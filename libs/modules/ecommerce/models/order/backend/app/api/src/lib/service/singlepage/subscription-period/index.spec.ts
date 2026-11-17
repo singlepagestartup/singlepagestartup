@@ -48,7 +48,7 @@ function fixture(
   );
   const service = new Service({
     findByIdExtended: async () => order,
-    findById: async () => order,
+    findById: async ({ id }) => (id === "source" ? order.sourceOrder : order),
     writeSubscriptionPeriod: write,
   });
   return { service, write, order: () => order };
@@ -99,8 +99,8 @@ describe("confirmed subscription period", () => {
     ["2026-10-25T10:00:00Z", "2026-10-26T10:00:00Z"],
     ["2026-10-22T10:00:00Z", "2026-10-24T10:00:00Z"],
   ])(
-    "renews one full interval from the later deadline/confirmation %s",
-    async (endsAt, expected) => {
+    "keeps an accepted period immutable when a second invoice appears %s",
+    async (endsAt, _expected) => {
       const { service } = fixture(
         {
           status: "delivering",
@@ -117,15 +117,59 @@ describe("confirmed subscription period", () => {
         id: "order",
         expectedInvoiceId: "invoice-a",
       });
-      expect(result.order.subscriptionPeriodInvoiceId).toBe("invoice-b");
-      expect(result.order.subscriptionPeriodEndsAt).toEqual(new Date(expected));
+      expect(result.accepted).toBe(false);
+      expect(result.order.subscriptionPeriodInvoiceId).toBe("invoice-a");
+      expect(result.order.subscriptionPeriodEndsAt).toEqual(new Date(endsAt));
       expect(result.order.subscriptionPeriodStartsAt).toEqual(
-        new Date(endsAt) > new Date()
-          ? new Date("2026-10-20T10:00:00Z")
-          : new Date(),
+        new Date("2026-10-20T10:00:00Z"),
       );
     },
   );
+
+  it.each([
+    ["2026-10-24T10:00:00Z", "2026-10-24T10:00:00Z", "2026-10-25T10:00:00Z"],
+    ["2026-10-22T10:00:00Z", "2026-10-23T10:00:00Z", "2026-10-24T10:00:00Z"],
+  ])(
+    "gives the new order its own early or late paid interval after %s",
+    async (sourceEnd, expectedStart, expectedEnd) => {
+      const { service } = fixture({
+        subscriptionSourceOrderId: "source",
+        subscriptionSourceInvoiceId: "previous",
+        sourceOrder: {
+          subscriptionPeriodInvoiceId: "previous",
+          subscriptionPeriodEndsAt: new Date(sourceEnd),
+        },
+      });
+      const result = await service.execute({
+        id: "order",
+        expectedInvoiceId: null,
+      });
+      expect(result.accepted).toBe(true);
+      expect(result.order.subscriptionPeriodStartsAt).toEqual(
+        new Date(expectedStart),
+      );
+      expect(result.order.subscriptionPeriodEndsAt).toEqual(
+        new Date(expectedEnd),
+      );
+    },
+  );
+
+  it("preserves the trusted provider period when delivery confirmation arrives late", async () => {
+    const { service } = fixture({
+      subscriptionScheduledStartsAt: new Date("2026-10-20T10:00:00Z"),
+      subscriptionScheduledEndsAt: new Date("2026-10-24T10:00:00Z"),
+    });
+    const result = await service.execute({
+      id: "order",
+      expectedInvoiceId: null,
+    });
+    expect(result.order.subscriptionPeriodStartsAt).toEqual(
+      new Date("2026-10-20T10:00:00Z"),
+    );
+    expect(result.order.subscriptionPeriodEndsAt).toEqual(
+      new Date("2026-10-24T10:00:00Z"),
+    );
+  });
 
   it("ignores an OPEN renewal and an older paid invoice", async () => {
     const { service, write } = fixture(

@@ -1,4 +1,5 @@
 "use client";
+import { useCatalogueMutationOptions } from "@sps/ecommerce/frontend/component/src/lib/admin-v2/catalogue-mutations";
 
 import { IComponentPropsExtended, variant, IModel } from "./interface";
 import {
@@ -6,9 +7,8 @@ import {
   insertSchema,
 } from "@sps/ecommerce/relations/stores-to-products/sdk/model";
 import { api } from "@sps/ecommerce/relations/stores-to-products/sdk/client";
-import { useForm, useFieldArray } from "react-hook-form";
+import { useForm, useFieldArray, type UseFormReturn } from "react-hook-form";
 import { memo, useCallback } from "react";
-import type { UseFormReturn } from "react-hook-form";
 import { FormField } from "@sps/ui-adapter";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -19,8 +19,19 @@ import { createId } from "@paralleldrive/cuid2";
 import { useGetAdminFormState } from "@sps/shared-frontend-client-hooks";
 
 export function Component(props: IComponentPropsExtended) {
-  const updateEntity = api.update();
-  const createEntity = api.create();
+  const updateEntity = api.update({
+    id: props.data?.id ?? "",
+    ...useCatalogueMutationOptions({
+      entity: "stores-to-products",
+      method: "PATCH",
+    }),
+  });
+  const createEntity = api.create(
+    useCatalogueMutationOptions({
+      entity: "stores-to-products",
+      method: "POST",
+    }),
+  );
 
   const { status } = useGetAdminFormState({
     updateEntity,
@@ -163,13 +174,6 @@ export function Component(props: IComponentPropsExtended) {
                 valueAsNumber: true,
               })}
             />
-          </label>
-          <label className="flex min-h-11 items-center gap-2 text-sm">
-            <input
-              type="checkbox"
-              {...form.register("settings.requiredDelivery")}
-            />
-            Require a receipt method
           </label>
           <label className="flex min-h-11 items-center gap-2 text-sm">
             <input type="checkbox" {...form.register("settings.standalone")} />

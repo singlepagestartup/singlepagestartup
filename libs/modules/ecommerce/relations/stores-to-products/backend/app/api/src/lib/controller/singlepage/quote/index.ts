@@ -13,7 +13,7 @@ const selection = z
       .object({
         address: z.string().max(500).optional(),
         region: z.string().max(128).optional(),
-        pickupPointId: z.string().max(128).optional(),
+        pickupPointId: z.unknown().optional(),
         coordinates: z
           .object({
             latitude: z.number().min(-90).max(90),
@@ -22,6 +22,11 @@ const selection = z
           .optional(),
       })
       .strict()
+      .transform(({ address, region, coordinates }) => ({
+        address,
+        region,
+        coordinates,
+      }))
       .optional(),
     services: z
       .array(

@@ -1,3 +1,4 @@
+import { Component as SubjectMeEcommerceModuleCatalogueAdmin } from "./subject/me/ecommerce-module/catalogue/admin";
 import { Component as SubjectMeEcommerceModuleOfferCreate } from "./subject/me/ecommerce-module/offer/create";
 import { Component as Hidden } from "@sps/shared-frontend-components/singlepage/hidden";
 import { Component as SubjectMeBlogModuleArticleCreate } from "./subject/me/blog-module/article/create";
@@ -46,6 +47,8 @@ import { Component as SubjectOverviewDefault } from "./subject/overview/default"
 import { Component as SubjectListDefault } from "./subject/list/default";
 
 export const variants = {
+  "subject-me-ecommerce-module-catalogue-admin":
+    SubjectMeEcommerceModuleCatalogueAdmin,
   "subject-me-ecommerce-module-offer-create":
     SubjectMeEcommerceModuleOfferCreate,
   hidden: Hidden,

@@ -7,6 +7,7 @@ jest.mock("@sps/shared-utils", () => ({
   RBAC_SECRET_KEY: "rbac-secret",
 }));
 jest.mock("@sps/backend-utils", () => ({
+  ...jest.requireActual("@sps/backend-utils"),
   authorization: (...args: unknown[]) => authorizationMock(...args),
   verifyJwt: (...args: unknown[]) => verifyMock(...args),
   getHttpErrorType: (error: Error) => ({
@@ -16,9 +17,11 @@ jest.mock("@sps/backend-utils", () => ({
   }),
 }));
 import { ECOMMERCE_ORDER_LINE_QUANTITY_BOUNDS as quantityBounds } from "@sps/shared-utils";
+import { ecommerceCartSelectionSchema } from "@sps/rbac/models/subject/sdk/model";
 import { Handler } from "./create";
 import { Service as CreateCartOrder } from "../../../../service/singlepage/ecommerce/order/create";
 import { Service as OfferQuotes } from "@sps/ecommerce/relations/stores-to-products/backend/app/api/src/lib/service";
+import { Service as CalculateQuote } from "@sps/ecommerce/relations/stores-to-products/backend/app/api/src/lib/service/singlepage/quote";
 
 function fixture() {
   const writes = {
@@ -146,40 +149,255 @@ it("rejects an offer outside the requested product/store retail choices", async 
   ).rejects.toThrow("Choose one available store offer");
   f.noWrites();
 });
-it("keeps an incomplete delivery selection as a cart draft", async () => {
+it.each([
+  ["shipping", "first", undefined],
+  ["pickup", "each", undefined],
+  [
+    "pickup",
+    "each",
+    {
+      address: "Previous shipping address",
+      region: "Previous region",
+      coordinates: { latitude: 60, longitude: 30 },
+      pickupPointId: "old-depot",
+    },
+  ],
+] as const)(
+  "stores the server-default %s method with recurrence %s and destination %j",
+  async (receiptMethod, recurrence, destination) => {
+    const f = fixture();
+    const serviceId = "7341680e-08e1-4984-bc97-c8072d3d968a";
+    const attribute = (key: string, value: string, currencyId?: string) => ({
+      id: key,
+      key,
+      type: key === "price" ? "price" : "feature",
+      field: key === "price" ? "number" : "string",
+      number: key === "price" ? value : null,
+      text: key === "price" ? undefined : value,
+      currencyIds: currencyId ? [currencyId] : [],
+    });
+    const formula = [
+      attribute("price_formula", "unit_price * quantity"),
+      attribute("formula_version", "1"),
+    ];
+    const calculate = new CalculateQuote({
+      catalog: {
+        products: new Map([
+          [
+            "product",
+            { id: "product", title: { en: "Wardrobe" }, kind: "physical" },
+          ],
+          [
+            "delivery-product",
+            {
+              id: "delivery-product",
+              title: { en: "Delivery" },
+              kind: "service",
+            },
+          ],
+        ]),
+        offers: new Map([
+          [f.offer.id, { ...f.offer, settings: {} }],
+          [
+            serviceId,
+            {
+              id: serviceId,
+              productId: "delivery-product",
+              storeId: "contractor",
+              variant: "default",
+              settings: { receiptMethod },
+            },
+          ],
+        ]),
+        links: [
+          {
+            sourceOfferId: f.offer.id,
+            targetOfferId: serviceId,
+            variant: "delivery",
+            recurrence,
+          },
+        ],
+        providers: [],
+        currencies: [{ id: "currency-rub", slug: "rub" }],
+        offerAttributes: new Map([
+          [f.offer.id, [attribute("price", "5000", "currency-rub")]],
+          [serviceId, [attribute("price", "1000", "currency-rub")]],
+        ]),
+        productAttributes: new Map([
+          ["product", formula],
+          ["delivery-product", formula],
+        ]),
+        storeAttributes: new Map(),
+      } as any,
+      held: {},
+      precision: () => 2,
+      routing: () => ({
+        geocode: jest.fn(),
+        distance: jest.fn(),
+      }),
+      now: new Date(),
+    });
+    const quotes: OfferQuotes = Object.create(OfferQuotes.prototype);
+    Object.defineProperty(quotes, "calculateMany", {
+      value: async (inputs: any[]) =>
+        Promise.all(inputs.map((input) => calculate.execute(input))),
+    });
+    f.service.ecommerceModule.storesToProducts.quotesUnderLock =
+      quotes.quotesUnderLock.bind(quotes);
+    f.quote.mockImplementation((input) => quotes.quote(input));
+    await new Handler(f.service).execute(f.context({ destination }), undefined);
+    const prepared =
+      await f.quote.mock.results[f.quote.mock.results.length - 1].value;
+    if (receiptMethod === "shipping") {
+      expect(prepared.amount).toBeNull();
+      expect(prepared.issues).toContainEqual(
+        expect.objectContaining({
+          offerId: serviceId,
+          code: "address_required",
+        }),
+      );
+      expect(
+        prepared.charges.some((charge) => charge.offerId === serviceId),
+      ).toBe(false);
+    } else {
+      expect(prepared.amount).toBe("6000.00");
+      expect(prepared.issues).toEqual([]);
+      expect(prepared.destination).toEqual({});
+      expect(
+        prepared.charges.some((charge) => charge.offerId === serviceId),
+      ).toBe(true);
+      expect(f.writes.line).toHaveBeenNthCalledWith(1, {
+        data: expect.objectContaining({ destination: {} }),
+      });
+      expect(f.quote).toHaveBeenCalledWith(
+        expect.objectContaining({
+          destination: destination
+            ? expect.not.objectContaining({ pickupPointId: expect.anything() })
+            : undefined,
+        }),
+      );
+    }
+    expect(prepared.selectedServices).toEqual([
+      { offerId: serviceId, quantity: 1 },
+    ]);
+    expect(f.writes.order).toHaveBeenCalledTimes(1);
+    expect(f.writes.line).toHaveBeenCalledTimes(2);
+    expect(f.writes.line).toHaveBeenNthCalledWith(2, {
+      data: {
+        orderId: "order-new",
+        productId: "delivery-product",
+        offerId: serviceId,
+        parentLineId: "primary",
+        quantity: 1,
+        recurrence,
+        selectionUpdatedAt: expect.any(Date),
+      },
+    });
+  },
+);
+
+it("keeps a compatible contractor alias and its schedule in an incomplete draft", async () => {
   const f = fixture();
+  const selected = "7341680e-08e1-4984-bc97-c8072d3d968a";
+  const originalQuote = f.quote.getMockImplementation()!;
+  f.quote.mockImplementation(
+    async (input: any) =>
+      ({
+        ...(await originalQuote(input)),
+        selectedServices: [{ offerId: selected, quantity: 1 }],
+        serviceOptions: [
+          {
+            offerId: "canonical-option",
+            compatibleOfferIds: [selected],
+            productId: "delivery-product",
+            role: "delivery",
+            receiptMethod: "shipping",
+            recurrence: "each",
+            currencyIds: ["currency-rub"],
+          },
+        ],
+        charges: [],
+        amount: null,
+        issues: [
+          {
+            offerId: selected,
+            code: "address_required",
+            message: "Enter address",
+          },
+        ],
+      }) as any,
+  );
+  await new Handler(f.service).execute(f.context(), undefined);
+  expect(f.writes.line).toHaveBeenNthCalledWith(2, {
+    data: {
+      orderId: "order-new",
+      productId: "delivery-product",
+      offerId: selected,
+      parentLineId: "primary",
+      quantity: 1,
+      recurrence: "each",
+      selectionUpdatedAt: expect.any(Date),
+    },
+  });
+});
+
+it("rejects an unquoted service even when another method needs an address", async () => {
+  const f = fixture();
+  const selected = "7341680e-08e1-4984-bc97-c8072d3d968a";
   f.quote.mockImplementation(
     async (input: any) =>
       ({
         ...input,
+        productId: "product",
         currencyIds: ["currency-rub"],
-        serviceOptions: [],
+        selectedServices: [{ offerId: selected, quantity: 1 }],
+        serviceOptions: [
+          {
+            offerId: selected,
+            productId: "delivery-product",
+            role: "delivery",
+            receiptMethod: "shipping",
+            recurrence: "first",
+            currencyIds: ["currency-rub"],
+          },
+        ],
         charges: [],
         amount: null,
-        issues: [{ code: "delivery_required", message: "Choose delivery" }],
+        issues: [
+          {
+            offerId: "another-service",
+            code: "address_required",
+            message: "Enter its address",
+          },
+        ],
         version: "terms-1",
         expiresAt: new Date(Date.now() + 60_000).toISOString(),
       }) as any,
   );
-  await new Handler(f.service).execute(f.context(), undefined);
-  expect(f.writes.order).toHaveBeenCalledTimes(1);
+  await expect(
+    new Handler(f.service).execute(f.context(), undefined),
+  ).rejects.toThrow("Selected service has no quoted charge");
+  f.noWrites();
 });
-it.each(["insufficient_stock", "configuration", "currency_unavailable"])(
-  "blocks %s before graph writes",
-  async (code) => {
-    const f = fixture();
-    f.service.ecommerceModuleCartQuote.mockResolvedValue([
-      {
-        currencyIds: ["currency-rub"],
-        issues: [{ code, message: "Cannot purchase this selection" }],
-      },
-    ]);
-    await expect(
-      new Handler(f.service).execute(f.context(), undefined),
-    ).rejects.toThrow("Cannot purchase this selection");
-    f.noWrites();
-  },
-);
+it.each([
+  "insufficient_stock",
+  "configuration",
+  "currency_unavailable",
+  "delivery_required",
+  "pickup_required",
+])("blocks %s before graph writes", async (code) => {
+  const f = fixture();
+  f.service.ecommerceModuleCartQuote.mockResolvedValue([
+    {
+      currencyIds: ["currency-rub"],
+      issues: [{ code, message: "Cannot purchase this selection" }],
+    },
+  ]);
+  await expect(
+    new Handler(f.service).execute(f.context(), undefined),
+  ).rejects.toThrow("Cannot purchase this selection");
+  f.noWrites();
+});
 it("rejects a duplicate of the same offer under the subject lock", async () => {
   const f = fixture();
   f.service.ecommerceModuleFindOpenCartOrderWithProduct.mockResolvedValue(
@@ -240,7 +458,12 @@ it("stores exactly the quoted destination, quantity, currency and selected servi
         ...(await quote(selection)),
         serviceOptions: [{ offerId: serviceId }],
         charges: [
-          { offerId: serviceId, role: "delivery", recurrence: "first" },
+          {
+            offerId: serviceId,
+            productId: "delivery-product",
+            role: "delivery",
+            recurrence: "first",
+          },
         ],
       }) as any,
   );
@@ -367,4 +590,59 @@ it("checks page-accepted terms again through the real locked-quote comparison be
   ).rejects.toThrow("Offer conditions changed");
   expect(calculate).toHaveBeenCalledTimes(2);
   f.noWrites();
+});
+
+it.each([undefined, {}])(
+  "accepts pickup cart selection without destination details: %j",
+  (destination) => {
+    const parsed = ecommerceCartSelectionSchema.safeParse({
+      action: "preview",
+      lineId: "7341680e-08e1-4984-bc97-c8072d3d968a",
+      selections: [
+        {
+          offerId: "50122f84-462d-45f6-bf3e-6e45eea0bd70",
+          currencyId: "a5e746ea-fbc7-4763-8159-1a685e0fa467",
+          quantity: 1,
+          destination,
+        },
+      ],
+    });
+    expect(parsed.success).toBe(true);
+  },
+);
+
+it("accepts a legacy cart point field while retaining validated shipping fields and stripping the point", () => {
+  const destination = {
+    address: "City Street 10",
+    region: "Area",
+    coordinates: { latitude: 60, longitude: 30 },
+  };
+  const input = {
+    action: "preview",
+    lineId: "7341680e-08e1-4984-bc97-c8072d3d968a",
+    selections: [
+      {
+        offerId: "50122f84-462d-45f6-bf3e-6e45eea0bd70",
+        currencyId: "a5e746ea-fbc7-4763-8159-1a685e0fa467",
+        quantity: 1,
+        destination: { ...destination, pickupPointId: "old-depot" },
+      },
+    ],
+  };
+  const parsed = ecommerceCartSelectionSchema.parse(input);
+  expect(parsed.selections[0].destination).toEqual(destination);
+  expect(
+    ecommerceCartSelectionSchema.safeParse({
+      ...input,
+      selections: [
+        {
+          ...input.selections[0],
+          destination: {
+            ...input.selections[0].destination,
+            coordinates: { latitude: 91, longitude: 30 },
+          },
+        },
+      ],
+    }).success,
+  ).toBe(false);
 });

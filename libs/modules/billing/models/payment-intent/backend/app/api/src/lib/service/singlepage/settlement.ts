@@ -32,6 +32,23 @@ export interface IPaymentLifecycle {
   }): Promise<void>;
 }
 
+export interface IProviderPeriodReceipt {
+  provider: string;
+  contractPaymentIntentId: string;
+  providerSubscriptionId: string;
+  providerInvoiceId: string;
+  periodStart: string;
+  periodEnd: string;
+  amount: number;
+  currency: string;
+  initial: boolean;
+  recordedPaymentIntentId?: string;
+}
+
+export interface IProviderPeriodResolver {
+  (receipt: IProviderPeriodReceipt): Promise<{ paymentIntentId: string }>;
+}
+
 export type IExpireProps = { invoiceId: string } & (
   | { provider: string | null; expiresBefore: Date; providerId?: never }
   | { provider: "stripe"; providerId: string; expiresBefore?: never }

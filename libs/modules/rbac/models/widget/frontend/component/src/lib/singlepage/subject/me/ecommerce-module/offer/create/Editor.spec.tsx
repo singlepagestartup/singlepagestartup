@@ -23,18 +23,20 @@ jest.mock("@sps/rbac/models/subject/sdk/client", () => ({
       mutateAsync: setAttribute,
       isPending: false,
     }),
-  },
-}));
-jest.mock("@sps/ecommerce/relations/stores-to-products/sdk/client", () => ({
-  api: { update: () => ({ mutateAsync: updateOffer, isPending: false }) },
-}));
-jest.mock("@sps/ecommerce/models/attribute/sdk/client", () => ({
-  api: { delete: () => ({ mutateAsync: deleteAttribute, isPending: false }) },
-}));
-jest.mock("@sps/ecommerce/relations/offers-to-offers/sdk/client", () => ({
-  api: {
-    create: () => ({ mutateAsync: createLink, isPending: false }),
-    delete: () => ({ mutateAsync: deleteLink, isPending: false }),
+    ecommerceModuleCatalogMutation: () => ({
+      isPending: false,
+      mutateAsync: (props: any) => {
+        const action =
+          props.data.entity === "stores-to-products"
+            ? updateOffer
+            : props.data.entity === "attributes"
+              ? deleteAttribute
+              : props.data.method === "POST"
+                ? createLink
+                : deleteLink;
+        return action(props);
+      },
+    }),
   },
 }));
 jest.mock("@sps/rbac/models/subject/sdk/model", () => ({
@@ -74,7 +76,7 @@ const context = {
     {
       id: "delivery",
       sku: "DELIVERY",
-      storeId: "store",
+      storeId: "contractor",
       productId: "delivery-product",
       variant: "default",
       settings: {},
@@ -120,13 +122,13 @@ beforeEach(() => {
   }
 });
 afterEach(cleanup);
-function openEditor() {
+function openEditor(editorContext = context) {
   const refresh = jest.fn().mockResolvedValue(undefined);
   render(
     <Editor
       subjectId="owner"
       storeId="store"
-      context={context}
+      context={editorContext}
       onRefresh={refresh}
     />,
   );
@@ -136,6 +138,7 @@ function openEditor() {
 
 test("editing an offer sends its actual price, stock and packaging through the owning SDKs", async () => {
   openEditor();
+  expect(screen.queryByLabelText(/Pickup point IDs/)).toBeNull();
   fireEvent.change(screen.getByLabelText("RUB"), {
     target: { value: "6200.25" },
   });
@@ -173,10 +176,15 @@ test("editing an offer sends its actual price, stock and packaging through the o
   );
   expect(updateOffer).toHaveBeenCalledWith(
     expect.objectContaining({
-      id: "offer",
+      id: "owner",
       data: expect.objectContaining({
-        settings: expect.objectContaining({
-          packages: [expect.objectContaining({ count: 2, weight_kg: "30" })],
+        entity: "stores-to-products",
+        method: "PATCH",
+        recordId: "offer",
+        data: expect.objectContaining({
+          settings: expect.objectContaining({
+            packages: [expect.objectContaining({ count: 2, weight_kg: "30" })],
+          }),
         }),
       }),
     }),
@@ -192,22 +200,30 @@ test("unlimited stock removes the stock attribute while archiving only changes a
       .closest("form")!,
   );
   await waitFor(() =>
-    expect(deleteAttribute).toHaveBeenCalledWith({ id: "stock" }),
+    expect(deleteAttribute).toHaveBeenCalledWith({
+      id: "owner",
+      data: { entity: "attributes", method: "DELETE", recordId: "stock" },
+    }),
   );
   await waitFor(() => expect(refresh).toHaveBeenCalled());
   jest.clearAllMocks();
   fireEvent.click(screen.getByRole("button", { name: "Stop new sales" }));
   await waitFor(() =>
     expect(updateOffer).toHaveBeenCalledWith({
-      id: "offer",
-      data: { variant: "hidden" },
+      id: "owner",
+      data: {
+        entity: "stores-to-products",
+        method: "PATCH",
+        recordId: "offer",
+        data: { variant: "hidden" },
+      },
     }),
   );
   expect(setAttribute).not.toHaveBeenCalled();
   expect(deleteAttribute).not.toHaveBeenCalled();
 });
 
-test("service editor uses the selected source and excludes shared Product editing for another owner", async () => {
+test("a store selling another owner's product cannot edit its delivery and add-on links", () => {
   openEditor();
   expect(
     (
@@ -216,6 +232,11 @@ test("service editor uses the selected source and excludes shared Product editin
       }) as HTMLOptionElement
     ).disabled,
   ).toBe(true);
+  expect(screen.queryByRole("button", { name: "Add service link" })).toBeNull();
+});
+
+test("the product owner can link a contractor's offer to the product", async () => {
+  openEditor({ ...context, ownedProductIds: ["product"] });
   fireEvent.change(screen.getByLabelText("Target offer"), {
     target: { value: "delivery" },
   });
@@ -224,11 +245,16 @@ test("service editor uses the selected source and excludes shared Product editin
   );
   await waitFor(() =>
     expect(createLink).toHaveBeenCalledWith({
+      id: "owner",
       data: {
-        sourceOfferId: "offer",
-        targetOfferId: "delivery",
-        variant: "delivery",
-        recurrence: "first",
+        entity: "offers-to-offers",
+        method: "POST",
+        data: {
+          sourceOfferId: "offer",
+          targetOfferId: "delivery",
+          variant: "delivery",
+          recurrence: "first",
+        },
       },
     }),
   );

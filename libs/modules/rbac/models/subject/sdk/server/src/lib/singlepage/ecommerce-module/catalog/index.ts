@@ -4,6 +4,8 @@ import type {
   ICatalogCreateOfferResult,
   ICatalogSetAttributeInput,
   ICatalogContext,
+  ICatalogMutationInput,
+  ICatalogMutationResult,
 } from "@sps/rbac/models/subject/sdk/model/src/lib/ecommerce-catalog";
 import type { IModel as IAttribute } from "@sps/ecommerce/models/attribute/sdk/model";
 import {
@@ -20,6 +22,10 @@ interface IOptions {
 export interface IOfferCreateProps extends IOptions {
   data: ICatalogCreateOfferInput;
 }
+export interface IMutationProps extends IOptions {
+  data: ICatalogMutationInput;
+}
+export type IMutationResult = ICatalogMutationResult;
 export interface IAttributeSetProps extends IOptions {
   data: ICatalogSetAttributeInput;
 }
@@ -64,4 +70,8 @@ export function attributeSet(
 }
 export function context(props: IContextProps): Promise<IContextResult> {
   return request(props, "catalogue-context", undefined, "GET");
+}
+
+export function mutation(props: IMutationProps): Promise<IMutationResult> {
+  return request(props, "catalogue-mutations", props.data);
 }

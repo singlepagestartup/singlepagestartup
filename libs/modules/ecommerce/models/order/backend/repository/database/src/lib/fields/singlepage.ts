@@ -17,4 +17,13 @@ export const fields = {
   subscriptionSourceOrderId: pgCore.uuid("subscription_source_order_id"),
   subscriptionSourceInvoiceId: pgCore.uuid("subscription_source_invoice_id"),
   subscriptionSourceInterval: pgCore.text("subscription_source_interval"),
+  subscriptionScheduledStartsAt: pgCore.timestamp(
+    "subscription_scheduled_starts_at",
+  ),
+  subscriptionScheduledEndsAt: pgCore.timestamp(
+    "subscription_scheduled_ends_at",
+  ),
+  subscriptionProviderInvoiceId: pgCore.text(
+    "subscription_provider_invoice_id",
+  ),
 };

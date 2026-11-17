@@ -13,7 +13,12 @@ export interface IReservationLine {
 
 interface IConstructorProps {
   repository: Repository;
-  service: Pick<PaymentRelationService, "find" | "create" | "update">;
+  service: Pick<
+    PaymentRelationService,
+    "find" | "create" | "update" | "stockForOffers" | "reservedQuantities"
+  > & {
+    writeStock: (attributeId: string, quantity: number) => Promise<void>;
+  };
 }
 
 export class Service {
@@ -80,8 +85,8 @@ export class Service {
       );
     }
     const [stock, held] = await Promise.all([
-      repository.stockForOffers(offerIds),
-      repository.reservedQuantities({ offerIds }),
+      service.stockForOffers(offerIds),
+      service.reservedQuantities({ offerIds }),
     ]);
     for (const [offerId, quantity] of quantities) {
       const limit = stock.get(offerId);
@@ -176,8 +181,8 @@ export class Service {
     }
     const offerIds = [...quantities.keys()];
     const [stock, held] = await Promise.all([
-      repository.stockForOffers(offerIds),
-      repository.reservedQuantities({ offerIds }),
+      service.stockForOffers(offerIds),
+      service.reservedQuantities({ offerIds }),
     ]);
     const unavailable =
       props.requiresReconciliation ||
@@ -216,10 +221,7 @@ export class Service {
     for (const [offerId, quantity] of quantities) {
       const limit = stock.get(offerId);
       if (limit) {
-        await repository.writeStock(
-          limit.attributeId,
-          limit.quantity - quantity,
-        );
+        await service.writeStock(limit.attributeId, limit.quantity - quantity);
       }
     }
     return { reconciliationPaymentIntentIds: [] };

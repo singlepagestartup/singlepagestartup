@@ -19,7 +19,7 @@ allOf:
         description: Primary order line for a selected service
       destination:
         type: object
-        description: Address, region, pickupPointId and optional coordinates of the primary line
+        description: Shipping address, region and optional coordinates. Store pickup uses the selected retail store.
       recurrence:
         type: string
         enum: [first, each]

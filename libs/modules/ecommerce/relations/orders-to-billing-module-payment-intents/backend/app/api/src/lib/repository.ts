@@ -6,63 +6,17 @@ import {
   trackRepositoryRead,
   withConsistencyDatabase,
 } from "@sps/shared-backend-api";
-import { db } from "@sps/providers-db";
-import { and, asc, eq, inArray, ne } from "drizzle-orm";
+import { and, asc, eq, inArray } from "drizzle-orm";
 import { Table } from "@sps/ecommerce/relations/orders-to-billing-module-payment-intents/backend/repository/database";
 import { Table as Offer } from "@sps/ecommerce/relations/stores-to-products/backend/repository/database";
 import { Table as OfferAttribute } from "@sps/ecommerce/relations/stores-to-products-to-attributes/backend/repository/database";
 import { Table as Attribute } from "@sps/ecommerce/models/attribute/backend/repository/database";
 import { Table as AttributeKey } from "@sps/ecommerce/models/attribute-key/backend/repository/database";
 import { Table as KeyAttribute } from "@sps/ecommerce/relations/attribute-keys-to-attributes/backend/repository/database";
-import { Repository as AttributeRepository } from "@sps/ecommerce/models/attribute/backend/app/api/src/lib/repository";
-import { Configuration as AttributeConfiguration } from "@sps/ecommerce/models/attribute/backend/app/api/src/lib/configuration";
-
-export interface IReservedOfferQuantitiesProps {
-  offerIds: string[];
-  excludePaymentIntentId?: string;
-  database?: Pick<typeof db, "select">;
-}
-
-export async function reservedOfferQuantities(
-  props: IReservedOfferQuantitiesProps,
-): Promise<Record<string, number>> {
-  const offerIds = [...new Set(props.offerIds)];
-  const quantities: Record<string, number> = Object.fromEntries(
-    offerIds.map((id) => [id, 0]),
-  );
-  if (!offerIds.length) {
-    return quantities;
-  }
-  const database =
-    props.database ?? consistencyContext.getStore()?.database ?? db;
-  await trackRepositoryRead(Table, database, {
-    and: [{ column: "offerId", method: "inArray", value: offerIds }],
-  });
-  const conditions = [
-    inArray(Table.offerId, offerIds),
-    inArray(Table.reservationStatus, ["held", "reconciliation"]),
-  ];
-  if (props.excludePaymentIntentId) {
-    conditions.push(
-      ne(Table.billingModulePaymentIntentId, props.excludePaymentIntentId),
-    );
-  }
-  const rows = await database
-    .select({ offerId: Table.offerId, quantity: Table.reservationQuantity })
-    .from(Table)
-    .where(and(...conditions));
-  for (const row of rows) {
-    if (row.offerId) {
-      quantities[row.offerId] += row.quantity;
-    }
-  }
-  return quantities;
-}
-
 @injectable()
 @injectFromBase()
 export class Repository extends DatabaseRepository<typeof Table> {
-  stockQuery(offerIds: string[]) {
+  stockQuery(offerIds: string[], attributeKey: string) {
     return this.db
       .select({
         offerId: OfferAttribute.storesToProductsId,
@@ -76,14 +30,14 @@ export class Repository extends DatabaseRepository<typeof Table> {
       .where(
         and(
           inArray(OfferAttribute.storesToProductsId, offerIds),
-          eq(AttributeKey.slug, "stock_quantity"),
+          eq(AttributeKey.slug, attributeKey),
         ),
       );
   }
 
-  async stockForOffers(offerIds: string[]) {
+  async stockRowsForOffers(offerIds: string[], attributeKey: string) {
     if (!offerIds.length) {
-      return new Map<string, { attributeId: string; quantity: number }>();
+      return [];
     }
     await Promise.all([
       trackRepositoryRead(OfferAttribute, this.db, {
@@ -95,37 +49,7 @@ export class Repository extends DatabaseRepository<typeof Table> {
       trackRepositoryRead(KeyAttribute, this.db),
       trackRepositoryRead(AttributeKey, this.db),
     ]);
-    const rows = await this.stockQuery(offerIds);
-    const result = new Map<string, { attributeId: string; quantity: number }>();
-    for (const row of rows) {
-      if (
-        result.has(row.offerId) ||
-        row.number === null ||
-        !/^\d+(?:\.0+)?$/.test(row.number) ||
-        !Number.isSafeInteger(Number(row.number))
-      ) {
-        throw new Error(
-          "Configuration error. Reserved offer stock is invalid or ambiguous",
-        );
-      }
-      result.set(row.offerId, {
-        attributeId: row.attributeId,
-        quantity: Number(row.number),
-      });
-    }
-    return result;
-  }
-
-  async writeStock(attributeId: string, quantity: number) {
-    const repository = new AttributeRepository(new AttributeConfiguration());
-    repository.db = this.db;
-    await repository.updateFirstByField("id", attributeId, {
-      number: String(quantity),
-    });
-  }
-
-  reservedQuantities(props: Omit<IReservedOfferQuantitiesProps, "database">) {
-    return reservedOfferQuantities({ ...props, database: this.db });
+    return this.stockQuery(offerIds, attributeKey);
   }
 
   async lockOffers(props: { offerIds: string[] }): Promise<void> {

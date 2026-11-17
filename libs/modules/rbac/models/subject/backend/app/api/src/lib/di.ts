@@ -42,6 +42,8 @@ export interface IEcommerceOrderReadService
       EcommerceOrderService,
       | "acceptSubscriptionPeriod"
       | "createNextPeriodCart"
+      | "configureNextPeriod"
+      | "fulfillmentQuoteOptions"
       | "freezeSubscriptionPeriod"
       | "assertSubscriptionPayment"
       | "hasSharedSubscriptionRenewal"
@@ -143,7 +145,11 @@ export interface IBillingModule {
   paymentIntent: ICreateUpdateService &
     Pick<
       PaymentIntentService,
-      "isProviderAllowed" | "failUnpaidIntent" | "prepareCheckoutDispatch"
+      | "isProviderAllowed"
+      | "schedulesSubscriptionPayments"
+      | "failUnpaidIntent"
+      | "prepareCheckoutDispatch"
+      | "reconcileSubscriptionPeriods"
     >;
   paymentIntentsToCurrencies: ICreateService;
   invoice: ICreateUpdateService;
@@ -236,6 +242,7 @@ export const SubjectDI = {
   IEcommerceOrderProceedService: Symbol.for(
     "rbac.subject.ecommerce-order-proceed.service",
   ),
+  IEcommerceOrderRenewal: Symbol.for("rbac.subject.ecommerce-order-renewal"),
   IEcommerceProductCheckout: Symbol.for(
     "rbac.subject.ecommerce-product-checkout",
   ),

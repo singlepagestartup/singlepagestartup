@@ -1,6 +1,8 @@
 import type { ICartDetails } from "@sps/ecommerce/models/order/sdk/model";
-import type { IModel as IOffer } from "@sps/ecommerce/relations/stores-to-products/sdk/model";
-import type { IEcommerceCartSelection } from "@sps/rbac/models/subject/sdk/model";
+import type {
+  IModel as IOffer,
+  IOfferQuoteInput,
+} from "@sps/ecommerce/relations/stores-to-products/sdk/model";
 import type { Service as SubjectService } from "../../index";
 
 export interface IExecuteProps {
@@ -27,6 +29,10 @@ export class Service {
     const details = await service.ecommerceModule.order.findByIdCartDetails({
       id: props.orderId,
     });
+    const fulfillment =
+      await service.ecommerceModule.order.fulfillmentQuoteOptions({
+        id: props.orderId,
+      });
     const storeLinks = await service.ecommerceModule.storesToOrders.find({
       params: {
         filters: {
@@ -36,7 +42,7 @@ export class Service {
     });
     const primaries = details.lines.filter((line) => !line.parentLineId);
     const offers = new Map<string, IOffer>();
-    const selections: IEcommerceCartSelection[] = [];
+    const selections: IOfferQuoteInput[] = [];
     const unpriced = [...(details.unpriced ?? [])];
     const quotedLines: ICartDetails["lines"] = [];
     for (const line of primaries) {
@@ -82,6 +88,7 @@ export class Service {
         continue;
       }
       selections.push({
+        lineId: line.id,
         offerId: selected.id,
         quantity: line.quantity,
         currencyId: details.billingModuleCurrencyId ?? "",
@@ -100,6 +107,9 @@ export class Service {
           subjectId: props.subjectId,
           excludeOrderIds: [props.orderId],
           selections,
+          ...(fulfillment.fulfilledLineIds.length
+            ? { fulfilledLineIds: fulfillment.fulfilledLineIds }
+            : {}),
         })
       : [];
     for (let index = 0; index < quotes.length; index += 1) {

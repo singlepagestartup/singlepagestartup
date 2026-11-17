@@ -1,3 +1,4 @@
+import { Service as OrderLifecycleService } from "@sps/ecommerce/models/order/backend/app/api/src/lib/service/startup/lifecycle";
 /**
  * PostgreSQL coverage for failed purchases, repeated carts and Subject Roles.
  * Payment confirmation, order reads and fulfillment use the owning services.
@@ -29,11 +30,19 @@ import { Handler as OrderUpdate } from "@sps/ecommerce/models/order/backend/app/
 import { db } from "@sps/providers-db";
 import { eq } from "drizzle-orm";
 import { Table as AttributeKeyTable } from "@sps/ecommerce/models/attribute-key/backend/repository/database";
-import { Repository as OfferRepository } from "@sps/ecommerce/relations/stores-to-products/backend/app/api/src/lib/repository";
-import { Configuration as OfferConfiguration } from "@sps/ecommerce/relations/stores-to-products/backend/app/api/src/lib/configuration";
-import { Service as OfferService } from "@sps/ecommerce/relations/stores-to-products/backend/app/api/src/lib/service";
+import { createService as createOfferService } from "@sps/ecommerce/relations/stores-to-products/backend/app/api/src/lib/bootstrap";
 import { Repository as OfferAttributeRepository } from "@sps/ecommerce/relations/stores-to-products-to-attributes/backend/app/api/src/lib/repository";
 import { Configuration as OfferAttributeConfiguration } from "@sps/ecommerce/relations/stores-to-products-to-attributes/backend/app/api/src/lib/configuration";
+
+let mockStripeClient: any;
+jest.mock("@sps/shared-utils", () => ({
+  ...jest.requireActual("@sps/shared-utils"),
+  STRIPE_SECRET_KEY: "sk_test_local_period_fixture",
+}));
+jest.mock("stripe", () => ({
+  __esModule: true,
+  default: jest.fn().mockImplementation(() => mockStripeClient),
+}));
 
 const paths = {
   store: "@sps/ecommerce/models/store",
@@ -45,6 +54,7 @@ const paths = {
   balances: "@sps/rbac/relations/subjects-to-billing-module-currencies",
   profiles: "@sps/rbac/relations/subjects-to-social-module-profiles",
   identities: "@sps/rbac/relations/subjects-to-identities",
+  offerLinks: "@sps/ecommerce/relations/offers-to-offers",
 };
 
 const cleanup: (() => Promise<unknown>)[] = [];
@@ -64,7 +74,7 @@ function where(column: string, value: string) {
 
 function track(service: any) {
   const create = service.create.bind(service);
-  service.create = async (props: any) => {
+  jest.spyOn(service, "create").mockImplementation(async (props: any) => {
     const entity = await create(props);
     if (entity?.id) {
       cleanup.push(async () => {
@@ -74,7 +84,7 @@ function track(service: any) {
       });
     }
     return entity;
-  };
+  });
   return service;
 }
 
@@ -90,6 +100,18 @@ async function fixture(type = "one_off") {
   });
   const { app: orderApp } = await bootstrapOrder();
   const order = track(orderApp.controller.service) as any;
+  const createNextPeriodCart = order.createNextPeriodCart.bind(order);
+  jest
+    .spyOn(order, "createNextPeriodCart")
+    .mockImplementation(async (props: any) => {
+      const next = await createNextPeriodCart(props);
+      cleanup.push(async () => {
+        if (await order.repository.findFirstByField("id", next.id)) {
+          await order.repository.deleteFirstByField("id", next.id);
+        }
+      });
+      return next;
+    });
   // Receipt rendering and notifications are external to payment/Role delivery.
   jest.spyOn(order.fileStorageModule.file, "find").mockResolvedValue([]);
   jest.spyOn(logger, "error").mockImplementation((message, context: any) => {
@@ -130,9 +152,7 @@ async function fixture(type = "one_off") {
   const lines = track(order.ordersToProducts);
   const orderCurrencies = track(order.ordersToBillingModuleCurrencies);
   const orderIntents = track(order.ordersToBillingModulePaymentIntents);
-  const offers = track(
-    new OfferService(new OfferRepository(new OfferConfiguration())),
-  );
+  const offers = track(createOfferService());
   const offerAttributes = track(
     new CRUDService(
       new OfferAttributeRepository(new OfferAttributeConfiguration()),
@@ -421,10 +441,6 @@ async function fixture(type = "one_off") {
     });
     return { intent, invoice };
   };
-  intents.paymentLifecycle = {
-    settle: (input) => orderIntents.settleReservations(input),
-    release: (input) => orderIntents.releaseReservations(input),
-  };
   const settle = async (invoiceId: string) => {
     const invoice = await invoices.findById({ id: invoiceId });
     return intents.settlePayment({
@@ -506,9 +522,7 @@ async function freshCheckout() {
     ordersToBillingModuleCurrencies: freshOrder.ordersToBillingModuleCurrencies,
     ordersToBillingModulePaymentIntents:
       freshOrder.ordersToBillingModulePaymentIntents,
-    storesToProducts: new OfferService(
-      new OfferRepository(new OfferConfiguration()),
-    ),
+    storesToProducts: createOfferService(),
   };
   jest
     .spyOn(ecommerceModule.storesToProducts, "quoteMany")
@@ -723,9 +737,11 @@ it("rejects buyer-written dispatch state and recovery metadata through generic P
     }),
   ).rejects.toThrow("server managed");
   await expect(
-    f.intents.repository.consumeFirstByField("id", saved.intent.id, {
-      checkoutDispatchState: "prepared",
-      checkoutMetadata: {},
+    f.intents.findOrCreate({
+      data: {
+        checkoutDispatchState: "prepared",
+        checkoutMetadata: { invalid: true },
+      },
     }),
   ).rejects.toThrow("server managed");
   await expect(
@@ -974,6 +990,30 @@ it("resumes a shared legacy invoice only when checkout includes every billed ord
   }
 });
 
+it("returns only the buyer's own charge when a historical invoice covers two subjects", async () => {
+  const f = await fixture();
+  const mine = await f.createCart();
+  const other = await f.createCart(f.item.id, f.stranger.id);
+  const { intent, invoice } = await f.attachPayment(
+    mine.id,
+    "succeeded",
+    "paid",
+  );
+  await f.order.ordersToBillingModulePaymentIntents.create({
+    data: { orderId: other.id, billingModulePaymentIntentId: intent.id },
+  });
+  await f.invoices.update({ id: invoice.id, data: { amount: 200 } });
+  const [entry] = await f.subject.ecommerceModuleOrderPurchaseDetails({
+    subjectId: f.buyer.id,
+    orders: [await f.order.findById({ id: mine.id })],
+  });
+  expect(entry.purchaseDetails.invoiceShares).toEqual([]);
+  expect(entry.purchaseDetails.totals.map((row) => Number(row.total))).toEqual([
+    100,
+  ]);
+  expect(entry.purchaseDetails.paymentUrl).toBeUndefined();
+});
+
 it("keeps an existing one-off Role when an unpaid purchase is canceled", async () => {
   const f = await fixture();
   const membership = await f.services.grants.create({
@@ -1055,6 +1095,40 @@ it.each(["one_off", "subscription"])(
     );
   },
 );
+
+it("releases the committed reservation when checkout observer registration fails", async () => {
+  const f = await fixture();
+  const cart = await f.createCart();
+  jest
+    .spyOn(channelApi, "pushMessage")
+    .mockRejectedValue(new Error("checkout-observer-failed"));
+  const provider = jest.spyOn(paymentIntentApi, "provider");
+
+  await expect(
+    f.subject.ecommerceOrderCheckout({
+      id: f.buyer.id,
+      provider: "stripe",
+      email: "buyer@example.test",
+      ecommerceModule: { orders: [{ id: cart.id }] },
+    }),
+  ).rejects.toThrow("checkout-observer-failed");
+
+  const reservations = await f.order.ordersToBillingModulePaymentIntents.find(
+    where("orderId", cart.id),
+  );
+  expect(reservations).toHaveLength(1);
+  expect(reservations[0].reservationStatus).toBe("released");
+  const failedIntent = await f.intents.findById({
+    id: reservations[0].billingModulePaymentIntentId,
+  });
+  expect(failedIntent.status).toBe("failed");
+  const reservedQuantities =
+    await f.order.ordersToBillingModulePaymentIntents.reservedQuantities({
+      offerIds: [reservations[0].offerId],
+    });
+  expect(reservedQuantities).toEqual({ [reservations[0].offerId]: 0 });
+  expect(provider).not.toHaveBeenCalled();
+});
 
 it("rolls back local payment preparation and leaves the original cart editable", async () => {
   const f = await fixture();
@@ -1866,3 +1940,483 @@ it("keeps the saved amount in total, extended and Subject history readers after 
     100,
   );
 });
+
+it.each(["first", "each"] as const)(
+  "keeps %s contractor fulfillment on its saved schedule through renewal reads, edits and payment",
+  async (recurrence) => {
+    const f = await fixture("subscription");
+    await f.order.product.update({ id: f.item.id, data: { kind: "physical" } });
+    const contractor = await f.services.store.create({
+      data: { slug: `renewal-contractor-${randomUUID()}` },
+    });
+    const delivery = await f.order.product.create({
+      data: {
+        slug: `renewal-receipt-${randomUUID()}`,
+        type: "one_off",
+        kind: "service",
+      },
+    });
+    const attributes = await f.order.product.productsToAttributes.find(
+      where("productId", f.item.id),
+    );
+    for (const link of attributes) {
+      await f.order.product.productsToAttributes.create({
+        data: { productId: delivery.id, attributeId: link.attributeId },
+      });
+    }
+    const receipt = await f.offers.create({
+      data: {
+        productId: delivery.id,
+        storeId: contractor.id,
+        sku: `renewal-receipt-${randomUUID()}`,
+        settings: { receiptMethod: "electronic" },
+      },
+    });
+    await f.offerAttributes.create({
+      data: { storesToProductsId: receipt.id, attributeId: f.price.id },
+    });
+    const [merchandise] = await f.offers.find(where("productId", f.item.id));
+    await f.services.offerLinks.create({
+      data: {
+        sourceOfferId: merchandise.id,
+        targetOfferId: receipt.id,
+        variant: "delivery",
+        recurrence,
+      },
+    });
+    const source = await f.createCart();
+    const originalPayment = await f.attachPayment(source.id);
+    await f.settle(originalPayment.invoice.id);
+    await f.check(source.id);
+    await f.proceed.execute({ subjectId: f.buyer.id });
+    const paid = await f.order.findById({ id: source.id });
+    expect(paid.subscriptionPeriodInvoiceId).toBe(originalPayment.invoice.id);
+    await new OrderLifecycleService(f.order.repository).writeSubscriptionPeriod(
+      {
+        id: source.id,
+        before: paid,
+        startsAt: new Date(Date.now() - 2 * 86400000),
+        endsAt: new Date(Date.now() - 86400000),
+        invoiceId: originalPayment.invoice.id,
+        status: "expired",
+      },
+    );
+    const next = await f.subject.ecommerceModuleOrderRepeat({
+      subjectId: f.buyer.id,
+      orderId: source.id,
+      mode: "next-period",
+    });
+    const nextId = next.orderIds[0];
+    cleanup.push(async () => {
+      await f.order.repository.deleteFirstByField("id", nextId);
+    });
+    const created = await f.graph(nextId);
+    expect(created.products.filter((line) => line.parentLineId)).toHaveLength(
+      recurrence === "each" ? 1 : 0,
+    );
+    const firstRead = await f.subject.ecommerceModuleOrderCartDetails({
+      subjectId: f.buyer.id,
+      orderId: nextId,
+    });
+    expect(firstRead.unpriced).toEqual([]);
+    expect(firstRead.totals[0].total).toBe(recurrence === "each" ? 200 : 100);
+    expect(
+      firstRead.offerQuotes![0].charges.filter(
+        (charge) => charge.role === "delivery",
+      ),
+    ).toHaveLength(recurrence === "each" ? 1 : 0);
+    const primary = created.products.find((line) => !line.parentLineId);
+    await f.subject.ecommerceModuleOrderMutateCart({
+      subjectId: f.buyer.id,
+      orderId: nextId,
+      lines: [{ id: primary.id, quantity: 2 }],
+    });
+    const edited = await f.subject.ecommerceModuleOrderCartDetails({
+      subjectId: f.buyer.id,
+      orderId: nextId,
+    });
+    expect(edited.unpriced).toEqual([]);
+    const expectedAmount = recurrence === "each" ? 400 : 200;
+    expect(edited.totals[0].total).toBe(expectedAmount);
+    jest.spyOn(channelApi, "pushMessage").mockResolvedValue({} as any);
+    jest
+      .spyOn(paymentIntentApi, "provider")
+      .mockImplementation(async ({ id, data }: any) => {
+        const intent = await f.intents.findById({ id });
+        const invoice = await f.invoices.create({
+          data: {
+            amount: intent.amount,
+            provider: "dummy",
+            status: "open",
+            paymentUrl: "https://fixture.test/pay",
+          },
+        });
+        await f.order.billingModule.paymentIntentsToInvoices.create({
+          data: { paymentIntentId: id, invoiceId: invoice.id },
+        });
+        await f.order.billingModule.paymentIntentsToCurrencies.create({
+          data: { paymentIntentId: id, currencyId: data.currencyId },
+        });
+        return invoice;
+      });
+    await f.subject.ecommerceOrderCheckout({
+      id: f.buyer.id,
+      provider: "dummy",
+      email: "buyer@example.test",
+      ecommerceModule: { orders: [{ id: nextId }] },
+    });
+    const reservations = await f.order.ordersToBillingModulePaymentIntents.find(
+      where("orderId", nextId),
+    );
+    expect(reservations).toHaveLength(recurrence === "each" ? 2 : 1);
+    const payment = await f.intents.findById({
+      id: reservations[0].billingModulePaymentIntentId,
+    });
+    expect(payment).toMatchObject({ amount: expectedAmount, type: "one_off" });
+    const deliveries = reservations.filter(
+      (link) => link.purchaseSnapshot.charge.role === "delivery",
+    );
+    expect(deliveries).toHaveLength(recurrence === "each" ? 1 : 0);
+    if (recurrence === "each") {
+      expect(deliveries[0].purchaseSnapshot.charge).toMatchObject({
+        offerId: receipt.id,
+        storeId: contractor.id,
+        providerStoreId: contractor.id,
+        recurrence: "each",
+      });
+    }
+  },
+);
+
+it.each(["digital", "legacy-digital", "physical", "physical-cancel"])(
+  "prepares one local Stripe period on the final day with %s fulfillment",
+  async (kind) => {
+    const f = await fixture("subscription");
+    let stockAttributeId: string | undefined;
+    if (kind.startsWith("physical")) {
+      await f.order.product.update({
+        id: f.item.id,
+        data: { kind: "physical" },
+      });
+      const delivery = await f.order.product.create({
+        data: {
+          slug: `stripe-delivery-${randomUUID()}`,
+          type: "one_off",
+          kind: "service",
+        },
+      });
+      const attributes = await f.order.product.productsToAttributes.find(
+        where("productId", f.item.id),
+      );
+      for (const link of attributes) {
+        await f.order.product.productsToAttributes.create({
+          data: { productId: delivery.id, attributeId: link.attributeId },
+        });
+      }
+      const receipt = await f.offers.create({
+        data: {
+          productId: delivery.id,
+          storeId: f.store.id,
+          sku: `stripe-receipt-${randomUUID()}`,
+          settings: { receiptMethod: "electronic" },
+        },
+      });
+      await f.offerAttributes.create({
+        data: { storesToProductsId: receipt.id, attributeId: f.price.id },
+      });
+      const [merchandise] = await f.offers.find(where("productId", f.item.id));
+      await f.services.offerLinks.create({
+        data: {
+          sourceOfferId: merchandise.id,
+          targetOfferId: receipt.id,
+          variant: "delivery",
+          recurrence: "each",
+        },
+      });
+      await db
+        .insert(AttributeKeyTable)
+        .values({ slug: "stock_quantity", field: "number" })
+        .onConflictDoNothing();
+      const [stockKey] = await db
+        .select()
+        .from(AttributeKeyTable)
+        .where(eq(AttributeKeyTable.slug, "stock_quantity"));
+      const stock = await f.order.product.attribute.create({
+        data: { number: "3" },
+      });
+      stockAttributeId = stock.id;
+      await f.order.product.attributeKeysToAttributes.create({
+        data: { attributeKeyId: stockKey.id, attributeId: stock.id },
+      });
+      await f.offerAttributes.create({
+        data: { storesToProductsId: merchandise.id, attributeId: stock.id },
+      });
+    }
+    const cart = await f.createCart();
+    const payment = await f.attachPayment(
+      cart.id,
+      "requires_payment_method",
+      "open",
+    );
+    const periodAmount = payment.intent.amount;
+    await f.intents.update({
+      id: payment.intent.id,
+      data: { ...payment.intent, type: "subscription" },
+    });
+    await f.invoices.update({
+      id: payment.invoice.id,
+      data: {
+        ...payment.invoice,
+        provider: "stripe",
+        providerId: `in_initial_${cart.id}`,
+      },
+    });
+    await f.subjectRepository.withSubjectLock({ subjectId: f.buyer.id }, () =>
+      f.intents.prepareCheckoutDispatch({
+        id: payment.intent.id,
+        provider: "stripe",
+        currencyId: f.money.id,
+        metadata: { email: "period@example.test" },
+      }),
+    );
+    f.intents.setProviderPeriodResolver((receipt) =>
+      f.subject.ecommerceModuleOrderResolveProviderPeriod(receipt),
+    );
+    (f.proceed as any).ecommerceOrderRenewal = (props: any) =>
+      f.subject.ecommerceModuleOrderRenewal(props);
+    const firstStart = Math.floor(Date.now() / 1000) - 3600;
+    const subscription = {
+      id: `sub_${cart.id}`,
+      metadata: { paymentIntentId: payment.intent.id },
+      status: "active",
+    };
+    const remote = (id: string, start: number, reason: string) => ({
+      id,
+      object: "invoice",
+      subscription: subscription.id,
+      created: start,
+      billing_reason: reason,
+      currency: f.money.slug,
+      status: "paid",
+      amount_due: periodAmount * 100,
+      amount_paid: periodAmount * 100,
+      lines: {
+        has_more: false,
+        data: [
+          {
+            currency: f.money.slug,
+            parent: {
+              subscription_item_details: {
+                subscription: subscription.id,
+                proration: false,
+              },
+            },
+            period: { start, end: start + 86400 },
+          },
+        ],
+      },
+    });
+    const first = remote(
+      `in_initial_${cart.id}`,
+      firstStart,
+      "subscription_create",
+    );
+    const cycle = remote(
+      `in_cycle_${cart.id}`,
+      firstStart + 86400,
+      "subscription_cycle",
+    );
+    const remoteInvoices = [first];
+    const createRemote = jest.fn(() => {
+      throw new Error(
+        "Scheduled preparation must not create a provider charge",
+      );
+    });
+    mockStripeClient = {
+      invoices: {
+        retrieve: jest.fn(async (id) =>
+          remoteInvoices.find((invoice) => invoice.id === id),
+        ),
+        list: jest.fn(() => ({
+          async *[Symbol.asyncIterator]() {
+            yield* remoteInvoices;
+          },
+        })),
+      },
+      subscriptions: {
+        retrieve: jest.fn().mockResolvedValue(subscription),
+        create: createRemote,
+        update: jest.fn(),
+      },
+      checkout: { sessions: { create: createRemote } },
+    };
+    await f.intents.stripe({
+      action: "webhook",
+      data: { data: { object: first } },
+    });
+    await f.check(cart.id);
+    await f.proceed.execute({ subjectId: f.buyer.id });
+    expect(
+      await f.order.find(where("subscriptionSourceOrderId", cart.id)),
+    ).toHaveLength(0);
+    if (kind === "legacy-digital") {
+      const legacyLines = await f.lines.find(where("orderId", cart.id));
+      for (const line of legacyLines) {
+        await f.lines.repository.updateFirstByField("id", line.id, {
+          offerId: null,
+        });
+      }
+      const legacyPayments =
+        await f.order.ordersToBillingModulePaymentIntents.find(
+          where("orderId", cart.id),
+        );
+      for (const link of legacyPayments) {
+        await f.order.ordersToBillingModulePaymentIntents.repository.updateFirstByField(
+          "id",
+          link.id,
+          { purchaseSnapshot: null, offerId: null, orderLineId: null },
+        );
+      }
+      const accepted = await f.order.findById({ id: cart.id });
+      await f.order.repository.updateFirstByField("id", cart.id, {
+        subscriptionPeriodStartsAt: new Date(
+          accepted.subscriptionPeriodStartsAt.getTime() + 789,
+        ),
+        subscriptionPeriodEndsAt: new Date(
+          accepted.subscriptionPeriodEndsAt.getTime() + 789,
+        ),
+        subscriptionScheduledStartsAt: null,
+        subscriptionScheduledEndsAt: null,
+        subscriptionProviderInvoiceId: null,
+      });
+    }
+    const original = await f.order.findById({ id: cart.id });
+    expect(original.subscriptionPeriodInvoiceId).toBe(payment.invoice.id);
+    expect(await f.grantRows()).toHaveLength(1);
+    const provider = jest.spyOn(paymentIntentApi, "provider");
+    const preparations = await Promise.all([
+      f.subject.ecommerceModuleOrderRenewal({
+        subjectId: f.buyer.id,
+        orderId: cart.id,
+      }),
+      f.subject.ecommerceModuleOrderRenewal({
+        subjectId: f.buyer.id,
+        orderId: cart.id,
+      }),
+    ]);
+    const next = await f.order.find(
+      where("subscriptionSourceOrderId", cart.id),
+    );
+    expect(next).toHaveLength(1);
+    expect(preparations).toEqual([
+      { orderId: next[0].id },
+      { orderId: next[0].id },
+    ]);
+    const links = await f.order.ordersToBillingModulePaymentIntents.find(
+      where("orderId", next[0].id),
+    );
+    const intentIds = [
+      ...new Set<string>(
+        links.map((link: any) => link.billingModulePaymentIntentId),
+      ),
+    ];
+    expect(intentIds).toHaveLength(1);
+    const invoiceLinks =
+      await f.order.billingModule.paymentIntentsToInvoices.find(
+        where("paymentIntentId", intentIds[0]),
+      );
+    expect(invoiceLinks).toHaveLength(1);
+    const draft = await f.invoices.findById({ id: invoiceLinks[0].invoiceId });
+    expect(draft).toMatchObject({
+      provider: "stripe",
+      providerId: null,
+      status: "draft",
+      amount: periodAmount,
+    });
+    if (stockAttributeId) {
+      expect(
+        (await f.order.product.attribute.findById({ id: stockAttributeId }))
+          .number,
+      ).toBe("2");
+      expect(
+        links.find(
+          (link: any) => link.purchaseSnapshot.charge.role === "product",
+        ).reservationStatus,
+      ).toBe("held");
+    }
+    if (kind === "physical-cancel") {
+      await f.order.update({
+        id: cart.id,
+        data: { status: "requested_cancelation" },
+      });
+      await f.proceed.execute({ subjectId: f.buyer.id });
+      expect((await f.order.findById({ id: next[0].id })).status).toBe(
+        "canceled",
+      );
+      expect((await f.invoices.findById({ id: draft.id })).status).toBe("void");
+      const released = await f.order.ordersToBillingModulePaymentIntents.find(
+        where("orderId", next[0].id),
+      );
+      expect(
+        released.every((link: any) => link.reservationStatus === "released"),
+      ).toBe(true);
+      expect(mockStripeClient.subscriptions.update).toHaveBeenCalledWith(
+        subscription.id,
+        { cancel_at_period_end: true },
+      );
+      expect(createRemote).not.toHaveBeenCalled();
+      expect(provider).not.toHaveBeenCalled();
+      return;
+    }
+    expect(provider).not.toHaveBeenCalled();
+    remoteInvoices.push(cycle);
+    await Promise.all([
+      f.intents.stripe({
+        action: "webhook",
+        data: { data: { object: cycle } },
+      }),
+      f.intents.stripe({
+        action: "webhook",
+        data: { data: { object: cycle } },
+      }),
+    ]);
+    await f.check(next[0].id);
+    await f.proceed.execute({ subjectId: f.buyer.id });
+    await f.proceed.execute({ subjectId: f.buyer.id });
+    const settled = await f.invoices.findById({ id: draft.id });
+    expect(settled).toMatchObject({
+      id: draft.id,
+      status: "paid",
+      providerId: cycle.id,
+    });
+    expect(
+      await f.order.billingModule.paymentIntentsToInvoices.find(
+        where("paymentIntentId", intentIds[0]),
+      ),
+    ).toHaveLength(1);
+    const originalAfter = await f.order.findById({ id: cart.id });
+    expect(originalAfter.subscriptionPeriodInvoiceId).toBe(
+      original.subscriptionPeriodInvoiceId,
+    );
+    expect(originalAfter.subscriptionPeriodStartsAt).toEqual(
+      original.subscriptionPeriodStartsAt,
+    );
+    expect(originalAfter.subscriptionPeriodEndsAt).toEqual(
+      original.subscriptionPeriodEndsAt,
+    );
+    const accepted = await f.order.findById({ id: next[0].id });
+    expect(accepted.subscriptionPeriodInvoiceId).toBe(draft.id);
+    expect(accepted.subscriptionPeriodStartsAt).toEqual(
+      new Date(cycle.lines.data[0].period.start * 1000),
+    );
+    expect(await f.grantRows()).toHaveLength(1);
+    if (stockAttributeId) {
+      expect(
+        (await f.order.product.attribute.findById({ id: stockAttributeId }))
+          .number,
+      ).toBe("1");
+    }
+    expect(createRemote).not.toHaveBeenCalled();
+    expect(provider).not.toHaveBeenCalled();
+  },
+);

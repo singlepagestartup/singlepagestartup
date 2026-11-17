@@ -2,7 +2,10 @@ import {
   ECOMMERCE_ORDER_LINE_QUANTITY_BOUNDS as quantityBounds,
   INITIAL_FREE_SUBSCRIPTION_PRODUCT_SLUG,
 } from "@sps/shared-utils";
-import type { IOfferQuote } from "@sps/ecommerce/relations/stores-to-products/sdk/model";
+import type {
+  IOfferQuote,
+  IOfferQuoteInput,
+} from "@sps/ecommerce/relations/stores-to-products/sdk/model";
 import type { IModel as ILine } from "@sps/ecommerce/relations/orders-to-products/sdk/model";
 import type {
   IEcommerceCartSelection,
@@ -19,9 +22,10 @@ export interface IExecuteProps {
 }
 export interface IQuoteProps {
   subjectId: string;
-  selections: IEcommerceCartSelection[];
+  selections: IOfferQuoteInput[];
   excludeOrderIds?: string[];
   preparedQuotes?: IOfferQuote[];
+  fulfilledLineIds?: readonly string[];
 }
 export interface IConstructorProps {
   repository: Pick<Repository, "withSubjectLock">;
@@ -68,20 +72,35 @@ export class Service {
       }
     }
     // Route/geocoding work happens before the caller enters a write lock.
-    const quotes =
-      props.preparedQuotes ??
-      (await this.dependencies.service.ecommerceModule.storesToProducts.quoteMany(
-        props.selections,
-      ));
+    let quotes = props.preparedQuotes;
+    if (!quotes) {
+      if (props.fulfilledLineIds?.length) {
+        quotes =
+          await this.dependencies.service.ecommerceModule.storesToProducts.quoteMany(
+            props.selections,
+            { fulfilledLineIds: props.fulfilledLineIds },
+          );
+      } else {
+        quotes =
+          await this.dependencies.service.ecommerceModule.storesToProducts.quoteMany(
+            props.selections,
+          );
+      }
+    }
+    if (quotes.length !== props.selections.length) {
+      throw new Error("Configuration error. Cart quote batch is incomplete");
+    }
     this.preparedQuotes = quotes;
     const existing = await this.otherCartQuantities(props);
     const requested = new Map<string, number>();
-    for (const selection of props.selections) {
+    for (const [index, selection] of props.selections.entries()) {
       requested.set(
         selection.offerId,
         (requested.get(selection.offerId) ?? 0) + selection.quantity,
       );
-      for (const service of selection.services ?? []) {
+      for (const service of quotes[index].selectedServices ??
+        selection.services ??
+        []) {
         requested.set(
           service.offerId,
           (requested.get(service.offerId) ?? 0) + service.quantity,
@@ -149,19 +168,25 @@ export class Service {
 
   async execute(props: IExecuteProps): Promise<IEcommerceCartSelectionResult> {
     const { service, repository } = this.dependencies;
+    if (props.data.selections.length !== 1) {
+      throw new Error(
+        "Validation error. A cart line must have exactly one fulfillment selection",
+      );
+    }
     await service.ecommerceModuleOrderAssertAccess({
       subjectId: props.subjectId,
       orderId: props.orderId,
       lineIds: [props.data.lineId],
     });
-    const before = await this.readEditable(props);
+    const editable = await this.readEditable(props);
+    const before = editable.lines;
     const primary = before.find((line) => line.id === props.data.lineId);
     if (!primary || primary.parentLineId) {
       throw new Error("Validation error. Select a primary cart line");
     }
     if (before.filter((line) => !line.parentLineId).length !== 1) {
       throw new Error(
-        "Conflict error. Choose a store for each legacy product before splitting this order",
+        "Conflict error. Choose a store for each product in this older cart before editing its selection",
       );
     }
     const product = await service.ecommerceModule.product.findById({
@@ -170,17 +195,6 @@ export class Service {
     if (!product || product.slug === INITIAL_FREE_SUBSCRIPTION_PRODUCT_SLUG) {
       throw new Error(
         "Permission error. This product cannot be edited through the cart",
-      );
-    }
-    if (
-      props.data.selections.length > 1 &&
-      props.data.selections.reduce(
-        (quantity, selection) => quantity + selection.quantity,
-        0,
-      ) !== primary.quantity
-    ) {
-      throw new Error(
-        "Validation error. Split quantities must equal the original quantity",
       );
     }
     const sourceOffer = primary.offerId
@@ -216,45 +230,54 @@ export class Service {
         );
       }
     }
+    const quoteOptions = editable.fulfilledLineIds.length
+      ? { fulfilledLineIds: editable.fulfilledLineIds }
+      : undefined;
+    const inputs = props.data.selections.map((selection) => ({
+      ...selection,
+      lineId: primary.id,
+    }));
     const quotes = await this.quote({
       subjectId: props.subjectId,
       excludeOrderIds: [props.orderId],
-      selections: props.data.selections,
+      selections: inputs,
+      ...quoteOptions,
     });
+    const selections = inputs.map((selection, index) => ({
+      ...selection,
+      services: quotes[index].selectedServices ?? selection.services,
+    }));
     if (props.data.action === "preview") {
       const comparisonQuotes: IOfferQuote[] = [];
       if (sourceOffer) {
-        for (let index = 0; index < props.data.selections.length; index += 1) {
-          const selection = props.data.selections[index];
+        for (let index = 0; index < selections.length; index += 1) {
+          const selection = selections[index];
           const targetQuote = quotes[index];
           if (selection.offerId === sourceOffer.id) {
             comparisonQuotes.push(targetQuote);
             continue;
           }
-          const source = await service.ecommerceModule.storesToProducts.quote({
-            ...selection,
-            offerId: sourceOffer.id,
-            services: [],
-          });
+          const source = await service.ecommerceModule.storesToProducts.quote(
+            { ...selection, offerId: sourceOffer.id, services: [] },
+            quoteOptions,
+          );
           const services: NonNullable<IEcommerceCartSelection["services"]> = [];
           for (const selected of selection.services ?? []) {
-            const target = targetQuote.serviceOptions.find(
-              (option) => option.offerId === selected.offerId,
-            );
-            const candidates = source.serviceOptions.filter(
+            const compatible = source.serviceOptions.some(
               (option) =>
-                option.productId === target?.productId &&
-                option.role === target?.role,
+                option.offerId === selected.offerId ||
+                option.compatibleOfferIds?.includes(selected.offerId),
             );
-            if (candidates.length === 1) {
+            if (compatible) {
               services.push({
-                offerId: candidates[0].offerId,
+                offerId: selected.offerId,
                 quantity: selected.quantity,
               });
             }
           }
           const previous = await service.ecommerceModule.storesToProducts.quote(
             { ...selection, offerId: sourceOffer.id, services },
+            quoteOptions,
           );
           comparisonQuotes.push(previous);
         }
@@ -301,7 +324,11 @@ export class Service {
         await service.ecommerceModule.order.lockForLifecycle({
           id: props.orderId,
         });
-        const current = await this.readEditable(props);
+        const currentEditable = await this.readEditable(props);
+        const current = currentEditable.lines;
+        const currentQuoteOptions = currentEditable.fulfilledLineIds.length
+          ? { fulfilledLineIds: currentEditable.fulfilledLineIds }
+          : undefined;
         const currentPrimary = current.find((line) => line.id === primary.id);
         if (
           !currentPrimary ||
@@ -325,7 +352,7 @@ export class Service {
           {
             offerIds: [
               ...new Set(
-                props.data.selections.flatMap((selection) => [
+                selections.flatMap((selection) => [
                   selection.offerId,
                   ...(selection.services ?? []).map(
                     (selected) => selected.offerId,
@@ -339,8 +366,9 @@ export class Service {
         try {
           currentQuotes =
             await service.ecommerceModule.storesToProducts.quotesUnderLock(
-              props.data.selections,
+              selections,
               this.preparedQuotes,
+              currentQuoteOptions,
             );
         } catch (error) {
           throw new Error(
@@ -364,11 +392,11 @@ export class Service {
         }
         const otherQuantities = await this.otherCartQuantities({
           subjectId: props.subjectId,
-          selections: props.data.selections,
+          selections,
           excludeOrderIds: [props.orderId],
         });
         const requested = new Map<string, number>();
-        for (const selection of props.data.selections) {
+        for (const selection of selections) {
           requested.set(
             selection.offerId,
             (requested.get(selection.offerId) ?? 0) + selection.quantity,
@@ -398,37 +426,14 @@ export class Service {
             new Date(currentPrimary.selectionUpdatedAt).getTime() + 1,
           ),
         );
-        for (let index = 0; index < props.data.selections.length; index += 1) {
-          const selection = props.data.selections[index];
-          const quote = quotes[index];
-          let orderId = props.orderId;
-          if (index > 0) {
-            const order = await service.ecommerceModule.order.create({
-              data: {},
-            });
-            if (!order) {
-              throw new Error(
-                "Internal error. Failed to create split cart order",
-              );
-            }
-            orderId = order.id;
-            await service.subjectsToEcommerceModuleOrders.create({
-              data: {
-                subjectId: props.subjectId,
-                ecommerceModuleOrderId: orderId,
-              },
-            });
-            orderIds.push(orderId);
-          }
-          await this.persistSelection({
-            orderId,
-            timestamp,
-            selection,
-            quote,
-            primary: index === 0 ? currentPrimary : undefined,
-            previousLines: index === 0 ? current : [],
-          });
-        }
+        await this.persistSelection({
+          orderId: props.orderId,
+          timestamp,
+          selection: selections[0],
+          quote: currentQuotes[0],
+          primary: currentPrimary,
+          previousLines: current,
+        });
         return {
           quotes,
           orderIds,
@@ -444,7 +449,7 @@ export class Service {
   private async readEditable(props: {
     subjectId: string;
     orderId: string;
-  }): Promise<ILine[]> {
+  }): Promise<{ lines: ILine[]; fulfilledLineIds: string[] }> {
     const { service } = this.dependencies;
     await service.ecommerceModuleOrderAssertAccess(props);
     const owners = await service.subjectsToEcommerceModuleOrders.find({
@@ -489,13 +494,22 @@ export class Service {
         "Conflict error. Only an editable cart order can change selection",
       );
     }
-    return service.ecommerceModule.ordersToProducts.find({
+    const lines = await service.ecommerceModule.ordersToProducts.find({
       params: {
         filters: {
           and: [{ column: "orderId", method: "eq", value: props.orderId }],
         },
       },
     });
+    let fulfilledLineIds: string[] = [];
+    if (order.subscriptionSourceOrderId) {
+      const fulfillment =
+        await service.ecommerceModule.order.fulfillmentQuoteOptions({
+          id: order.id,
+        });
+      fulfilledLineIds = fulfillment.fulfilledLineIds;
+    }
+    return { lines, fulfilledLineIds };
   }
 
   private async otherCartQuantities(
@@ -576,7 +590,7 @@ export class Service {
     timestamp: Date;
     selection: IEcommerceCartSelection;
     quote: IOfferQuote;
-    primary?: ILine;
+    primary: ILine;
     previousLines: ILine[];
   }) {
     const { service } = this.dependencies;
@@ -586,20 +600,15 @@ export class Service {
       productId: props.quote.productId,
       offerId: props.selection.offerId,
       quantity: props.selection.quantity,
-      destination: props.selection.destination ?? {},
+      destination: props.quote.destination ?? props.selection.destination ?? {},
       selectionUpdatedAt: timestamp,
       quoteVersion: props.quote.version,
       quoteExpiresAt: new Date(props.quote.expiresAt),
     };
-    let primary: ILine | null | undefined;
-    if (props.primary) {
-      primary = await service.ecommerceModule.ordersToProducts.update({
-        id: props.primary.id,
-        data,
-      });
-    } else {
-      primary = await service.ecommerceModule.ordersToProducts.create({ data });
-    }
+    const primary = await service.ecommerceModule.ordersToProducts.update({
+      id: props.primary.id,
+      data,
+    });
     if (!primary) {
       throw new Error("Internal error. Failed to save primary cart line");
     }

@@ -195,6 +195,61 @@ it("serializes concurrent adds of the same offer across service instances", asyn
   expect(await f.owners()).toHaveLength(1);
 });
 
+it("persists a server-selected contractor service even when its option uses a canonical alias", async () => {
+  const f = await fixture();
+  const product = await f.services.product.create({
+    data: { slug: `delivery-${randomUUID()}`, kind: "service" },
+  });
+  const contractor = await f.services.store.create({
+    data: { slug: `contractor-${randomUUID()}` },
+  });
+  const offer = await f.services.offers.create({
+    data: {
+      productId: product.id,
+      storeId: contractor.id,
+      sku: `delivery-${randomUUID()}`,
+    },
+  });
+  const originalQuote = f.services.offers.quote.getMockImplementation();
+  f.services.offers.quote.mockImplementation(async (input: any) => ({
+    ...(await originalQuote(input)),
+    selectedServices: [{ offerId: offer.id, quantity: 1 }],
+    serviceOptions: [{ offerId: randomUUID(), compatibleOfferIds: [offer.id] }],
+    charges: [
+      {
+        offerId: offer.id,
+        productId: product.id,
+        role: "delivery",
+        quantity: 1,
+        recurrence: "first",
+        availableQuantity: null,
+      },
+    ],
+  }));
+  const lockOffers = jest.spyOn(f.services.payments, "lockOffers");
+  const result = await f.create.execute(f.props);
+  const lines = await f.services.lines.find({
+    params: {
+      filters: {
+        and: [{ column: "orderId", method: "eq", value: result.orderId }],
+      },
+    },
+  });
+  expect(lines).toHaveLength(2);
+  expect(lines).toContainEqual(
+    expect.objectContaining({
+      parentLineId: result.lineId,
+      productId: product.id,
+      offerId: offer.id,
+      quantity: 1,
+      recurrence: "first",
+    }),
+  );
+  expect(lockOffers).toHaveBeenCalledWith({
+    offerIds: [expect.any(String), offer.id],
+  });
+});
+
 it("rejects a direct multiple-fulfillment request before creating a cart graph", async () => {
   const f = await fixture();
   const selectedServices: { offerId: string; quantity: number }[] = [];

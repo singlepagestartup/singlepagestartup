@@ -10,12 +10,20 @@ import {
 import { type IBillingModule, type IEcommerceModule } from "../../../../di";
 import { api as ecommerceModuleOrderApi } from "@sps/ecommerce/models/order/sdk/server";
 import type { IModel as IInvoice } from "@sps/billing/models/invoice/sdk/model";
-import { IModel as IBillingModulePaymentIntent } from "@sps/billing/models/payment-intent/sdk/model";
+import {
+  type IModel as IBillingModulePaymentIntent,
+  paymentProviderPrecision,
+} from "@sps/billing/models/payment-intent/sdk/model";
 import { api as billingModulePaymentIntentApi } from "@sps/billing/models/payment-intent/sdk/server";
 import { api as broadcastModuleChannelApi } from "@sps/broadcast/models/channel/sdk/server";
-import { addMoney, moneyNumber, providerMinorUnits } from "@sps/backend-utils";
+import {
+  addMoney,
+  moneyNumber,
+  moneyFromMinorUnits,
+  moneyMinorUnits,
+  providerMinorUnits,
+} from "@sps/backend-utils";
 import { isSupportedOrderInterval } from "@sps/ecommerce/models/order/backend/app/api/src/lib/service/singlepage/find-by-id/checkout-attributes";
-import { paymentProviderPrecision } from "@sps/billing/models/payment-intent/sdk/model";
 import type {
   IOfferQuote,
   IOfferQuoteInput,
@@ -90,7 +98,14 @@ export class Service {
       props.subjectsToEcommerceModuleOrders;
   }
 
-  async execute(props: IExecuteProps) {
+  async execute(
+    props: IExecuteProps,
+    internal?: {
+      deferProviderCheckout?: boolean;
+      manualSubscriptionPeriod?: boolean;
+      providerContractPaymentIntentId?: string;
+    },
+  ) {
     if (!RBAC_SECRET_KEY) {
       throw new Error("Configuration error. RBAC_SECRET_KEY is required");
     }
@@ -192,9 +207,14 @@ export class Service {
             trustedIntent?.checkoutProvider ||
             props.provider,
         });
-        await this.resumePreparedCheckout(
-          existing.preparedPaymentIntentIds ?? [],
-        );
+        if (
+          !internal?.deferProviderCheckout &&
+          !trustedIntent?.checkoutMetadata?.providerContractPaymentIntentId
+        ) {
+          await this.resumePreparedCheckout(
+            existing.preparedPaymentIntentIds ?? [],
+          );
+        }
         if (existing.preparedPaymentIntentIds?.length) {
           return this.existingAttemptInvoices(
             existing.preparedPaymentIntentIds,
@@ -311,7 +331,7 @@ export class Service {
         },
       });
 
-    if (!ecommerceModuleAttributesKeysToAttributes?.length) {
+    if (!ecommerceModuleAttributesKeysToAttributes?.length && !offerBacked) {
       throw new Error(
         "Not Found error. No ecommerce module attributes keys to attributes found",
       );
@@ -592,11 +612,32 @@ export class Service {
         },
       });
     }
-    const previews = offerSelections.length
-      ? await this.ecommerceModule.storesToProducts.quoteMany(
-          offerSelections.map((selection) => selection.input),
-        )
-      : [];
+    const fulfilledLineIds: string[] = [];
+    for (const { order } of offerSelections) {
+      if (order.subscriptionSourceOrderId) {
+        const fulfillment =
+          await this.ecommerceModule.order.fulfillmentQuoteOptions({
+            id: order.id,
+          });
+        fulfilledLineIds.push(...fulfillment.fulfilledLineIds);
+      }
+    }
+    const quoteOptions = fulfilledLineIds.length
+      ? { fulfilledLineIds }
+      : undefined;
+    let previews: IOfferQuote[] = [];
+    if (offerSelections.length) {
+      const inputs = offerSelections.map((selection) => selection.input);
+      if (quoteOptions) {
+        previews = await this.ecommerceModule.storesToProducts.quoteMany(
+          inputs,
+          quoteOptions,
+        );
+      } else {
+        previews =
+          await this.ecommerceModule.storesToProducts.quoteMany(inputs);
+      }
+    }
     if (previews.length !== offerSelections.length) {
       throw new Error(
         "Configuration error. Checkout quote batch is incomplete",
@@ -613,6 +654,26 @@ export class Service {
       if (quote.amount === null || quote.issues.length) {
         throw new Error(
           `Conflict error. Checkout quote is unavailable: ${JSON.stringify(quote.issues)}`,
+        );
+      }
+      const lines = ordersToProducts.filter(
+        (line) => line.orderId === order.id,
+      );
+      if (
+        quote.charges.some(
+          (charge) =>
+            !lines.some(
+              (line) =>
+                line.offerId === charge.offerId &&
+                line.quantity === charge.quantity &&
+                (charge.role === "product"
+                  ? !line.parentLineId
+                  : line.parentLineId === main.id),
+            ),
+        )
+      ) {
+        throw new Error(
+          "Conflict error. Save the current cart service selection before payment",
         );
       }
       if (main.quoteVersion && main.quoteVersion !== quote.version) {
@@ -680,6 +741,9 @@ export class Service {
       });
       if (
         type === "subscription" &&
+        !this.billingModule.paymentIntent.schedulesSubscriptionPayments({
+          provider: props.provider,
+        }) &&
         (primaryProduct?.kind === "physical" ||
           quote.charges.some(
             (charge) =>
@@ -820,6 +884,7 @@ export class Service {
           subjectId: props.id,
           orderIds: ecommerceModuleOrders.map((order) => order.id),
           comment: props.comment,
+          resumeExisting: true,
           expectedLines: ordersToProducts,
           expectedCurrencies: ordersToBillingModuleCurrencies,
         });
@@ -839,6 +904,7 @@ export class Service {
             await this.ecommerceModule.storesToProducts.quotesUnderLock(
               selections.map(([, selected]) => selected.input),
               selections.map(([, selected]) => selected.quote),
+              quoteOptions,
             );
           if (refreshed.length !== selections.length) {
             throw new Error(
@@ -899,6 +965,25 @@ export class Service {
           )!;
 
           if (type === "subscription") {
+            const sourceOrderIds = new Set<string>();
+            let sourceOrderId = order.subscriptionSourceOrderId;
+            while (sourceOrderId) {
+              if (sourceOrderIds.has(sourceOrderId)) {
+                throw new Error(
+                  "Conflict error. Subscription period chain is cyclic",
+                );
+              }
+              sourceOrderIds.add(sourceOrderId);
+              const source = await this.ecommerceModule.order.findById({
+                id: sourceOrderId,
+              });
+              if (!source) {
+                throw new Error(
+                  "Conflict error. Subscription period source is unavailable",
+                );
+              }
+              sourceOrderId = source.subscriptionSourceOrderId;
+            }
             const subjectToEcommerceModuleOrders =
               await this.subjectsToEcommerceModuleOrders.find({
                 params: {
@@ -932,13 +1017,7 @@ export class Service {
                 ) {
                   continue;
                 }
-                if (
-                  order.subscriptionSourceOrderId === ecommerceModuleOrder.id &&
-                  ecommerceModuleOrder.subscriptionPeriodEndsAt &&
-                  new Date(
-                    ecommerceModuleOrder.subscriptionPeriodEndsAt,
-                  ).getTime() <= Date.now()
-                ) {
+                if (sourceOrderIds.has(ecommerceModuleOrder.id)) {
                   continue;
                 }
 
@@ -1069,7 +1148,8 @@ export class Service {
                 amount,
                 interval,
                 type:
-                  separatePeriodOrderIds.has(order.id) &&
+                  (separatePeriodOrderIds.has(order.id) ||
+                    internal?.manualSubscriptionPeriod) &&
                   type === "subscription"
                     ? "one_off"
                     : type,
@@ -1101,6 +1181,47 @@ export class Service {
             currencyId: attempt.billingModuleCurrencyId,
             metadata: {
               ...metadata,
+              ...(internal?.providerContractPaymentIntentId
+                ? {
+                    providerContractPaymentIntentId:
+                      internal.providerContractPaymentIntentId,
+                  }
+                : {}),
+              ...(this.billingModule.paymentIntent.schedulesSubscriptionPayments(
+                {
+                  provider: props.provider,
+                },
+              ) && attempt.checkoutAttributesByCurrency.type === "subscription"
+                ? {
+                    providerRecurringAmount: moneyFromMinorUnits(
+                      attempt.orderIds.reduce((total, orderId) => {
+                        const selected = orderQuotes.get(orderId);
+                        if (!selected) {
+                          return (
+                            total +
+                            moneyMinorUnits(
+                              attempt.billingModulePaymentIntent.amount,
+                            )
+                          );
+                        }
+                        return (
+                          total +
+                          selected.quote.charges
+                            .filter(
+                              (charge) =>
+                                charge.role === "product" ||
+                                charge.recurrence === "each",
+                            )
+                            .reduce(
+                              (sum, charge) =>
+                                sum + moneyMinorUnits(charge.amount),
+                              0n,
+                            )
+                        );
+                      }, 0n),
+                    ),
+                  }
+                : {}),
               ecommerceModule: {
                 ...metadata.ecommerceModule,
                 orders: metadata.ecommerceModule.orders.filter((order) =>
@@ -1110,9 +1231,35 @@ export class Service {
             },
           });
         }
+        if (internal?.deferProviderCheckout) {
+          for (const attempt of billingModulePaymentIntents) {
+            await this.billingModule.paymentIntentsToCurrencies.create({
+              data: {
+                paymentIntentId: attempt.billingModulePaymentIntent.id,
+                currencyId: attempt.billingModuleCurrencyId,
+              },
+            });
+            const invoice = await this.billingModule.invoice.create({
+              data: {
+                provider: props.provider,
+                status: "draft",
+                amount: attempt.billingModulePaymentIntent.amount,
+              },
+            });
+            await this.billingModule.paymentIntentsToInvoices.create({
+              data: {
+                paymentIntentId: attempt.billingModulePaymentIntent.id,
+                invoiceId: invoice.id,
+              },
+            });
+          }
+        }
         return claim;
       },
     );
+    if (internal?.deferProviderCheckout) {
+      return { billingModule: { invoices: [] as IInvoice[] } };
+    }
     const exposedPaymentIntentIds = new Set<string>();
     const preserveFailedCheckout = async (error: unknown): Promise<never> => {
       await Promise.allSettled(

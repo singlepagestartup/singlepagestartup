@@ -21,6 +21,7 @@ interface IConstructorProps {
     | "ecommerceModule"
     | "billingModule"
     | "fileStorageModule"
+    | "subjectsToEcommerceModuleOrders"
   >;
 }
 
@@ -34,7 +35,94 @@ export class Service {
         subjectId,
         orders,
       });
-    const saved = await this.savedPayments(orders.map((order) => order.id));
+    const saved = await this.savedPayments(
+      subjectId,
+      orders.map((order) => order.id),
+    );
+    const nextBySource = new Map<string, IPurchaseDetails["nextPeriod"]>();
+    const periodOrderIds = orders
+      .filter((order) => order.subscriptionPeriodInvoiceId)
+      .map((order) => order.id);
+    if (periodOrderIds.length) {
+      const nextOrders = (await service.ecommerceModule.order.find({
+        params: {
+          filters: {
+            and: [
+              {
+                column: "subscriptionSourceOrderId",
+                method: "inArray",
+                value: periodOrderIds,
+              },
+            ],
+          },
+        },
+      })) as IEcommerceModuleOrder[];
+      if (nextOrders.length) {
+        const owned = await service.subjectsToEcommerceModuleOrders.find({
+          params: {
+            filters: {
+              and: [
+                { column: "subjectId", method: "eq", value: subjectId },
+                {
+                  column: "ecommerceModuleOrderId",
+                  method: "inArray",
+                  value: nextOrders.map((order) => order.id),
+                },
+              ],
+            },
+          },
+        });
+        const allowed = nextOrders.filter((order) =>
+          owned.some(
+            (owner) =>
+              owner.subjectId === subjectId &&
+              owner.ecommerceModuleOrderId === order.id,
+          ),
+        );
+        const nextPayments = await service.ecommerceModuleOrderPurchasePayments(
+          { subjectId, orders: allowed },
+        );
+        const nextSaved = await this.savedPayments(
+          subjectId,
+          allowed.map((order) => order.id),
+        );
+        for (const next of allowed) {
+          if (!next.subscriptionSourceOrderId) {
+            continue;
+          }
+          const payment = nextSaved.get(next.id);
+          const totals =
+            payment?.totals ??
+            (await service.ecommerceModule.order.findByIdTotal({ id: next.id }))
+              .totals;
+          nextBySource.set(next.subscriptionSourceOrderId, {
+            orderId: next.id,
+            status: next.status,
+            ...((next.subscriptionPeriodStartsAt ??
+            next.subscriptionScheduledStartsAt)
+              ? {
+                  startsAt: new Date(
+                    (next.subscriptionPeriodStartsAt ??
+                      next.subscriptionScheduledStartsAt)!,
+                  ).toISOString(),
+                }
+              : {}),
+            ...((next.subscriptionPeriodEndsAt ??
+            next.subscriptionScheduledEndsAt)
+              ? {
+                  endsAt: new Date(
+                    (next.subscriptionPeriodEndsAt ??
+                      next.subscriptionScheduledEndsAt)!,
+                  ).toISOString(),
+                }
+              : {}),
+            paymentUrl: nextPayments.paymentUrls.get(next.id),
+            totals,
+            requiresConfirmation: next.type === "cart" && next.status === "new",
+          });
+        }
+      }
+    }
     const receiptOrderIds = orders
       .filter((order) => !retryableIds.has(order.id))
       .map((order) => order.id);
@@ -103,10 +191,15 @@ export class Service {
         ...order,
         purchaseDetails: {
           canRepeatPayment: retryableIds.has(order.id),
+          ...(nextBySource.has(order.id)
+            ? { nextPeriod: nextBySource.get(order.id) }
+            : {}),
           ...(payment?.canPayNextPeriod &&
+          !nextBySource.has(order.id) &&
           order.subscriptionPeriodInvoiceId &&
           order.subscriptionPeriodEndsAt &&
-          new Date(order.subscriptionPeriodEndsAt).getTime() <= Date.now() &&
+          new Date(order.subscriptionPeriodEndsAt).getTime() <=
+            Date.now() + 24 * 60 * 60 * 1000 &&
           !order.subscriptionRevokedAt
             ? { canPayNextPeriod: true }
             : {}),
@@ -126,7 +219,7 @@ export class Service {
     return purchases;
   }
 
-  private async savedPayments(orderIds: string[]) {
+  private async savedPayments(subjectId: string, orderIds: string[]) {
     const { service } = this.dependencies;
     const result = new Map<
       string,
@@ -270,6 +363,37 @@ export class Service {
           },
         })
       : allOrderLinks;
+    const linkedOrderIds = [
+      ...new Set(fullOrderLinks.map((link) => link.orderId)),
+    ];
+    const ownership = linkedOrderIds.length
+      ? await service.subjectsToEcommerceModuleOrders.find({
+          params: {
+            filters: {
+              and: [
+                {
+                  column: "ecommerceModuleOrderId",
+                  method: "inArray",
+                  value: linkedOrderIds,
+                },
+              ],
+            },
+          },
+        })
+      : [];
+    const ownedOrders = new Set(
+      ownership
+        .filter((link) => link.subjectId === subjectId)
+        .map((link) => link.ecommerceModuleOrderId),
+    );
+    for (const link of ownership) {
+      if (link.subjectId !== subjectId) {
+        ownedOrders.delete(link.ecommerceModuleOrderId);
+      }
+    }
+    const intentsWithOrders = new Set(
+      fullOrderLinks.map((link) => link.billingModulePaymentIntentId),
+    );
     for (const orderId of orderIds) {
       const orderLinks = links.filter((link) => link.orderId === orderId);
       const candidates = intents.filter((intent) =>
@@ -324,7 +448,7 @@ export class Service {
       if (!invoice) {
         continue;
       }
-      const sharedIntentIds = new Set(
+      const sharedIntentIds = new Set<string>(
         fullInvoiceLinks
           .filter((link) => link.invoiceId === invoice.id)
           .map((link) => link.paymentIntentId),
@@ -346,7 +470,12 @@ export class Service {
             ),
           )
         : null;
-      const showSharedTotal = amount === null && sharedOrderIds[0] === orderId;
+      const ownsWholeInvoice =
+        sharedOrderIds.includes(orderId) &&
+        [...sharedIntentIds].every((id) => intentsWithOrders.has(id)) &&
+        sharedOrderIds.every((id) => ownedOrders.has(id));
+      const showSharedTotal =
+        ownsWholeInvoice && amount === null && sharedOrderIds[0] === orderId;
       result.set(orderId, {
         canPayNextPeriod:
           intent.type === "one_off" &&
@@ -360,17 +489,19 @@ export class Service {
             : showSharedTotal
               ? [{ total: invoice.amount, billingModuleCurrency: currency }]
               : [],
-        invoiceShares: [
-          {
-            invoiceId: invoice.id,
-            invoiceAmount: invoice.amount,
-            amount,
-            currencyId: currency.id,
-            orderIds: sharedOrderIds,
-            showSharedTotal,
-            status: invoice.status,
-          },
-        ],
+        invoiceShares: ownsWholeInvoice
+          ? [
+              {
+                invoiceId: invoice.id,
+                invoiceAmount: invoice.amount,
+                amount,
+                currencyId: currency.id,
+                orderIds: sharedOrderIds,
+                showSharedTotal,
+                status: invoice.status,
+              },
+            ]
+          : [],
       });
     }
     return result;

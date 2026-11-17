@@ -1,5 +1,54 @@
 import { IRouteRule } from "@sps/shared-utils";
 
+/** Raw financial records require a role. Provider callbacks authenticate their notifications. */
+export const privateCommerceRoutes: IRouteRule[] = [
+  {
+    regexPath:
+      /^\/api\/billing\/(?:invoices|payment-intents-to-(?:invoices|currencies))(?:\/.*)?$/i,
+  },
+  {
+    regexPath: /^\/api\/billing\/payment-intents(?:\/.*)?$/i,
+    methods: ["GET", "HEAD", "PUT", "PATCH", "DELETE"],
+  },
+  {
+    regexPath:
+      /^\/api\/billing\/payment-intents(?!\/[^/]+\/webhook\/?$)(?:\/.*)?$/i,
+    methods: ["POST"],
+  },
+  {
+    regexPath:
+      /^\/api\/ecommerce\/(?:orders|orders-to-products|orders-to-billing-module-(?:currencies|payment-intents)|orders-to-file-storage-module-files|stores-to-orders)(?:\/.*)?$/i,
+  },
+  {
+    regexPath:
+      /^\/api\/rbac\/subjects-to-(?:ecommerce-module-orders|billing-module-payment-intents)(?:\/.*)?$/i,
+  },
+];
+
+/** Catalogue writes use Subject operations for every end user; raw writes require the operator credential. */
+export const operatorOnlyCatalogueWriteRoutes: IRouteRule[] = [
+  {
+    regexPath:
+      /^\/api\/ecommerce\/(stores|products|attributes|attribute-keys|stores-to-products|stores-to-attributes|products-to-attributes|stores-to-products-to-attributes|attribute-keys-to-attributes|attributes-to-billing-module-currencies|offers-to-offers)(?:\/[^/]+)?\/?$/i,
+    methods: ["POST", "PATCH", "PUT", "DELETE"],
+  },
+  {
+    regexPath:
+      /^\/api\/rbac\/subjects-to-ecommerce-module-(stores|products|orders)(?:\/.*)?$/i,
+    methods: ["POST", "PATCH", "PUT", "DELETE"],
+  },
+];
+
+/** End-user permissions cannot grant these infrastructure operations. */
+export const operatorOnlyRoutes: IRouteRule[] = [
+  ...operatorOnlyCatalogueWriteRoutes,
+  {
+    regexPath:
+      /^\/api\/billing\/payment-intents\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\/[^/]+\/?$/i,
+    methods: ["POST"],
+  },
+];
+
 /**
  * Routes that are never public because a permission row happens to carry no
  * role (issue #270).
@@ -20,6 +69,7 @@ import { IRouteRule } from "@sps/shared-utils";
  * are legitimately anonymous and stay open.
  */
 export const sensitiveRoutes: IRouteRule[] = [
+  ...privateCommerceRoutes,
   {
     regexPath: /^\/api\/social\/chats(?:\/.*)?$/i,
     methods: ["GET", "HEAD"],
@@ -49,4 +99,5 @@ export const sensitiveRoutes: IRouteRule[] = [
     regexPath: /^\/api\/rbac\/roles(\/.*)?$/i,
     methods: ["GET"],
   },
+  ...operatorOnlyCatalogueWriteRoutes,
 ];

@@ -29,6 +29,15 @@ export interface IPurchaseDetails {
   /** Whether the Subject may retry an unfinished payment by replacing the cart. */
   canRepeatPayment?: boolean;
   canPayNextPeriod?: boolean;
+  nextPeriod?: {
+    orderId: string;
+    status: string;
+    startsAt?: string;
+    endsAt?: string;
+    paymentUrl?: string;
+    totals: { total: number; billingModuleCurrency: IBillingModuleCurrency }[];
+    requiresConfirmation: boolean;
+  };
   requiresReconciliation?: boolean;
   /** Existing hosted payment page for an open invoice owned by this Subject. */
   paymentUrl?: string;

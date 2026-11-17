@@ -10,7 +10,6 @@ export const offerSettingsSchema = z
     requiredDelivery: z.boolean().optional(),
     receiptMethod: z.enum(["shipping", "pickup", "electronic"]).optional(),
     regionIds: z.array(z.string().min(1)).max(100).optional(),
-    pickupPointIds: z.array(z.string().min(1)).max(100).optional(),
     origin: z
       .object({
         latitude: z.number().min(-90).max(90),
@@ -36,3 +35,14 @@ export const offerSettingsSchema = z
       .optional(),
   })
   .strict();
+
+export const offerSettingsInputSchema = z.preprocess(
+  (value: z.input<typeof offerSettingsSchema>) => {
+    if (value && typeof value === "object" && "pickupPointIds" in value) {
+      const { pickupPointIds: _legacy, ...settings } = value;
+      return settings;
+    }
+    return value;
+  },
+  offerSettingsSchema,
+);

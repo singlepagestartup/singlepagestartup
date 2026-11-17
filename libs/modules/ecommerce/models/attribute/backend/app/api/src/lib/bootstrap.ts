@@ -48,6 +48,12 @@ const bindings = new ContainerModule(({ bind }) => {
     .inSingletonScope();
 });
 
+export function createService(): Service {
+  const container = new Container();
+  container.load(bindings);
+  return container.get<Service>(DI.IService);
+}
+
 export async function bootstrap() {
   const container = new Container();
   container.load(bindings);

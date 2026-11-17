@@ -1,7 +1,6 @@
 export interface IOfferDestination {
   address?: string;
   region?: string;
-  pickupPointId?: string;
   coordinates?: { latitude: number; longitude: number };
 }
 export interface IOfferServiceSelection {
@@ -44,9 +43,12 @@ export interface IOfferCharge {
 export interface IOfferServiceOption {
   offerId: string;
   productId: string;
+  serviceKey?: string;
+  compatibleOfferIds?: string[];
   title: string;
   titles?: Partial<Record<string, string>>;
   role: "delivery" | "add-on";
+  recurrence?: "first" | "each";
   receiptMethod?: "shipping" | "pickup" | "electronic";
   pricePreview?: {
     kind: "fixed" | "from";
@@ -56,7 +58,6 @@ export interface IOfferServiceOption {
     basis: "fixed" | "distance" | "calculated";
     fixedAmount?: string;
   };
-  pickupPointIds?: string[];
   regionIds?: string[];
   currencyIds: string[];
 }
@@ -70,6 +71,10 @@ export interface IOfferQuote {
   availableQuantity: number | null;
   currencyIds: string[];
   serviceOptions: IOfferServiceOption[];
+  /** Authoritative service choices, including the default fulfillment when available. */
+  selectedServices?: IOfferServiceSelection[];
+  /** Verified paid first-only fulfillment already covers this subscription period. */
+  fulfillmentAlreadySatisfied?: boolean;
   charges: IOfferCharge[];
   issues: IOfferQuoteIssue[];
   destination?: IOfferDestination;

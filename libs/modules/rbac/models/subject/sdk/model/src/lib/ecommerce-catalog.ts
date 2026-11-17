@@ -1,4 +1,18 @@
-import { offerSettingsSchema } from "@sps/ecommerce/relations/stores-to-products/sdk/model/src/lib/settings";
+import { insertSchema as storeInsertSchema } from "@sps/ecommerce/models/store/sdk/model";
+import { insertSchema as productInsertSchema } from "@sps/ecommerce/models/product/sdk/model";
+import { insertSchema as attributeInsertSchema } from "@sps/ecommerce/models/attribute/sdk/model";
+import { insertSchema as attributeKeyInsertSchema } from "@sps/ecommerce/models/attribute-key/sdk/model";
+import { insertSchema as offerInsertSchema } from "@sps/ecommerce/relations/stores-to-products/sdk/model";
+import { insertSchema as offerLinkInsertSchema } from "@sps/ecommerce/relations/offers-to-offers/sdk/model";
+import { insertSchema as storeAttributeInsertSchema } from "@sps/ecommerce/relations/stores-to-attributes/sdk/model";
+import { insertSchema as productAttributeInsertSchema } from "@sps/ecommerce/relations/products-to-attributes/sdk/model";
+import { insertSchema as offerAttributeInsertSchema } from "@sps/ecommerce/relations/stores-to-products-to-attributes/sdk/model";
+import { insertSchema as attributeKeyAttributeInsertSchema } from "@sps/ecommerce/relations/attribute-keys-to-attributes/sdk/model";
+import { insertSchema as attributeCurrencyInsertSchema } from "@sps/ecommerce/relations/attributes-to-billing-module-currencies/sdk/model";
+import { insertSchema as subjectStoreInsertSchema } from "@sps/rbac/relations/subjects-to-ecommerce-module-stores/sdk/model";
+import { insertSchema as subjectProductInsertSchema } from "@sps/rbac/relations/subjects-to-ecommerce-module-products/sdk/model";
+import { insertSchema as subjectOrderInsertSchema } from "@sps/rbac/relations/subjects-to-ecommerce-module-orders/sdk/model";
+import { offerSettingsInputSchema } from "@sps/ecommerce/relations/stores-to-products/sdk/model/src/lib/settings";
 import { z } from "zod";
 import type { IModel as IProduct } from "@sps/ecommerce/models/product/sdk/model";
 import type { IModel as IOffer } from "@sps/ecommerce/relations/stores-to-products/sdk/model";
@@ -23,7 +37,7 @@ export interface ICatalogContext {
   products: IProduct[];
   currencies: ICurrency[];
   offers: IOffer[];
-  links: IOfferLink[];
+  links: (IOfferLink & { sourceProductId?: string })[];
   attributes: ICatalogAttributeValue[];
   ownedProductIds: string[];
 }
@@ -73,7 +87,7 @@ export const catalogCreateOfferSchema = z
       .optional(),
     variant: z.enum(["default", "provider"]).default("default"),
     configurationKey: z.string().max(200).default(""),
-    settings: offerSettingsSchema.default({}),
+    settings: offerSettingsInputSchema.default({}),
   })
   .strict()
   .refine((input) => Boolean(input.productId) !== Boolean(input.product), {
@@ -140,3 +154,111 @@ export const catalogSetAttributeSchema = z
 export type ICatalogSetAttributeInput = z.input<
   typeof catalogSetAttributeSchema
 >;
+
+export const catalogEntitySchemas = {
+  stores: storeInsertSchema.omit({
+    id: true,
+    createdAt: true,
+    updatedAt: true,
+  }),
+  products: productInsertSchema.omit({
+    id: true,
+    createdAt: true,
+    updatedAt: true,
+  }),
+  attributes: attributeInsertSchema.omit({
+    id: true,
+    createdAt: true,
+    updatedAt: true,
+  }),
+  "attribute-keys": attributeKeyInsertSchema.omit({
+    id: true,
+    createdAt: true,
+    updatedAt: true,
+  }),
+  "stores-to-products": offerInsertSchema.omit({
+    id: true,
+    createdAt: true,
+    updatedAt: true,
+  }),
+  "offers-to-offers": offerLinkInsertSchema.omit({
+    id: true,
+    createdAt: true,
+    updatedAt: true,
+  }),
+  "stores-to-attributes": storeAttributeInsertSchema.omit({
+    id: true,
+    createdAt: true,
+    updatedAt: true,
+  }),
+  "products-to-attributes": productAttributeInsertSchema.omit({
+    id: true,
+    createdAt: true,
+    updatedAt: true,
+  }),
+  "stores-to-products-to-attributes": offerAttributeInsertSchema.omit({
+    id: true,
+    createdAt: true,
+    updatedAt: true,
+  }),
+  "attribute-keys-to-attributes": attributeKeyAttributeInsertSchema.omit({
+    id: true,
+    createdAt: true,
+    updatedAt: true,
+  }),
+  "attributes-to-billing-module-currencies": attributeCurrencyInsertSchema.omit(
+    {
+      id: true,
+      createdAt: true,
+      updatedAt: true,
+    },
+  ),
+  "subjects-to-ecommerce-module-stores": subjectStoreInsertSchema.omit({
+    id: true,
+    createdAt: true,
+    updatedAt: true,
+  }),
+  "subjects-to-ecommerce-module-products": subjectProductInsertSchema.omit({
+    id: true,
+    createdAt: true,
+    updatedAt: true,
+  }),
+  "subjects-to-ecommerce-module-orders": subjectOrderInsertSchema.omit({
+    id: true,
+    createdAt: true,
+    updatedAt: true,
+  }),
+} as const;
+
+export const catalogMutationSchema = z
+  .object({
+    entity: z.enum(
+      Object.keys(catalogEntitySchemas) as [
+        keyof typeof catalogEntitySchemas,
+        ...Array<keyof typeof catalogEntitySchemas>,
+      ],
+    ),
+    method: z.enum(["POST", "PATCH", "DELETE"]),
+    recordId: z.uuid().optional(),
+    data: z.record(z.string(), z.unknown()).default({}),
+  })
+  .strict()
+  .superRefine((input, context) => {
+    if ((input.method === "POST") === Boolean(input.recordId)) {
+      context.addIssue({
+        code: "custom",
+        message: "Only updates and deletions require a record ID",
+      });
+    }
+    if (input.method === "DELETE" && Object.keys(input.data).length) {
+      context.addIssue({
+        code: "custom",
+        message: "Deletions do not accept record values",
+      });
+    }
+  });
+export type ICatalogMutationInput = z.input<typeof catalogMutationSchema>;
+export interface ICatalogMutationResult {
+  id: string;
+  [key: string]: unknown;
+}

@@ -1,4 +1,5 @@
 "use client";
+import { useCatalogueMutationOptions } from "@sps/ecommerce/frontend/component/src/lib/admin-v2/catalogue-mutations";
 
 import { IComponentPropsExtended } from "./interface";
 import { api } from "@sps/ecommerce/models/store/sdk/client";
@@ -6,7 +7,9 @@ import { Component as ParentComponent } from "@sps/shared-frontend-components/si
 import { internationalization } from "@sps/shared-configuration";
 
 export function Component(props: IComponentPropsExtended) {
-  const deleteEntity = api.delete();
+  const deleteEntity = api.delete(
+    useCatalogueMutationOptions({ entity: "stores", method: "DELETE" }),
+  );
 
   return (
     <ParentComponent

@@ -15,5 +15,8 @@ export const Table = pgTable(
     pgCore
       .uniqueIndex("sps_ee_order_subscription_next_period_unique")
       .on(table.subscriptionSourceOrderId, table.subscriptionSourceInvoiceId),
+    pgCore
+      .uniqueIndex("sps_ee_order_subscription_provider_invoice_unique")
+      .on(table.subscriptionProviderInvoiceId),
   ],
 );

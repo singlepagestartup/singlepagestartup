@@ -7,6 +7,7 @@ import { getPostgresClient } from "@sps/shared-backend-database-config";
 import { Repository as SubjectRepository } from "../../../../repository";
 import { Configuration as SubjectConfiguration } from "../../../../configuration";
 import { Service as Selection } from "./selection";
+import { Service as CheckoutLegacy } from "./checkout-legacy";
 import { Service as Access } from "./access";
 import { Service as MergeGuestCart } from "./merge-guest-cart";
 import type { IEcommerceCartSelection } from "@sps/rbac/models/subject/sdk/model";
@@ -114,6 +115,8 @@ async function fixture() {
   let serviceStock = 100;
   let serviceAvailable = 100;
   let version = "terms-1";
+  let sharedServices = false;
+  let pickup = false;
   services.offer.quote = jest.fn(async (input: any) => {
     const seller = offers.findIndex((set) => set[0].id === input.offerId);
     const set = offers[seller];
@@ -135,8 +138,15 @@ async function fixture() {
         inputs: {},
       },
     ];
-    for (const selected of input.services ?? []) {
-      const index = set.findIndex((offer) => offer.id === selected.offerId);
+    let selectedServices = input.services ?? [];
+    if (sharedServices && !selectedServices.length) {
+      selectedServices = [{ offerId: offers[0][1].id, quantity: 1 }];
+    }
+    for (const selected of selectedServices) {
+      const serviceSet = sharedServices ? offers[0] : set;
+      const index = serviceSet.findIndex(
+        (offer) => offer.id === selected.offerId,
+      );
       if (index < 1) {
         throw new Error(
           "Validation error. Service belongs to another store offer",
@@ -145,7 +155,9 @@ async function fixture() {
       charges.push({
         ...charges[0],
         offerId: selected.offerId,
-        productId: set[index].productId,
+        productId: serviceSet[index].productId,
+        storeId: serviceSet[index].storeId,
+        providerStoreId: serviceSet[index].storeId,
         role: index === 1 ? "delivery" : "add-on",
         stockQuantity: serviceStock,
         availableQuantity: serviceAvailable,
@@ -162,17 +174,21 @@ async function fixture() {
       ),
       availableQuantity: stock,
       currencyIds: [currency.id],
+      ...(sharedServices ? { selectedServices } : {}),
+      ...(pickup ? { destination: {} } : {}),
       serviceOptions: [
         {
-          offerId: set[1].id,
+          offerId: sharedServices ? offers[1][1].id : set[1].id,
+          compatibleOfferIds: sharedServices ? [offers[0][1].id] : [],
           productId: delivery.id,
           title: "Delivery",
           role: "delivery",
-          receiptMethod: "shipping",
+          receiptMethod: pickup ? "pickup" : "shipping",
           currencyIds: [currency.id],
         },
         {
-          offerId: set[2].id,
+          offerId: sharedServices ? offers[1][2].id : set[2].id,
+          compatibleOfferIds: sharedServices ? [offers[0][2].id] : [],
           productId: assembly.id,
           title: "Assembly",
           role: "add-on",
@@ -281,6 +297,12 @@ async function fixture() {
     order,
     preview,
     selected,
+    sharedServices() {
+      sharedServices = true;
+    },
+    pickup() {
+      pickup = true;
+    },
     stock(value: number) {
       stock = value;
     },
@@ -337,37 +359,50 @@ it("saves the clicked services with the current price and chains edits by the pe
   expect(await f.services.line.find(f.byOrder(order.id))).toHaveLength(1);
 });
 
-it("splits one primary into independent orders and saves each service under its parent", async () => {
-  const f = await fixture();
-  const source = await f.order(2);
-  const selections = [
-    f.selected(),
-    {
-      ...f.selected(),
-      destination: { address: "Region address", region: "region" },
-      services: [{ offerId: f.offers[0][1].id, quantity: 1 }],
-    },
-  ];
-  const data = await f.preview(source, selections);
-  const result = await f
-    .operation()
-    .execute({ subjectId: f.subject.id, orderId: source.order.id, data });
-  expect(result.orderIds).toHaveLength(2);
-  const first = await f.services.line.find(f.byOrder(result.orderIds[0]));
-  const second = await f.services.line.find(f.byOrder(result.orderIds[1]));
-  expect(first).toHaveLength(3);
-  expect(second).toHaveLength(2);
-  const secondPrimary = second.find((line: any) => !line.parentLineId);
-  expect(secondPrimary.destination.address).toBe("Region address");
-  expect(second.filter((line: any) => line.parentLineId)).toEqual([
-    expect.objectContaining({
-      parentLineId: secondPrimary.id,
-      quantity: 1,
-      offerId: f.offers[0][1].id,
-    }),
-  ]);
-  expect(first.find((line: any) => !line.parentLineId).quantity).toBe(1);
-});
+it.each(["preview", "save", "apply"] as const)(
+  "rejects a multiple-destination %s before quoting or writing a cart graph",
+  async (action) => {
+    const f = await fixture();
+    const source = await f.order(2);
+    const beforeOwners = await f.services.owner.find({
+      params: {
+        filters: {
+          and: [{ column: "subjectId", method: "eq", value: f.subject.id }],
+        },
+      },
+    });
+    await expect(
+      f.operation().execute({
+        subjectId: f.subject.id,
+        orderId: source.order.id,
+        data: {
+          action,
+          lineId: source.primary.id,
+          selections: [
+            f.selected(),
+            { ...f.selected(), destination: { address: "Other address" } },
+          ],
+          expectedSelectionUpdatedAt: new Date(
+            source.primary.selectionUpdatedAt,
+          ).toISOString(),
+        },
+      }),
+    ).rejects.toThrow("exactly one fulfillment selection");
+    expect(f.services.offer.quote).not.toHaveBeenCalled();
+    expect(await f.services.line.findById({ id: source.primary.id })).toEqual(
+      source.primary,
+    );
+    expect(
+      await f.services.owner.find({
+        params: {
+          filters: {
+            and: [{ column: "subjectId", method: "eq", value: f.subject.id }],
+          },
+        },
+      }),
+    ).toEqual(beforeOwners);
+  },
+);
 
 it("changes one seller atomically while a separate order retains its own address and offer", async () => {
   const f = await fixture();
@@ -387,12 +422,144 @@ it("changes one seller atomically while a separate order retains its own address
   );
 });
 
-it("rolls back all split graph writes when a store link fails", async () => {
+it("clears stale pickup point data when changing the retail store and retains the independent line", async () => {
   const f = await fixture();
-  const source = await f.order(2);
-  const data = await f.preview(source, [f.selected(), f.selected()]);
+  f.pickup();
+  const source = await f.order(1);
+  const untouched = await f.order(1);
+  const destination = {
+    address: "Old address",
+    region: "Old region",
+    coordinates: { latitude: 60, longitude: 30 },
+    pickupPointId: "point-at-another-shop",
+  };
+  const primary = await f.services.line.update({
+    id: source.primary.id,
+    data: { destination },
+  });
+  const selection = { ...f.selected(1), destination };
+  const data = await f.preview({ ...source, primary }, [selection]);
+  const result = await f
+    .operation()
+    .execute({ subjectId: f.subject.id, orderId: source.order.id, data });
+  expect(result.quotes[0].destination).toEqual({});
+  expect(result.quotes[0].storeId).toBe(f.stores[1].id);
+  const saved = await f.services.line.findById({ id: primary.id });
+  expect(saved.offerId).toBe(f.offers[1][0].id);
+  expect(saved.destination).toEqual({});
+  expect(
+    (await f.services.storeLink.find(f.byOrder(source.order.id)))[0].storeId,
+  ).toBe(f.stores[1].id);
+  expect(await f.services.line.findById({ id: untouched.primary.id })).toEqual(
+    untouched.primary,
+  );
+  expect(primary.destination).toEqual(destination);
+});
+
+it("retains exact contractor service aliases on a seller change and persists the server default", async () => {
+  const f = await fixture();
+  f.sharedServices();
+  const source = await f.order(1);
+  const services = f.selected(0).services;
+  const changed = { ...f.selected(1), services };
+  const preview = await f.operation().execute({
+    subjectId: f.subject.id,
+    orderId: source.order.id,
+    data: {
+      action: "preview",
+      lineId: source.primary.id,
+      selections: [changed],
+    },
+  });
+  expect(preview.quotes[0].selectedServices).toEqual(services);
+  expect(preview.comparisonQuotes?.[0].selectedServices).toEqual(services);
+  const applied = await f.operation().execute({
+    subjectId: f.subject.id,
+    orderId: source.order.id,
+    data: {
+      action: "save",
+      lineId: source.primary.id,
+      selections: [changed],
+      expectedSelectionUpdatedAt: new Date(
+        source.primary.selectionUpdatedAt,
+      ).toISOString(),
+    },
+  });
+  const children = (
+    await f.services.line.find(f.byOrder(source.order.id))
+  ).filter((line: any) => line.parentLineId === source.primary.id);
+  expect(children.map((line: any) => line.offerId).sort()).toEqual(
+    services!.map((service) => service.offerId).sort(),
+  );
+  const defaulted = await f.operation().execute({
+    subjectId: f.subject.id,
+    orderId: source.order.id,
+    data: {
+      action: "save",
+      lineId: source.primary.id,
+      selections: [{ ...changed, services: [] }],
+      expectedSelectionUpdatedAt: applied.selectionUpdatedAt,
+    },
+  });
+  expect(defaulted.applied).toBe(true);
+  const defaultChildren = (
+    await f.services.line.find(f.byOrder(source.order.id))
+  ).filter((line: any) => line.parentLineId === source.primary.id);
+  expect(defaultChildren).toEqual([
+    expect.objectContaining({ offerId: f.offers[0][1].id, quantity: 1 }),
+  ]);
+});
+
+it("prepares a legacy primary and its default contractor service for confirmation together", async () => {
+  const f = await fixture();
+  f.sharedServices();
+  const source = await f.order(1);
+  const legacy = await f.services.line.update({
+    id: source.primary.id,
+    data: { offerId: null },
+  });
+  f.services.offer.offersForProduct = jest
+    .fn()
+    .mockResolvedValue([f.offers[0][0]]);
+  const operation = new CheckoutLegacy({
+    repository: f.subjects,
+    ecommerceModule: f.subjectService.ecommerceModule,
+    owners: f.services.owner,
+  });
+  await expect(
+    operation.execute({
+      subjectId: f.subject.id,
+      orders: [source.order],
+      lines: [legacy],
+    }),
+  ).rejects.toThrow("Confirm the updated store offer and charges");
+  const lines = await f.services.line.find(f.byOrder(source.order.id));
+  expect(lines).toHaveLength(2);
+  expect(lines).toContainEqual(
+    expect.objectContaining({
+      id: legacy.id,
+      offerId: f.offers[0][0].id,
+      quoteVersion: "terms-1",
+    }),
+  );
+  expect(lines).toContainEqual(
+    expect.objectContaining({
+      parentLineId: legacy.id,
+      offerId: f.offers[0][1].id,
+      quantity: 1,
+    }),
+  );
+  expect(
+    await f.services.payment.find(f.byOrder(source.order.id)),
+  ).toHaveLength(0);
+});
+
+it("rolls back a seller and service change when its store link fails", async () => {
+  const f = await fixture();
+  const source = await f.order(1);
+  const data = await f.preview(source, [f.selected(1)]);
   jest
-    .spyOn(f.services.storeLink, "create")
+    .spyOn(f.services.storeLink, "update")
     .mockRejectedValueOnce(new Error("fixture link failure"));
   await expect(
     f
@@ -441,7 +608,7 @@ it("refuses expired terms and stale buyer selection without changing the cart", 
   ).toBe(f.offers[0][0].id);
 });
 
-it("serializes concurrent edits so the buyer's split lines cannot exceed one offer's stock", async () => {
+it("serializes concurrent edits so the buyer's independent lines cannot exceed one offer's stock", async () => {
   const f = await fixture();
   f.stock(3);
   const first = await f.order(1);
@@ -476,7 +643,7 @@ it("serializes concurrent edits so the buyer's split lines cannot exceed one off
   expect(quantities.sort()).toEqual([1, 2]);
 });
 
-it("refuses a foreign subject and a quantity-changing split before any selection writes", async () => {
+it("refuses a foreign subject and multiple selections before any selection writes", async () => {
   const f = await fixture();
   const source = await f.order(2);
   await expect(
@@ -492,17 +659,22 @@ it("refuses a foreign subject and a quantity-changing split before any selection
   ).rejects.toThrow("does not belong");
   await expect(
     f.preview(source, [f.selected(0, 2), f.selected()]),
-  ).rejects.toThrow("Split quantities");
+  ).rejects.toThrow("exactly one fulfillment selection");
   expect(await f.services.line.findById({ id: source.primary.id })).toEqual(
     source.primary,
   );
 });
 
-it("subtracts external service reservations before accepting two split service lines", async () => {
+it("subtracts external service reservations before accepting one service selection", async () => {
   const f = await fixture();
   f.serviceStock(3, 1);
   const source = await f.order(2);
-  const selections = [f.selected(), f.selected()];
+  const selections = [
+    {
+      ...f.selected(0, 2),
+      services: [{ offerId: f.offers[0][1].id, quantity: 2 }],
+    },
+  ];
   const result = await f.operation().execute({
     subjectId: f.subject.id,
     orderId: source.order.id,
@@ -535,10 +707,10 @@ it("subtracts external service reservations before accepting two split service l
         data: confirmed,
       })
     ).orderIds,
-  ).toHaveLength(2);
+  ).toHaveLength(1);
 });
 
-it("merges the latest complete Product selection, retaining both split orders and child services", async () => {
+it("merges the latest complete Product selection, retaining independent orders and child services", async () => {
   const f = await fixture();
   const guest = await f.subjects.insert({
     slug: `issue414-guest-${randomUUID()}`,

@@ -1,4 +1,5 @@
 "use client";
+import { useCatalogueMutationOptions } from "@sps/ecommerce/frontend/component/src/lib/admin-v2/catalogue-mutations";
 
 import { IComponentPropsExtended } from "./interface";
 import { api } from "@sps/ecommerce/relations/attributes-to-billing-module-currencies/sdk/client";
@@ -6,7 +7,12 @@ import { Component as AdminForm } from "../form";
 import { Component as ParentComponent } from "@sps/shared-frontend-components/singlepage/admin-v2/table-row/Component";
 
 export function Component(props: IComponentPropsExtended) {
-  const deleteEntity = api.delete();
+  const deleteEntity = api.delete(
+    useCatalogueMutationOptions({
+      entity: "attributes-to-billing-module-currencies",
+      method: "DELETE",
+    }),
+  );
 
   return (
     <ParentComponent

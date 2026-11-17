@@ -13,6 +13,7 @@ export function Component(props: IComponentPropsExtended) {
       ecommerceModuleProduct={props.ecommerceModuleProduct}
       ecommerceModuleStore={props.ecommerceModuleStore}
       excludedOfferIds={props.excludedOfferIds}
+      hideConfiguration={props.hideConfiguration}
       checkoutSlot={props.checkoutSlot}
     />
   );

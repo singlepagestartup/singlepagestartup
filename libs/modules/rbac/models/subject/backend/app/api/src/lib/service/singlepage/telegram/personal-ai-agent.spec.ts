@@ -15,6 +15,7 @@ const mockSocialModuleProfilesToChatsDelete = jest.fn();
 const mockEnsureKnowledgeAccess = jest.fn();
 
 jest.mock("@sps/shared-utils", () => ({
+  ...jest.requireActual("@sps/shared-utils"),
   RBAC_SECRET_KEY: "rbac-secret",
 }));
 

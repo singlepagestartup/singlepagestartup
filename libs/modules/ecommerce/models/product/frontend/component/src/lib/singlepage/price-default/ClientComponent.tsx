@@ -85,20 +85,15 @@ export function Component(props: IPriceClientProps) {
         </p>
       )}
       {current?.issues
-        .filter(
-          (issue) =>
-            ![
-              "delivery_required",
-              "address_required",
-              "pickup_required",
-            ].includes(issue.code),
-        )
+        .filter((issue) => issue.code !== "address_required")
         .map((issue) => (
           <p
             key={`${issue.code}-${issue.offerId}`}
             className="text-xs text-destructive"
           >
-            {issue.message}
+            {props.language === "ru" && issue.code === "delivery_required"
+              ? "Для выбранных условий заказа нет доступного способа получения."
+              : issue.message}
           </p>
         ))}
     </div>

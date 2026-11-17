@@ -1,23 +1,30 @@
 import { App } from "./app";
-import type { Apps } from "./apps";
+import { Apps } from "./apps";
+import type { App as PaymentIntentApp } from "@sps/billing/models/payment-intent/backend/app/api";
 import {
   DI,
   ExceptionFilter,
-  IModuleApp,
-  IExceptionFilter,
+  type IExceptionFilter,
 } from "@sps/shared-backend-api";
 import { Container, ContainerModule } from "inversify";
 
+export interface IBootstrapResult {
+  app: App;
+}
+
 const bindings = new ContainerModule(({ bind }) => {
   bind<IExceptionFilter>(DI.IExceptionFilter).to(ExceptionFilter);
-  bind<IModuleApp<Apps>>(DI.IApp).to(App);
+  bind<App>(DI.IApp).to(App);
 });
 
-export async function bootstrap() {
+export async function bootstrap(
+  paymentIntentApp?: PaymentIntentApp,
+): Promise<IBootstrapResult> {
   const container = new Container();
   container.load(bindings);
+  container.bind<Apps>(Apps).toDynamicValue(() => new Apps(paymentIntentApp));
 
-  const app = container.get<IModuleApp<Apps>>(DI.IApp);
+  const app = container.get<App>(DI.IApp);
   await app.init();
 
   return { app };

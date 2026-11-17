@@ -4,6 +4,7 @@ import {
 } from "@sps/shared-utils";
 import type { IModel as IOrder } from "@sps/ecommerce/models/order/sdk/model";
 import type { IModel as IOrderLine } from "@sps/ecommerce/relations/orders-to-products/sdk/model";
+import type { IOfferQuote } from "@sps/ecommerce/relations/stores-to-products/sdk/model";
 import type { Repository } from "../../../../repository";
 import type { Service as SubjectService } from "../../index";
 import { randomUUID } from "node:crypto";
@@ -237,6 +238,14 @@ export class Service {
               "Validation error. Source service has no primary item",
             );
           }
+          let destination = line.destination;
+          if (destination && "pickupPointId" in destination) {
+            const {
+              pickupPointId: _legacyPickupPointId,
+              ...currentDestination
+            } = destination;
+            destination = currentDestination;
+          }
           const created = await service.ecommerceModule.ordersToProducts.create(
             {
               data: {
@@ -247,7 +256,7 @@ export class Service {
                   ? {
                       offerId: line.offerId,
                       parentLineId,
-                      destination: line.destination,
+                      destination,
                       recurrence: line.recurrence,
                       quoteVersion: line.quoteVersion,
                       quoteExpiresAt: line.quoteExpiresAt,
@@ -292,8 +301,14 @@ export class Service {
       source.type !== "history" ||
       !source.subscriptionPeriodInvoiceId ||
       source.subscriptionRevokedAt ||
+      ["requested_cancelation", "canceling", "canceled", "completed"].includes(
+        source.status,
+      ) ||
       !source.subscriptionPeriodEndsAt ||
-      new Date(source.subscriptionPeriodEndsAt).getTime() > Date.now()
+      new Date(
+        source.subscriptionScheduledEndsAt ?? source.subscriptionPeriodEndsAt,
+      ).getTime() >
+        Date.now() + 24 * 60 * 60 * 1000
     ) {
       throw new Error(
         "Conflict error. A separately paid subscription period is not due",
@@ -350,11 +365,18 @@ export class Service {
           link.purchaseSnapshot,
       )
       .map((link) => link.purchaseSnapshot!);
+    if (
+      !snapshots.length &&
+      intent?.status === "succeeded" &&
+      invoice?.status === "paid"
+    ) {
+      return this.legacyNextPeriodCart(props, source, intent.id);
+    }
     const main = snapshots.find(
       (snapshot) => snapshot.charge.role === "product",
     );
     if (
-      intent?.type !== "one_off" ||
+      !["one_off", "subscription"].includes(intent?.type ?? "") ||
       intent.status !== "succeeded" ||
       invoice?.status !== "paid" ||
       !main ||
@@ -421,7 +443,22 @@ export class Service {
         })),
     };
     // Delivery routing and current prices resolve before acquiring database locks.
-    const quote = await service.ecommerceModule.storesToProducts.quote(input);
+    const fulfillment =
+      await service.ecommerceModule.order.fulfillmentQuoteOptions({
+        id: source.id,
+      });
+    const quoteOptions = fulfillment.fulfilledLineIds.length
+      ? { fulfilledLineIds: [primaryId] }
+      : undefined;
+    let quote: IOfferQuote;
+    if (quoteOptions) {
+      quote = await service.ecommerceModule.storesToProducts.quote(
+        input,
+        quoteOptions,
+      );
+    } else {
+      quote = await service.ecommerceModule.storesToProducts.quote(input);
+    }
     if (quote.amount === null || quote.issues.length) {
       throw new Error(
         `Conflict error. Next delivery is unavailable: ${JSON.stringify(quote.issues)}`,
@@ -439,10 +476,20 @@ export class Service {
         if (
           !current ||
           current.subscriptionRevokedAt ||
+          [
+            "requested_cancelation",
+            "canceling",
+            "canceled",
+            "completed",
+          ].includes(current.status) ||
           current.subscriptionPeriodInvoiceId !==
             source.subscriptionPeriodInvoiceId ||
           !current.subscriptionPeriodEndsAt ||
-          new Date(current.subscriptionPeriodEndsAt).getTime() > Date.now()
+          new Date(
+            current.subscriptionScheduledEndsAt ??
+              current.subscriptionPeriodEndsAt,
+          ).getTime() >
+            Date.now() + 24 * 60 * 60 * 1000
         ) {
           throw new Error(
             "Conflict error. Subscription period changed during renewal",
@@ -531,6 +578,166 @@ export class Service {
             createdPrimaryId = created.id;
           }
         }
+        return { orderIds: [order.id] };
+      },
+    );
+  }
+
+  private async legacyNextPeriodCart(
+    props: IExecuteProps,
+    source: IOrder,
+    intentId: string,
+  ): Promise<IResult> {
+    const { service, repository } = this.dependencies;
+    const extended = await service.ecommerceModule.order.findByIdExtended({
+      id: source.id,
+    });
+    const primary = extended.ordersToProducts.filter(
+      (line: IOrderLine) => !line.parentLineId,
+    );
+    if (
+      primary.length !== 1 ||
+      extended.ordersToProducts.length !== 1 ||
+      extended.checkoutAttributesByCurrency.type !== "subscription" ||
+      !extended.checkoutAttributesByCurrency.interval
+    ) {
+      throw new Error(
+        "Conflict error. Legacy subscription delivery requires reconciliation",
+      );
+    }
+    const line = primary[0];
+    if (line.product?.kind === "physical") {
+      throw new Error(
+        "Conflict error. Legacy physical subscription needs an offer for stock reservation",
+      );
+    }
+    if (line.product?.slug === INITIAL_FREE_SUBSCRIPTION_PRODUCT_SLUG) {
+      throw new Error("Permission error. Initial Free cannot be renewed");
+    }
+    const [shared, currencies, stores] = await Promise.all([
+      service.ecommerceModule.ordersToBillingModulePaymentIntents.find({
+        params: {
+          filters: {
+            and: [
+              {
+                column: "billingModulePaymentIntentId",
+                method: "eq",
+                value: intentId,
+              },
+            ],
+          },
+        },
+      }),
+      service.ecommerceModule.ordersToBillingModuleCurrencies.find({
+        params: {
+          filters: {
+            and: [{ column: "orderId", method: "eq", value: source.id }],
+          },
+        },
+      }),
+      service.ecommerceModule.storesToOrders.find({
+        params: {
+          filters: {
+            and: [{ column: "orderId", method: "eq", value: source.id }],
+          },
+        },
+      }),
+    ]);
+    if (
+      shared.some((link: IPaymentLink) => link.orderId !== source.id) ||
+      currencies.length !== 1 ||
+      stores.length > 1
+    ) {
+      throw new Error(
+        "Conflict error. Legacy subscription payment allocation requires reconciliation",
+      );
+    }
+    return repository.withSubjectLock(
+      { subjectId: props.subjectId },
+      async () => {
+        await service.ecommerceModule.order.lockForLifecycle({ id: source.id });
+        await service.ecommerceModuleOrderAssertAccess(props);
+        await this.assertExclusiveOwner(props.subjectId, source.id);
+        const current = await service.ecommerceModule.order.findById({
+          id: source.id,
+        });
+        if (
+          !current ||
+          current.subscriptionRevokedAt ||
+          [
+            "requested_cancelation",
+            "canceling",
+            "canceled",
+            "completed",
+          ].includes(current.status) ||
+          current.subscriptionPeriodInvoiceId !==
+            source.subscriptionPeriodInvoiceId
+        ) {
+          throw new Error(
+            "Conflict error. Subscription period changed during renewal",
+          );
+        }
+        const existing = await service.ecommerceModule.order.find({
+          params: {
+            filters: {
+              and: [
+                {
+                  column: "subscriptionSourceOrderId",
+                  method: "eq",
+                  value: source.id,
+                },
+                {
+                  column: "subscriptionSourceInvoiceId",
+                  method: "eq",
+                  value: source.subscriptionPeriodInvoiceId,
+                },
+              ],
+            },
+          },
+        });
+        if (existing.length) {
+          if (existing.length !== 1) {
+            throw new Error(
+              "Conflict error. Next subscription period is ambiguous",
+            );
+          }
+          await service.ecommerceModuleOrderAssertAccess({
+            subjectId: props.subjectId,
+            orderId: existing[0].id,
+          });
+          return { orderIds: [existing[0].id] };
+        }
+        const order = await service.ecommerceModule.order.createNextPeriodCart({
+          sourceOrderId: source.id,
+          sourceInvoiceId: source.subscriptionPeriodInvoiceId!,
+          interval: extended.checkoutAttributesByCurrency.interval,
+        });
+        await service.subjectsToEcommerceModuleOrders.create({
+          data: {
+            subjectId: props.subjectId,
+            ecommerceModuleOrderId: order.id,
+          },
+        });
+        await service.ecommerceModule.ordersToBillingModuleCurrencies.create({
+          data: {
+            orderId: order.id,
+            billingModuleCurrencyId: currencies[0].billingModuleCurrencyId,
+          },
+        });
+        for (const store of stores) {
+          await service.ecommerceModule.storesToOrders.create({
+            data: { orderId: order.id, storeId: store.storeId },
+          });
+        }
+        await service.ecommerceModule.ordersToProducts.create({
+          data: {
+            orderId: order.id,
+            productId: line.productId,
+            quantity: line.quantity,
+            destination: line.destination,
+            recurrence: "each",
+          },
+        });
         return { orderIds: [order.id] };
       },
     );

@@ -1,3 +1,4 @@
+import { Service as FulfillmentQuoteOptionsService } from "../startup/fulfillment-quote-options";
 import { Service as CartDetailsService } from "../startup/find-by-id/cart-details";
 import "reflect-metadata";
 import { inject, injectable } from "inversify";
@@ -37,6 +38,7 @@ import { Service as BillingPaymentIntentsToInvoicesService } from "@sps/billing/
 import { Service as BillingInvoiceService } from "@sps/billing/models/invoice/backend/app/api/src/lib/service";
 import { Service as FileStorageFileService } from "@sps/file-storage/models/file/backend/app/api/src/lib/service";
 import { Service as SubscriptionPeriodService } from "../startup/subscription-period";
+import { Service as LifecycleService } from "../startup/lifecycle";
 import type {
   IExecuteProps as ISubscriptionPeriodProps,
   IFreezeProps as ISubscriptionPeriodFreezeProps,
@@ -122,6 +124,29 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
       ordersToBillingModulePaymentIntents;
   }
 
+  protected override async insert(data: Record<string, unknown>) {
+    return super.insert(this.lifecycleService().writableData(data));
+  }
+
+  override async update(props: {
+    id: string;
+    data: Partial<(typeof Table)["$inferSelect"]>;
+  }) {
+    const lifecycle = this.lifecycleService();
+    let order: typeof Table.$inferSelect | null = null;
+    if (
+      lifecycle.protectedLifecycleFields.some((field) => field in props.data)
+    ) {
+      order = await this.findById({ id: props.id });
+    }
+    const data = lifecycle.writableData(props.data, order);
+    return super.update({ id: props.id, data });
+  }
+
+  private lifecycleService() {
+    return new LifecycleService(this.repository);
+  }
+
   async findByIdCartDetails(props: { id: string }) {
     return new CartDetailsService({
       ordersToProducts: this.ordersToProducts,
@@ -140,7 +165,13 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     sourceInvoiceId: string;
     interval: string;
   }) {
-    return this.repository.createNextPeriodCart(props);
+    return this.lifecycleService().createNextPeriodCart(props);
+  }
+
+  configureNextPeriod(
+    props: Parameters<LifecycleService["configureNextPeriod"]>[0],
+  ) {
+    return this.lifecycleService().configureNextPeriod(props);
   }
 
   async assertSubscriptionPayment(props: { id: string }) {
@@ -209,9 +240,10 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     if (
       order.type !== "history" ||
       order.checkoutAttributesByCurrency.type !== "subscription"
-    )
+    ) {
       return undefined;
-    return this.repository.revokeSubscription(props);
+    }
+    return this.lifecycleService().revokeSubscription(props);
   }
 
   async lockForLifecycle(props: { id: string }) {
@@ -248,7 +280,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     if (!allowed) {
       return undefined;
     }
-    return this.repository.writePaymentStatus({
+    return this.lifecycleService().writePaymentStatus({
       before: order,
       status: props.status,
     });
@@ -296,7 +328,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
         ) {
           return undefined;
         }
-        return this.repository.writePaymentStatus({
+        return this.lifecycleService().writePaymentStatus({
           before: afterHook,
           status: "paid",
         });
@@ -348,9 +380,13 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
       new Date(order.subscriptionPeriodEndsAt).getTime() !==
         new Date(props.expectedEndsAt).getTime() ||
       new Date(order.subscriptionPeriodEndsAt) > now
-    )
+    ) {
       return undefined;
-    return this.repository.expireSubscriptionPeriod({ before: order, now });
+    }
+    return this.lifecycleService().expireSubscriptionPeriod({
+      before: order,
+      now,
+    });
   }
 
   async freezeSubscriptionPeriod(props: ISubscriptionPeriodFreezeProps) {
@@ -362,7 +398,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
       findByIdExtended: (props) => this.findByIdExtended(props),
       findById: (props) => this.findById(props),
       writeSubscriptionPeriod: (props) =>
-        this.repository.writeSubscriptionPeriod(props),
+        this.lifecycleService().writeSubscriptionPeriod(props),
     });
   }
 
@@ -429,6 +465,15 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     return extended;
   }
 
+  async fulfillmentQuoteOptions(props: { id: string }) {
+    return new FulfillmentQuoteOptionsService({
+      findById: (input) => this.findById(input),
+      ordersToProducts: this.ordersToProducts,
+      payments: this.ordersToBillingModulePaymentIntents,
+      billingModule: this.billingModule,
+    }).execute(props);
+  }
+
   async findByIdTotal(props: IFindByIdTotalExecuteProps) {
     const saved = await this.savedCheckoutContext(props.id);
     if (saved) {
@@ -450,7 +495,8 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
         unpriced: [],
       };
     }
-    return this.findByIdTotalService.execute(props);
+    const options = await this.fulfillmentQuoteOptions(props);
+    return this.findByIdTotalService.execute(props, options);
   }
 
   async findByIdQuantity(props: IFindByIdQuantityExecuteProps) {

@@ -50,3 +50,19 @@ it("does not offer a partially priced currency when one line has no price", asyn
   expect(result.availableCurrencyIds).toEqual([]);
   expect(result.unpriced).toHaveLength(1);
 });
+
+it("passes verified renewal fulfillment context to the offer totals reader", async () => {
+  const lines = [{ id: "main", offerId: "offer", productId: "product" }];
+  const offerTotals = jest.fn().mockResolvedValue({
+    totals: [],
+    availableCurrencyIds: ["rub"],
+    unpriced: [],
+  });
+  const service = new Service(
+    { find: jest.fn() } as any,
+    { find: async () => lines, offerTotals } as any,
+  );
+  const options = { fulfilledLineIds: ["main"] };
+  await service.execute({ id: "renewal-cart" }, options);
+  expect(offerTotals).toHaveBeenCalledWith(lines, undefined, options);
+});

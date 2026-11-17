@@ -71,18 +71,18 @@ jest.mock("@sps/rbac/models/subject/frontend/component", () => ({
         );
       case "ecommerce-module-order-create-default":
         return (
-          <div
-            data-testid="excluded"
-            data-value={JSON.stringify(props.excludedOfferIds)}
-          >
+          <div>
+            {!props.hideConfiguration ? (
+              <span data-testid="creation-form" />
+            ) : null}
             {props.checkoutSlot?.(null, {
               refreshQuote: jest.fn(),
-              hideWhenIdle: false,
+              hideWhenIdle: props.hideConfiguration,
             })}
           </div>
         );
       case "me-ecommerce-module-product-checkout-default":
-        return (
+        return props.hideWhenIdle ? null : (
           <button disabled={props.purchaseConfiguration === null}>
             Buy this configuration
           </button>
@@ -117,16 +117,14 @@ it("edits the saved primary and blocks only its payment until its choices are sa
   expect(pay.disabled).toBe(true);
   fireEvent.click(screen.getByText("Finish save"));
   expect(pay.disabled).toBe(false);
-  expect(screen.getByTestId("excluded").dataset.value).toBe('["chair-offer"]');
+  expect(screen.queryByTestId("creation-form")).toBeNull();
   expect(screen.queryByText("Pay other-product")).toBeNull();
-  expect(
-    (screen.getByText("Buy this configuration") as HTMLButtonElement).disabled,
-  ).toBe(true);
+  expect(screen.queryByText("Buy this configuration")).toBeNull();
 });
 
 it("does not treat a child service as a saved primary on the service page", () => {
   renderProduct("delivery", false);
   expect(screen.queryByRole("heading", { name: "В корзине" })).toBeNull();
-  expect(screen.getByTestId("excluded").dataset.value).toBe("[]");
+  expect(screen.getByTestId("creation-form")).toBeTruthy();
   expect(screen.queryByText("Buy this configuration")).toBeNull();
 });

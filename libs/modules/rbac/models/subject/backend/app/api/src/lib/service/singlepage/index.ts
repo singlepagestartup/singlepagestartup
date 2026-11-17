@@ -1,3 +1,7 @@
+import { Service as ProviderPeriod } from "../startup/ecommerce/order/provider-period";
+import type { IProviderPeriodReceipt } from "@sps/billing/models/payment-intent/backend/app/api/src/lib/service/singlepage/settlement";
+import { Service as OrderRenewal } from "../startup/ecommerce/order/renewal";
+import type { IExecuteProps as IOrderRenewalProps } from "./ecommerce/order/renewal";
 import type { Service as EcommerceCatalog } from "./ecommerce/catalog";
 import type { Service as SecurityNotifications } from "./security-notifications";
 import { Service as MutateCart } from "../startup/ecommerce/order/mutate-cart";
@@ -717,7 +721,33 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     }).execute(props);
   }
 
-  async ecommerceOrderCheckout(props: IEcommerceOrderCheckoutExecuteProps) {
+  async ecommerceModuleOrderResolveProviderPeriod(
+    props: IProviderPeriodReceipt,
+  ) {
+    return new ProviderPeriod({
+      repository: this.repository,
+      service: this,
+    }).execute(props);
+  }
+
+  async ecommerceModuleOrderRenewal(
+    props: IOrderRenewalProps,
+    internal?: { skipProviderReconciliation?: boolean },
+  ) {
+    return new OrderRenewal({
+      repository: this.repository,
+      service: this,
+    }).execute(props, internal);
+  }
+
+  async ecommerceOrderCheckout(
+    props: IEcommerceOrderCheckoutExecuteProps,
+    internal?: {
+      deferProviderCheckout?: boolean;
+      manualSubscriptionPeriod?: boolean;
+      providerContractPaymentIntentId?: string;
+    },
+  ) {
     return new EcommerceOrderCheckout({
       repository: this.repository,
       settledOrderIds: (input) => this.ecommerceModuleOrderSettledIds(input),
@@ -725,7 +755,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
       ecommerceModule: this.ecommerceModule,
       billingModule: this.billingModule,
       subjectsToEcommerceModuleOrders: this.subjectsToEcommerceModuleOrders,
-    }).execute(props);
+    }).execute(props, internal);
   }
 
   async crmModuleFormRequestCreate(props: ICrmFormRequestCreateProps) {

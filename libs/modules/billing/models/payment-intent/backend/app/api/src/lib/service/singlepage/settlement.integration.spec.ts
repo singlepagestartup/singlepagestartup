@@ -32,6 +32,7 @@ jest.mock("stripe", () => ({
   default: jest.fn().mockImplementation(() => ({
     subscriptions: {
       retrieve: jest.fn(async () => ({
+        id: "sub_fixture",
         metadata: { paymentIntentId: mockSubscriptionIntentId },
       })),
     },
@@ -598,7 +599,7 @@ it("closes a completed Stripe checkout page while the asynchronous payment can s
   );
 });
 
-it("creates and settles a recurring Stripe invoice once across concurrent webhook deliveries", async () => {
+it("creates and settles the initial Stripe subscription invoice once across concurrent webhook deliveries", async () => {
   const f = await fixture("stripe");
   mockSubscriptionIntentId = f.intent.id;
   const providerId = "in_fixture_" + randomUUID();
@@ -611,6 +612,8 @@ it("creates and settles a recurring Stripe invoice once across concurrent webhoo
         object: "invoice",
         id: providerId,
         subscription: "sub_fixture",
+        billing_reason: "subscription_create",
+        currency: "usd",
         status: "paid",
         amount_due: 10000,
         amount_paid: 10000,
@@ -670,6 +673,101 @@ it("creates and settles a recurring Stripe invoice once across concurrent webhoo
       await f.invoices.delete({ id: row.id });
     }
   }
+});
+
+it("adopts a prepared renewal invoice atomically and serializes duplicate provider deliveries", async () => {
+  const f = await fixture("stripe");
+  mockSubscriptionIntentId = f.intent.id;
+  const next = await f.service.create({
+    data: { amount: 100, type: "subscription" } as any,
+  });
+  removals.push(() => f.service.delete({ id: next.id }));
+  const draft = await f.invoices.create({
+    data: { amount: 100, status: "draft", provider: "stripe" } as any,
+  });
+  removals.push(() => f.invoices.delete({ id: draft.id }));
+  const relation = new RelationService(
+    new RelationRepository(new RelationConfiguration()),
+  );
+  const link = await relation.create({
+    data: { paymentIntentId: next.id, invoiceId: draft.id } as any,
+  });
+  removals.push(() => relation.delete({ id: link.id }));
+  f.service.setProviderPeriodResolver(async () => ({
+    paymentIntentId: next.id,
+  }));
+  const providerId = "in_period_" + randomUUID();
+  const event = {
+    action: "webhook",
+    data: {
+      data: {
+        object: {
+          id: providerId,
+          object: "invoice",
+          subscription: "sub_fixture",
+          status: "paid",
+          billing_reason: "subscription_cycle",
+          currency: "usd",
+          amount_due: 10000,
+          amount_paid: 10000,
+          lines: {
+            data: [
+              {
+                currency: "usd",
+                parent: {
+                  subscription_item_details: {
+                    subscription: "sub_fixture",
+                    proration: false,
+                  },
+                },
+                period: { start: 1704067200, end: 1706745600 },
+              },
+            ],
+            has_more: false,
+          },
+        },
+      },
+    },
+  };
+  const write = jest
+    .spyOn(f.service, "update")
+    .mockRejectedValueOnce(new Error("fixture settlement failure"));
+  await expect(f.service.stripe(event as any)).rejects.toThrow(
+    "fixture settlement failure",
+  );
+  expect(await f.invoices.findById({ id: draft.id })).toMatchObject({
+    status: "draft",
+    providerId: null,
+  });
+  expect((await f.service.findById({ id: next.id }))?.status).toBe(
+    "requires_payment_method",
+  );
+  write.mockRestore();
+  await Promise.all(
+    Array.from({ length: 4 }, () => f.service.stripe(event as any)),
+  );
+  const recorded = await f.invoices.find({
+    params: {
+      filters: {
+        and: [{ column: "providerId", method: "eq", value: providerId }],
+      },
+    },
+  });
+  expect(recorded).toHaveLength(1);
+  expect(recorded[0]).toMatchObject({ id: draft.id, status: "paid" });
+  expect((await f.service.findById({ id: next.id }))?.status).toBe("succeeded");
+  expect((await f.service.findById({ id: f.intent.id }))?.status).toBe(
+    "requires_payment_method",
+  );
+  const linked = await relation.find({
+    params: {
+      filters: {
+        and: [{ column: "invoiceId", method: "eq", value: draft.id }],
+      },
+    },
+  });
+  expect(linked).toHaveLength(1);
+  expect(linked[0].paymentIntentId).toBe(next.id);
 });
 
 it("does not expire an orphan that acquired a relation before the lock was taken", async () => {

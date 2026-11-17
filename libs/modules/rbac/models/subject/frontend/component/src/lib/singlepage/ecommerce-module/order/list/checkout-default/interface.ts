@@ -103,11 +103,6 @@ export interface IServiceOptionsProps {
   children?: ReactNode;
 }
 
-export interface IServiceNoSelectionProps {
-  id: string;
-  language: string;
-}
-
 export interface IQuantityInputProps {
   id: string;
   label: string;

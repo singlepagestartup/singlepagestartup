@@ -18,11 +18,10 @@ Invoices track payable amounts and statuses for completed or pending transaction
 - `providerId`: provider-specific identifier.
 - `provider`: payment provider name.
 
-The owning repository rejects `createdAt` on create and changed values on
-ordinary or conditional updates. Provider updates may include the unchanged
-creation date in an existing full-record payload; the repository removes it
-from the SQL patch. This keeps the subscription Invoice ordering stable when
-payment status changes or a webhook is repeated.
+The Invoice service rejects a supplied `createdAt` on creation and changes to
+it on update. When a provider sends the full Invoice with its original creation
+date, the service omits that field from the write. Repeated webhooks therefore
+preserve the order of subscription Invoices.
 
 ## Payment confirmation
 

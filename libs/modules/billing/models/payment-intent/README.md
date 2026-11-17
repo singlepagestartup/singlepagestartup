@@ -17,8 +17,10 @@ Payment intents represent an upcoming or in-progress payment with amount and sta
 
 ## Payment providers
 
-- `POST /api/billing/payment-intents/:uuid/:provider` starts a payment for the
-  payment intent through the provider.
+- `POST /api/billing/payment-intents/:uuid/:provider` dispatches a prepared
+  payment using the server's operator credential. A buyer starts checkout
+  and reads the payment status and payment link through their order in RBAC
+  Subject.
 - `POST /api/billing/payment-intents/:provider/webhook` receives the provider's
   payment notification and settles the invoice.
 
@@ -33,6 +35,16 @@ that runs without real payments; `apps/api/create_env.sh` lists it for local
 development. The check is `Service.isProviderAllowed`, which a project can
 override in its `startup` service.
 
+Dummy callbacks require the operator `X-RBAC-SECRET-KEY`, as Telegram Stars
+callbacks do. Stripe callbacks supply an event ID; the handler retrieves that
+event through Stripe's authenticated API and processes only the retrieved
+payment object. Posted payment fields cannot replace it. Unhandled verified
+events receive an acknowledgment without running payment settlement.
+Webhook responses contain acknowledgments rather than local Invoice or Intent
+records. CloudPayments and TipTopPay receive `{"code":0}` after signature
+verification, and PayKeeper retains its plain-text acknowledgment. Callback
+headers and raw payment bodies are not written to debug logs.
+
 The internal `stopSubscriptionRenewal` capability stops future Stripe charges
 with `cancel_at_period_end`, after checking the subscription's Payment Intent
 metadata. It preserves paid Invoices and the current paid period. Already
@@ -43,9 +55,57 @@ The standard CloudPayments, TipTopPay, 0xProcessing, Payselection, PayKeeper,
 Telegram Stars and dummy adapters create individual payments, even when an
 older intent retains `type = subscription`. They have no remote renewal contract
 to cancel. One-off intents and zero-price payments also require no provider
-cancellation. A custom adapter with recurring charges must override
-`subscriptionRenewalContext` and `stopSubscriptionRenewal` in its owning startup
-service. Unknown recurring providers fail explicitly and remain pending.
+cancellation. The Payment Intent service's
+`schedulesSubscriptionPayments({ provider })` capability reports whether the
+adapter owns future subscription payments; Stripe currently returns true.
+Checkout and renewal use this capability without naming the processor. A custom
+scheduled adapter overrides it together with its receipt reconciliation and
+`subscriptionRenewalContext` / `stopSubscriptionRenewal` operations in the owning
+startup service. Unknown recurring providers fail explicitly and remain pending.
+
+### Provider-managed subscription periods
+
+Stripe owns scheduled card debits. The application composes the effective
+Payment Intent service with `setProviderPeriodResolver`; the higher consumer
+owns the local subscription contract and period Orders. Billing passes an
+authenticated receipt containing the original contract Payment Intent,
+provider subscription and invoice IDs, currency, amount, and subscription line
+coverage. The resolver returns the Payment Intent belonging to that exact
+period. Initial receipts retain the original intent; renewals use a new one.
+Billing does not import Ecommerce or RBAC.
+
+The higher consumer can prepare the next period's Intent and its linked draft
+Stripe Invoice before the provider debit. The draft has no `providerId` or
+payment URL. A receipt adopts that same Invoice, binds its remote ID and
+settles it through the existing atomic settlement service. Amounts and existing
+associations must match; retries cannot replace a different invoice or intent.
+An unbound prepared Invoice that was closed by cancellation cannot be replaced
+by a new Invoice when a delayed provider receipt arrives; it requires payment
+reconciliation.
+An unresolved or out-of-order receipt remains retryable without attaching it to
+the original intent. Prorations, subscription updates and ambiguous coverage
+require reconciliation instead of creating a fulfillment period.
+
+`reconcileSubscriptionPeriods({ id })` reads Stripe's subscription invoices and
+uses the same receipt path after a missed notification. Checking an unbound
+draft period Invoice also runs this recovery using the original contract ID
+saved in `checkoutMetadata.providerContractPaymentIntentId`. Both operations
+read the provider outside database transactions. Already paid local invoices,
+including historical invoices of legacy subscriptions, keep their associations.
+Their receipts include a trusted `recordedPaymentIntentId`; the higher consumer
+can recover the accepted legacy period's provider schedule from that exact
+invoice without changing its paid history or accepted period dates.
+Neither recovery nor checkout for a prepared successor submits another charge.
+
+For the initial Stripe subscription,
+`checkoutMetadata.providerRecurringAmount` contains the recurring subtotal.
+The remaining first-only amount becomes an initial invoice item; Stripe's
+recurring price excludes it. Cancellation from a successor uses its trusted
+original contract ID and preserves all paid period records. The initial
+subscription Invoice can settle without a period resolver. Every unresolved
+renewal requires one, including when polling an open provider Invoice; a missing
+resolver fails before creating, associating or settling that renewal. Already
+settled legacy receipts remain read-only when no resolver is composed.
 
 ## PayKeeper webhook identifiers
 

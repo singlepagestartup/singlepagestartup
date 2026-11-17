@@ -178,6 +178,33 @@ describe("Given: the framework sensitive-route list", () => {
   });
 });
 
+describe("private commerce and Subject order routes", () => {
+  const service = createService();
+  it.each([
+    ["GET", "/api/billing/payment-intents"],
+    ["HEAD", "/api/billing/payment-intents/count"],
+    ["GET", "/api/billing/invoices/invoice-id"],
+    ["GET", "/api/billing/payment-intents-to-invoices"],
+    ["POST", "/api/billing/payment-intents/intent-id/check"],
+    ["GET", "/api/ecommerce/orders/order-id/extended"],
+    ["PATCH", "/api/ecommerce/orders-to-billing-module-payment-intents/bulk"],
+    ["GET", "/api/rbac/subjects-to-ecommerce-module-orders"],
+  ])("requires an explicit role for %s %s", async (method, path) => {
+    await expect(service.isSensitiveRoute(path, method, path)).resolves.toBe(
+      true,
+    );
+  });
+  it.each([
+    ["GET", "/api/rbac/subjects/subject-id/ecommerce-module/orders"],
+    ["POST", "/api/billing/payment-intents/stripe/webhook"],
+    ["POST", "/api/ecommerce/stores-to-products/offer-id/quote"],
+  ])("keeps the regular permission flow for %s %s", async (method, path) => {
+    await expect(service.isSensitiveRoute(path, method, path)).resolves.toBe(
+      false,
+    );
+  });
+});
+
 describe("public Social reads", () => {
   const demoId = "72f56db2-4eb1-4798-a302-c138f89da53a";
   const demo = "/api/social/chats/" + demoId;
@@ -225,4 +252,57 @@ describe("public Social reads", () => {
       );
     },
   );
+});
+
+describe("catalogue actor write boundaries", () => {
+  const service = createService();
+  const id = "00000000-0000-4000-8000-000000000001";
+  it.each(["POST", "PATCH", "PUT", "DELETE"])(
+    "requires roles for raw catalogue %s including ownership grants",
+    async (method) => {
+      for (const entity of [
+        "stores",
+        "products",
+        "attributes",
+        "attribute-keys",
+        "stores-to-products",
+        "offers-to-offers",
+        "stores-to-attributes",
+        "products-to-attributes",
+        "stores-to-products-to-attributes",
+        "attribute-keys-to-attributes",
+        "attributes-to-billing-module-currencies",
+      ]) {
+        for (const suffix of ["", `/${id}`, "/bulk", "/find-or-create"]) {
+          await expect(
+            service.isSensitiveRoute(
+              `/api/ecommerce/${entity}${suffix}`,
+              method,
+            ),
+          ).resolves.toBe(true);
+        }
+        await expect(
+          service.isSensitiveRoute(`/api/ecommerce/${entity}`, "GET"),
+        ).resolves.toBe(false);
+      }
+      for (const entity of ["stores", "products", "orders"]) {
+        await expect(
+          service.isSensitiveRoute(
+            `/api/rbac/subjects-to-ecommerce-module-${entity}/${id}`,
+            method,
+          ),
+        ).resolves.toBe(true);
+      }
+    },
+  );
+  it("preserves public offer quotes and address suggestions", async () => {
+    for (const operation of ["quote", "address-suggestions"]) {
+      await expect(
+        service.isSensitiveRoute(
+          `/api/ecommerce/stores-to-products/${id}/${operation}`,
+          "POST",
+        ),
+      ).resolves.toBe(false);
+    }
+  });
 });

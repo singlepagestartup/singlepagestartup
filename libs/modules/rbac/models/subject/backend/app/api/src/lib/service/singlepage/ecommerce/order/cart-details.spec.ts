@@ -29,6 +29,9 @@ it("keeps an unavailable offer in its own row while quoting the remaining legacy
     ecommerceModuleCartQuote: jest.fn().mockResolvedValue([quote]),
     ecommerceModule: {
       order: {
+        fulfillmentQuoteOptions: jest
+          .fn()
+          .mockResolvedValue({ fulfilledLineIds: [] }),
         findByIdCartDetails: jest.fn().mockResolvedValue({
           lines: [
             {
@@ -112,6 +115,9 @@ it("reports the same incomplete delivery once when both total and offer quote ex
     ]),
     ecommerceModule: {
       order: {
+        fulfillmentQuoteOptions: jest
+          .fn()
+          .mockResolvedValue({ fulfilledLineIds: [] }),
         findByIdCartDetails: jest.fn().mockResolvedValue({
           lines: [line],
           unpriced: [

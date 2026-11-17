@@ -111,6 +111,8 @@ properties:
         type: boolean
       requiredDelivery:
         type: boolean
+        deprecated: true
+        description: Legacy setting. Configured receipt methods determine fulfillment selection.
       receiptMethod:
         type: string
         enum:
@@ -118,12 +120,6 @@ properties:
           - pickup
           - electronic
       regionIds:
-        maxItems: 100
-        type: array
-        items:
-          type: string
-          minLength: 1
-      pickupPointIds:
         maxItems: 100
         type: array
         items:

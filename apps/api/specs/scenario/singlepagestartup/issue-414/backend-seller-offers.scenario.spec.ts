@@ -1,10 +1,12 @@
 import { randomUUID } from "node:crypto";
 import { sign } from "hono/jwt";
-import qs from "qs";
 import { api as subjectApi } from "@sps/rbac/models/subject/sdk/server";
 import { api as identityApi } from "@sps/rbac/models/identity/sdk/server";
 import { api as subjectsToIdentitiesApi } from "@sps/rbac/relations/subjects-to-identities/sdk/server";
 import { api as permissionApi } from "@sps/rbac/models/permission/sdk/server";
+import { api as roleApi } from "@sps/rbac/models/role/sdk/server";
+import { api as subjectsToRolesApi } from "@sps/rbac/relations/subjects-to-roles/sdk/server";
+import { api as rolesToPermissionsApi } from "@sps/rbac/relations/roles-to-permissions/sdk/server";
 import { api as storeApi } from "@sps/ecommerce/models/store/sdk/server";
 import { api as productApi } from "@sps/ecommerce/models/product/sdk/server";
 import { api as offerApi } from "@sps/ecommerce/relations/stores-to-products/sdk/server";
@@ -32,6 +34,7 @@ interface IActor {
   email: string;
   options: { headers: Record<string, string> };
 }
+const actors = new Map<string, string>();
 const cleanup: (() => Promise<unknown>)[] = [];
 const attributes = new Set<string>();
 const newKeys = new Set<string>();
@@ -49,7 +52,25 @@ async function create(
   data: Record<string, unknown>,
   options: { headers: Record<string, string> } = operator(),
 ) {
-  const record = await api.create({ data, options });
+  const subjectId = actors.get(options.headers.Authorization);
+  const entity =
+    api === storeApi
+      ? "stores"
+      : api === productApi
+        ? "products"
+        : api === offerApi
+          ? "stores-to-products"
+          : api === linksApi
+            ? "offers-to-offers"
+            : undefined;
+  const record =
+    subjectId && entity
+      ? await subjectApi.ecommerceModuleCatalogMutation({
+          id: subjectId,
+          data: { entity, method: "POST", data },
+          options,
+        })
+      : await api.create({ data, options });
   cleanup.unshift(async () => {
     try {
       await api.delete({ id: record.id, options: operator() });
@@ -83,6 +104,7 @@ async function actor(name: string): Promise<IActor> {
     getRequiredEnv("RBAC_JWT_SECRET"),
     "HS256",
   );
+  actors.set(`Bearer ${token}`, person.id);
   return {
     id: person.id,
     email: `${name}-${suffix}@example.test`,
@@ -151,6 +173,28 @@ async function offer(
 }
 
 beforeAll(async () => {
+  for (const [method, operation] of [
+    ["GET", "catalogue-context"],
+    ["POST", "offers"],
+    ["POST", "catalogue-attributes"],
+    ["POST", "catalogue-mutations"],
+  ]) {
+    const path = `/api/rbac/subjects/[rbac.subjects.id]/ecommerce-module/${operation}`;
+    const installed = await permissionApi.find({
+      params: {
+        filters: {
+          and: [
+            { column: "method", method: "eq", value: method },
+            { column: "path", method: "eq", value: path },
+          ],
+        },
+      },
+      options: operator(),
+    });
+    if (!installed?.length) {
+      await create(permissionApi, { type: "HTTP", method, path });
+    }
+  }
   const keys = await keyApi.find({ options: operator() });
   if (!keys) {
     throw new Error("Fixture attribute keys did not return a collection");
@@ -405,58 +449,37 @@ it("reuses mixed-currency checkout invoices and resumes only USD after local RUB
   const intentIds = [
     ...new Set(attempts.map((attempt) => attempt.billingModulePaymentIntentId)),
   ];
-  const privateIntentFields = [
-    "checkoutProvider",
-    "checkoutCurrencyId",
-    "checkoutMetadata",
-    "checkoutDispatchState",
-    "checkoutDispatchStartedAt",
-  ];
-  const intentQuery = qs.stringify({
-    filters: { and: [{ column: "id", method: "inArray", value: intentIds }] },
-  });
+  // Buyers read invoice shares and status through their own Subject order history.
   for (const headers of [
     undefined,
     buyer.options.headers,
-    operator().headers,
+    seller.options.headers,
   ]) {
-    for (const target of [
-      `/api/billing/payment-intents?${intentQuery}`,
+    for (const path of [
+      "/api/billing/payment-intents",
+      "/api/billing/payment-intents/count",
       `/api/billing/payment-intents/${intentIds[0]}`,
+      `/api/billing/invoices/${invoices[0].id}`,
+      "/api/billing/payment-intents-to-invoices",
+      "/api/ecommerce/orders",
+      "/api/ecommerce/orders-to-products",
+      "/api/ecommerce/orders-to-billing-module-payment-intents/count",
+      `/api/ecommerce/orders/${orderIds[0]}/extended`,
     ]) {
-      const response = await fetch(`${getApiUrl()}${target}`, { headers });
-      expect(response.status).toBe(200);
-      expect(response.headers.get("Cache-Control")).toBe("private, no-store");
-      const body = (await response.json()) as {
-        data: Record<string, unknown> | Record<string, unknown>[];
-      };
-      const records = Array.isArray(body.data) ? body.data : [body.data];
-      expect(records.length).toBe(target.includes("?") ? 2 : 1);
-      for (const record of records) {
-        expect(intentIds).toContain(record.id);
-        expect(record).toEqual(
-          expect.objectContaining({
-            amount: expect.any(Number),
-            status: expect.any(String),
-            type: "one_off",
-          }),
-        );
-        for (const field of privateIntentFields) {
-          expect(record).not.toHaveProperty(field);
-        }
-      }
+      const response = await fetch(`${getApiUrl()}${path}`, { headers });
+      expect([401, 403]).toContain(response.status);
     }
   }
-  for (const headers of [undefined, buyer.options.headers]) {
-    const query = qs.stringify({
-      filters: { and: [{ column: "checkoutMetadata", method: "isNotNull" }] },
-    });
-    const response = await fetch(
-      `${getApiUrl()}/api/billing/payment-intents/count?${query}`,
-      { headers },
-    );
-    expect(response.status).toBe(400);
-  }
+  const otherSubject = await fetch(
+    `${getApiUrl()}/api/rbac/subjects/${buyer.id}/ecommerce-module/orders?includePurchaseDetails=true`,
+    { headers: seller.options.headers },
+  );
+  expect([400, 401, 403]).toContain(otherSubject.status);
+  const operatorIntent = await intentApi.findById({
+    id: intentIds[0],
+    options: operator(),
+  });
+  expect(operatorIntent?.id).toBe(intentIds[0]);
   const repeatedCheckout = await subjectApi.ecommerceModuleOrderCheckout({
     id: buyer.id,
     options: buyer.options,
@@ -468,57 +491,6 @@ it("reuses mixed-currency checkout invoices and resumes only USD after local RUB
   expect(reservationState(await readAttempts())).toEqual(
     reservationState(attempts),
   );
-  for (const target of [
-    "/api/ecommerce/orders",
-    "/api/ecommerce/orders-to-products",
-    "/api/ecommerce/orders-to-billing-module-payment-intents",
-    "/api/ecommerce/orders-to-billing-module-payment-intents/count",
-    `/api/ecommerce/orders-to-billing-module-payment-intents/${attempts[0].id}`,
-  ]) {
-    expect((await fetch(`${getApiUrl()}${target}`)).status).toBe(401);
-    expect(
-      (
-        await fetch(`${getApiUrl()}${target}`, {
-          headers: buyer.options.headers,
-        })
-      ).status,
-    ).toBe(403);
-  }
-  expect(
-    (
-      await fetch(
-        `${getApiUrl()}/api/ecommerce/orders-to-billing-module-payment-intents/bulk`,
-        {
-          method: "PATCH",
-          headers: {
-            ...buyer.options.headers,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ data: [], operator: true }),
-        },
-      )
-    ).status,
-  ).toBe(403);
-  const ownedOrder = await fetch(
-    `${getApiUrl()}/api/ecommerce/orders/${orderIds[0]}/extended`,
-    { headers: buyer.options.headers },
-  );
-  expect(ownedOrder.status).toBe(200);
-  expect(ownedOrder.headers.get("Cache-Control")).toBe("private, no-store");
-  const ownedBody = (await ownedOrder.json()) as { data: { id: string } };
-  expect(ownedBody.data.id).toBe(orderIds[0]);
-  expect(
-    (await fetch(`${getApiUrl()}/api/ecommerce/orders/${orderIds[0]}/extended`))
-      .status,
-  ).toBe(401);
-  expect(
-    (
-      await fetch(
-        `${getApiUrl()}/api/ecommerce/orders/${orderIds[0]}/extended`,
-        { headers: seller.options.headers },
-      )
-    ).status,
-  ).toBe(403);
   const snapshots = attempts.map((attempt) => attempt.purchaseSnapshot!);
   expect(snapshots.every((snapshot) => snapshot?.version === 1)).toBe(true);
   const byOrder = new Map<string, typeof snapshots>();
@@ -573,9 +545,14 @@ it("reuses mixed-currency checkout invoices and resumes only USD after local RUB
         .map((attempt) => attempt.orderId),
     ),
   ]).toEqual(usdOrderIds);
-  await offerApi.update({
-    id: main.offer.id,
-    data: { variant: "hidden" },
+  await subjectApi.ecommerceModuleCatalogMutation({
+    id: seller.id,
+    data: {
+      entity: "stores-to-products",
+      method: "PATCH",
+      recordId: main.offer.id,
+      data: { variant: "hidden" },
+    },
     options: seller.options,
   });
   await expect(
@@ -665,7 +642,7 @@ it("reuses mixed-currency checkout invoices and resumes only USD after local RUB
   ).toBe("open");
 });
 
-it("creates offers through seller SDKs, quotes for guests/buyers and atomically switches 8,000 ₽ to 7,400 ₽", async () => {
+it("quotes the same contractor services for guests and buyers when the retail store changes", async () => {
   const a = await actor("seller-a");
   const b = await actor("seller-b");
   const buyer = await actor("buyer");
@@ -735,34 +712,34 @@ it("creates offers through seller SDKs, quotes for guests/buyers and atomically 
     storeId: storeB.id,
     productId: deliveryA.product.id,
     prices: [{ currencyId: rub.id, amount: "500" }],
-    settings: { receiptMethod: "shipping" },
+    settings: { receiptMethod: "pickup" },
   });
   const assemblyB = await offer(b, {
     storeId: storeB.id,
     productId: assemblyA.product.id,
     prices: [{ currencyId: rub.id, amount: "1500" }],
   });
-  for (const [seller, main, delivery, assembly] of [
-    [a, mainA, deliveryA, assemblyA],
-    [b, mainB, deliveryB, assemblyB],
+  for (const [delivery, assembly] of [
+    [deliveryA, assemblyA],
+    [deliveryB, assemblyB],
   ] as const) {
     await create(
       linksApi,
       {
-        sourceOfferId: main.offer.id,
+        sourceOfferId: mainA.offer.id,
         targetOfferId: delivery.offer.id,
         variant: "delivery",
       },
-      seller.options,
+      a.options,
     );
     await create(
       linksApi,
       {
-        sourceOfferId: main.offer.id,
+        sourceOfferId: mainA.offer.id,
         targetOfferId: assembly.offer.id,
         variant: "add-on",
       },
-      seller.options,
+      a.options,
     );
   }
   const destination = {
@@ -782,10 +759,6 @@ it("creates offers through seller SDKs, quotes for guests/buyers and atomically 
   const selectionB = {
     ...selectionA,
     offerId: mainB.offer.id,
-    services: [
-      { offerId: deliveryB.offer.id, quantity: 1 },
-      { offerId: assemblyB.offer.id, quantity: 1 },
-    ],
   };
   const publicResponse = await fetch(
     `${getApiUrl()}/api/ecommerce/stores-to-products/${mainA.offer.id}/quote`,
@@ -814,12 +787,35 @@ it("creates offers through seller SDKs, quotes for guests/buyers and atomically 
     "1000.00",
     "2000.00",
   ]);
-  expect((await offerApi.quote({ data: selectionB })).amount).toBe("7400.00");
+  const otherStore = await offerApi.quote({ data: selectionB });
+  expect(otherStore.amount).toBe("8400.00");
+  expect(
+    new Set(otherStore.serviceOptions.map((option) => option.offerId)),
+  ).toEqual(new Set(guest.serviceOptions.map((option) => option.offerId)));
+  const automatic = await offerApi.quote({
+    data: { ...selectionB, destination: {}, services: [] },
+  });
+  expect(automatic.storeId).toBe(storeB.id);
+  expect(automatic.destination).toEqual({});
+  expect(automatic.selectedServices).toEqual([
+    expect.objectContaining({ offerId: deliveryB.offer.id, quantity: 1 }),
+  ]);
+  expect(automatic.amount).toBe("5900.00");
+  const pickupAtA = await offerApi.quote({
+    data: {
+      ...selectionA,
+      destination: {},
+      services: automatic.selectedServices,
+    },
+  });
+  expect(pickupAtA.storeId).toBe(storeA.id);
+  expect(pickupAtA.destination).toEqual({});
+  expect(pickupAtA.amount).toBe("5500.00");
   const dollars = await offerApi.quote({
     data: { ...selectionA, currencyId: usd.id, services: [] },
   });
-  expect(dollars.amount).toBe("60.00");
-  expect(dollars.currencyIds).toContain(usd.id);
+  expect(dollars.amount).toBeNull();
+  expect(dollars.currencyIds).not.toContain(usd.id);
   const incompatible = await offerApi.quote({
     data: {
       ...selectionA,
@@ -893,7 +889,7 @@ it("creates offers through seller SDKs, quotes for guests/buyers and atomically 
     data: { action: "preview", lineId: primary.id, selections: [selectionB] },
   });
   expect(preview.applied).toBe(false);
-  expect(preview.quotes[0].amount).toBe("7400.00");
+  expect(preview.quotes[0].amount).toBe("8400.00");
   expect(preview.comparisonQuotes?.[0].amount).toBe("8000.00");
   expect(
     (await linesApi.findById({ id: primary.id, options: operator() }))?.offerId,
@@ -924,7 +920,7 @@ it("creates offers through seller SDKs, quotes for guests/buyers and atomically 
   }
   expect(updated).toHaveLength(3);
   expect(new Set(updated.map((line) => line.offerId))).toEqual(
-    new Set([mainB.offer.id, deliveryB.offer.id, assemblyB.offer.id]),
+    new Set([mainB.offer.id, deliveryA.offer.id, assemblyA.offer.id]),
   );
   await subjectApi.ecommerceModuleCatalogAttributeSet({
     id: a.id,
@@ -944,4 +940,105 @@ it("creates offers through seller SDKs, quotes for guests/buyers and atomically 
       expect.objectContaining({ code: "insufficient_stock", available: 0 }),
     ]),
   );
+});
+
+it("requires Subject mutations for an explicitly granted admin and retains held-stock checks", async () => {
+  const admin = await actor("catalogue-raw-admin");
+  const existing = await roleApi.find({
+    params: {
+      filters: { and: [{ column: "slug", method: "eq", value: "admin" }] },
+    },
+    options: operator(),
+  });
+  const role =
+    existing?.[0] ??
+    (await create(roleApi, { slug: "admin", title: "Administrator" }));
+  await create(subjectsToRolesApi, { subjectId: admin.id, roleId: role.id });
+  const store = await create(storeApi, {
+    slug: `issue414-raw-admin-${suffix}`,
+  });
+  const currency = await create(currencyApi, {
+    slug: `issue414-raw-admin-currency-${suffix}`,
+    title: "Admin test currency",
+    symbol: "A",
+  });
+  const created = await offer(admin, {
+    storeId: store.id,
+    product: {
+      title: { en: "Admin catalogue fixture" },
+      kind: "physical",
+      formula: "unit_price * quantity",
+    },
+    prices: [{ currencyId: currency.id, amount: "10" }],
+    stockQuantity: 3,
+  });
+  const links = await offerAttributesApi.find({
+    params: {
+      filters: {
+        and: [
+          {
+            column: "storesToProductsId",
+            method: "eq",
+            value: created.offer.id,
+          },
+        ],
+      },
+    },
+    options: operator(),
+  });
+  const values = await Promise.all(
+    (links ?? []).map((link) =>
+      attributeApi.findById({ id: link.attributeId, options: operator() }),
+    ),
+  );
+  const stock = values.find(
+    (attribute) => attribute?.adminTitle === "stock_quantity",
+  );
+  expect(stock).toBeDefined();
+  const order = await create(orderApi, {});
+  const intent = await create(intentApi, { amount: 1 });
+  await create(attemptsApi, {
+    orderId: order.id,
+    billingModulePaymentIntentId: intent.id,
+    offerId: created.offer.id,
+    reservationQuantity: 2,
+    reservationStatus: "held",
+  });
+  const permission = await create(permissionApi, {
+    type: "HTTP",
+    method: "PATCH",
+    path: `/api/ecommerce/attributes/${stock!.id}`,
+  });
+  await create(rolesToPermissionsApi, {
+    roleId: role.id,
+    permissionId: permission.id,
+  });
+  await expect(
+    attributeApi.update({
+      id: stock!.id,
+      data: { number: "1" },
+      options: admin.options,
+    }),
+  ).rejects.toThrow("This operation requires the operator credential");
+  expect(
+    (await attributeApi.findById({ id: stock!.id, options: operator() }))
+      ?.number,
+  ).toBe("3");
+  const mutate = (number: string) =>
+    subjectApi.ecommerceModuleCatalogMutation({
+      id: admin.id,
+      options: admin.options,
+      data: {
+        entity: "attributes",
+        method: "PATCH",
+        recordId: stock!.id,
+        data: { number },
+      },
+    });
+  await expect(mutate("1")).rejects.toThrow("outstanding reservations");
+  await mutate("2");
+  expect(
+    (await attributeApi.findById({ id: stock!.id, options: operator() }))
+      ?.number,
+  ).toBe("2");
 });

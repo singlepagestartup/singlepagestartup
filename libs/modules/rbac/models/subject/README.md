@@ -28,7 +28,7 @@ former `ecommerce-module-product-cart-default` and
 compositions should select the corresponding `me` variant and pass
 `dataSource="props"` when they already own the current Subject.
 
-When a visitor signs in to an existing account by password, wallet, or OAuth, the API merges the open guest cart into the account cart using the visitor’s access token. The account cart keeps distinct products from both sessions. For a Product in both carts, the most recent buyer selection supplies the complete group of offers, split orders, destinations and child services. An exact timestamp tie keeps the account group. History and orders with a payment attempt keep their owners.
+When a visitor signs in to an existing account by password, wallet, or OAuth, the API merges the open guest cart into the account cart using the visitor’s access token. The account cart keeps distinct products from both sessions. For a Product in both carts, the most recent buyer selection supplies the orders for that product, their offers, destinations and child services. An exact timestamp tie keeps the account group. History and orders with a payment attempt keep their owners.
 
 ### Offers in an open cart
 
@@ -48,8 +48,8 @@ editable lines. Opening a cart does not reserve stock.
 `POST /api/rbac/subjects/:id/ecommerce-module/orders/:orderId/selection` accepts
 `action: "save" | "preview" | "apply"`, the primary `lineId`, and `selections`. Each selection
 contains `offerId`, quantity, `currencyId`, destination and selected service offer
-IDs with quantities. One selection replaces that Order's choice. Multiple
-selections split its original quantity into independent Orders. The cart uses
+IDs with quantities. Each request accepts one selection and one destination for
+the entire quantity. Previously saved orders remain individually editable. The cart uses
 `save` when a buyer changes a service, store, quantity, currency or destination.
 The server quotes that selection, checks `expectedSelectionUpdatedAt` and writes
 the order in one request. The response contains the itemized quotes and the
@@ -70,9 +70,11 @@ IDs when the selection still uses them.
 ### Pricing before cart creation
 
 Prices and compatible currencies come from the selected offer's quote, including
-its chosen services. A draft may retain an incomplete delivery, address or pickup
-choice; it cannot proceed to payment until those fields are complete. Stock,
-configuration and incompatible-currency issues reject the add before writes.
+its chosen services. For shipping, a buyer can add the product to the cart
+and enter the delivery address there. For pickup, the primary offer determines the store. Payment requires a complete quote.
+If all configured delivery methods are unavailable, the server rejects the
+purchase before creating the order. Stock, configuration and currency checks
+also run before the order is created.
 The product form quotes the selected offer, quantity, currency, services and
 destination. Add to cart and one-step checkout submit the same selection and
 quote version. One-step checkout requires a complete quote and pays for that
@@ -84,17 +86,19 @@ The quantity, total and single-order handlers retain their ownership checks.
 Foreign and unknown Order IDs return the same 403 before private data is read.
 
 The product editor and cart drawer group delivery, pickup and electronic receipt
-as a single fulfillment selection. Add-ons support multiple selections. An
-optional fulfillment group includes an explicit empty choice. The server rejects
-multiple fulfillment methods before writing a cart. Product and service quantity
+as a single fulfillment selection. The server preserves a valid selected method
+and chooses the cheapest eligible method when the buyer has not chosen one.
+A sole paid method is included in the quote. A product without configured
+methods uses the store's ordinary fulfillment. Add-ons support multiple
+selections. Product and service quantity
 controls support typing, plus/minus buttons and arrow keys within their limits.
 The compact price displays the server's `unitAmount`. The receipt includes
 quantity totals and selected services.
 
-For a saved shipping order with at least two items, the shipping card offers a
-second destination. The buyer assigns a quantity to that address and explicitly
-splits the order. Each resulting order has its own delivery calculation. Selecting
-pickup or electronic receipt clears the pending split.
+Retail offers for the same product share the product's delivery methods and
+add-ons. Changing the selling store preserves eligible service offers, their
+quantities and the destination. The server recalculates the receipt for the
+new retail offer. A service can have a different provider from the seller.
 
 ### Current-Subject cart reads
 
@@ -1156,8 +1160,9 @@ A signed-in Subject creates an offer through `ecommerceModuleOfferCreate`
 (`POST /:id/ecommerce-module/offers`). The operation accepts either an existing
 Product or a new Product, its formula, prices, stock and offer settings. It assigns
 new ownership from the caller and writes the graph in one transaction. A Store
-owner can sell another owner's Product without gaining permission to edit its
-shared description or formula. Administrators can manage either record.
+owner can sell another owner's Product. The Product owner and administrators
+manage its shared description, formula, delivery methods and add-ons. The
+service offer's Store owner controls its price and provider.
 
 `ecommerceModuleCatalogAttributeSet` creates or updates one owned Store rate,
 Product formula or offer price/stock. Stock values are exact non-negative
@@ -1165,6 +1170,32 @@ integers; a missing value means unlimited stock. Updates and removals lock the
 relevant offers and retain outstanding reservations. Used offers stop new sales
 with `variant="hidden"`; their invoices and purchase history remain available.
 Physical deletion of a referenced offer is refused.
+
+`ecommerceModuleCatalogMutation` creates, updates or deletes a catalogue model
+or relation through `POST /:id/ecommerce-module/catalogue-mutations`. Its input
+names the entity, operation and record ID; record values follow that entity's
+SDK schema. Store and Product creation assigns the current Subject as owner.
+Ownership grants require an administrator. All seller routes pass the normal
+permission check, require a signed-in caller matching `:id`, then verify
+catalogue ownership in the Subject service. Every end user, including an
+administrator with a wildcard or explicit raw write grant, uses Subject
+catalogue operations. Raw catalogue writes require the operator credential.
+Public reads, offer quotes and address suggestions retain their existing access.
+
+The operator-only rule covers `POST`, `PATCH`, `PUT` and `DELETE` for raw
+`stores`, `products`, `attributes`, `attribute-keys`, `stores-to-products`,
+`offers-to-offers` and the Store/Product/offer attribute relations, including
+attribute-key and currency links. It also covers raw
+`subjects-to-ecommerce-module-stores`, `subjects-to-ecommerce-module-products`
+and `subjects-to-ecommerce-module-orders` writes. Collection, item, bulk and
+find-or-create paths follow the same rule.
+
+The Host admin composition wraps Ecommerce and RBAC admin views in the RBAC
+catalogue-admin Widget.
+Its explicit mutation provider sends catalogue form saves and row deletions
+through Subject operations, including administrator edits to held stock.
+The owning Ecommerce SDK hooks retain their query-cache updates. Generic SDKs
+outside that composition retain the operator transport for framework tools.
 
 Admin v2 exposes creation in Ecommerce → Product and Store → Create offer.
 “Edit existing offers, rates and services” edits prices, stock/unlimited,
@@ -1174,8 +1205,16 @@ form and mutations; Host supplies it to the Ecommerce admin through explicit
 slots. The existing Store–Product admin form also edits configuration and
 packaging without changing the offer endpoints.
 
-The raw Order collection/count and raw order-line/payment-attempt registries
-require administrator or operator access. Exact owned Order reads are private
-and uncached; checkout, cart and purchase history use authenticated Subject
-operations. Raw registry data, including purchase destinations and snapshots,
-is never a public catalogue response.
+Buyers read cart and payment details through `GET /api/rbac/subjects/:id/ecommerce-module/orders`.
+The purchase view requests `includePurchaseDetails=true` with a history filter.
+It returns each owned order's charges, invoice status and available payment link.
+A shared invoice total and the IDs of its orders are visible only when all billed
+orders belong to that Subject. The raw Billing and Ecommerce registries require
+an explicit role grant or operator credentials.
+
+Each subscription period has its own Order, PaymentIntent and Invoice. In the
+last 24 hours of paid coverage, Subject prepares the next order with its
+recurring services. Stripe collects scheduled payments on the original
+provider subscription. Other payment methods use the new order's payment
+instructions. Purchase history includes the prepared period and its payment
+status.

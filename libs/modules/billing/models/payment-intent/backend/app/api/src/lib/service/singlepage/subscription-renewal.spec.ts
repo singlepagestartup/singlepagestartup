@@ -124,6 +124,25 @@ it("propagates provider failures so the pending cancellation can be retried", as
   ).rejects.toThrow("Stripe unavailable");
 });
 
+it("cancels the original provider contract from a successor intent's trusted dispatch context", async () => {
+  const service = fixture();
+  jest.spyOn(service, "findById").mockResolvedValue({
+    id: "intent",
+    type: "subscription",
+    amount: 100,
+    checkoutMetadata: { providerContractPaymentIntentId: "root-intent" },
+  } as any);
+  mockRetrieveSubscription.mockResolvedValue({
+    metadata: { paymentIntentId: "root-intent" },
+    status: "active",
+    cancel_at_period_end: false,
+  });
+  await service.stopSubscriptionRenewal({ id: "intent" });
+  expect(mockUpdateSubscription).toHaveBeenCalledWith("sub_paid", {
+    cancel_at_period_end: true,
+  });
+});
+
 it("does not call Stripe while an Order or Subject transaction is open", async () => {
   await expect(
     withConsistencyDatabase({} as any, () =>

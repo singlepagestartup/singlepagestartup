@@ -25,6 +25,10 @@ export const ecommerceCartSelectionSchema = z
                   .optional(),
               })
               .strict()
+              .transform(
+                ({ pickupPointId: _legacyPickupPointId, ...destination }) =>
+                  destination,
+              )
               .optional(),
             services: z
               .array(
@@ -41,8 +45,8 @@ export const ecommerceCartSelectionSchema = z
           .strict(),
       )
       .min(1)
-      .max(16),
-    expectedVersions: z.array(z.string().min(1)).max(16).optional(),
+      .max(1),
+    expectedVersions: z.array(z.string().min(1)).max(1).optional(),
     expectedSelectionUpdatedAt: z.string().optional(),
   })
   .strict();

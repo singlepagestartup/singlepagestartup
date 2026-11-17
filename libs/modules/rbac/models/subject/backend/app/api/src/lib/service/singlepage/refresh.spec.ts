@@ -11,6 +11,7 @@
 const mockSubjectFindById = jest.fn();
 
 jest.mock("@sps/shared-utils", () => ({
+  ...jest.requireActual("@sps/shared-utils"),
   RBAC_SECRET_KEY: "test-rbac-secret",
   RBAC_JWT_SECRET: "test-jwt-secret",
   RBAC_JWT_TOKEN_LIFETIME_IN_SECONDS: 3600,

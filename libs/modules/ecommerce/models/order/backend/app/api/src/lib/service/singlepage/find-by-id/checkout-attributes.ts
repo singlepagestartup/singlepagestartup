@@ -157,7 +157,7 @@ export class Service {
       },
     });
 
-    const intervalAttributeKey = intervalAttributeKeys?.[0];
+    const intervalAttributeKeyIds = intervalAttributeKeys.map((key) => key.id);
 
     const priceAttributeKeyIds = priceAttributeKeys.map((key) => key.id);
 
@@ -293,7 +293,7 @@ export class Service {
       const productIntervals: IAttribute[] = [];
 
       for (const productToAttribute of productToAttributes) {
-        if (!intervalAttributeKey) {
+        if (!intervalAttributeKeyIds.length) {
           continue;
         }
 
@@ -308,8 +308,8 @@ export class Service {
                 },
                 {
                   column: "attributeKeyId",
-                  method: "eq",
-                  value: intervalAttributeKey.id,
+                  method: "inArray",
+                  value: intervalAttributeKeyIds,
                 },
               ],
             },
@@ -342,7 +342,13 @@ export class Service {
       }
 
       // Billing interval identifiers use the canonical English value, not UI copy.
-      const nextIntervalRaw = productIntervals[0].string?.en;
+      const intervalValues = new Set(
+        productIntervals.map((attribute) => attribute.string?.en),
+      );
+      if (intervalValues.size > 1) {
+        throw new Error("Internal error. Product has multiple intervals");
+      }
+      const nextIntervalRaw = intervalValues.values().next().value;
 
       if (nextIntervalRaw && !isSupportedOrderInterval(nextIntervalRaw)) {
         throw new Error(

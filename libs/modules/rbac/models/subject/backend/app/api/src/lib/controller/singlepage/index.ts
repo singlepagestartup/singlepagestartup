@@ -145,6 +145,13 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
     });
     this.bindHttpRoutes([
       {
+        method: "POST",
+        path: "/:id/ecommerce-module/catalogue-mutations",
+        handler: (c) =>
+          new EcommerceCatalog(this.service, "mutation").execute(c),
+        middlewares: [new RequestSubjectIdOwner().init({ requireJwt: true })],
+      },
+      {
         method: "GET",
         path: "/:id/ecommerce-module/catalogue-context",
         handler: (c) =>

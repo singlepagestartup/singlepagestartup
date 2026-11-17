@@ -680,3 +680,153 @@ describe("roleless Chat access", () => {
     },
   );
 });
+
+describe("Subject-only catalogue mutations", () => {
+  const id = "00000000-0000-4000-8000-000000000414";
+  it.each(["explicit", "wildcard"])(
+    "refuses raw catalogue and ownership mutations even with an %s admin grant",
+    async (grant) => {
+      const permissionService = createPermissionService(
+        grant === "wildcard"
+          ? {
+              rootPermission: {
+                id: "catalogue-admin-root",
+                method: "*",
+                path: "*",
+              },
+            }
+          : { permission: { id: "catalogue-admin-explicit" } },
+      );
+      const service = new Service(
+        permissionService as any,
+        {
+          find: jest
+            .fn()
+            .mockResolvedValue([{ roleId: "catalogue-role-admin" }]),
+        } as any,
+        {
+          find: jest
+            .fn()
+            .mockResolvedValue([{ roleId: "catalogue-role-admin" }]),
+        } as any,
+        createSubjectRepository({ tokensValidAfter: null }) as any,
+      );
+      for (const resource of [
+        "/api/ecommerce/stores",
+        "/api/ecommerce/products",
+        "/api/ecommerce/attributes",
+        "/api/ecommerce/attribute-keys",
+        "/api/ecommerce/stores-to-products",
+        "/api/ecommerce/offers-to-offers",
+        "/api/ecommerce/stores-to-attributes",
+        "/api/ecommerce/products-to-attributes",
+        "/api/ecommerce/stores-to-products-to-attributes",
+        "/api/ecommerce/attribute-keys-to-attributes",
+        "/api/ecommerce/attributes-to-billing-module-currencies",
+        "/api/rbac/subjects-to-ecommerce-module-stores",
+        "/api/rbac/subjects-to-ecommerce-module-products",
+        "/api/rbac/subjects-to-ecommerce-module-orders",
+      ]) {
+        for (const method of ["POST", "PATCH", "PUT", "DELETE"]) {
+          for (const suffix of ["", `/${id}`, "/bulk", "/find-or-create"]) {
+            await expect(
+              service.execute({
+                permission: { type: "HTTP", method, route: resource + suffix },
+                authorization: { value: "catalogue-admin-jwt" },
+              }),
+            ).rejects.toThrow(
+              "This operation requires the operator credential",
+            );
+          }
+        }
+      }
+      expect(permissionService.resolveByRoute).not.toHaveBeenCalled();
+    },
+  );
+  it("preserves wildcard admin access to Subject catalogue operations, reads and other modules", async () => {
+    (verify as jest.Mock).mockResolvedValue({
+      subject: { id: "catalogue-admin-allowed" },
+    });
+    const service = new Service(
+      createPermissionService({
+        rootPermission: {
+          id: "catalogue-admin-root-allowed",
+          method: "*",
+          path: "*",
+        },
+      }) as any,
+      {
+        find: jest
+          .fn()
+          .mockResolvedValue([{ roleId: "catalogue-role-admin-allowed" }]),
+      } as any,
+      {
+        find: jest
+          .fn()
+          .mockResolvedValue([{ roleId: "catalogue-role-admin-allowed" }]),
+      } as any,
+      createSubjectRepository({ tokensValidAfter: null }) as any,
+    );
+    await expect(
+      service.execute({
+        permission: {
+          type: "HTTP",
+          method: "POST",
+          route: `/api/billing/payment-intents/${id}/dummy`,
+        },
+        authorization: { value: "catalogue-admin-allowed-jwt" },
+      }),
+    ).rejects.toThrow("This operation requires the operator credential");
+    for (const [method, route] of [
+      ["POST", "/api/billing/payment-intents/dummy/webhook"],
+      ["POST", "/api/billing/payment-intents"],
+      ["PATCH", `/api/billing/payment-intents/${id}`],
+      ["POST", `/api/rbac/subjects/${id}/ecommerce-module/catalogue-mutations`],
+      ["GET", `/api/ecommerce/attributes/${id}`],
+      ["POST", `/api/ecommerce/stores-to-products/${id}/quote`],
+      ["POST", `/api/ecommerce/stores-to-products/${id}/address-suggestions`],
+      ["PATCH", `/api/blog/articles/${id}`],
+    ]) {
+      await expect(
+        service.execute({
+          permission: { type: "HTTP", method, route },
+          authorization: { value: "catalogue-admin-allowed-jwt" },
+        }),
+      ).resolves.toEqual({ ok: true });
+    }
+  });
+});
+
+it("leaves provider webhook notifications outside the central operator-only policy", async () => {
+  const permissionService = createPermissionService({
+    permission: {
+      id: "operator-policy-public-webhook",
+      type: "HTTP",
+      method: "POST",
+      path: "/api/billing/payment-intents/stripe/webhook",
+    },
+  });
+  const service = new Service(
+    permissionService as any,
+    { find: jest.fn().mockResolvedValue([]) } as any,
+    { find: jest.fn().mockResolvedValue([]) } as any,
+    createSubjectRepository() as any,
+  );
+  await expect(
+    service.execute({
+      permission: {
+        type: "HTTP",
+        method: "POST",
+        route: "/api/billing/payment-intents/stripe/webhook",
+      },
+      authorization: {},
+    }),
+  ).resolves.toEqual({ ok: true });
+  expect(permissionService.resolveByRoute).toHaveBeenCalledWith({
+    permission: {
+      type: "HTTP",
+      method: "POST",
+      route: "/api/billing/payment-intents/stripe/webhook",
+    },
+  });
+});

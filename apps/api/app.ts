@@ -26,36 +26,20 @@ import { app as agentApp } from "@sps/agent/backend/app/api";
 import { app as analyticApp } from "@sps/analytic/backend/app/api";
 import { app as hostApp } from "@sps/host/backend/app/api";
 import { app as rbacApp } from "@sps/rbac/backend/app/api";
-import {
-  ecommerceCatalogGuardedRoutes,
-  privateOrderRoutes,
-} from "@sps/rbac/models/subject/backend/app/middlewares";
+import { privateCommerceRoutes } from "@sps/rbac/models/permission/backend/app/api";
 import { app as startupApp } from "@sps/startup/backend/app/api";
 import { app as crmApp } from "@sps/crm/backend/app/api";
-import { app as ecommerceApp } from "@sps/ecommerce/backend/app/api";
+import {
+  app as ecommerceApp,
+  billingApp,
+} from "@sps/ecommerce/backend/app/api";
 import { app as notificationApp } from "@sps/notification/backend/app/api";
 import { app as blogApp } from "@sps/blog/backend/app/api";
-import { app as billingApp } from "@sps/billing/backend/app/api";
-import { privatePaymentIntentReadRoutes } from "@sps/billing/models/payment-intent/backend/app/middlewares";
 import { app as websiteBuilderApp } from "@sps/website-builder/backend/app/api";
 import { app as broadcastApp } from "@sps/broadcast/backend/app/api";
 import { app as fileStorageApp } from "@sps/file-storage/backend/app/api";
 import { app as socialApp } from "@sps/social/backend/app/api";
 import { app as knowledgeApp } from "@sps/knowledge/backend/app/api";
-import { app as paymentIntentApp } from "@sps/billing/models/payment-intent/backend/app/api";
-import { app as orderPaymentRelationApp } from "@sps/ecommerce/relations/orders-to-billing-module-payment-intents/backend/app/api";
-import type { Service as PaymentIntentService } from "@sps/billing/models/payment-intent/backend/app/api/src/lib/service";
-import type { Service as OrderPaymentRelationService } from "@sps/ecommerce/relations/orders-to-billing-module-payment-intents/backend/app/api/src/lib/service";
-
-const orderPaymentRelations = orderPaymentRelationApp.controller
-  .service as OrderPaymentRelationService;
-(paymentIntentApp.controller.service as PaymentIntentService).paymentLifecycle =
-  {
-    settle: (props) => orderPaymentRelations.settleReservations(props),
-    canRecordLatePayment: (props) =>
-      orderPaymentRelations.canRecordLatePayment(props),
-    release: (props) => orderPaymentRelations.releaseReservations(props),
-  };
 
 export const app = new Hono<Env>().basePath("/");
 const apiModules = {
@@ -85,9 +69,8 @@ const httpCacheMiddleware = new HTTPCacheMiddleware({
   runtime: consistencyMiddleware.runtime,
   excludedRoutes: [
     ...controllerGuardedRoutes,
-    ...ecommerceCatalogGuardedRoutes,
-    ...privateOrderRoutes,
-    ...privatePaymentIntentReadRoutes,
+    ...privateCommerceRoutes,
+    { regexPath: /^\/api\/rbac\/subjects\/[^/]+\/ecommerce-module(?:\/.*)?$/i },
   ],
 });
 
@@ -190,12 +173,7 @@ app.use(new OperatorSecretAttemptsMiddleware().init());
 app.use(new ObserverMiddleware().init());
 app.use(revalidationMiddleware.init());
 app.use(new ActionLoggerMiddleware().init());
-app.use(rbacApp.catalogueWriteGuard());
-app.use(
-  new IsAuthorizedMiddleware({
-    allowedRoutes: ecommerceCatalogGuardedRoutes,
-  }).init(),
-);
+app.use(new IsAuthorizedMiddleware().init());
 app.use(new BillRouteMiddleware().init());
 app.use(new ParseQueryMiddleware().init());
 

@@ -25,7 +25,7 @@ export interface IConfiguredPurchase {
 
 export interface IConfiguratorActions {
   refreshQuote: () => Promise<unknown>;
-  /** Only idle payment UI hides while the fresh configurator is absent or collapsed. */
+  /** Only idle payment UI hides while the fresh configurator is absent. */
   hideWhenIdle: boolean;
 }
 
@@ -37,6 +37,8 @@ export interface IComponentProps extends IParentComponentProps<
   ecommerceModuleProduct: IEcommerceModuleProduct;
   ecommerceModuleStore?: IEcommerceModuleStore;
   excludedOfferIds?: string[];
+  /** Hide the new-item form while preserving an active payment slot. */
+  hideConfiguration?: boolean;
   /** Client composition slot; shares the exact quoted selection with payment. */
   checkoutSlot?: (
     configuration: IConfiguredPurchase | undefined,

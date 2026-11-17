@@ -5,14 +5,14 @@ import { DI } from "../../../../di/constants";
 
 @injectable()
 export class Action<SCHEMA extends Record<string, unknown>> {
-  repository: IRepository;
+  repository: Pick<IRepository, "insert">;
 
-  constructor(@inject(DI.IRepository) repository: IRepository) {
+  constructor(@inject(DI.IRepository) repository: Pick<IRepository, "insert">) {
     this.repository = repository;
   }
 
   async execute(props: { data: SCHEMA }) {
-    const { data } = props;
+    const data = { ...props.data };
     delete data.updatedAt;
 
     const result = await this.repository.insert(data);

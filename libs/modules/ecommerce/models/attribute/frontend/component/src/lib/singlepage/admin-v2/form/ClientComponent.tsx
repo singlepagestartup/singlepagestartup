@@ -1,4 +1,5 @@
 "use client";
+import { useCatalogueMutationOptions } from "@sps/ecommerce/frontend/component/src/lib/admin-v2/catalogue-mutations";
 
 import { IComponentPropsExtended, variant, IModel } from "./interface";
 import { api } from "@sps/ecommerce/models/attribute/sdk/client";
@@ -24,8 +25,13 @@ import {
 import { useEffect, useMemo, useState } from "react";
 
 export function Component(props: IComponentPropsExtended) {
-  const updateEntity = api.update();
-  const createEntity = api.create();
+  const updateEntity = api.update({
+    id: props.data?.id ?? "",
+    ...useCatalogueMutationOptions({ entity: "attributes", method: "PATCH" }),
+  });
+  const createEntity = api.create(
+    useCatalogueMutationOptions({ entity: "attributes", method: "POST" }),
+  );
 
   const { status } = useGetAdminFormState({
     updateEntity,

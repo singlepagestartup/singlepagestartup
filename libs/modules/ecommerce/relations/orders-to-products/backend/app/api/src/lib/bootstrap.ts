@@ -10,6 +10,8 @@ import { Controller } from "./controller";
 import { Service } from "./service";
 import { App } from "./app";
 import { OrdersToProductsDI } from "./di";
+import { createService as createOfferService } from "@sps/ecommerce/relations/stores-to-products/backend/app/api/src/lib/bootstrap";
+import type { Service as OfferService } from "@sps/ecommerce/relations/stores-to-products/backend/app/api/src/lib/service";
 import { Service as ProductService } from "@sps/ecommerce/models/product/backend/app/api/src/lib/service";
 import { Repository as ProductRepository } from "@sps/ecommerce/models/product/backend/app/api/src/lib/repository";
 import { Configuration as ProductConfiguration } from "@sps/ecommerce/models/product/backend/app/api/src/lib/configuration";
@@ -45,6 +47,9 @@ const bindings = new ContainerModule(({ bind }) => {
   bind<Repository>(DI.IRepository).to(Repository);
   bind<Service>(DI.IService).to(Service);
   bind<Configuration>(DI.IConfiguration).to(Configuration);
+  bind<OfferService>(OrdersToProductsDI.IOffersService)
+    .toDynamicValue(() => createOfferService())
+    .inSingletonScope();
   bind<ProductService>(OrdersToProductsDI.IProductsService)
     .toDynamicValue(
       () =>

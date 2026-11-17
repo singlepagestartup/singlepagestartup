@@ -1,5 +1,7 @@
 "use client";
 import {
+  mutation as ecommerceModuleCatalogMutation,
+  type IMutationProps as IEcommerceModuleCatalogMutationProps,
   context as ecommerceModuleCatalogContext,
   type IContextProps as IEcommerceModuleCatalogContextProps,
   offerCreate as ecommerceModuleOfferCreate,
@@ -462,6 +464,7 @@ import {
 } from "./host-cache/revalidate";
 
 export type IProps = {
+  IEcommerceModuleCatalogMutationProps: IEcommerceModuleCatalogMutationProps;
   IEcommerceModuleCatalogContextProps: IEcommerceModuleCatalogContextProps;
   IEcommerceModuleOfferCreateProps: IEcommerceModuleOfferCreateProps;
   IEcommerceModuleCatalogAttributeSetProps: IEcommerceModuleCatalogAttributeSetProps;
@@ -649,6 +652,7 @@ export type IResult = {
 };
 
 export const api = {
+  ecommerceModuleCatalogMutation,
   ecommerceModuleCatalogContext,
   ecommerceModuleOfferCreate,
   ecommerceModuleCatalogAttributeSet,

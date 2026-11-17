@@ -1,3 +1,4 @@
+import { Service as OrderLifecycleService } from "@sps/ecommerce/models/order/backend/app/api/src/lib/service/startup/lifecycle";
 import { randomUUID } from "node:crypto";
 import { Service } from "./proceed";
 import { Repository as SubjectRepository } from "../../../../repository";
@@ -128,7 +129,8 @@ describe("paid order atomic fulfillment", () => {
     const period = new PeriodService({
       findByIdExtended: readExtended,
       findById: ({ id }) => orders.findFirstByField("id", id),
-      writeSubscriptionPeriod: (props) => orders.writeSubscriptionPeriod(props),
+      writeSubscriptionPeriod: (props) =>
+        new OrderLifecycleService(orders).writeSubscriptionPeriod(props),
     });
     const service = new Service(
       subjects,
@@ -260,22 +262,20 @@ describe("paid order atomic fulfillment", () => {
         ecommerceModuleOrderId: activeOrderId,
       },
     });
-    await (service as any).renewSubscription(await freshProps());
+    await service.fromPaidStatus(await freshProps());
     expect((await balances.findById({ id: balance.id }))?.amount).toBe("5000");
     await invoices.updateFirstByField("id", renewal.id, {
       ...renewal,
       status: "paid",
     });
     await Promise.all(
-      [1, 2, 3].map(async () =>
-        (service as any).renewSubscription(await freshProps()),
-      ),
+      [1, 2, 3].map(async () => service.fromPaidStatus(await freshProps())),
     );
     expect(
       (await orders.findFirstByField("id", order.id))
         .subscriptionPeriodInvoiceId,
-    ).toBe(renewal.id);
-    expect((await balances.findById({ id: balance.id }))?.amount).toBe("10000");
+    ).toBe(invoice.id);
+    expect((await balances.findById({ id: balance.id }))?.amount).toBe("5000");
 
     const secondOrder = await orders.insert({
       type: "history",
@@ -291,7 +291,7 @@ describe("paid order atomic fulfillment", () => {
     activeOrderId = secondOrder.id;
     activeInvoices = [secondInvoice.id];
     await service.fromPaidStatus(await freshProps());
-    expect((await balances.findById({ id: balance.id }))?.amount).toBe("15000");
+    expect((await balances.findById({ id: balance.id }))?.amount).toBe("10000");
     expect((await orders.findFirstByField("id", order.id)).status).toBe(
       "delivering",
     );
@@ -315,7 +315,7 @@ describe("paid order atomic fulfillment", () => {
     await Promise.all(
       [1, 2, 3].map(async () => service.fromPaidStatus(await freshProps())),
     );
-    expect((await balances.findById({ id: balance.id }))?.amount).toBe("17000");
+    expect((await balances.findById({ id: balance.id }))?.amount).toBe("12000");
     expect((await orders.findFirstByField("id", packOrder.id)).status).toBe(
       "approving",
     );
@@ -325,9 +325,11 @@ describe("paid order atomic fulfillment", () => {
     productType = "subscription";
     quantity = 1;
     creditAmount = "5000";
-    await orders.revokeSubscription({ id: secondOrder.id });
+    await new OrderLifecycleService(orders).revokeSubscription({
+      id: secondOrder.id,
+    });
     await orders.updateFirstByField("id", secondOrder.id, { status: "paid" });
     await service.fromPaidStatus(await freshProps());
-    expect((await balances.findById({ id: balance.id }))?.amount).toBe("17000");
+    expect((await balances.findById({ id: balance.id }))?.amount).toBe("12000");
   });
 });

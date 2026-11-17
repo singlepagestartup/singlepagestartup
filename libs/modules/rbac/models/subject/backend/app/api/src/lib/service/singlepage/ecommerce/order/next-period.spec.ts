@@ -75,6 +75,9 @@ function fixture() {
     },
     ecommerceModule: {
       order: {
+        fulfillmentQuoteOptions: jest
+          .fn()
+          .mockResolvedValue({ fulfilledLineIds: [] }),
         findById: jest.fn().mockResolvedValue(source),
         lockForLifecycle: jest.fn(),
         find: jest.fn(async () => [...nextOrders]),
@@ -207,22 +210,26 @@ it("creates one next-period cart under concurrent retry and retains only recurri
   });
 });
 
-it("refuses an early, revoked or automatically renewed period", async () => {
+it("refuses a period before its final day and permits a provider-managed period", async () => {
   const f = fixture();
   const props = {
     subjectId: "buyer",
     orderId: "source",
     mode: "next-period" as const,
   };
-  f.source.subscriptionPeriodEndsAt = new Date(Date.now() + 60_000);
+  f.source.subscriptionPeriodEndsAt = new Date(
+    Date.now() + 25 * 60 * 60 * 1000,
+  );
   await expect(f.operation.execute(props)).rejects.toThrow("not due");
   f.source.subscriptionPeriodEndsAt = new Date(Date.now() - 1000);
   f.service.billingModule.paymentIntent.findById.mockResolvedValue({
     type: "subscription",
     status: "succeeded",
   });
-  await expect(f.operation.execute(props)).rejects.toThrow("separately paid");
+  await expect(f.operation.execute(props)).resolves.toEqual({
+    orderIds: ["next"],
+  });
   expect(
     f.service.ecommerceModule.order.createNextPeriodCart,
-  ).not.toHaveBeenCalled();
+  ).toHaveBeenCalledTimes(1);
 });

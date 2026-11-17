@@ -7,7 +7,6 @@ export interface IOfferSettings {
   requiredDelivery?: boolean;
   receiptMethod?: "shipping" | "pickup" | "electronic";
   regionIds?: string[];
-  pickupPointIds?: string[];
   origin?: { latitude: number; longitude: number };
   routeProfile?: "drive" | "truck" | "bicycle";
   quoteMinutes?: number;

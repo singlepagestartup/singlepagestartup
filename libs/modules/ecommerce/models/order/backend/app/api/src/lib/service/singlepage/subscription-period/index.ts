@@ -1,12 +1,12 @@
 import { isConfirmedInvoice } from "@sps/billing/models/payment-intent/sdk/model";
 import type { IModel as IOrder } from "@sps/ecommerce/models/order/sdk/model";
 import type { IResult as IExtendedOrder } from "../find-by-id/extended";
-import type { Repository } from "../../../repository";
+import type { Service as LifecycleService } from "../lifecycle";
 import { compareInvoices, intervalEnd } from "./utils";
 
 export interface IConstructorProps {
   findByIdExtended: (props: { id: string }) => Promise<IExtendedOrder>;
-  writeSubscriptionPeriod: Repository["writeSubscriptionPeriod"];
+  writeSubscriptionPeriod: LifecycleService["writeSubscriptionPeriod"];
   findById: (props: { id: string }) => Promise<IOrder | null>;
 }
 export interface IExecuteProps {
@@ -28,84 +28,89 @@ export class Service {
 
   async assertPayment(props: { id: string }): Promise<boolean> {
     const order = await this.dependencies.findByIdExtended(props);
-    if (order.subscriptionRevokedAt)
+    if (order.subscriptionRevokedAt) {
       throw new Error("Permission error. Subscription was explicitly revoked");
+    }
     const context = this.paymentContext(order);
     intervalEnd(new Date(), context.interval);
-    if (!order.subscriptionPeriodInvoiceId) return true;
-    const anchor = context.invoices.find(
-      (invoice) => invoice.id === order.subscriptionPeriodInvoiceId,
-    );
-    if (!anchor)
+    if (
+      order.subscriptionPeriodInvoiceId &&
+      !context.invoices.some(
+        (invoice) => invoice.id === order.subscriptionPeriodInvoiceId,
+      )
+    ) {
       throw new Error(
         "Validation error. Accepted invoice no longer belongs to this order",
       );
-    return compareInvoices(context.invoice, anchor) > 0;
+    }
+    return !order.subscriptionPeriodInvoiceId;
   }
 
   async execute(props: IExecuteProps): Promise<IResult> {
     const order = await this.dependencies.findByIdExtended({ id: props.id });
-    if (order.subscriptionRevokedAt)
+    if (order.subscriptionRevokedAt) {
       throw new Error("Permission error. Subscription was explicitly revoked");
-    if ((order.subscriptionPeriodInvoiceId ?? null) !== props.expectedInvoiceId)
-      return { accepted: false, order };
+    }
     if (
-      ![
-        "paid",
-        "delivering",
-        "requested_cancelation",
-        "delivered",
-        "expired",
-      ].includes(order.status)
-    )
-      throw new Error(
-        "Validation error. Order cannot activate a subscription period",
-      );
+      (order.subscriptionPeriodInvoiceId ?? null) !== props.expectedInvoiceId
+    ) {
+      return { accepted: false, order };
+    }
     const context = this.paymentContext(order);
-    const anchor = order.subscriptionPeriodInvoiceId
-      ? context.invoices.find(
+    if (order.subscriptionPeriodInvoiceId) {
+      if (
+        !context.invoices.some(
           (invoice) => invoice.id === order.subscriptionPeriodInvoiceId,
         )
-      : undefined;
-    if (order.subscriptionPeriodInvoiceId && !anchor)
-      throw new Error(
-        "Validation error. Accepted invoice no longer belongs to this order",
-      );
-    if (anchor && compareInvoices(context.invoice, anchor) <= 0)
+      ) {
+        throw new Error(
+          "Validation error. Accepted invoice no longer belongs to this order",
+        );
+      }
       return { accepted: false, order };
-    if (!anchor && order.status !== "paid")
+    }
+    if (order.status !== "paid") {
       throw new Error(
         "Validation error. Legacy subscription must be frozen before renewal",
       );
+    }
     const now = new Date();
-    const previousEnd = order.subscriptionPeriodEndsAt
-      ? new Date(order.subscriptionPeriodEndsAt)
-      : undefined;
-    const previousStart = order.subscriptionPeriodStartsAt
-      ? new Date(order.subscriptionPeriodStartsAt)
-      : undefined;
+    let startsAt = now;
+    if (order.subscriptionSourceOrderId) {
+      const source = await this.dependencies.findById({
+        id: order.subscriptionSourceOrderId,
+      });
+      if (
+        !source ||
+        source.subscriptionPeriodInvoiceId !==
+          order.subscriptionSourceInvoiceId ||
+        !source.subscriptionPeriodEndsAt
+      ) {
+        throw new Error(
+          "Conflict error. Subscription source period is unavailable",
+        );
+      }
+      startsAt = new Date(
+        Math.max(
+          now.getTime(),
+          new Date(source.subscriptionPeriodEndsAt).getTime(),
+        ),
+      );
+    }
+    let endsAt = intervalEnd(startsAt, context.interval);
     if (
-      anchor &&
-      (!previousEnd ||
-        !Number.isFinite(previousEnd.getTime()) ||
-        !previousStart ||
-        !Number.isFinite(previousStart.getTime()) ||
-        previousStart > previousEnd)
-    )
-      throw new Error("Validation error. Incomplete subscription period");
-    const intervalStartsAt = new Date(
-      Math.max(now.getTime(), previousEnd?.getTime() ?? 0),
-    );
-    const startsAt =
-      previousStart && previousEnd && previousStart <= now && now < previousEnd
-        ? previousStart
-        : now;
+      order.subscriptionScheduledStartsAt &&
+      order.subscriptionScheduledEndsAt
+    ) {
+      startsAt = new Date(order.subscriptionScheduledStartsAt);
+      endsAt = new Date(order.subscriptionScheduledEndsAt);
+    }
     return this.write(
       order,
       startsAt,
-      intervalEnd(intervalStartsAt, context.interval),
+      endsAt,
       context.invoice.id,
-      order.status === "requested_cancelation" ? order.status : "delivering",
+      "delivering",
     );
   }
 

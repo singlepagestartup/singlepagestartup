@@ -79,6 +79,14 @@ const statuses: Record<string, { ru: string; en: string; color: string }> = {
   },
 };
 
+const invoiceStatuses: Record<string, { ru: string; en: string }> = {
+  draft: { ru: "Готовится", en: "Draft" },
+  open: { ru: "Ожидает оплаты", en: "Awaiting payment" },
+  paid: { ru: "Оплачен", en: "Paid" },
+  uncollectible: { ru: "Не удалось взыскать оплату", en: "Uncollectible" },
+  void: { ru: "Аннулирован", en: "Void" },
+};
+
 function Receipt({ file, language }: IReceiptProps) {
   const path = file?.file?.trim();
   if (!path) return null;
@@ -137,6 +145,21 @@ export const Component = memo(function Component(
         : billingModuleCurrency.symbol,
     });
   });
+  const next = props.purchaseDetails?.nextPeriod;
+  const pendingPeriod =
+    next && (next.requiresConfirmation || next.status === "paying")
+      ? next
+      : undefined;
+  const dateFormat = new Intl.DateTimeFormat(language, {
+    dateStyle: "medium",
+    timeZone: "UTC",
+  });
+  const startsAt =
+    props.data.subscriptionPeriodStartsAt ??
+    props.data.subscriptionScheduledStartsAt;
+  const endsAt =
+    props.data.subscriptionPeriodEndsAt ??
+    props.data.subscriptionScheduledEndsAt;
   const date = new Date(props.data.createdAt);
   const dateLabel = Number.isNaN(date.getTime())
     ? ""
@@ -162,6 +185,12 @@ export const Component = memo(function Component(
         <p className="mt-1 text-xs text-muted-foreground">
           {props.data.receipt || props.data.id} · {dateLabel}
         </p>
+        {startsAt && endsAt && (
+          <p className="mt-1 text-xs text-muted-foreground">
+            {ru ? "Период подписки" : "Subscription period"} ·{" "}
+            {dateFormat.formatRange(new Date(startsAt), new Date(endsAt))}
+          </p>
+        )}
       </div>
       <div className="flex flex-wrap items-center gap-4">
         <span className="text-sm font-semibold">
@@ -260,7 +289,9 @@ export const Component = memo(function Component(
         <div className="space-y-1 text-xs text-muted-foreground @[640px]:col-span-2">
           {invoiceShares.map((share) => (
             <p key={share.invoiceId} className="break-words">
-              {ru ? "Счёт" : "Invoice"} {share.invoiceId}
+              {ru ? "Счёт" : "Invoice"} {share.invoiceId} ·{" "}
+              {invoiceStatuses[share.status]?.[ru ? "ru" : "en"] ??
+                share.status}
               {share.orderIds.length > 1
                 ? ` · ${ru ? "Общий для заказов" : "Shared by orders"}: ${share.orderIds.join(", ")}`
                 : ""}
@@ -271,6 +302,40 @@ export const Component = memo(function Component(
           ))}
         </div>
       ) : null}
+      {pendingPeriod && (
+        <div className="grid justify-items-start gap-1 text-sm @[640px]:col-span-2">
+          <p className="font-medium">
+            {ru ? "Следующий период" : "Next period"}
+            {pendingPeriod.startsAt && pendingPeriod.endsAt
+              ? ` · ${dateFormat.formatRange(new Date(pendingPeriod.startsAt), new Date(pendingPeriod.endsAt))}`
+              : ""}
+          </p>
+          {pendingPeriod.totals.map(({ total, billingModuleCurrency }) => (
+            <p key={billingModuleCurrency.id}>
+              {total.toLocaleString(language, { maximumFractionDigits: 8 })}{" "}
+              {billingModuleCurrency.symbol}
+            </p>
+          ))}
+          {pendingPeriod.requiresConfirmation ? (
+            <p>
+              {ru
+                ? "Проверьте новые условия заказа в корзине."
+                : "Review the updated order in your cart."}
+            </p>
+          ) : pendingPeriod.paymentUrl ? (
+            <a
+              href={pendingPeriod.paymentUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex min-h-11 items-center font-medium underline"
+            >
+              {ru ? "Оплатить следующий период" : "Pay for the next period"}
+            </a>
+          ) : (
+            <p>{ru ? "Ожидает оплаты" : "Awaiting payment"}</p>
+          )}
+        </div>
+      )}
       {savedCharges.length > 0 ? (
         <details className="group min-w-0 rounded-xl border border-border p-4 @[640px]:col-span-2">
           <summary className="cursor-pointer text-sm font-medium focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground">

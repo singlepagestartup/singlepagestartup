@@ -918,8 +918,10 @@ paths:
                   description: >-
                     Serialized JSON with provider and optional email, account, offerId,
                     storeId, quantity, expectedQuoteVersion, comment, destination and services.
-                    destination contains address, region, pickupPointId and optional coordinates
-                    {latitude, longitude}. services is an array of {offerId, quantity}.
+                    destination contains a delivery address, region and optional coordinates
+                    {latitude, longitude}. Pickup takes place at the selected retail store
+                    and needs no address or point ID. Legacy pickupPointId values are ignored.
+                    services is an array of {offerId, quantity}.
                     Currency is billingModule.currency.id; billingModuleCurrencyId is also accepted.
                     Supply expectedQuoteVersion from the exact product-page quote to reject changed
                     terms before writes. Legacy calls may omit the offer when only one is available
@@ -987,12 +989,14 @@ paths:
                   description: >-
                     Serialized JSON with productId and optional offerId, storeId, quantity,
                     billingModuleCurrencyId (or billingModule.currency.id), expectedQuoteVersion,
-                    destination, services and comment. destination contains address, region,
-                    pickupPointId and optional coordinates {latitude, longitude}.
+                    destination, services and comment. destination contains a delivery address,
+                    region and optional coordinates {latitude, longitude}. Pickup takes place at
+                    the selected retail store and needs no address or point ID. Legacy
+                    pickupPointId values are ignored.
                     services is an array of {offerId, quantity}. A supplied expectedQuoteVersion
                     must match the re-quoted selection before graph writes. The stored primary
                     line preserves the exact offer, destination and quantity; selected services
-                    become child lines in the same order. Legacy incomplete delivery selections
+                    become child lines in the same order. Shipping selections without an address
                     may remain editable cart drafts.
                   example: '{"productId":"00000000-0000-0000-0000-000000000000","offerId":"00000000-0000-0000-0000-000000000001","quantity":2,"billingModuleCurrencyId":"00000000-0000-0000-0000-000000000002","destination":{"address":"City Street 10"},"services":[{"offerId":"00000000-0000-0000-0000-000000000003","quantity":1}],"expectedQuoteVersion":"server-quote-version"}'
               required:
@@ -1917,7 +1921,7 @@ paths:
               properties:
                 data:
                   type: string
-                  description: JSON containing action (save, preview or apply), the primary lineId, and selections with offerId, quantity, currencyId, optional destination and services. A write requires the primary line's expectedSelectionUpdatedAt. Apply also requires expectedVersions from a preview.
+                  description: JSON containing action (save, preview or apply), the primary lineId, and exactly one entry in selections with offerId, quantity, currencyId, optional destination and services. A write requires the primary line's expectedSelectionUpdatedAt. Apply also requires expectedVersions from a preview. Omitted or empty services use the server's fulfillment default, which a successful save persists as a child line. Pickup uses the selected retail store and needs no destination; legacy pickupPointId values are ignored.
       responses:
         "200":
           description: Itemized server quotes. An incomplete save returns quote issues and applied=false. A successful save returns the revision to use for the next edit.
@@ -2031,3 +2035,59 @@ paths:
           { description: Stores, products and currencies for the seller form }
         "401": { description: A signed-in Subject is required }
         "403": { description: The requested Subject does not match the caller }
+
+  /rbac/subjects/{id}/ecommerce-module/catalogue-mutations:
+    post:
+      tags: [rbac-subject]
+      summary: Change an owned catalogue record
+      description: Requires the current signed-in Subject and normal route permission. The Subject service validates the owning entity schema and checks catalogue ownership before writing. Ownership grants require an administrator.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [data]
+              additionalProperties: false
+              properties:
+                data:
+                  type: object
+                  required: [entity, method]
+                  additionalProperties: false
+                  properties:
+                    entity:
+                      type: string
+                      enum:
+                        [
+                          stores,
+                          products,
+                          attributes,
+                          attribute-keys,
+                          stores-to-products,
+                          offers-to-offers,
+                          stores-to-attributes,
+                          products-to-attributes,
+                          stores-to-products-to-attributes,
+                          attribute-keys-to-attributes,
+                          attributes-to-billing-module-currencies,
+                          subjects-to-ecommerce-module-stores,
+                          subjects-to-ecommerce-module-products,
+                          subjects-to-ecommerce-module-orders,
+                        ]
+                    method: { type: string, enum: [POST, PATCH, DELETE] }
+                    recordId: { type: string, format: uuid }
+                    data: { type: object, additionalProperties: true }
+      responses:
+        "200": { description: Updated or deleted catalogue record }
+        "201":
+          {
+            description: Created catalogue record and current Subject ownership when applicable,
+          }
+        "400": { description: Invalid record values or unavailable stock }
+        "401": { description: A signed-in Subject is required }
+        "403": { description: Permission or catalogue ownership is required }

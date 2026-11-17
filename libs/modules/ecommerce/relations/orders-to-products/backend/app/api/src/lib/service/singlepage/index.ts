@@ -1,7 +1,6 @@
 import type { IOrderLineTotals } from "@sps/ecommerce/relations/orders-to-products/sdk/model";
-import { Repository as OfferRepository } from "@sps/ecommerce/relations/stores-to-products/backend/app/api/src/lib/repository";
-import { Configuration as OfferConfiguration } from "@sps/ecommerce/relations/stores-to-products/backend/app/api/src/lib/configuration";
-import { Service as OfferService } from "@sps/ecommerce/relations/stores-to-products/backend/app/api/src/lib/service";
+import type { Service as OfferService } from "@sps/ecommerce/relations/stores-to-products/backend/app/api/src/lib/service";
+import type { IQuoteOptions } from "@sps/ecommerce/relations/stores-to-products/backend/app/api/src/lib/service/singlepage";
 import type { IOfferQuoteInput } from "@sps/ecommerce/relations/stores-to-products/sdk/model";
 import "reflect-metadata";
 import { inject, injectable } from "inversify";
@@ -39,6 +38,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     attributeKeysToAttributes: AttributeKeysToAttributesService,
     @inject(OrdersToProductsDI.IAttributesToBillingModuleCurrenciesService)
     attributesToBillingModuleCurrencies: AttributesToBillingModuleCurrenciesService,
+    @inject(OrdersToProductsDI.IOffersService) readonly offers: OfferService,
   ) {
     super(repository);
     this.product = product;
@@ -48,14 +48,6 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     this.attributeKeysToAttributes = attributeKeysToAttributes;
     this.attributesToBillingModuleCurrencies =
       attributesToBillingModuleCurrencies;
-  }
-
-  private offerService?: OfferService;
-  get offers() {
-    this.offerService ??= new OfferService(
-      new OfferRepository(new OfferConfiguration()),
-    );
-    return this.offerService;
   }
 
   offerSelection(
@@ -93,9 +85,13 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     };
   }
 
-  async offerTotals(lines: (typeof Table.$inferSelect)[], lineId?: string) {
+  async offerTotals(
+    lines: (typeof Table.$inferSelect)[],
+    lineId?: string,
+    options: IQuoteOptions = {},
+  ) {
     const input = this.offerSelection(lines, "");
-    const quotes = await this.offers.quoteCurrencies(input);
+    const quotes = await this.offers.quoteCurrencies(input, options);
     const totals: IOrderLineTotals["totals"] = [];
     for (const { quote, currency } of quotes) {
       if (quote.amount === null) {
@@ -123,7 +119,9 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     return {
       totals,
       unpriced,
-      availableCurrencyIds: quotes[0]?.quote.currencyIds ?? [],
+      availableCurrencyIds: [
+        ...new Set(quotes.flatMap(({ quote }) => quote.currencyIds)),
+      ].sort(),
     };
   }
 

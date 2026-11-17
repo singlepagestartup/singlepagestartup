@@ -6,7 +6,6 @@ import { Table as Offer } from "@sps/ecommerce/relations/stores-to-products/back
 export interface IOrderLineDestination {
   address?: string;
   region?: string;
-  pickupPointId?: string;
   coordinates?: { latitude: number; longitude: number };
 }
 

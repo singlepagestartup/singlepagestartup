@@ -3,7 +3,9 @@ import { inject, injectable } from "inversify";
 import { CRUDService, DI } from "@sps/shared-backend-api";
 import { currencyPrecision } from "@sps/billing/models/currency/sdk/model";
 import { Table } from "@sps/ecommerce/relations/stores-to-products/backend/repository/database";
-import { reservedOfferQuantities } from "@sps/ecommerce/relations/orders-to-billing-module-payment-intents/backend/app/api/src/lib/repository";
+import type { Service as ReservationsService } from "@sps/ecommerce/relations/orders-to-billing-module-payment-intents/backend/app/api/src/lib/service";
+import { OfferDI } from "../../di";
+import { Service as Catalog } from "./catalog";
 import type {
   IAddressSuggestionsInput,
   IOfferQuoteInput,
@@ -18,11 +20,20 @@ import {
   type IDeliveryRouting,
 } from "./quote/routing";
 
+export interface IQuoteOptions {
+  fulfilledLineIds?: readonly string[];
+}
+
 const previewRoutes = new WeakMap<IOfferQuote, QuoteRoutes>();
 
 @injectable()
 export class Service extends CRUDService<typeof Table.$inferSelect> {
-  constructor(@inject(DI.IRepository) readonly repository: Repository) {
+  constructor(
+    @inject(DI.IRepository) readonly repository: Repository,
+    @inject(OfferDI.ICatalogService) readonly catalog: Catalog,
+    @inject(OfferDI.IReservationsService)
+    readonly reservations: Pick<ReservationsService, "reservedQuantities">,
+  ) {
     super(repository);
   }
 
@@ -35,21 +46,25 @@ export class Service extends CRUDService<typeof Table.$inferSelect> {
     signal?: AbortSignal,
   ) {
     return new AddressSuggestions({
-      repository: this.repository,
+      catalog: this.catalog,
       routing: () => this.resolveDeliveryRouting(),
     }).execute(input, signal);
   }
 
-  async quote(input: IOfferQuoteInput) {
-    const [quote] = await this.quoteMany([input]);
+  async quote(input: IOfferQuoteInput, options: IQuoteOptions = {}) {
+    const [quote] = await this.quoteMany([input], options);
     return quote;
   }
 
-  async quoteMany(inputs: IOfferQuoteInput[]): Promise<IOfferQuote[]> {
+  async quoteMany(
+    inputs: IOfferQuoteInput[],
+    options: IQuoteOptions = {},
+  ): Promise<IOfferQuote[]> {
     const routes = new QuoteRoutes(() => this.resolveDeliveryRouting());
     const quotes = await this.calculateMany(
       inputs,
       inputs.map(() => routes),
+      options,
     );
     routes.freeze();
     for (const quote of quotes) {
@@ -58,15 +73,19 @@ export class Service extends CRUDService<typeof Table.$inferSelect> {
     return quotes;
   }
 
-  async quoteUnderLock(input: IOfferQuoteInput, preview: IOfferQuote) {
-    const [current] = await this.quotesUnderLock([input], [preview]);
+  async quoteUnderLock(
+    input: IOfferQuoteInput,
+    preview: IOfferQuote,
+    options: IQuoteOptions = {},
+  ) {
+    const [current] = await this.quotesUnderLock([input], [preview], options);
     return current;
   }
 
   async quotesUnderLock(
     inputs: IOfferQuoteInput[],
     previews: IOfferQuote[],
-    options: { allowIncompleteDelivery?: boolean } = {},
+    options: IQuoteOptions & { allowIncompleteDelivery?: boolean } = {},
   ) {
     if (inputs.length !== previews.length) {
       throw new Error("Conflict error. Missing offer quote");
@@ -78,16 +97,11 @@ export class Service extends CRUDService<typeof Table.$inferSelect> {
       }
       return evidence;
     });
-    const current = await this.calculateMany(inputs, routes);
+    const current = await this.calculateMany(inputs, routes, options);
     for (const [index, quote] of current.entries()) {
       const hasBlockingIssue = quote.issues.some(
         (issue) =>
-          !options.allowIncompleteDelivery ||
-          ![
-            "delivery_required",
-            "address_required",
-            "pickup_required",
-          ].includes(issue.code),
+          !options.allowIncompleteDelivery || issue.code !== "address_required",
       );
       if (quote.version !== previews[index].version || hasBlockingIssue) {
         throw new Error("Conflict error. Offer conditions changed");
@@ -99,16 +113,16 @@ export class Service extends CRUDService<typeof Table.$inferSelect> {
   private async calculateMany(
     inputs: IOfferQuoteInput[],
     routes: QuoteRoutes[],
+    options: IQuoteOptions,
   ) {
     if (!inputs.length) {
       return [];
     }
-    const catalog = await this.repository.catalog(
+    const catalog = await this.catalog.catalog(
       inputs.map((input) => input.offerId),
     );
-    const held = await reservedOfferQuantities({
+    const held = await this.reservations.reservedQuantities({
       offerIds: [...catalog.offers.keys()],
-      database: this.repository.db,
     });
     const now = new Date();
     const results: IOfferQuote[] = [];
@@ -119,17 +133,19 @@ export class Service extends CRUDService<typeof Table.$inferSelect> {
         now,
         routing: () => routes[index],
         precision: currencyPrecision,
+        fulfillmentAlreadySatisfied: Boolean(
+          input.lineId && options.fulfilledLineIds?.includes(input.lineId),
+        ),
       });
       results.push(await calculator.execute(input));
     }
     return results;
   }
 
-  async quoteCurrencies(input: IOfferQuoteInput) {
-    const catalog = await this.repository.catalog(input.offerId);
-    const held = await reservedOfferQuantities({
+  async quoteCurrencies(input: IOfferQuoteInput, options: IQuoteOptions = {}) {
+    const catalog = await this.catalog.catalog(input.offerId);
+    const held = await this.reservations.reservedQuantities({
       offerIds: [...catalog.offers.keys()],
-      database: this.repository.db,
     });
     const routes = new QuoteRoutes(() => this.resolveDeliveryRouting());
     const calculator = new Quote({
@@ -138,6 +154,9 @@ export class Service extends CRUDService<typeof Table.$inferSelect> {
       now: new Date(),
       routing: () => routes,
       precision: currencyPrecision,
+      fulfillmentAlreadySatisfied: Boolean(
+        input.lineId && options.fulfilledLineIds?.includes(input.lineId),
+      ),
     });
     const results: {
       quote: IOfferQuote;
@@ -154,7 +173,7 @@ export class Service extends CRUDService<typeof Table.$inferSelect> {
   }
 
   async purchaseTerms(input: IOfferQuoteInput, includeAmount: boolean) {
-    const catalog = await this.repository.catalog(input.offerId);
+    const catalog = await this.catalog.catalog(input.offerId);
     const offer = catalog.offers.get(input.offerId);
     const product = offer && catalog.products.get(offer.productId);
     if (!product) {

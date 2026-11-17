@@ -103,47 +103,6 @@ export const TwoBothAssembly: Story = {
   name: "Два шкафа · две сборки · 15 000 ₽",
 };
 
-export const SplitOrders: Story = {
-  ...purchase("split-orders"),
-  name: "Два адреса · 8 000 + 7 000 ₽",
-  play: async ({ canvasElement }) => {
-    const canvas = within(canvasElement);
-    await userEvent.selectOptions(
-      canvas.getByLabelText("Адрес, заказ 2"),
-      "city",
-    );
-    await expect(canvas.getByTestId("order-a-breakdown")).toHaveTextContent(
-      /8\s000 ₽/,
-    );
-    await expect(canvas.getByTestId("total-RUB")).toHaveTextContent(
-      /14\s000 ₽/,
-    );
-    await userEvent.selectOptions(
-      canvas.getByLabelText("Адрес, заказ 2"),
-      "region",
-    );
-    await expect(canvas.getByTestId("total-RUB")).toHaveTextContent(
-      /15\s000 ₽/,
-    );
-  },
-};
-
-export const SplitPosition: Story = {
-  ...purchase("two-one-assembly"),
-  name: "Разделение позиции по адресам",
-  play: async ({ canvasElement }) => {
-    const canvas = within(canvasElement);
-    await userEvent.click(
-      canvas.getByRole("button", { name: "Разделить по адресам" }),
-    );
-    await expect(canvas.getByLabelText("Адрес, заказ 1")).toHaveValue("city");
-    await expect(canvas.getByLabelText("Адрес, заказ 2")).toHaveValue("region");
-    await expect(canvas.getByTestId("total-RUB")).toHaveTextContent(
-      /15\s000 ₽/,
-    );
-  },
-};
-
 export const SellerComparison: Story = {
   ...purchase("seller-comparison"),
   name: "Сравнение · 8 000 ₽ и 7 400 ₽",
@@ -190,37 +149,6 @@ export const SellerChangeApplied: Story = {
     );
     await expect(canvas.getByTestId("total-RUB")).toHaveTextContent(
       /14\s400 ₽/,
-    );
-  },
-};
-
-export const ServiceUnavailable: Story = {
-  ...purchase("service-unavailable"),
-  name: "Сборка недоступна у нового продавца",
-  play: async ({ canvasElement }) => {
-    const { dialog } = await openComparison(canvasElement);
-    await expect(
-      dialog.getByRole("button", { name: "Выбрать этот магазин" }),
-    ).toBeDisabled();
-  },
-};
-
-export const ServiceRemovalConfirmed: Story = {
-  ...purchase("service-unavailable"),
-  name: "Подтверждён отказ от сборки",
-  play: async ({ canvasElement }) => {
-    const { canvas, dialog } = await openComparison(canvasElement);
-    await userEvent.click(
-      dialog.getByRole("checkbox", { name: "Продолжить без сборки" }),
-    );
-    await userEvent.click(
-      dialog.getByRole("button", { name: "Выбрать этот магазин" }),
-    );
-    await expect(
-      canvas.getByLabelText("Количество сборок, заказ 1"),
-    ).toHaveValue("0");
-    await expect(canvas.getByTestId("total-RUB")).toHaveTextContent(
-      /12\s900 ₽/,
     );
   },
 };

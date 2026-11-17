@@ -3,11 +3,7 @@
 import { memo, useCallback } from "react";
 import { Checkbox, RadioGroup, RadioGroupItem } from "@sps/shared-ui-shadcn";
 import { formatCurrencyAmount } from "@sps/shared-frontend-client-utils";
-import type {
-  IServiceCardProps,
-  IServiceOptionsProps,
-  IServiceNoSelectionProps,
-} from "./interface";
+import type { IServiceCardProps, IServiceOptionsProps } from "./interface";
 
 export function ServiceOptions(props: IServiceOptionsProps) {
   if (props.multiple)
@@ -28,26 +24,6 @@ export function ServiceOptions(props: IServiceOptionsProps) {
     >
       {props.children}
     </RadioGroup>
-  );
-}
-
-export function ServiceNoSelection(props: IServiceNoSelectionProps) {
-  return (
-    <div className="relative rounded-xl border border-border hover:bg-muted/50 has-[[data-state=checked]]:border-primary has-[[data-state=checked]]:bg-primary/5">
-      <RadioGroupItem
-        id={props.id}
-        value=""
-        className="absolute left-3 top-3.5 size-4 bg-card"
-      />
-      <label
-        htmlFor={props.id}
-        className="flex min-h-11 cursor-pointer items-center py-2 pl-10 pr-3 text-xs"
-      >
-        {props.language === "ru"
-          ? "Не выбирать способ получения"
-          : "No fulfillment selection"}
-      </label>
-    </div>
   );
 }
 

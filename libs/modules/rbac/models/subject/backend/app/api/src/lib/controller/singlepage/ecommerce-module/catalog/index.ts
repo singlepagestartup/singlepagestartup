@@ -3,6 +3,7 @@ import type { Context } from "hono";
 import { getHttpErrorType } from "@sps/backend-utils";
 import {
   catalogCreateOfferSchema,
+  catalogMutationSchema,
   catalogSetAttributeSchema,
 } from "@sps/rbac/models/subject/sdk/model/src/lib/ecommerce-catalog";
 import type { Service } from "../../../../service";
@@ -10,7 +11,7 @@ import type { Service } from "../../../../service";
 export class Handler {
   constructor(
     readonly service: Service,
-    readonly operation: "offer" | "attribute" | "context",
+    readonly operation: "offer" | "attribute" | "context" | "mutation",
   ) {}
 
   async execute(c: Context): Promise<Response> {
@@ -49,6 +50,17 @@ export class Handler {
         !("data" in body)
       ) {
         throw new Error("Validation error. Expected a catalogue data envelope");
+      }
+      if (this.operation === "mutation") {
+        const parsed = catalogMutationSchema.safeParse(body.data);
+        if (!parsed.success) {
+          throw new Error("Validation error. Invalid catalogue mutation");
+        }
+        const data = await this.service.ecommerceCatalog.mutation({
+          subjectId,
+          data: parsed.data,
+        });
+        return c.json({ data }, parsed.data.method === "POST" ? 201 : 200);
       }
       if (this.operation === "offer") {
         const parsed = catalogCreateOfferSchema.safeParse(body.data);

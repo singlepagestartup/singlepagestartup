@@ -382,3 +382,32 @@ it.each(["history", "cart-a"])(
     expect(f.service.ecommerceModule.order.delete).not.toHaveBeenCalled();
   },
 );
+
+it("strips a retired pickup point from the new cart without changing the historical line", async () => {
+  const f = fixture();
+  const destination = {
+    address: "Existing delivery address",
+    region: "Existing region",
+    pickupPointId: "other-store-point",
+  };
+  const source = {
+    ...f.lines[0],
+    offerId: "offer-a",
+    destination,
+    parentLineId: null,
+    recurrence: "each",
+    quoteVersion: "accepted-old-version",
+  };
+  f.service.ecommerceModule.ordersToProducts.find.mockResolvedValue([source]);
+  await f.operation.execute(props);
+  expect(
+    f.service.ecommerceModule.ordersToProducts.create,
+  ).toHaveBeenCalledWith({
+    data: expect.objectContaining({
+      destination: { address: destination.address, region: destination.region },
+    }),
+  });
+  expect(source.destination).toEqual(destination);
+  expect(source.destination.pickupPointId).toBe("other-store-point");
+  expect(f.service.ecommerceModule.order.update).not.toHaveBeenCalled();
+});

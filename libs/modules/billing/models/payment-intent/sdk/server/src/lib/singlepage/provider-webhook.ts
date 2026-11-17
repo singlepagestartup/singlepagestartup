@@ -1,7 +1,6 @@
 import {
   serverHost,
   route,
-  IModel,
 } from "@sps/billing/models/payment-intent/sdk/model";
 import {
   NextRequestOptions,
@@ -28,7 +27,9 @@ export interface IProps {
   };
 }
 
-export interface IResult extends IModel {}
+export interface IResult {
+  code: 0;
+}
 
 export async function action(props: IProps): Promise<IResult | undefined> {
   const productionBuild = process.env.NEXT_PHASE === PHASE_PRODUCTION_BUILD;

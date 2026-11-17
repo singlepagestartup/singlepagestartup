@@ -2,9 +2,6 @@
 import { memo, useCallback, useState, type FormEvent } from "react";
 import { createId } from "@paralleldrive/cuid2";
 import { api as subjectApi } from "@sps/rbac/models/subject/sdk/client";
-import { api as offerApi } from "@sps/ecommerce/relations/stores-to-products/sdk/client";
-import { api as attributeApi } from "@sps/ecommerce/models/attribute/sdk/client";
-import { api as linksApi } from "@sps/ecommerce/relations/offers-to-offers/sdk/client";
 import { catalogCreateOfferSchema } from "@sps/rbac/models/subject/sdk/model";
 import type { IModel as IOffer } from "@sps/ecommerce/relations/stores-to-products/sdk/model";
 import type { IModel as ILink } from "@sps/ecommerce/relations/offers-to-offers/sdk/model";
@@ -60,11 +57,11 @@ export function Editor(props: IEditorProps) {
 
 function OfferEditor(props: IEditorProps & { offer: IOffer }) {
   const { offer, context } = props;
-  const updateOffer = offerApi.update();
+  const updateOffer = subjectApi.ecommerceModuleCatalogMutation();
   const setAttribute = subjectApi.ecommerceModuleCatalogAttributeSet();
-  const deleteAttribute = attributeApi.delete();
-  const createLink = linksApi.create();
-  const deleteLink = linksApi.delete();
+  const deleteAttribute = subjectApi.ecommerceModuleCatalogMutation();
+  const createLink = subjectApi.ecommerceModuleCatalogMutation();
+  const deleteLink = subjectApi.ecommerceModuleCatalogMutation();
   const attrs = context.attributes.filter(
     (attribute) =>
       attribute.owner.type === "offer" && attribute.owner.id === offer.id,
@@ -74,7 +71,10 @@ function OfferEditor(props: IEditorProps & { offer: IOffer }) {
   const [feedback, setFeedback] = useState("");
   const [error, setError] = useState("");
   const [removingId, setRemovingId] = useState<string | null>(null);
-  const [linkRole, setLinkRole] = useState("delivery");
+  const ownsProduct = context.ownedProductIds.includes(offer.productId);
+  const [linkRole, setLinkRole] = useState(
+    ownsProduct ? "delivery" : "fulfilled-by",
+  );
   const serviceProduct =
     context.products.find((product) => product.id === offer.productId)?.kind ===
     "service";
@@ -84,7 +84,6 @@ function OfferEditor(props: IEditorProps & { offer: IOffer }) {
       (linkRole === "fulfilled-by"
         ? target.variant === "provider" && target.productId === offer.productId
         : target.variant === "default" &&
-          target.storeId === offer.storeId &&
           context.products.some(
             (product) =>
               product.id === target.productId && product.kind === "service",
@@ -121,7 +120,10 @@ function OfferEditor(props: IEditorProps & { offer: IOffer }) {
       setRemovingId(id);
       setError("");
       try {
-        await deleteLink.mutateAsync({ id });
+        await deleteLink.mutateAsync({
+          id: props.subjectId,
+          data: { entity: "offers-to-offers", method: "DELETE", recordId: id },
+        });
         await props.onRefresh();
       } catch (failure) {
         setError(
@@ -133,7 +135,7 @@ function OfferEditor(props: IEditorProps & { offer: IOffer }) {
         setRemovingId(null);
       }
     },
-    [deleteLink.mutateAsync, props.onRefresh],
+    [deleteLink.mutateAsync, props.subjectId, props.onRefresh],
   );
 
   async function archive() {
@@ -141,8 +143,13 @@ function OfferEditor(props: IEditorProps & { offer: IOffer }) {
     setFeedback("");
     try {
       await updateOffer.mutateAsync({
-        id: offer.id,
-        data: { variant: "hidden" },
+        id: props.subjectId,
+        data: {
+          entity: "stores-to-products",
+          method: "PATCH",
+          recordId: offer.id,
+          data: { variant: "hidden" },
+        },
       });
       await props.onRefresh();
       setFeedback(
@@ -166,13 +173,8 @@ function OfferEditor(props: IEditorProps & { offer: IOffer }) {
     try {
       const settings = catalogCreateOfferSchema.shape.settings.parse({
         ...offer.settings,
-        requiredDelivery: values.has("requiredDelivery"),
         standalone: values.has("standalone"),
         receiptMethod: text("receiptMethod"),
-        pickupPointIds: text("pickupPoints")
-          .split(",")
-          .map((value) => value.trim())
-          .filter(Boolean),
         regionIds: text("regions")
           .split(",")
           .map((value) => value.trim())
@@ -196,11 +198,16 @@ function OfferEditor(props: IEditorProps & { offer: IOffer }) {
         throw new Error("Stock must be a whole number of zero or more.");
       }
       await updateOffer.mutateAsync({
-        id: offer.id,
+        id: props.subjectId,
         data: {
-          configurationKey: text("configurationKey"),
-          variant: text("offerVariant"),
-          settings,
+          entity: "stores-to-products",
+          method: "PATCH",
+          recordId: offer.id,
+          data: {
+            configurationKey: text("configurationKey"),
+            variant: text("offerVariant"),
+            settings,
+          },
         },
       });
       for (const currency of context.currencies) {
@@ -222,11 +229,21 @@ function OfferEditor(props: IEditorProps & { offer: IOffer }) {
             },
           });
         } else if (previous) {
-          await deleteAttribute.mutateAsync({ id: previous.id });
+          await deleteAttribute.mutateAsync({
+            id: props.subjectId,
+            data: {
+              entity: "attributes",
+              method: "DELETE",
+              recordId: previous.id,
+            },
+          });
         }
       }
       if (unlimited && stock) {
-        await deleteAttribute.mutateAsync({ id: stock.id });
+        await deleteAttribute.mutateAsync({
+          id: props.subjectId,
+          data: { entity: "attributes", method: "DELETE", recordId: stock.id },
+        });
       } else if (!unlimited) {
         await setAttribute.mutateAsync({
           id: props.subjectId,
@@ -255,11 +272,16 @@ function OfferEditor(props: IEditorProps & { offer: IOffer }) {
     setError("");
     try {
       await createLink.mutateAsync({
+        id: props.subjectId,
         data: {
-          sourceOfferId: offer.id,
-          targetOfferId: String(values.get("target")),
-          variant: String(values.get("role")),
-          recurrence: String(values.get("recurrence")) as "first" | "each",
+          entity: "offers-to-offers",
+          method: "POST",
+          data: {
+            sourceOfferId: offer.id,
+            targetOfferId: String(values.get("target")),
+            variant: String(values.get("role")),
+            recurrence: String(values.get("recurrence")) as "first" | "each",
+          },
         },
       });
       await props.onRefresh();
@@ -378,14 +400,6 @@ function OfferEditor(props: IEditorProps & { offer: IOffer }) {
               />
             </label>
             <label className={label}>
-              Pickup point IDs · comma separated
-              <input
-                name="pickupPoints"
-                className={field}
-                defaultValue={offer.settings.pickupPointIds?.join(", ")}
-              />
-            </label>
-            <label className={label}>
               Delivery region IDs · comma separated
               <input
                 name="regions"
@@ -418,14 +432,6 @@ function OfferEditor(props: IEditorProps & { offer: IOffer }) {
               />
             </label>
           </div>
-          <label className="flex min-h-11 items-center gap-2 text-sm">
-            <input
-              name="requiredDelivery"
-              type="checkbox"
-              defaultChecked={offer.settings.requiredDelivery}
-            />
-            A receipt method must be selected
-          </label>
           <label className="flex min-h-11 items-center gap-2 text-sm">
             <input
               name="standalone"
@@ -486,7 +492,12 @@ function OfferEditor(props: IEditorProps & { offer: IOffer }) {
         <h3 className="font-semibold">Delivery, add-ons and fulfilment</h3>
         <ul className="space-y-2">
           {context.links
-            .filter((link) => link.sourceOfferId === offer.id)
+            .filter(
+              (link) =>
+                link.sourceOfferId === offer.id ||
+                (link.variant !== "fulfilled-by" &&
+                  link.sourceProductId === offer.productId),
+            )
             .map((link) => (
               <LinkRow
                 key={link.id}
@@ -497,60 +508,65 @@ function OfferEditor(props: IEditorProps & { offer: IOffer }) {
                   )?.sku ?? link.targetOfferId
                 }
                 removing={removingId === link.id}
-                onRemove={onLinkRemove}
+                onRemove={
+                  link.variant === "fulfilled-by" || ownsProduct
+                    ? onLinkRemove
+                    : undefined
+                }
               />
             ))}
         </ul>
-        <form onSubmit={link} className="grid gap-3 sm:grid-cols-2">
-          <label className={label}>
-            Association
-            <select
-              name="role"
-              className={field}
-              value={linkRole}
-              onChange={(event) => setLinkRole(event.target.value)}
-            >
-              <option value="delivery">Delivery</option>
-              <option value="add-on">Add-on</option>
-              <option value="fulfilled-by" disabled={!serviceProduct}>
-                Fulfilled by provider
-              </option>
-            </select>
-          </label>
-          <label className={label}>
-            Target offer
-            <select key={linkRole} name="target" className={field} required>
-              <option value="">Choose a service or provider offer</option>
-              {targets.map((target) => (
-                <option key={target.id} value={target.id}>
-                  {context.products.find(
-                    (product) => product.id === target.productId,
-                  )?.title?.en || target.productId}{" "}
-                  · {target.sku} · {target.variant}
+        {offer.variant === "default" && (ownsProduct || serviceProduct) && (
+          <form onSubmit={link} className="grid gap-3 sm:grid-cols-2">
+            <label className={label}>
+              Association
+              <select
+                name="role"
+                className={field}
+                value={linkRole}
+                onChange={(event) => setLinkRole(event.target.value)}
+              >
+                {ownsProduct && <option value="delivery">Delivery</option>}
+                {ownsProduct && <option value="add-on">Add-on</option>}
+                <option value="fulfilled-by" disabled={!serviceProduct}>
+                  Fulfilled by provider
                 </option>
-              ))}
-            </select>
-          </label>
-          <label className={label}>
-            Recurrence
-            <select name="recurrence" className={field}>
-              <option value="first">First delivery only</option>
-              <option value="each">Every delivery</option>
-            </select>
-          </label>
-          <button
-            className={button}
-            type="submit"
-            disabled={createLink.isPending}
-          >
-            {createLink.isPending ? "Saving…" : "Add service link"}
-          </button>
-          <p className="text-xs text-muted-foreground sm:col-span-2">
-            Delivery and add-ons use your store’s retail services. Fulfilment
-            uses one provider offer for the same service Product. The server
-            checks both ends.
-          </p>
-        </form>
+              </select>
+            </label>
+            <label className={label}>
+              Target offer
+              <select key={linkRole} name="target" className={field} required>
+                <option value="">Choose a service or provider offer</option>
+                {targets.map((target) => (
+                  <option key={target.id} value={target.id}>
+                    {context.products.find(
+                      (product) => product.id === target.productId,
+                    )?.title?.en || target.productId}{" "}
+                    · {target.sku} · {target.variant}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label className={label}>
+              Recurrence
+              <select name="recurrence" className={field}>
+                <option value="first">First delivery only</option>
+                <option value="each">Every delivery</option>
+              </select>
+            </label>
+            <button
+              className={button}
+              type="submit"
+              disabled={createLink.isPending}
+            >
+              {createLink.isPending ? "Saving…" : "Add service link"}
+            </button>
+            <p className="text-xs text-muted-foreground sm:col-span-2">
+              Delivery methods and add-ons apply to this product in every store.
+              Choose the service offer from the contractor who supplies it.
+            </p>
+          </form>
+        )}
       </section>
       {feedback && (
         <p role="status" className="text-sm text-muted-foreground">
@@ -625,21 +641,23 @@ const LinkRow = memo(function LinkRow({
   link: ILink;
   target: string;
   removing: boolean;
-  onRemove: (id: string) => void;
+  onRemove?: (id: string) => void;
 }) {
   return (
     <li className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border p-3 text-sm">
       <span className="break-all">
         {link.variant} · {target} · {link.recurrence}
       </span>
-      <button
-        className={button}
-        type="button"
-        disabled={removing}
-        onClick={() => onRemove(link.id)}
-      >
-        {removing ? "Removing…" : "Remove link"}
-      </button>
+      {onRemove && (
+        <button
+          className={button}
+          type="button"
+          disabled={removing}
+          onClick={() => onRemove(link.id)}
+        >
+          {removing ? "Removing…" : "Remove link"}
+        </button>
+      )}
     </li>
   );
 });

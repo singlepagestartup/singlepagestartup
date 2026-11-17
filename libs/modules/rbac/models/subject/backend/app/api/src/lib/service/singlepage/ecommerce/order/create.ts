@@ -27,6 +27,13 @@ interface IConstructorProps {
   >;
 }
 
+interface ISelectedService {
+  offerId: string;
+  productId: string;
+  quantity: number;
+  recurrence: "first" | "each";
+}
+
 export class Service {
   constructor(private readonly dependencies: IConstructorProps) {}
 
@@ -81,6 +88,7 @@ export class Service {
       prepared =
         await service.ecommerceModule.storesToProducts.quote(selection);
     }
+    selection.services = prepared.selectedServices ?? selection.services;
     if (
       props.expectedQuoteVersion &&
       props.expectedQuoteVersion !== prepared.version
@@ -124,17 +132,63 @@ export class Service {
           selections: [selection],
           preparedQuotes: [lockedQuote],
         });
-        const incomplete = new Set([
-          "delivery_required",
-          "address_required",
-          "pickup_required",
-        ]);
+        const incomplete = new Set(["address_required"]);
         if (
           !quote.currencyIds.includes(selection.currencyId) ||
           quote.issues.some((issue) => !incomplete.has(issue.code))
         ) {
           throw new Error(
             `Validation error. ${quote.issues.find((issue) => !incomplete.has(issue.code))?.message ?? "Offer is not available in the selected currency"}`,
+          );
+        }
+        const selectedServices: ISelectedService[] = [];
+        const draftOfferIds = new Set<string>();
+        for (const selected of selection.services ?? []) {
+          const charge = quote.charges.find(
+            (charge) =>
+              charge.offerId === selected.offerId && charge.role !== "product",
+          );
+          if (charge) {
+            selectedServices.push({
+              ...selected,
+              productId: charge.productId,
+              recurrence: charge.recurrence,
+            });
+            continue;
+          }
+          const option = quote.serviceOptions.find(
+            (option) =>
+              option.offerId === selected.offerId ||
+              option.compatibleOfferIds?.includes(selected.offerId),
+          );
+          const needsDestination = quote.issues.some(
+            (issue) =>
+              issue.offerId === selected.offerId &&
+              issue.code === "address_required" &&
+              option?.receiptMethod === "shipping",
+          );
+          if (
+            !option ||
+            option.role !== "delivery" ||
+            !option.productId ||
+            !option.recurrence ||
+            !option.currencyIds.includes(selection.currencyId) ||
+            !needsDestination
+          ) {
+            throw new Error(
+              "Validation error. Selected service has no quoted charge",
+            );
+          }
+          selectedServices.push({
+            ...selected,
+            productId: option.productId,
+            recurrence: option.recurrence,
+          });
+          draftOfferIds.add(selected.offerId);
+        }
+        if (quote.issues.some((issue) => !draftOfferIds.has(issue.offerId))) {
+          throw new Error(
+            "Validation error. Complete the selected fulfillment method before adding this product",
           );
         }
         const order = await service.ecommerceModule.order.create({
@@ -155,7 +209,7 @@ export class Service {
             productId: props.productId,
             offerId: offer.id,
             quantity: props.quantity,
-            destination: props.destination ?? {},
+            destination: quote.destination ?? props.destination ?? {},
             selectionUpdatedAt: new Date(),
             quoteVersion: quote.version,
             quoteExpiresAt: new Date(quote.expiresAt),
@@ -164,33 +218,15 @@ export class Service {
         if (!primary) {
           throw new Error("Not Found error. No orders to products found");
         }
-        for (const selected of selection.services ?? []) {
-          const serviceOffer =
-            await service.ecommerceModule.storesToProducts.findById({
-              id: selected.offerId,
-            });
-          if (
-            !serviceOffer ||
-            !quote.serviceOptions.some(
-              (option) => option.offerId === selected.offerId,
-            )
-          ) {
-            throw new Error(
-              "Validation error. Selected service does not belong to this offer",
-            );
-          }
-          const charge = quote.charges.find(
-            (charge) =>
-              charge.offerId === selected.offerId && charge.role !== "product",
-          );
+        for (const selected of selectedServices) {
           await service.ecommerceModule.ordersToProducts.create({
             data: {
               orderId: order.id,
-              productId: serviceOffer.productId,
-              offerId: serviceOffer.id,
+              productId: selected.productId,
+              offerId: selected.offerId,
               parentLineId: primary.id,
               quantity: selected.quantity,
-              recurrence: charge?.recurrence ?? "each",
+              recurrence: selected.recurrence,
               selectionUpdatedAt: new Date(),
             },
           });

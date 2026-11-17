@@ -145,7 +145,6 @@ paths:
                   type: object
                   properties:
                     address: { type: string }
-                    pickupPointId: { type: string }
                     region: { type: string }
                 services:
                   type: array

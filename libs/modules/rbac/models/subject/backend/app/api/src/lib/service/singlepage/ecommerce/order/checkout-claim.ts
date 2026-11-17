@@ -119,6 +119,45 @@ export class Service {
               "Conflict error. Checkout order has a recorded subscription period",
             );
           }
+          if (order.subscriptionSourceOrderId && !payingHistory) {
+            await ecommerceModule.order.lockForLifecycle({
+              id: order.subscriptionSourceOrderId,
+            });
+            const source = await ecommerceModule.order.findById({
+              id: order.subscriptionSourceOrderId,
+            });
+            const sourceOwners = await subjectsToEcommerceModuleOrders.find({
+              params: {
+                filters: {
+                  and: [
+                    {
+                      column: "ecommerceModuleOrderId",
+                      method: "eq",
+                      value: order.subscriptionSourceOrderId,
+                    },
+                  ],
+                },
+              },
+            });
+            if (
+              !source ||
+              source.subscriptionRevokedAt ||
+              source.subscriptionPeriodInvoiceId !==
+                order.subscriptionSourceInvoiceId ||
+              [
+                "requested_cancelation",
+                "canceling",
+                "canceled",
+                "completed",
+              ].includes(source.status) ||
+              !sourceOwners.length ||
+              sourceOwners.some((owner) => owner.subjectId !== props.subjectId)
+            ) {
+              throw new Error(
+                "Conflict error. Source subscription no longer permits another paid period",
+              );
+            }
+          }
           lockedOrders.push(order);
         }
         const filters = {
@@ -248,7 +287,9 @@ export class Service {
               const invoice = payable[0] ?? paid[0];
               if (
                 payable.length > 1 ||
-                (payable[0] && !payable[0].paymentUrl)
+                (payable[0] &&
+                  !payable[0].paymentUrl &&
+                  !intent.checkoutMetadata?.providerContractPaymentIntentId)
               ) {
                 throw new Error(
                   "Conflict error. Cart has an unresolved payment attempt",

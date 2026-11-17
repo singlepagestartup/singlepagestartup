@@ -1,5 +1,22 @@
 type: object
-required: [offerId, productId, storeId, currencyId, quantity, amount, availableQuantity, currencyIds, serviceOptions, charges, issues, version, expiresAt]
+required:
+  [
+    offerId,
+    productId,
+    storeId,
+    currencyId,
+    quantity,
+    amount,
+    availableQuantity,
+    currencyIds,
+    serviceOptions,
+    selectedServices,
+    fulfillmentAlreadySatisfied,
+    charges,
+    issues,
+    version,
+    expiresAt,
+  ]
 properties:
   offerId: { type: string, format: uuid }
   productId: { type: string, format: uuid }
@@ -26,9 +43,21 @@ properties:
       properties:
         offerId: { type: string, format: uuid }
         productId: { type: string, format: uuid }
+        serviceKey:
+          {
+            type: string,
+            description: Identity of a contractor service configuration and tariff.,
+          }
+        compatibleOfferIds:
+          {
+            type: array,
+            items: { type: string, format: uuid },
+            description: Equivalent service offer IDs accepted for existing cart selections.,
+          }
         title: { type: string }
         titles: { type: object, additionalProperties: { type: string } }
         role: { type: string, enum: [delivery, add-on] }
+        recurrence: { type: string, enum: [first, each] }
         receiptMethod: { type: string, enum: [shipping, pickup, electronic] }
         pricePreview:
           type: object
@@ -36,21 +65,58 @@ properties:
           description: Fixed service charge or verified starting price for this offer, merchandise quantity and quote currency.
           properties:
             kind: { type: string, enum: [fixed, from] }
-            amount: { type: string, description: Major currency units, rounded with the same precision as the final charge. }
+            amount:
+              {
+                type: string,
+                description: Major currency units,
+                rounded with the same precision as the final charge.,
+              }
         deliveryTariff:
           type: object
           required: [basis]
           properties:
             basis: { type: string, enum: [fixed, distance, calculated] }
-            fixedAmount: { type: string, description: Fixed delivery charge in the requested currency. }
-        pickupPointIds: { type: array, items: { type: string } }
+            fixedAmount:
+              {
+                type: string,
+                description: Fixed delivery charge in the requested currency.,
+              }
         regionIds: { type: array, items: { type: string } }
         currencyIds: { type: array, items: { type: string, format: uuid } }
+  fulfillmentAlreadySatisfied:
+    type: boolean
+    readOnly: true
+    description: Verified paid first-only fulfillment already covers this subscription period. Only trusted server context can establish this value.
+  selectedServices:
+    type: array
+    description: Authoritative service selections, including the cheapest available fulfillment when none was selected. Returned even when a delivery address is still required. Pickup is at the selected retail store.
+    items:
+      type: object
+      required: [offerId, quantity]
+      properties:
+        offerId: { type: string, format: uuid }
+        quantity: { type: integer, minimum: 1 }
+        lineId: { type: string, format: uuid }
   charges:
     type: array
     items:
       type: object
-      required: [offerId, productId, storeId, providerStoreId, role, recurrence, quantity, amount, formula, formulaVersion, inputs, stockQuantity, availableQuantity]
+      required:
+        [
+          offerId,
+          productId,
+          storeId,
+          providerStoreId,
+          role,
+          recurrence,
+          quantity,
+          amount,
+          formula,
+          formulaVersion,
+          inputs,
+          stockQuantity,
+          availableQuantity,
+        ]
       properties:
         offerId: { type: string, format: uuid }
         productId: { type: string, format: uuid }
@@ -84,7 +150,6 @@ properties:
     properties:
       address: { type: string }
       region: { type: string }
-      pickupPointId: { type: string }
       coordinates:
         type: object
         required: [latitude, longitude]

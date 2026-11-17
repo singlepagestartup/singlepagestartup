@@ -13,7 +13,7 @@ const offer = {
 const product = { id: "delivery", kind: "service", variant: "default" };
 const input = { offerId: "shipping", query: "  Main Street  ", language: "EN" };
 const service = new Service({
-  repository: { addressSuggestionsOffer },
+  catalog: { addressSuggestionsOffer },
   routing,
 });
 beforeEach(() => {

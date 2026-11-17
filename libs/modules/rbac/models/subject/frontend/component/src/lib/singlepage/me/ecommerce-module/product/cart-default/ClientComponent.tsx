@@ -85,27 +85,12 @@ export function Component(props: IComponentPropsExtended) {
         apiProps={{ params: { includeCartDetails: true } }}
       >
         {({ data }) => {
-          const orders = data.filter(
-            (order) =>
-              (!props.ecommerceModuleStore ||
-                order.cartDetails?.storeIds.includes(
-                  props.ecommerceModuleStore.id,
-                )) &&
-              order.cartDetails?.lines.some(
-                (line) =>
-                  !line.parentLineId &&
-                  line.productId === props.ecommerceModuleProduct.id,
-              ),
-          );
-          const savedOfferIds = orders.flatMap(
-            (order) =>
-              order.cartDetails?.lines.flatMap((line) =>
+          const orders = data.filter((order) =>
+            order.cartDetails?.lines.some(
+              (line) =>
                 !line.parentLineId &&
-                line.offerId &&
-                line.productId === props.ecommerceModuleProduct.id
-                  ? [line.offerId]
-                  : [],
-              ) ?? [],
+                line.productId === props.ecommerceModuleProduct.id,
+            ),
           );
           return (
             <>
@@ -135,7 +120,7 @@ export function Component(props: IComponentPropsExtended) {
                 ecommerceModuleProduct={props.ecommerceModuleProduct}
                 ecommerceModuleStore={props.ecommerceModuleStore}
                 language={props.language}
-                excludedOfferIds={savedOfferIds}
+                hideConfiguration={orders.length > 0}
                 checkoutSlot={
                   props.withOneStepCheckout
                     ? (configuration, actions) => (

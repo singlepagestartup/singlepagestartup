@@ -66,9 +66,7 @@ export type CartPurchaseScenario =
   | "wardrobe-region"
   | "two-one-assembly"
   | "two-both-assembly"
-  | "split-orders"
   | "seller-comparison"
-  | "service-unavailable"
   | "tariff-changed"
   | "sold-out"
   | "stock-shortage"
@@ -242,17 +240,8 @@ export const cartPurchaseScenarios: Record<
       },
     ],
   },
-  "split-orders": {
-    description: "У каждого шкафа свой адрес, услуги и итог.",
-    lines: [wardrobePurchaseLine, secondWardrobePurchaseLine],
-  },
   "seller-comparison": {
     description: "Смена магазина в первом заказе сохраняет выбор второго.",
-    lines: [wardrobePurchaseLine, secondWardrobePurchaseLine],
-  },
-  "service-unavailable": {
-    description:
-      "У другого магазина нет сборки. Отказ от услуги требует подтверждения.",
     lines: [wardrobePurchaseLine, secondWardrobePurchaseLine],
   },
   "tariff-changed": {

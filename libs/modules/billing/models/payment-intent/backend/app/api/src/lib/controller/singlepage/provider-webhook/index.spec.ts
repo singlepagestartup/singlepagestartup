@@ -138,7 +138,7 @@ describe("Given: the payment-intent provider webhook handler", () => {
    *
    * Given: the list names dummy and the invoice has a non-zero amount.
    * When: the dummy webhook is posted with the invoice id.
-   * Then: the dummy branch settles the invoice and the handler answers 200 with it.
+   * Then: the authenticated dummy branch settles the invoice and answers with an acknowledgment.
    */
   it("Then: settles the invoice through the dummy branch when the list names dummy", async () => {
     const service = createService({ allowedProviders: ["dummy"] });
@@ -154,14 +154,27 @@ describe("Given: the payment-intent provider webhook handler", () => {
       service,
       provider: "dummy",
       body: { data: { id: "invoice-1" } },
+      headers: { "X-RBAC-SECRET-KEY": "test-rbac-secret" },
     });
 
     expect(response.status).toBe(200);
-    await expect(response.json()).resolves.toEqual({ data: paidInvoice });
+    await expect(response.json()).resolves.toEqual({ data: { ok: true } });
     expect(service.dummy).toHaveBeenCalledWith({
       data: { id: "invoice-1" },
       action: "webhook",
     });
+  });
+
+  it("refuses an anonymous dummy callback without reading or settling an invoice", async () => {
+    const service = createService({ allowedProviders: ["dummy"] });
+    const response = await postWebhook({
+      service,
+      provider: "dummy",
+      body: { data: { id: "invoice-1" } },
+    });
+    expect(response.status).toBe(403);
+    expect(service.billingModule.invoice.findById).not.toHaveBeenCalled();
+    expect(service.dummy).not.toHaveBeenCalled();
   });
 
   /**

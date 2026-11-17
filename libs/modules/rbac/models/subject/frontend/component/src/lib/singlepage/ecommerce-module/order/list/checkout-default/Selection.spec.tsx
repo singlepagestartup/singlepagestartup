@@ -19,12 +19,20 @@ import type {
 } from "@sps/ecommerce/relations/stores-to-products/sdk/model";
 
 const mockMutation = jest.fn();
+const mockPreview = jest.fn();
 const mockInvalidate = jest.fn();
 const mockQueryClient = { invalidateQueries: mockInvalidate };
 const mockQuoteRead = jest.fn();
 let mockPublish:
   ((request: any, result: IEcommerceCartSelectionResult) => void) | undefined;
 let mockMissing = false;
+let mockCommonServices = false;
+let mockSelectedServices:
+  | ((
+      selection: IEcommerceCartSelection | undefined,
+      options: IOfferServiceOption[],
+    ) => { offerId: string; quantity: number }[])
+  | undefined;
 let mockPickup = false;
 let mockCurrencyLoading = false;
 let mockDeliveryTariff: IOfferServiceOption["deliveryTariff"] | undefined;
@@ -39,49 +47,56 @@ const mockOptions = (
   seller: string,
   currencyId = "rub",
   quantity = 1,
-): IOfferServiceOption[] => [
-  {
-    offerId: `delivery-${seller}`,
-    productId: "delivery",
-    title: "Доставка",
-    titles: { ru: "Доставка", en: "Delivery" },
-    role: "delivery",
-    receiptMethod: "shipping",
-    deliveryTariff: mockDeliveryTariff ?? {
-      basis: "fixed",
-      fixedAmount:
-        currencyId === "usd" ? "12.35" : seller === "a" ? "1000" : "500",
+): IOfferServiceOption[] => {
+  if (mockCommonServices) seller = "a";
+  const legacyPickupFields = { pickupPointIds: ["pickup-1", "pickup-2"] };
+  return [
+    {
+      offerId: `delivery-${seller}`,
+      compatibleOfferIds: ["delivery-a", "delivery-b"],
+      productId: "delivery",
+      title: "Доставка",
+      titles: { ru: "Доставка", en: "Delivery" },
+      role: "delivery",
+      receiptMethod: "shipping",
+      deliveryTariff: mockDeliveryTariff ?? {
+        basis: "fixed",
+        fixedAmount:
+          currencyId === "usd" ? "12.35" : seller === "a" ? "1000" : "500",
+      },
+      currencyIds: ["rub", "usd"],
     },
-    currencyIds: ["rub", "usd"],
-  },
-  ...(mockPickup
-    ? [
-        {
-          offerId: `pickup-${seller}`,
-          productId: "pickup",
-          title: "Пункт выдачи",
-          titles: { ru: "Пункт выдачи", en: "Collection point" },
-          role: "delivery" as const,
-          receiptMethod: "pickup" as const,
-          pickupPointIds: ["pickup-1", "pickup-2"],
-          currencyIds: ["rub", "usd"],
-        },
-      ]
-    : []),
-  ...(mockMissing && seller === "b"
-    ? []
-    : [
-        {
-          offerId: `assembly-${seller}`,
-          productId: "assembly",
-          title: "Сборка",
-          titles: { ru: "Сборка", en: "Assembly" },
-          role: "add-on" as const,
-          currencyIds: ["rub", "usd"],
-        },
-      ]),
-  ...(mockExtraOptions?.(quantity, currencyId) ?? []),
-];
+    ...(mockPickup
+      ? [
+          {
+            offerId: `pickup-${seller}`,
+            compatibleOfferIds: ["pickup-a", "pickup-b"],
+            productId: "pickup",
+            title: "Пункт выдачи",
+            titles: { ru: "Пункт выдачи", en: "Collection point" },
+            role: "delivery" as const,
+            receiptMethod: "pickup" as const,
+            ...legacyPickupFields,
+            currencyIds: ["rub", "usd"],
+          },
+        ]
+      : []),
+    ...(mockMissing && seller === "b"
+      ? []
+      : [
+          {
+            offerId: `assembly-${seller}`,
+            compatibleOfferIds: ["assembly-a", "assembly-b"],
+            productId: "assembly",
+            title: "Сборка",
+            titles: { ru: "Сборка", en: "Assembly" },
+            role: "add-on" as const,
+            currencyIds: ["rub", "usd"],
+          },
+        ]),
+    ...(mockExtraOptions?.(quantity, currencyId) ?? []),
+  ];
+};
 
 function mockCharge(
   offerId: string,
@@ -184,6 +199,10 @@ function mockQuote(
       selection?.currencyId,
       selection?.quantity,
     ),
+    selectedServices: mockSelectedServices?.(
+      selection,
+      mockOptions(seller, selection?.currencyId, selection?.quantity),
+    ),
     issues: [],
     charges,
     destination: selection?.destination,
@@ -208,14 +227,49 @@ function mockResult(
 
 jest.mock("@sps/rbac/models/subject/sdk/client", () => ({
   api: {
-    ecommerceModuleOrderSelection: () => ({
-      mutateAsync: async (request: any) => {
-        const result = await mockMutation(request);
-        mockPublish?.(request, result);
-        return result;
-      },
-      isPending: false,
-    }),
+    ecommerceModuleOrderSelection: () => {
+      const { useState } = jest.requireActual("react");
+      const [state, setState] = useState({
+        data: undefined,
+        variables: undefined,
+        isPending: false,
+        isError: false,
+      });
+      return {
+        ...state,
+        mutateAsync: async (request: any) => {
+          if (request.data.action === "preview") {
+            setState({
+              variables: request,
+              data: undefined,
+              isPending: true,
+              isError: false,
+            });
+            try {
+              const result = await mockPreview(request);
+              setState({
+                variables: request,
+                data: result,
+                isPending: false,
+                isError: false,
+              });
+              return result;
+            } catch (error) {
+              setState({
+                variables: request,
+                data: undefined,
+                isPending: false,
+                isError: true,
+              });
+              throw error;
+            }
+          }
+          const result = await mockMutation(request);
+          mockPublish?.(request, result);
+          return result;
+        },
+      };
+    },
   },
 }));
 jest.mock("@sps/rbac/models/subject/sdk/model", () => ({
@@ -335,6 +389,8 @@ beforeAll(() => {
 });
 beforeEach(() => {
   mockMissing = false;
+  mockCommonServices = false;
+  mockSelectedServices = undefined;
   mockPickup = false;
   mockCurrencyLoading = false;
   mockDeliveryTariff = undefined;
@@ -345,6 +401,10 @@ beforeEach(() => {
   mockDiscovery.clear();
   mockPublish = undefined;
   mockInvalidate.mockReset().mockResolvedValue(undefined);
+  mockPreview.mockReset().mockImplementation(async ({ data }) => ({
+    ...mockResult(data.selections),
+    applied: false,
+  }));
   mockMutation
     .mockReset()
     .mockImplementation(async ({ data }) => mockResult(data.selections));
@@ -851,21 +911,15 @@ it("serializes overlapping saves, keeps controls editable, and chains the return
   ).toEqual(["save", "save"]);
 });
 
-it("requires an explicit choice before dropping a service unavailable at another seller", async () => {
+it("reconciles an unavailable service without a manual removal checkbox", async () => {
   mockMissing = true;
-  const onSelectionPendingChange = jest.fn();
-  renderSelection({ ...props, onSelectionPendingChange });
+  renderSelection();
   await selectOption("Магазин", "Магазин Б");
-  const remove = await screen.findByRole("checkbox", {
-    name: "Убрать недоступные услуги",
-  });
-  await settleDebounce();
-  expect(mockMutation).not.toHaveBeenCalled();
-  expect(onSelectionPendingChange).toHaveBeenLastCalledWith("line", false);
-  expect(screen.getByRole("alert").textContent).toMatch(/Сборка/);
-  fireEvent.click(remove);
-  expect(onSelectionPendingChange).toHaveBeenLastCalledWith("line", true);
   await waitFor(() => expect(mockMutation).toHaveBeenCalledTimes(1));
+  expect(
+    screen.queryByRole("checkbox", { name: "Убрать недоступные услуги" }),
+  ).toBeNull();
+  expect(screen.queryByRole("checkbox", { name: "Сборка" })).toBeNull();
   expect(mockMutation.mock.calls[0][0].data.selections[0].services).toEqual([
     { offerId: "delivery-b", quantity: 1 },
   ]);
@@ -1040,73 +1094,33 @@ it("keeps a conflicting edit blocked until refreshed cart data supplies the curr
   ]);
 });
 
-it("splits only on the structural action, preserving total quantity and fulfillment for both addresses", async () => {
-  const splitLine = { ...line, quantity: 3 };
-  const onSelectionPendingChange = jest.fn();
-  const splitProps = {
+it("uses one address and one selection for every purchased unit", async () => {
+  const multi = { ...line, quantity: 3 };
+  renderSelection({
     ...props,
-    onSelectionPendingChange,
-    line: splitLine,
+    line: multi,
     details: {
       ...props.details,
-      offerQuotes: [{ ...mockQuote(), quantity: 3 }],
-      lines: [splitLine, ...props.details.lines.slice(1)],
+      lines: [multi, ...props.details.lines.slice(1)],
     },
-  };
-  renderSelection(splitProps);
-  fireEvent.click(
-    screen.getByRole("checkbox", { name: "Доставить часть на другой адрес" }),
-  );
-  expect(onSelectionPendingChange).not.toHaveBeenCalledWith("line", true);
-  await settleDebounce();
-  expect(mockMutation).not.toHaveBeenCalled();
-  expect(
-    screen
-      .getByRole("button", { name: "Разделить заказ" })
-      .hasAttribute("disabled"),
-  ).toBe(true);
-  fireEvent.change(screen.getByLabelText("Адрес второго заказа"), {
-    target: { value: "City address" },
   });
-  await settleDebounce();
-  expect(mockMutation).not.toHaveBeenCalled();
   expect(
-    screen
-      .getByRole("button", { name: "Разделить заказ" })
-      .hasAttribute("disabled"),
-  ).toBe(true);
-  fireEvent.change(screen.getByLabelText("Адрес второго заказа"), {
-    target: { value: "Second address" },
+    screen.queryByRole("checkbox", { name: "Доставить часть на другой адрес" }),
+  ).toBeNull();
+  expect(screen.queryByRole("button", { name: "Разделить заказ" })).toBeNull();
+  expect(screen.getAllByLabelText("Адрес доставки")).toHaveLength(1);
+  fireEvent.change(screen.getByLabelText("Адрес доставки"), {
+    target: { value: "Один адрес" },
   });
-  await settleDebounce();
-  expect(mockMutation).not.toHaveBeenCalled();
-  fireEvent.click(screen.getByRole("button", { name: "Разделить заказ" }));
-  expect(onSelectionPendingChange).toHaveBeenLastCalledWith("line", true);
   await waitFor(() => expect(mockMutation).toHaveBeenCalledTimes(1));
-  expect(mockMutation.mock.calls[0][0].data).toEqual(
+  const selections = mockMutation.mock.calls[0][0].data.selections;
+  expect(selections).toHaveLength(1);
+  expect(selections[0]).toEqual(
     expect.objectContaining({
-      action: "save",
-      selections: [
-        expect.objectContaining({
-          quantity: 2,
-          destination: { address: "City address", region: "city" },
-          services: [
-            { offerId: "delivery-a", quantity: 1 },
-            { offerId: "assembly-a", quantity: 1 },
-          ],
-        }),
-        expect.objectContaining({
-          quantity: 1,
-          destination: { address: "Second address", region: "city" },
-          services: [{ offerId: "delivery-a", quantity: 1 }],
-        }),
-      ],
+      quantity: 3,
+      destination: { address: "Один адрес", region: "city" },
     }),
   );
-  await waitFor(() => expect(receipt().getByText("Шкаф × 2")).toBeTruthy());
-  expect(onSelectionPendingChange).toHaveBeenLastCalledWith("line", false);
-  expect(screen.getAllByRole("region", { name: "Расчёт" })).toHaveLength(1);
-  expect(screen.getAllByText("Итого")).toHaveLength(1);
 });
 
 it("persists currency and service quantity changes with prices from the returned quote", async () => {
@@ -1258,33 +1272,25 @@ it("keeps checkout blocked after a successful write until the authoritative list
   expect(mockMutation).toHaveBeenCalledTimes(1);
 });
 
-it("preserves services when switching back from a seller that cannot supply them", async () => {
-  mockMissing = true;
+it("retains common contractor services and quantities across seller changes", async () => {
+  mockCommonServices = true;
   renderSelection();
   await selectOption("Магазин", "Магазин Б");
-  expect(
-    await screen.findByRole("checkbox", { name: "Убрать недоступные услуги" }),
-  ).toBeTruthy();
-  expect(mockMutation).not.toHaveBeenCalled();
-  await selectOption("Магазин", "Магазин А");
   await waitFor(() => expect(mockMutation).toHaveBeenCalledTimes(1));
-  expect(mockMutation.mock.calls[0][0].data.selections[0]).toEqual(
-    expect.objectContaining({
-      offerId: "offer-a",
-      services: [
-        { offerId: "delivery-a", quantity: 1 },
-        { offerId: "assembly-a", quantity: 1 },
-      ],
-    }),
-  );
+  expect(mockMutation.mock.calls[0][0].data.selections[0].services).toEqual([
+    { offerId: "delivery-a", quantity: 1 },
+    { offerId: "assembly-a", quantity: 1 },
+  ]);
   expect(
     screen
       .getByRole("checkbox", { name: "Сборка" })
       .getAttribute("aria-checked"),
   ).toBe("true");
-  expect(
-    screen.queryByRole("checkbox", { name: "Убрать недоступные услуги" }),
-  ).toBeNull();
+  await selectOption("Магазин", "Магазин А");
+  await waitFor(() => expect(mockMutation).toHaveBeenCalledTimes(2));
+  expect(mockMutation.mock.calls[1][0].data.selections[0].services).toEqual(
+    mockMutation.mock.calls[0][0].data.selections[0].services,
+  );
 });
 
 it("preserves the draft for review when another cart revision is newer than a delayed successful save", async () => {
@@ -1426,64 +1432,35 @@ it.each([
   },
 );
 
-it("keeps shipping and pickup fields inside their selected fulfillment option and service units separate", async () => {
+it("keeps shipping address and service quantity fields while collecting pickup at the selected store without a picker", async () => {
   mockPickup = true;
   const onSelectionPendingChange = jest.fn();
-  mockMutation.mockImplementation(async ({ data }) => {
-    const result = mockResult(data.selections);
-    if (!data.selections[0].destination?.pickupPointId) {
-      return {
-        ...result,
-        applied: false,
-        selectionUpdatedAt: undefined,
-        quotes: [
-          {
-            ...result.quotes[0],
-            amount: null,
-            issues: [
-              {
-                code: "pickup",
-                offerId: "pickup-a",
-                message: "Choose a pickup point",
-              },
-            ],
-          },
-        ],
-      };
-    }
-    return result;
-  });
   renderSelection({ ...props, onSelectionPendingChange });
   const delivery = within(screen.getByRole("group", { name: "Доставка" }));
   expect(delivery.getByLabelText("Адрес доставки")).toBeTruthy();
   expect(
     delivery.queryByRole("spinbutton", { name: "Количество единиц услуги" }),
   ).toBeNull();
-  expect(screen.queryByLabelText("Регион")).toBeNull();
   const assembly = within(screen.getByRole("group", { name: "Сборка" }));
   expect(
     assembly.getByRole("spinbutton", { name: "Количество единиц услуги" }),
   ).toBeTruthy();
   expect(assembly.queryByLabelText("Адрес доставки")).toBeNull();
   fireEvent.click(screen.getByRole("radio", { name: /Пункт выдачи/ }));
-  expect(onSelectionPendingChange).not.toHaveBeenCalledWith("line", true);
   expect(screen.queryByLabelText("Адрес доставки")).toBeNull();
-  const pickup = within(screen.getByRole("group", { name: /Пункт выдачи/ }));
+  expect(screen.queryByLabelText("Точка самовывоза")).toBeNull();
   expect(
-    pickup.getByRole("combobox", { name: "Точка самовывоза" }),
-  ).toBeTruthy();
-  expect(
-    pickup.queryByRole("spinbutton", { name: "Количество единиц услуги" }),
+    within(screen.getByRole("group", { name: /Пункт выдачи/ })).queryByRole(
+      "spinbutton",
+    ),
   ).toBeNull();
-  await selectOption("Точка самовывоза", "pickup-2");
-  expect(onSelectionPendingChange).toHaveBeenCalledWith("line", true);
   await waitFor(() =>
     expect(mockMutation).toHaveBeenLastCalledWith(
       expect.objectContaining({
         data: expect.objectContaining({
           selections: [
             expect.objectContaining({
-              destination: { pickupPointId: "pickup-2" },
+              destination: {},
               services: expect.arrayContaining([
                 { offerId: "pickup-a", quantity: 1 },
                 { offerId: "assembly-a", quantity: 1 },
@@ -1497,76 +1474,120 @@ it("keeps shipping and pickup fields inside their selected fulfillment option an
   await waitFor(() =>
     expect(onSelectionPendingChange).toHaveBeenLastCalledWith("line", false),
   );
-  expect(
-    screen
-      .getByRole("radio", { name: "Доставка" })
-      .getAttribute("aria-checked"),
-  ).toBe("false");
 });
 
-it.each(["price", "tariff", "coverage", "padding"] as const)(
-  "selects a delivery exactly once from the header %s without adding metadata to its accessible name",
-  async (target) => {
-    const selection: IEcommerceCartSelection = {
-      offerId: "offer-a",
-      quantity: 1,
-      currencyId: "rub",
+it("ignores a legacy pickup point while changing the selected store and blocks shipping payment until its address is entered", async () => {
+  mockPickup = true;
+  const onSelectionStateChange = jest.fn();
+  const savedLine = {
+    ...line,
+    destination: { address: undefined, pickupPointId: "old-branch-point" },
+  };
+  const selected = {
+    offerId: "offer-a",
+    currencyId: "rub",
+    quantity: 1,
+    destination: savedLine.destination,
+    services: [
+      { offerId: "pickup-a", quantity: 1 },
+      { offerId: "assembly-a", quantity: 1 },
+    ],
+  };
+  mockMutation.mockImplementation(async ({ data }) => {
+    const result = mockResult(data.selections);
+    const selection = data.selections[0];
+    if (
+      selection.services?.some((service: any) =>
+        service.offerId.startsWith("delivery"),
+      ) &&
+      !selection.destination?.address?.trim()
+    )
+      return {
+        ...result,
+        applied: false,
+        selectionUpdatedAt: undefined,
+        quotes: [
+          {
+            ...result.quotes[0],
+            amount: null,
+            issues: [
+              {
+                code: "address_required",
+                offerId: "delivery-b",
+                message: "Delivery address is required",
+              },
+            ],
+          },
+        ],
+      };
+    return result;
+  });
+  renderSelection({
+    ...props,
+    line: savedLine,
+    onSelectionStateChange,
+    details: {
+      ...props.details,
+      offerQuotes: [mockQuote("a", selected)],
+      lines: [
+        savedLine,
+        { ...props.details.lines[1], productId: "pickup", offerId: "pickup-a" },
+        props.details.lines[2],
+      ],
+    },
+  });
+  expect(screen.queryByLabelText("Точка самовывоза")).toBeNull();
+  await selectOption("Магазин", "Магазин Б");
+  await waitFor(() => expect(mockMutation).toHaveBeenCalledTimes(1));
+  expect(mockMutation.mock.calls[0][0].data.selections[0]).toEqual(
+    expect.objectContaining({
+      offerId: "offer-b",
       destination: {},
-      services: [{ offerId: "assembly-a", quantity: 1 }],
-    };
-    const quote = mockQuote("a", selection);
-    const savedLine = { ...line, quoteVersion: quote.version };
-    renderSelection({
-      ...props,
-      line: savedLine,
-      details: {
-        ...props.details,
-        offerQuotes: [quote],
-        lines: [savedLine, props.details.lines[2]],
-      },
-    });
-    const group = screen.getByRole("group", { name: "Доставка" });
-    const delivery = within(group);
-    const checkbox = delivery.getByRole("radio", { name: "Доставка" });
-    const heading = delivery.getByText("Доставка").closest("label")!;
-    expect(heading.htmlFor).toBe(checkbox.id);
-    expect(
-      heading.querySelector("input, button, label, [role=combobox]"),
-    ).toBeNull();
-    const clickTarget =
-      target === "price"
-        ? delivery.getByText("1 000 ₽")
-        : target === "tariff"
-          ? delivery.getByText("Фиксированная стоимость")
-          : target === "coverage"
-            ? delivery.getByText("Зона доставки не указана")
-            : heading;
-    fireEvent.click(clickTarget);
-    expect(checkbox.getAttribute("aria-checked")).toBe("true");
-    expect(screen.getByLabelText("Адрес доставки")).toBeTruthy();
-    await waitFor(() => expect(mockMutation).toHaveBeenCalledTimes(1));
-    expect(mockMutation.mock.calls[0][0].data.selections[0]).toEqual(
-      expect.objectContaining({
-        destination: line.destination,
-        services: expect.arrayContaining([
-          { offerId: "assembly-a", quantity: 1 },
-          { offerId: "delivery-a", quantity: 1 },
-        ]),
-      }),
-    );
-    await waitFor(() => expect(receipt().getByText("8 000 ₽")).toBeTruthy());
-    fireEvent.click(heading);
-    expect(delivery.getByRole("radio", { name: "Доставка" })).toBe(checkbox);
-    expect(mockMutation).toHaveBeenCalledTimes(1);
-  },
-);
+      services: expect.arrayContaining([{ offerId: "pickup-b", quantity: 1 }]),
+    }),
+  );
+  expect(
+    screen
+      .getByRole("radio", { name: "Пункт выдачи" })
+      .getAttribute("aria-checked"),
+  ).toBe("true");
+  fireEvent.click(screen.getByRole("radio", { name: "Доставка" }));
+  await waitFor(() => expect(mockMutation).toHaveBeenCalledTimes(2));
+  expect(screen.getByLabelText("Адрес доставки")).toBeTruthy();
+  expect(onSelectionStateChange).toHaveBeenLastCalledWith("line", true);
+  expect(receipt().queryByText("5 900 ₽")).toBeNull();
+  fireEvent.change(screen.getByLabelText("Адрес доставки"), {
+    target: { value: "Новый адрес доставки" },
+  });
+  await waitFor(() => expect(mockMutation).toHaveBeenCalledTimes(3));
+  await waitFor(() =>
+    expect(onSelectionStateChange).toHaveBeenLastCalledWith("line", false),
+  );
+  expect(mockMutation.mock.calls[2][0].data.selections[0].destination).toEqual({
+    address: "Новый адрес доставки",
+  });
+  expect(
+    mockQuoteRead.mock.calls.every(
+      ([args]) => !Object.hasOwn(args.data.destination ?? {}, "pickupPointId"),
+    ),
+  ).toBe(true);
+});
 
 it("shows a loading currency label without exposing its identifier and uses the cart currency record when available", async () => {
   mockCurrencyLoading = true;
   const currencyId = "6101a20d-9b3f-46ad-b279-98232436c010";
   const quote = { ...mockQuote(), currencyId, currencyIds: [currencyId] };
   mockDiscovery.set(
-    JSON.stringify({ offerId: "offer-a", quantity: 1, currencyId }),
+    JSON.stringify({
+      offerId: "offer-a",
+      quantity: 1,
+      currencyId,
+      destination: { address: "City address", region: "city" },
+      services: [
+        { offerId: "delivery-a", quantity: 1 },
+        { offerId: "assembly-a", quantity: 1 },
+      ],
+    }),
     {
       ...quote,
       amount: "999999",
@@ -1634,7 +1655,11 @@ it("advertises fixed electronic delivery and setup from a minimum before selecti
   expect(setup.getByText("от 50 ₽")).toBeTruthy();
   expect(mockQuoteRead).toHaveBeenCalledWith(
     expect.objectContaining({
-      data: { offerId: "offer-a", quantity: 2, currencyId: "rub" },
+      data: expect.objectContaining({
+        offerId: "offer-a",
+        quantity: 2,
+        currencyId: "rub",
+      }),
     }),
   );
   expect(mockMutation).not.toHaveBeenCalled();
@@ -1728,7 +1753,11 @@ it("keeps service controls while rejecting previews retained from another curren
   await waitFor(() =>
     expect(mockQuoteRead).toHaveBeenCalledWith(
       expect.objectContaining({
-        data: { offerId: "offer-a", quantity: 3, currencyId: "usd" },
+        data: expect.objectContaining({
+          offerId: "offer-a",
+          quantity: 3,
+          currencyId: "usd",
+        }),
       }),
     ),
   );
@@ -1803,13 +1832,18 @@ it("isolates page and drawer fulfillment groups while retaining independent add-
   expect(
     (page.getByLabelText("Адрес доставки") as HTMLInputElement).value,
   ).toBe("City address");
-  fireEvent.click(
-    page.getByRole("radio", { name: "Не выбирать способ получения" }),
-  );
+  expect(
+    page.queryByRole("radio", { name: "Не выбирать способ получения" }),
+  ).toBeNull();
   await waitFor(() =>
     expect(
       mockMutation.mock.calls.at(-1)![0].data.selections[0].services,
-    ).toEqual([{ offerId: "assembly-a", quantity: 1 }]),
+    ).toEqual(
+      expect.arrayContaining([
+        { offerId: "delivery-a", quantity: 1 },
+        { offerId: "assembly-a", quantity: 1 },
+      ]),
+    ),
   );
   expect(drawerShipping.getAttribute("aria-checked")).toBe("true");
 });
@@ -1951,48 +1985,202 @@ it("keeps quantity steppers and typing stable through saves, max-line limits and
   ).toContainEqual({ offerId: "assembly-a", quantity: 2 });
 });
 
-it("offers a second address only inside multi-item shipping and clears its draft on pickup", async () => {
-  mockPickup = true;
-  const multi = { ...line, quantity: 3 };
-  const view = renderSelection({
+it("reconciles saved service aliases to current contractor options without losing quantities", async () => {
+  mockExtraOptions = () => [];
+  mockSelectedServices = (selection, options) =>
+    (selection?.services ?? []).map((service) => ({
+      ...service,
+      offerId:
+        options.find(
+          (option) =>
+            option.offerId === service.offerId ||
+            option.compatibleOfferIds?.includes(service.offerId),
+        )?.offerId ?? service.offerId,
+    }));
+  const alias = { ...props.details.lines[2], offerId: "old-assembly" };
+  const quote = mockQuote();
+  quote.serviceOptions.find(
+    (option) => option.offerId === "assembly-a",
+  )!.compatibleOfferIds = ["old-assembly"];
+  mockDiscovery.set(
+    JSON.stringify({
+      offerId: "offer-a",
+      quantity: 1,
+      currencyId: "rub",
+      destination: { address: "City address", region: "city" },
+      services: [
+        { offerId: "delivery-a", quantity: 1 },
+        { offerId: "old-assembly", quantity: 1 },
+      ],
+    }),
+    {
+      ...quote,
+      selectedServices: [
+        { offerId: "delivery-a", quantity: 1 },
+        { offerId: "assembly-a", quantity: 1 },
+      ],
+    },
+  );
+  renderSelection({
     ...props,
-    line: multi,
     details: {
       ...props.details,
-      lines: [multi, ...props.details.lines.slice(1)],
+      offerQuotes: [quote],
+      lines: [line, props.details.lines[1], alias],
     },
   });
-  const split = screen.getByRole("checkbox", {
-    name: "Доставить часть на другой адрес",
-  });
+  await waitFor(() => expect(mockMutation).toHaveBeenCalledTimes(1));
   expect(
-    within(screen.getByRole("group", { name: "Доставка" })).getByRole(
-      "checkbox",
-      {
-        name: "Доставить часть на другой адрес",
-      },
+    screen
+      .getByRole("checkbox", { name: "Сборка" })
+      .getAttribute("aria-checked"),
+  ).toBe("true");
+  expect(mockMutation.mock.calls[0][0].data.selections[0].services).toEqual(
+    expect.arrayContaining([{ offerId: "assembly-a", quantity: 1 }]),
+  );
+});
+
+it("uses the server selected paid fulfillment for an old cart without a method and leaves add-ons optional", async () => {
+  mockSelectedServices = (selection) =>
+    selection?.services?.length
+      ? selection.services
+      : [{ offerId: "delivery-a", quantity: 1 }];
+  const selected = {
+    offerId: "offer-a",
+    currencyId: "rub",
+    quantity: 1,
+    destination: line.destination,
+    services: [],
+  };
+  renderSelection({
+    ...props,
+    details: {
+      ...props.details,
+      lines: [line],
+      offerQuotes: [mockQuote("a", selected)],
+    },
+  });
+  await waitFor(() =>
+    expect(
+      screen
+        .getByRole("radio", { name: "Доставка" })
+        .getAttribute("aria-checked"),
+    ).toBe("true"),
+  );
+  expect(screen.getByLabelText("Адрес доставки")).toBeTruthy();
+  expect(
+    screen
+      .getByRole("checkbox", { name: "Сборка" })
+      .getAttribute("aria-checked"),
+  ).toBe("false");
+  await waitFor(() => expect(mockMutation).toHaveBeenCalledTimes(1));
+  expect(mockMutation.mock.calls[0][0].data.selections[0].services).toEqual([
+    { offerId: "delivery-a", quantity: 1 },
+  ]);
+});
+
+it("does not reselect an unchecked optional service from a retained quote", async () => {
+  mockSelectedServices = (selection) => [
+    ...(selection?.services ?? []),
+    ...((selection?.services ?? []).some(
+      (service) => service.offerId === "assembly-a",
+    )
+      ? []
+      : [{ offerId: "assembly-a", quantity: 1 }]),
+  ];
+  renderSelection();
+  const assembly = screen.getByRole("checkbox", { name: "Сборка" });
+  fireEvent.click(assembly);
+  await waitFor(() => expect(mockMutation).toHaveBeenCalledTimes(1));
+  expect(assembly.getAttribute("aria-checked")).toBe("false");
+  expect(mockMutation.mock.calls[0][0].data.selections[0].services).toEqual([
+    { offerId: "delivery-a", quantity: 1 },
+  ]);
+});
+
+it("uses authenticated renewal previews without re-adding a paid first-period fulfillment while editing quantity and add-ons", async () => {
+  const renewalQuote = (selection: IEcommerceCartSelection): IOfferQuote => ({
+    ...mockQuote("a", selection),
+    selectedServices: selection.services ?? [],
+    fulfillmentAlreadySatisfied: true,
+  });
+  // The public catalog quote describes a first purchase and must stay disabled here.
+  mockSelectedServices = (selection) => [
+    ...(selection?.services ?? []),
+    ...((selection?.services ?? []).some(
+      (service) => service.offerId === "delivery-a",
+    )
+      ? []
+      : [{ offerId: "delivery-a", quantity: 1 }]),
+  ];
+  mockPreview.mockImplementation(async ({ data }) => ({
+    quotes: [renewalQuote(data.selections[0])],
+    orderIds: ["order"],
+    applied: false,
+  }));
+  mockMutation.mockImplementation(async ({ data }) => ({
+    ...mockResult(data.selections),
+    quotes: [renewalQuote(data.selections[0])],
+  }));
+  const selection = {
+    offerId: "offer-a",
+    currencyId: "rub",
+    quantity: 1,
+    destination: line.destination,
+    services: [],
+  };
+  renderSelection({
+    ...props,
+    ecommerceModuleOrder: {
+      id: "order",
+      subscriptionSourceOrderId: "paid-source",
+      subscriptionSourceInvoiceId: "paid-invoice",
+    },
+    details: {
+      ...props.details,
+      offerQuotes: [renewalQuote(selection)],
+      lines: [line],
+    },
+  });
+  await waitFor(() => expect(mockPreview).toHaveBeenCalledTimes(1));
+  expect(mockMutation).not.toHaveBeenCalled();
+  expect(screen.queryByRole("radiogroup", { name: "Получение" })).toBeNull();
+  expect(screen.queryByLabelText("Адрес доставки")).toBeNull();
+  expect(
+    mockQuoteRead.mock.calls.every(
+      ([args]) => args.reactQueryOptions.enabled === false,
     ),
-  ).toBe(split);
-  fireEvent.click(split);
-  expect(
-    screen.getByText(/Для каждого адреса будет отдельный заказ/),
-  ).toBeTruthy();
-  fireEvent.click(screen.getByRole("radio", { name: "Пункт выдачи" }));
-  expect(
-    screen.queryByRole("checkbox", { name: "Доставить часть на другой адрес" }),
-  ).toBeNull();
-  expect(screen.queryByLabelText("Адрес второго заказа")).toBeNull();
-  await selectOption("Точка самовывоза", "pickup-1");
-  await waitFor(() => expect(mockMutation).toHaveBeenCalled());
-  const request = mockMutation.mock.calls.at(-1)[0].data;
-  expect(request.selections).toHaveLength(1);
-  expect(request.selections[0].quantity).toBe(3);
-  expect(request.selections[0].destination).toEqual({
-    pickupPointId: "pickup-1",
+  ).toBe(true);
+  fireEvent.change(screen.getByRole("spinbutton", { name: "Количество" }), {
+    target: { value: "2" },
   });
-  view.unmount();
-  renderSelection(props);
+  await waitFor(() => expect(mockMutation).toHaveBeenCalledTimes(1));
+  expect(mockMutation.mock.calls[0][0].data.selections).toEqual([
+    {
+      offerId: "offer-a",
+      currencyId: "rub",
+      quantity: 2,
+      destination: {},
+      services: [],
+    },
+  ]);
+  expect(receipt().getByText("5 000 ₽")).toBeTruthy();
   expect(
-    screen.queryByRole("checkbox", { name: "Доставить часть на другой адрес" }),
-  ).toBeNull();
+    screen.getByRole("spinbutton", { name: "Количество" }).getAttribute("max"),
+  ).toBe("5");
+  fireEvent.click(screen.getByRole("checkbox", { name: "Сборка" }));
+  await waitFor(() => expect(mockMutation).toHaveBeenCalledTimes(2));
+  expect(mockMutation.mock.calls[1][0].data.selections[0].services).toEqual([
+    { offerId: "assembly-a", quantity: 1 },
+  ]);
+  await waitFor(() => expect(receipt().getByText("7 000 ₽")).toBeTruthy());
+  expect(screen.queryByRole("radiogroup", { name: "Получение" })).toBeNull();
+  expect(
+    mockPreview.mock.calls.every(
+      ([request]) =>
+        request.data.action === "preview" &&
+        request.data.lineId === "line" &&
+        request.orderId === "order",
+    ),
+  ).toBe(true);
 });

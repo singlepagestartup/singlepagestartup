@@ -24,6 +24,7 @@ export class Service {
       (order) =>
         order.type === "cart" &&
         order.status === "new" &&
+        !order.subscriptionSourceOrderId &&
         props.lines.some((line) => line.orderId === order.id && !line.offerId),
     );
     if (!legacy.length) {
@@ -39,7 +40,7 @@ export class Service {
       const lines = props.lines.filter((line) => line.orderId === order.id);
       if (lines.length !== 1 || lines[0].parentLineId) {
         throw new Error(
-          "Conflict error. Choose a store and split the products in this older cart before payment",
+          "Conflict error. Choose one product and store for each order in this older cart before payment",
         );
       }
       const [stores, currencies] = await Promise.all([
@@ -99,6 +100,10 @@ export class Service {
       throw new Error(
         `Conflict error. Complete the store and delivery selection before payment: ${JSON.stringify(quotes.map((quote) => ({ offerId: quote.offerId, issues: quote.issues })))}`,
       );
+    }
+    for (const [index, plan] of plans.entries()) {
+      plan.input.services =
+        quotes[index].selectedServices ?? plan.input.services;
     }
     await repository.withSubjectLock(
       { subjectId: props.subjectId },
@@ -222,6 +227,29 @@ export class Service {
               selectionUpdatedAt: new Date(),
             },
           });
+          for (const selected of plan.input.services ?? []) {
+            const charge = currentQuotes[index].charges.find(
+              (charge) =>
+                charge.offerId === selected.offerId &&
+                charge.role !== "product",
+            );
+            if (!charge) {
+              throw new Error(
+                "Validation error. Selected service has no quoted charge",
+              );
+            }
+            await ecommerceModule.ordersToProducts.create({
+              data: {
+                orderId: order.id,
+                productId: charge.productId,
+                offerId: selected.offerId,
+                quantity: selected.quantity,
+                recurrence: charge.recurrence,
+                parentLineId: current.id,
+                selectionUpdatedAt: new Date(),
+              },
+            });
+          }
         }
       },
     );

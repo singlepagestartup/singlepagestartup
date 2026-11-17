@@ -15,36 +15,28 @@ import { DeliveryAddress } from "../list/checkout-default/DeliveryAddress";
 import {
   ServiceCard,
   ServiceOptions,
-  ServiceNoSelection,
 } from "../list/checkout-default/ServiceCard";
 import { QuantityInput } from "../list/checkout-default/QuantityInput";
 import type { IComponentPropsExtended, IConfiguredPurchase } from "./interface";
 
 interface IServiceIntent {
-  productId: string;
-  role: IOfferServiceOption["role"];
+  offerId: string;
+  serviceKey?: string;
   quantity: string;
-  title: string;
 }
 interface IDraft {
   offerId: string;
   currencyId: string;
   quantity: string;
   address: string;
-  pickup: string;
   method: string;
   services: Record<string, string>;
   transfer: IServiceIntent[] | null;
-  missing: IServiceIntent[];
 }
 
 const input =
   "min-h-11 w-full min-w-0 rounded-xl border border-border bg-card px-3 py-2 text-sm text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground disabled:opacity-50";
-const incompleteCodes = new Set([
-  "delivery_required",
-  "address_required",
-  "pickup_required",
-]);
+const incompleteCodes = new Set(["address_required"]);
 
 export function Component(props: IComponentPropsExtended) {
   const ru = props.language === "ru";
@@ -56,11 +48,9 @@ export function Component(props: IComponentPropsExtended) {
       currencyId: "",
       quantity: "1",
       address: "",
-      pickup: "",
       method: "",
       services: {},
       transfer: null,
-      missing: [],
     };
   }
   const [draft, setDraft] = useState<IDraft>(initialDraft);
@@ -75,7 +65,6 @@ export function Component(props: IComponentPropsExtended) {
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [error, setError] = useState("");
   const [added, setAdded] = useState(false);
-  const [secondaryOpen, setSecondaryOpen] = useState(false);
   const offersQuery = offerApi.find({
     params: {
       filters: {
@@ -133,9 +122,7 @@ export function Component(props: IComponentPropsExtended) {
           ? {
               address: value.address,
             }
-          : value.method === "pickup"
-            ? { pickupPointId: value.pickup }
-            : {},
+          : {},
       services: Object.entries(value.services).map(([offerId, quantity]) => ({
         offerId,
         quantity: Number(quantity),
@@ -176,25 +163,17 @@ export function Component(props: IComponentPropsExtended) {
   const metadata =
     quote.data?.offerId === selected?.id ? quote.data : undefined;
   const previousOptions = knownOptions.current.get(selected?.id ?? "");
-  const options = metadata
-    ? [
-        ...metadata.serviceOptions,
-        ...Object.keys(draft.services)
-          .filter(
-            (id) =>
-              !metadata.serviceOptions.some((option) => option.offerId === id),
-          )
-          .map((id) => previousOptions?.get(id))
-          .filter((option): option is IOfferServiceOption => Boolean(option)),
-      ]
-    : [...(previousOptions?.values() ?? [])];
+  const options = metadata?.serviceOptions ?? [
+    ...(previousOptions?.values() ?? []),
+  ];
   useEffect(() => {
     if (!metadata) return;
     const known =
       knownOptions.current.get(metadata.offerId) ??
       new Map<string, IOfferServiceOption>();
-    for (const option of metadata.serviceOptions)
+    for (const option of metadata.serviceOptions) {
       known.set(option.offerId, option);
+    }
     knownOptions.current.set(metadata.offerId, known);
   }, [metadata?.offerId, JSON.stringify(metadata?.serviceOptions)]);
   const orderedOptions = [...options].sort(
@@ -241,7 +220,7 @@ export function Component(props: IComponentPropsExtended) {
     quote.data?.offerId === selection.offerId &&
     quote.data.quantity === selection.quantity &&
     quote.data.currencyId === selection.currencyId &&
-    (["address", "region", "pickupPointId"] as const).every(
+    (["address", "region"] as const).every(
       (key) =>
         (quote.data?.destination?.[key] ?? "") ===
         (selection.destination?.[key] ?? ""),
@@ -257,7 +236,6 @@ export function Component(props: IComponentPropsExtended) {
     validNumbers &&
     currencyIds.includes(draft.currencyId) &&
     !draft.transfer &&
-    !draft.missing.length &&
     currentQuote?.version &&
     !currentQuote.issues.some((issue) => !incompleteCodes.has(issue.code)),
   );
@@ -294,7 +272,6 @@ export function Component(props: IComponentPropsExtended) {
   );
   useEffect(() => {
     edit(() => initialDraft());
-    setSecondaryOpen(false);
   }, [
     props.data.id,
     props.ecommerceModuleProduct.id,
@@ -329,23 +306,89 @@ export function Component(props: IComponentPropsExtended) {
   useEffect(() => {
     if (!draft.transfer || !metadata) return;
     const services: Record<string, string> = {};
-    const missing: IServiceIntent[] = [];
     let method = "";
     for (const service of draft.transfer) {
-      const matches = options.filter(
+      const exact = options.find(
         (option) =>
-          option.productId === service.productId &&
-          option.role === service.role,
+          option.offerId === service.offerId ||
+          option.compatibleOfferIds?.includes(service.offerId) ||
+          Boolean(
+            service.serviceKey && option.serviceKey === service.serviceKey,
+          ),
       );
-      if (matches.length !== 1) missing.push(service);
-      else {
-        services[matches[0].offerId] = service.quantity;
-        if (matches[0].role === "delivery")
-          method = matches[0].receiptMethod ?? "";
+      if (exact) {
+        services[exact.offerId] = service.quantity;
+        if (exact.role === "delivery") method = exact.receiptMethod ?? "";
       }
     }
-    edit((value) => ({ ...value, services, missing, method, transfer: null }));
+    edit((value) => ({ ...value, services, method, transfer: null }));
   }, [draft.transfer, metadata?.offerId, JSON.stringify(options)]);
+
+  useEffect(() => {
+    if (
+      !metadata ||
+      !metadata.selectedServices ||
+      draft.transfer ||
+      !validNumbers ||
+      quote.isFetching ||
+      signature !== requestedSignature ||
+      metadata.currencyId !== draft.currencyId ||
+      metadata.quantity !== selection.quantity
+    )
+      return;
+    const canonical = (id: string) =>
+      metadata.serviceOptions.find(
+        (option) =>
+          option.offerId === id || option.compatibleOfferIds?.includes(id),
+      );
+    // Retained quote data must not replace an explicit edit made after that request.
+    if (
+      Object.entries(draft.services).some(([id, count]) => {
+        const option = canonical(id);
+        return (
+          option &&
+          !metadata.selectedServices?.some(
+            (selected) =>
+              canonical(selected.offerId)?.offerId === option.offerId &&
+              selected.quantity === Number(count),
+          )
+        );
+      })
+    )
+      return;
+    const services = Object.fromEntries(
+      metadata.selectedServices.flatMap((selected) => {
+        const option = canonical(selected.offerId);
+        if (!option) return [];
+        // Additional services are selected by the buyer, never by a retained quote.
+        if (
+          option.role === "add-on" &&
+          !Object.keys(draft.services).some(
+            (id) => canonical(id)?.offerId === option.offerId,
+          )
+        )
+          return [];
+        return [[option.offerId, String(selected.quantity)]];
+      }),
+    );
+    const method =
+      metadata.serviceOptions.find(
+        (option) =>
+          option.role === "delivery" && services[option.offerId] !== undefined,
+      )?.receiptMethod ?? "";
+    if (
+      JSON.stringify(services) !== JSON.stringify(draft.services) ||
+      method !== draft.method
+    )
+      edit((current) => ({ ...current, services, method }));
+  }, [
+    metadata,
+    signature,
+    requestedSignature,
+    draft.transfer,
+    validNumbers,
+    quote.isFetching,
+  ]);
 
   async function submit(event: React.FormEvent) {
     event.preventDefault();
@@ -415,22 +458,6 @@ export function Component(props: IComponentPropsExtended) {
   );
   const changeService = useCallback(
     (offerId: string, checked: boolean) => {
-      if (!offerId && !selected?.settings?.requiredDelivery) {
-        edit((value) => ({
-          ...value,
-          method: "",
-          services: Object.fromEntries(
-            Object.entries(value.services).filter(
-              ([id]) =>
-                !options.some(
-                  (option) =>
-                    option.offerId === id && option.role === "delivery",
-                ),
-            ),
-          ),
-        }));
-        return;
-      }
       const option = options.find((option) => option.offerId === offerId);
       if (!option) return;
       edit((value) => {
@@ -449,14 +476,12 @@ export function Component(props: IComponentPropsExtended) {
         return { ...value, services, method };
       });
     },
-    [options, selected?.settings?.requiredDelivery],
+    [options],
   );
   const allOffersExcluded = Boolean(
     props.excludedOfferIds?.length && !offersQuery.isPending && !offers.length,
   );
-  const secondary =
-    Boolean(props.excludedOfferIds?.length) && !allOffersExcluded;
-  const hideWhenIdle = allOffersExcluded || (secondary && !secondaryOpen);
+  const hideWhenIdle = Boolean(props.hideConfiguration || allOffersExcluded);
 
   return (
     <div
@@ -466,22 +491,8 @@ export function Component(props: IComponentPropsExtended) {
       data-variant={props.variant}
       className={cn("w-full min-w-0 space-y-4", props.className)}
     >
-      {secondary ? (
-        <button
-          type="button"
-          aria-expanded={secondaryOpen}
-          aria-controls={`${formId}-configuration`}
-          className="min-h-11 w-full rounded-xl border border-border px-3 py-2 text-left text-sm font-semibold focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground"
-          onClick={() => setSecondaryOpen((open) => !open)}
-        >
-          {ru ? "Другое предложение" : "Another offer"}
-        </button>
-      ) : null}
-      {!allOffersExcluded ? (
-        <div
-          id={`${formId}-configuration`}
-          hidden={secondary && !secondaryOpen}
-        >
+      {!hideWhenIdle ? (
+        <div id={`${formId}-configuration`}>
           <form onSubmit={submit} className="space-y-3" noValidate>
             <div className="grid min-w-0 grid-cols-2 items-end gap-2 min-[480px]:grid-cols-[minmax(8rem,1fr)_minmax(0,1fr)_minmax(0,1fr)]">
               <QuantityInput
@@ -593,8 +604,6 @@ export function Component(props: IComponentPropsExtended) {
                     ...value,
                     offerId,
                     services: {},
-                    missing: [],
-                    pickup: "",
                     transfer: [
                       ...Object.entries(value.services).map(
                         ([id, quantity]) => {
@@ -602,17 +611,12 @@ export function Component(props: IComponentPropsExtended) {
                             (option) => option.offerId === id,
                           );
                           return {
-                            productId: option?.productId ?? id,
-                            role: option?.role ?? "add-on",
+                            offerId: id,
+                            serviceKey: option?.serviceKey,
                             quantity,
-                            title:
-                              option?.titles?.[props.language] ||
-                              option?.title ||
-                              id,
                           };
                         },
                       ),
-                      ...value.missing,
                     ],
                   }))
                 }
@@ -625,9 +629,7 @@ export function Component(props: IComponentPropsExtended) {
                     (option) => option.role === role,
                   );
                   if (!groupOptions.length) return null;
-                  const mandatory = Boolean(
-                    selected?.settings?.requiredDelivery,
-                  );
+                  const mandatory = role === "delivery";
                   return (
                     <fieldset key={role} className="space-y-1.5">
                       <legend
@@ -644,13 +646,9 @@ export function Component(props: IComponentPropsExtended) {
                       </legend>
                       <div className="text-xs leading-4 text-muted-foreground">
                         {role === "delivery"
-                          ? mandatory
-                            ? ru
-                              ? "Выберите один вариант"
-                              : "Choose one option"
-                            : ru
-                              ? "Необязательно · один вариант"
-                              : "Optional · one option"
+                          ? ru
+                            ? "Выберите один вариант"
+                            : "Choose one option"
                           : ru
                             ? "Можно выбрать несколько"
                             : "Choose any number"}
@@ -672,12 +670,6 @@ export function Component(props: IComponentPropsExtended) {
                           changeService(offerId, true)
                         }
                       >
-                        {role === "delivery" && !mandatory ? (
-                          <ServiceNoSelection
-                            id={formId + "-fulfillment-none"}
-                            language={props.language}
-                          />
-                        ) : null}
                         {groupOptions.map((option) => {
                           const id = `${formId}-${option.offerId}`;
                           const checked =
@@ -745,38 +737,6 @@ export function Component(props: IComponentPropsExtended) {
                                       }
                                     />
                                   ) : null}
-                                  {option.receiptMethod === "pickup" ? (
-                                    <div className="grid gap-1 text-xs">
-                                      <label htmlFor={`${id}-pickup`}>
-                                        {ru
-                                          ? "Точка самовывоза"
-                                          : "Pickup point"}
-                                      </label>
-                                      <Select
-                                        ui="shadcn"
-                                        id={`${id}-pickup`}
-                                        className={input}
-                                        value={draft.pickup}
-                                        placeholder={
-                                          ru
-                                            ? "Выберите точку магазина"
-                                            : "Choose a store location"
-                                        }
-                                        options={(
-                                          option.pickupPointIds ?? []
-                                        ).map((id) => ({
-                                          value: id,
-                                          label: id,
-                                        }))}
-                                        onValueChange={(pickup) =>
-                                          edit((value) => ({
-                                            ...value,
-                                            pickup,
-                                          }))
-                                        }
-                                      />
-                                    </div>
-                                  ) : null}
                                   {option.role === "add-on" ? (
                                     <QuantityInput
                                       id={`${id}-quantity`}
@@ -829,23 +789,6 @@ export function Component(props: IComponentPropsExtended) {
                     </fieldset>
                   );
                 })}
-              </div>
-            ) : null}
-            {draft.missing.length ? (
-              <div className="space-y-2 text-xs text-destructive">
-                <p role="alert">
-                  {ru ? "Недоступные услуги" : "Unavailable services"}:{" "}
-                  {draft.missing.map((service) => service.title).join(", ")}
-                </p>
-                <button
-                  type="button"
-                  className="min-h-11 underline"
-                  onClick={() => edit((value) => ({ ...value, missing: [] }))}
-                >
-                  {ru
-                    ? "Убрать недоступные услуги"
-                    : "Remove unavailable services"}
-                </button>
               </div>
             ) : null}
             {!validNumbers ? (
@@ -911,7 +854,9 @@ export function Component(props: IComponentPropsExtended) {
                     role="alert"
                     className="text-xs text-destructive"
                   >
-                    {issue.message}
+                    {ru && issue.code === "delivery_required"
+                      ? "Для выбранных условий заказа нет доступного способа получения."
+                      : issue.message}
                   </p>
                 ))}
               <dl className="space-y-1 text-xs">

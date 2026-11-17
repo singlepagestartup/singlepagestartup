@@ -1,4 +1,7 @@
 import {
+  mutation as ecommerceModuleCatalogMutation,
+  type IMutationProps as IEcommerceModuleCatalogMutationProps,
+  type IMutationResult as IEcommerceModuleCatalogMutationResult,
   context as ecommerceModuleCatalogContext,
   type IContextProps as IEcommerceModuleCatalogContextProps,
   type IContextResult as IEcommerceModuleCatalogContextResult,
@@ -512,6 +515,7 @@ import {
 } from "./host-cache/revalidate";
 
 export type IProps = {
+  IEcommerceModuleCatalogMutationProps: IEcommerceModuleCatalogMutationProps;
   IEcommerceModuleCatalogContextProps: IEcommerceModuleCatalogContextProps;
   IEcommerceModuleOfferCreateProps: IEcommerceModuleOfferCreateProps;
   IEcommerceModuleCatalogAttributeSetProps: IEcommerceModuleCatalogAttributeSetProps;
@@ -621,6 +625,7 @@ export type IProps = {
 };
 
 export type IResult = {
+  IEcommerceModuleCatalogMutationResult: IEcommerceModuleCatalogMutationResult;
   IEcommerceModuleCatalogContextResult: IEcommerceModuleCatalogContextResult;
   IEcommerceModuleOfferCreateResult: IEcommerceModuleOfferCreateResult;
   IEcommerceModuleCatalogAttributeSetResult: IEcommerceModuleCatalogAttributeSetResult;
@@ -730,6 +735,7 @@ export type IResult = {
 };
 
 export const api = {
+  ecommerceModuleCatalogMutation,
   ecommerceModuleCatalogContext,
   ecommerceModuleOfferCreate,
   ecommerceModuleCatalogAttributeSet,

@@ -10,6 +10,7 @@ import { Controller } from "./controller";
 import { Service } from "./service";
 import { App } from "./app";
 import { PaymentIntentDI, type IBillingModule } from "./di";
+import type { IPaymentLifecycle } from "./service/singlepage/settlement";
 import { Service as BillingCurrencyService } from "@sps/billing/models/currency/backend/app/api/src/lib/service";
 import { Repository as BillingCurrencyRepository } from "@sps/billing/models/currency/backend/app/api/src/lib/repository";
 import { Configuration as BillingCurrencyConfiguration } from "@sps/billing/models/currency/backend/app/api/src/lib/configuration";
@@ -20,12 +21,17 @@ import { Service as BillingPaymentIntentsToInvoicesService } from "@sps/billing/
 import { Repository as BillingPaymentIntentsToInvoicesRepository } from "@sps/billing/relations/payment-intents-to-invoices/backend/app/api/src/lib/repository";
 import { Configuration as BillingPaymentIntentsToInvoicesConfiguration } from "@sps/billing/relations/payment-intents-to-invoices/backend/app/api/src/lib/configuration";
 
+export interface IBootstrapResult {
+  app: App;
+  service: Service;
+}
+
 const bindings = new ContainerModule(({ bind }) => {
   bind<IExceptionFilter>(DI.IExceptionFilter).to(ExceptionFilter);
   bind<App>(DI.IApp).to(App);
   bind<Controller>(DI.IController).to(Controller);
   bind<Repository>(DI.IRepository).to(Repository);
-  bind<Service>(DI.IService).to(Service);
+  bind<Service>(DI.IService).to(Service).inSingletonScope();
   bind<Configuration>(DI.IConfiguration).to(Configuration);
   bind<IBillingModule>(PaymentIntentDI.IBillingModule)
     .toDynamicValue(() => {
@@ -46,12 +52,20 @@ const bindings = new ContainerModule(({ bind }) => {
     .inSingletonScope();
 });
 
-export async function bootstrap() {
+export async function bootstrap(
+  paymentLifecycle?: IPaymentLifecycle,
+): Promise<IBootstrapResult> {
   const container = new Container();
   container.load(bindings);
+  if (paymentLifecycle) {
+    container
+      .bind<IPaymentLifecycle>(PaymentIntentDI.IPaymentLifecycle)
+      .toConstantValue(paymentLifecycle);
+  }
   const app = container.get<App>(DI.IApp);
+  const service = container.get<Service>(DI.IService);
 
   await app.init();
 
-  return { app };
+  return { app, service };
 }

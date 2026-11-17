@@ -53,6 +53,9 @@ export class Middleware {
           }
         }
 
+        if (options?.requireJwt) {
+          c.header("Cache-Control", "private, no-store");
+        }
         return next();
       } catch (error: any) {
         const { status, message, details } = getHttpErrorType(error);

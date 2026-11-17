@@ -2,7 +2,7 @@
 
 ## Purpose
 
-Links one primary Product and its selected services to an Order, including the exact offers and quantities. Split primary items have separate Orders.
+Links one primary Product and its selected services to an Order, including the exact offers and quantities. The primary line has one destination for its entire quantity.
 
 ## Fields
 
@@ -17,7 +17,7 @@ Links one primary Product and its selected services to an Order, including the e
 - `productId`: linked product ID.
 - `offerId`: exact retail Store–Product offer; nullable for historical rows.
 - `parentLineId`: primary line for a selected service; primary lines have no parent.
-- `destination`: address, region, pickup point and optional coordinates on the primary.
+- `destination`: shipping address, region and optional coordinates on the primary line. The primary offer identifies the store for pickup.
 - `recurrence`: `first` or `each`, copied from the service quote.
 - `selectionUpdatedAt`: timestamp of the buyer's last selection edit.
 - `quoteVersion`, `quoteExpiresAt`: accepted conditions on the primary line.

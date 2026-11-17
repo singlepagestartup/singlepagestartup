@@ -2,11 +2,11 @@ import type {
   IAddressSuggestionsInput,
   IAddressSuggestionsResult,
 } from "@sps/ecommerce/relations/stores-to-products/sdk/model";
-import type { Repository } from "../../repository";
+import type { Service as Catalog } from "./catalog";
 import type { IDeliveryRouting } from "./quote/routing";
 
 export interface IConstructorProps {
-  repository: Pick<Repository, "addressSuggestionsOffer">;
+  catalog: Pick<Catalog, "addressSuggestionsOffer">;
   routing: () => IDeliveryRouting;
 }
 
@@ -25,7 +25,7 @@ export class Service {
     ) {
       throw new Error("Validation error. Invalid address suggestions request");
     }
-    const details = await this.dependencies.repository.addressSuggestionsOffer(
+    const details = await this.dependencies.catalog.addressSuggestionsOffer(
       input.offerId,
     );
     const offer = details?.offer;

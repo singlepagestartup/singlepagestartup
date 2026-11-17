@@ -81,6 +81,10 @@ function setup() {
         tables[name].push(row);
         return row;
       },
+      async delete({ id }) {
+        const index = tables[name].findIndex((row) => row.id === id);
+        return tables[name].splice(index, 1)[0];
+      },
       async update({ id, data }) {
         const row = tables[name].find((item) => item.id === id)!;
         Object.assign(row, data);
@@ -146,6 +150,48 @@ function stock(tables: Record<string, IRecord[]>, number = "3") {
 }
 
 describe("seller catalogue ownership and atomic writes", () => {
+  test("only the product owner or admin can change shared delivery and add-on links", async () => {
+    const { service, tables } = setup();
+    const targetOfferId = randomUUID();
+    const data = { sourceOfferId: offerId, targetOfferId, variant: "delivery" };
+    const create = { entity: "offers-to-offers", method: "POST", data };
+    const save = jest.fn(async () => undefined);
+    await expect(
+      service.mutate({ ...create, subjectId: owner }, save),
+    ).rejects.toThrow("another owner");
+    expect(save).not.toHaveBeenCalled();
+    await service.mutate({ ...create, subjectId: other }, save);
+    await service.mutate({ ...create, subjectId: admin }, save);
+    expect(save).toHaveBeenCalledTimes(2);
+
+    const id = randomUUID();
+    tables["offers-to-offers"].push({ id, ...data });
+    await expect(
+      service.mutate(
+        {
+          ...create,
+          id,
+          subjectId: owner,
+          method: "PATCH",
+          data: { variant: "fulfilled-by" },
+        },
+        save,
+      ),
+    ).rejects.toThrow("another owner");
+    await expect(
+      service.mutate(
+        {
+          entity: "stores-to-products",
+          method: "DELETE",
+          subjectId: owner,
+          id: offerId,
+          data: {},
+        },
+        save,
+      ),
+    ).rejects.toThrow("product services");
+    expect(save).toHaveBeenCalledTimes(2);
+  });
   test("an owner can stop sales with held stock while used offers refuse physical deletion", async () => {
     const { service, tables, held, dependencies } = setup();
     stock(tables, "invalid");
@@ -183,89 +229,24 @@ describe("seller catalogue ownership and atomic writes", () => {
       ),
     ).rejects.toThrow("archived");
   });
-  test("private order registries reject buyers and preserve exact owned Order reads", async () => {
-    const { service, tables } = setup();
-    const orderId = randomUUID();
-    tables["subjects-to-ecommerce-module-orders"].push({
-      id: randomUUID(),
-      subjectId: owner,
-      ecommerceModuleOrderId: orderId,
-    });
-    for (const entity of [
-      "orders-to-products",
-      "orders-to-billing-module-payment-intents",
-      "orders",
-    ]) {
-      await expect(
-        service.assertPrivateOrderAccess({
-          subjectId: owner,
-          operator: false,
-          entity,
-          method: "GET",
-          itemRead: false,
-        }),
-      ).rejects.toThrow("another owner");
-      await expect(
-        service.assertPrivateOrderAccess({
-          subjectId: owner,
-          operator: false,
-          entity,
-          id: orderId,
-          method: "PATCH",
-          itemRead: true,
-        }),
-      ).rejects.toThrow("another owner");
-    }
-    await expect(
-      service.assertPrivateOrderAccess({
-        subjectId: other,
-        operator: false,
-        entity: "orders",
-        id: orderId,
-        method: "GET",
-        itemRead: true,
-      }),
-    ).rejects.toThrow("another owner");
-    await expect(
-      service.assertPrivateOrderAccess({
-        subjectId: owner,
-        operator: false,
-        entity: "orders",
-        id: orderId,
-        method: "GET",
-        itemRead: true,
-      }),
-    ).resolves.toBeUndefined();
-    await expect(
-      service.assertPrivateOrderAccess({
-        subjectId: admin,
-        operator: false,
-        entity: "orders-to-billing-module-payment-intents",
-        method: "GET",
-        itemRead: false,
-      }),
-    ).resolves.toBeUndefined();
-    await expect(
-      service.assertPrivateOrderAccess({
-        operator: true,
-        entity: "orders-to-billing-module-payment-intents",
-        method: "DELETE",
-        itemRead: false,
-      }),
-    ).resolves.toBeUndefined();
-  });
   test("store owner creates an offer for another seller’s shared Product without acquiring Product ownership", async () => {
     const { service, tables } = setup();
+    const oldSettings = {
+      receiptMethod: "pickup" as const,
+      pickupPointIds: ["former-collection-point"],
+    };
     const result = await service.createOffer({
       subjectId: owner,
       data: {
         productId,
         prices: [{ currencyId, amount: "5000" }],
         stockQuantity: "3",
+        settings: oldSettings,
       },
     });
     expect(result.offer.storeId).toBe(storeId);
     expect(result.offer.productId).toBe(productId);
+    expect(result.offer.settings).toEqual({ receiptMethod: "pickup" });
     expect(
       tables["subjects-to-ecommerce-module-products"].map(
         (row) => row.subjectId,
@@ -542,5 +523,59 @@ describe("seller catalogue ownership and atomic writes", () => {
       ),
     ).resolves.toBe("existing");
     expect(tables["subjects-to-ecommerce-module-products"]).toHaveLength(1);
+  });
+});
+
+test("Subject mutations create caller ownership and reject foreign edits and ownership grants", async () => {
+  const { service, tables } = setup();
+  const store = await service.mutation({
+    subjectId: owner,
+    data: {
+      entity: "stores",
+      method: "POST",
+      data: { title: { en: "New store" } },
+    },
+  });
+  expect(
+    tables["subjects-to-ecommerce-module-stores"].find(
+      (grant) => grant.ecommerceModuleStoreId === store.id,
+    )?.subjectId,
+  ).toBe(owner);
+  await expect(
+    service.mutation({
+      subjectId: other,
+      data: {
+        entity: "stores",
+        method: "PATCH",
+        recordId: store.id,
+        data: { title: { en: "Other store" } },
+      },
+    }),
+  ).rejects.toThrow("another owner");
+  await expect(
+    service.mutation({
+      subjectId: owner,
+      data: {
+        entity: "subjects-to-ecommerce-module-stores",
+        method: "POST",
+        data: {
+          subjectId: owner,
+          ecommerceModuleStoreId: otherStoreId,
+          variant: "owner",
+        },
+      },
+    }),
+  ).rejects.toThrow("another owner");
+  await service.mutation({
+    subjectId: admin,
+    data: {
+      entity: "stores",
+      method: "PATCH",
+      recordId: store.id,
+      data: { title: { en: "Admin store" } },
+    },
+  });
+  expect(tables.stores.find((row) => row.id === store.id)?.title).toEqual({
+    en: "Admin store",
   });
 });

@@ -1,3 +1,4 @@
+import type { IComponentProps as ISubjectMeEcommerceModuleCatalogueAdminProps } from "./subject/me/ecommerce-module/catalogue/admin/interface";
 import type { IComponentProps as ISubjectMeEcommerceModuleOfferCreateProps } from "./subject/me/ecommerce-module/offer/create/interface";
 import { IComponentProps as IHiddenComponentProps } from "@sps/shared-frontend-components/singlepage/hidden/interface";
 import type { IComponentProps as ISubjectMeBlogModuleArticleCreateProps } from "./subject/me/blog-module/article/create/interface";
@@ -46,6 +47,7 @@ import { IComponentProps as ISubjectOverviewDefaultComponentProps } from "./subj
 import { IComponentProps as ISubjectListDefaultComponentProps } from "./subject/list/default/interface";
 
 export type IComponentProps =
+  | ISubjectMeEcommerceModuleCatalogueAdminProps
   | ISubjectMeEcommerceModuleOfferCreateProps
   | IHiddenComponentProps
   | ISubjectMeBlogModuleArticleCreateProps

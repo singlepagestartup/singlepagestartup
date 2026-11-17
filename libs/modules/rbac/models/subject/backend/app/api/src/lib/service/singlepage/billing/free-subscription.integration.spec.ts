@@ -1,3 +1,4 @@
+import { Service as OrderLifecycleService } from "@sps/ecommerce/models/order/backend/app/api/src/lib/service/startup/lifecycle";
 import { randomUUID } from "node:crypto";
 import { CRUDService } from "@sps/shared-backend-api";
 import { getPostgresClient } from "@sps/shared-backend-database-config";
@@ -195,7 +196,9 @@ async function fixture() {
     findById: (props) => services.order.findById(props),
     findByIdExtended: readExtended,
     writeSubscriptionPeriod: (props) =>
-      repositories.order.writeSubscriptionPeriod(props),
+      new OrderLifecycleService(repositories.order).writeSubscriptionPeriod(
+        props,
+      ),
   });
   const ecommerceModule: any = {
     order: Object.assign(services.order, {

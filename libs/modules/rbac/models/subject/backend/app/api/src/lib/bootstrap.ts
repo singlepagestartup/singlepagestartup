@@ -1,12 +1,12 @@
 import { app as catalogSubjectsToEcommerceModuleOrdersApp } from "@sps/rbac/relations/subjects-to-ecommerce-module-orders/backend/app/api";
 import { Service as EcommerceCatalog } from "./service/startup/ecommerce/catalog";
 import type { IConstructorProps as ICatalogDependencies } from "./service/singlepage/ecommerce/catalog";
-import { app as catalogStoreApp } from "@sps/ecommerce/models/store/backend/app/api";
+import { app as ecommerceStoreApp } from "@sps/ecommerce/models/store/backend/app/api";
 import { app as catalogProductApp } from "@sps/ecommerce/models/product/backend/app/api";
 import { app as catalogAttributeApp } from "@sps/ecommerce/models/attribute/backend/app/api";
 import { app as catalogAttributeKeyApp } from "@sps/ecommerce/models/attribute-key/backend/app/api";
 import { app as catalogCurrencyApp } from "@sps/billing/models/currency/backend/app/api";
-import { app as catalogStoresToProductsApp } from "@sps/ecommerce/relations/stores-to-products/backend/app/api";
+import { createService as createOfferService } from "@sps/ecommerce/relations/stores-to-products/backend/app/api/src/lib/bootstrap";
 import { app as catalogOffersToOffersApp } from "@sps/ecommerce/relations/offers-to-offers/backend/app/api";
 import { app as catalogStoresToAttributesApp } from "@sps/ecommerce/relations/stores-to-attributes/backend/app/api";
 import { app as catalogProductsToAttributesApp } from "@sps/ecommerce/relations/products-to-attributes/backend/app/api";
@@ -62,15 +62,13 @@ import { app as blogCategoryApp } from "@sps/blog/models/category/backend/app/ap
 import { app as blogCategoriesToArticlesApp } from "@sps/blog/relations/categories-to-articles/backend/app/api";
 import { app as socialProfilesToArticlesApp } from "@sps/social/relations/profiles-to-blog-module-articles/backend/app/api";
 import { app as subjectsToArticlesApp } from "@sps/rbac/relations/subjects-to-blog-module-articles/backend/app/api";
-import { app as billingPaymentIntentApp } from "@sps/billing/models/payment-intent/backend/app/api";
+import { orderPaymentIntentService } from "@sps/ecommerce/models/order/backend/app/api";
 import { app as billingInvoiceApp } from "@sps/billing/models/invoice/backend/app/api";
 import { app as billingPaymentIntentsToCurrenciesApp } from "@sps/billing/relations/payment-intents-to-currencies/backend/app/api";
 import { app as billingPaymentIntentsToInvoicesApp } from "@sps/billing/relations/payment-intents-to-invoices/backend/app/api";
-import { app as ecommerceStoreApp } from "@sps/ecommerce/models/store/backend/app/api";
 import { app as ecommerceStoresToOrdersApp } from "@sps/ecommerce/relations/stores-to-orders/backend/app/api";
 import { app as ecommerceOrdersToCurrenciesApp } from "@sps/ecommerce/relations/orders-to-billing-module-currencies/backend/app/api";
-import { app as ecommerceOrdersToPaymentIntentsApp } from "@sps/ecommerce/relations/orders-to-billing-module-payment-intents/backend/app/api";
-import { app as ecommerceStoresToProductsApp } from "@sps/ecommerce/relations/stores-to-products/backend/app/api";
+import { service as ordersToBillingModulePaymentIntents } from "@sps/ecommerce/relations/orders-to-billing-module-payment-intents/backend/app/api";
 import {
   SubjectDI,
   type IBlogModule,
@@ -193,9 +191,6 @@ import { Configuration as EcommerceAttributeKeysToAttributesConfiguration } from
 import { Repository as BillingCurrencyRepository } from "@sps/billing/models/currency/backend/app/api/src/lib/repository";
 import { Configuration as BillingCurrencyConfiguration } from "@sps/billing/models/currency/backend/app/api/src/lib/configuration";
 import { Service as BillingCurrencyService } from "@sps/billing/models/currency/backend/app/api/src/lib/service";
-import { Repository as BillingPaymentIntentRepository } from "@sps/billing/models/payment-intent/backend/app/api/src/lib/repository";
-import { Configuration as BillingPaymentIntentConfiguration } from "@sps/billing/models/payment-intent/backend/app/api/src/lib/configuration";
-import { Service as BillingPaymentIntentService } from "@sps/billing/models/payment-intent/backend/app/api/src/lib/service";
 import { Repository as BillingInvoiceRepository } from "@sps/billing/models/invoice/backend/app/api/src/lib/repository";
 import { Configuration as BillingInvoiceConfiguration } from "@sps/billing/models/invoice/backend/app/api/src/lib/configuration";
 import { Service as BillingInvoiceService } from "@sps/billing/models/invoice/backend/app/api/src/lib/service";
@@ -223,6 +218,7 @@ import { Repository as CrmFormsToRequestsRepository } from "@sps/crm/relations/f
 import { Configuration as CrmFormsToRequestsConfiguration } from "@sps/crm/relations/forms-to-requests/backend/app/api/src/lib/configuration";
 
 const bindings = new ContainerModule(({ bind }) => {
+  const offers = createOfferService();
   bind<EcommerceCatalog>(SubjectDI.IEcommerceCatalogService)
     .toDynamicValue(
       () =>
@@ -235,15 +231,15 @@ const bindings = new ContainerModule(({ bind }) => {
               ),
             ),
             "orders-to-billing-module-payment-intents":
-              ecommerceOrdersToPaymentIntentsApp.controller.service,
+              ordersToBillingModulePaymentIntents,
             "subjects-to-ecommerce-module-orders":
               catalogSubjectsToEcommerceModuleOrdersApp.controller.service,
-            stores: catalogStoreApp.controller.service,
+            stores: ecommerceStoreApp.controller.service,
             products: catalogProductApp.controller.service,
             attributes: catalogAttributeApp.controller.service,
             "attribute-keys": catalogAttributeKeyApp.controller.service,
             currencies: catalogCurrencyApp.controller.service,
-            "stores-to-products": catalogStoresToProductsApp.controller.service,
+            "stores-to-products": offers,
             "offers-to-offers": catalogOffersToOffersApp.controller.service,
             "stores-to-attributes":
               catalogStoresToAttributesApp.controller.service,
@@ -283,8 +279,7 @@ const bindings = new ContainerModule(({ bind }) => {
                 link.subjectId === subjectId && ids.includes(link.roleId),
             );
           },
-          stock: ecommerceOrdersToPaymentIntentsApp.controller
-            .service as unknown as ICatalogDependencies["stock"],
+          stock: ordersToBillingModulePaymentIntents,
         }),
     )
     .inSingletonScope();
@@ -293,7 +288,7 @@ const bindings = new ContainerModule(({ bind }) => {
   bind<App>(DI.IApp).to(App);
   bind<Controller>(DI.IController).to(Controller);
   bind<Repository>(DI.IRepository).to(Repository);
-  bind<Service>(DI.IService).to(Service);
+  bind<Service>(DI.IService).to(Service).inSingletonScope();
   bind<Configuration>(DI.IConfiguration).to(Configuration);
   bind<IBlogModule>(SubjectDI.IBlogModule).toConstantValue({
     article: blogArticleApp.controller.service,
@@ -424,9 +419,6 @@ const bindings = new ContainerModule(({ bind }) => {
       const storesToOrders = ecommerceStoresToOrdersApp.controller.service;
       const ordersToBillingModuleCurrencies =
         ecommerceOrdersToCurrenciesApp.controller.service;
-      const ordersToBillingModulePaymentIntents =
-        ecommerceOrdersToPaymentIntentsApp.controller
-          .service as unknown as IEcommerceModule["ordersToBillingModulePaymentIntents"];
       const ordersToFileStorageModuleFiles = new CRUDService<any>(
         new EcommerceOrdersToFileStorageModuleFilesRepository(
           new EcommerceOrdersToFileStorageModuleFilesConfiguration(),
@@ -477,6 +469,7 @@ const bindings = new ContainerModule(({ bind }) => {
         productsToAttributes as any,
         attributeKeysToAttributes as any,
         attributesToBillingModuleCurrencies as any,
+        offers,
       );
 
       const findByIdCheckoutAttributesService =
@@ -495,24 +488,6 @@ const bindings = new ContainerModule(({ bind }) => {
       );
       const findByIdQuantityService = new EcommerceOrderFindByIdQuantityService(
         ordersToProducts as any,
-      );
-      const billingPaymentIntent = new BillingPaymentIntentService(
-        new BillingPaymentIntentRepository(
-          new BillingPaymentIntentConfiguration(),
-        ),
-        {
-          currency: new BillingCurrencyService(
-            new BillingCurrencyRepository(new BillingCurrencyConfiguration()),
-          ),
-          invoice: new BillingInvoiceService(
-            new BillingInvoiceRepository(new BillingInvoiceConfiguration()),
-          ),
-          paymentIntentsToInvoices: new BillingPaymentIntentsToInvoicesService(
-            new BillingPaymentIntentsToInvoicesRepository(
-              new BillingPaymentIntentsToInvoicesConfiguration(),
-            ),
-          ),
-        },
       );
       const billingCurrency = new BillingCurrencyService(
         new BillingCurrencyRepository(new BillingCurrencyConfiguration()),
@@ -542,9 +517,9 @@ const bindings = new ContainerModule(({ bind }) => {
         ordersToBillingModuleCurrencies as any,
         ordersToFileStorageModuleFiles as any,
         productsToFileStorageModuleFiles as any,
-        ordersToBillingModulePaymentIntents as any,
+        ordersToBillingModulePaymentIntents,
         billingCurrency,
-        billingPaymentIntent,
+        orderPaymentIntentService,
         billingPaymentIntentsToCurrencies,
         billingPaymentIntentsToInvoices,
         billingInvoice,
@@ -557,8 +532,7 @@ const bindings = new ContainerModule(({ bind }) => {
         store,
         order,
         product,
-        storesToProducts: ecommerceStoresToProductsApp.controller
-          .service as unknown as IEcommerceModule["storesToProducts"],
+        storesToProducts: offers,
         attribute,
         attributeKey,
         storesToOrders,
@@ -579,8 +553,7 @@ const bindings = new ContainerModule(({ bind }) => {
         currency: new CRUDService<any>(
           new BillingCurrencyRepository(new BillingCurrencyConfiguration()),
         ),
-        paymentIntent: billingPaymentIntentApp.controller
-          .service as BillingPaymentIntentService,
+        paymentIntent: orderPaymentIntentService,
         paymentIntentsToCurrencies:
           billingPaymentIntentsToCurrenciesApp.controller.service,
         invoice: billingInvoiceApp.controller.service,
@@ -782,6 +755,12 @@ const bindings = new ContainerModule(({ bind }) => {
   bind<EcommerceOrderProceedService>(SubjectDI.IEcommerceOrderProceedService)
     .to(EcommerceOrderProceedService)
     .inSingletonScope();
+  bind<import("./service/singlepage/ecommerce/order/renewal").IRenewal>(
+    SubjectDI.IEcommerceOrderRenewal,
+  ).toFactory(
+    (context) => (props) =>
+      context.get<Service>(DI.IService).ecommerceModuleOrderRenewal(props),
+  );
   bind<IEcommerceProductCheckout>(
     SubjectDI.IEcommerceProductCheckout,
   ).toFactory(
@@ -795,6 +774,10 @@ export async function bootstrap() {
   container.load(bindings);
   const app = container.get<App>(DI.IApp);
   await app.init();
+  const subjectService = container.get<Service>(DI.IService);
+  orderPaymentIntentService.setProviderPeriodResolver((receipt) =>
+    subjectService.ecommerceModuleOrderResolveProviderPeriod(receipt),
+  );
 
   return { app };
 }

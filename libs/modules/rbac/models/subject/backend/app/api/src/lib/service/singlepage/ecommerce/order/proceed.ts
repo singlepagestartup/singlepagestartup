@@ -30,6 +30,7 @@ import { Service as RolesToEcommerceModuleProductsService } from "@sps/rbac/rela
 import { logger } from "@sps/backend-utils";
 import type { ICheckout as IEcommerceProductCheckout } from "../product/checkout";
 import { Repository } from "../../../../repository";
+import type { IRenewal } from "./renewal";
 
 export type IExecuteProps = {
   subjectId?: string;
@@ -162,6 +163,8 @@ export class Service {
     subjectsToIdentities: SubjectsToIdentitiesService,
     @inject(SubjectDI.IEcommerceProductCheckout)
     readonly ecommerceProductCheckout: IEcommerceProductCheckout,
+    @inject(SubjectDI.IEcommerceOrderRenewal)
+    readonly ecommerceOrderRenewal: IRenewal = async () => ({}),
   ) {
     this.repository = repository;
     this.socialModule = socialModule;
@@ -279,23 +282,32 @@ export class Service {
                 ) ?? [],
           });
 
-          if (extendedOrder.status && extendedOrder.status === "delivered") {
-            if (
-              extendedOrder.subscriptionPeriodInvoiceId &&
+          if (
+            extendedOrder.subscriptionPeriodInvoiceId &&
+            !extendedOrder.subscriptionRevokedAt &&
+            ["delivering", "delivered", "expired"].includes(
+              extendedOrder.status,
+            ) &&
+            (extendedOrder.status === "expired" ||
               productsRolesIds.every((roleId) =>
                 existingRolesIds?.includes(roleId),
-              )
-            ) {
-              const renewal = await this.renewSubscription({
-                order: extendedOrder,
-                extendedOrder,
-                subjectToEcommerceModuleOrder: {
-                  subjectId: subjectToEcommerceModuleOrder.subjectId,
-                  ecommerceModuleOrderId: order.id,
-                },
+              )) &&
+            !this.isInitialFree(extendedOrder)
+          ) {
+            try {
+              await this.ecommerceOrderRenewal({
+                subjectId: subjectToEcommerceModuleOrder.subjectId,
+                orderId: order.id,
               });
-              if (renewal?.accepted) continue;
+            } catch (error) {
+              logger.error("RBAC next subscription period preparation failed", {
+                orderId: order.id,
+                error,
+              });
             }
+          }
+
+          if (extendedOrder.status && extendedOrder.status === "delivered") {
             await this.delivered({
               order: extendedOrder,
               extendedOrder,
@@ -308,7 +320,7 @@ export class Service {
               productsRolesIds,
               subjectsToRoles: rbacSubjectsToRoles,
             });
-          } else if (["paid", "expired"].includes(extendedOrder.status)) {
+          } else if (extendedOrder.status === "paid") {
             await this.fromPaidStatus({
               order: extendedOrder,
               extendedOrder,
@@ -325,29 +337,22 @@ export class Service {
               extendedOrder.status,
             )
           ) {
-            // A removed grant is a durable revocation. Ordinary proceed never repairs it.
-            if (
-              !extendedOrder.subscriptionRevokedAt &&
-              extendedOrder.subscriptionPeriodInvoiceId &&
-              productsRolesIds.every((roleId) =>
-                existingRolesIds?.includes(roleId),
-              )
-            ) {
-              await this.renewSubscription({
-                order: extendedOrder,
-                extendedOrder,
-                subjectToEcommerceModuleOrder: {
-                  subjectId: subjectToEcommerceModuleOrder.subjectId,
-                  ecommerceModuleOrderId: order.id,
-                },
-              });
-            }
             if (extendedOrder.status === "requested_cancelation") {
+              await this.ecommerceOrderRenewal({
+                subjectId: subjectToEcommerceModuleOrder.subjectId,
+                orderId: order.id,
+                cancel: true,
+              });
               await this.ecommerceModule.order.stopSubscriptionRenewal({
                 id: order.id,
               });
             }
           } else if (extendedOrder.status === "canceling") {
+            await this.ecommerceOrderRenewal({
+              subjectId: subjectToEcommerceModuleOrder.subjectId,
+              orderId: order.id,
+              cancel: true,
+            });
             if (extendedOrder.subscriptionPeriodInvoiceId) {
               await this.ecommerceModule.order.stopSubscriptionRenewal({
                 id: order.id,
@@ -1161,6 +1166,7 @@ export class Service {
         id: props.order.id,
       });
     let currentSuperseded = false;
+    const subscriptionRootId = await this.subscriptionRootId(props.order);
     for (const candidate of candidates) {
       const id = candidate.id;
       if (!otherIds.includes(id)) {
@@ -1176,6 +1182,9 @@ export class Service {
         !other.subscriptionPeriodInvoiceId ||
         !other.subscriptionPeriodEndsAt
       ) {
+        continue;
+      }
+      if ((await this.subscriptionRootId(other)) === subscriptionRootId) {
         continue;
       }
       const owners = await this.subjectsToEcommerceModuleOrders.find({
@@ -1257,8 +1266,31 @@ export class Service {
     return Array.from(cancellations);
   }
 
+  private async subscriptionRootId(
+    order: IEcommerceModuleOrder,
+  ): Promise<string> {
+    const seen = new Set<string>();
+    let current = order;
+    while (current.subscriptionSourceOrderId) {
+      if (seen.has(current.id)) {
+        throw new Error("Conflict error. Subscription period chain is cyclic");
+      }
+      seen.add(current.id);
+      const parent = await this.ecommerceModule.order.findById({
+        id: current.subscriptionSourceOrderId,
+      });
+      if (!parent) {
+        throw new Error(
+          "Conflict error. Subscription period source is unavailable",
+        );
+      }
+      current = parent;
+    }
+    return current.id;
+  }
+
   async delivered(props: ILifecycleProps) {
-    const checkout = await this.repository.withOrderDelivery(
+    await this.repository.withOrderDelivery(
       {
         subjectId: props.subjectToEcommerceModuleOrder.subjectId,
         orderId: props.order.id,
@@ -1272,20 +1304,12 @@ export class Service {
         return this.applyDeliveredStatus(current);
       },
     );
-    if (checkout) await checkout();
   }
 
   private async applyDeliveredStatus(props: ILifecycleProps) {
     if (!RBAC_SECRET_KEY) {
       throw new Error("Configuration error. RBAC_SECRET_KEY not set");
     }
-
-    const canAutoRenew =
-      !this.isInitialFree(props.extendedOrder) &&
-      !props.order.subscriptionRevokedAt &&
-      (props.productsRolesIds ?? []).every((roleId) =>
-        props.existingRolesIds?.includes(roleId),
-      );
 
     const preservedRoles = await this.otherActiveOrderRoles({
       subjectId: props.subjectToEcommerceModuleOrder.subjectId,
@@ -1318,65 +1342,9 @@ export class Service {
       }
     }
 
-    const needToCreateSubscriptionOrder =
-      canAutoRenew &&
-      props.extendedOrder.checkoutAttributesByCurrency.type ===
-        "subscription" &&
-      props.extendedOrder.ordersToBillingModulePaymentIntents
-        .map((orderToBillingModulePaymentIntent) => {
-          return orderToBillingModulePaymentIntent.billingModulePaymentIntent
-            .type;
-        })
-        .every((billingModulePaymentIntentType) => {
-          return billingModulePaymentIntentType === "one_off";
-        }) &&
-      props.extendedOrder.ordersToProducts.length === 1;
-
-    const currencies = props.extendedOrder.ordersToBillingModulePaymentIntents
-      .map((orderToBillingModulePaymentIntent) => {
-        return orderToBillingModulePaymentIntent.billingModulePaymentIntent.paymentIntentsToCurrencies.map(
-          (paymentIntentToCurrency) => {
-            return paymentIntentToCurrency.currency;
-          },
-        );
-      })
-      .flat(1)
-      .filter((currency): currency is IBillingModuleCurrency =>
-        Boolean(currency),
-      );
-
-    const invoices = props.extendedOrder.ordersToBillingModulePaymentIntents
-      .map((orderToBillingModulePaymentIntent) => {
-        return orderToBillingModulePaymentIntent.billingModulePaymentIntent.paymentIntentsToInvoices.map(
-          (paymentIntentsToInvoices) => {
-            return paymentIntentsToInvoices.invoice;
-          },
-        );
-      })
-      .flat(1)
-      .filter((invoice): invoice is NonNullable<typeof invoice> =>
-        Boolean(invoice),
-      );
-
-    const firstCurrency = currencies[0];
-    const firstInvoice = invoices[0];
-
-    const allOrderCurrenciesAreTheSame =
-      Boolean(firstCurrency) &&
-      currencies.every((entity) => {
-        return firstCurrency.id === entity.id;
-      });
-
-    const allProvidersAreTheSame =
-      Boolean(firstInvoice) &&
-      invoices.every((invoice) => {
-        return invoice.provider === firstInvoice.provider;
-      });
-
     const recurring =
-      props.extendedOrder.ordersToBillingModulePaymentIntents.some(
-        (link) => link.billingModulePaymentIntent.type === "subscription",
-      );
+      !this.isInitialFree(props.extendedOrder) &&
+      props.extendedOrder.checkoutAttributesByCurrency.type === "subscription";
     await this.ecommerceModule.order.update({
       id: props.extendedOrder.id,
       data: {
@@ -1388,104 +1356,6 @@ export class Service {
       },
     });
 
-    if (
-      needToCreateSubscriptionOrder &&
-      firstCurrency &&
-      firstInvoice &&
-      allOrderCurrenciesAreTheSame &&
-      allProvidersAreTheSame
-    ) {
-      const provider = firstInvoice.provider;
-      const currency = firstCurrency;
-
-      if (
-        provider &&
-        firstInvoice.amount === 0 &&
-        props.extendedOrder.checkoutAttributesByCurrency.amount === 0
-      ) {
-        return () =>
-          this.ecommerceProductCheckout({
-            id: props.subjectToEcommerceModuleOrder.subjectId,
-            productId: props.extendedOrder.ordersToProducts[0].productId,
-            data: { provider, billingModule: { currency } },
-          });
-        return;
-      }
-
-      if (provider === "telegram-star") {
-        const subjectToSocialModuleProfiles =
-          await this.subjectsToSocialModuleProfiles.find({
-            params: {
-              filters: {
-                and: [
-                  {
-                    column: "subjectId",
-                    method: "eq",
-                    value: props.subjectToEcommerceModuleOrder.subjectId,
-                  },
-                ],
-              },
-            },
-          });
-
-        if (subjectToSocialModuleProfiles?.length) {
-          const socialModuleProfilesToChats =
-            await this.socialModule.profilesToChats.find({
-              params: {
-                filters: {
-                  and: [
-                    {
-                      column: "profileId",
-                      method: "inArray",
-                      value: subjectToSocialModuleProfiles.map((entity) => {
-                        return entity.socialModuleProfileId;
-                      }),
-                    },
-                  ],
-                },
-              },
-            });
-
-          if (socialModuleProfilesToChats?.length) {
-            const telegramChats = await this.socialModule.chat.find({
-              params: {
-                filters: {
-                  and: [
-                    {
-                      column: "id",
-                      method: "inArray",
-                      value: socialModuleProfilesToChats.map((entity) => {
-                        return entity.chatId;
-                      }),
-                    },
-                    {
-                      column: "variant",
-                      method: "eq",
-                      value: "telegram",
-                    },
-                  ],
-                },
-              },
-            });
-
-            if (telegramChats?.length && telegramChats.length === 1) {
-              return () =>
-                this.ecommerceProductCheckout({
-                  id: props.subjectToEcommerceModuleOrder.subjectId,
-                  productId: props.extendedOrder.ordersToProducts[0].productId,
-                  data: {
-                    provider,
-                    billingModule: {
-                      currency,
-                    },
-                    account: telegramChats[0].sourceSystemId,
-                  },
-                });
-            }
-          }
-        }
-      }
-    }
     return undefined;
   }
 
@@ -1824,37 +1694,6 @@ export class Service {
         }
       }
     }
-  }
-
-  private async renewSubscription(props: ILifecycleProps) {
-    if (this.isInitialFree(props.extendedOrder)) return;
-    const result = await this.repository.withOrderDelivery(
-      {
-        subjectId: props.subjectToEcommerceModuleOrder.subjectId,
-        orderId: props.order.id,
-      },
-      async () => {
-        await this.ecommerceModule.order.lockForLifecycle({
-          id: props.order.id,
-        });
-        const current = await this.freshLifecycleProps(props);
-        if (
-          !current ||
-          current.order.subscriptionRevokedAt ||
-          !current.order.subscriptionPeriodInvoiceId ||
-          !["delivering", "requested_cancelation", "delivered"].includes(
-            current.order.status,
-          ) ||
-          current.productsRolesIds?.some(
-            (roleId) => !current.existingRolesIds?.includes(roleId),
-          )
-        )
-          return;
-        return this.applyPaidStatus(current);
-      },
-    );
-    if (result) await this.dispatchPaidEffects(result);
-    return result;
   }
 
   private async freshLifecycleProps(

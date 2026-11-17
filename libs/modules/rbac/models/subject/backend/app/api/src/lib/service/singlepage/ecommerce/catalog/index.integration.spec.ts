@@ -11,7 +11,8 @@ import { getPostgresClient } from "@sps/shared-backend-database-config";
 import { Repository as SubjectRepository } from "../../../../repository";
 import { Configuration as SubjectConfiguration } from "../../../../configuration";
 import { Service as Reservations } from "@sps/ecommerce/relations/orders-to-billing-module-payment-intents/backend/app/api/src/lib/service";
-import { Middleware as CatalogueGuard } from "../../../../../../../middlewares/src/lib/request-ecommerce-catalog-write";
+import { Handler as CatalogHandler } from "../../../../controller/singlepage/ecommerce-module/catalog";
+import type { Service as SubjectService } from "../../../../service";
 import { Service, type IConstructorProps } from "./index";
 
 const paths: Record<string, string> = {
@@ -109,7 +110,10 @@ async function fixture() {
   await entities["subjects-to-roles"].create({
     data: { subjectId: people.admin.id, roleId: role.id },
   });
-  const reservations = new Reservations(repositories.holds);
+  const reservations = new Reservations(
+    repositories.holds,
+    entities.attributes,
+  );
   const service = new Service({
     repository,
     entities: entities as IConstructorProps["entities"],
@@ -156,54 +160,29 @@ async function fixture() {
     },
   });
   const app = new Hono();
-  app.use(
-    new CatalogueGuard().init({
-      catalog: service,
-      authenticate: async (token) => {
+  const subjectService = {
+    ecommerceCatalog: service,
+    isAuthorizedService: {
+      async getSubjectId(token: string) {
         const claims = await verifyJwt(token, RBAC_JWT_SECRET!, {
           type: "access",
         });
-        const id = (claims.subject as { id?: unknown } | undefined)?.id;
-        if (
-          typeof id !== "string" ||
-          !(await repository.findFirstByField("id", id))
-        ) {
-          return undefined;
-        }
-        const identities = await entities["subjects-to-identities"].find({
-          params: {
-            filters: {
-              and: [{ column: "subjectId", method: "eq", value: id }],
-            },
-          },
-        });
-        return { id, authenticated: identities.length > 0 };
+        return (claims.subject as { id: string }).id;
       },
-    }),
-  );
-  app.post("/api/ecommerce/stores", async (c) => {
-    const body = await c.req.parseBody();
-    const data = await entities.stores.create({
-      data: JSON.parse(String(body.data)),
-    });
-    return c.json({ data }, 201);
-  });
-  app.patch("/api/ecommerce/attributes/:id", async (c) => {
-    const body = await c.req.parseBody();
-    const data = await entities.attributes.update({
-      id: c.req.param("id"),
-      data: JSON.parse(String(body.data)),
-    });
-    return c.json({ data });
-  });
-  app.delete(
-    "/api/ecommerce/stores-to-products-to-attributes/:id",
-    async (c) => {
-      const data = await entities["stores-to-products-to-attributes"].delete({
-        id: c.req.param("id"),
-      });
-      return c.json({ data });
     },
+    async authenticationMe({ subjectId }: { subjectId: string }) {
+      const identities = await entities["subjects-to-identities"].find({
+        params: {
+          filters: {
+            and: [{ column: "subjectId", method: "eq", value: subjectId }],
+          },
+        },
+      });
+      return { id: subjectId, authenticated: identities.length > 0 };
+    },
+  } as unknown as SubjectService;
+  app.post("/api/rbac/subjects/:id/ecommerce-module/catalogue-mutations", (c) =>
+    new CatalogHandler(subjectService, "mutation").execute(c),
   );
   const tokens: Record<string, string> = {};
   const now = Math.floor(Date.now() / 1000);
@@ -224,14 +203,24 @@ async function fixture() {
     method: string,
     data?: unknown,
   ) =>
-    app.request(url, {
-      method,
-      headers: { Authorization: `Bearer ${tokens[actor]}` },
-      body:
-        data === undefined
-          ? undefined
-          : new URLSearchParams({ data: JSON.stringify(data) }),
-    });
+    app.request(
+      `/api/rbac/subjects/${people[actor].id}/ecommerce-module/catalogue-mutations`,
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${tokens[actor]}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          data: {
+            entity: url.split("/")[3],
+            recordId: url.split("/")[4],
+            method,
+            data: data ?? {},
+          },
+        }),
+      },
+    );
   return {
     suffix,
     repository,
@@ -296,13 +285,10 @@ it("rolls back a real new Product/owner/offer/price graph and preserves separate
   ).resolves.toBeUndefined();
 });
 
-it("authenticates raw Store creation and assigns only the caller’s owner grant", async () => {
+it("authenticates Subject Store creation and assigns only the caller’s owner grant", async () => {
   const f = await fixture();
   const response = await f.request("/api/ecommerce/stores", "alice", "POST", {
     slug: `issue414-raw-store-${f.suffix}`,
-    subjectId: f.people.bob.id,
-    admin: true,
-    operator: true,
   });
   expect(response.status).toBe(201);
   const body = (await response.json()) as { data: { id: string } };
@@ -357,7 +343,7 @@ it("locks real stock rows and rejects cross-owner updates, lowering, deletion an
     }
   }
   const order = await f.entities.orders.create({ data: {} });
-  const intent = await f.entities.intents.create({ data: { amount: "1" } });
+  const intent = await f.entities.intents.create({ data: { amount: 1 } });
   await f.entities.holds.create({
     data: {
       orderId: order.id,
@@ -371,7 +357,6 @@ it("locks real stock rows and rejects cross-owner updates, lowering, deletion an
     (
       await f.request(`/api/ecommerce/attributes/${stock.id}`, "bob", "PATCH", {
         number: "3",
-        admin: true,
       })
     ).status,
   ).toBe(403);
@@ -417,4 +402,34 @@ it("locks real stock rows and rejects cross-owner updates, lowering, deletion an
   expect((await f.entities.attributes.findById({ id: stock.id })).number).toBe(
     "2",
   );
+});
+
+it("preserves the normal Product admin metadata conflict check through Subject mutations", async () => {
+  const f = await fixture();
+  await f.service.mutation({
+    subjectId: f.people.admin.id,
+    data: {
+      entity: "products",
+      method: "PATCH",
+      recordId: f.product.id,
+      data: {
+        metadata: { summary: "Current metadata" },
+        _expectedMetadata: {},
+      },
+    },
+  });
+  await expect(
+    f.service.mutation({
+      subjectId: f.people.admin.id,
+      data: {
+        entity: "products",
+        method: "PATCH",
+        recordId: f.product.id,
+        data: { metadata: { summary: "Stale editor" }, _expectedMetadata: {} },
+      },
+    }),
+  ).rejects.toThrow("Metadata changed");
+  expect(
+    (await f.entities.products.findById({ id: f.product.id })).metadata,
+  ).toEqual({ summary: "Current metadata" });
 });

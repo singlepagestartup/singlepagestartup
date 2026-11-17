@@ -186,11 +186,34 @@ paths:
                 - data
       responses:
         "200":
-          description: Payment intent
+          description: Provider acknowledgment after authenticated processing
           content:
             application/json:
               schema:
-                $ref: "billing-payment-intent.yaml"
+                oneOf:
+                  - type: object
+                    properties:
+                      code:
+                        type: integer
+                        enum: [0]
+                    required: [code]
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          code:
+                            type: integer
+                            enum: [0]
+                          ok:
+                            type: boolean
+                          received:
+                            type: boolean
+                    required: [data]
+            text/plain:
+              schema:
+                type: string
+                description: PayKeeper acknowledgment
 
   /billing/payment-intents/{id}/check:
     post:
@@ -210,7 +233,7 @@ paths:
                 data:
                   type: string
                   description: JSON string
-                  example: '{}'
+                  example: "{}"
               required:
                 - data
       responses:

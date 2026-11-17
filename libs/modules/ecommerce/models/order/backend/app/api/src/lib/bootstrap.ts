@@ -22,6 +22,7 @@ import { Configuration as AttributeKeyConfiguration } from "@sps/ecommerce/model
 import { Service as OrdersToProductsService } from "@sps/ecommerce/relations/orders-to-products/backend/app/api/src/lib/service";
 import { Repository as OrdersToProductsRepository } from "@sps/ecommerce/relations/orders-to-products/backend/app/api/src/lib/repository";
 import { Configuration as OrdersToProductsConfiguration } from "@sps/ecommerce/relations/orders-to-products/backend/app/api/src/lib/configuration";
+import { createService as createOfferService } from "@sps/ecommerce/relations/stores-to-products/backend/app/api/src/lib/bootstrap";
 import { Service as ProductsToAttributesService } from "@sps/ecommerce/relations/products-to-attributes/backend/app/api/src/lib/service";
 import { Repository as ProductsToAttributesRepository } from "@sps/ecommerce/relations/products-to-attributes/backend/app/api/src/lib/repository";
 import { Configuration as ProductsToAttributesConfiguration } from "@sps/ecommerce/relations/products-to-attributes/backend/app/api/src/lib/configuration";
@@ -40,15 +41,16 @@ import { Configuration as OrdersToFileStorageModuleFilesConfiguration } from "@s
 import { Service as ProductsToFileStorageModuleFilesService } from "@sps/ecommerce/relations/products-to-file-storage-module-files/backend/app/api/src/lib/service";
 import { Repository as ProductsToFileStorageModuleFilesRepository } from "@sps/ecommerce/relations/products-to-file-storage-module-files/backend/app/api/src/lib/repository";
 import { Configuration as ProductsToFileStorageModuleFilesConfiguration } from "@sps/ecommerce/relations/products-to-file-storage-module-files/backend/app/api/src/lib/configuration";
-import { Service as OrdersToBillingModulePaymentIntentsService } from "@sps/ecommerce/relations/orders-to-billing-module-payment-intents/backend/app/api/src/lib/service";
-import { Repository as OrdersToBillingModulePaymentIntentsRepository } from "@sps/ecommerce/relations/orders-to-billing-module-payment-intents/backend/app/api/src/lib/repository";
-import { Configuration as OrdersToBillingModulePaymentIntentsConfiguration } from "@sps/ecommerce/relations/orders-to-billing-module-payment-intents/backend/app/api/src/lib/configuration";
+import { bootstrap as bootstrapOrdersToBillingModulePaymentIntents } from "@sps/ecommerce/relations/orders-to-billing-module-payment-intents/backend/app/api/src/lib/bootstrap";
+import type { Service as OrdersToBillingModulePaymentIntentsService } from "@sps/ecommerce/relations/orders-to-billing-module-payment-intents/backend/app/api";
 import { Service as BillingModuleCurrencyService } from "@sps/billing/models/currency/backend/app/api/src/lib/service";
 import { Repository as BillingModuleCurrencyRepository } from "@sps/billing/models/currency/backend/app/api/src/lib/repository";
 import { Configuration as BillingModuleCurrencyConfiguration } from "@sps/billing/models/currency/backend/app/api/src/lib/configuration";
-import { Service as BillingPaymentIntentService } from "@sps/billing/models/payment-intent/backend/app/api/src/lib/service";
-import { Repository as BillingPaymentIntentRepository } from "@sps/billing/models/payment-intent/backend/app/api/src/lib/repository";
-import { Configuration as BillingPaymentIntentConfiguration } from "@sps/billing/models/payment-intent/backend/app/api/src/lib/configuration";
+import { bootstrap as bootstrapBillingPaymentIntent } from "@sps/billing/models/payment-intent/backend/app/api/src/lib/bootstrap";
+import type {
+  App as BillingPaymentIntentApp,
+  Service as BillingPaymentIntentService,
+} from "@sps/billing/models/payment-intent/backend/app/api";
 import { Service as BillingPaymentIntentsToCurrenciesService } from "@sps/billing/relations/payment-intents-to-currencies/backend/app/api/src/lib/service";
 import { Repository as BillingPaymentIntentsToCurrenciesRepository } from "@sps/billing/relations/payment-intents-to-currencies/backend/app/api/src/lib/repository";
 import { Configuration as BillingPaymentIntentsToCurrenciesConfiguration } from "@sps/billing/relations/payment-intents-to-currencies/backend/app/api/src/lib/configuration";
@@ -64,6 +66,12 @@ import { Configuration as FileStorageFileConfiguration } from "@sps/file-storage
 import { Service as FindByIdCheckoutAttributesService } from "./service/startup/find-by-id/checkout-attributes";
 import { Service as FindByIdTotalService } from "./service/startup/find-by-id/total";
 import { Service as FindByIdQuantityService } from "./service/startup/find-by-id/quantity";
+
+export interface IBootstrapResult {
+  app: App;
+  billingPaymentIntentApp: BillingPaymentIntentApp;
+  orderPaymentIntentService: BillingPaymentIntentService;
+}
 
 const bindings = new ContainerModule(({ bind }) => {
   bind<IExceptionFilter>(DI.IExceptionFilter).to(ExceptionFilter);
@@ -90,32 +98,6 @@ const bindings = new ContainerModule(({ bind }) => {
           new BillingModuleCurrencyRepository(
             new BillingModuleCurrencyConfiguration(),
           ),
-        ),
-    )
-    .inSingletonScope();
-  bind<BillingPaymentIntentService>(OrderDI.IBillingModulePaymentIntentService)
-    .toDynamicValue(
-      () =>
-        new BillingPaymentIntentService(
-          new BillingPaymentIntentRepository(
-            new BillingPaymentIntentConfiguration(),
-          ),
-          {
-            currency: new BillingModuleCurrencyService(
-              new BillingModuleCurrencyRepository(
-                new BillingModuleCurrencyConfiguration(),
-              ),
-            ),
-            invoice: new BillingInvoiceService(
-              new BillingInvoiceRepository(new BillingInvoiceConfiguration()),
-            ),
-            paymentIntentsToInvoices:
-              new BillingPaymentIntentsToInvoicesService(
-                new BillingPaymentIntentsToInvoicesRepository(
-                  new BillingPaymentIntentsToInvoicesConfiguration(),
-                ),
-              ),
-          },
         ),
     )
     .inSingletonScope();
@@ -320,6 +302,7 @@ const bindings = new ContainerModule(({ bind }) => {
               new AttributesToBillingModuleCurrenciesConfiguration(),
             ),
           ),
+          createOfferService(),
         ),
     )
     .inSingletonScope();
@@ -393,26 +376,36 @@ const bindings = new ContainerModule(({ bind }) => {
         ),
     )
     .inSingletonScope();
-  bind<OrdersToBillingModulePaymentIntentsService>(
-    OrderDI.IOrdersToBillingModulePaymentIntentsService,
-  )
-    .toDynamicValue(
-      () =>
-        new OrdersToBillingModulePaymentIntentsService(
-          new OrdersToBillingModulePaymentIntentsRepository(
-            new OrdersToBillingModulePaymentIntentsConfiguration(),
-          ),
-        ),
-    )
-    .inSingletonScope();
 });
 
-export async function bootstrap() {
+export async function bootstrap(
+  ordersToBillingModulePaymentIntentsService?: OrdersToBillingModulePaymentIntentsService,
+): Promise<IBootstrapResult> {
+  const reservationService =
+    ordersToBillingModulePaymentIntentsService ??
+    (await bootstrapOrdersToBillingModulePaymentIntents()).service;
+  const { app: billingPaymentIntentApp, service: orderPaymentIntentService } =
+    await bootstrapBillingPaymentIntent({
+      settle: (props) => reservationService.settleReservations(props),
+      canRecordLatePayment: (props) =>
+        reservationService.canRecordLatePayment(props),
+      release: (props) => reservationService.releaseReservations(props),
+    });
   const container = new Container();
   container.load(bindings);
+  container
+    .bind<BillingPaymentIntentService>(
+      OrderDI.IBillingModulePaymentIntentService,
+    )
+    .toConstantValue(orderPaymentIntentService);
+  container
+    .bind<OrdersToBillingModulePaymentIntentsService>(
+      OrderDI.IOrdersToBillingModulePaymentIntentsService,
+    )
+    .toConstantValue(reservationService);
   const app = container.get<App>(DI.IApp);
 
   await app.init();
 
-  return { app };
+  return { app, billingPaymentIntentApp, orderPaymentIntentService };
 }

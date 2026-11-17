@@ -21,6 +21,7 @@ import {
   queryClient,
   appendToListQueries,
   patchInListQueries,
+  removeFromListQueries,
   subscription,
   consistencyQueryKey,
 } from "@sps/shared-frontend-client-api";
@@ -60,8 +61,18 @@ export function context(props: IContextProps) {
       topics: [
         "ecommerce.stores",
         "ecommerce.products",
+        "ecommerce.stores-to-products",
+        "ecommerce.offers-to-offers",
+        "ecommerce.attributes",
+        "ecommerce.attribute-keys",
+        "ecommerce.stores-to-attributes",
+        "ecommerce.products-to-attributes",
+        "ecommerce.stores-to-products-to-attributes",
+        "ecommerce.attribute-keys-to-attributes",
+        "ecommerce.attributes-to-billing-module-currencies",
         "billing.currencies",
         "rbac.subjects-to-ecommerce-module-stores",
+        "rbac.subjects-to-ecommerce-module-products",
       ],
       ...props.reactQueryOptions?.meta,
     },
@@ -144,6 +155,71 @@ export function attributeSet(props: IAttributeSetProps = {}) {
       globalActionsStore.getState().addAction({
         type: "mutation",
         name: `${route}/${variables.id}/ecommerce-module/catalogue-attributes`,
+        props: variables,
+        result: data,
+        timestamp: Date.now(),
+        requestId: createId(),
+      });
+      await onSuccess?.(...args);
+    },
+  });
+}
+
+export interface IMutationProps {
+  reactQueryOptions?: Partial<
+    UseMutationOptions<
+      IServerResult["IEcommerceModuleCatalogMutationResult"],
+      DefaultError,
+      IServerProps["IEcommerceModuleCatalogMutationProps"]
+    >
+  >;
+}
+export function mutation(props: IMutationProps = {}) {
+  const { onSuccess, ...options } = props.reactQueryOptions ?? {};
+  return useMutation<
+    IServerResult["IEcommerceModuleCatalogMutationResult"],
+    DefaultError,
+    IServerProps["IEcommerceModuleCatalogMutationProps"]
+  >({
+    ...options,
+    mutationKey: [`${route}/:id/ecommerce-module/catalogue-mutations`],
+    mutationFn: (variables) =>
+      api.ecommerceModuleCatalogMutation({
+        ...variables,
+        host: variables.host ?? clientHost,
+        options: {
+          ...variables.options,
+          headers: saturateHeaders(variables.options?.headers),
+        },
+      }),
+    async onSuccess(...args) {
+      const [data, variables] = args;
+      const entityRoute = variables.data.entity.startsWith("subjects-to-")
+        ? `/api/rbac/${variables.data.entity}`
+        : `/api/ecommerce/${variables.data.entity}`;
+      if (variables.data.method === "DELETE") {
+        removeFromListQueries(queryClient, entityRoute, data.id);
+        queryClient.removeQueries({ queryKey: [`${entityRoute}/${data.id}`] });
+      } else {
+        patchInListQueries(queryClient, entityRoute, data.id, data);
+        appendToListQueries(queryClient, entityRoute, data);
+        for (const query of queryClient
+          .getQueryCache()
+          .findAll({ queryKey: [`${entityRoute}/${data.id}`] })) {
+          queryClient.setQueryData(query.queryKey, (old: unknown) =>
+            old && typeof old === "object" ? { ...old, ...data } : old,
+          );
+        }
+      }
+      await queryClient.invalidateQueries({
+        predicate: (query) =>
+          String(query.queryKey[0]).startsWith(entityRoute) ||
+          query.queryKey[0] ===
+            `${route}/${variables.id}/ecommerce-module/catalogue-context`,
+      });
+      globalActionsStore.getState().addAction({
+        type: "mutation",
+        name: `${route}/${variables.id}/ecommerce-module/catalogue-mutations`,
         props: variables,
         result: data,
         timestamp: Date.now(),

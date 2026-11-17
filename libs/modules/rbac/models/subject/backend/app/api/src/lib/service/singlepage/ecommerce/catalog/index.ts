@@ -3,6 +3,9 @@ import { compileTariffFormula } from "@sps/backend-utils";
 import type { FindServiceProps } from "@sps/shared-backend-api";
 import {
   catalogCreateOfferSchema,
+  catalogMutationSchema,
+  catalogEntitySchemas,
+  type ICatalogMutationInput,
   catalogSetAttributeSchema,
   type ICatalogCreateOfferInput,
   type ICatalogCreateOfferResult,
@@ -17,6 +20,7 @@ export interface IEntityService {
   find(props?: FindServiceProps): Promise<IRecord[]>;
   findById(props: { id: string }): Promise<IRecord | null | undefined>;
   create(props: { data: Record<string, unknown> }): Promise<IRecord>;
+  delete?(props: { id: string }): Promise<IRecord>;
   update(props: {
     id: string;
     data: Record<string, unknown>;
@@ -49,40 +53,6 @@ export interface IMutation {
 
 export class Service {
   constructor(readonly dependencies: IConstructorProps) {}
-
-  async assertPrivateOrderAccess(props: {
-    subjectId?: string;
-    operator: boolean;
-    entity: string;
-    id?: string;
-    method: string;
-    itemRead: boolean;
-  }) {
-    if (
-      props.operator ||
-      (props.subjectId && (await this.dependencies.isAdmin(props.subjectId)))
-    ) {
-      return;
-    }
-    if (
-      props.subjectId &&
-      props.entity === "orders" &&
-      props.method === "GET" &&
-      props.id &&
-      props.itemRead
-    ) {
-      const owners = await this.find("subjects-to-ecommerce-module-orders", {
-        ecommerceModuleOrderId: props.id,
-      });
-      if (
-        owners.length &&
-        owners.every((owner) => owner.subjectId === props.subjectId)
-      ) {
-        return;
-      }
-    }
-    this.denied();
-  }
 
   async context(subjectId: string) {
     const admin = await this.dependencies.isAdmin(subjectId);
@@ -241,6 +211,16 @@ export class Service {
           ];
         });
     });
+    const productIds = new Set([
+      ...ownedProductIds,
+      ...writableOffers.map((offer) => String(offer.productId)),
+    ]);
+    const serviceProductIds = new Set(
+      products
+        .filter((product) => product.kind === "service")
+        .map((product) => product.id),
+    );
+    const offersById = new Map(offers.map((offer) => [offer.id, offer]));
     return {
       stores: ownedStores,
       products,
@@ -248,11 +228,21 @@ export class Service {
       offers: offers.filter(
         (offer) =>
           offer.variant === "provider" ||
+          (offer.variant === "default" &&
+            serviceProductIds.has(String(offer.productId))) ||
           writableOffers.some((owned) => owned.id === offer.id),
       ),
-      links: allLinks.filter((link) =>
-        writableOffers.some((offer) => offer.id === link.sourceOfferId),
-      ),
+      links: allLinks.flatMap((link) => {
+        const source = offersById.get(String(link.sourceOfferId));
+        if (!source) {
+          return [];
+        }
+        const visible =
+          link.variant === "fulfilled-by"
+            ? writableOffers.some((offer) => offer.id === source.id)
+            : productIds.has(String(source.productId));
+        return visible ? [{ ...link, sourceProductId: source.productId }] : [];
+      }),
       attributes,
       ownedProductIds,
     };
@@ -564,19 +554,31 @@ export class Service {
       return;
     }
     if (props.entity === "offers-to-offers") {
-      for (const source of [
-        ...new Set(
-          [previous?.sourceOfferId, data.sourceOfferId]
-            .filter(Boolean)
-            .map(String),
-        ),
-      ]) {
-        await this.assertOwner(subjectId, "offer", source, admin);
-      }
       if (!data.sourceOfferId || !data.targetOfferId) {
         throw new Error(
           "Validation error. Service offer endpoints are required",
         );
+      }
+      for (const link of previous ? [previous, data] : [data]) {
+        const source = await this.record(
+          "stores-to-products",
+          String(link.sourceOfferId),
+        );
+        if (link.variant === "fulfilled-by") {
+          await this.assertOwner(
+            subjectId,
+            "store",
+            String(source.storeId),
+            admin,
+          );
+        } else {
+          await this.assertOwner(
+            subjectId,
+            "product",
+            String(source.productId),
+            admin,
+          );
+        }
       }
       return;
     }
@@ -834,6 +836,32 @@ export class Service {
       ["stores", "products", "stores-to-products"].includes(props.entity)
     ) {
       if (offerIds.length) {
+        if (props.entity !== "products") {
+          const productServices = await this.entity("offers-to-offers").find({
+            params: {
+              filters: {
+                and: [
+                  {
+                    column: "sourceOfferId",
+                    method: "inArray",
+                    value: offerIds,
+                  },
+                  {
+                    column: "variant",
+                    method: "inArray",
+                    value: ["delivery", "add-on"],
+                  },
+                ],
+              },
+              limit: 1,
+            },
+          });
+          if (productServices.length) {
+            throw new Error(
+              "Conflict error. This offer defines product services. Archive the offer or remove those links before deletion",
+            );
+          }
+        }
         const lines = await this.entity("orders-to-products").find({
           params: {
             filters: {
@@ -1078,6 +1106,70 @@ export class Service {
       data: { [column]: owner.id, attributeId: attribute.id },
     });
     return attribute;
+  }
+
+  async mutation(props: { subjectId: string; data: ICatalogMutationInput }) {
+    const input = catalogMutationSchema.parse(props.data);
+    const entitySchema = catalogEntitySchemas[input.entity];
+    const values = { ...input.data };
+    if (input.entity === "attributes") {
+      for (const field of ["date", "datetime"]) {
+        if (typeof values[field] === "string") {
+          values[field] = new Date(values[field]);
+        }
+      }
+    }
+    if (input.entity === "products" && input.method === "PATCH") {
+      delete values._expectedMetadata;
+    }
+    const parsed = (
+      input.method === "PATCH" ? entitySchema.partial() : entitySchema
+    )
+      .strict()
+      .safeParse(values);
+    if (input.method !== "DELETE" && !parsed.success) {
+      throw new Error("Validation error. Invalid catalogue record values");
+    }
+    const data: Record<string, unknown> =
+      input.method === "DELETE" ? {} : parsed.data!;
+    if (input.method === "PATCH") {
+      for (const key of Object.keys(data)) {
+        if (!Object.hasOwn(values, key)) {
+          delete data[key];
+        }
+      }
+      if (
+        input.entity === "products" &&
+        Object.hasOwn(input.data, "_expectedMetadata")
+      ) {
+        data._expectedMetadata = input.data._expectedMetadata;
+      }
+    }
+    const entity = this.entity(input.entity);
+    return this.mutate(
+      {
+        subjectId: props.subjectId,
+        entity: input.entity,
+        method: input.method,
+        id: input.recordId,
+        data,
+      },
+      async () => {
+        if (input.method === "POST") {
+          return entity.create({ data });
+        }
+        if (input.method === "PATCH") {
+          return entity.update({ id: input.recordId!, data });
+        }
+        if (!entity.delete) {
+          throw new Error(
+            "Configuration error. Catalogue entity cannot be deleted",
+          );
+        }
+        return entity.delete({ id: input.recordId! });
+      },
+      async (record) => record,
+    );
   }
 
   async createOffer(props: {

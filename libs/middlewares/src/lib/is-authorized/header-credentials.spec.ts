@@ -145,3 +145,25 @@ describe("Given: a protected route behind the is-authorized middleware", () => {
     expect(forwardedHeaders()).toMatchObject({ Authorization: "header-jwt" });
   });
 });
+
+it("keeps raw catalogue writes available to the operator credential", async () => {
+  mockAuthenticationIsAuthorized.mockReset();
+  mockAuthenticationIsAuthorized.mockRejectedValue(
+    new Error(
+      "Permission error. This operation requires the operator credential",
+    ),
+  );
+  const handler = jest.fn((c: any) =>
+    c.json({ privileged: Boolean(c.get(RBAC_PRIVILEGED_CONTEXT_KEY)) }),
+  );
+  const app = new Hono();
+  app.use(new Middleware().init());
+  app.patch("/api/ecommerce/attributes/:id", handler);
+  const response = await app.request(
+    "/api/ecommerce/attributes/00000000-0000-4000-8000-000000000414",
+    { method: "PATCH", headers: { "X-RBAC-SECRET-KEY": mockConfiguredSecret } },
+  );
+  expect(response.status).toBe(200);
+  expect(await response.json()).toEqual({ privileged: true });
+  expect(mockAuthenticationIsAuthorized).not.toHaveBeenCalled();
+});

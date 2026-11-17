@@ -8,6 +8,7 @@
  */
 
 jest.mock("@sps/shared-utils", () => ({
+  ...jest.requireActual("@sps/shared-utils"),
   RBAC_JWT_SECRET: "test-jwt-secret",
 }));
 

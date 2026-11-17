@@ -1,4 +1,5 @@
 "use client";
+import { useCatalogueMutationOptions } from "@sps/ecommerce/frontend/component/src/lib/admin-v2/catalogue-mutations";
 
 import { IComponentPropsExtended, variant, IModel } from "./interface";
 import {
@@ -16,8 +17,19 @@ import { Component as ParentAdminForm } from "@sps/shared-frontend-components/si
 import { useGetAdminFormState } from "@sps/shared-frontend-client-hooks";
 
 export function Component(props: IComponentPropsExtended) {
-  const updateEntity = api.update();
-  const createEntity = api.create();
+  const updateEntity = api.update({
+    id: props.data?.id ?? "",
+    ...useCatalogueMutationOptions({
+      entity: "products-to-attributes",
+      method: "PATCH",
+    }),
+  });
+  const createEntity = api.create(
+    useCatalogueMutationOptions({
+      entity: "products-to-attributes",
+      method: "POST",
+    }),
+  );
 
   const { status } = useGetAdminFormState({
     updateEntity,

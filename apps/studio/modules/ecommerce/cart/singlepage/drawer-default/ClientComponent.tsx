@@ -79,7 +79,6 @@ interface IPurchaseLineProps {
   pending: boolean;
   onChange: (id: string, patch: Partial<CartPurchaseLine>) => void;
   onCompare: (id: string) => void;
-  onSplit: (id: string) => void;
   onRetry: (id: string) => void;
 }
 
@@ -89,7 +88,6 @@ const PurchaseLine = memo(function PurchaseLine({
   pending,
   onChange,
   onCompare,
-  onSplit,
   onRetry,
 }: IPurchaseLineProps) {
   const physical = !["tokens", "electronic"].includes(line.kind);
@@ -348,16 +346,6 @@ const PurchaseLine = memo(function PurchaseLine({
             <Icon variant="phosphor" name="shopping-cart" className="h-4 w-4" />
             Сравнить магазины
           </button>
-          {line.quantity === 2 ? (
-            <button
-              type="button"
-              className={button}
-              disabled={pending || lineBlocked(line)}
-              onClick={() => onSplit(line.id)}
-            >
-              Разделить по адресам
-            </button>
-          ) : null}
           {line.error === "quote" ? (
             <button
               type="button"
@@ -390,13 +378,11 @@ export function ClientComponent({
   );
   const [open, setOpen] = useState(isOpen);
   const [comparingId, setComparingId] = useState<string | null>(null);
-  const [dropAssembly, setDropAssembly] = useState(false);
   const [requoted, setRequoted] = useState(false);
   const [notice, setNotice] = useState("");
   const [pendingId, setPendingId] = useState<string | null>(null);
   const [checkoutOpen, setCheckoutOpen] = useState(false);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const splitSequence = useRef(0);
   const checkout = useRef<HTMLElement>(null);
   useEffect(() => setOpen(isOpen), [isOpen]);
   useEffect(
@@ -443,46 +429,7 @@ export function ClientComponent({
   );
   const openComparison = useCallback((id: string) => {
     setComparingId(id);
-    setDropAssembly(false);
     setRequoted(false);
-  }, []);
-  const splitLine = useCallback((id: string) => {
-    setCheckoutOpen(false);
-    const splitId = `${id}-split-${++splitSequence.current}`;
-    setLines((current) =>
-      current.flatMap((line) => {
-        if (line.id !== id) return [line];
-        const firstAssembly =
-          line.assemblyQuantity > 0 ? (1 as const) : (0 as const);
-        const secondAssembly =
-          line.assemblyQuantity === 2 ? (1 as const) : (0 as const);
-        return [
-          {
-            ...line,
-            quantity: 1 as const,
-            assemblyQuantity: firstAssembly,
-            quote:
-              wardrobePurchaseQuotes[
-                `${line.seller}/1/${line.destination}/${firstAssembly}`
-              ],
-          },
-          {
-            ...line,
-            id: splitId,
-            quantity: 1 as const,
-            destination: "region" as const,
-            assemblyQuantity: secondAssembly,
-            quote:
-              wardrobePurchaseQuotes[
-                `${line.seller}/1/region/${secondAssembly}`
-              ],
-          },
-        ];
-      }),
-    );
-    setNotice(
-      "Позиция разделена на два заказа. Укажите адрес и услуги для каждого.",
-    );
   }, []);
   const retryLine = useCallback((id: string) => {
     setPendingId(id);
@@ -499,14 +446,9 @@ export function ClientComponent({
 
   const comparing = lines.find((line) => line.id === comparingId);
   const targetSeller = comparing?.seller === "a" ? "b" : "a";
-  const unavailable =
-    scenario === "service-unavailable" &&
-    targetSeller === "b" &&
-    Boolean(comparing?.assemblyQuantity);
-  const nextAssembly =
-    unavailable && dropAssembly ? 0 : (comparing?.assemblyQuantity ?? 0);
+  const nextAssembly = comparing?.assemblyQuantity ?? 0;
   const previewKey = comparing
-    ? `${targetSeller}/${comparing.quantity}/${comparing.destination}/${unavailable ? 0 : nextAssembly}`
+    ? `${targetSeller}/${comparing.quantity}/${comparing.destination}/${nextAssembly}`
     : "";
   const basePreview = wardrobePurchaseQuotes[previewKey];
   const preview =
@@ -527,7 +469,9 @@ export function ClientComponent({
   const blocked = lines.some(lineBlocked) || pendingId !== null;
 
   function applyComparison() {
-    if (!comparing || !preview || (unavailable && !dropAssembly)) return;
+    if (!comparing || !preview) {
+      return;
+    }
     if (scenario === "tariff-changed" && !requoted && targetSeller === "b") {
       setRequoted(true);
       return;
@@ -607,7 +551,6 @@ export function ClientComponent({
                 pending={pendingId === line.id}
                 onChange={changeLine}
                 onCompare={openComparison}
-                onSplit={splitLine}
                 onRetry={retryLine}
               />
             ))}
@@ -747,28 +690,6 @@ export function ClientComponent({
                     Цена товара, доставки и услуг зафиксирована в этом
                     сравнении. Расчёт действует 15 минут.
                   </p>
-                  {unavailable ? (
-                    <div
-                      role="alert"
-                      className="mt-4 rounded-xl border border-destructive/30 p-3 text-sm"
-                    >
-                      <p>
-                        У магазина Б нет сборки. Для перехода нужно отказаться
-                        от этой услуги.
-                      </p>
-                      <label className="mt-2 flex min-h-11 items-center gap-2">
-                        <input
-                          type="checkbox"
-                          className="h-4 w-4 accent-primary"
-                          checked={dropAssembly}
-                          onChange={(event) =>
-                            setDropAssembly(event.target.checked)
-                          }
-                        />
-                        Продолжить без сборки
-                      </label>
-                    </div>
-                  ) : null}
                   {requoted ? (
                     <p
                       role="alert"
@@ -786,7 +707,6 @@ export function ClientComponent({
                     <button
                       type="button"
                       className={primaryButton}
-                      disabled={unavailable && !dropAssembly}
                       onClick={applyComparison}
                     >
                       {requoted

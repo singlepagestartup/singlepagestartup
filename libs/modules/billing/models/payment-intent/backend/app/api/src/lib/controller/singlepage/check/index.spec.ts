@@ -205,6 +205,7 @@ describe("CloudPayments invoice reconciliation", () => {
       }),
     };
     const repository = {
+      withPaymentIntentLock: jest.fn(async (_id, run) => run()),
       withPaymentIntentLocks: jest.fn(async (_ids, run) => run()),
       updateFirstByField: jest.fn(async (_field, _id, data) =>
         Object.assign(intent, data),

@@ -5,13 +5,19 @@ import type {
   IExecuteProps as ISettlementProps,
   IExpireProps,
   IPaymentLifecycle,
+  IProviderPeriodResolver,
 } from "./settlement";
 import "reflect-metadata";
-import { inject, injectable } from "inversify";
+import { inject, injectable, optional } from "inversify";
 import { CRUDService, DI, consistencyContext } from "@sps/shared-backend-api";
-import { Table } from "@sps/billing/models/payment-intent/backend/repository/database";
+import {
+  Table,
+  privateCheckoutFields,
+} from "@sps/billing/models/payment-intent/backend/repository/database";
 import { Repository } from "../../repository";
-import type { IPrepareCheckoutDispatch } from "../../repository";
+import { Service as CheckoutDispatch } from "../startup/checkout-dispatch";
+import { Service as StripePeriod } from "../startup/stripe-period";
+import type { IPrepareCheckoutDispatch } from "./checkout-dispatch";
 import Stripe from "stripe";
 import {
   STRIPE_RETURN_URL,
@@ -55,6 +61,8 @@ interface IStripeInvoiceProps {
   paymentIntentId: string;
   providerId: string;
   amount: number;
+  currency?: string;
+  firstPeriodOnly?: boolean;
   paymentUrl?: string;
   successUrl?: string | null;
   cancelUrl?: string | null;
@@ -64,14 +72,19 @@ interface IStripeInvoiceProps {
 export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
   declare repository: Repository;
   billingModule: IBillingModule;
-  paymentLifecycle?: IPaymentLifecycle;
+  private readonly checkoutDispatch: CheckoutDispatch;
+  private providerPeriodResolver?: IProviderPeriodResolver;
 
   constructor(
     @inject(DI.IRepository) repository: Repository,
     @inject(PaymentIntentDI.IBillingModule) billingModule: IBillingModule,
+    @inject(PaymentIntentDI.IPaymentLifecycle)
+    @optional()
+    readonly paymentLifecycle?: IPaymentLifecycle,
   ) {
     super(repository);
     this.billingModule = billingModule;
+    this.checkoutDispatch = new CheckoutDispatch(repository);
   }
 
   /**
@@ -85,6 +98,11 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     );
   }
 
+  /** Whether the adapter owns future subscription payment scheduling. */
+  schedulesSubscriptionPayments(props: { provider: string }): boolean {
+    return props.provider === "stripe";
+  }
+
   settlePayment(props: ISettlementProps) {
     return new Settlement({
       repository: this.repository,
@@ -92,25 +110,48 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     }).execute(props);
   }
 
-  async prepareCheckoutDispatch(props: IPrepareCheckoutDispatch) {
-    const prepared = await this.repository.prepareCheckoutDispatch(props);
-    if (!prepared) {
-      throw new Error(
-        "Conflict error. Payment attempt cannot be prepared for dispatch",
-      );
+  setProviderPeriodResolver(resolver: IProviderPeriodResolver) {
+    this.providerPeriodResolver = resolver;
+  }
+
+  protected override insert(data: Record<string, unknown>) {
+    return super.insert(this.checkoutDispatch.writableData(data));
+  }
+
+  override update(props: {
+    id: string;
+    data: Partial<typeof Table.$inferSelect>;
+  }) {
+    if (
+      props.data.amount === undefined &&
+      !privateCheckoutFields.some((field) => field in props.data)
+    ) {
+      return super.update(props);
     }
-    return prepared;
+    // Serialize amount changes with checkout preparation on this same intent.
+    return this.repository.withPaymentIntentLock(props.id, async () => {
+      const intent = await this.findById({ id: props.id });
+      const data = this.checkoutDispatch.writableData(props.data, intent);
+      return super.update({
+        id: props.id,
+        data,
+      });
+    });
+  }
+
+  prepareCheckoutDispatch(props: IPrepareCheckoutDispatch) {
+    return this.checkoutDispatch.prepare(props);
   }
 
   claimCheckoutDispatch(props: { id: string; provider: string }) {
     return this.repository.withPaymentIntentLock(props.id, () =>
-      this.repository.claimCheckoutDispatch(props),
+      this.checkoutDispatch.claim(props),
     );
   }
 
   markCheckoutExposed(props: { id: string }) {
     return this.repository.withPaymentIntentLock(props.id, () =>
-      this.repository.markCheckoutExposed(props.id),
+      this.checkoutDispatch.markExposed(props.id),
     );
   }
 
@@ -217,7 +258,9 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     }
     for (const id of subscriptionIds) {
       const subscription = await stripe.subscriptions.retrieve(id);
-      if (subscription.metadata?.paymentIntentId !== intent.id) {
+      const contractId =
+        intent.checkoutMetadata?.providerContractPaymentIntentId ?? intent.id;
+      if (subscription.metadata?.paymentIntentId !== contractId) {
         throw new Error(
           "Permission error. Stripe subscription belongs to another payment intent",
         );
@@ -346,10 +389,27 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
       props.paymentIntentId,
       async () => {
         const intent = await this.findById({ id: props.paymentIntentId });
-        if (!intent)
+        if (!intent) {
           throw new Error("Not Found error. Payment intent not found");
-        if (!props.providerId || moneyNumber(props.amount) < 0)
+        }
+        if (!props.providerId || moneyNumber(props.amount) < 0) {
           throw new Error("Validation error. Invalid Stripe invoice");
+        }
+        if (moneyNumber(intent.amount) !== moneyNumber(props.amount)) {
+          throw new Error(
+            "Conflict error. Stripe invoice amount differs from its local payment intent",
+          );
+        }
+        if (props.currency && intent.checkoutCurrencyId) {
+          const currency = await this.billingModule.currency.findById({
+            id: intent.checkoutCurrencyId,
+          });
+          if (!currency || currency.slug !== props.currency) {
+            throw new Error(
+              "Conflict error. Stripe invoice currency differs from its saved checkout",
+            );
+          }
+        }
         const invoices = await this.billingModule.invoice.find({
           params: {
             filters: {
@@ -360,10 +420,102 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
             },
           },
         });
-        if (invoices && invoices.length > 1)
+        if (invoices && invoices.length > 1) {
           throw new Error("Conflict error. Multiple Stripe invoices found");
+        }
         let invoice = invoices?.[0];
-        if (!invoice)
+        if (
+          props.firstPeriodOnly &&
+          ["succeeded", "requires_reconciliation"].includes(intent.status) &&
+          invoice?.status !== "paid"
+        ) {
+          throw new Error(
+            "Conflict error. Initial Stripe subscription payment was already settled",
+          );
+        }
+        if (!invoice && this.providerPeriodResolver) {
+          if (intent.status === "canceled") {
+            throw new Error(
+              "Conflict error. Canceled subscription period requires payment reconciliation",
+            );
+          }
+          const intentLinks =
+            await this.billingModule.paymentIntentsToInvoices.find({
+              params: {
+                filters: {
+                  and: [
+                    {
+                      column: "paymentIntentId",
+                      method: "eq",
+                      value: intent.id,
+                    },
+                  ],
+                },
+              },
+            });
+          if (intentLinks?.length) {
+            const pending = await this.billingModule.invoice.find({
+              params: {
+                filters: {
+                  and: [
+                    {
+                      column: "id",
+                      method: "inArray",
+                      value: intentLinks.map((link) => link.invoiceId),
+                    },
+                    { column: "provider", method: "eq", value: "stripe" },
+                  ],
+                },
+              },
+            });
+            if (
+              pending.some(
+                (item) =>
+                  item.provider === "stripe" &&
+                  !item.providerId &&
+                  item.status !== "draft",
+              )
+            ) {
+              throw new Error(
+                "Conflict error. Closed subscription period invoice requires payment reconciliation",
+              );
+            }
+            const drafts = pending.filter(
+              (item) =>
+                item.provider === "stripe" &&
+                item.status === "draft" &&
+                !item.providerId &&
+                intentLinks.some((link) => link.invoiceId === item.id),
+            );
+            if (drafts.length > 1) {
+              throw new Error(
+                "Conflict error. Multiple pending Stripe period invoices found",
+              );
+            }
+            const draft = drafts[0];
+            if (draft) {
+              if (moneyNumber(draft.amount) !== moneyNumber(props.amount)) {
+                throw new Error(
+                  "Conflict error. Stripe invoice amount differs from its prepared period invoice",
+                );
+              }
+              const updated = await this.billingModule.invoice.update({
+                id: draft.id,
+                data: {
+                  ...draft,
+                  providerId: props.providerId,
+                  status: "open",
+                  paymentUrl: props.paymentUrl || "",
+                },
+              });
+              if (!updated) {
+                throw new Error("Not Found error. Invoice not found");
+              }
+              invoice = updated;
+            }
+          }
+        }
+        if (!invoice) {
           invoice = await this.billingModule.invoice.create({
             data: {
               provider: "stripe",
@@ -375,6 +527,10 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
               cancelUrl: props.cancelUrl || "",
             },
           });
+        }
+        if (moneyNumber(invoice.amount) !== moneyNumber(props.amount)) {
+          throw new Error("Conflict error. Stripe invoice amount changed");
+        }
         const links = await this.billingModule.paymentIntentsToInvoices.find({
           params: {
             filters: {
@@ -383,10 +539,11 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
           },
         });
         if (links?.length) {
-          if (links.length !== 1 || links[0].paymentIntentId !== intent.id)
+          if (links.length !== 1 || links[0].paymentIntentId !== intent.id) {
             throw new Error(
               "Conflict error. Stripe invoice belongs to another payment intent",
             );
+          }
         } else {
           const link = await this.billingModule.paymentIntentsToInvoices.create(
             {
@@ -396,8 +553,9 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
               },
             },
           );
-          if (!link)
+          if (!link) {
             throw new Error("Internal error. Failed to link Stripe invoice");
+          }
         }
         return operation(invoice);
       },
@@ -460,6 +618,28 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
   }
 
   async checkStripeInvoice(invoice: IInvoice) {
+    if (
+      this.providerPeriodResolver &&
+      invoice.status === "draft" &&
+      !invoice.providerId
+    ) {
+      const links = await this.billingModule.paymentIntentsToInvoices.find({
+        params: {
+          filters: {
+            and: [{ column: "invoiceId", method: "eq", value: invoice.id }],
+          },
+        },
+      });
+      if (links?.length === 1) {
+        const intent = await this.findById({ id: links[0].paymentIntentId });
+        const contractId =
+          intent?.checkoutMetadata?.providerContractPaymentIntentId;
+        if (typeof contractId === "string") {
+          await this.reconcileSubscriptionPeriods({ id: contractId });
+        }
+      }
+      return;
+    }
     if (invoice.status !== "open" || !invoice.providerId) {
       return;
     }
@@ -474,7 +654,207 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
       await this.applyStripePaymentStatus(invoice, session);
     } else if (invoice.providerId.startsWith("in_")) {
       const remote = await stripe.invoices.retrieve(invoice.providerId);
-      await this.applyStripePaymentStatus(invoice, remote);
+      const subscription =
+        remote.parent?.subscription_details?.subscription ??
+        ("subscription" in remote ? remote.subscription : undefined);
+      if (subscription || remote.billing_reason?.startsWith("subscription_")) {
+        await this.receiveStripeSubscriptionInvoice(stripe, remote);
+      } else {
+        await this.applyStripePaymentStatus(invoice, remote);
+      }
+    }
+  }
+
+  private async receiveStripeSubscriptionInvoice(
+    stripe: Stripe,
+    remote: Stripe.Invoice,
+    subscription?: Stripe.Subscription,
+  ) {
+    const reference = remote.parent?.subscription_details?.subscription;
+    const subscriptionId =
+      reference ?? ("subscription" in remote ? remote.subscription : undefined);
+    if (typeof subscriptionId !== "string") {
+      throw new Error(
+        "Validation error. Stripe invoice subscription is missing",
+      );
+    }
+    const contract =
+      subscription ?? (await stripe.subscriptions.retrieve(subscriptionId));
+    if (
+      (this.providerPeriodResolver || contract.id) &&
+      contract.id !== subscriptionId
+    ) {
+      throw new Error("Conflict error. Stripe subscription identity changed");
+    }
+    let paymentIntentId = contract.metadata?.paymentIntentId;
+    if (!paymentIntentId) {
+      throw new Error(
+        "Validation error. Stripe subscription payment intent is missing",
+      );
+    }
+    let period: StripePeriod | undefined;
+    if (this.providerPeriodResolver) {
+      period = new StripePeriod({
+        resolve: this.providerPeriodResolver,
+        readLines: async (invoiceId) => {
+          const lines: Stripe.InvoiceLineItem[] = [];
+          for await (const line of stripe.invoices.listLineItems(invoiceId, {
+            limit: 100,
+          })) {
+            lines.push(line);
+          }
+          return lines;
+        },
+      });
+    }
+    // Historic subscribers can retain earlier paid invoices on their original
+    // intent. A replay preserves that history without allocating a new period.
+    const recorded = await this.billingModule.invoice.find({
+      params: {
+        filters: {
+          and: [
+            { column: "provider", method: "eq", value: "stripe" },
+            { column: "providerId", method: "eq", value: remote.id },
+          ],
+        },
+      },
+    });
+    if (recorded.length > 1) {
+      throw new Error("Conflict error. Multiple Stripe invoices found");
+    }
+    const paid = recorded[0];
+    if (paid?.status === "paid") {
+      const links = await this.billingModule.paymentIntentsToInvoices.find({
+        params: {
+          filters: {
+            and: [{ column: "invoiceId", method: "eq", value: paid.id }],
+          },
+        },
+      });
+      if (links.length === 1) {
+        const intent = await this.findById({ id: links[0].paymentIntentId });
+        const contractId =
+          intent?.checkoutMetadata?.providerContractPaymentIntentId ??
+          intent?.id;
+        const remoteAmount =
+          remote.status === "paid" ? remote.amount_paid : remote.amount_due;
+        if (
+          intent?.status === "succeeded" &&
+          contractId === paymentIntentId &&
+          moneyNumber(paid.amount) ===
+            remoteAmount / 10 ** currencyPrecision(remote.currency ?? "usd")
+        ) {
+          if (period) {
+            await period.execute({
+              invoice: remote,
+              subscription: contract,
+              recordedPaymentIntentId: intent.id,
+            });
+          }
+          return paid;
+        }
+      }
+    }
+    if (period) {
+      const resolved = await period.execute({
+        invoice: remote,
+        subscription: contract,
+      });
+      paymentIntentId = resolved.paymentIntentId;
+    } else if (remote.billing_reason !== "subscription_create") {
+      throw new Error(
+        "Configuration error. Subscription period resolver is required for recurring Stripe invoices",
+      );
+    }
+    return this.withStripeInvoice(
+      {
+        paymentIntentId,
+        providerId: remote.id,
+        amount:
+          remote.amount_due / 10 ** currencyPrecision(remote.currency ?? "usd"),
+        currency: remote.currency,
+        firstPeriodOnly: !period,
+        paymentUrl: remote.hosted_invoice_url ?? "",
+      },
+      (invoice) =>
+        this.applyStripePaymentStatus(invoice, remote, { paymentIntentId }),
+    );
+  }
+
+  /** Reads provider-owned debits after a lost notification; never submits one. */
+  async reconcileSubscriptionPeriods(props: { id: string }) {
+    if (!this.providerPeriodResolver) {
+      return;
+    }
+    if (consistencyContext.getStore()?.database) {
+      throw new Error(
+        "Conflict error. Provider reconciliation requires a committed transaction",
+      );
+    }
+    const context = await this.subscriptionRenewalContext(props);
+    if (
+      !context ||
+      context.paid.some((invoice) => invoice.provider !== "stripe")
+    ) {
+      return;
+    }
+    if (!STRIPE_SECRET_KEY) {
+      throw new Error("Configuration error. Stripe secret key not found");
+    }
+    const stripe = new Stripe(STRIPE_SECRET_KEY);
+    const subscriptions = new Set<string>();
+    for (const invoice of context.paid) {
+      if (!invoice.providerId) {
+        throw new Error(
+          "Validation error. Stripe invoice provider ID is missing",
+        );
+      }
+      const remote = await stripe.invoices.retrieve(invoice.providerId);
+      const reference = remote.parent?.subscription_details?.subscription;
+      const id =
+        reference ??
+        ("subscription" in remote ? remote.subscription : undefined);
+      if (typeof id !== "string") {
+        throw new Error(
+          "Validation error. Stripe invoice subscription is missing",
+        );
+      }
+      subscriptions.add(id);
+    }
+    for (const id of subscriptions) {
+      const subscription = await stripe.subscriptions.retrieve(id);
+      const contractId =
+        context.intent.checkoutMetadata?.providerContractPaymentIntentId ??
+        context.intent.id;
+      if (subscription.metadata?.paymentIntentId !== contractId) {
+        throw new Error(
+          "Permission error. Stripe subscription belongs to another payment intent",
+        );
+      }
+      const invoices: Stripe.Invoice[] = [];
+      for await (const invoice of stripe.invoices.list({
+        subscription: id,
+        limit: 100,
+      })) {
+        invoices.push(invoice);
+      }
+      invoices.sort(
+        (left, right) =>
+          left.created - right.created || left.id.localeCompare(right.id),
+      );
+      for (const remote of invoices) {
+        if (
+          (remote.billing_reason === "subscription_create" ||
+            remote.billing_reason === "subscription_cycle") &&
+          remote.status !== "draft"
+        ) {
+          await this.receiveStripeSubscriptionInvoice(
+            stripe,
+            remote,
+            subscription,
+          );
+        }
+      }
     }
   }
 
@@ -506,6 +886,11 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     const stripe = new Stripe(STRIPE_SECRET_KEY);
 
     if (props.action === "create") {
+      if (props.entity.checkoutMetadata?.providerContractPaymentIntentId) {
+        throw new Error(
+          "Conflict error. Subscription period payment is managed by its existing provider contract",
+        );
+      }
       if (!props.entity.amount) {
         throw new Error("Validation error. Amount is required");
       }
@@ -513,10 +898,32 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
       if (props.entity.amount < 0) {
         throw new Error("Validation error. Amount cannot be negative");
       }
+      let recurringAmount = props.entity.amount;
+      if (
+        props.entity.type === "subscription" &&
+        props.entity.checkoutMetadata?.providerRecurringAmount !== undefined
+      ) {
+        const saved = props.entity.checkoutMetadata.providerRecurringAmount;
+        if (
+          typeof saved !== "number" ||
+          saved <= 0 ||
+          saved > props.entity.amount
+        ) {
+          throw new Error(
+            "Validation error. Invalid provider recurring amount",
+          );
+        }
+        recurringAmount = saved;
+      }
       const stripeMinorAmount = providerMinorUnits(
-        props.entity.amount,
+        recurringAmount,
         currencyPrecision(props.currency),
       );
+      const firstOnlyMinorAmount =
+        providerMinorUnits(
+          props.entity.amount,
+          currencyPrecision(props.currency),
+        ) - stripeMinorAmount;
       const recurringInterval =
         props.entity.interval === "four_weeks" ? "week" : props.entity.interval;
       const recurringCount = props.entity.interval === "four_weeks" ? 4 : 1;
@@ -611,6 +1018,20 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
             metadata: {
               ...props.metadata,
             },
+            ...(firstOnlyMinorAmount > 0
+              ? {
+                  add_invoice_items: [
+                    {
+                      price_data: {
+                        currency: props.currency,
+                        product: stripeProduct.id,
+                        unit_amount: firstOnlyMinorAmount,
+                      },
+                      quantity: 1,
+                    },
+                  ],
+                }
+              : {}),
           },
           { idempotencyKey: `sps:${props.entity.id}:subscription` },
         );
@@ -673,6 +1094,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
           {
             paymentIntentId: props.entity.id,
             amount: props.entity.amount,
+            currency: props.currency,
             providerId: checkout.id,
             paymentUrl: checkout.url,
             successUrl: checkout.success_url,
@@ -689,6 +1111,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
           {
             paymentIntentId: props.entity.id,
             amount: props.entity.amount,
+            currency: props.currency,
             providerId: checkout.latest_invoice.id,
             paymentUrl: checkout.latest_invoice.hosted_invoice_url || "",
           },
@@ -721,31 +1144,14 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
             props.data.type === "checkout.session.async_payment_failed",
         });
       } else if (data.object === "invoice") {
+        if (this.providerPeriodResolver && data.status === "draft") {
+          return { pending: true };
+        }
         const reference = data.parent?.subscription_details?.subscription;
         const subscriptionId =
           reference ?? ("subscription" in data ? data.subscription : undefined);
         if (typeof subscriptionId === "string") {
-          const subscription =
-            await stripe.subscriptions.retrieve(subscriptionId);
-
-          const intentId = subscription.metadata?.paymentIntentId;
-          if (!intentId)
-            throw new Error(
-              "Validation error. Stripe subscription payment intent is missing",
-            );
-          return this.withStripeInvoice(
-            {
-              paymentIntentId: intentId,
-              providerId: data.id,
-              amount:
-                data.amount_due /
-                10 ** currencyPrecision(data.currency ?? "usd"),
-            },
-            (invoice) =>
-              this.applyStripePaymentStatus(invoice, data, {
-                paymentIntentId: intentId,
-              }),
-          );
+          return this.receiveStripeSubscriptionInvoice(stripe, data);
         }
       }
 

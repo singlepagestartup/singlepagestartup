@@ -24,17 +24,9 @@ import {
 } from "@sps/ecommerce/relations/orders-to-billing-module-payment-intents/backend/repository/database";
 import { Configuration } from "../../configuration";
 import { Repository } from "../../repository";
-import { Service } from "./index";
+import { bootstrap } from "../../bootstrap";
 import type { IReservationLine } from "./reservation";
-import { Configuration as IntentConfiguration } from "@sps/billing/models/payment-intent/backend/app/api/src/lib/configuration";
-import { Repository as IntentRepository } from "@sps/billing/models/payment-intent/backend/app/api/src/lib/repository";
-import { Service as IntentService } from "@sps/billing/models/payment-intent/backend/app/api/src/lib/service";
-import { Configuration as InvoiceConfiguration } from "@sps/billing/models/invoice/backend/app/api/src/lib/configuration";
-import { Repository as InvoiceRepository } from "@sps/billing/models/invoice/backend/app/api/src/lib/repository";
-import { Service as InvoiceService } from "@sps/billing/models/invoice/backend/app/api/src/lib/service";
-import { Configuration as IntentInvoiceConfiguration } from "@sps/billing/relations/payment-intents-to-invoices/backend/app/api/src/lib/configuration";
-import { Repository as IntentInvoiceRepository } from "@sps/billing/relations/payment-intents-to-invoices/backend/app/api/src/lib/repository";
-import { Service as IntentInvoiceService } from "@sps/billing/relations/payment-intents-to-invoices/backend/app/api/src/lib/service";
+import { bootstrap as bootstrapOrder } from "@sps/ecommerce/models/order/backend/app/api/src/lib/bootstrap";
 
 const cleanups: (() => Promise<unknown>)[] = [];
 afterEach(async () => {
@@ -84,27 +76,10 @@ async function fixture(stock = 1) {
       .delete(OfferAttribute)
       .where(eq(OfferAttribute.attributeId, attributeId)),
   );
-  const relation = new Service(new Repository(new Configuration()));
-  const second = new Service(new Repository(new Configuration()));
-  const invoices = new InvoiceService(
-    new InvoiceRepository(new InvoiceConfiguration()),
-  );
-  const intentInvoices = new IntentInvoiceService(
-    new IntentInvoiceRepository(new IntentInvoiceConfiguration()),
-  );
-  const intents = new IntentService(
-    new IntentRepository(new IntentConfiguration()),
-    {
-      invoice: invoices,
-      paymentIntentsToInvoices: intentInvoices,
-      currency: {},
-    } as any,
-  );
-  intents.paymentLifecycle = {
-    settle: (props) => relation.settleReservations(props),
-    release: (props) => relation.releaseReservations(props),
-    canRecordLatePayment: (props) => relation.canRecordLatePayment(props),
-  };
+  const { service: relation } = await bootstrap();
+  const { service: second } = await bootstrap();
+  const { orderPaymentIntentService: intents } = await bootstrapOrder();
+  const invoices = intents.billingModule.invoice;
   const attempts: {
     intentId: string;
     invoiceId: string;
@@ -241,17 +216,19 @@ it("allows only one independent attempt to reserve the last unit and consumes it
 it("reads finite stock through the key junction and keeps unlimited attempts visible as outstanding holds", async () => {
   const f = await fixture();
   const repository = new Repository(new Configuration());
-  const generated = repository.stockQuery([f.offerId]).toSQL();
+  const generated = repository
+    .stockQuery([f.offerId], "stock_quantity")
+    .toSQL();
   expect(generated.sql).toContain(
     `"${getTableName(KeyAttribute)}"."${KeyAttribute.attributeKeyId.name}" = "${getTableName(AttributeKey)}"."id"`,
   );
   expect(
-    (await repository.stockForOffers([f.offerId])).get(f.offerId)?.quantity,
+    (await f.relation.stockForOffers([f.offerId])).get(f.offerId)?.quantity,
   ).toBe(1);
   await db
     .delete(OfferAttribute)
     .where(eq(OfferAttribute.attributeId, f.attributeId));
-  expect((await repository.stockForOffers([f.offerId])).has(f.offerId)).toBe(
+  expect((await f.relation.stockForOffers([f.offerId])).has(f.offerId)).toBe(
     false,
   );
   for (const attempt of f.attempts) {
