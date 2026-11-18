@@ -52,49 +52,7 @@ jest.mock("@sps/shared-frontend-client-store", () => ({
     getState: () => ({ addAction: jest.fn() }),
   },
 }));
-async function mockWrite(path: string, props: any) {
-  const response = await mockApp.request(path, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(props.data),
-  });
-  if (!response.ok) throw new Error(await response.text());
-  return ((await response.json()) as any).data;
-}
-jest.mock("@sps/ecommerce/models/order/sdk/server", () => ({
-  api: { create: (props: any) => mockWrite("/api/ecommerce/orders", props) },
-}));
-jest.mock(
-  "@sps/rbac/relations/subjects-to-ecommerce-module-orders/sdk/server",
-  () => ({
-    api: {
-      create: (props: any) =>
-        mockWrite("/api/rbac/subjects-to-ecommerce-module-orders", props),
-    },
-  }),
-);
-jest.mock("@sps/ecommerce/relations/orders-to-products/sdk/server", () => ({
-  api: {
-    create: (props: any) =>
-      mockWrite("/api/ecommerce/orders-to-products", props),
-  },
-}));
-jest.mock("@sps/ecommerce/relations/stores-to-orders/sdk/server", () => ({
-  api: {
-    create: (props: any) => mockWrite("/api/ecommerce/stores-to-orders", props),
-  },
-}));
-jest.mock(
-  "@sps/ecommerce/relations/orders-to-billing-module-currencies/sdk/server",
-  () => ({
-    api: {
-      create: (props: any) =>
-        mockWrite("/api/ecommerce/orders-to-billing-module-currencies", props),
-    },
-  }),
-);
-
-it("keeps nested mutation effects when Product checkout runs without its outer HTTP request", async () => {
+it("reconciles both legacy clients after exact-offer Product checkout through the API", async () => {
   mockValues.clear();
   const dependency = "public.fixture|collection|0";
   let generation = "0";
@@ -126,20 +84,23 @@ it("keeps nested mutation effects when Product checkout runs without its outer H
     return c.json({ data: [...orders] });
   });
   mockApp.get("/api/ecommerce/orders", reads);
-  mockApp.post("/api/ecommerce/orders", (c) => {
-    orders.push({ id });
-    generation = String(Number(generation) + 1);
-    return c.json({ data: { id } });
-  });
-  for (const path of [
-    "/api/rbac/subjects-to-ecommerce-module-orders",
-    "/api/ecommerce/orders-to-products",
-    "/api/ecommerce/stores-to-orders",
-    "/api/ecommerce/orders-to-billing-module-currencies",
-  ])
-    mockApp.post(path, (c) => c.json({ data: { id } }));
 
   const route = "/api/ecommerce/orders";
+  const rpc =
+    "/api/rbac/subjects/303302a0-4eb7-4cef-af04-74d7e8e72442/ecommerce-module/products/303302a0-4eb7-4cef-af04-74d7e8e72442/checkout";
+  mockApp.post(rpc, async (c) => {
+    const result = await service.execute({
+      id: "subject",
+      productId: "product",
+      data: {
+        provider: "dummy",
+        storeId: "store",
+        billingModule: { currency: { id: "currency" } },
+      },
+    });
+    return c.json({ data: result });
+  });
+
   const clients = [new QueryClient(), new QueryClient()];
   const cleanups: Array<() => void> = [];
   for (const client of clients) {
@@ -170,6 +131,16 @@ it("keeps nested mutation effects when Product checkout runs without its outer H
     subjectsToIdentities: {
       find: jest.fn(async () => [{ identityId: "identity" }]),
     },
+    billingModule: {
+      paymentIntent: { isProviderAllowed: jest.fn(() => true) },
+      currency: {
+        findById: jest.fn(async () => ({
+          id: "currency",
+          slug: "usd",
+          minorUnitDigits: 2,
+        })),
+      },
+    },
     ecommerceModule: {
       product: {
         findById: jest.fn(async () => ({
@@ -177,23 +148,30 @@ it("keeps nested mutation effects when Product checkout runs without its outer H
           slug: "fixture-product",
         })),
       },
-      productsToAttributes: { find },
-      attributesToBillingModuleCurrencies: { find },
+      storesToProducts: {
+        find: jest.fn().mockResolvedValue([]),
+        offersForProduct: jest.fn(async () => [
+          { id: "offer", productId: "product", storeId: "store" },
+        ]),
+        quote: jest.fn(async () => ({
+          amount: "100",
+          currencyIds: ["currency"],
+          issues: [],
+        })),
+      },
     },
+    ecommerceModuleOrderCreate: jest.fn(async () => {
+      orders.push({ id });
+      generation = String(Number(generation) + 1);
+      return { orderId: id, lineId: "line" };
+    }),
     ecommerceOrderCheckout: jest.fn(async () => ({
       billingModule: { invoices: [] },
     })),
   } as any);
   try {
-    await service.execute({
-      id: "subject",
-      productId: "product",
-      data: {
-        provider: "dummy",
-        storeId: "store",
-        billingModule: { currency: { id: "currency" } },
-      },
-    });
+    const response = await mockApp.request(rpc, { method: "POST" });
+    expect(response.status).toBe(200);
     await new Promise((resolve) => setTimeout(resolve, 250));
     for (const client of clients)
       expect(client.getQueryData([route])).toEqual([{ id }]);

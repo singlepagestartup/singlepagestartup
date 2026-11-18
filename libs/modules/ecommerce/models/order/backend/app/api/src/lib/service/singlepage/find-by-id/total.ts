@@ -5,6 +5,7 @@ import { Service as AttributeKeyService } from "@sps/ecommerce/models/attribute-
 import { Service as OrdersToProductsService } from "@sps/ecommerce/relations/orders-to-products/backend/app/api/src/lib/service";
 import { type IUnpricedOrderToProduct } from "@sps/ecommerce/relations/orders-to-products/sdk/model";
 import { OrderDI } from "../../../di";
+import type { IQuoteOptions } from "@sps/ecommerce/relations/stores-to-products/backend/app/api/src/lib/service/singlepage";
 
 export type IExecuteProps = {
   id: string;
@@ -33,27 +34,9 @@ export class Service {
     this.ordersToProducts = ordersToProducts;
   }
 
-  async execute(props: IExecuteProps) {
+  async execute(props: IExecuteProps, options: IQuoteOptions = {}) {
     if (!RBAC_SECRET_KEY) {
       throw new Error("Configuration error. RBAC_SECRET_KEY is not defined");
-    }
-
-    const priceAttributeKeys = await this.attributeKey.find({
-      params: {
-        filters: {
-          and: [
-            {
-              column: "type",
-              method: "eq",
-              value: "price",
-            },
-          ],
-        },
-      },
-    });
-
-    if (!priceAttributeKeys?.length) {
-      throw new Error("Not Found error. Price attribute key not found");
     }
 
     const orderToProducts = await this.ordersToProducts.find({
@@ -72,6 +55,32 @@ export class Service {
 
     if (!orderToProducts?.length) {
       throw new Error("Not Found error. Order does not have any products");
+    }
+
+    if (orderToProducts.some((line) => line.offerId)) {
+      return this.ordersToProducts.offerTotals(
+        orderToProducts,
+        undefined,
+        options,
+      );
+    }
+
+    const priceAttributeKeys = await this.attributeKey.find({
+      params: {
+        filters: {
+          and: [
+            {
+              column: "type",
+              method: "eq",
+              value: "price",
+            },
+          ],
+        },
+      },
+    });
+
+    if (!priceAttributeKeys?.length) {
+      throw new Error("Not Found error. Price attribute key not found");
     }
 
     const totals: IExecuteResult["totals"] = [];

@@ -4,7 +4,7 @@
   "totals": {
     "modules": 15,
     "entities": 61,
-    "variants": 1079,
+    "variants": 1084,
     "coveredVariants": 255,
     "representedEntities": 61
   },
@@ -2467,6 +2467,12 @@
               "coveredBy": []
             },
             {
+              "variant": "cart-card-default",
+              "scope": "singlepage",
+              "variantsFile": "libs/modules/ecommerce/models/order/frontend/component/src/lib/singlepage/variants.ts",
+              "coveredBy": []
+            },
+            {
               "variant": "cart-default",
               "scope": "singlepage",
               "variantsFile": "libs/modules/ecommerce/models/order/frontend/component/src/lib/singlepage/variants.ts",
@@ -2530,6 +2536,7 @@
             "apps/studio/modules/ecommerce/order/singlepage/checkout-payment-default/Component.stories.tsx",
             "apps/studio/modules/ecommerce/order/singlepage/checkout-stepper-default/Component.stories.tsx",
             "apps/studio/modules/ecommerce/order/singlepage/checkout/tokens/ai-chat/Component.stories.tsx",
+            "apps/studio/modules/ecommerce/order/singlepage/history-default/Component.stories.tsx",
             "apps/studio/modules/ecommerce/order/singlepage/summary-default/Component.stories.tsx"
           ]
         },
@@ -2763,6 +2770,12 @@
               "coveredBy": []
             },
             {
+              "variant": "delivery",
+              "scope": "singlepage",
+              "variantsFile": "libs/modules/ecommerce/models/store/frontend/component/src/lib/singlepage/variants.ts",
+              "coveredBy": []
+            },
+            {
               "variant": "find",
               "scope": "singlepage",
               "variantsFile": "libs/modules/ecommerce/models/store/frontend/component/src/lib/singlepage/variants.ts",
@@ -2779,12 +2792,19 @@
               "scope": "singlepage",
               "variantsFile": "libs/modules/ecommerce/models/store/frontend/component/src/lib/singlepage/variants.ts",
               "coveredBy": []
+            },
+            {
+              "variant": "service",
+              "scope": "singlepage",
+              "variantsFile": "libs/modules/ecommerce/models/store/frontend/component/src/lib/singlepage/variants.ts",
+              "coveredBy": []
             }
           ],
           "storyFiles": [
             "apps/studio/modules/ecommerce/store/Skeleton.stories.tsx",
             "apps/studio/modules/ecommerce/store/singlepage/admin-v2-card/Component.stories.tsx",
-            "apps/studio/modules/ecommerce/store/singlepage/admin-v2-table/Component.stories.tsx"
+            "apps/studio/modules/ecommerce/store/singlepage/admin-v2-table/Component.stories.tsx",
+            "apps/studio/modules/ecommerce/store/singlepage/offer-editor/Component.stories.tsx"
           ]
         },
         {
@@ -5512,6 +5532,12 @@
               "coveredBy": []
             },
             {
+              "variant": "subject-me-ecommerce-module-offer-create",
+              "scope": "singlepage",
+              "variantsFile": "libs/modules/rbac/models/widget/frontend/component/src/lib/singlepage/variants.ts",
+              "coveredBy": []
+            },
+            {
               "variant": "subject-me-ecommerce-module-product-list-default",
               "scope": "singlepage",
               "variantsFile": "libs/modules/rbac/models/widget/frontend/component/src/lib/singlepage/variants.ts",
@@ -7201,6 +7227,12 @@
             },
             {
               "variant": "hidden",
+              "scope": "singlepage",
+              "variantsFile": "libs/modules/website-builder/models/buttons-array/frontend/component/src/lib/singlepage/variants.ts",
+              "coveredBy": []
+            },
+            {
+              "variant": "internationalization",
               "scope": "singlepage",
               "variantsFile": "libs/modules/website-builder/models/buttons-array/frontend/component/src/lib/singlepage/variants.ts",
               "coveredBy": []

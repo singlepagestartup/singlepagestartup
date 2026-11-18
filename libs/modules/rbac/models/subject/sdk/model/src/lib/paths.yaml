@@ -897,7 +897,7 @@ paths:
       tags:
         - "rbac-subject"
       summary: Checkout product
-      description: Create checkout for a product
+      description: Re-quote one configured retail offer, create its order and check out only that order. Existing cart orders are not included. An offer already in the cart must be purchased through its saved order checkout.
       parameters:
         - $ref: "../../../../../../../../../libs/shared/backend/api/src/lib/query-builder/id.yaml"
         - name: productId
@@ -915,8 +915,18 @@ paths:
               properties:
                 data:
                   type: string
-                  description: JSON string
-                  example: '{"productId": "00000000-0000-0000-0000-000000000000"}'
+                  description: >-
+                    Serialized JSON with provider and optional email, account, offerId,
+                    storeId, quantity, expectedQuoteVersion, comment, destination and services.
+                    destination contains a delivery address, region and optional coordinates
+                    {latitude, longitude}. Pickup takes place at the selected retail store
+                    and needs no address or point ID. Legacy pickupPointId values are ignored.
+                    services is an array of {offerId, quantity}.
+                    Currency is billingModule.currency.id; billingModuleCurrencyId is also accepted.
+                    Supply expectedQuoteVersion from the exact product-page quote to reject changed
+                    terms before writes. Legacy calls may omit the offer when only one is available
+                    and omit currency to use an available default.
+                  example: '{"provider":"stripe","email":"buyer@example.com","offerId":"00000000-0000-0000-0000-000000000001","quantity":2,"billingModule":{"currency":{"id":"00000000-0000-0000-0000-000000000002"}},"destination":{"address":"City Street 10"},"services":[{"offerId":"00000000-0000-0000-0000-000000000003","quantity":1}],"expectedQuoteVersion":"server-quote-version"}'
               required:
                 - data
       responses:
@@ -927,13 +937,20 @@ paths:
               schema:
                 type: object
                 properties:
-                  billingModule:
+                  data:
                     type: object
                     properties:
-                      invoices:
-                        type: array
-                        items:
-                          $ref: "../../../../../../../../../libs/modules/billing/models/invoice/sdk/model/src/lib/billing-invoice.yaml"
+                      billingModule:
+                        type: object
+                        properties:
+                          invoices:
+                            type: array
+                            items:
+                              $ref: "../../../../../../../../../libs/modules/billing/models/invoice/sdk/model/src/lib/billing-invoice.yaml"
+        "400":
+          description: Invalid or incomplete offer, quantity, currency, destination or service selection.
+        "409":
+          description: Quoted terms changed or this offer is already in the cart.
 
   /rbac/subjects/{id}/ecommerce-module/orders:
     get:
@@ -957,7 +974,7 @@ paths:
       tags:
         - "rbac-subject"
       summary: Create order
-      description: Create ecommerce order for a subject
+      description: Re-quote and atomically add one exact retail offer with its selected services to the subject's cart. Existing callers may omit the offer when only one is available. Duplicate copies of the same offer are refused.
       parameters:
         - $ref: "../../../../../../../../../libs/shared/backend/api/src/lib/query-builder/id.yaml"
       requestBody:
@@ -969,8 +986,19 @@ paths:
               properties:
                 data:
                   type: string
-                  description: JSON string
-                  example: '{"productId": "00000000-0000-0000-0000-000000000000", "storeId": "00000000-0000-0000-0000-000000000000", "quantity": 1, "billingModuleCurrencyId": "00000000-0000-0000-0000-000000000000"}'
+                  description: >-
+                    Serialized JSON with productId and optional offerId, storeId, quantity,
+                    billingModuleCurrencyId (or billingModule.currency.id), expectedQuoteVersion,
+                    destination, services and comment. destination contains a delivery address,
+                    region and optional coordinates {latitude, longitude}. Pickup takes place at
+                    the selected retail store and needs no address or point ID. Legacy
+                    pickupPointId values are ignored.
+                    services is an array of {offerId, quantity}. A supplied expectedQuoteVersion
+                    must match the re-quoted selection before graph writes. The stored primary
+                    line preserves the exact offer, destination and quantity; selected services
+                    become child lines in the same order. Shipping selections without an address
+                    may remain editable cart drafts.
+                  example: '{"productId":"00000000-0000-0000-0000-000000000000","offerId":"00000000-0000-0000-0000-000000000001","quantity":2,"billingModuleCurrencyId":"00000000-0000-0000-0000-000000000002","destination":{"address":"City Street 10"},"services":[{"offerId":"00000000-0000-0000-0000-000000000003","quantity":1}],"expectedQuoteVersion":"server-quote-version"}'
               required:
                 - data
       responses:
@@ -1877,3 +1905,312 @@ paths:
                   data:
                     type: integer
                     format: int32
+
+  /rbac/subjects/{id}/ecommerce-module/orders/{orderId}/selection:
+    post:
+      tags: [rbac-subject]
+      summary: Price and save the current buyer's cart selection
+      parameters: *a1
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [data]
+              properties:
+                data:
+                  type: string
+                  description: JSON containing action (save, preview or apply), the primary lineId, and exactly one entry in selections with offerId, quantity, currencyId, optional destination and services. A write requires the primary line's expectedSelectionUpdatedAt. Apply also requires expectedVersions from a preview. Omitted or empty services use the server's fulfillment default, which a successful save persists as a child line. Pickup uses the selected retail store and needs no destination; legacy pickupPointId values are ignored.
+      responses:
+        "200":
+          description: Itemized server quotes. An incomplete save returns quote issues and applied=false. A successful save returns the revision to use for the next edit.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data:
+                    type: object
+                    required: [quotes, orderIds, applied]
+                    properties:
+                      quotes: &cartSelectionQuotes
+                        type: array
+                        items:
+                          {
+                            $ref: "../../../../../../../../../libs/modules/ecommerce/relations/stores-to-products/sdk/model/src/lib/offer-quote.yaml",
+                          }
+                      comparisonQuotes: *cartSelectionQuotes
+                      orderIds:
+                        { type: array, items: { type: string, format: uuid } }
+                      applied: { type: boolean }
+                      selectionUpdatedAt: { type: string, format: date-time }
+        "400": { description: Invalid cart selection }
+        "403": { description: Cart access denied }
+        "409":
+          {
+            description: Cart revision,
+            payment state or offer conditions changed,
+          }
+  /rbac/subjects/{id}/ecommerce-module/offers:
+    post:
+      tags: [rbac-subject]
+      summary: Atomically create a seller offer
+      description: Requires the current signed-in Subject. Creates an offer for an existing Product or a new Product with its owner grant, formula, first offer, prices and stock. Store ownership is required; an existing Product keeps its owner.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [data]
+              additionalProperties: false
+              properties:
+                data:
+                  $ref: ecommerce-catalog-offer-input.yaml
+      responses:
+        "201":
+          description: Product and store offer
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      product:
+                        $ref: ../../../../../../../ecommerce/models/product/sdk/model/src/lib/ecommerce-product.yaml
+                      offer:
+                        type: object
+                        description: The stored Store–Product offer with its UUID and unique SKU.
+        "400":
+          { description: Invalid product, prices, stock or store selection }
+        "401": { description: A signed-in Subject is required }
+        "403": { description: The Subject does not own the store }
+  /rbac/subjects/{id}/ecommerce-module/catalogue-attributes:
+    post:
+      tags: [rbac-subject]
+      summary: Set an owned catalogue attribute
+      description: Creates or updates one scoped Store rate, Product formula or offer price/stock. The server verifies all attribute owners; stock changes lock the offer and retain active reservations.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [data]
+              additionalProperties: false
+              properties:
+                data:
+                  $ref: ecommerce-catalog-attribute-input.yaml
+      responses:
+        "200": { description: Stored Attribute }
+        "400": { description: Invalid or ambiguous attribute, formula or stock }
+        "401": { description: A signed-in Subject is required }
+        "403": { description: Catalogue ownership is required }
+  /rbac/subjects/{id}/ecommerce-module/catalogue-context:
+    get:
+      tags: [rbac-subject]
+      summary: Read the current seller catalogue context
+      description: Returns only writable stores, up to 200 published Product choices and the available currencies. The caller must match the Subject; administrators can choose any store.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        "200":
+          { description: Stores, products and currencies for the seller form }
+        "401": { description: A signed-in Subject is required }
+        "403": { description: The requested Subject does not match the caller }
+
+  /rbac/subjects/{id}/ecommerce-module/catalogue-mutations:
+    post:
+      tags: [rbac-subject]
+      summary: Change an owned catalogue record
+      description: Requires the current signed-in Subject and normal route permission. The Subject service validates the owning entity schema and checks catalogue ownership before writing. Ownership grants require an administrator.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [data]
+              additionalProperties: false
+              properties:
+                data:
+                  type: object
+                  required: [entity, method]
+                  additionalProperties: false
+                  properties:
+                    entity:
+                      type: string
+                      enum:
+                        [
+                          stores,
+                          products,
+                          attributes,
+                          attribute-keys,
+                          stores-to-products,
+                          offers-to-offers,
+                          stores-to-attributes,
+                          products-to-attributes,
+                          stores-to-products-to-attributes,
+                          attribute-keys-to-attributes,
+                          attributes-to-billing-module-currencies,
+                          subjects-to-ecommerce-module-stores,
+                          subjects-to-ecommerce-module-products,
+                          subjects-to-ecommerce-module-orders,
+                        ]
+                    method: { type: string, enum: [POST, PATCH, DELETE] }
+                    recordId: { type: string, format: uuid }
+                    data: { type: object, additionalProperties: true }
+      responses:
+        "200": { description: Updated or deleted catalogue record }
+        "201":
+          {
+            description: Created catalogue record and current Subject ownership when applicable,
+          }
+        "400": { description: Invalid record values or unavailable stock }
+        "401": { description: A signed-in Subject is required }
+        "403": { description: Permission or catalogue ownership is required }
+
+  /rbac/subjects/ecommerce-module/orders/payment-intents/{id}/providers/{provider}:
+    post:
+      tags:
+        - "rbac-subject"
+      summary: Payment intent provider
+      description: Dispatch an existing order payment intent. Requires the operator credential.
+      parameters:
+        - $ref: "../../../../../../../../../libs/shared/backend/api/src/lib/query-builder/id.yaml"
+        - name: provider
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                data:
+                  type: string
+                  description: JSON string
+                  example: '{"provider": "stripe", "currencyId": "00000000-0000-0000-0000-000000000000", "metadata": {"email": "user@example.com"}}'
+              required:
+                - data
+      responses:
+        "201":
+          description: Payment intent
+          content:
+            application/json:
+              schema:
+                $ref: "../../../../../../../../../libs/modules/billing/models/payment-intent/sdk/model/src/lib/billing-payment-intent.yaml"
+
+  /rbac/subjects/ecommerce-module/orders/payment-intents/{provider}/webhook:
+    post:
+      tags:
+        - "rbac-subject"
+      summary: Payment intent provider webhook
+      description: Authenticate the callback for the provider in the URL and apply it to the linked order payment.
+      parameters:
+        - name: provider
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { type: object, additionalProperties: true }
+          application/x-www-form-urlencoded:
+            schema: { type: object, additionalProperties: true }
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                data:
+                  type: string
+                  description: JSON string
+                  example: '{"provider": "telegram-star", "currency": "USD", "total_amount": 0, "invoice_payload": "payload", "telegram_payment_charge_id": "charge", "provider_payment_charge_id": "provider_charge"}'
+              required:
+                - data
+      responses:
+        "200":
+          description: Provider acknowledgment after authenticated processing
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - type: object
+                    properties:
+                      code:
+                        type: integer
+                        enum: [0]
+                    required: [code]
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          code:
+                            type: integer
+                            enum: [0]
+                          ok:
+                            type: boolean
+                          received:
+                            type: boolean
+                    required: [data]
+            text/plain:
+              schema:
+                type: string
+                description: PayKeeper acknowledgment
+
+  /rbac/subjects/ecommerce-module/orders/payment-intents/{id}/check:
+    post:
+      tags:
+        - "rbac-subject"
+      summary: Check payment intent
+      description: Reconcile the order payment with its provider. Requires the operator credential.
+      parameters:
+        - $ref: "../../../../../../../../../libs/shared/backend/api/src/lib/query-builder/id.yaml"
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                data:
+                  type: string
+                  description: JSON string
+                  example: "{}"
+              required:
+                - data
+      responses:
+        "200":
+          description: Payment intent
+          content:
+            application/json:
+              schema:
+                $ref: "../../../../../../../../../libs/modules/billing/models/payment-intent/sdk/model/src/lib/billing-payment-intent.yaml"

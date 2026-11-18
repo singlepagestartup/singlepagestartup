@@ -16,7 +16,6 @@ import {
   RequestIdMiddleware,
   ActionLoggerMiddleware,
   BillRouteMiddleware,
-  controllerGuardedRoutes,
   OperatorSecretAttemptsMiddleware,
   ApiRateLimitMiddleware,
 } from "@sps/middlewares";
@@ -25,13 +24,16 @@ import { getFileContentHeaders, resolveCorsOrigin } from "@sps/backend-utils";
 import { app as agentApp } from "@sps/agent/backend/app/api";
 import { app as analyticApp } from "@sps/analytic/backend/app/api";
 import { app as hostApp } from "@sps/host/backend/app/api";
-import { app as rbacApp } from "@sps/rbac/backend/app/api";
+import {
+  app as rbacApp,
+  rbacHttpCacheExcludeRoutes,
+} from "@sps/rbac/backend/app/api";
 import { app as startupApp } from "@sps/startup/backend/app/api";
 import { app as crmApp } from "@sps/crm/backend/app/api";
 import { app as ecommerceApp } from "@sps/ecommerce/backend/app/api";
+import { app as billingApp } from "@sps/billing/backend/app/api";
 import { app as notificationApp } from "@sps/notification/backend/app/api";
 import { app as blogApp } from "@sps/blog/backend/app/api";
-import { app as billingApp } from "@sps/billing/backend/app/api";
 import { app as websiteBuilderApp } from "@sps/website-builder/backend/app/api";
 import { app as broadcastApp } from "@sps/broadcast/backend/app/api";
 import { app as fileStorageApp } from "@sps/file-storage/backend/app/api";
@@ -64,7 +66,7 @@ const consistencyMiddleware = new ConsistencyMiddleware({
 });
 const httpCacheMiddleware = new HTTPCacheMiddleware({
   runtime: consistencyMiddleware.runtime,
-  excludedRoutes: controllerGuardedRoutes,
+  excludedRoutes: [...rbacHttpCacheExcludeRoutes],
 });
 
 app.use(

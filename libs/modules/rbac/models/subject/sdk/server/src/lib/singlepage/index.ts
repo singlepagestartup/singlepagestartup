@@ -1,4 +1,33 @@
 import {
+  action as ecommerceModuleOrderPaymentProvider,
+  type IProps as IOrderPaymentProviderProps,
+  type IResult as IOrderPaymentProviderResult,
+} from "./ecommerce-module/order/payment-intent/provider";
+import {
+  action as ecommerceModuleOrderPaymentCheck,
+  type IProps as IOrderPaymentCheckProps,
+  type IResult as IOrderPaymentCheckResult,
+} from "./ecommerce-module/order/payment-intent/check";
+import {
+  action as ecommerceModuleOrderPaymentWebhook,
+  type IProps as IOrderPaymentWebhookProps,
+  type IResult as IOrderPaymentWebhookResult,
+} from "./ecommerce-module/order/payment-intent/provider-webhook";
+import {
+  mutation as ecommerceModuleCatalogMutation,
+  type IMutationProps as IEcommerceModuleCatalogMutationProps,
+  type IMutationResult as IEcommerceModuleCatalogMutationResult,
+  context as ecommerceModuleCatalogContext,
+  type IContextProps as IEcommerceModuleCatalogContextProps,
+  type IContextResult as IEcommerceModuleCatalogContextResult,
+  offerCreate as ecommerceModuleOfferCreate,
+  attributeSet as ecommerceModuleCatalogAttributeSet,
+  type IOfferCreateProps as IEcommerceModuleOfferCreateProps,
+  type IAttributeSetProps as IEcommerceModuleCatalogAttributeSetProps,
+  type IOfferCreateResult as IEcommerceModuleOfferCreateResult,
+  type IAttributeSetResult as IEcommerceModuleCatalogAttributeSetResult,
+} from "./ecommerce-module/catalog";
+import {
   action as blogModuleArticleCreate,
   type IProps as IBlogModuleArticleCreateProps,
   type IResult as IBlogModuleArticleCreateResult,
@@ -106,6 +135,11 @@ import {
   type IProps as IEcommerceModuleProductCheckoutProps,
   type IResult as IEcommerceModuleProductCheckoutResult,
 } from "./ecommerce-module/product/checkout";
+import {
+  action as ecommerceModuleOrderSelection,
+  type IProps as IEcommerceModuleOrderSelectionProps,
+  type IResult as IEcommerceModuleOrderSelectionResult,
+} from "./ecommerce-module/order/selection";
 import {
   action as ecommerceModuleOrderRepeat,
   type IProps as IEcommerceModuleOrderRepeatProps,
@@ -496,6 +530,13 @@ import {
 } from "./host-cache/revalidate";
 
 export type IProps = {
+  IOrderPaymentProviderProps: IOrderPaymentProviderProps;
+  IOrderPaymentCheckProps: IOrderPaymentCheckProps;
+  IOrderPaymentWebhookProps: IOrderPaymentWebhookProps;
+  IEcommerceModuleCatalogMutationProps: IEcommerceModuleCatalogMutationProps;
+  IEcommerceModuleCatalogContextProps: IEcommerceModuleCatalogContextProps;
+  IEcommerceModuleOfferCreateProps: IEcommerceModuleOfferCreateProps;
+  IEcommerceModuleCatalogAttributeSetProps: IEcommerceModuleCatalogAttributeSetProps;
   IPermissionDefaultsProps: IPermissionDefaultsProps;
   IHostCacheRevalidateProps: IHostCacheRevalidateProps;
   IBlogModuleArticleCreateProps: IBlogModuleArticleCreateProps;
@@ -520,6 +561,7 @@ export type IProps = {
 
   IEcommerceModuleProductCheckoutProps: IEcommerceModuleProductCheckoutProps;
   IEcommerceModuleOrderCreateProps: IEcommerceModuleOrderCreateProps;
+  IEcommerceModuleOrderSelectionProps: IEcommerceModuleOrderSelectionProps;
   IEcommerceModuleOrderRepeatProps: IEcommerceModuleOrderRepeatProps;
   IEcommerceModuleOrderUpdateProps: IEcommerceModuleOrderUpdateProps;
   IEcommerceModuleOrderDeleteProps: IEcommerceModuleOrderDeleteProps;
@@ -601,6 +643,13 @@ export type IProps = {
 };
 
 export type IResult = {
+  IOrderPaymentProviderResult: IOrderPaymentProviderResult;
+  IOrderPaymentCheckResult: IOrderPaymentCheckResult;
+  IOrderPaymentWebhookResult: IOrderPaymentWebhookResult;
+  IEcommerceModuleCatalogMutationResult: IEcommerceModuleCatalogMutationResult;
+  IEcommerceModuleCatalogContextResult: IEcommerceModuleCatalogContextResult;
+  IEcommerceModuleOfferCreateResult: IEcommerceModuleOfferCreateResult;
+  IEcommerceModuleCatalogAttributeSetResult: IEcommerceModuleCatalogAttributeSetResult;
   IPermissionDefaultsResult: IPermissionDefaultsResult;
   IHostCacheRevalidateResult: IHostCacheRevalidateResult;
   IBlogModuleArticleCreateResult: IBlogModuleArticleCreateResult;
@@ -625,6 +674,7 @@ export type IResult = {
 
   IEcommerceModuleProductCheckoutResult: IEcommerceModuleProductCheckoutResult;
   IEcommerceModuleOrderCreateResult: IEcommerceModuleOrderCreateResult;
+  IEcommerceModuleOrderSelectionResult: IEcommerceModuleOrderSelectionResult;
   IEcommerceModuleOrderRepeatResult: IEcommerceModuleOrderRepeatResult;
   IEcommerceModuleOrderUpdateResult: IEcommerceModuleOrderUpdateResult;
   IEcommerceModuleOrderDeleteResult: IEcommerceModuleOrderDeleteResult;
@@ -706,6 +756,13 @@ export type IResult = {
 };
 
 export const api = {
+  ecommerceModuleOrderPaymentProvider,
+  ecommerceModuleOrderPaymentCheck,
+  ecommerceModuleOrderPaymentWebhook,
+  ecommerceModuleCatalogMutation,
+  ecommerceModuleCatalogContext,
+  ecommerceModuleOfferCreate,
+  ecommerceModuleCatalogAttributeSet,
   permissionDefaults,
   hostCacheRevalidate,
   blogModuleArticleCreate,
@@ -728,6 +785,7 @@ export const api = {
 
   ecommerceModuleProductCheckout,
   ecommerceModuleOrderCreate,
+  ecommerceModuleOrderSelection,
   ecommerceModuleOrderRepeat,
   ecommerceModuleOrderUpdate,
   ecommerceModuleOrderDelete,

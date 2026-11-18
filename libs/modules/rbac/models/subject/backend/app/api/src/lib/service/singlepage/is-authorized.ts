@@ -1,4 +1,10 @@
-import { RBAC_JWT_SECRET, createMemoryCache } from "@sps/shared-utils";
+import {
+  RBAC_JWT_SECRET,
+  createMemoryCache,
+  RouteMatcher,
+  normalizeRoutePath,
+} from "@sps/shared-utils";
+import { operatorOnlyRoutes } from "@sps/rbac/models/permission/backend/app/api/src/lib/service/singlepage/sensitive-routes";
 import { DI, type IRepository } from "@sps/shared-backend-api";
 import { Service as PermissionService } from "@sps/rbac/models/permission/backend/app/api/src/lib/service";
 import { Service as RolesToPermissionsService } from "@sps/rbac/relations/roles-to-permissions/backend/app/api/src/lib/service";
@@ -12,6 +18,7 @@ import { inject, injectable } from "inversify";
 import { SubjectDI } from "../../di";
 
 const cache = createMemoryCache({ ttlMs: 30_000, maxSize: 10_000 });
+const operatorOnlyOperations = new RouteMatcher(operatorOnlyRoutes);
 
 export type IExecuteProps = {
   permission: {
@@ -179,6 +186,17 @@ export class Service {
 
     if (!RBAC_JWT_SECRET) {
       throw new Error("Configuration error. RBAC_JWT_SECRET is not defined");
+    }
+
+    if (
+      operatorOnlyOperations.matches(
+        normalizeRoutePath(props.permission.route),
+        props.permission.method,
+      )
+    ) {
+      throw new Error(
+        "Permission error. This operation requires the operator credential. Use the current Subject operation",
+      );
     }
 
     let subjectId: string | undefined = undefined;

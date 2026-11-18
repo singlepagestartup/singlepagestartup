@@ -186,4 +186,26 @@ export const topicRules: ITopicRule[] = [
     ],
     stop: true,
   },
+  {
+    routeTemplate:
+      "/api/rbac/subjects/[rbac.subjects.id]/ecommerce-module/products/[ecommerce.products.id]/checkout",
+    topics: [
+      "ecommerce.orders",
+      "ecommerce.orders-to-products",
+      "ecommerce.subjects.[rbac.subjects.id].orders",
+    ],
+    stop: true,
+  },
+  {
+    routeTemplate:
+      "/api/rbac/subjects/[rbac.subjects.id]/ecommerce-module/orders/[ecommerce.orders.id]/selection",
+    topics: [
+      "ecommerce.orders",
+      "ecommerce.orders-to-products",
+      "ecommerce.stores-to-orders",
+      "ecommerce.orders-to-billing-module-currencies",
+      "ecommerce.subjects.[rbac.subjects.id].orders",
+    ],
+    stop: true,
+  },
 ];

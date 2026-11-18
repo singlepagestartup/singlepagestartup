@@ -95,9 +95,6 @@
             "command": "nx run @sps/ecommerce:relations:attribute-keys-to-attributes:repository-migrate"
           },
           {
-            "command": "nx run @sps/ecommerce:relations:orders-to-billing-module-payment-intents:repository-migrate"
-          },
-          {
             "command": "nx run @sps/ecommerce:relations:orders-to-billing-module-currencies:repository-migrate"
           },
           {
@@ -140,10 +137,16 @@
             "command": "nx run @sps/ecommerce:relations:orders-to-products:repository-migrate"
           },
           {
+            "command": "nx run @sps/ecommerce:relations:orders-to-billing-module-payment-intents:repository-migrate"
+          },
+          {
             "command": "nx run @sps/ecommerce:relations:products-to-attributes:repository-migrate"
           },
           {
             "command": "nx run @sps/ecommerce:relations:stores-to-products-to-attributes:repository-migrate"
+          },
+          {
+            "command": "nx run @sps/ecommerce:relations:offers-to-offers:repository-migrate"
           },
           {
             "command": "nx run @sps/ecommerce:relations:categories-to-website-builder-module-widgets:repository-migrate"
@@ -198,6 +201,9 @@
           },
           {
             "command": "nx run @sps/ecommerce:relations:stores-to-products-to-attributes:repository-generate"
+          },
+          {
+            "command": "nx run @sps/ecommerce:relations:offers-to-offers:repository-generate"
           },
           {
             "command": "nx run @sps/ecommerce:relations:stores-to-attributes:repository-generate"
@@ -713,6 +719,22 @@
         ]
       }
     },
+    "relations:offers-to-offers:repository-generate": {
+      "executor": "nx:run-commands",
+      "cache": false,
+      "options": {
+        "parallel": false,
+        "cwd": "libs/modules/ecommerce/relations/offers-to-offers/backend/repository/database",
+        "commands": [
+          {
+            "command": "drizzle-kit up --config=./src/lib/config.ts"
+          },
+          {
+            "command": "drizzle-kit generate --config=./src/lib/config.ts"
+          }
+        ]
+      }
+    },
     "relations:stores-to-products-to-attributes:repository-migrate": {
       "executor": "nx:run-commands",
       "cache": false,
@@ -720,6 +742,20 @@
         "parallel": false,
         "envFile": "apps/api/.env",
         "cwd": "libs/modules/ecommerce/relations/stores-to-products-to-attributes/backend/repository/database",
+        "commands": [
+          {
+            "command": "bun run ./src/lib/migrate.ts"
+          }
+        ]
+      }
+    },
+    "relations:offers-to-offers:repository-migrate": {
+      "executor": "nx:run-commands",
+      "cache": false,
+      "options": {
+        "parallel": false,
+        "envFile": "apps/api/.env",
+        "cwd": "libs/modules/ecommerce/relations/offers-to-offers/backend/repository/database",
         "commands": [
           {
             "command": "bun run ./src/lib/migrate.ts"

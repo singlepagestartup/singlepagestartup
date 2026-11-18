@@ -1,6 +1,5 @@
 import {
   ECOMMERCE_ORDER_LINE_QUANTITY_BOUNDS as quantityBounds,
-  INITIAL_FREE_SUBSCRIPTION_PRODUCT_SLUG,
   RBAC_JWT_SECRET,
   RBAC_SECRET_KEY,
 } from "@sps/shared-utils";
@@ -8,6 +7,7 @@ import { Context } from "hono";
 import { HTTPException } from "hono/http-exception";
 import { authorization, getHttpErrorType, verifyJwt } from "@sps/backend-utils";
 import { Service } from "../../../../service";
+import { ecommerceOrderCreateSchema } from "@sps/rbac/models/subject/sdk/model";
 
 export class Handler {
   service: Service;
@@ -48,7 +48,22 @@ export class Handler {
         throw new Error("Validation error. Invalid body");
       }
 
-      const data = JSON.parse(body["data"]);
+      let parsedBody: unknown;
+      try {
+        parsedBody = JSON.parse(body["data"]);
+      } catch {
+        throw new Error("Validation error. Invalid order creation JSON");
+      }
+      const parsed = ecommerceOrderCreateSchema.safeParse(parsedBody);
+      if (!parsed.success) {
+        if (parsed.error.issues.some((issue) => issue.path[0] === "quantity")) {
+          throw new Error(
+            `Validation error. Quantity must be an integer between ${quantityBounds.min} and ${quantityBounds.max}`,
+          );
+        }
+        throw new Error("Validation error. Invalid order purchase selection");
+      }
+      const data = parsed.data;
 
       if (decoded?.["subject"]?.["id"] !== id) {
         throw new Error("Validation error. Only order owner can update order");
@@ -62,42 +77,22 @@ export class Handler {
       const product = await this.service.ecommerceModule.product.findById({
         id: productId,
       });
-      if (!product) throw new Error("Not Found error. Product not found");
-      if (product.slug === INITIAL_FREE_SUBSCRIPTION_PRODUCT_SLUG)
+      if (!product) {
+        throw new Error("Not Found error. Product not found");
+      }
+      if (
+        await this.service.ecommerceModuleProductInitialGrantIncludes({
+          productId: product.id,
+        })
+      ) {
         throw new Error(
           "Permission error. Initial Free is available only through authentication bootstrap",
         );
+      }
       const quantity = data.quantity ?? 1;
-      if (
-        !Number.isInteger(quantity) ||
-        quantity < quantityBounds.min ||
-        quantity > quantityBounds.max
-      ) {
-        throw new Error(
-          `Validation error. Quantity must be an integer between ${quantityBounds.min} and ${quantityBounds.max}`,
-        );
-      }
 
-      const requestedCurrencyId = data["billingModule"]?.currency?.id;
-
-      let storeId = data.storeId;
-
-      if (!storeId) {
-        const stores = await this.service.ecommerceModule.store.find();
-
-        if (stores?.length === 0) {
-          throw new Error("Not Found error. No stores found");
-        }
-
-        if (stores?.length && stores.length > 1) {
-          throw new Error(
-            "Internal error. Multiple stores found. Pass 'data.storeId'",
-          );
-        }
-
-        storeId = stores?.[0]?.id;
-      }
-
+      const requestedCurrencyId =
+        data["billingModule"]?.currency?.id ?? data.billingModuleCurrencyId;
       const entity = await this.service.findById({
         id,
       });
@@ -109,9 +104,14 @@ export class Handler {
       await this.service.ecommerceModuleOrderCreate({
         subjectId: id,
         productId,
-        storeId,
+        storeId: data.storeId,
+        offerId: data.offerId,
+        expectedQuoteVersion: data.expectedQuoteVersion,
         quantity,
         billingModuleCurrencyId: requestedCurrencyId,
+        destination: data.destination,
+        services: data.services,
+        comment: data.comment,
       });
 
       return c.json({

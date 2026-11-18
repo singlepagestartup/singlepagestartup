@@ -14,6 +14,7 @@ jest.mock("@sps/ecommerce/models/product/frontend/component", () => ({
       <article>
         <h1>{props.data.title.en}</h1>
         {props.topSlot}
+        {props.priceSlot}
         {props.middleSlot}
         {props.children}
       </article>
@@ -21,12 +22,26 @@ jest.mock("@sps/ecommerce/models/product/frontend/component", () => ({
   },
 }));
 jest.mock("@sps/rbac/models/subject/frontend/component", () => ({
+  ProductWithOfferPrice: (...args: any[]) =>
+    jest
+      .requireActual(
+        "../../../../../../../subject/frontend/component/src/lib/singlepage/ecommerce-module/order/create-default/ProductWithOfferPrice",
+      )
+      .ProductWithOfferPrice(...args),
   Component: (props: any) => {
     subjectReads(props);
     return props.variant.startsWith("me-") ? null : (
       <span>{props.variant}</span>
     );
   },
+}));
+jest.mock("@sps/ecommerce/models/store/frontend/component", () => ({
+  Component: ({ product, variant, readOnly }: any) =>
+    variant === "product-price-default" &&
+    readOnly &&
+    product.id === "product-1"
+      ? "Quoted unit price"
+      : null,
 }));
 jest.mock("@sps/shared-ui-shadcn", () => ({
   CardHeader: ({ children }: any) => children,
@@ -41,6 +56,7 @@ it("renders product H1 while session-dependent actions are absent", () => {
     />,
   );
   expect(html).toContain("<h1>Public product</h1>");
+  expect(html).toContain("Quoted unit price");
   for (const variant of [
     "ecommerce-module-product-category-default",
     "ecommerce-module-product-profile-default",
@@ -55,13 +71,18 @@ it("renders product H1 while session-dependent actions are absent", () => {
     );
     expect(html).toContain(variant);
   }
-  for (const variant of [
-    "me-ecommerce-module-product-cart-default",
-    "me-ecommerce-module-product-checkout-default",
-  ])
-    expect(subjectReads).toHaveBeenCalledWith(
-      expect.objectContaining({ variant, isServer: false }),
-    );
+  expect(subjectReads).toHaveBeenCalledWith(
+    expect.objectContaining({
+      variant: "me-ecommerce-module-product-cart-default",
+      isServer: false,
+      withOneStepCheckout: true,
+    }),
+  );
+  expect(subjectReads).not.toHaveBeenCalledWith(
+    expect.objectContaining({
+      variant: "me-ecommerce-module-product-checkout-default",
+    }),
+  );
   expect(reads).toHaveBeenCalledWith({
     params: {
       filters: { and: [{ column: "slug", method: "eq", value: "one" }] },

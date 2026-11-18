@@ -1,15 +1,15 @@
 import { Component as Subject } from "@sps/rbac/models/subject/frontend/component";
-import { Component as EcommerceModuleProduct } from "@sps/ecommerce/models/product/frontend/component";
+import { ProductWithOfferPrice } from "../../../../ecommerce-module/order/create-default/ProductWithOfferPrice";
 import type { IComponentPropsExtended } from "./interface";
 import { CardContent, CardHeader } from "@sps/shared-ui-shadcn";
 
 export function Component(props: IComponentPropsExtended) {
   return (
-    <EcommerceModuleProduct
+    <ProductWithOfferPrice
       isServer={props.isServer}
       variant="default"
-      dataSource="props"
-      data={props.ecommerceModuleProduct}
+      product={props.ecommerceModuleProduct}
+      storeId={props.ecommerceModuleStore?.id}
       language={props.language}
       topSlot={
         <CardHeader className="p-0">
@@ -39,21 +39,12 @@ export function Component(props: IComponentPropsExtended) {
           ecommerceModuleStore={props.ecommerceModuleStore}
           language={props.language}
           variant="me-ecommerce-module-product-cart-default"
-          dataSource="props"
-          data={props.data}
-          className="w-full"
-        />
-        <Subject
-          isServer={props.isServer}
-          ecommerceModuleProduct={props.ecommerceModuleProduct}
-          ecommerceModuleStore={props.ecommerceModuleStore}
-          language={props.language}
-          variant="me-ecommerce-module-product-checkout-default"
+          withOneStepCheckout
           dataSource="props"
           data={props.data}
           className="w-full"
         />
       </>
-    </EcommerceModuleProduct>
+    </ProductWithOfferPrice>
   );
 }

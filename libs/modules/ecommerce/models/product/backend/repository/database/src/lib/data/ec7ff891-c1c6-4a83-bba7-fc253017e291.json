@@ -1,0 +1,23 @@
+{
+  "metadata": {},
+  "id": "ec7ff891-c1c6-4a83-bba7-fc253017e291",
+  "createdAt": "2026-11-17T10:50:44.123Z",
+  "updatedAt": "2026-11-17T10:50:44.123Z",
+  "variant": "default",
+  "kind": "service",
+  "type": "one_off",
+  "slug": "demo-ai-chat-setup",
+  "title": {
+    "en": "AI chat setup (demo)",
+    "ru": "Настройка AI-чата (демо)"
+  },
+  "shortDescription": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Optional one-time AI chat setup for trying the cart. This demo tariff does not start an external service.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Необязательная разовая настройка AI-чата для проверки корзины. Демотариф не запускает внешнюю услугу.\"}]}]}"
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Optional one-time AI chat setup for trying the cart. This demo tariff does not start an external service.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Необязательная разовая настройка AI-чата для проверки корзины. Демотариф не запускает внешнюю услугу.\"}]}]}"
+  },
+  "adminTitle": "AI chat setup (demo)"
+}

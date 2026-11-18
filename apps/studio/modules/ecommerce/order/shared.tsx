@@ -76,3 +76,10 @@ export const defaultCheckoutForm = {
   country: "",
   notes: "",
 };
+
+export function formatOrderMoney(amount: number, currency: string) {
+  const value = new Intl.NumberFormat("ru-RU", {
+    maximumFractionDigits: 2,
+  }).format(amount);
+  return `${value} ${currency === "RUB" ? "₽" : currency}`;
+}

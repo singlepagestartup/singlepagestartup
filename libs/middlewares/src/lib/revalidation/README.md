@@ -72,6 +72,12 @@ Next tag invalidation before delivery. Route/topic frames remain a notification
 fallback for browser subscriptions; they do not select another response cache.
 Ordinary messages do not call router.refresh, reload or root-layout invalidation.
 
+Handlers for POST-based reads set `READ_ONLY_OPERATION_CONTEXT_KEY`. Observer,
+action logging and HTTP revalidation middleware use that classification to avoid
+mutation effects after the read completes. Request validation, authorization and
+the handler still run. Database write capture and committed-write delivery are
+independent of this marker.
+
 Read tracking and the committed-write bridge always run. HTTP response caching
 is separately opt-in through `MIDDLEWARE_HTTP_CACHE=true`; disabling that cache
 does not disable dependency capture, authorization or invalidation delivery.

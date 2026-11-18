@@ -17,6 +17,19 @@ describe("repeat order transport", () => {
     fetchSpy.mockRestore();
   });
 
+  it("sends the explicit next-period mode in its form body", async () => {
+    await action({
+      id: "subject",
+      orderId: "period",
+      mode: "next-period",
+      host: "http://api.test",
+    });
+    const body = fetchSpy.mock.calls[0][1]?.body as FormData;
+    expect(JSON.parse(String(body.get("data")))).toEqual({
+      mode: "next-period",
+    });
+  });
+
   it("posts the source order to the subject route and returns new cart IDs", async () => {
     await expect(
       action({

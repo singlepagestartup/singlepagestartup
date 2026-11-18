@@ -23,6 +23,7 @@ export type {
   ProductCardProps,
   IProductCardAttribute,
   IProductCardPrice,
+  IProductCardOffer,
   IProductCardOption,
   IProductCardOptionValue,
   IProductCardPaymentMethod,

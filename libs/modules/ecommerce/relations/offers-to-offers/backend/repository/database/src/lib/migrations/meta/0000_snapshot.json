@@ -1,0 +1,176 @@
+{
+  "id": "44c5ced9-e50d-4335-82d7-b746192137bc",
+  "prevId": "00000000-0000-0000-0000-000000000000",
+  "version": "7",
+  "dialect": "postgresql",
+  "tables": {
+    "public.sps_ee_offers_to_offers": {
+      "name": "sps_ee_offers_to_offers",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "variant": {
+          "name": "variant",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'delivery'"
+        },
+        "order_index": {
+          "name": "order_index",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
+        },
+        "class_name": {
+          "name": "class_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "source_offer_id": {
+          "name": "source_offer_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "target_offer_id": {
+          "name": "target_offer_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "recurrence": {
+          "name": "recurrence",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'first'"
+        }
+      },
+      "indexes": {
+        "ee_offer_link_target": {
+          "name": "ee_offer_link_target",
+          "columns": [
+            {
+              "expression": "source_offer_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "variant",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "target_offer_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "ee_offer_fulfiller": {
+          "name": "ee_offer_fulfiller",
+          "columns": [
+            {
+              "expression": "source_offer_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "where": "\"sps_ee_offers_to_offers\".\"variant\" = 'fulfilled-by'",
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "sps_ee_offers_to_offers_source_offer_id_sps_ee_ss_to_ps_vn7_id_fk": {
+          "name": "sps_ee_offers_to_offers_source_offer_id_sps_ee_ss_to_ps_vn7_id_fk",
+          "tableFrom": "sps_ee_offers_to_offers",
+          "tableTo": "sps_ee_ss_to_ps_vn7",
+          "columnsFrom": [
+            "source_offer_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "sps_ee_offers_to_offers_target_offer_id_sps_ee_ss_to_ps_vn7_id_fk": {
+          "name": "sps_ee_offers_to_offers_target_offer_id_sps_ee_ss_to_ps_vn7_id_fk",
+          "tableFrom": "sps_ee_offers_to_offers",
+          "tableTo": "sps_ee_ss_to_ps_vn7",
+          "columnsFrom": [
+            "target_offer_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {
+        "different_offers": {
+          "name": "different_offers",
+          "value": "\"sps_ee_offers_to_offers\".\"source_offer_id\" <> \"sps_ee_offers_to_offers\".\"target_offer_id\""
+        },
+        "offer_link_variant": {
+          "name": "offer_link_variant",
+          "value": "\"sps_ee_offers_to_offers\".\"variant\" in ('delivery', 'add-on', 'fulfilled-by')"
+        },
+        "offer_link_recurrence": {
+          "name": "offer_link_recurrence",
+          "value": "\"sps_ee_offers_to_offers\".\"recurrence\" in ('first', 'each')"
+        }
+      },
+      "isRLSEnabled": false
+    }
+  },
+  "enums": {},
+  "schemas": {},
+  "sequences": {},
+  "roles": {},
+  "policies": {},
+  "views": {},
+  "_meta": {
+    "columns": {},
+    "schemas": {},
+    "tables": {}
+  }
+}

@@ -15,6 +15,13 @@
       "when": 1744566350871,
       "tag": "0001_mighty_stick",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1794871901588,
+      "tag": "0002_keen_ender_wiggin",
+      "breakpoints": true
     }
   ]
 }

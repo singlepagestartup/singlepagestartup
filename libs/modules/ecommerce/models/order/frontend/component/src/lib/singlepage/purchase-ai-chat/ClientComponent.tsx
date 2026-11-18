@@ -1,10 +1,14 @@
 "use client";
 import { internationalization } from "@sps/shared-configuration";
 import { memo } from "react";
+import Link from "next/link";
 import { Component as OrdersToFileStorageModuleFiles } from "@sps/ecommerce/relations/orders-to-file-storage-module-files/frontend/component";
 import { Component as FileStorageModuleFile } from "@sps/file-storage/models/file/frontend/component";
 import { Icon } from "@sps/ui-adapter";
-import { NEXT_PUBLIC_API_SERVICE_URL } from "@sps/shared-utils";
+import {
+  NEXT_PUBLIC_API_SERVICE_URL,
+  saveLanguageContext,
+} from "@sps/shared-utils";
 import type { IComponentPropsExtended, IReceiptProps } from "./interface";
 
 const statuses: Record<string, { ru: string; en: string; color: string }> = {
@@ -79,6 +83,14 @@ const statuses: Record<string, { ru: string; en: string; color: string }> = {
   },
 };
 
+const invoiceStatuses: Record<string, { ru: string; en: string }> = {
+  draft: { ru: "Готовится", en: "Draft" },
+  open: { ru: "Ожидает оплаты", en: "Awaiting payment" },
+  paid: { ru: "Оплачен", en: "Paid" },
+  uncollectible: { ru: "Не удалось взыскать оплату", en: "Uncollectible" },
+  void: { ru: "Аннулирован", en: "Void" },
+};
+
 function Receipt({ file, language }: IReceiptProps) {
   const path = file?.file?.trim();
   if (!path) return null;
@@ -105,12 +117,29 @@ export const Component = memo(function Component(
 ) {
   const language = props.language || internationalization.defaultLanguage.code;
   const ru = language === "ru";
-  const status =
-    statuses[
-      props.data.status === "cancelled" ? "canceled" : props.data.status
-    ];
+  const savedCharges = props.purchaseDetails?.charges ?? [];
+  const primaryCharge = savedCharges.find(
+    (snapshot) => snapshot.charge.role === "product",
+  );
+  const title =
+    primaryCharge?.charge.title ?? (ru ? "Покупка услуги" : "Service purchase");
+  const productSlug = props.purchaseDetails?.primaryProductSlug;
+  const invoiceShares = props.purchaseDetails?.invoiceShares ?? [];
+  const legacyShared = invoiceShares.some(
+    (share) => share.amount === null && !share.showSharedTotal,
+  );
+  const status = props.purchaseDetails?.requiresReconciliation
+    ? {
+        ru: "Платёж на проверке",
+        en: "Payment under review",
+        color: "bg-muted text-foreground",
+      }
+    : statuses[
+        props.data.status === "cancelled" ? "canceled" : props.data.status
+      ];
   const paymentUrl =
-    props.data.status === "paying"
+    props.data.status === "paying" &&
+    !props.purchaseDetails?.requiresReconciliation
       ? props.purchaseDetails?.paymentUrl
       : undefined;
   const currencies = new Map<string, { amount: number; label: string }>();
@@ -123,6 +152,21 @@ export const Component = memo(function Component(
         : billingModuleCurrency.symbol,
     });
   });
+  const next = props.purchaseDetails?.nextPeriod;
+  const pendingPeriod =
+    next && (next.requiresConfirmation || next.status === "paying")
+      ? next
+      : undefined;
+  const dateFormat = new Intl.DateTimeFormat(language, {
+    dateStyle: "medium",
+    timeZone: "UTC",
+  });
+  const startsAt =
+    props.data.subscriptionPeriodStartsAt ??
+    props.data.subscriptionScheduledStartsAt;
+  const endsAt =
+    props.data.subscriptionPeriodEndsAt ??
+    props.data.subscriptionScheduledEndsAt;
   const date = new Date(props.data.createdAt);
   const dateLabel = Number.isNaN(date.getTime())
     ? ""
@@ -137,7 +181,20 @@ export const Component = memo(function Component(
     >
       <div>
         <p className="text-sm font-semibold">
-          {ru ? "Покупка услуги" : "Service purchase"}{" "}
+          {productSlug ? (
+            <Link
+              href={saveLanguageContext(
+                `/ecommerce/products/${encodeURIComponent(productSlug)}`,
+                language,
+                internationalization.languages,
+              )}
+              className="rounded underline decoration-muted-foreground/50 underline-offset-2 hover:decoration-current focus-visible:outline-2 focus-visible:outline-offset-2"
+            >
+              {title}
+            </Link>
+          ) : (
+            title
+          )}{" "}
           <span
             className={`ml-2 inline-flex rounded-full px-2 py-1 text-xs font-medium ${status?.color ?? "bg-muted text-muted-foreground"}`}
           >
@@ -147,6 +204,12 @@ export const Component = memo(function Component(
         <p className="mt-1 text-xs text-muted-foreground">
           {props.data.receipt || props.data.id} · {dateLabel}
         </p>
+        {startsAt && endsAt && (
+          <p className="mt-1 text-xs text-muted-foreground">
+            {ru ? "Период подписки" : "Subscription period"} ·{" "}
+            {dateFormat.formatRange(new Date(startsAt), new Date(endsAt))}
+          </p>
+        )}
       </div>
       <div className="flex flex-wrap items-center gap-4">
         <span className="text-sm font-semibold">
@@ -154,15 +217,22 @@ export const Component = memo(function Component(
             ? ru
               ? "Загрузка суммы…"
               : "Loading total…"
-            : props.totalsError || !currencies.size
+            : legacyShared
               ? ru
-                ? "Сумма недоступна"
-                : "Total unavailable"
-              : Array.from(currencies, ([id, value]) => (
-                  <span key={id} className="block">
-                    {value.amount.toLocaleString(language)} {value.label}
-                  </span>
-                ))}
+                ? "В общем счёте"
+                : "Included in shared invoice"
+              : props.totalsError || !currencies.size
+                ? ru
+                  ? "Сумма недоступна"
+                  : "Total unavailable"
+                : Array.from(currencies, ([id, value]) => (
+                    <span key={id} className="block">
+                      {value.amount.toLocaleString(language, {
+                        maximumFractionDigits: 8,
+                      })}{" "}
+                      {value.label}
+                    </span>
+                  ))}
         </span>
         {paymentUrl && (
           <a
@@ -234,6 +304,108 @@ export const Component = memo(function Component(
         )}
         {props.actions}
       </div>
+      {invoiceShares.length > 0 ? (
+        <div className="space-y-1 text-xs text-muted-foreground @[640px]:col-span-2">
+          {invoiceShares.map((share) => (
+            <p key={share.invoiceId} className="break-words">
+              {ru ? "Счёт" : "Invoice"} {share.invoiceId} ·{" "}
+              {invoiceStatuses[share.status]?.[ru ? "ru" : "en"] ??
+                share.status}
+              {share.orderIds.length > 1
+                ? ` · ${ru ? "Общий для заказов" : "Shared by orders"}: ${share.orderIds.join(", ")}`
+                : ""}
+              {share.amount === null
+                ? ` · ${ru ? "Доли заказов не сохранены" : "Individual shares were not saved"}`
+                : ""}
+            </p>
+          ))}
+        </div>
+      ) : null}
+      {pendingPeriod && (
+        <div className="grid justify-items-start gap-1 text-sm @[640px]:col-span-2">
+          <p className="font-medium">
+            {ru ? "Следующий период" : "Next period"}
+            {pendingPeriod.startsAt && pendingPeriod.endsAt
+              ? ` · ${dateFormat.formatRange(new Date(pendingPeriod.startsAt), new Date(pendingPeriod.endsAt))}`
+              : ""}
+          </p>
+          {pendingPeriod.totals.map(({ total, billingModuleCurrency }) => (
+            <p key={billingModuleCurrency.id}>
+              {total.toLocaleString(language, { maximumFractionDigits: 8 })}{" "}
+              {billingModuleCurrency.symbol}
+            </p>
+          ))}
+          {pendingPeriod.requiresConfirmation ? (
+            <p>
+              {ru
+                ? "Проверьте новые условия заказа в корзине."
+                : "Review the updated order in your cart."}
+            </p>
+          ) : pendingPeriod.paymentUrl ? (
+            <a
+              href={pendingPeriod.paymentUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex min-h-11 items-center font-medium underline"
+            >
+              {ru ? "Оплатить следующий период" : "Pay for the next period"}
+            </a>
+          ) : (
+            <p>{ru ? "Ожидает оплаты" : "Awaiting payment"}</p>
+          )}
+        </div>
+      )}
+      {savedCharges.length > 0 ? (
+        <details className="group min-w-0 rounded-xl border border-border p-4 @[640px]:col-span-2">
+          <summary className="cursor-pointer text-sm font-medium focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground">
+            {ru ? "Товар и услуги" : "Item and services"}
+          </summary>
+          {primaryCharge?.destination.address ||
+          primaryCharge?.destination.pickupPointId ? (
+            <p className="mt-3 text-sm text-muted-foreground">
+              {primaryCharge.destination.address ??
+                `${ru ? "Самовывоз" : "Pickup"}: ${primaryCharge.destination.pickupPointId}`}
+            </p>
+          ) : null}
+          <ul className="mt-4 space-y-3">
+            {savedCharges.map((snapshot) => (
+              <li
+                key={`${snapshot.charge.offerId}:${snapshot.parentLineId ?? "primary"}`}
+                className={`flex justify-between gap-4 text-sm ${snapshot.charge.role === "product" ? "font-medium" : "ml-4 border-l border-border pl-4"}`}
+              >
+                <div>
+                  <p>
+                    {snapshot.charge.title ??
+                      (snapshot.charge.role === "product"
+                        ? ru
+                          ? "Товар"
+                          : "Item"
+                        : ru
+                          ? "Услуга"
+                          : "Service")}{" "}
+                    × {snapshot.charge.quantity}
+                  </p>
+                  <p className="mt-1 text-xs font-normal text-muted-foreground">
+                    {snapshot.charge.storeTitle}
+                    {snapshot.charge.providerStoreId !== snapshot.charge.storeId
+                      ? ` · ${ru ? "Исполнитель" : "Fulfilled by"}: ${snapshot.charge.providerStoreTitle ?? snapshot.charge.providerStoreId}`
+                      : ""}
+                    {snapshot.purchaseType === "subscription"
+                      ? ` · ${snapshot.charge.recurrence === "first" ? (ru ? "Только первая поставка" : "First delivery only") : ru ? "Каждая поставка" : "Every delivery"}`
+                      : ""}
+                  </p>
+                </div>
+                <span className="shrink-0 tabular-nums">
+                  {Number(snapshot.amount).toLocaleString(language, {
+                    maximumFractionDigits: 8,
+                  })}{" "}
+                  {currencies.get(snapshot.currencyId)?.label ?? ""}
+                </span>
+              </li>
+            ))}
+          </ul>
+        </details>
+      ) : null}
       {props.footer && (
         <div className="@[640px]:col-span-2">{props.footer}</div>
       )}

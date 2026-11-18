@@ -28,6 +28,28 @@ describe("Given: the payment-intent service", () => {
     return new Service({} as any, {} as any);
   }
 
+  it("declares adapter scheduling independently from provider availability and permits startup overrides", () => {
+    const service = createService();
+    expect(service.schedulesSubscriptionPayments({ provider: "stripe" })).toBe(
+      true,
+    );
+    expect(service.schedulesSubscriptionPayments({ provider: "dummy" })).toBe(
+      false,
+    );
+    class CustomService extends Service {
+      override schedulesSubscriptionPayments(props: { provider: string }) {
+        return (
+          props.provider === "custom-scheduled" ||
+          super.schedulesSubscriptionPayments(props)
+        );
+      }
+    }
+    const custom = new CustomService({} as any, {} as any);
+    expect(
+      custom.schedulesSubscriptionPayments({ provider: "custom-scheduled" }),
+    ).toBe(true);
+  });
+
   afterEach(() => {
     mockEnvs.ALLOWED_BILLING_SERVICE_PROVIDERS = "stripe,payselection,dummy";
   });

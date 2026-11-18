@@ -258,6 +258,8 @@ describe("MCP content-management registration", () => {
       registerTool: jest.fn(),
     } as unknown as McpServer;
     const mutations = new Set([
+      "ecommerce-offer-create",
+      "ecommerce-catalogue-attribute-set",
       "model-record-create",
       "model-record-update",
       "model-record-delete-apply",
@@ -268,7 +270,7 @@ describe("MCP content-management registration", () => {
 
     registerTools(mcp);
     const calls = (mcp.registerTool as jest.Mock).mock.calls;
-    expect(calls).toHaveLength(20);
+    expect(calls).toHaveLength(22);
 
     for (const [name, config] of calls) {
       if (mutations.has(name)) {

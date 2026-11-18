@@ -1,0 +1,15 @@
+{
+  "id": "96ed77b7-3c89-49bf-8eab-6913d4319bf2",
+  "createdAt": "2026-11-17T10:50:44.265Z",
+  "updatedAt": "2026-11-17T10:50:44.265Z",
+  "variant": "default",
+  "orderIndex": 0,
+  "className": null,
+  "configurationKey": "demo-add-on",
+  "settings": {
+    "standalone": false
+  },
+  "sku": "dced9210-2ebc-4628-98e0-61b5f973d082",
+  "storeId": "92aefa1f-247b-49a9-b1b9-c8029cc840dc",
+  "productId": "ec7ff891-c1c6-4a83-bba7-fc253017e291"
+}

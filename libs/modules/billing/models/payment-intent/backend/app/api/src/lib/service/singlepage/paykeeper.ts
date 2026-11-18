@@ -15,7 +15,11 @@ import {
 import { api as paymentIntentsToInvoicesApi } from "@sps/billing/relations/payment-intents-to-invoices/sdk/server";
 import { api as invoiceApi } from "@sps/billing/models/invoice/sdk/server";
 import { IModel as IInvoice } from "@sps/billing/models/invoice/sdk/model";
-import { verifyPaykeeperWebhook } from "@sps/backend-utils";
+import {
+  verifyPaykeeperWebhook,
+  providerMinorUnits,
+  parseExactMonetaryAmount,
+} from "@sps/backend-utils";
 import type { IBillingModule } from "../../di";
 import type { IExecuteProps as ISettlementProps } from "./paykeeper-settlement";
 
@@ -23,6 +27,12 @@ interface IMetadata {
   ecommerceModule?: {
     orders?: Array<{
       id: string;
+      purchaseCharges?: {
+        title: string;
+        amount: string;
+        quantity: number;
+        role: string;
+      }[];
       ordersToProducts?: Array<{
         id: string;
         quantity: number;
@@ -359,7 +369,7 @@ export class Service {
       });
 
       const paymentData: Omit<IPayKeeperPaymentData, "token"> = {
-        pay_amount: Math.round(props.entity.amount),
+        pay_amount: providerMinorUnits(props.entity.amount) / 100,
         client_email: props.email,
         orderid: props.entity.id,
         client_phone: props.metadata.clientPhone,
@@ -535,6 +545,22 @@ export class Service {
     }
 
     for (const order of metadata.ecommerceModule.orders) {
+      if (order.purchaseCharges) {
+        for (const charge of order.purchaseCharges) {
+          const sum = parseExactMonetaryAmount(charge.amount);
+          providerMinorUnits(sum);
+          cartItems.push({
+            name: charge.title,
+            price: sum,
+            quantity: 1,
+            sum,
+            tax: "none",
+            item_type: charge.role === "product" ? "goods" : "service",
+            payment_type: "full",
+          });
+        }
+        continue;
+      }
       if (!order.ordersToProducts) {
         continue;
       }
@@ -568,9 +594,12 @@ export class Service {
 
           cartItems.push({
             name: productName,
-            price: Math.round(productPrice),
+            price: providerMinorUnits(productPrice) / 100,
             quantity: quantity,
-            sum: Math.round(productPrice * quantity),
+            sum:
+              providerMinorUnits(
+                parseExactMonetaryAmount(String(productPrice * quantity)),
+              ) / 100,
             tax: "none",
             item_type: "goods",
             payment_type: "full",

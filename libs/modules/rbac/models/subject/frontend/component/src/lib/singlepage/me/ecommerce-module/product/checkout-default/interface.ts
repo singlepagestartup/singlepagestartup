@@ -4,12 +4,22 @@ import type { IModel } from "@sps/rbac/models/subject/sdk/model";
 import type { IComponentProps as IAuthenticationProps } from "../../../../authentication/me-default/interface";
 import type { IModel as IEcommerceModuleProduct } from "@sps/ecommerce/models/product/sdk/model";
 import type { IModel as IEcommerceModuleStore } from "@sps/ecommerce/models/store/sdk/model";
+import type { IConfiguredPurchase } from "@sps/rbac/models/subject/frontend/component";
+import type { IModel as IBillingModuleInvoice } from "@sps/billing/models/invoice/sdk/model";
+
+export type { IBillingModuleInvoice };
 
 export const variant = "me-ecommerce-module-product-checkout-default" as const;
 
 export interface IComponentBaseProps extends ISpsComponentBase {
   ecommerceModuleProduct: IEcommerceModuleProduct;
   ecommerceModuleStore?: IEcommerceModuleStore;
+  /** undefined keeps the standalone legacy form; null is an incomplete shared configurator. */
+  purchaseConfiguration?: IConfiguredPurchase | null;
+  /** Excluded offers hide an idle checkout while preserving requests and payment outcomes. */
+  hideWhenIdle?: boolean;
+  /** The client configurator owns the quoted selection and its refresh. */
+  onQuoteStale?: () => Promise<unknown>;
   language: string;
   variant: typeof variant;
 }

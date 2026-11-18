@@ -1,4 +1,67 @@
-import { IRouteRule } from "@sps/shared-utils";
+import { type IRouteRule, UUID_PATH_SUFFIX_REGEX } from "@sps/shared-utils";
+
+/** Routes whose controllers authenticate the caller and enforce resource access. */
+export const controllerGuardedRoutes: IRouteRule[] = [
+  {
+    regexPath: /^\/api\/rbac\/subjects\/host-cache\/revalidate\/?$/,
+    methods: ["POST"],
+  },
+  {
+    regexPath: /^\/api\/rbac\/subjects\/[^/]+\/blog-module\/articles\/?$/,
+    methods: ["POST"],
+  },
+  {
+    regexPath:
+      /^\/api\/rbac\/subjects\/[^/]+\/blog-module\/articles\/[^/]+\/content$/,
+    methods: ["GET"],
+  },
+  {
+    regexPath: new RegExp(
+      `^/api/rbac/subjects${UUID_PATH_SUFFIX_REGEX.source}`,
+    ),
+    methods: ["GET"],
+  },
+];
+
+/** Raw financial records require a role. Provider callbacks authenticate their notifications. */
+export const privateCommerceRoutes: IRouteRule[] = [
+  {
+    regexPath:
+      /^\/api\/billing\/(?:invoices|payment-intents-to-(?:invoices|currencies))(?:\/.*)?$/i,
+  },
+  { regexPath: /^\/api\/billing\/payment-intents(?:\/.*)?$/i },
+  {
+    regexPath:
+      /^\/api\/ecommerce\/(?:orders|orders-to-products|orders-to-billing-module-(?:currencies|payment-intents)|orders-to-file-storage-module-files|stores-to-orders)(?:\/.*)?$/i,
+  },
+  {
+    regexPath:
+      /^\/api\/rbac\/subjects-to-(?:ecommerce-module-orders|billing-module-payment-intents)(?:\/.*)?$/i,
+  },
+];
+
+/** Catalogue and ownership writes require a granted role, including on role-less permission records. */
+const catalogueWriteRoutes: IRouteRule[] = [
+  {
+    regexPath:
+      /^\/api\/ecommerce\/(stores|products|attributes|attribute-keys|stores-to-products|stores-to-attributes|products-to-attributes|stores-to-products-to-attributes|attribute-keys-to-attributes|attributes-to-billing-module-currencies|offers-to-offers)(?:\/[^/]+)?\/?$/i,
+    methods: ["POST", "PATCH", "PUT", "DELETE"],
+  },
+  {
+    regexPath:
+      /^\/api\/rbac\/subjects-to-ecommerce-module-(stores|products|orders)(?:\/.*)?$/i,
+    methods: ["POST", "PATCH", "PUT", "DELETE"],
+  },
+];
+
+/** End-user permissions cannot grant these infrastructure operations. */
+export const operatorOnlyRoutes: IRouteRule[] = [
+  {
+    regexPath:
+      /^\/api\/rbac\/subjects\/ecommerce-module\/orders\/payment-intents\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\/(?:check|providers\/[^/]+)\/?$/i,
+    methods: ["POST"],
+  },
+];
 
 /**
  * Routes that are never public because a permission row happens to carry no
@@ -20,6 +83,7 @@ import { IRouteRule } from "@sps/shared-utils";
  * are legitimately anonymous and stay open.
  */
 export const sensitiveRoutes: IRouteRule[] = [
+  ...privateCommerceRoutes,
   {
     regexPath: /^\/api\/social\/chats(?:\/.*)?$/i,
     methods: ["GET", "HEAD"],
@@ -49,4 +113,5 @@ export const sensitiveRoutes: IRouteRule[] = [
     regexPath: /^\/api\/rbac\/roles(\/.*)?$/i,
     methods: ["GET"],
   },
+  ...catalogueWriteRoutes,
 ];

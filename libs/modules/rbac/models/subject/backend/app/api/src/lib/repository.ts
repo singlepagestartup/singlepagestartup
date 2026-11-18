@@ -12,6 +12,21 @@ import { eq, sql } from "drizzle-orm";
 @injectable()
 @injectFromBase()
 export class Repository extends DatabaseRepository<typeof Table> {
+  withCatalogLock<T>(keys: string[], operation: () => Promise<T>): Promise<T> {
+    const run = async () => {
+      for (const key of [...new Set(keys)].sort()) {
+        await this.db.execute(
+          sql`SELECT pg_advisory_xact_lock(hashtext(${`rbac.catalog:${key}`}))`,
+        );
+      }
+      return operation();
+    };
+    if (consistencyContext.getStore()?.database) {
+      return run();
+    }
+    return this.db.transaction((tx) => withConsistencyDatabase(tx, run));
+  }
+
   withSubjectLock<T>(
     scope: { subjectId: string },
     operation: () => Promise<T>,

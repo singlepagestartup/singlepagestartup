@@ -21,7 +21,9 @@ import { useMemo } from "react";
 import { ModelFormTabs } from "@sps/ecommerce/frontend/component/src/lib/admin-v2/form-tabs";
 
 export function Component(props: IComponentPropsExtended) {
-  const updateEntity = api.update();
+  const updateEntity = api.update({
+    id: props.data?.id ?? "",
+  });
   const createEntity = api.create();
 
   const { status } = useGetAdminFormState({

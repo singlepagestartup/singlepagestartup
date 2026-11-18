@@ -1,3 +1,4 @@
+import { Service as OrderLifecycleService } from "@sps/ecommerce/models/order/backend/app/api/src/lib/service/startup/lifecycle";
 import { randomUUID } from "node:crypto";
 import { CRUDService } from "@sps/shared-backend-api";
 import { getPostgresClient } from "@sps/shared-backend-database-config";
@@ -14,6 +15,7 @@ const paths = {
   order: "@sps/ecommerce/models/order",
   product: "@sps/ecommerce/models/product",
   store: "@sps/ecommerce/models/store",
+  offers: "@sps/ecommerce/relations/stores-to-products",
   currency: "@sps/billing/models/currency",
   intent: "@sps/billing/models/payment-intent",
   invoice: "@sps/billing/models/invoice",
@@ -83,10 +85,22 @@ async function fixture() {
     data: { subjectId: subject.id, identityId: identity.id },
   });
   const freeProduct = await services.product.create({
-    data: { slug: `issue376-free-${suffix}`, type: "subscription" },
+    data: {
+      slug: `issue376-free-${suffix}`,
+      type: "subscription",
+      kind: "digital",
+    },
   });
   const store = await services.store.create({
     data: { slug: `issue376-store-${suffix}` },
+  });
+  await services.offers.create({
+    data: {
+      productId: freeProduct.id,
+      storeId: store.id,
+      sku: `issue415-gift-${suffix}`,
+      settings: { initialGrant: true, initialGrantLegacyHistory: true },
+    },
   });
   const currency = await services.currency.create({
     data: {
@@ -120,12 +134,10 @@ async function fixture() {
       ),
     },
   });
-  // Only this fixture's graph reader aliases synthetic slugs for the internal policy.
-  // Product/Store/Currency, ownership, settlement, grants and wallet writes are real.
-  const tokenProjection = { ...token, slug: "token" };
+  // Catalogue selection, ownership, settlement, grants and wallet writes use real rows.
+  const tokenProjection = token;
   const freeProjection = {
     ...freeProduct,
-    slug: "free-subscription",
     productsToAttributes: [
       attribute("price", { number: "0" }, [currency]),
       attribute("interval", { string: { en: "day", ru: "day" } }),
@@ -195,7 +207,9 @@ async function fixture() {
     findById: (props) => services.order.findById(props),
     findByIdExtended: readExtended,
     writeSubscriptionPeriod: (props) =>
-      repositories.order.writeSubscriptionPeriod(props),
+      new OrderLifecycleService(repositories.order).writeSubscriptionPeriod(
+        props,
+      ),
   });
   const ecommerceModule: any = {
     order: Object.assign(services.order, {
@@ -209,7 +223,24 @@ async function fixture() {
       find: async () => [freeProjection],
       findByIdExtended: async ({ id }: any) => products.get(id),
     },
-    store: { find: async () => [store] },
+    store: services.store,
+    storesToProducts: {
+      find: (props?: any) =>
+        services.offers.find({
+          params: {
+            filters: {
+              and: [
+                {
+                  column: "productId",
+                  method: "inArray",
+                  value: [...products.keys()],
+                },
+                ...(props?.params?.filters?.and ?? []),
+              ],
+            },
+          },
+        }),
+    },
     ordersToProducts: services.lines,
     storesToOrders: services.stores,
     ordersToBillingModuleCurrencies: services.currencies,
@@ -306,6 +337,7 @@ async function fixture() {
     free,
     freeProduct,
     freeProjection,
+    currency,
     proceed,
     services,
     dispatch,
@@ -525,4 +557,162 @@ it("resumes a real existing paid zero graph and survives an unknown committed re
   expect(afterLines.map((line: any) => line.id)).toEqual(
     beforeLines.map((line: any) => line.id),
   );
+});
+
+it("uses the database associations to issue a subscription and a one-off Product from separate Stores once", async () => {
+  const f = await fixture();
+  const pack = await f.services.product.create({
+    data: {
+      slug: `issue415-pack-${randomUUID()}`,
+      type: "one_off",
+      kind: "digital",
+    },
+  });
+  const store = await f.services.store.create({
+    data: { slug: `issue415-second-store-${randomUUID()}` },
+  });
+  f.products.set(pack.id, {
+    ...pack,
+    productsToAttributes: [
+      f.attribute("price", { number: "0" }, [f.currency]),
+      f.attribute("topup", { number: "175" }, [f.tokenProjection]),
+    ],
+  });
+  await f.services.offers.create({
+    data: {
+      productId: pack.id,
+      storeId: store.id,
+      sku: `issue415-pack-gift-${randomUUID()}`,
+      settings: { initialGrant: true },
+    },
+  });
+  const results = await Promise.all([
+    f.free.execute({ id: f.subject.id }),
+    f.free.execute({ id: f.subject.id }),
+    f.free.execute({ id: f.subject.id }),
+  ]);
+  expect(results.filter(Boolean)).toHaveLength(1);
+  expect(results.find(Boolean)?.billingModule.invoices).toHaveLength(2);
+  expect((await f.balance()).amount).toBe("3175");
+  const owners = await f.services.owners.find({
+    params: {
+      filters: {
+        and: [{ column: "subjectId", method: "eq", value: f.subject.id }],
+      },
+    },
+  });
+  expect(owners).toHaveLength(2);
+  for (const owner of owners) {
+    expect(
+      (await f.services.order.findById({ id: owner.ecommerceModuleOrderId }))
+        .variant,
+    ).toBe("registration-grant");
+  }
+  const offers = await f.services.offers.find({
+    params: {
+      filters: {
+        and: [
+          {
+            column: "productId",
+            method: "inArray",
+            value: [...f.products.keys()],
+          },
+        ],
+      },
+    },
+  });
+  for (const offer of offers) {
+    await f.services.offers.update({
+      id: offer.id,
+      data: { ...offer, settings: { ...offer.settings, initialGrant: false } },
+    });
+  }
+  expect(await f.free.execute({ id: f.subject.id })).toBeNull();
+  expect((await f.balance()).amount).toBe("3175");
+});
+
+it("settles a separate registration Order and credits for each Store issuing the same Product", async () => {
+  const f = await fixture();
+  const first = await f.free.execute({ id: f.subject.id });
+  const store = await f.services.store.create({
+    data: { slug: `issue415-issuer-${randomUUID()}` },
+  });
+  await f.services.offers.create({
+    data: {
+      productId: f.freeProduct.id,
+      storeId: store.id,
+      sku: `issue415-gift-${randomUUID()}`,
+      settings: { initialGrant: true },
+    },
+  });
+  const attempts = await Promise.all([
+    f.free.execute({ id: f.subject.id }),
+    f.free.execute({ id: f.subject.id }),
+  ]);
+  const invoices = [first, ...attempts].flatMap(
+    (result) => result?.billingModule.invoices ?? [],
+  );
+  expect(invoices).toHaveLength(2);
+  expect(new Set(invoices.map((invoice) => invoice.id)).size).toBe(2);
+  const owners = await f.services.owners.find({
+    params: {
+      filters: {
+        and: [{ column: "subjectId", method: "eq", value: f.subject.id }],
+      },
+    },
+  });
+  const orderIds = owners.map(
+    (owner: { ecommerceModuleOrderId: string }) => owner.ecommerceModuleOrderId,
+  );
+  const filters = {
+    params: {
+      filters: {
+        and: [{ column: "orderId", method: "inArray", value: orderIds }],
+      },
+    },
+  };
+  const issuers = await f.services.stores.find(filters);
+  const paymentLinks = await f.services.orderIntents.find(filters);
+  expect(new Set(orderIds).size).toBe(2);
+  expect(
+    new Set(issuers.map((link: { storeId: string }) => link.storeId)).size,
+  ).toBe(2);
+  expect(
+    new Set(
+      paymentLinks.map(
+        (link: { billingModulePaymentIntentId: string }) =>
+          link.billingModulePaymentIntentId,
+      ),
+    ).size,
+  ).toBe(2);
+  expect(await f.free.execute({ id: f.subject.id })).toBeNull();
+  expect((await f.balance()).amount).toBe("6000");
+});
+
+it("permits registration without any configured grants", async () => {
+  const f = await fixture();
+  const offers = await f.services.offers.find({
+    params: {
+      filters: {
+        and: [{ column: "productId", method: "eq", value: f.freeProduct.id }],
+      },
+    },
+  });
+  for (const offer of offers) {
+    await f.services.offers.update({
+      id: offer.id,
+      data: { ...offer, settings: { initialGrant: false } },
+    });
+  }
+  expect(await f.free.execute({ id: f.subject.id })).toBeNull();
+  expect(await f.balance()).toBeUndefined();
+  expect(
+    await f.services.owners.find({
+      params: {
+        filters: {
+          and: [{ column: "subjectId", method: "eq", value: f.subject.id }],
+        },
+      },
+    }),
+  ).toHaveLength(0);
 });

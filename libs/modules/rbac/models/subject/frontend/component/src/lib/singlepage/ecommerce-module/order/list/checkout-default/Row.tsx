@@ -1,13 +1,14 @@
 "use client";
+import { REGISTRATION_GRANT_VARIANT } from "@sps/shared-utils";
 import { memo, useCallback, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { api } from "@sps/rbac/models/subject/sdk/client";
 import { route } from "@sps/rbac/models/subject/sdk/model";
-import { INITIAL_FREE_SUBSCRIPTION_PRODUCT_SLUG } from "@sps/shared-utils";
 import { Icon, Select } from "@sps/ui-adapter";
 import { Component as EcommerceModuleOrder } from "@sps/ecommerce/models/order/frontend/component";
 import { Component as Subject } from "@sps/rbac/models/subject/frontend/component";
 import type { IRowProps, IQuantityProps, ICurrencyProps } from "./interface";
+import { Selection } from "./Selection";
 
 function Currency(props: ICurrencyProps) {
   const update = api.ecommerceModuleOrderUpdate({});
@@ -141,8 +142,7 @@ function Quantity(props: IQuantityProps) {
   const increase = useCallback(() => {
     void change(props.line.quantity + 1);
   }, [change, props.line.quantity]);
-  const locked =
-    props.line.product?.slug === INITIAL_FREE_SUBSCRIPTION_PRODUCT_SLUG;
+  const locked = props.line.variant === REGISTRATION_GRANT_VARIANT;
   return (
     <div>
       <div
@@ -190,8 +190,28 @@ function Quantity(props: IQuantityProps) {
 export const Component = memo(function Row(props: IRowProps) {
   const details = props.ecommerceModuleOrder.cartDetails;
   const ru = props.language === "ru";
-  const lines = details?.lines ?? [];
+  const lines = details?.lines.filter((line) => !line.parentLineId) ?? [];
   const onlyProduct = lines.length === 1 ? lines[0].product : null;
+  const onSelectionStateChange = useCallback(
+    (lineId: string, blocked: boolean) => {
+      props.onOrderSelectionStateChange?.(
+        props.ecommerceModuleOrder.id,
+        lineId,
+        blocked,
+      );
+    },
+    [props.onOrderSelectionStateChange, props.ecommerceModuleOrder.id],
+  );
+  const onSelectionPendingChange = useCallback(
+    (lineId: string, pending: boolean) => {
+      props.onOrderSelectionPendingChange?.(
+        props.ecommerceModuleOrder.id,
+        lineId,
+        pending,
+      );
+    },
+    [props.onOrderSelectionPendingChange, props.ecommerceModuleOrder.id],
+  );
   const productTitle =
     onlyProduct?.title?.[props.language] ||
     onlyProduct?.title?.en ||
@@ -212,7 +232,7 @@ export const Component = memo(function Row(props: IRowProps) {
       data={props.subject}
       ecommerceModuleOrder={props.ecommerceModuleOrder}
       language={props.language}
-      iconOnly={!!onlyProduct}
+      iconOnly
       label={removeLabel}
     />
   );
@@ -226,28 +246,49 @@ export const Component = memo(function Row(props: IRowProps) {
         language={props.language}
         cartDetails={details}
         quantitySlots={
-          details &&
-          Object.fromEntries(
-            lines.map((line) => [
-              line.id,
-              <Quantity
-                key={line.id}
-                subjectId={props.subject.id}
-                orderId={props.ecommerceModuleOrder.id}
-                line={line}
-                maxLineQuantity={details.maxLineQuantity}
-                language={props.language}
-              />,
-            ]),
-          )
+          details && !details.offers
+            ? Object.fromEntries(
+                lines.map((line) => [
+                  line.id,
+                  <Quantity
+                    key={line.id}
+                    subjectId={props.subject.id}
+                    orderId={props.ecommerceModuleOrder.id}
+                    line={line}
+                    maxLineQuantity={details.maxLineQuantity}
+                    language={props.language}
+                  />,
+                ]),
+              )
+            : undefined
         }
         removeSlot={remove}
         currencySlot={
-          <Currency
-            subject={props.subject}
-            ecommerceModuleOrder={props.ecommerceModuleOrder}
-            language={props.language}
-          />
+          !details?.offers && (
+            <Currency
+              subject={props.subject}
+              ecommerceModuleOrder={props.ecommerceModuleOrder}
+              language={props.language}
+            />
+          )
+        }
+        selectionSlots={
+          details?.offers &&
+          Object.fromEntries(
+            lines.map((line) => [
+              line.id,
+              <Selection
+                key={line.id}
+                line={line}
+                details={details}
+                subject={props.subject}
+                ecommerceModuleOrder={props.ecommerceModuleOrder}
+                language={props.language}
+                onSelectionStateChange={onSelectionStateChange}
+                onSelectionPendingChange={onSelectionPendingChange}
+              />,
+            ]),
+          )
         }
       />
     </li>

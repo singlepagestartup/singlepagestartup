@@ -12,6 +12,8 @@ import { Component as SubjectsToBlogModuleArticles } from "@sps/rbac/relations/s
 import { Component as SubjectsToActions } from "@sps/rbac/relations/subjects-to-actions/frontend/component";
 import { Component as SubjectsToBillingModuleCurrencies } from "@sps/rbac/relations/subjects-to-billing-module-currencies/frontend/component";
 
+import { Component as SubjectsToEcommerceModuleStores } from "@sps/rbac/relations/subjects-to-ecommerce-module-stores/frontend/component";
+
 export function Component() {
   return (
     <ParentComponent
@@ -23,6 +25,31 @@ export function Component() {
             isServer={false}
             data={props.data}
             variant="admin-form"
+            subjectsToEcommerceModuleStores={({ data, isServer }) => {
+              if (!data) {
+                return;
+              }
+
+              return (
+                <SubjectsToEcommerceModuleStores
+                  isServer={isServer}
+                  variant="admin-table"
+                  apiProps={{
+                    params: {
+                      filters: {
+                        and: [
+                          {
+                            column: "subjectId",
+                            method: "eq",
+                            value: data.id,
+                          },
+                        ],
+                      },
+                    },
+                  }}
+                />
+              );
+            }}
             subjectsToEcommerceModuleProducts={({ data, isServer }) => {
               if (!data) {
                 return;

@@ -18,7 +18,9 @@ import { Component as Subject } from "@sps/rbac/models/subject/frontend/componen
 import { Component as EcommerceModuleProduct } from "@sps/ecommerce/models/product/frontend/component";
 
 export function Component(props: IComponentPropsExtended) {
-  const updateEntity = api.update();
+  const updateEntity = api.update({
+    id: props.data?.id ?? "",
+  });
   const createEntity = api.create();
 
   const { status } = useGetAdminFormState({

@@ -8,7 +8,6 @@ import {
 } from "@sps/shared-backend-api";
 import { asc, inArray } from "drizzle-orm";
 import { Table } from "@sps/billing/models/payment-intent/backend/repository/database";
-
 @injectable()
 @injectFromBase()
 export class Repository extends DatabaseRepository<typeof Table> {
@@ -24,8 +23,9 @@ export class Repository extends DatabaseRepository<typeof Table> {
     operation: () => Promise<T>,
   ): Promise<T> {
     const orderedIds = [...new Set(ids)].sort();
-    if (!orderedIds.length)
+    if (!orderedIds.length) {
       throw new Error("Validation error. Payment intent is required");
+    }
     const run = async () => {
       await trackRepositoryRead(Table, this.db, {
         and: [{ column: "id", method: "inArray", value: orderedIds }],
@@ -38,7 +38,9 @@ export class Repository extends DatabaseRepository<typeof Table> {
         .for("update");
       return operation();
     };
-    if (consistencyContext.getStore()?.database) return run();
+    if (consistencyContext.getStore()?.database) {
+      return run();
+    }
     return this.db.transaction((tx) => withConsistencyDatabase(tx, run));
   }
 }

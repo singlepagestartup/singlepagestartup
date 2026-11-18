@@ -1,5 +1,20 @@
+import { Service as OrderPaymentDispatch } from "../startup/ecommerce/order/payment-dispatch";
+import { Service as OrderPaymentCheck } from "../startup/ecommerce/order/payment-check";
+import { Service as StripeOrderPayment } from "../startup/ecommerce/order/stripe-payment";
+import { Service as ProviderPeriod } from "../startup/ecommerce/order/provider-period";
+import type { IProviderPeriodReceipt } from "@sps/billing/models/payment-intent/backend/app/api/src/lib/service/singlepage/settlement";
+import { Service as OrderRenewal } from "../startup/ecommerce/order/renewal";
+import type { IExecuteProps as IOrderRenewalProps } from "./ecommerce/order/renewal";
+import type { Service as EcommerceCatalog } from "./ecommerce/catalog";
 import type { Service as SecurityNotifications } from "./security-notifications";
 import { Service as MutateCart } from "../startup/ecommerce/order/mutate-cart";
+import { Service as CartSelection } from "../startup/ecommerce/order/selection";
+import { Service as CartDetails } from "../startup/ecommerce/order/cart-details";
+import type { IExecuteProps as ICartDetailsProps } from "./ecommerce/order/cart-details";
+import type {
+  IExecuteProps as ICartSelectionProps,
+  IQuoteProps as ICartQuoteProps,
+} from "./ecommerce/order/selection";
 import type { IExecuteProps as IMutateCartProps } from "./ecommerce/order/mutate-cart";
 import { Service as MergeGuestCart } from "../startup/ecommerce/order/merge-guest-cart";
 import { Service as RepeatOrder } from "../startup/ecommerce/order/repeat";
@@ -40,6 +55,7 @@ import { Service as ProfileOwnership } from "../startup/social-module/profile/ow
 import { Service as ProfileSkills } from "../startup/social-module/profile/skills";
 import type { IForDocumentProps as IProfileDocumentSkillProps } from "./social-module/profile/skills";
 import { Service as AuthenticationMe } from "../startup/authentication/me";
+import { Service as InitialGrantProducts } from "./billing/initial-grant-products";
 import { Service as FreeSubscription } from "../startup/billing/free-subscription";
 import type { IConstructorProps as IFreeSubscriptionDependencies } from "./billing/free-subscription";
 import { Service as BlogArticleCreate } from "../startup/blog/article/create";
@@ -228,6 +244,8 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     @inject(SubjectDI.IBlogModule) blogModule: IBlogModule,
     @inject(SubjectDI.ISubjectsToBlogModuleArticlesService)
     subjectsToBlogModuleArticles: SubjectsToBlogModuleArticlesService,
+    @inject(SubjectDI.IEcommerceCatalogService)
+    readonly ecommerceCatalog: EcommerceCatalog,
   ) {
     super(repository);
     this.socialModule = socialModule;
@@ -269,6 +287,24 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
       repository: this.repository,
       service: this,
     }).execute(props);
+  }
+
+  async ecommerceModuleOrderSelection(props: ICartSelectionProps) {
+    return new CartSelection({
+      repository: this.repository,
+      service: this,
+    }).execute(props);
+  }
+
+  async ecommerceModuleCartQuote(props: ICartQuoteProps) {
+    return new CartSelection({
+      repository: this.repository,
+      service: this,
+    }).quote(props);
+  }
+
+  async ecommerceModuleOrderCartDetails(props: ICartDetailsProps) {
+    return new CartDetails({ service: this }).execute(props);
   }
 
   async ecommerceModuleOrderRepeat(props: IRepeatOrderProps) {
@@ -620,6 +656,14 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     return result;
   }
 
+  async ecommerceModuleProductInitialGrantIncludes(props: {
+    productId: string;
+  }) {
+    return new InitialGrantProducts(
+      this.ecommerceModule.storesToProducts,
+    ).includes(props.productId);
+  }
+
   async freeSubscriptionEnsure(props: { subjectId: string }) {
     await new FreeSubscription(this.getFreeSubscriptionDependencies()).execute({
       id: props.subjectId,
@@ -689,7 +733,48 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     }).execute(props);
   }
 
-  async ecommerceOrderCheckout(props: IEcommerceOrderCheckoutExecuteProps) {
+  get ecommerceModuleOrderPaymentDispatch() {
+    return new OrderPaymentDispatch(this.billingModule.paymentIntent);
+  }
+
+  get ecommerceModuleOrderPaymentCheck() {
+    return new OrderPaymentCheck(
+      this.billingModule.paymentIntent,
+      this.ecommerceModuleOrderStripePayment,
+    );
+  }
+
+  get ecommerceModuleOrderStripePayment() {
+    return new StripeOrderPayment(this);
+  }
+
+  async ecommerceModuleOrderResolveProviderPeriod(
+    props: IProviderPeriodReceipt,
+  ) {
+    return new ProviderPeriod({
+      repository: this.repository,
+      service: this,
+    }).execute(props);
+  }
+
+  async ecommerceModuleOrderRenewal(
+    props: IOrderRenewalProps,
+    internal?: { skipProviderReconciliation?: boolean },
+  ) {
+    return new OrderRenewal({
+      repository: this.repository,
+      service: this,
+    }).execute(props, internal);
+  }
+
+  async ecommerceOrderCheckout(
+    props: IEcommerceOrderCheckoutExecuteProps,
+    internal?: {
+      deferProviderCheckout?: boolean;
+      manualSubscriptionPeriod?: boolean;
+      providerContractPaymentIntentId?: string;
+    },
+  ) {
     return new EcommerceOrderCheckout({
       repository: this.repository,
       settledOrderIds: (input) => this.ecommerceModuleOrderSettledIds(input),
@@ -697,7 +782,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
       ecommerceModule: this.ecommerceModule,
       billingModule: this.billingModule,
       subjectsToEcommerceModuleOrders: this.subjectsToEcommerceModuleOrders,
-    }).execute(props);
+    }).execute(props, internal);
   }
 
   async crmModuleFormRequestCreate(props: ICrmFormRequestCreateProps) {

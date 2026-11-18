@@ -393,10 +393,10 @@ export class TelegarmBot {
 
     return Boolean(
       message?.forum_topic_edited ||
-        message?.forum_topic_closed ||
-        message?.forum_topic_reopened ||
-        message?.general_forum_topic_hidden ||
-        message?.general_forum_topic_unhidden,
+      message?.forum_topic_closed ||
+      message?.forum_topic_reopened ||
+      message?.general_forum_topic_hidden ||
+      message?.general_forum_topic_unhidden,
     );
   }
 
@@ -808,7 +808,7 @@ export class TelegarmBot {
     }
 
     try {
-      await billingModulePaymentIntentApi.providerWebhook({
+      await rbacModuleSubjectApi.ecommerceModuleOrderPaymentWebhook({
         data: {
           provider: "telegram-star",
           currency: "XTR",
@@ -1666,7 +1666,7 @@ export class TelegarmBot {
 
     return Boolean(
       props.extension &&
-        TELEGRAM_AUDIO_EXTENSIONS.includes(props.extension.toLowerCase()),
+      TELEGRAM_AUDIO_EXTENSIONS.includes(props.extension.toLowerCase()),
     );
   }
 

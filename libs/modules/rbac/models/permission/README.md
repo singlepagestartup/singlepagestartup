@@ -35,6 +35,11 @@ In **Admin v2 → Settings → Public API permissions**, choose a module, select
 
 Use **RBAC → Permissions** and role assignments to configure other routes. Export the intended records with the standard dump and load them in another installation with the standard seed. Project-specific paths need no entry in TypeScript.
 
+The storefront quote and address-suggestion endpoints each have a role-less POST
+permission under `/api/ecommerce/stores-to-products/:uuid`. Assign a role to
+one of these permissions to restrict that operation. Saving a cart selection
+uses the buyer’s Subject order route.
+
 ## Website Builder and File Storage reads
 
 Run `npx nx run api:db:seed` to load the shipped read permissions from the

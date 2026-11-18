@@ -16,7 +16,9 @@ import { Component as ParentAdminForm } from "@sps/shared-frontend-components/si
 import { useGetAdminFormState } from "@sps/shared-frontend-client-hooks";
 
 export function Component(props: IComponentPropsExtended) {
-  const updateEntity = api.update();
+  const updateEntity = api.update({
+    id: props.data?.id ?? "",
+  });
   const createEntity = api.create();
 
   const { status } = useGetAdminFormState({

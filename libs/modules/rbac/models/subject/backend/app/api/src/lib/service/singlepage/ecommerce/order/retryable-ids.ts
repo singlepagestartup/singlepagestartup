@@ -223,30 +223,26 @@ export class Service {
       }
     }
 
-    const ordersByIntent = Map.groupBy(
-      linkedOrders,
-      (link) => link.billingModulePaymentIntentId,
-    );
-    const intentsByInvoice = Map.groupBy(
-      invoiceIntents,
-      (link) => link.invoiceId,
-    );
+    const ordersByIntent = new Map<string, string[]>();
+    for (const link of linkedOrders) {
+      const ids = ordersByIntent.get(link.billingModulePaymentIntentId) ?? [];
+      ids.push(link.orderId);
+      ordersByIntent.set(link.billingModulePaymentIntentId, ids);
+    }
+    const intentsByInvoice = new Map<string, string[]>();
+    for (const link of invoiceIntents) {
+      const ids = intentsByInvoice.get(link.invoiceId) ?? [];
+      ids.push(link.paymentIntentId);
+      intentsByInvoice.set(link.invoiceId, ids);
+    }
     const ambiguous = new Set<string>();
     for (const invoice of open) {
       const intents = intentsByInvoice.get(invoice.id) ?? [];
       const coveredOrders = new Set(
-        intents.flatMap((intent) =>
-          (ordersByIntent.get(intent.paymentIntentId) ?? []).map(
-            (link) => link.orderId,
-          ),
-        ),
+        intents.flatMap((id) => ordersByIntent.get(id) ?? []),
       );
       const canPay =
-        intents.every(
-          ({ paymentIntentId }) =>
-            actionable.has(paymentIntentId) &&
-            ordersByIntent.has(paymentIntentId),
-        ) &&
+        intents.every((id) => actionable.has(id) && ordersByIntent.has(id)) &&
         [...coveredOrders].every(
           (id) => pendingIds.has(id) && exclusive.has(id),
         );

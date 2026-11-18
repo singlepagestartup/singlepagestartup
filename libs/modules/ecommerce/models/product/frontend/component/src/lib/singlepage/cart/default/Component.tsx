@@ -3,9 +3,10 @@ import type { IComponentPropsExtended } from "./interface";
 import { cn } from "@sps/shared-frontend-client-utils";
 import Link from "next/link";
 import { internationalization } from "@sps/shared-configuration";
-import { saveLanguageContext } from "@sps/shared-utils";
+import { saveLanguageContext, TIPTAP_EMPTY_DOC } from "@sps/shared-utils";
 import { Component as ProductsToFileStorageModuleFiles } from "@sps/ecommerce/relations/products-to-file-storage-module-files/frontend/component";
 import { Icon } from "@sps/ui-adapter";
+import { TipTap } from "@sps/shared-ui-shadcn";
 
 export const Component = memo(function Component(
   props: IComponentPropsExtended,
@@ -82,6 +83,13 @@ export const Component = memo(function Component(
           </h3>
           {props.priceSlot}
         </div>
+        {props.data.shortDescription?.[props.language] &&
+          props.data.shortDescription[props.language] !== TIPTAP_EMPTY_DOC && (
+            <TipTap
+              value={props.data.shortDescription[props.language] || ""}
+              className="mt-1 text-xs leading-4 text-muted-foreground [&_p]:m-0 [&_p]:text-xs [&_p]:leading-4"
+            />
+          )}
         {props.data.type === "subscription" && (
           <p className="mt-1 text-xs text-muted-foreground">
             {props.language === "ru" ? "Подписка" : "Subscription"}

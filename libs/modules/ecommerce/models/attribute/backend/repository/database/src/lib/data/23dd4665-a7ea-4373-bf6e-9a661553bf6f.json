@@ -1,0 +1,15 @@
+{
+  "id": "23dd4665-a7ea-4373-bf6e-9a661553bf6f",
+  "createdAt": "2026-11-17T00:05:36.053Z",
+  "updatedAt": "2026-11-17T00:05:36.053Z",
+  "variant": "default",
+  "number": null,
+  "boolean": null,
+  "date": null,
+  "datetime": null,
+  "string": {
+    "en": "1"
+  },
+  "adminTitle": "website-formula-version",
+  "slug": "website-formula-version"
+}

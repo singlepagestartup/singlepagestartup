@@ -579,7 +579,14 @@ export class Database<
     return result;
   }
 
-  async seed(props?: { seeds: ISeedResult[] }): Promise<ISeedResult> {
+  async seed(
+    props?: { seeds: ISeedResult[] },
+    writes = {
+      insert: (data: T["$inferInsert"]) => this.insert(data),
+      update: (id: string, data: T["$inferInsert"]) =>
+        this.updateFirstByField("id", id, data),
+    },
+  ): Promise<ISeedResult> {
     const result: ISeedResult = {
       module: this.configuration.repository.seed.module,
       name: this.configuration.repository.seed.name,
@@ -683,8 +690,7 @@ export class Database<
 
             delete transformedEntity.id;
 
-            const updatedEntity = await this.updateFirstByField(
-              "id",
+            const updatedEntity = await writes.update(
               filteredEntity.id,
               transformedEntity,
             );
@@ -698,7 +704,7 @@ export class Database<
             insertedEntities.push(seedResult);
           }
         } else {
-          const insertedEntity = await this.insert(transformedEntity);
+          const insertedEntity = await writes.insert(transformedEntity);
           const seedResult = {
             new: insertedEntity,
             dump: dumpEntity,
@@ -706,7 +712,7 @@ export class Database<
           insertedEntities.push(seedResult);
         }
       } else {
-        const insertedEntity = await this.insert(transformedEntity);
+        const insertedEntity = await writes.insert(transformedEntity);
         const seedResult = {
           new: insertedEntity,
           dump: dumpEntity,

@@ -10,16 +10,18 @@ Payment intents represent an upcoming or in-progress payment with amount and sta
 - `createdAt`: creation timestamp.
 - `updatedAt`: last update timestamp.
 - `variant`: display variant.
-- `amount`: payment amount as integer.
+- `amount`: decimal payment amount in main currency units, stored as `numeric(24,8)` with the existing numeric SDK field.
 - `status`: payment status (default: `requires_payment_method`).
 - `interval`: recurring interval (optional).
 - `type`: payment type (default: `one_off`).
 
 ## Payment providers
 
-- `POST /api/billing/payment-intents/:uuid/:provider` starts a payment for the
-  payment intent through the provider.
-- `POST /api/billing/payment-intents/:provider/webhook` receives the provider's
+- `POST /api/rbac/subjects/ecommerce-module/orders/payment-intents/:uuid/providers/:provider` dispatches a prepared
+  payment using the server's operator credential. A buyer starts checkout
+  and reads the payment status and payment link through their order in RBAC
+  Subject.
+- `POST /api/rbac/subjects/ecommerce-module/orders/payment-intents/:provider/webhook` receives the provider's
   payment notification and settles the invoice.
 
 Both routes answer 400 for a provider that `ALLOWED_BILLING_SERVICE_PROVIDERS`
@@ -33,6 +35,16 @@ that runs without real payments; `apps/api/create_env.sh` lists it for local
 development. The check is `Service.isProviderAllowed`, which a project can
 override in its `startup` service.
 
+Dummy callbacks require the operator `X-RBAC-SECRET-KEY`, as Telegram Stars
+callbacks do. Stripe callbacks supply an event ID; the handler retrieves that
+event through Stripe's authenticated API and processes only the retrieved
+payment object. Posted payment fields cannot replace it. Unhandled verified
+events receive an acknowledgment without running payment settlement.
+Webhook responses contain acknowledgments rather than local Invoice or Intent
+records. CloudPayments and TipTopPay receive `{"code":0}` after signature
+verification, and PayKeeper retains its plain-text acknowledgment. Callback
+headers and raw payment bodies are not written to debug logs.
+
 The internal `stopSubscriptionRenewal` capability stops future Stripe charges
 with `cancel_at_period_end`, after checking the subscription's Payment Intent
 metadata. It preserves paid Invoices and the current paid period. Already
@@ -43,11 +55,53 @@ The standard CloudPayments, TipTopPay, 0xProcessing, Payselection, PayKeeper,
 Telegram Stars and dummy adapters create individual payments, even when an
 older intent retains `type = subscription`. They have no remote renewal contract
 to cancel. One-off intents and zero-price payments also require no provider
-cancellation. A custom adapter with recurring charges must override
-`subscriptionRenewalContext` and `stopSubscriptionRenewal` in its owning startup
-service. Unknown recurring providers fail explicitly and remain pending.
+cancellation. The Payment Intent service's
+`schedulesSubscriptionPayments({ provider })` capability reports whether the
+adapter owns future subscription payments; Stripe currently returns true.
+Checkout and renewal use this capability without naming the processor. A custom
+scheduled adapter overrides it together with its receipt reconciliation and
+`subscriptionRenewalContext` / `stopSubscriptionRenewal` operations in the owning
+startup service. Unknown recurring providers fail explicitly and remain pending.
 
-## PayKeeper webhook identifiers
+### Provider-managed subscription periods
+
+Stripe schedules recurring card payments. RBAC Subject resolves each verified
+subscription receipt to its period Order and Payment Intent. Billing checks the
+provider subscription, invoice ID, currency, amount and subscription lines.
+The first receipt identifies the original intent. Each renewal has its own
+intent, and a repeated receipt identifies the same period.
+
+The Subject order service can prepare the next period's Intent and its linked draft
+Stripe Invoice before the provider debit. The draft has no `providerId` or
+payment URL. A receipt adopts that same Invoice, binds its remote ID and
+settles it through the existing atomic settlement service. Amounts and existing
+associations must match; retries cannot replace a different invoice or intent.
+An unbound prepared Invoice that was closed by cancellation cannot be replaced
+by a new Invoice when a delayed provider receipt arrives; it requires payment
+reconciliation.
+An unresolved or out-of-order receipt remains retryable without attaching it to
+the original intent. Prorations, subscription updates and ambiguous coverage
+require reconciliation instead of creating a fulfillment period.
+
+The Subject order payment check reads Stripe's subscription invoices and
+uses the same receipt path after a missed notification. Checking an unbound
+draft period Invoice also runs this recovery using the original contract ID
+saved in `checkoutMetadata.providerContractPaymentIntentId`. Both operations
+read the provider outside database transactions. Already paid local invoices,
+including historical invoices of legacy subscriptions, keep their associations.
+Their receipts include a trusted `recordedPaymentIntentId`; the Subject service
+can recover the accepted legacy period's provider schedule from that exact
+invoice without changing its paid history or accepted period dates.
+Neither recovery nor checkout for a prepared successor submits another charge.
+
+For the initial Stripe subscription,
+`checkoutMetadata.providerRecurringAmount` contains the recurring subtotal.
+The remaining first-only amount becomes an initial invoice item; Stripe's
+recurring price excludes it. Cancellation from a successor uses its trusted
+original contract ID and preserves all paid period records. Standalone Billing
+can settle an initial subscription invoice or return an already settled receipt.
+For a renewal, the Subject order service identifies the period's own Payment
+Intent before Billing records payment.
 
 ## Atomic payment confirmation
 
@@ -64,20 +118,30 @@ It writes `Invoice.status = paid` and `PaymentIntent.status = succeeded` through
 the effective owning services in one PostgreSQL transaction. A write failure
 rolls back both statuses. Concurrent deliveries wait for the same records;
 retries preserve already completed statuses and timestamps. A canceled Invoice
-or Payment Intent cannot be revived by a callback. Multiple linked intents
+or Payment Intent without a reservation snapshot cannot be revived by a callback.
+For a new reserved purchase, the Ecommerce order payment service records a late canceled payment as paid
+with `requires_reconciliation` on its Intent and blocks fulfillment. Multiple linked intents
 consume their allocated amount even when already succeeded, preventing a
 retry from allocating that amount again. An invoice that cannot cover all its
 linked intents is rejected without writes.
 
-The existing integer amount schema remains in force. A provider confirmation
-must match the saved invoice amount; decimals are never truncated or used to
-replace it. CloudPayments and TipTopPay use `Amount`, which represents the
+Amounts are compared as exact scaled integers. A provider confirmation must
+match the saved invoice and its Payment Intent shares. Unsupported precision
+is rejected before payment creation; it is never truncated. CloudPayments and TipTopPay use `Amount`, which represents the
 original purchase amount, rather than the card's `PaymentAmount`. Stripe
 Checkout requires a completed session with `payment_status = paid` or
 `no_payment_required`; completing an unpaid session does not settle it.
 Recurring Stripe invoice creation, association and settlement share the same
 transaction and Payment Intent lock. Pending out-of-order events do not
 reset an existing paid invoice.
+
+`paymentProviderPrecision(provider, currency)` is the shared boundary used by
+checkout and provider creation. Dummy keeps the configured currency precision;
+Telegram Stars require integers. The current external adapters accept two
+decimal places. Stripe rejects a differently configured currency because its
+current conversion does not implement that currency's minor units. An amount
+such as `1.005` can use an exact supported provider instead of being truncated
+for PayKeeper.
 
 Telegram Stars binds the successful charge ID under the lock; a different
 charge cannot replace it. For a zero-price checkout, the creation handler reads
@@ -112,7 +176,7 @@ Provider contracts: [Stripe fulfillment](https://docs.stripe.com/checkout/fulfil
 Set `PAYKEEPER_WEBHOOK_SECRET` to the merchant's secret word (`secret_seed`) from
 PayKeeper's POST notification settings. It is independent of the application
 RBAC secret. The callback URL is
-`POST /api/billing/payment-intents/paykeeper/webhook`. The provider sends an
+`POST /api/rbac/subjects/ecommerce-module/orders/payment-intents/paykeeper/webhook`. The provider sends an
 ordinary form body; direct JSON payloads are supported as well. No internal
 RBAC credential is required by the callback contract.
 
@@ -130,8 +194,8 @@ API and checks its paid status, invoice ID, payment ID, order ID, client and
 amount. Both stored billing amounts must match. Mismatches and unpaid/canceled
 payments receive no success acknowledgment. This integration creates RUB
 payments only; selecting another currency is rejected before creating an Invoice.
-Billing amounts retain the existing integer schema; received decimals are
-compared exactly in minor units and are never truncated into a matching amount.
+PayKeeper amounts support two decimal places and are compared exactly in minor
+units. Received decimals are never truncated into a matching amount.
 
 The owning Payment Intent and Invoice services settle both records in one
 PostgreSQL transaction, locking the Payment Intent before the Invoice. A failed
@@ -149,6 +213,28 @@ and [invoice lookup contract](https://docs.paykeeper.ru/dokumentatsiya-json-api/
 define the external protocol. The merchant account must enable POST notifications
 with this callback URL and the same secret word. Local tests use a loopback
 provider fixture rather than charging an account.
+
+## Checkout dispatch recovery
+
+Owning migration `0002_brief_stature.sql` adds the five private dispatch fields.
+
+New Subject checkouts persist `checkoutDispatchState=prepared`, the selected
+provider, currency and original provider metadata in the same transaction as the
+Payment Intent and reserved purchase allocation. The provider route claims that
+row once under its Payment Intent lock, committing `dispatching` before calling
+the adapter. A successful adapter result records `exposed`.
+
+A fresh service can resume `prepared` using the saved context without re-quoting
+or creating another Payment Intent or reservation. Concurrent retries share the
+same dispatch claim. `dispatching` with no invoice has an unknown outcome and
+returns a conflict; a missing invoice alone never authorizes resending. Existing
+invoice links remain reusable, including separate currency invoices and paid
+members of a partially paid selection. Legacy Payment Intents keep the existing
+invoice-based recovery rules.
+
+Generic create, update and conditional-write operations cannot set or change the
+five `checkout*` recovery fields. HTTP provider responses omit those fields;
+recovery reads them through the owning service inside the application.
 
 ## Variants
 

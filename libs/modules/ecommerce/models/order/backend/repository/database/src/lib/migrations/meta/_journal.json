@@ -29,6 +29,20 @@
       "when": 1794837369211,
       "tag": "0003_good_dazzler",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1794873405886,
+      "tag": "0004_worried_madelyne_pryor",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1794953719617,
+      "tag": "0005_condemned_kree",
+      "breakpoints": true
     }
   ]
 }

@@ -26,7 +26,6 @@ jest.mock("@sps/shared-utils", () => ({
   ...jest.requireActual("@sps/shared-utils"),
   RBAC_SECRET_KEY: "test-rbac-secret",
   NEXT_PUBLIC_API_SERVICE_URL: "http://localhost:4000",
-  INITIAL_FREE_SUBSCRIPTION_PRODUCT_SLUG: "free-subscription",
 }));
 
 jest.mock("@sps/ecommerce/models/order/sdk/server", () => ({
@@ -39,9 +38,9 @@ jest.mock("@sps/ecommerce/models/order/sdk/server", () => ({
   },
 }));
 
-jest.mock("@sps/billing/models/payment-intent/sdk/server", () => ({
+jest.mock("@sps/rbac/models/subject/sdk/server", () => ({
   api: {
-    provider: (...args: unknown[]) =>
+    ecommerceModuleOrderPaymentProvider: (...args: unknown[]) =>
       mockBillingModulePaymentIntentProvider(...args),
   },
 }));
@@ -70,6 +69,7 @@ jest.mock("@sps/broadcast/models/message/sdk/server", () => ({
 }));
 
 jest.mock("@sps/backend-utils", () => ({
+  ...jest.requireActual("@sps/backend-utils"),
   fetchOutboundUrl: (...args: unknown[]) => mockObserverFetch(...args),
   getHttpErrorType: (error: Error) => ({ status: 500, message: error.message }),
   logger: { error: (...args: unknown[]) => mockObserverError(...args) },
@@ -174,6 +174,9 @@ function createTestContext(props?: {
               orderId: checkoutOrder.id,
               productId: "product-target",
               quantity: 1,
+              offerId: "offer-target",
+              parentLineId: null,
+              destination: {},
             })),
           );
         }
@@ -198,6 +201,7 @@ function createTestContext(props?: {
           id: "product-target",
           slug: props?.productSlug ?? "paid-product",
           type: productType,
+          kind: "digital",
         },
       ]),
     },
@@ -208,6 +212,15 @@ function createTestContext(props?: {
           productId: "product-target",
           attributeId: "attribute-price-1",
         },
+        ...(interval
+          ? [
+              {
+                id: "pta-interval",
+                productId: "product-target",
+                attributeId: "attribute-interval",
+              },
+            ]
+          : []),
       ]),
     },
     attributeKeysToAttributes: {
@@ -217,6 +230,15 @@ function createTestContext(props?: {
           attributeId: "attribute-price-1",
           attributeKeyId: "attribute-key-price-1",
         },
+        ...(interval
+          ? [
+              {
+                id: "aka-interval",
+                attributeId: "attribute-interval",
+                attributeKeyId: "key-interval",
+              },
+            ]
+          : []),
       ]),
     },
     attributeKey: {
@@ -225,6 +247,7 @@ function createTestContext(props?: {
           id: "attribute-key-price-1",
           type: "price",
         },
+        ...(interval ? [{ id: "key-interval", type: "interval" }] : []),
       ]),
     },
     attribute: {
@@ -233,6 +256,9 @@ function createTestContext(props?: {
           id: "attribute-price-1",
           number: "100",
         },
+        ...(interval
+          ? [{ id: "attribute-interval", string: { en: interval } }]
+          : []),
       ]),
     },
     attributesToBillingModuleCurrencies: {
@@ -253,11 +279,76 @@ function createTestContext(props?: {
       create: jest.fn((input) =>
         mockOrdersToBillingModulePaymentIntentsCreate(input),
       ),
+      lockOffers: jest.fn(),
+      reserveCharges: jest.fn(async ({ paymentIntentId, lines }) => {
+        for (const line of lines) {
+          await mockOrdersToBillingModulePaymentIntentsCreate({
+            data: {
+              orderId: line.orderId,
+              billingModulePaymentIntentId: paymentIntentId,
+            },
+          });
+        }
+      }),
+    },
+    store: {
+      find: jest
+        .fn()
+        .mockResolvedValue([{ id: "store-1", title: { en: "Seller" } }]),
+    },
+    storesToProducts: {
+      find: jest.fn().mockResolvedValue(
+        props?.productSlug === "free-subscription"
+          ? [
+              {
+                productId: "product-target",
+                settings: { initialGrant: true },
+              },
+            ]
+          : [],
+      ),
+      quoteMany: jest.fn(async (inputs) =>
+        inputs.map((input) => ({
+          offerId: input.offerId,
+          productId: "product-target",
+          storeId: "store-1",
+          currencyId: input.currencyId,
+          quantity: input.quantity,
+          amount: "100",
+          issues: [],
+          currencyIds: [input.currencyId],
+          serviceOptions: [],
+          version: "v1",
+          expiresAt: new Date(Date.now() + 60_000).toISOString(),
+          charges: [
+            {
+              offerId: input.offerId,
+              productId: "product-target",
+              storeId: "store-1",
+              providerStoreId: "store-1",
+              lineId: input.lineId,
+              role: "product",
+              recurrence: "each",
+              quantity: input.quantity,
+              stockQuantity: null,
+              amount: "100",
+              formula: "unit_price * quantity",
+              formulaVersion: "v1",
+              inputs: {},
+            },
+          ],
+        })),
+      ),
+      quotesUnderLock: jest.fn(async (_inputs, previews) => previews),
     },
   } as any;
 
   const billingModule = {
     paymentIntent: {
+      schedulesSubscriptionPayments: jest.fn(
+        ({ provider }: { provider: string }) => provider === "stripe",
+      ),
+      prepareCheckoutDispatch: jest.fn(),
       create: jest.fn((input) => mockBillingModulePaymentIntentCreate(input)),
       update: jest.fn((input) => mockBillingModulePaymentIntentUpdate(input)),
       find: jest.fn().mockResolvedValue([]),
@@ -273,7 +364,17 @@ function createTestContext(props?: {
       ),
     },
     currency: {
-      find: jest.fn().mockResolvedValue([]),
+      find: jest
+        .fn()
+        .mockResolvedValue(
+          [
+            ...new Set(
+              checkoutOrders.map(
+                (order) => props?.currencyByOrderId?.[order.id] ?? "currency-1",
+              ),
+            ),
+          ].map((id) => ({ id, slug: "usd", symbol: "$" })),
+        ),
     },
     paymentIntentsToInvoices: {
       find: jest.fn().mockResolvedValue([
@@ -444,6 +545,45 @@ describe("Given: subject starts checkout for a product", () => {
     expect(mockBillingModulePaymentIntentProvider).toHaveBeenCalledTimes(1);
   });
 
+  it("uses the Billing scheduling capability for another provider's physical subscription", async () => {
+    const { service, checkoutOrders } = createTestContext({
+      activeOrderProductId: "another-product",
+    });
+    service.billingModule.paymentIntent.schedulesSubscriptionPayments = jest
+      .fn()
+      .mockReturnValue(true);
+    (service.ecommerceModule.product.find as jest.Mock).mockResolvedValue([
+      {
+        id: "product-target",
+        slug: "paid-product",
+        type: "subscription",
+        kind: "physical",
+      },
+    ]);
+    await service.execute({
+      id: "subject-1",
+      email: "buyer@example.com",
+      provider: "custom-scheduled",
+      ecommerceModule: { orders: [{ id: checkoutOrders[0].id }] },
+    });
+    expect(
+      service.billingModule.paymentIntent.schedulesSubscriptionPayments,
+    ).toHaveBeenCalledWith({ provider: "custom-scheduled" });
+    expect(mockBillingModulePaymentIntentCreate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({ type: "subscription" }),
+      }),
+    );
+    expect(
+      service.billingModule.paymentIntent.prepareCheckoutDispatch,
+    ).toHaveBeenCalledWith(
+      expect.objectContaining({
+        provider: "custom-scheduled",
+        metadata: expect.objectContaining({ providerRecurringAmount: 100 }),
+      }),
+    );
+  });
+
   it("Then: Initial Free remains restricted to authentication bootstrap", async () => {
     const { service, checkoutOrders } = createTestContext({
       productSlug: "free-subscription",
@@ -459,6 +599,37 @@ describe("Given: subject starts checkout for a product", () => {
       "Initial Free is available only through authentication bootstrap",
     );
     expect(mockBillingModulePaymentIntentProvider).not.toHaveBeenCalled();
+  });
+
+  it("permits its next period at the trusted provider boundary despite a later legacy local deadline", async () => {
+    const now = Date.now();
+    jest.spyOn(Date, "now").mockReturnValue(now);
+    const context = createTestContext({
+      activeOrderProductId: "product-target",
+      activeOrderStatus: "delivering",
+    });
+    Object.assign(context.activeSubscriptionOrder, {
+      type: "history",
+      subscriptionPeriodInvoiceId: "previous-invoice",
+      subscriptionPeriodEndsAt: new Date(now + 24 * 60 * 60 * 1000 + 789),
+      subscriptionScheduledEndsAt: new Date(now + 24 * 60 * 60 * 1000),
+    });
+    Object.assign(context.checkoutOrders[0], {
+      subscriptionSourceOrderId: context.activeSubscriptionOrder.id,
+      subscriptionSourceInvoiceId: "previous-invoice",
+      subscriptionSourceInterval: "month",
+    });
+    (context.service.ecommerceModule.order as any).fulfillmentQuoteOptions =
+      jest.fn().mockResolvedValue({ fulfilledLineIds: [] });
+    await expect(
+      context.service.execute({
+        id: "subject-1",
+        email: "buyer@example.com",
+        provider: "stripe",
+        ecommerceModule: { orders: [{ id: context.checkoutOrders[0].id }] },
+      }),
+    ).resolves.toHaveProperty("billingModule.invoices");
+    expect(mockBillingModulePaymentIntentCreate).toHaveBeenCalledTimes(1);
   });
 
   describe("When: active subscription has the same product", () => {
@@ -753,15 +924,13 @@ describe("Given: subject starts checkout for a product", () => {
       });
 
       expect(
-        service.ecommerceModule.order.findByIdCheckoutAttributesByCurrency,
+        service.ecommerceModule.storesToProducts.quoteMany,
       ).toHaveBeenCalledTimes(1);
       expect(
-        service.ecommerceModule.order.findByIdCheckoutAttributesByCurrency,
-      ).toHaveBeenCalledWith(
-        expect.objectContaining({
-          id: checkoutOrders[0].id,
-        }),
-      );
+        service.ecommerceModule.storesToProducts.quoteMany,
+      ).toHaveBeenCalledWith([
+        expect.objectContaining({ lineId: "otp-checkout-1" }),
+      ]);
     });
   });
 
@@ -821,7 +990,7 @@ describe("Given: subject starts checkout for a product", () => {
 
       expect(firstMessagePayload.trigger.method).toBe("POST");
       expect(firstMessagePayload.trigger.url).toContain(
-        "/api/billing/payment-intents/stripe/webhook",
+        "/api/rbac/subjects/ecommerce-module/orders/payment-intents/stripe/webhook",
       );
       expect(firstMessagePayload.pipe[0].url).toContain(
         `/api/ecommerce/orders/${checkoutOrders[0].id}/check`,
@@ -928,6 +1097,251 @@ it("rolls back the claimed cart when local payment preparation fails", async () 
   expect(mockBillingModulePaymentIntentProvider).not.toHaveBeenCalled();
   expect(mockBroadcastChannelPushMessage).not.toHaveBeenCalled();
 });
+
+it("requires saving a newly defaulted service before any checkout writes", async () => {
+  jest.clearAllMocks();
+  const { service, checkoutOrders } = createTestContext({
+    productType: "one_off",
+  });
+  const quoteMany = service.ecommerceModule.storesToProducts
+    .quoteMany as jest.Mock;
+  const originalQuote = quoteMany.getMockImplementation()!;
+  quoteMany.mockImplementation(async (inputs) => {
+    const quotes = await originalQuote(inputs);
+    return quotes.map((quote: any) => ({
+      ...quote,
+      charges: [
+        ...quote.charges,
+        {
+          ...quote.charges[0],
+          offerId: "default-contractor-delivery",
+          productId: "delivery-product",
+          role: "delivery",
+          quantity: 1,
+        },
+      ],
+    }));
+  });
+  await expect(
+    service.execute({
+      id: "subject-1",
+      provider: "stripe",
+      email: "buyer@example.test",
+      ecommerceModule: { orders: [{ id: checkoutOrders[0].id }] },
+    }),
+  ).rejects.toThrow("Save the current cart service selection");
+  expect(service.ecommerceModule.order.update).not.toHaveBeenCalled();
+  expect(mockBillingModulePaymentIntentCreate).not.toHaveBeenCalled();
+  expect(mockBillingModulePaymentIntentProvider).not.toHaveBeenCalled();
+  expect(
+    service.ecommerceModule.ordersToBillingModulePaymentIntents.reserveCharges,
+  ).not.toHaveBeenCalled();
+});
+
+it.each([false, true])(
+  "reserves the configured order using its quoted destination and contractor, pickup=%s",
+  async (pickup) => {
+    jest.clearAllMocks();
+    const { service, checkoutOrders } = createTestContext({
+      productType: "one_off",
+    });
+    const orderId = checkoutOrders[0].id;
+    const destination = {
+      address: "City Street 10",
+      region: "Area",
+      ...(pickup ? { pickupPointId: "point-at-another-shop" } : {}),
+    };
+    const normalizedDestination = pickup ? {} : destination;
+    const lines = [
+      {
+        id: "primary",
+        orderId,
+        productId: "product-target",
+        offerId: "offer-target",
+        quantity: 2,
+        parentLineId: null,
+        destination,
+        quoteVersion: "configured-v1",
+      },
+      {
+        id: "delivery",
+        orderId,
+        productId: "delivery-product",
+        offerId: "delivery-offer",
+        quantity: 1,
+        parentLineId: "primary",
+      },
+      {
+        id: "assembly",
+        orderId,
+        productId: "assembly-product",
+        offerId: "assembly-offer",
+        quantity: 1,
+        parentLineId: "primary",
+      },
+    ];
+    const originalLines = (
+      service.ecommerceModule.ordersToProducts.find as jest.Mock
+    ).getMockImplementation()!;
+    (
+      service.ecommerceModule.ordersToProducts.find as jest.Mock
+    ).mockImplementation((props) => {
+      const filters = props?.params?.filters?.and ?? [];
+      if (
+        filters.some(
+          (filter: any) =>
+            filter.column === "orderId" &&
+            (filter.value === orderId ||
+              (Array.isArray(filter.value) && filter.value.includes(orderId))),
+        )
+      ) {
+        return Promise.resolve(lines);
+      }
+      return originalLines(props);
+    });
+    (service.ecommerceModule.product.find as jest.Mock).mockResolvedValue([
+      {
+        id: "product-target",
+        slug: "paid-product",
+        type: "one_off",
+        kind: "physical",
+        title: { en: "Configured product" },
+      },
+      {
+        id: "delivery-product",
+        type: "one_off",
+        kind: "service",
+        title: { en: "Delivery" },
+      },
+      {
+        id: "assembly-product",
+        type: "one_off",
+        kind: "service",
+        title: { en: "Assembly" },
+      },
+    ]);
+    const originalQuotes = (
+      service.ecommerceModule.storesToProducts.quoteMany as jest.Mock
+    ).getMockImplementation()!;
+    (
+      service.ecommerceModule.storesToProducts.quoteMany as jest.Mock
+    ).mockImplementation(async (inputs) => {
+      const [quote] = await originalQuotes(inputs);
+      const charge = quote.charges[0];
+      return [
+        {
+          ...quote,
+          destination: normalizedDestination,
+          amount: "130.00",
+          version: "configured-v1",
+          charges: [
+            { ...charge, amount: "100.00" },
+            {
+              ...charge,
+              lineId: "delivery",
+              productId: "delivery-product",
+              offerId: "delivery-offer",
+              storeId: "contractor-store",
+              providerStoreId: "contractor-store",
+              role: "delivery",
+              quantity: 1,
+              amount: "20.00",
+            },
+            {
+              ...charge,
+              lineId: "assembly",
+              productId: "assembly-product",
+              offerId: "assembly-offer",
+              role: "add-on",
+              recurrence: "first",
+              quantity: 1,
+              amount: "10.00",
+            },
+          ],
+        },
+      ];
+    });
+    await service.execute({
+      id: "subject-1",
+      provider: "stripe",
+      email: "buyer@example.test",
+      ecommerceModule: { orders: [{ id: orderId }] },
+    });
+    expect(
+      service.ecommerceModule.storesToProducts.quoteMany,
+    ).toHaveBeenCalledWith([
+      {
+        offerId: "offer-target",
+        quantity: 2,
+        currencyId: "currency-1",
+        lineId: "primary",
+        destination,
+        services: [
+          { offerId: "delivery-offer", quantity: 1, lineId: "delivery" },
+          { offerId: "assembly-offer", quantity: 1, lineId: "assembly" },
+        ],
+      },
+    ]);
+    const reserve = service.ecommerceModule.ordersToBillingModulePaymentIntents
+      .reserveCharges as jest.Mock;
+    expect(reserve).toHaveBeenCalledTimes(1);
+    expect(
+      reserve.mock.calls[0][0].lines.map((line: any) => ({
+        orderId: line.orderId,
+        orderLineId: line.orderLineId,
+        offerId: line.offerId,
+        quantity: line.quantity,
+      })),
+    ).toEqual([
+      { orderId, orderLineId: "primary", offerId: "offer-target", quantity: 2 },
+      {
+        orderId,
+        orderLineId: "delivery",
+        offerId: "delivery-offer",
+        quantity: 1,
+      },
+      {
+        orderId,
+        orderLineId: "assembly",
+        offerId: "assembly-offer",
+        quantity: 1,
+      },
+    ]);
+    for (const line of reserve.mock.calls[0][0].lines) {
+      expect(line.snapshot).toMatchObject({
+        currencyId: "currency-1",
+        orderAmount: "130.00",
+        quoteVersion: "configured-v1",
+        destination: normalizedDestination,
+      });
+    }
+    expect(lines[0].destination).toEqual(destination);
+    expect(reserve.mock.calls[0][0].lines[0].snapshot.charge.storeId).toBe(
+      "store-1",
+    );
+    expect(reserve.mock.calls[0][0].lines[1].snapshot.charge).toMatchObject({
+      offerId: "delivery-offer",
+      storeId: "contractor-store",
+      providerStoreId: "contractor-store",
+    });
+    expect(reserve.mock.calls[0][0].lines[2].snapshot).toMatchObject({
+      parentLineId: "primary",
+      charge: { recurrence: "first", role: "add-on", amount: "10.00" },
+    });
+    expect(service.ecommerceModule.order.find).toHaveBeenNthCalledWith(1, {
+      params: {
+        filters: {
+          and: [{ column: "id", method: "inArray", value: [orderId] }],
+        },
+      },
+    });
+    expect(
+      (service.ecommerceModule.order.update as jest.Mock).mock.calls.every(
+        ([props]) => props.id === orderId,
+      ),
+    ).toBe(true);
+  },
+);
 
 it("keeps every committed history recoverable after a multi-currency provider failure", async () => {
   jest.clearAllMocks();
@@ -1229,7 +1643,7 @@ it.each([
       {
         type: "request",
         method: "POST",
-        url: `http://localhost:4000/api/billing/payment-intents/${resume ? "paykeeper" : "stripe"}/webhook`,
+        url: `http://localhost:4000/api/rbac/subjects/ecommerce-module/orders/payment-intents/${resume ? "paykeeper" : "stripe"}/webhook`,
       },
       {
         type: "request",
@@ -1275,6 +1689,7 @@ it.each([
       },
       billingModule: {
         paymentIntent: {
+          prepareCheckoutDispatch: jest.fn(),
           findById: async () => ({
             id: "payment-intent-1",
             status: paymentStatus,
@@ -1386,6 +1801,7 @@ it("fulfills through the webhook pipeline after an earlier pending check consume
     },
     billingModule: {
       paymentIntent: {
+        prepareCheckoutDispatch: jest.fn(),
         findById: async () => ({
           id: "payment-intent-1",
           status: paymentStatus,
@@ -1400,8 +1816,9 @@ it("fulfills through the webhook pipeline after an earlier pending check consume
   app.post("/api/ecommerce/orders/:uuid/check", (context, next) =>
     check.execute(context, next),
   );
-  app.post("/api/billing/payment-intents/stripe/webhook", (context) =>
-    context.json({ data: { ok: true } }),
+  app.post(
+    "/api/rbac/subjects/ecommerce-module/orders/payment-intents/stripe/webhook",
+    (context) => context.json({ data: { ok: true } }),
   );
   mockObserverFetch.mockImplementation((url, init) => app.request(url, init));
   const early = await app.request(`/api/ecommerce/orders/${order.id}/check`, {
@@ -1417,7 +1834,7 @@ it("fulfills through the webhook pipeline after an earlier pending check consume
   ]);
   paymentStatus = "succeeded";
   const webhook = await app.request(
-    "/api/billing/payment-intents/stripe/webhook",
+    "/api/rbac/subjects/ecommerce-module/orders/payment-intents/stripe/webhook",
     { method: "POST" },
   );
   await webhookCompleted;

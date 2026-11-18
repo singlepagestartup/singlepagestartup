@@ -1,4 +1,9 @@
-import { serverHost, route, IModel } from "@sps/rbac/models/subject/sdk/model";
+import {
+  serverHost,
+  route,
+  type IModel,
+  type IEcommerceProductPurchaseInput,
+} from "@sps/rbac/models/subject/sdk/model";
 import {
   NextRequestOptions,
   prepareFormDataToSend,
@@ -17,11 +22,9 @@ export interface IProps {
     [key: string]: any;
   };
   options?: Partial<NextRequestOptions>;
-  data: {
+  data: IEcommerceProductPurchaseInput & {
     productId: string;
-    storeId?: string;
     quantity: number;
-    billingModuleCurrencyId?: string;
   };
 }
 

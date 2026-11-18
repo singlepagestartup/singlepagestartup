@@ -43,6 +43,11 @@ export function Component(props: IContentProps) {
                     filters: {
                       and: [
                         {
+                          column: "variant",
+                          method: "eq",
+                          value: "default",
+                        },
+                        {
                           column: "storeId",
                           method: "eq",
                           value: store.id,

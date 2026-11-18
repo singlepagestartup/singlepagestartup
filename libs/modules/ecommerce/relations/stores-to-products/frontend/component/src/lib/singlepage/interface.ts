@@ -9,6 +9,7 @@ import { IComponentProps as IAdminV2TableComponentProps } from "./admin-v2/table
 import { IComponentProps as IAdminV2SelectInputComponentProps } from "./admin-v2/select-input/interface";
 import { IComponentProps as IAdminV2FormComponentProps } from "./admin-v2/form/interface";
 import { IComponentProps as IDefaultComponentProps } from "./default/interface";
+import { IComponentProps as IProviderComponentProps } from "./provider/interface";
 export type IComponentProps =
   | IHiddenComponentProps
   | IFindComponentProps
@@ -21,5 +22,5 @@ export type IComponentProps =
   | IAdminV2SelectInputComponentProps
   | IAdminV2FormComponentProps
   | IDefaultComponentProps
-  | IDefaultComponentProps
+  | IProviderComponentProps
   | never;

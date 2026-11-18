@@ -23,6 +23,16 @@ function fixture() {
   let inTransaction = false;
   let tail = Promise.resolve();
   let failFulfillment: "settlement" | "balance" | undefined;
+  const catalogStores = [{ id: "store" }];
+  const offers = [
+    {
+      id: "gift-offer",
+      productId: "free",
+      storeId: "store",
+      variant: "default",
+      settings: { initialGrant: true, initialGrantLegacyHistory: true },
+    },
+  ];
   const crud = (table: string) => ({
     find: jest.fn(async (props?: any) =>
       tables[table].filter((row) =>
@@ -68,6 +78,7 @@ function fixture() {
       attribute("topup", { number: "3000" }, [token]),
     ],
   };
+  const products = [product];
   const order = {
     ...crud("order"),
     lockForLifecycle: jest.fn(async () => undefined),
@@ -104,10 +115,24 @@ function fixture() {
     ecommerceModule: {
       order,
       product: {
-        find: jest.fn(async () => [product]),
-        findByIdExtended: jest.fn(async () => product),
+        find: jest.fn(async () => products),
+        findByIdExtended: jest.fn(async ({ id }) =>
+          products.find((row) => row.id === id),
+        ),
       },
-      store: { find: jest.fn(async () => [{ id: "store" }]) },
+      storesToProducts: { find: jest.fn(async () => offers) },
+      store: {
+        findById: jest.fn(async ({ id }) =>
+          catalogStores.find((row) => row.id === id),
+        ),
+        find: jest.fn(async (props: any) => {
+          const filter = props.params.filters?.and[0];
+          if (filter) {
+            return catalogStores.filter((store) => store.id === filter.value);
+          }
+          return catalogStores.slice(0, props.params.limit);
+        }),
+      },
       ordersToProducts: crud("lines"),
       storesToOrders: crud("stores"),
       ordersToBillingModuleCurrencies: crud("currencies"),
@@ -140,6 +165,9 @@ function fixture() {
   };
   return {
     tables,
+    catalogStores,
+    offers,
+    products,
     product,
     dependencies,
     service: new Service(dependencies),
@@ -175,6 +203,120 @@ it("uses only direct Services and dispatches effects after its own transaction",
   }
 });
 
+it("keeps the issuing Store from the saved association when another seller opens a Store", async () => {
+  const { service, tables, catalogStores } = fixture();
+  await service.execute({ id: "owner" });
+  catalogStores.unshift({ id: "retail-store" });
+  expect(await service.execute({ id: "owner" })).toBeNull();
+  expect(tables.stores.map((link) => link.storeId)).toEqual(["store"]);
+  expect(tables.balances).toHaveLength(1);
+});
+
+it("allows a project with no registration grants", async () => {
+  const { service, offers, tables, dependencies } = fixture();
+  offers.length = 0;
+  expect(await service.execute({ id: "owner" })).toBeNull();
+  expect(tables.order).toHaveLength(0);
+  expect(dependencies.fulfillPaidOrderInTransaction).not.toHaveBeenCalled();
+});
+
+it("issues several arbitrary Products from their configured Stores once", async () => {
+  const { service, offers, products, catalogStores, tables, dependencies } =
+    fixture();
+  catalogStores.push({ id: "other-store" });
+  products.push({
+    ...products[0],
+    id: "other-product",
+    slug: "arbitrary",
+    type: "one_off",
+    productsToAttributes: [products[0].productsToAttributes[0]],
+  });
+  offers.push({
+    ...offers[0],
+    id: "other-gift",
+    productId: "other-product",
+    storeId: "other-store",
+  });
+  const results = [
+    await service.execute({ id: "owner" }),
+    await service.execute({ id: "owner" }),
+  ];
+  expect(results.filter(Boolean)).toHaveLength(1);
+  expect(results.find(Boolean)?.billingModule.invoices).toHaveLength(2);
+  expect(tables.lines.map((line) => line.productId)).toEqual([
+    "free",
+    "other-product",
+  ]);
+  expect(tables.stores.map((link) => link.storeId)).toEqual([
+    "store",
+    "other-store",
+  ]);
+  expect(
+    tables.order.every((order) => order.variant === "registration-grant"),
+  ).toBe(true);
+  expect(dependencies.fulfillPaidOrderInTransaction).toHaveBeenCalledTimes(2);
+});
+
+it("issues the same Product once per marked Store even when one Store has two marked SKUs", async () => {
+  const { service, offers, catalogStores, tables } = fixture();
+  catalogStores.push({ id: "other-store" });
+  offers.push({ ...offers[0], id: "other-offer", storeId: "other-store" });
+  offers.push({ ...offers[0], id: "another-sku" });
+  await service.execute({ id: "owner" });
+  expect(await service.execute({ id: "owner" })).toBeNull();
+  expect(tables.stores.map((link) => link.storeId).sort()).toEqual([
+    "other-store",
+    "store",
+  ]);
+  for (const table of ["order", "lines", "intents", "invoices", "balances"]) {
+    expect(tables[table]).toHaveLength(2);
+  }
+});
+
+it("assigns storeless registration history to the legacy issuer before granting at a second Store", async () => {
+  const { service, offers, catalogStores, tables } = fixture();
+  await service.execute({ id: "owner" });
+  const originalOrder = tables.stores.pop().orderId;
+  catalogStores.push({ id: "other-store" });
+  offers.unshift({
+    ...offers[0],
+    id: "other-offer",
+    storeId: "other-store",
+    settings: { initialGrant: true, initialGrantLegacyHistory: false },
+  });
+  expect(
+    (await service.execute({ id: "owner" }))?.billingModule.invoices,
+  ).toHaveLength(1);
+  expect(tables.stores).toContainEqual(
+    expect.objectContaining({ orderId: originalOrder, storeId: "store" }),
+  );
+  expect(await service.execute({ id: "owner" })).toBeNull();
+  expect(tables.order).toHaveLength(2);
+});
+
+it("ignores hidden and unmarked offers", async () => {
+  const { service, offers, tables } = fixture();
+  offers[0].variant = "hidden";
+  offers.push({
+    ...offers[0],
+    id: "ordinary",
+    variant: "default",
+    settings: { initialGrant: false },
+  });
+  expect(await service.execute({ id: "owner" })).toBeNull();
+  expect(tables.order).toHaveLength(0);
+});
+
+it("accepts configured credit amounts and currencies instead of a fixed allowance", async () => {
+  const { service, product, dependencies } = fixture();
+  product.slug = "welcome";
+  product.productsToAttributes[2].attribute.number = "175";
+  product.productsToAttributes[2].attribute.attributesToBillingModuleCurrencies[0].billingModuleCurrency.slug =
+    "credit";
+  await service.execute({ id: "owner" });
+  expect(dependencies.fulfillPaidOrderInTransaction).toHaveBeenCalledTimes(1);
+});
+
 it("serializes simultaneous authentication retries into one complete gift graph", async () => {
   const { service, tables, dependencies } = fixture();
   const results = await Promise.all([
@@ -198,7 +340,12 @@ it.each([
   "skips known %s Free history without granting or blocking authentication",
   async (status) => {
     const { service, tables, dependencies } = fixture();
-    tables.order.push({ id: "old-free", status });
+    tables.order.push({
+      id: "old-free",
+      status,
+      type: "history",
+      variant: "registration-grant",
+    });
     tables.owners.push({
       subjectId: "owner",
       ecommerceModuleOrderId: "old-free",
@@ -225,7 +372,7 @@ it("an unrelated Pro cart does not replace an initial Free grant", async () => {
 
 it("resumes one existing zero-price graph without replacing its saved IDs", async () => {
   const { service, tables } = fixture();
-  tables.order.push({ id: "partial-order", status: "paying" });
+  tables.order.push({ id: "partial-order", status: "paying", type: "history" });
   tables.owners.push({
     subjectId: "owner",
     ecommerceModuleOrderId: "partial-order",
@@ -309,7 +456,7 @@ it("does not credit again after an unknown committed response", async () => {
 it("rejects multiple unaccepted pending Free histories, a nonzero price and guests", async () => {
   const first = fixture();
   for (const id of ["a", "b"]) {
-    first.tables.order.push({ id, status: "paying" });
+    first.tables.order.push({ id, status: "paying", type: "history" });
     first.tables.owners.push({
       subjectId: "owner",
       ecommerceModuleOrderId: id,
@@ -353,3 +500,72 @@ it("rejects a caller-owned ambient transaction before any writes or effects", as
   expect(dependencies.repository.withSubjectLock).not.toHaveBeenCalled();
   expect(dependencies.dispatchPaidEffects).not.toHaveBeenCalled();
 });
+
+it("keeps the original Order and grants once from a newly assigned Store", async () => {
+  const { service, offers, catalogStores, tables, dependencies } = fixture();
+  await service.execute({ id: "owner" });
+  offers[0].settings.initialGrant = false;
+  expect(await service.execute({ id: "owner" })).toBeNull();
+  expect(tables.order[0].variant).toBe("registration-grant");
+  catalogStores.push({ id: "new-store" });
+  offers[0].storeId = "new-store";
+  offers[0].settings.initialGrant = true;
+  expect(
+    (await service.execute({ id: "owner" }))?.billingModule.invoices,
+  ).toHaveLength(1);
+  expect(tables.stores.map((link) => link.storeId)).toEqual([
+    "store",
+    "new-store",
+  ]);
+  expect(await service.execute({ id: "owner" })).toBeNull();
+  expect(dependencies.fulfillPaidOrderInTransaction).toHaveBeenCalledTimes(2);
+});
+
+it("marks an existing zero-price legacy grant without crediting it again", async () => {
+  const { service, tables, dependencies } = fixture();
+  await service.execute({ id: "owner" });
+  tables.order[0].variant = "default";
+  expect(await service.execute({ id: "owner" })).toBeNull();
+  expect(tables.order[0].variant).toBe("registration-grant");
+  expect(dependencies.fulfillPaidOrderInTransaction).toHaveBeenCalledTimes(1);
+});
+
+it("preserves a pre-existing paid Order when its Product becomes a registration Product", async () => {
+  const { service, tables } = fixture();
+  await service.execute({ id: "owner" });
+  tables.order[0].variant = "default";
+  tables.intents[0].amount = 100;
+  tables.invoices[0].amount = 100;
+  expect(await service.execute({ id: "owner" })).not.toBeNull();
+  expect(tables.order).toHaveLength(2);
+  expect(tables.order[1].variant).toBe("registration-grant");
+  expect(tables.order[0].variant).toBe("default");
+});
+
+it.each(["completed", "canceled"])(
+  "issues a new grant alongside ordinary %s history for the same Product",
+  async (status) => {
+    const { service, offers, tables } = fixture();
+    offers[0].settings.initialGrantLegacyHistory = false;
+    tables.order.push({
+      id: "ordinary",
+      status,
+      type: "history",
+      variant: "default",
+    });
+    tables.owners.push({
+      subjectId: "owner",
+      ecommerceModuleOrderId: "ordinary",
+    });
+    tables.lines.push({
+      orderId: "ordinary",
+      productId: "free",
+      offerId: "retail-offer",
+      quantity: 1,
+    });
+    await service.execute({ id: "owner" });
+    expect(tables.order).toHaveLength(2);
+    expect(tables.order[0].variant).toBe("default");
+    expect(tables.balances).toHaveLength(1);
+  },
+);

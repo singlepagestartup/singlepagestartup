@@ -4,8 +4,9 @@ import { Configuration as RequestConfiguration } from "@sps/crm/models/request/b
 import { Service as FormsToRequestsService } from "@sps/crm/relations/forms-to-requests/backend/app/api/src/lib/service";
 import { Repository as FormsToRequestsRepository } from "@sps/crm/relations/forms-to-requests/backend/app/api/src/lib/repository";
 import { Configuration as FormsToRequestsConfiguration } from "@sps/crm/relations/forms-to-requests/backend/app/api/src/lib/configuration";
-import { Container, ContainerModule } from "inversify";
+import { ContainerModule } from "inversify";
 import {
+  createAppBootstrap,
   CRUDService,
   DI,
   ExceptionFilter,
@@ -31,7 +32,7 @@ const bindings = new ContainerModule(({ bind }) => {
   bind<App>(DI.IApp).to(App);
   bind<Controller>(DI.IController).to(Controller);
   bind<Repository>(DI.IRepository).to(Repository);
-  bind<Service>(DI.IService).to(Service);
+  bind<Service>(DI.IService).to(Service).inSingletonScope();
   bind<Configuration>(DI.IConfiguration).to(Configuration);
   bind<ISubmissionServices>(FormDI.ISubmissionServices)
     .toDynamicValue(() => ({
@@ -59,12 +60,6 @@ const bindings = new ContainerModule(({ bind }) => {
     .inSingletonScope();
 });
 
-export async function bootstrap() {
-  const container = new Container();
-  container.load(bindings);
-  const app = container.get<App>(DI.IApp);
-
-  await app.init();
-
-  return { app };
-}
+export const { bootstrap, createService } = createAppBootstrap<App, Service>(
+  bindings,
+);

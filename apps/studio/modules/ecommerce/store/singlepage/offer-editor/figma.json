@@ -1,0 +1,21 @@
+{
+  "componentName": "ecommerce.store",
+  "pageName": "ecommerce",
+  "variantName": "offer-editor",
+  "nodeId": null,
+  "variantNodeId": null,
+  "metadata": {
+    "singlepagestartup.studio.blockId": "ecommerce.store.offer-editor",
+    "singlepagestartup.studio.layer": "singlepage",
+    "singlepagestartup.studio.syncKey": "ecommerce/store/singlepage/offer-editor",
+    "sps.figma.component": "ecommerce.store",
+    "sps.figma.variant": "offer-editor",
+    "sps.source.module": "ecommerce",
+    "sps.source.entityType": "model",
+    "sps.source.entity": "store",
+    "sps.source.variant": "offer-editor",
+    "sps.contractVersion": "0.1.0",
+    "sps.code.component": "apps/studio/modules/ecommerce/store/singlepage/offer-editor/Component.tsx",
+    "sps.code.story": "apps/studio/modules/ecommerce/store/singlepage/offer-editor/Component.stories.tsx"
+  }
+}

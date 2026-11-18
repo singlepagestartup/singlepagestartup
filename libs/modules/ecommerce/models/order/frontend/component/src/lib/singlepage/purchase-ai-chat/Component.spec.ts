@@ -108,6 +108,91 @@ describe("Paid purchase details", () => {
     expect(html).not.toContain("Чек");
     expect(html).not.toContain("href=");
   });
+  it.each(["ru", "en"])(
+    "links the saved product title to its current %s page",
+    (language) => {
+      const html = renderToStaticMarkup(
+        createElement(Component, {
+          isServer: false,
+          variant: "purchase-ai-chat",
+          dataSource: "props",
+          language,
+          data: {
+            id: "purchase",
+            status: "paid",
+            createdAt: "2026-11-17",
+          } as any,
+          purchaseDetails: {
+            totals: [],
+            receipts: [],
+            primaryProductSlug: "birch-chair",
+            charges: [
+              {
+                charge: { role: "delivery", title: "Доставка" },
+                destination: {},
+              },
+              {
+                charge: { role: "product", title: "Стул «Берёза»" },
+                destination: {},
+              },
+            ] as any,
+          },
+        }),
+      );
+      expect(html).toMatch(
+        new RegExp(
+          `<a [^>]*href="/${language}/ecommerce/products/birch-chair"[^>]*>Стул «Берёза»</a>`,
+        ),
+      );
+    },
+  );
+  it("renders the period and the next payment supplied by the buyer's Subject", () => {
+    const html = renderToStaticMarkup(
+      createElement(Component, {
+        isServer: false,
+        variant: "purchase-ai-chat",
+        dataSource: "props",
+        language: "ru",
+        data: {
+          id: "current",
+          status: "delivering",
+          createdAt: "2026-10-01",
+          subscriptionPeriodStartsAt: "2026-10-01",
+          subscriptionPeriodEndsAt: "2026-11-01",
+        } as any,
+        purchaseDetails: {
+          totals: [],
+          receipts: [],
+          invoiceShares: [
+            {
+              invoiceId: "october",
+              invoiceAmount: 100,
+              amount: 100,
+              currencyId: "rub",
+              orderIds: ["current"],
+              showSharedTotal: false,
+              status: "paid",
+            },
+          ],
+          nextPeriod: {
+            orderId: "next",
+            status: "paying",
+            startsAt: "2026-11-01",
+            endsAt: "2026-12-01",
+            paymentUrl: "https://checkout.example/next",
+            totals: [],
+            requiresConfirmation: false,
+          },
+        },
+      }),
+    );
+    expect(html).toContain("Период подписки");
+    expect(html).toContain("Оплачен");
+    expect(html).toContain("Оплатить следующий период");
+    expect(html).toContain('href="https://checkout.example/next"');
+    expect(mockTotal).not.toHaveBeenCalled();
+    expect(mockReceiptLinks).not.toHaveBeenCalled();
+  });
   it.each([
     ["paying", "Ожидает оплаты", "bg-amber-100", true, false],
     ["paid", "Оплачено", "bg-green-100", false, false],

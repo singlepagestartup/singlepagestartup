@@ -7,7 +7,11 @@
  */
 
 const toastErrorMock = jest.fn();
+const invalidateMock = jest.fn();
 const ecommerceModuleOrderCreateMock = jest.fn();
+const ecommerceModuleOrderUpdateMock = jest.fn();
+const ecommerceModuleOrderDeleteMock = jest.fn();
+const ecommerceModuleOrderSelectionMock = jest.fn();
 let capturedMutationOptions: any;
 
 jest.mock("@tanstack/react-query", () => ({
@@ -34,6 +38,12 @@ jest.mock("@sps/rbac/models/subject/sdk/server", () => ({
   api: {
     ecommerceModuleOrderCreate: (...args: unknown[]) =>
       ecommerceModuleOrderCreateMock(...args),
+    ecommerceModuleOrderUpdate: (...args: unknown[]) =>
+      ecommerceModuleOrderUpdateMock(...args),
+    ecommerceModuleOrderDelete: (...args: unknown[]) =>
+      ecommerceModuleOrderDeleteMock(...args),
+    ecommerceModuleOrderSelection: (...args: unknown[]) =>
+      ecommerceModuleOrderSelectionMock(...args),
   },
 }));
 
@@ -51,7 +61,18 @@ jest.mock("@paralleldrive/cuid2", () => ({
   createId: () => "request-id",
 }));
 
+jest.mock("@sps/shared-frontend-client-api", () => ({
+  invalidateRouteQueries: jest.requireActual(
+    "../../../../../../../../../../../shared/frontend/client/api/src/lib/cache",
+  ).invalidateRouteQueries,
+  queryClient: {
+    invalidateQueries: (...args: unknown[]) => invalidateMock(...args),
+  },
+}));
 import { action } from "./create";
+import { action as update } from "./id/update";
+import { action as remove } from "./id/delete";
+import { action as selection } from "./selection";
 
 const NO_PRICE_ERROR =
   "Validation error. Product has no price in an available currency";
@@ -59,6 +80,7 @@ const NO_PRICE_ERROR =
 describe("Given: a visitor adds a product the API refuses to put in the cart", () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    invalidateMock.mockReset().mockResolvedValue(undefined);
     capturedMutationOptions = undefined;
   });
 
@@ -82,6 +104,71 @@ describe("Given: a visitor adds a product the API refuses to put in the cart", (
     ).rejects.toThrow(NO_PRICE_ERROR);
 
     expect(toastErrorMock).toHaveBeenCalledWith(NO_PRICE_ERROR);
+    expect(invalidateMock).not.toHaveBeenCalled();
+  });
+
+  it("refreshes only the acting Subject's cart when another tab already added the same offer", async () => {
+    const duplicate = new Error(
+      "Conflict error. Product is already in the cart",
+    );
+    ecommerceModuleOrderCreateMock.mockRejectedValue(duplicate);
+    action({});
+    await expect(
+      capturedMutationOptions.mutationFn({
+        id: "subject-1",
+        data: { productId: "product", offerId: "offer", quantity: 1 },
+      }),
+    ).rejects.toBe(duplicate);
+    expect(ecommerceModuleOrderCreateMock).toHaveBeenCalledTimes(1);
+    expect(invalidateMock).toHaveBeenCalledTimes(1);
+    const { predicate } = invalidateMock.mock.calls[0][0];
+    expect(
+      predicate({
+        queryKey: ["/api/rbac/subjects/subject-1/ecommerce-module/orders"],
+      }),
+    ).toBe(true);
+    expect(
+      predicate({
+        queryKey: [
+          "/api/rbac/subjects/subject-1/ecommerce-module/orders/quantity",
+        ],
+      }),
+    ).toBe(true);
+    expect(
+      predicate({
+        queryKey: ["/api/rbac/subjects/subject-2/ecommerce-module/orders"],
+      }),
+    ).toBe(false);
+  });
+
+  it("preserves the duplicate conflict when its cart refresh fails", async () => {
+    const duplicate = new Error(
+      "Conflict error. Product is already in the cart",
+    );
+    ecommerceModuleOrderCreateMock.mockRejectedValue(duplicate);
+    invalidateMock.mockRejectedValueOnce(new Error("Refresh failed"));
+    action({});
+    await expect(
+      capturedMutationOptions.mutationFn({
+        id: "subject-1",
+        data: { productId: "product", quantity: 1 },
+      }),
+    ).rejects.toBe(duplicate);
+    expect(invalidateMock).toHaveBeenCalledTimes(1);
+  });
+
+  it("does not refresh an ordinary stale-price conflict", async () => {
+    ecommerceModuleOrderCreateMock.mockRejectedValue(
+      new Error("Conflict error. Offer terms changed. Review the new price"),
+    );
+    action({});
+    await expect(
+      capturedMutationOptions.mutationFn({
+        id: "subject-1",
+        data: { productId: "product", quantity: 1 },
+      }),
+    ).rejects.toThrow("Offer terms changed");
+    expect(invalidateMock).not.toHaveBeenCalled();
   });
 
   /**
@@ -104,5 +191,101 @@ describe("Given: a visitor adds a product the API refuses to put in the cart", (
     ).resolves.toEqual({ id: "subject-1" });
 
     expect(toastErrorMock).not.toHaveBeenCalled();
+    const { predicate } = invalidateMock.mock.calls[0][0];
+    expect(
+      predicate({
+        queryKey: ["/api/rbac/subjects/subject-1/ecommerce-module/orders"],
+      }),
+    ).toBe(true);
+    expect(
+      predicate({
+        queryKey: [
+          "/api/rbac/subjects/subject-1/ecommerce-module/orders/quantity",
+        ],
+      }),
+    ).toBe(true);
+    expect(
+      predicate({
+        queryKey: [
+          "/api/rbac/subjects/subject-2/ecommerce-module/orders/quantity",
+        ],
+      }),
+    ).toBe(false);
+  });
+});
+
+describe("cart aggregate cache reconciliation", () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    invalidateMock.mockReset().mockResolvedValue(undefined);
+  });
+  it.each([
+    ["create", action, ecommerceModuleOrderCreateMock],
+    ["remove", remove, ecommerceModuleOrderDeleteMock],
+    ["change quantity", update, ecommerceModuleOrderUpdateMock],
+    ["apply offer quantity", selection, ecommerceModuleOrderSelectionMock],
+  ] as const)(
+    "%s reconciles both list and quantity before the consumer callback",
+    async (_name, useAction, request) => {
+      const result = { id: "subject-1", applied: true, orderIds: ["order"] };
+      request.mockResolvedValue(result);
+      const consumer = jest.fn(() => {
+        expect(invalidateMock).toHaveBeenCalledTimes(1);
+      });
+      useAction({ reactQueryOptions: { onSuccess: consumer } });
+      const value = await capturedMutationOptions.mutationFn({
+        id: "subject-1",
+        orderId: "order",
+        data: { quantity: 2, action: "apply" },
+      });
+      await capturedMutationOptions.onSuccess(value, {}, undefined, {});
+      expect(consumer).toHaveBeenCalledTimes(1);
+      const { predicate } = invalidateMock.mock.calls[0][0];
+      for (const suffix of ["orders", "orders/quantity"]) {
+        expect(
+          predicate({
+            queryKey: [
+              `/api/rbac/subjects/subject-1/ecommerce-module/${suffix}`,
+            ],
+          }),
+        ).toBe(true);
+      }
+      expect(
+        predicate({
+          queryKey: [
+            "/api/rbac/subjects/subject-2/ecommerce-module/orders/quantity",
+          ],
+        }),
+      ).toBe(false);
+    },
+  );
+  it("leaves seller catalog readers untouched", async () => {
+    ecommerceModuleOrderCreateMock.mockResolvedValue({ id: "subject-1" });
+    action();
+    await capturedMutationOptions.mutationFn({ id: "subject-1", data: {} });
+    const { predicate } = invalidateMock.mock.calls[0][0];
+    expect(
+      predicate({
+        queryKey: ["/api/rbac/subjects/subject-1/ecommerce-module/stores"],
+      }),
+    ).toBe(false);
+    expect(
+      predicate({
+        queryKey: ["/api/rbac/subjects/subject-1/ecommerce-module/products"],
+      }),
+    ).toBe(false);
+  });
+  it("keeps preview read-only without invalidating cart readers", async () => {
+    ecommerceModuleOrderSelectionMock.mockResolvedValue({
+      applied: false,
+      orderIds: [],
+    });
+    selection();
+    await capturedMutationOptions.mutationFn({
+      id: "subject-1",
+      orderId: "order",
+      data: { action: "preview" },
+    });
+    expect(invalidateMock).not.toHaveBeenCalled();
   });
 });

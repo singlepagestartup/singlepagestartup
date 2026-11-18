@@ -1,13 +1,20 @@
 import { Service } from "./index";
 import { Repository as OrderRepository } from "../../../repository";
+import { Service as OrderService } from "../index";
+import { Service as OrderLifecycleService } from "../../startup/lifecycle";
 import { Configuration as OrderConfiguration } from "../../../configuration";
 import { Repository as InvoiceRepository } from "@sps/billing/models/invoice/backend/app/api/src/lib/repository";
 import { Configuration as InvoiceConfiguration } from "@sps/billing/models/invoice/backend/app/api/src/lib/configuration";
+import { Service as InvoiceService } from "@sps/billing/models/invoice/backend/app/api/src/lib/service";
 import { getPostgresClient } from "@sps/shared-backend-database-config";
 
 describe("subscription period PostgreSQL write boundary", () => {
   const orders = new OrderRepository(new OrderConfiguration());
   const invoices = new InvoiceRepository(new InvoiceConfiguration());
+  const invoiceService = new InvoiceService(invoices);
+  const lifecycle = new OrderLifecycleService(orders);
+  const orderService = Object.create(OrderService.prototype) as OrderService;
+  orderService.repository = orders;
   const orderIds: string[] = [];
   const invoiceIds: string[] = [];
   afterAll(async () => {
@@ -32,7 +39,8 @@ describe("subscription period PostgreSQL write boundary", () => {
     const paymentInvoices: string[] = [first.id!];
     const service = new Service({
       findById: ({ id }) => orders.findFirstByField("id", id),
-      writeSubscriptionPeriod: (props) => orders.writeSubscriptionPeriod(props),
+      writeSubscriptionPeriod: (props) =>
+        lifecycle.writeSubscriptionPeriod(props),
       findByIdExtended: async ({ id }) =>
         ({
           ...(await orders.findFirstByField("id", id)),
@@ -81,11 +89,11 @@ describe("subscription period PostgreSQL write boundary", () => {
         service.execute({ id: order.id!, expectedInvoiceId: first.id! }),
       ),
     );
-    expect(renewalResults.filter((result) => result.accepted)).toHaveLength(1);
+    expect(renewalResults.filter((result) => result.accepted)).toHaveLength(0);
     const acceptedB = await orders.findFirstByField("id", order.id);
     expect(
-      await orders.expireSubscriptionPeriod({
-        before: acceptedA,
+      await lifecycle.expireSubscriptionPeriod({
+        before: { ...acceptedA, subscriptionPeriodInvoiceId: second.id },
         now: new Date(
           new Date(acceptedA.subscriptionPeriodEndsAt).getTime() + 1,
         ),
@@ -95,14 +103,16 @@ describe("subscription period PostgreSQL write boundary", () => {
       "delivering",
     );
     expect(new Date(acceptedB.subscriptionPeriodEndsAt).getTime()).toBe(
-      new Date(acceptedA.subscriptionPeriodEndsAt).getTime() +
-        24 * 60 * 60 * 1000,
+      new Date(acceptedA.subscriptionPeriodEndsAt).getTime(),
     );
     await expect(
-      invoices.updateFirstByField("id", first.id, {
-        ...first,
-        createdAt: new Date(Date.now() + 100000),
-        status: "paid",
+      invoiceService.update({
+        id: first.id!,
+        data: {
+          ...first,
+          createdAt: new Date(Date.now() + 100000),
+          status: "paid",
+        },
       }),
     ).rejects.toThrow("immutable");
     expect(
@@ -113,16 +123,21 @@ describe("subscription period PostgreSQL write boundary", () => {
       (await orders.findFirstByField("id", order.id)).subscriptionPeriodEndsAt,
     ).toEqual(acceptedB.subscriptionPeriodEndsAt);
     await expect(
-      orders.updateFirstByField("id", order.id, {
-        ...acceptedB,
-        subscriptionPeriodEndsAt: new Date(Date.now() + 999999999),
+      orderService.update({
+        id: order.id!,
+        data: {
+          ...acceptedB,
+          subscriptionPeriodEndsAt: new Date(Date.now() + 999999999),
+        },
       }),
     ).rejects.toThrow("server managed");
     const beforeRevoke = await orders.findFirstByField("id", order.id);
-    expect(await orders.revokeSubscription({ id: order.id! })).toBeDefined();
-    expect(await orders.revokeSubscription({ id: order.id! })).toBeUndefined();
+    expect(await lifecycle.revokeSubscription({ id: order.id! })).toBeDefined();
     expect(
-      await orders.writeSubscriptionPeriod({
+      await lifecycle.revokeSubscription({ id: order.id! }),
+    ).toBeUndefined();
+    expect(
+      await lifecycle.writeSubscriptionPeriod({
         id: order.id!,
         before: beforeRevoke,
         startsAt: new Date(),
@@ -132,9 +147,12 @@ describe("subscription period PostgreSQL write boundary", () => {
       }),
     ).toBeUndefined();
     await expect(
-      orders.updateFirstByField("id", order.id, {
-        ...beforeRevoke,
-        subscriptionRevokedAt: null,
+      orderService.update({
+        id: order.id!,
+        data: {
+          ...beforeRevoke,
+          subscriptionRevokedAt: null,
+        },
       }),
     ).rejects.toThrow("server managed");
     await expect(

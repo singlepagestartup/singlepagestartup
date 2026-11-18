@@ -1,7 +1,8 @@
 import type { IModel as IInvoice } from "@sps/billing/models/invoice/sdk/model";
-import type { IModel as IPaymentIntent } from "@sps/billing/models/payment-intent/sdk/model";
+import type { ISelectSchema as IPaymentIntent } from "@sps/billing/models/payment-intent/backend/repository/database";
 import type { Repository } from "../../repository";
 import type { Service as PaymentIntentService } from "./index";
+import { moneyMinorUnits } from "@sps/backend-utils";
 
 export interface IExecuteProps {
   invoiceId: string;
@@ -14,6 +15,19 @@ export interface IExecuteProps {
     invoice: IInvoice;
     paymentIntents: IPaymentIntent[];
   }) => void;
+}
+
+export interface IProviderPeriodReceipt {
+  provider: string;
+  contractPaymentIntentId: string;
+  providerSubscriptionId: string;
+  providerInvoiceId: string;
+  periodStart: string;
+  periodEnd: string;
+  amount: number;
+  currency: string;
+  initial: boolean;
+  recordedPaymentIntentId?: string;
 }
 
 export type IExpireProps = { invoiceId: string } & (
@@ -29,7 +43,7 @@ interface IConstructorProps {
 export class Service {
   constructor(private readonly dependencies: IConstructorProps) {}
 
-  private async withInvoice<T>(
+  async withInvoice<T>(
     props: {
       invoiceId: string;
       provider: string | null;
@@ -56,33 +70,39 @@ export class Service {
       !ids.length ||
       (props.paymentIntentId &&
         (ids.length !== 1 || ids[0] !== props.paymentIntentId))
-    )
+    ) {
       throw new Error(
         "Conflict error. Invoice payment intent association is missing or ambiguous",
       );
+    }
     return repository.withPaymentIntentLocks(ids, async () => {
       await service.billingModule.invoice.lockForSettlement(props.invoiceId);
       const currentLinks = await readLinks();
       const currentIds = [
         ...new Set((currentLinks || []).map((link) => link.paymentIntentId)),
       ].sort();
-      if (JSON.stringify(currentIds) !== JSON.stringify(ids))
+      if (JSON.stringify(currentIds) !== JSON.stringify(ids)) {
         throw new Error(
           "Conflict error. Invoice payment intent association changed",
         );
+      }
       const invoice = await service.billingModule.invoice.findById({
         id: props.invoiceId,
       });
-      if (!invoice) throw new Error("Not Found error. Invoice not found");
-      if (invoice.provider !== props.provider)
+      if (!invoice) {
+        throw new Error("Not Found error. Invoice not found");
+      }
+      if (invoice.provider !== props.provider) {
         throw new Error(
           "Permission error. Invoice belongs to another payment provider",
         );
+      }
       const intents: IPaymentIntent[] = [];
       for (const id of ids) {
         const intent = await service.findById({ id });
-        if (!intent)
+        if (!intent) {
           throw new Error("Not Found error. Payment intent not found");
+        }
         intents.push(intent);
       }
       return operation(invoice, intents);
@@ -90,74 +110,101 @@ export class Service {
   }
 
   execute(props: IExecuteProps): Promise<IInvoice> {
-    const { service } = this.dependencies;
     return this.withInvoice(props, async (invoice, intents) => {
-      if (
-        props.providerId !== undefined &&
-        invoice.providerId !== props.providerId
-      )
-        throw new Error("Conflict error. Invoice provider ID changed");
-      if (
-        invoice.status === "canceled" ||
-        intents.some((intent) => intent.status === "canceled")
-      )
+      this.validate(props, invoice, intents);
+      if (this.isCanceled(invoice, intents)) {
         throw new Error("Conflict error. Payment was canceled");
-      if (
-        !Number.isSafeInteger(props.amount) ||
-        props.amount < 0 ||
-        invoice.amount !== props.amount
-      )
-        throw new Error(
-          "Validation error. Payment amount does not match the invoice",
-        );
-      let remaining = props.amount;
-      for (const intent of intents) {
-        if (
-          !Number.isSafeInteger(intent.amount) ||
-          intent.amount < 0 ||
-          intent.amount > remaining
-        )
-          throw new Error(
-            "Validation error. Payment amount does not cover the payment intents",
-          );
-        // Already succeeded intents still consume their share on delivery retries.
-        remaining -= intent.amount;
       }
-      if (
-        props.settledProviderId &&
-        invoice.providerId &&
-        invoice.providerId !== props.settledProviderId
-      )
+      return this.record(props, invoice, intents);
+    });
+  }
+
+  isCanceled(invoice: IInvoice, intents: IPaymentIntent[]) {
+    return (
+      invoice.status === "canceled" ||
+      intents.some((intent) => intent.status === "canceled")
+    );
+  }
+
+  validate(props: IExecuteProps, invoice: IInvoice, intents: IPaymentIntent[]) {
+    if (
+      props.providerId !== undefined &&
+      invoice.providerId !== props.providerId
+    ) {
+      throw new Error("Conflict error. Invoice provider ID changed");
+    }
+    const confirmedAmount = moneyMinorUnits(props.amount);
+    if (moneyMinorUnits(invoice.amount) !== confirmedAmount) {
+      throw new Error(
+        "Validation error. Payment amount does not match the invoice",
+      );
+    }
+    let remaining = confirmedAmount;
+    for (const intent of intents) {
+      const intentAmount = moneyMinorUnits(intent.amount);
+      if (intentAmount > remaining) {
         throw new Error(
-          "Conflict error. Invoice is already associated with another payment",
+          "Validation error. Payment amount does not cover the payment intents",
         );
-      props.validate?.({ invoice, paymentIntents: intents });
-      const paid =
-        invoice.status === "paid"
-          ? invoice
-          : await service.billingModule.invoice.update({
-              id: invoice.id,
-              data: {
-                ...invoice,
-                status: "paid",
-                ...(props.settledProviderId
-                  ? { providerId: props.settledProviderId }
-                  : {}),
-              },
-            });
-      if (!paid) throw new Error("Not Found error. Invoice not found");
-      for (const intent of intents) {
-        if (intent.status !== "succeeded") {
-          const updated = await service.update({
-            id: intent.id,
-            data: { ...intent, status: "succeeded" },
+      }
+      // Already succeeded intents still consume their share on delivery retries.
+      remaining -= intentAmount;
+    }
+    if (remaining !== 0n) {
+      throw new Error(
+        "Validation error. Invoice amount differs from its payment intent shares",
+      );
+    }
+    if (
+      props.settledProviderId &&
+      invoice.providerId &&
+      invoice.providerId !== props.settledProviderId
+    ) {
+      throw new Error(
+        "Conflict error. Invoice is already associated with another payment",
+      );
+    }
+    props.validate?.({ invoice, paymentIntents: intents });
+  }
+
+  async record(
+    props: IExecuteProps,
+    invoice: IInvoice,
+    intents: IPaymentIntent[],
+    reconciliation = new Set<string>(),
+  ) {
+    const { service } = this.dependencies;
+    const paid =
+      invoice.status === "paid"
+        ? invoice
+        : await service.billingModule.invoice.update({
+            id: invoice.id,
+            data: {
+              ...invoice,
+              status: "paid",
+              ...(props.settledProviderId
+                ? { providerId: props.settledProviderId }
+                : {}),
+            },
           });
-          if (!updated)
-            throw new Error("Not Found error. Payment intent not found");
+    if (!paid) {
+      throw new Error("Not Found error. Invoice not found");
+    }
+    for (const intent of intents) {
+      const status = reconciliation.has(intent.id)
+        ? "requires_reconciliation"
+        : "succeeded";
+      if (intent.status !== status) {
+        const updated = await service.update({
+          id: intent.id,
+          data: { ...intent, status },
+        });
+        if (!updated) {
+          throw new Error("Not Found error. Payment intent not found");
         }
       }
-      return paid;
-    });
+    }
+    return paid;
   }
 
   async closeStripePaymentPage(props: {
@@ -187,68 +234,78 @@ export class Service {
     );
   }
 
-  expire(props: IExpireProps): Promise<void> {
+  async expire(props: IExpireProps): Promise<void> {
+    await this.withInvoice(props, (invoice, intents) =>
+      this.markExpired(props, invoice, intents),
+    );
+  }
+
+  async markExpired(
+    props: IExpireProps,
+    invoice: IInvoice,
+    intents: IPaymentIntent[],
+  ) {
     const { service } = this.dependencies;
-    return this.withInvoice(props, async (invoice, intents) => {
-      if (
-        (props.provider === "stripe" &&
-          (!props.providerId || props.providerId !== invoice.providerId)) ||
-        (props.expiresBefore &&
-          new Date(invoice.createdAt) >= props.expiresBefore) ||
-        ["paid", "canceled"].includes(invoice.status) ||
-        intents.some(
-          (intent) =>
-            intent.status === "succeeded" || intent.status === "canceled",
-        )
+    const failed: string[] = [];
+    if (
+      (props.provider === "stripe" &&
+        (!props.providerId || props.providerId !== invoice.providerId)) ||
+      (props.expiresBefore &&
+        new Date(invoice.createdAt) >= props.expiresBefore) ||
+      ["paid", "canceled"].includes(invoice.status) ||
+      intents.some(
+        (intent) =>
+          intent.status === "succeeded" || intent.status === "canceled",
       )
-        return;
-      if (invoice.status !== "failed") {
-        const updatedInvoice = await service.billingModule.invoice.update({
-          id: invoice.id,
-          data: { ...invoice, status: "failed" },
-        });
-        if (!updatedInvoice) {
-          throw new Error("Not Found error. Invoice not found");
-        }
+    ) {
+      return failed;
+    }
+    if (invoice.status !== "failed") {
+      const updatedInvoice = await service.billingModule.invoice.update({
+        id: invoice.id,
+        data: { ...invoice, status: "failed" },
+      });
+      if (!updatedInvoice) {
+        throw new Error("Not Found error. Invoice not found");
       }
-      for (const intent of intents) {
-        if (intent.status === "failed") {
-          continue;
-        }
-        const links = await service.billingModule.paymentIntentsToInvoices.find(
-          {
-            params: {
-              filters: {
-                and: [
-                  { column: "paymentIntentId", method: "eq", value: intent.id },
-                ],
-              },
-            },
-          },
-        );
-        const invoiceIds = [...new Set(links.map((link) => link.invoiceId))];
-        const invoices = await service.billingModule.invoice.find({
-          params: {
-            filters: {
-              and: [{ column: "id", method: "inArray", value: invoiceIds }],
-            },
-          },
-        });
-        if (
-          !invoiceIds.length ||
-          invoices.length !== invoiceIds.length ||
-          invoices.some((linkedInvoice) => linkedInvoice.status !== "failed")
-        ) {
-          continue;
-        }
-        const updated = await service.update({
-          id: intent.id,
-          data: { ...intent, status: "failed" },
-        });
-        if (!updated) {
-          throw new Error("Not Found error. Payment intent not found");
-        }
+    }
+    for (const intent of intents) {
+      if (intent.status === "failed") {
+        continue;
       }
-    });
+      const links = await service.billingModule.paymentIntentsToInvoices.find({
+        params: {
+          filters: {
+            and: [
+              { column: "paymentIntentId", method: "eq", value: intent.id },
+            ],
+          },
+        },
+      });
+      const invoiceIds = [...new Set(links.map((link) => link.invoiceId))];
+      const invoices = await service.billingModule.invoice.find({
+        params: {
+          filters: {
+            and: [{ column: "id", method: "inArray", value: invoiceIds }],
+          },
+        },
+      });
+      if (
+        !invoiceIds.length ||
+        invoices.length !== invoiceIds.length ||
+        invoices.some((linkedInvoice) => linkedInvoice.status !== "failed")
+      ) {
+        continue;
+      }
+      const updated = await service.update({
+        id: intent.id,
+        data: { ...intent, status: "failed" },
+      });
+      if (!updated) {
+        throw new Error("Not Found error. Payment intent not found");
+      }
+      failed.push(intent.id);
+    }
+    return failed;
   }
 }

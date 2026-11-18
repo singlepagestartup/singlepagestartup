@@ -18,6 +18,7 @@ export interface IComponentPropsExtended extends IParentExtended<
 
 export interface IRepeatConfirmation {
   orderId: string;
+  mode?: "next-period";
 }
 
 export interface IOrderRowProps {

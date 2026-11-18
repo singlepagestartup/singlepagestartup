@@ -43,7 +43,9 @@ export function Component(props: IComponentPropsExtended) {
           <h2 className="text-xl font-semibold">
             {props.language === "ru" ? "Характеристики" : "Product details"}
           </h2>
+          {props.priceSlot}
           <Attributes
+            hidePrice={props.priceSlot != null}
             showAll
             isServer={props.isServer}
             data={props.data}

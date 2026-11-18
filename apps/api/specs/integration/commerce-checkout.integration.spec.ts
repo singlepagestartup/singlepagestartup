@@ -2,12 +2,12 @@
  * Actual SDK requests, Hono handlers, owning services and PostgreSQL writes.
  * Nested fixture transactions use real savepoints and always roll back. The
  * observer queue and delayed dummy webhook stop at a captured transport boundary.
- * No app.ts jobs, notification delivery or external payment provider starts here.
+ * The owning HTTP modules are mounted in isolation. Background workers and listeners stay stopped.
  */
 import { spawnSync } from "node:child_process";
 import { resolve } from "node:path";
 
-it("persists cart mutations and derives dummy checkout invoices from current product data", () => {
+it("persists cart mutations and derives dummy checkout invoices from the selected store offer", () => {
   const script = String.raw`
 import assert from "node:assert/strict";
 import {randomUUID} from "node:crypto";
@@ -20,7 +20,7 @@ import {sql} from "drizzle-orm";
 import {getDrizzle,getPostgresClient} from "@sps/shared-backend-database-config";
 import {ExceptionFilter,ParseQueryMiddleware,withConsistencyDatabase} from "@sps/shared-backend-api";
 import {consistencyContext} from "./libs/shared/backend/api/src/lib/repository/database/context";
-import {DATABASE_OPTIONS,RBAC_JWT_SECRET,API_SERVICE_URL,NEXT_PUBLIC_HOST_SERVICE_URL,ALLOWED_BILLING_SERVICE_PROVIDERS} from "@sps/shared-utils";
+import {DATABASE_OPTIONS,RBAC_JWT_SECRET,RBAC_SECRET_KEY,API_SERVICE_URL,NEXT_PUBLIC_HOST_SERVICE_URL,ALLOWED_BILLING_SERVICE_PROVIDERS} from "@sps/shared-utils";
 import {internationalization} from "@sps/shared-configuration";
 import {api as subjectApi} from "@sps/rbac/models/subject/sdk/server";
 
@@ -36,6 +36,8 @@ const modules={
 const services={};
 for(const [module,owner] of Object.entries(modules))for(const entry of owner.apps.apps)services[module+entry.route]=entry.app.controller.service;
 const service=resource=>{assert(services[resource],"Missing effective owner: "+resource);return services[resource];};
+const paymentIntents = service("rbac/subjects").billingModule.paymentIntent;
+assert.equal(service("ecommerce/orders").billingModule.paymentIntent, paymentIntents);
 const create=async(resource,data)=>{const row=await service(resource).create({data});assert(row?.id,resource+" did not persist an ID");return row;};
 const find=(resource,and)=>service(resource).find({params:{filters:{and}}});
 const eq=(column,value)=>({column,method:"eq",value});
@@ -44,6 +46,8 @@ const suffix=randomUUID(),prefix="issue376-commerce-"+suffix;
 const persisted=[];
 const remember=(resource,row)=>{persisted.push([resource,row.id]);return row;};
 const observer=[],webhooks=[],providers=[];
+let failObserver = false;
+let failedObserverRequests = 0;
 const db=getDrizzle({}),pg=getPostgresClient(),transaction=db.transaction;
 const rollback=Error("ROLLBACK_COMMERCE_FIXTURE");
 let assertionsComplete=false;
@@ -51,21 +55,31 @@ const app=new Hono(),exception=new ExceptionFilter();
 app.onError(exception.catch.bind(exception));
 app.use(new ParseQueryMiddleware().init());
 for(const [module,owner] of Object.entries(modules))app.route("/api/"+module,owner.hono);
+for (const action of ["check", "providers/dummy"]) {
+ const path = "/api/rbac/subjects/ecommerce-module/orders/payment-intents/" + randomUUID() + "/" + action;
+ const res = await app.request(path, {method: "POST"});
+ assert([401,403].includes(res.status), "Payment operator route must check credentials before reading an intent");
+}
+assert.equal((await app.request("/api/billing/payment-intents/dummy/webhook", {method:"POST"})).status, 404);
 // Only the transport is adapted. Every business read/write still reaches the
 // exported production controller/service/repository with its original payload.
 globalThis.fetch=async(input,init)=>{
  const request=new Request(input,init),url=new URL(request.url);
  assert.equal(url.origin,API_SERVICE_URL,"Unexpected outbound network destination: "+url.origin);
  if(url.pathname==="/api/broadcast/channels/push-message"){
+  if (failObserver) {
+   failedObserverRequests++;
+   throw Error("checkout-observer-failed");
+  }
   const form=await request.formData();observer.push(JSON.parse(String(form.get("data"))));
   return Response.json({data:{id:randomUUID(),slug:"captured-observer-transport"}});
  }
- if(url.pathname==="/api/billing/payment-intents/dummy/webhook"){
+ if(url.pathname==="/api/rbac/subjects/ecommerce-module/orders/payment-intents/dummy/webhook"){
   webhooks.push(await request.json());
   return Response.json({data:{transportSuppressed:true}});
  }
  assert(/^\/api\/(?:rbac|ecommerce|billing)\//.test(url.pathname),"Unexpected notification/provider route: "+url.pathname);
- if(/^\/api\/billing\/payment-intents\/[^/]+\/dummy$/.test(url.pathname)){
+ if(/^\/api\/rbac\/subjects\/ecommerce-module\/orders\/payment-intents\/[^/]+\/providers\/dummy$/.test(url.pathname)){
   const form=await request.clone().formData();providers.push(JSON.parse(String(form.get("data"))));
  }
  return app.fetch(request);
@@ -82,6 +96,31 @@ try{
   const foreign=remember("rbac/subjects",await create("rbac/subjects",{slug:prefix+"-foreign"}));
   const store=remember("ecommerce/stores",await create("ecommerce/stores",{slug:prefix+"-store",title:{en:"Integration store"}}));
   const product=remember("ecommerce/products",await create("ecommerce/products",{slug:prefix+"-product",type:"one_off",title:{en:"Current integration product"}}));
+  const offer=remember("ecommerce/stores-to-products",await create("ecommerce/stores-to-products",{productId:product.id,storeId:store.id,sku:prefix+"-offer"}));
+  const stockKeys = await find("ecommerce/attribute-keys", [eq("slug", "stock_quantity")]);
+  let stockKey = stockKeys[0];
+  if (!stockKey) {
+   const createdKey = await create("ecommerce/attribute-keys", {
+    slug: "stock_quantity", type: "default", field: "number",
+   });
+   stockKey = remember("ecommerce/attribute-keys", createdKey);
+  }
+  const stockAttribute = await create("ecommerce/attributes", {
+   slug: prefix + "-stock", number: "20",
+  });
+  const stock = remember("ecommerce/attributes", stockAttribute);
+  await create("ecommerce/attribute-keys-to-attributes", {
+   attributeKeyId: stockKey.id, attributeId: stock.id,
+  });
+  await create("ecommerce/stores-to-products-to-attributes", {
+   storesToProductsId: offer.id, attributeId: stock.id,
+  });
+  for(const [slug,text] of [["price_formula","unit_price * quantity"],["formula_version","1"]]){
+   const key=(await find("ecommerce/attribute-keys",[eq("slug",slug)]))[0]||remember("ecommerce/attribute-keys",await create("ecommerce/attribute-keys",{slug,type:"default",field:"string"}));
+   const value=remember("ecommerce/attributes",await create("ecommerce/attributes",{slug:prefix+"-"+slug,string:{en:text}}));
+   await create("ecommerce/attribute-keys-to-attributes",{attributeKeyId:key.id,attributeId:value.id});
+   await create("ecommerce/products-to-attributes",{productId:product.id,attributeId:value.id});
+  }
   const currencies=[];
   for(const name of ["a","b"])currencies.push(remember("billing/currencies",await create("billing/currencies",{slug:prefix+"-"+name,title:"Integration "+name,symbol:name.toUpperCase()})));
   const priceKeys=await find("ecommerce/attribute-keys",[eq("type","price")]);
@@ -91,6 +130,7 @@ try{
    const attribute=remember("ecommerce/attributes",await create("ecommerce/attributes",{slug:prefix+"-price-"+index,number:String(index?175:100)}));prices.push(attribute);
    await create("ecommerce/attribute-keys-to-attributes",{attributeKeyId:priceKey.id,attributeId:attribute.id});
    priceProductLinks.push(await create("ecommerce/products-to-attributes",{productId:product.id,attributeId:attribute.id,orderIndex:index}));
+   await create("ecommerce/stores-to-products-to-attributes",{storesToProductsId:offer.id,attributeId:attribute.id,orderIndex:index});
    await create("ecommerce/attributes-to-billing-module-currencies",{attributeId:attribute.id,billingModuleCurrencyId:currencies[index].id});
   }
   const specificationKey=remember("ecommerce/attribute-keys",await create("ecommerce/attribute-keys",{slug:prefix+"-specification",type:"default",field:"string",title:{en:"Specification"}}));
@@ -102,7 +142,7 @@ try{
   const options={headers:{Authorization:"Bearer "+token,"Cache-Control":"no-store"}};
   const ownerProps={id:subject.id,options};
   const carts=()=>subjectApi.ecommerceModuleOrderList({...ownerProps,params:{includeCartDetails:true}});
-  const createCart=()=>subjectApi.ecommerceModuleOrderCreate({...ownerProps,data:{productId:product.id,storeId:store.id,quantity:2,billingModule:{currency:{id:currencies[0].id}}}});
+  const createCart=()=>subjectApi.ecommerceModuleOrderCreate({...ownerProps,data:{productId:product.id,offerId:offer.id,storeId:store.id,quantity:2,billingModule:{currency:{id:currencies[0].id}}}});
   await createCart();
   const subjectLock=sql.join([
    sql.raw("SELECT 1 FROM pg_locks WHERE locktype = 'advisory' AND granted AND pid = pg_backend_pid() AND objsubid = 1 AND objid::bigint = (hashtext("),
@@ -134,7 +174,7 @@ try{
   const removedLine=cartList[0].cartDetails.lines[0];
   assert.equal(cartList[0].type,"cart");assert.equal(cartList[0].status,"new");
   assert.deepEqual(cartList[0].cartDetails.storeIds,[store.id]);
-  assert.equal(removedLine.orderId,removedCart.id);assert.equal(removedLine.productId,product.id);assert.equal(removedLine.quantity,2);assert.equal(removedLine.product.id,product.id);
+  assert.equal(removedLine.offerId,offer.id);assert(removedLine.quoteVersion);assert(removedLine.quoteExpiresAt);assert.equal(removedLine.orderId,removedCart.id);assert.equal(removedLine.productId,product.id);assert.equal(removedLine.quantity,2);assert.equal(removedLine.product.id,product.id);
   const cartOwnerLink=(await find("rbac/subjects-to-ecommerce-module-orders",[eq("ecommerceModuleOrderId",removedCart.id)]))[0];assert.equal(cartOwnerLink.subjectId,subject.id);
   const cartCurrencyLink=(await find("ecommerce/orders-to-billing-module-currencies",[eq("orderId",removedCart.id)]))[0];assert.equal(cartCurrencyLink.billingModuleCurrencyId,currencies[0].id);
   await subjectApi.ecommerceModuleOrderUpdate({...ownerProps,orderId:removedCart.id,data:{ordersToProducts:[{id:removedLine.id,quantity:4}]}});
@@ -161,20 +201,30 @@ try{
   const email=prefix+"@example.test";
   const identity=remember("rbac/identities",await create("rbac/identities",{provider:"email",email}));
   await create("rbac/subjects-to-identities",{subjectId:subject.id,identityId:identity.id});
-  assert.deepEqual(await service("ecommerce/orders").findByIdCheckoutAttributesByCurrency({id:checkoutCart.id,billingModuleCurrencyId:currencies[0].id}),{type:"one_off",interval:undefined,amount:500});
+  const checkoutAttributes=await service("ecommerce/orders").findByIdCheckoutAttributesByCurrency({id:checkoutCart.id,billingModuleCurrencyId:currencies[0].id});assert.equal(checkoutAttributes.type,"one_off");assert.equal(checkoutAttributes.interval,undefined);assert.equal(Number(checkoutAttributes.amount),500);
+  const observersBeforeReprice=observer.length;
+  await assert.rejects(subjectApi.ecommerceModuleOrderCheckout({...ownerProps,data:{email,provider:"dummy",ecommerceModule:{orders:[{id:checkoutCart.id}]}}}),/Checkout price changed/);
+  assert.equal(observer.length,observersBeforeReprice,"A rejected price change must not register observers");
+  assert.equal((await find("ecommerce/orders-to-billing-module-payment-intents",[eq("orderId",checkoutCart.id)])).length,0,"A changed price must not create a payment attempt");
+  const refreshed=(await carts()).find(order=>order.id===checkoutCart.id);assert(refreshed);
+  const refreshedLine=refreshed.cartDetails.lines.find(line=>line.id===checkoutLine.id);assert(refreshedLine);
+  const selection={offerId:offer.id,quantity:4,currencyId:currencies[0].id,destination:refreshedLine.destination,services:[]};
+  const preview=await subjectApi.ecommerceModuleOrderSelection({...ownerProps,orderId:checkoutCart.id,data:{action:"preview",lineId:checkoutLine.id,selections:[selection]}});
+  assert.equal(preview.quotes[0].amount,"500.00");
+  await subjectApi.ecommerceModuleOrderSelection({...ownerProps,orderId:checkoutCart.id,data:{action:"apply",lineId:checkoutLine.id,selections:[selection],expectedVersions:preview.quotes.map(quote=>quote.version),expectedSelectionUpdatedAt:new Date(refreshedLine.selectionUpdatedAt).toISOString()}});
   const checkout=await subjectApi.ecommerceModuleOrderCheckout({...ownerProps,data:{email,provider:"dummy",comment:"Saved cart checkout",ecommerceModule:{orders:[{id:checkoutCart.id}]}}});
   assert.equal(checkout.billingModule.invoices.length,1);
   const verifyCheckout=async({result,orderId,currencyId,quantity,amount,lineId,comment})=>{
    const invoice=remember("billing/invoices",result.billingModule.invoices[0]);
-   assert.equal(invoice.provider,"dummy");assert.equal(invoice.status,"open");assert.equal(invoice.amount,amount);assert(invoice.providerId);assert.equal(invoice.paymentUrl,NEXT_PUBLIC_HOST_SERVICE_URL);
-   const savedInvoice=await byId("billing/invoices",invoice.id);assert.equal(savedInvoice.amount,amount);assert.equal(savedInvoice.paymentUrl,NEXT_PUBLIC_HOST_SERVICE_URL);
+   assert.equal(invoice.provider,"dummy");assert.equal(invoice.status,"open");assert.equal(Number(invoice.amount),amount);assert(invoice.providerId);assert.equal(invoice.paymentUrl,NEXT_PUBLIC_HOST_SERVICE_URL);
+   const savedInvoice=await byId("billing/invoices",invoice.id);assert.equal(Number(savedInvoice.amount),amount);assert.equal(savedInvoice.paymentUrl,NEXT_PUBLIC_HOST_SERVICE_URL);
    const order=await byId("ecommerce/orders",orderId);assert.equal(order.type,"history");assert.equal(order.status,"paying");assert.equal(order.comment,comment);
-   const lines=await find("ecommerce/orders-to-products",[eq("orderId",orderId)]);assert.equal(lines.length,1);assert.equal(lines[0].productId,product.id);assert.equal(lines[0].quantity,quantity);if(lineId)assert.equal(lines[0].id,lineId);
+   const lines=await find("ecommerce/orders-to-products",[eq("orderId",orderId)]);assert.equal(lines.length,1);assert.equal(lines[0].offerId,offer.id);assert.equal(lines[0].productId,product.id);assert.equal(lines[0].quantity,quantity);if(lineId)assert.equal(lines[0].id,lineId);
    assert.equal((await find("ecommerce/stores-to-orders",[eq("orderId",orderId)]))[0].storeId,store.id);
    assert.equal((await find("ecommerce/orders-to-billing-module-currencies",[eq("orderId",orderId)]))[0].billingModuleCurrencyId,currencyId);
    assert.equal((await find("rbac/subjects-to-ecommerce-module-orders",[eq("ecommerceModuleOrderId",orderId)]))[0].subjectId,subject.id);
    const orderIntent=(await find("ecommerce/orders-to-billing-module-payment-intents",[eq("orderId",orderId)]));assert.equal(orderIntent.length,1);
-   const intent=remember("billing/payment-intents",await byId("billing/payment-intents",orderIntent[0].billingModulePaymentIntentId));assert.equal(intent.amount,amount);assert.equal(intent.type,"one_off");
+   const intent=remember("billing/payment-intents",await byId("billing/payment-intents",orderIntent[0].billingModulePaymentIntentId));assert.equal(Number(intent.amount),amount);assert.equal(intent.type,"one_off");
    const intentCurrency=await find("billing/payment-intents-to-currencies",[eq("paymentIntentId",intent.id)]);assert.equal(intentCurrency.length,1);assert.equal(intentCurrency[0].currencyId,currencyId);
    const intentInvoice=await find("billing/payment-intents-to-invoices",[eq("paymentIntentId",intent.id)]);assert.equal(intentInvoice.length,1);assert.equal(intentInvoice[0].invoiceId,invoice.id);
    const payload=providers.find(value=>value.currencyId===currencyId);assert(payload,"Real provider request must include selected currency");assert.equal(payload.provider,"dummy");
@@ -194,7 +244,13 @@ try{
   const quickInvoice=await verifyCheckout({result:quick,orderId:quickOrder.id,currencyId:currencies[1].id,quantity:3,amount:675,comment:"One click checkout"});
   assert.notEqual(quickInvoice.id,cartInvoice.id);assert.notEqual(quickOrder.id,checkoutCart.id);
   assert.equal((await find("rbac/subjects-to-identities",[eq("subjectId",subject.id)])).length,1,"Existing identity must be reused without notification");
-  assert.equal(observer.length,4,"Only the two observer transports per checkout should be captured");
+  assert.equal(observer.length,6,"Each successful order registers provider, patch and check observers");
+  const triggers=observer.map(message=>JSON.parse(message.payload).trigger);
+  assert.equal(triggers.filter(trigger=>trigger.method==="POST"&&trigger.url.endsWith("/api/rbac/subjects/ecommerce-module/orders/payment-intents/dummy/webhook")).length,2);
+  for(const orderId of [checkoutCart.id,quickOrder.id]){
+   assert.equal(triggers.filter(trigger=>trigger.method==="PATCH"&&trigger.url.endsWith("/api/ecommerce/orders/"+orderId)).length,1);
+   assert.equal(triggers.filter(trigger=>trigger.method==="POST"&&trigger.url.endsWith("/api/ecommerce/orders/"+orderId+"/check")).length,1);
+  }
   assert.equal(providers.length,2,"Both actual provider handlers must be called");
   // Dummy schedules its own webhook transport after ten seconds. Capture both
   // before teardown so no pending timer can contact a running local API later.
@@ -202,6 +258,83 @@ try{
   while(webhooks.length<2&&Date.now()<deadline)await new Promise(done=>setTimeout(done,20));
   assert.deepEqual(webhooks.map(value=>value.data.id).sort(),[cartInvoice.id,quickInvoice.id].sort());
   assert.equal((await byId("billing/invoices",cartInvoice.id)).status,"open");assert.equal((await byId("billing/invoices",quickInvoice.id)).status,"open");
+  const sendWebhook = (invoiceId) => app.request("/api/rbac/subjects/ecommerce-module/orders/payment-intents/dummy/webhook", {
+   method: "POST",
+   headers: {
+    "Content-Type": "application/json",
+    "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+   },
+   body: JSON.stringify({ data: { id: invoiceId } }),
+  });
+  const reservations = service("ecommerce/orders-to-billing-module-payment-intents");
+  const interrupted = spyOn(reservations, "settleReservations")
+   .mockRejectedValueOnce(Error("fixture-settlement-interrupted"));
+  try {
+   const failed = await sendWebhook(cartInvoice.id);
+   assert(failed.status >= 400);
+   assert.match(await failed.text(), /fixture-settlement-interrupted/);
+   assert.equal((await byId("billing/invoices", cartInvoice.id)).status, "open");
+   const [allocation] = await find("ecommerce/orders-to-billing-module-payment-intents", [eq("orderId", checkoutCart.id)]);
+   assert.equal(allocation.reservationStatus, "held");
+   assert.equal(Number((await byId("ecommerce/attributes", stock.id)).number), 20);
+  } finally {
+   interrupted.mockRestore();
+  }
+  for (const invoice of [cartInvoice, quickInvoice]) {
+   for (let attempt = 0; attempt < 2; attempt++) {
+    const response = await sendWebhook(invoice.id);
+    const responseBody = await response.text();
+    assert.equal(response.status, 200, responseBody);
+   }
+   const paidInvoice = await byId("billing/invoices", invoice.id);
+   assert.equal(paidInvoice.status, "paid");
+  }
+  for (const orderId of [checkoutCart.id, quickOrder.id]) {
+   const allocations = await find("ecommerce/orders-to-billing-module-payment-intents", [
+    eq("orderId", orderId),
+   ]);
+   assert.equal(allocations.length, 1);
+   const allocation = allocations[0];
+   const settledIntent = await byId("billing/payment-intents", allocation.billingModulePaymentIntentId);
+   assert.equal(allocation.reservationStatus, "consumed", "Mounted Billing callbacks must consume the commerce hold");
+   assert.equal(settledIntent.status, "succeeded");
+  }
+  const settledStock = await byId("ecommerce/attributes", stock.id);
+  assert.equal(Number(settledStock.number), 13, "Duplicate callbacks must deduct each checkout quantity once");
+
+  await createCart();
+  const nextCarts = await carts();
+  assert.equal(nextCarts.length, 1);
+  const failedCart = remember("ecommerce/orders", nextCarts[0]);
+  failObserver = true;
+  try {
+   await assert.rejects(subjectApi.ecommerceModuleOrderCheckout({
+    ...ownerProps,
+    data: {
+     email,
+     provider: "dummy",
+     ecommerceModule: { orders: [{ id: failedCart.id }] },
+    },
+   }));
+  } finally {
+   failObserver = false;
+  }
+  assert.equal(failedObserverRequests, 1, "Checkout must fail during observer registration");
+  const failedAllocations = await find("ecommerce/orders-to-billing-module-payment-intents", [
+   eq("orderId", failedCart.id),
+  ]);
+  assert.equal(failedAllocations.length, 1, "Failed checkout must preserve its committed payment attempt");
+  const failedAllocation = failedAllocations[0];
+  const failedIntent = await byId("billing/payment-intents", failedAllocation.billingModulePaymentIntentId);
+  const failedInvoiceLinks = await find("billing/payment-intents-to-invoices", [
+   eq("paymentIntentId", failedAllocation.billingModulePaymentIntentId),
+  ]);
+  const releasedStock = await byId("ecommerce/attributes", stock.id);
+  assert.equal(failedAllocation.reservationStatus, "released", "Checkout failure must release its committed commerce hold");
+  assert.equal(failedIntent.status, "failed");
+  assert.equal(failedInvoiceLinks.length, 0);
+  assert.equal(providers.length, 2, "Observer failure must stop checkout before the payment provider");
+  assert.equal(Number(releasedStock.number), 13, "Failed checkout must not consume stock");
   assertionsComplete=true;
   throw rollback;
  }));
@@ -216,6 +349,7 @@ finally{
 }
 assert(assertionsComplete);
 console.log(JSON.stringify({realDatabase:true,actualSdk:true,actualControllers:true,actualDummyProvider:true,cartCreateUpdateDelete:true,currentAttributes:true,selectedCurrency:true,paymentUrl:true,transactionRolledBack:true,externalPayments:0,notifications:0}));
+process.exit(0);
 `;
   const result = spawnSync(
     "bun",
@@ -245,8 +379,16 @@ console.log(JSON.stringify({realDatabase:true,actualSdk:true,actualControllers:t
       },
     },
   );
-  if (result.status !== 0)
-    throw new Error(result.stderr || result.stdout || String(result.error));
+  if (result.error) {
+    throw result.error;
+  }
+  if (result.status !== 0) {
+    throw new Error(
+      result.stderr ||
+        result.stdout ||
+        `Bun exited with ${result.signal || result.status}`,
+    );
+  }
   expect(result.stdout).toContain('"actualDummyProvider":true');
   expect(result.stdout).toContain('"transactionRolledBack":true');
 }, 100000);

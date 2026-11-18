@@ -1,5 +1,6 @@
-import { Container, ContainerModule } from "inversify";
+import { ContainerModule } from "inversify";
 import {
+  createAppBootstrap,
   DI,
   ExceptionFilter,
   type IExceptionFilter,
@@ -10,6 +11,8 @@ import { Controller } from "./controller";
 import { Service } from "./service";
 import { App } from "./app";
 import { OrdersToProductsDI } from "./di";
+import { createService as createOfferService } from "@sps/ecommerce/relations/stores-to-products/backend/app/api/src/lib/bootstrap";
+import type { Service as OfferService } from "@sps/ecommerce/relations/stores-to-products/backend/app/api/src/lib/service";
 import { Service as ProductService } from "@sps/ecommerce/models/product/backend/app/api/src/lib/service";
 import { Repository as ProductRepository } from "@sps/ecommerce/models/product/backend/app/api/src/lib/repository";
 import { Configuration as ProductConfiguration } from "@sps/ecommerce/models/product/backend/app/api/src/lib/configuration";
@@ -43,8 +46,11 @@ const bindings = new ContainerModule(({ bind }) => {
   bind<App>(DI.IApp).to(App);
   bind<Controller>(DI.IController).to(Controller);
   bind<Repository>(DI.IRepository).to(Repository);
-  bind<Service>(DI.IService).to(Service);
+  bind<Service>(DI.IService).to(Service).inSingletonScope();
   bind<Configuration>(DI.IConfiguration).to(Configuration);
+  bind<OfferService>(OrdersToProductsDI.IOffersService)
+    .toDynamicValue(() => createOfferService())
+    .inSingletonScope();
   bind<ProductService>(OrdersToProductsDI.IProductsService)
     .toDynamicValue(
       () =>
@@ -161,12 +167,6 @@ const bindings = new ContainerModule(({ bind }) => {
     .inSingletonScope();
 });
 
-export async function bootstrap() {
-  const container = new Container();
-  container.load(bindings);
-  const app = container.get<App>(DI.IApp);
-
-  await app.init();
-
-  return { app };
-}
+export const { bootstrap, createService } = createAppBootstrap<App, Service>(
+  bindings,
+);

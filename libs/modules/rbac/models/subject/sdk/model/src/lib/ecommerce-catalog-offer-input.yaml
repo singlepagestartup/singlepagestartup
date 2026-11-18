@@ -1,0 +1,186 @@
+$schema: https://json-schema.org/draft/2020-12/schema
+type: object
+properties:
+  storeId:
+    type: string
+    format: uuid
+    pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+  productId:
+    type: string
+    format: uuid
+    pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+  product:
+    type: object
+    properties:
+      title:
+        type: object
+        propertyNames:
+          type: string
+        additionalProperties:
+          type: string
+          maxLength: 100000
+      slug:
+        type: string
+        maxLength: 200
+        pattern: ^[a-z0-9-]+$
+      adminTitle:
+        type: string
+        maxLength: 200
+      shortDescription:
+        type: object
+        propertyNames:
+          type: string
+        additionalProperties:
+          type: string
+          maxLength: 100000
+      description:
+        type: object
+        propertyNames:
+          type: string
+        additionalProperties:
+          type: string
+          maxLength: 100000
+      kind:
+        type: string
+        minLength: 1
+      type:
+        default: one_off
+        type: string
+        enum:
+          - one_off
+          - subscription
+      formula:
+        type: string
+        minLength: 1
+        maxLength: 2000
+      formulaVersion:
+        default: "1"
+        type: string
+        minLength: 1
+        maxLength: 100
+    required:
+      - title
+      - kind
+      - formula
+    additionalProperties: false
+  prices:
+    minItems: 1
+    maxItems: 20
+    type: array
+    items:
+      type: object
+      properties:
+        currencyId:
+          type: string
+          format: uuid
+          pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+        amount:
+          type: string
+          maxLength: 100
+          pattern: ^(0|[1-9]\d*)(\.\d{1,8})?$
+      required:
+        - currencyId
+        - amount
+      additionalProperties: false
+  stockQuantity:
+    anyOf:
+      - type: integer
+        minimum: 0
+        maximum: 9007199254740991
+      - type: string
+        pattern: ^(0|[1-9]\d*)$
+      - type: "null"
+  variant:
+    default: default
+    type: string
+    enum:
+      - default
+      - provider
+  configurationKey:
+    default: ""
+    type: string
+    maxLength: 200
+  settings:
+    default: {}
+    type: object
+    properties:
+      initialGrant:
+        type: boolean
+      initialGrantLegacyHistory:
+        type: boolean
+      standalone:
+        type: boolean
+      requiredDelivery:
+        type: boolean
+        deprecated: true
+        description: Legacy setting. Configured receipt methods determine fulfillment selection.
+      receiptMethod:
+        type: string
+        enum:
+          - shipping
+          - pickup
+          - electronic
+      regionIds:
+        maxItems: 100
+        type: array
+        items:
+          type: string
+          minLength: 1
+      origin:
+        type: object
+        properties:
+          latitude:
+            type: number
+            minimum: -90
+            maximum: 90
+          longitude:
+            type: number
+            minimum: -180
+            maximum: 180
+        required:
+          - latitude
+          - longitude
+        additionalProperties: false
+      routeProfile:
+        type: string
+        enum:
+          - drive
+          - truck
+          - bicycle
+      quoteMinutes:
+        type: integer
+        minimum: 1
+        maximum: 1440
+      packages:
+        maxItems: 100
+        type: array
+        items:
+          type: object
+          properties:
+            count:
+              type: integer
+              minimum: 1
+              maximum: 10000
+            length_cm:
+              type: string
+              maxLength: 100
+              pattern: ^(0|[1-9]\d*)(\.\d{1,8})?$
+            width_cm:
+              type: string
+              maxLength: 100
+              pattern: ^(0|[1-9]\d*)(\.\d{1,8})?$
+            height_cm:
+              type: string
+              maxLength: 100
+              pattern: ^(0|[1-9]\d*)(\.\d{1,8})?$
+            weight_kg:
+              type: string
+              maxLength: 100
+              pattern: ^(0|[1-9]\d*)(\.\d{1,8})?$
+          required:
+            - count
+          additionalProperties: false
+    additionalProperties: false
+required:
+  - prices
+additionalProperties: false

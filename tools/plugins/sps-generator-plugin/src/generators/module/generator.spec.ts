@@ -35,8 +35,8 @@ it("generates a module using ModuleApp and its typed public interface", async ()
   expect(app).toContain("extends ModuleApp<Apps>");
   expect(app).not.toContain("describeRoutes()");
   const bootstrap = tree.read(`${root}/bootstrap.ts`)!.toString();
-  expect(bootstrap).toContain("container.get<IModuleApp<Apps>>(DI.IApp)");
-  expect(bootstrap).not.toContain("container.get<App>");
+  expect(bootstrap).toContain("createAppBootstrap<IModuleApp<Apps>>");
+  expect(bootstrap).not.toContain("new Container()");
   const composition = tree.read("apps/api/app.ts")!.toString();
   expect(composition).toContain('"probe": probeApp,');
   expect(composition).toContain("export const app = new Hono<Env>()");

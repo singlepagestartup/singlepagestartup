@@ -1,0 +1,1 @@
+CREATE UNIQUE INDEX "rc_product_owner_unique" ON "rc_ss_to_ee_me_ps_whq" USING btree ("ee_me_pt_id") WHERE "rc_ss_to_ee_me_ps_whq"."variant" = 'owner';

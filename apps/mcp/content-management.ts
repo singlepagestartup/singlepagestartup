@@ -4,6 +4,12 @@ import {
 } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
 import {
+  EcommerceOfferCreateInputSchema,
+  EcommerceCatalogAttributeSetInputSchema,
+  createEcommerceOffer,
+  setEcommerceCatalogueAttribute,
+} from "./lib/content-management/ecommerce-catalog";
+import {
   ContentModelCountInputSchema,
   ContentModelCreateInputSchema,
   ContentModelDeleteApplyInputSchema,
@@ -152,6 +158,45 @@ export function registerResources(mcp: McpServer) {
 }
 
 export function registerTools(mcp: McpServer) {
+  mcp.registerTool(
+    "ecommerce-offer-create",
+    {
+      title: "Create a seller offer",
+      description:
+        "Create an offer for an existing Product, or atomically create a Product, its owner grant, offer, prices and stock. Uses the signed-in Subject and checks Store ownership. dryRun defaults to true.",
+      annotations: {
+        readOnlyHint: false,
+        destructiveHint: true,
+        openWorldHint: true,
+      },
+      inputSchema: EcommerceOfferCreateInputSchema.shape,
+    },
+    withAuth(async (args, extra) => {
+      const result = await createEcommerceOffer(args, getMcpAuthHeaders(extra));
+      return okResponse("ecommerce-offer-create", result);
+    }),
+  );
+  mcp.registerTool(
+    "ecommerce-catalogue-attribute-set",
+    {
+      title: "Set a seller catalogue attribute",
+      description:
+        "Set a Store rate, a Product formula or an offer price/stock through the owning seller. Stock changes check active reservations. dryRun defaults to true.",
+      annotations: {
+        readOnlyHint: false,
+        destructiveHint: true,
+        openWorldHint: true,
+      },
+      inputSchema: EcommerceCatalogAttributeSetInputSchema.shape,
+    },
+    withAuth(async (args, extra) => {
+      const result = await setEcommerceCatalogueAttribute(
+        args,
+        getMcpAuthHeaders(extra),
+      );
+      return okResponse("ecommerce-catalogue-attribute-set", result);
+    }),
+  );
   mcp.registerTool(
     "project-guide",
     {

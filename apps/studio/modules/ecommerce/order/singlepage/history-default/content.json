@@ -1,0 +1,228 @@
+{
+  "orders": [
+    {
+      "id": "ORDER-A",
+      "title": "Wardrobe",
+      "seller": "North Furniture",
+      "offerId": "north-wardrobe-01",
+      "quantity": 1,
+      "currency": "RUB",
+      "amount": 8000,
+      "status": "paid",
+      "invoiceId": "INV-RUB-414",
+      "date": "17 November 2026",
+      "fulfilment": "Delivery · 10 Nevsky Prospekt, Saint Petersburg",
+      "note": "The purchased price and services are saved. This offer is now archived.",
+      "charges": [
+        {
+          "id": "a-product",
+          "title": "Wardrobe",
+          "kind": "product",
+          "quantity": 1,
+          "amount": 5000,
+          "seller": "North Furniture"
+        },
+        {
+          "id": "a-delivery",
+          "title": "Delivery to Saint Petersburg",
+          "kind": "delivery",
+          "quantity": 1,
+          "amount": 1000,
+          "seller": "North Furniture",
+          "fulfilledBy": "City Delivery"
+        },
+        {
+          "id": "a-assembly",
+          "title": "Assembly",
+          "kind": "add-on",
+          "quantity": 1,
+          "amount": 2000,
+          "seller": "North Furniture"
+        }
+      ]
+    },
+    {
+      "id": "ORDER-B",
+      "title": "Chair",
+      "seller": "North Furniture",
+      "offerId": "north-chair-01",
+      "quantity": 1,
+      "currency": "RUB",
+      "amount": 3000,
+      "status": "paid",
+      "invoiceId": "INV-RUB-414",
+      "date": "17 November 2026",
+      "fulfilment": "Free pickup · North Furniture, 18 Ligovsky Prospekt",
+      "charges": [
+        {
+          "id": "b-product",
+          "title": "Chair",
+          "kind": "product",
+          "quantity": 1,
+          "amount": 3000,
+          "seller": "North Furniture"
+        },
+        {
+          "id": "b-pickup",
+          "title": "Store pickup",
+          "kind": "delivery",
+          "quantity": 1,
+          "amount": 0,
+          "seller": "North Furniture"
+        }
+      ]
+    },
+    {
+      "id": "ORDER-C",
+      "title": "AI tokens · 100,000",
+      "seller": "SinglePageStartup",
+      "offerId": "sps-tokens-100k",
+      "quantity": 1,
+      "currency": "USD",
+      "amount": 20,
+      "status": "awaiting-payment",
+      "invoiceId": "INV-USD-414",
+      "date": "17 November 2026",
+      "fulfilment": "Digital delivery · No postal address required",
+      "note": "Tokens are issued after this invoice is paid.",
+      "charges": [
+        {
+          "id": "c-product",
+          "title": "AI tokens · 100,000",
+          "kind": "product",
+          "quantity": 1,
+          "amount": 20,
+          "seller": "SinglePageStartup"
+        }
+      ]
+    }
+  ],
+  "invoices": [
+    {
+      "id": "INV-RUB-414",
+      "currency": "RUB",
+      "amount": 11000,
+      "status": "paid",
+      "orderIds": ["ORDER-A", "ORDER-B"],
+      "description": "Wardrobe with delivery and assembly · Chair with free pickup"
+    },
+    {
+      "id": "INV-USD-414",
+      "currency": "USD",
+      "amount": 20,
+      "status": "awaiting-payment",
+      "orderIds": ["ORDER-C"],
+      "description": "AI tokens · 100,000"
+    }
+  ],
+  "legacyOrders": [
+    {
+      "id": "ORDER-OLD-A",
+      "title": "Website Development",
+      "seller": "SinglePageStartup",
+      "offerId": "legacy-product-web",
+      "quantity": 1,
+      "currency": "USD",
+      "amount": null,
+      "status": "paid",
+      "invoiceId": "INV-LEGACY-2025",
+      "date": "20 December 2025",
+      "fulfilment": "Digital delivery",
+      "charges": []
+    },
+    {
+      "id": "ORDER-OLD-B",
+      "title": "Technical Consulting",
+      "seller": "SinglePageStartup",
+      "offerId": "legacy-product-consulting",
+      "quantity": 1,
+      "currency": "USD",
+      "amount": null,
+      "status": "paid",
+      "invoiceId": "INV-LEGACY-2025",
+      "date": "20 December 2025",
+      "fulfilment": "Online consultation",
+      "charges": []
+    }
+  ],
+  "legacyInvoices": [
+    {
+      "id": "INV-LEGACY-2025",
+      "currency": "USD",
+      "amount": 5250,
+      "status": "paid",
+      "orderIds": ["ORDER-OLD-A", "ORDER-OLD-B"],
+      "description": "Website Development · Technical Consulting",
+      "legacy": true
+    }
+  ],
+  "subscriptionPeriods": [
+    {
+      "id": "coffee-first",
+      "label": "First delivery",
+      "date": "20 November 2026",
+      "currency": "RUB",
+      "amount": 1650,
+      "paymentMode": "separate-payment",
+      "note": "Pay this period separately. Delivery repeats every four weeks; gift wrapping is charged once.",
+      "charges": [
+        {
+          "id": "coffee-first-product",
+          "title": "Coffee beans · 1 kg",
+          "kind": "product",
+          "quantity": 1,
+          "amount": 1200,
+          "seller": "Morning Coffee",
+          "schedule": "every-delivery"
+        },
+        {
+          "id": "coffee-first-delivery",
+          "title": "Delivery",
+          "kind": "delivery",
+          "quantity": 1,
+          "amount": 300,
+          "seller": "Morning Coffee",
+          "schedule": "every-delivery"
+        },
+        {
+          "id": "coffee-first-wrap",
+          "title": "Gift wrapping",
+          "kind": "add-on",
+          "quantity": 1,
+          "amount": 150,
+          "seller": "Morning Coffee",
+          "schedule": "first-delivery"
+        }
+      ]
+    },
+    {
+      "id": "coffee-next",
+      "label": "Next delivery · Every four weeks",
+      "date": "18 December 2026",
+      "currency": "RUB",
+      "amount": 1500,
+      "paymentMode": "separate-payment",
+      "note": "Pay each period after its stock and agreed price are confirmed. A changed price needs your approval before payment.",
+      "charges": [
+        {
+          "id": "coffee-next-product",
+          "title": "Coffee beans · 1 kg",
+          "kind": "product",
+          "quantity": 1,
+          "amount": 1200,
+          "seller": "Morning Coffee",
+          "schedule": "every-delivery"
+        },
+        {
+          "id": "coffee-next-delivery",
+          "title": "Delivery",
+          "kind": "delivery",
+          "quantity": 1,
+          "amount": 300,
+          "seller": "Morning Coffee",
+          "schedule": "every-delivery"
+        }
+      ]
+    }
+  ]
+}

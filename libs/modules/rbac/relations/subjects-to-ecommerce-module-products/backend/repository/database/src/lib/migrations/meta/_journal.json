@@ -8,6 +8,13 @@
       "when": 1746228221282,
       "tag": "0000_aspiring_medusa",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1794872565759,
+      "tag": "0001_fuzzy_hawkeye",
+      "breakpoints": true
     }
   ]
 }

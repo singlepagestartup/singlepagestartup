@@ -14,6 +14,13 @@ import { render } from "@testing-library/react";
 
 const rbacSpy = jest.fn();
 const ecommerceProductSpy = jest.fn();
+const storePriceSpy = jest.fn();
+jest.mock("@sps/ecommerce/models/store/frontend/component", () => ({
+  Component: (props: any) => {
+    storePriceSpy(props);
+    return null;
+  },
+}));
 
 jest.mock("@sps/rbac/models/subject/frontend/component", () => ({
   Component: (props: any) => {
@@ -28,6 +35,7 @@ jest.mock("@sps/ecommerce/models/product/frontend/component", () => ({
     return (
       <div data-testid="ecommerce-product">
         {props.topSlot}
+        {props.priceSlot}
         {props.middleSlot}
         {props.children}
       </div>
@@ -63,10 +71,10 @@ describe("Given: RBAC ecommerce product default component", () => {
     const delegatedVariants = rbacSpy.mock.calls.map((call) => call[0].variant);
 
     expect(delegatedVariants).toEqual(
-      expect.arrayContaining([
-        "me-ecommerce-module-product-cart-default",
-        "me-ecommerce-module-product-checkout-default",
-      ]),
+      expect.arrayContaining(["me-ecommerce-module-product-cart-default"]),
+    );
+    expect(delegatedVariants).not.toContain(
+      "me-ecommerce-module-product-checkout-default",
     );
 
     expect(rbacSpy).toHaveBeenCalledWith(
@@ -75,9 +83,18 @@ describe("Given: RBAC ecommerce product default component", () => {
         dataSource: "props",
         ecommerceModuleProduct: expect.objectContaining({ id: "product-1" }),
         ecommerceModuleStore: expect.objectContaining({ id: "store-1" }),
+        withOneStepCheckout: true,
       }),
     );
 
+    expect(storePriceSpy).toHaveBeenCalledWith(
+      expect.objectContaining({
+        variant: "product-price-default",
+        storeId: "store-1",
+        product: expect.objectContaining({ id: "product-1" }),
+        readOnly: true,
+      }),
+    );
     expect(ecommerceProductSpy).toHaveBeenCalledWith(
       expect.objectContaining({
         variant: "default",

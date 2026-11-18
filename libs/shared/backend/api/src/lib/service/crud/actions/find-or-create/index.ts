@@ -7,9 +7,11 @@ import { ContentfulStatusCode } from "hono/utils/http-status";
 
 @injectable()
 export class Action<SCHEMA extends Record<string, unknown>> {
-  repository: IRepository;
+  repository: Pick<IRepository, "find" | "insert">;
 
-  constructor(@inject(DI.IRepository) repository: IRepository) {
+  constructor(
+    @inject(DI.IRepository) repository: Pick<IRepository, "find" | "insert">,
+  ) {
     this.repository = repository;
   }
 

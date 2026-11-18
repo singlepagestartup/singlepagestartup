@@ -19,6 +19,7 @@ export interface IComponentProps extends IParentComponentProps<
   language: string;
   ecommerceModuleProduct: IEcommerceModuleProduct;
   ecommerceModuleOrder: IEcommerceModuleOrder;
+  disabled?: boolean;
   ecommerceModuleStore?: IEcommerceModuleStore;
 }
 

@@ -1,8 +1,12 @@
-import { RBAC_SECRET_KEY } from "@sps/shared-utils";
+import {
+  RBAC_SECRET_KEY,
+  ECOMMERCE_ORDER_LINE_QUANTITY_BOUNDS as quantityBounds,
+} from "@sps/shared-utils";
 import { Context } from "hono";
 import { HTTPException } from "hono/http-exception";
 import { Service } from "../../../../../service";
 import { getHttpErrorType } from "@sps/backend-utils";
+import { ecommerceProductCheckoutSchema } from "@sps/rbac/models/subject/sdk/model";
 
 export class Handler {
   service: Service;
@@ -38,20 +42,26 @@ export class Handler {
         );
       }
 
-      let data;
+      let parsedBody: unknown;
       try {
-        data = JSON.parse(body["data"]);
-      } catch (error) {
-        throw new Error(
-          "Validation error. Invalid JSON in body['data']. Got: " +
-            body["data"],
-        );
+        parsedBody = JSON.parse(body["data"]);
+      } catch {
+        throw new Error("Validation error. Invalid product checkout JSON");
+      }
+      const parsed = ecommerceProductCheckoutSchema.safeParse(parsedBody);
+      if (!parsed.success) {
+        if (parsed.error.issues.some((issue) => issue.path[0] === "quantity")) {
+          throw new Error(
+            `Validation error. Quantity must be an integer between ${quantityBounds.min} and ${quantityBounds.max}`,
+          );
+        }
+        throw new Error("Validation error. Invalid product purchase selection");
       }
 
       const result = await this.service.ecommerceProductCheckout({
         id,
         productId,
-        data,
+        data: parsed.data,
       });
 
       return c.json({ data: result });

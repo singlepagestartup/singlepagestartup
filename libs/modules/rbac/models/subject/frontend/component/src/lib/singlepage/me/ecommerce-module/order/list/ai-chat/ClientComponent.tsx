@@ -52,10 +52,15 @@ function History(props: IComponentPropsExtended) {
     },
   });
   const onRepeat = useCallback((order: IOrderRowProps["order"]) => {
-    if (inFlight.current || order.purchaseDetails?.canRepeatPayment !== true)
+    if (
+      inFlight.current ||
+      (order.purchaseDetails?.canRepeatPayment !== true &&
+        order.purchaseDetails?.canPayNextPeriod !== true)
+    )
       return;
     setConfirmation({
       orderId: order.id,
+      mode: order.purchaseDetails?.canPayNextPeriod ? "next-period" : undefined,
     });
     setError("");
     setRepeated(false);
@@ -72,7 +77,9 @@ function History(props: IComponentPropsExtended) {
       !orders.data?.some(
         (order) =>
           order.id === confirmation.orderId &&
-          order.purchaseDetails?.canRepeatPayment === true,
+          (confirmation.mode === "next-period"
+            ? order.purchaseDetails?.canPayNextPeriod === true
+            : order.purchaseDetails?.canRepeatPayment === true),
       )
     ) {
       setConfirmation(null);
@@ -87,6 +94,7 @@ function History(props: IComponentPropsExtended) {
       await repeat.mutateAsync({
         id: props.data.id,
         orderId: captured.orderId,
+        mode: captured.mode,
       });
       if (lifecycle.current !== currentLifecycle) return;
       setConfirmation(null);

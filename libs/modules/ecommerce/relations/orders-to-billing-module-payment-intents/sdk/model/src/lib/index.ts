@@ -3,6 +3,7 @@ export {
   type IInsertSchema,
   insertSchema,
   selectSchema,
+  type IPurchaseSnapshot,
 } from "@sps/ecommerce/relations/orders-to-billing-module-payment-intents/backend/repository/database";
 import {
   API_SERVICE_URL,

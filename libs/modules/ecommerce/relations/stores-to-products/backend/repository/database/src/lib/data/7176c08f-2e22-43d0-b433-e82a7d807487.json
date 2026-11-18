@@ -1,0 +1,17 @@
+{
+  "id": "7176c08f-2e22-43d0-b433-e82a7d807487",
+  "createdAt": "2026-11-17T23:42:19.801Z",
+  "updatedAt": "2026-11-17T23:45:25.370Z",
+  "variant": "default",
+  "orderIndex": 0,
+  "className": null,
+  "configurationKey": "",
+  "settings": {
+    "standalone": false,
+    "initialGrant": true,
+    "initialGrantLegacyHistory": true
+  },
+  "sku": "registration-free-subscription",
+  "storeId": "92aefa1f-247b-49a9-b1b9-c8029cc840dc",
+  "productId": "2a167247-3770-4365-ad17-a2e916cf0659"
+}

@@ -2,7 +2,8 @@
 
 ## Purpose
 
-Links subjects to ecommerce orders.
+Links subjects to ecommerce orders. The admin form writes this relation through its own SDK. The API checks the
+caller’s permission for the requested method and relation route.
 
 ## Fields
 

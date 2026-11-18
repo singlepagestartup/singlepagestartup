@@ -14,12 +14,56 @@ import {
 } from "@sps/shared-ui-shadcn";
 import { cn } from "@sps/shared-frontend-client-utils";
 import { internationalization } from "@sps/shared-configuration";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 export function Component(props: IComponentPropsExtended) {
+  return (
+    <Cart
+      key={props.data.id}
+      isServer={false}
+      data={props.data}
+      className={props.className}
+      language={props.language}
+      variant={props.variant}
+    />
+  );
+}
+
+function Cart(props: IComponentPropsExtended) {
   const language = props.language || internationalization.defaultLanguage.code;
   const ru = language === "ru";
+  const [open, setOpen] = useState(false);
+  const [waitingToClose, setWaitingToClose] = useState(false);
+  const pending = useRef(false);
+  const closeRequested = useRef(false);
+  const mounted = useRef(true);
+  useEffect(() => {
+    mounted.current = true;
+    return () => {
+      mounted.current = false;
+    };
+  }, []);
+  const onOpenChange = useCallback((next: boolean) => {
+    if (!next && pending.current) {
+      closeRequested.current = true;
+      setWaitingToClose(true);
+      return;
+    }
+    closeRequested.current = false;
+    setWaitingToClose(false);
+    setOpen(next);
+  }, []);
+  const onSelectionPendingChange = useCallback((next: boolean) => {
+    if (!mounted.current) return;
+    pending.current = next;
+    if (!next && closeRequested.current) {
+      closeRequested.current = false;
+      setWaitingToClose(false);
+      setOpen(false);
+    }
+  }, []);
   return (
-    <Sheet>
+    <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetTrigger
         aria-label={ru ? "Открыть корзину" : "Open cart"}
         className={cn(
@@ -60,6 +104,11 @@ export function Component(props: IComponentPropsExtended) {
           <SheetTitle className="text-2xl font-semibold">
             {ru ? "Корзина" : "Cart"}
           </SheetTitle>
+          {waitingToClose && (
+            <p role="status" className="text-xs text-muted-foreground">
+              {ru ? "Сохраняем изменения…" : "Saving changes…"}
+            </p>
+          )}
           <SheetClose
             aria-label={ru ? "Закрыть корзину" : "Close cart"}
             className="inline-flex size-12 shrink-0 items-center justify-center rounded-xl border border-border bg-card text-foreground hover:bg-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground"
@@ -79,6 +128,7 @@ export function Component(props: IComponentPropsExtended) {
           data={props.data}
           language={language}
           className="min-h-0 flex-1"
+          onSelectionPendingChange={onSelectionPendingChange}
         />
       </SheetContent>
     </Sheet>

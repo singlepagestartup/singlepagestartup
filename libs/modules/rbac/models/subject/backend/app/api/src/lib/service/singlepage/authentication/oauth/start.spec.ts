@@ -14,6 +14,7 @@ const mockActionCreate = jest.fn();
 const mockSubjectsToActionsCreate = jest.fn();
 
 jest.mock("@sps/shared-utils", () => ({
+  ...jest.requireActual("@sps/shared-utils"),
   API_SERVICE_URL: "https://api.example",
   NEXT_PUBLIC_HOST_SERVICE_URL: "https://host.example",
   RBAC_JWT_SECRET: "test-jwt-secret",

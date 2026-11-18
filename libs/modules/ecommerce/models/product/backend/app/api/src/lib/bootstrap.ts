@@ -1,5 +1,6 @@
-import { Container, ContainerModule } from "inversify";
+import { ContainerModule } from "inversify";
 import {
+  createAppBootstrap,
   DI,
   ExceptionFilter,
   type IExceptionFilter,
@@ -40,7 +41,7 @@ const bindings = new ContainerModule(({ bind }) => {
   bind<App>(DI.IApp).to(App);
   bind<Controller>(DI.IController).to(Controller);
   bind<Repository>(DI.IRepository).to(Repository);
-  bind<Service>(DI.IService).to(Service);
+  bind<Service>(DI.IService).to(Service).inSingletonScope();
   bind<Configuration>(DI.IConfiguration).to(Configuration);
   bind<ProductsToAttributesService>(ProductDI.IProductsToAttributesService)
     .toDynamicValue(
@@ -134,12 +135,6 @@ const bindings = new ContainerModule(({ bind }) => {
     .inSingletonScope();
 });
 
-export async function bootstrap() {
-  const container = new Container();
-  container.load(bindings);
-  const app = container.get<App>(DI.IApp);
-
-  await app.init();
-
-  return { app };
-}
+export const { bootstrap, createService } = createAppBootstrap<App, Service>(
+  bindings,
+);

@@ -1,0 +1,9 @@
+{
+  "id": "735f98d8-3cd9-45ff-8bb8-affc2ede1790",
+  "createdAt": "2026-11-17T23:37:41.917Z",
+  "updatedAt": "2026-11-17T23:37:41.917Z",
+  "variant": "default",
+  "type": "HTTP",
+  "method": "POST",
+  "path": "/api/ecommerce/stores-to-products/:uuid/quote"
+}

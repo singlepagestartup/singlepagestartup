@@ -1,7 +1,10 @@
 import { Component as CollectionSkeleton } from "./Skeleton";
 import { notFound } from "next/navigation";
 import { Component as EcommerceModuleProduct } from "@sps/ecommerce/models/product/frontend/component";
-import { Component as Subject } from "@sps/rbac/models/subject/frontend/component";
+import {
+  Component as Subject,
+  ProductWithOfferPrice,
+} from "@sps/rbac/models/subject/frontend/component";
 import { CardContent, CardHeader } from "@sps/shared-ui-shadcn";
 import { IContentProps } from "./interface";
 export function Component(props: IContentProps) {
@@ -30,12 +33,11 @@ export function Component(props: IContentProps) {
         if (products?.length === 0) notFound();
         return products?.map((product) => {
           return (
-            <EcommerceModuleProduct
+            <ProductWithOfferPrice
               key={product.id}
               isServer={props.isServer}
               variant="overview-default"
-              dataSource="props"
-              data={product}
+              product={product}
               language={props.language}
               topSlot={
                 <CardHeader className="pb-0">
@@ -62,17 +64,12 @@ export function Component(props: IContentProps) {
                 <Subject
                   isServer={false}
                   variant="me-ecommerce-module-product-cart-default"
-                  ecommerceModuleProduct={product}
-                  language={props.language}
-                />
-                <Subject
-                  isServer={false}
-                  variant="me-ecommerce-module-product-checkout-default"
+                  withOneStepCheckout
                   ecommerceModuleProduct={product}
                   language={props.language}
                 />
               </div>
-            </EcommerceModuleProduct>
+            </ProductWithOfferPrice>
           );
         });
       }}

@@ -9,6 +9,7 @@ function fixture() {
       find: jest.fn().mockResolvedValue(owners),
     },
     ecommerceModule: {
+      storesToProducts: { find: jest.fn().mockResolvedValue([]) },
       order: {
         lockForLifecycle: jest.fn(),
         findById: jest.fn().mockResolvedValue(order),
@@ -50,7 +51,10 @@ it("updates only validated owned lines while holding the cart lock", async () =>
   });
   expect(
     f.service.ecommerceModule.ordersToProducts.update,
-  ).toHaveBeenCalledWith({ id: "line", data: { quantity: 4 } });
+  ).toHaveBeenCalledWith({
+    id: "line",
+    data: { quantity: 4, selectionUpdatedAt: expect.any(Date) },
+  });
 });
 
 it("deletes an empty-attempt cart through its owning service", async () => {

@@ -1,4 +1,5 @@
 export { type IModel } from "@sps/rbac/models/subject/sdk/model";
+import type { IRowProps } from "../../../../ecommerce-module/order/list/checkout-default/interface";
 import type { ISpsComponentBase } from "@sps/ui-adapter";
 import type { IModel } from "@sps/rbac/models/subject/sdk/model";
 import type { IComponentProps as IAuthenticationProps } from "../../../../authentication/me-default/interface";
@@ -10,6 +11,7 @@ export const variant = "me-ecommerce-module-product-cart-default" as const;
 export interface IComponentBaseProps extends ISpsComponentBase {
   ecommerceModuleProduct: IEcommerceModuleProduct;
   ecommerceModuleStore?: IEcommerceModuleStore;
+  withOneStepCheckout?: boolean;
   language: string;
   variant: typeof variant;
 }
@@ -29,4 +31,11 @@ export type IComponentProps = IApiComponentProps | ILoadedComponentProps;
 
 export interface IComponentPropsExtended extends IComponentBaseProps {
   data: IModel;
+}
+
+export interface ISavedOrderProps extends Pick<
+  IRowProps,
+  "subject" | "ecommerceModuleOrder" | "language"
+> {
+  ecommerceModuleProduct: IEcommerceModuleProduct;
 }

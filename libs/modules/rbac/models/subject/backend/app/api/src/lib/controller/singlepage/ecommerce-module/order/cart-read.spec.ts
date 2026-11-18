@@ -74,6 +74,9 @@ function createService() {
           .mockResolvedValue([{ ecommerceModuleOrderId: "order-1" }]),
       },
       ecommerceModule: {
+        ordersToBillingModulePaymentIntents: {
+          find: jest.fn().mockResolvedValue([]),
+        },
         order: {
           find: orderFind,
           findByIdQuantity: jest.fn(),
@@ -353,12 +356,11 @@ describe("Private cart projection", () => {
       { ecommerceModuleOrderId: "order-1" },
       { ecommerceModuleOrderId: "old" },
     ]);
-    service.ecommerceModule.order.findByIdCartDetails = jest
-      .fn()
-      .mockResolvedValue({
-        lines: [{ id: "my-line", productId: "product", quantity: 2 }],
-        totals: [{ total: 250 }],
-      });
+    service.ecommerceModuleOrderCartDetails = jest.fn().mockResolvedValue({
+      lines: [{ id: "my-line", productId: "product", quantity: 2 }],
+      totals: [{ total: 250 }],
+      storeIds: ["store"],
+    });
     service.ecommerceModule.storesToOrders = {
       find: jest.fn().mockResolvedValue([{ storeId: "store" }]),
     };
@@ -383,12 +385,11 @@ describe("Private cart projection", () => {
         },
       ],
     });
-    expect(
-      service.ecommerceModule.order.findByIdCartDetails,
-    ).toHaveBeenCalledTimes(1);
-    expect(
-      service.ecommerceModule.order.findByIdCartDetails,
-    ).toHaveBeenCalledWith({ id: "order-1" });
+    expect(service.ecommerceModuleOrderCartDetails).toHaveBeenCalledTimes(1);
+    expect(service.ecommerceModuleOrderCartDetails).toHaveBeenCalledWith({
+      subjectId: "subject-1",
+      orderId: "order-1",
+    });
   });
   it("rejects a token for a different subject before reading data", async () => {
     const { service } = createService();

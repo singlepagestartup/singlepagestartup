@@ -1,8 +1,12 @@
 import { type IBillingModule, type IEcommerceModule } from "../../../../di";
+import type { IEcommerceCartSelection } from "@sps/rbac/models/subject/sdk/model";
 
 export interface IExecuteProps {
   productId: string;
   billingModuleCurrencyId?: string;
+  offerId?: string;
+  destination?: IEcommerceCartSelection["destination"];
+  services?: IEcommerceCartSelection["services"];
 }
 
 interface IConstructorProps {
@@ -28,9 +32,21 @@ export class Service {
   }
 
   async execute(props: IExecuteProps): Promise<string> {
-    const priceCurrencyIds = await this.findPriceCurrencyIds({
-      productId: props.productId,
-    });
+    let priceCurrencyIds: string[];
+    if (props.offerId) {
+      const quote = await this.ecommerceModule.storesToProducts.quote({
+        offerId: props.offerId,
+        quantity: 1,
+        currencyId: props.billingModuleCurrencyId ?? "",
+        destination: props.destination,
+        services: props.services,
+      });
+      priceCurrencyIds = quote.currencyIds;
+    } else {
+      priceCurrencyIds = await this.findPriceCurrencyIds({
+        productId: props.productId,
+      });
+    }
 
     if (!priceCurrencyIds.length) {
       throw new Error(

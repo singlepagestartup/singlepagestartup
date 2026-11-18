@@ -11,6 +11,11 @@ The Ecommerce module manages product catalogs, stores, orders, and shopping cart
 - Product data, entity presentation and commercial calculations remain Ecommerce capabilities. Host contains no parallel Ecommerce Product/Order/Widget registries.
 - Ecommerce must not import RBAC subject implementation code (no reverse dependency from ecommerce to rbac).
 
+Order constructs its payment service with the reservation operations from
+Orders-to-Billing-Module-Payment-Intents. RBAC Subject uses that service for
+checkout, provider callbacks and payment checks. The saved allocation links
+the verified payment to the order lines and offers whose stock it settles.
+
 ### It solves the following tasks:
 
 - Stores product, category, and store metadata.
@@ -62,6 +67,7 @@ The Ecommerce module manages product catalogs, stores, orders, and shopping cart
 | [stores-to-attributes](./relations/stores-to-attributes/README.md)                                                 | Link stores to attributes              |
 | [stores-to-orders](./relations/stores-to-orders/README.md)                                                         | Link stores to orders                  |
 | [stores-to-products](./relations/stores-to-products/README.md)                                                     | Link stores to products                |
+| [offers-to-offers](./relations/offers-to-offers/README.md)                                                         | Link offers to services and providers  |
 | [stores-to-products-to-attributes](./relations/stores-to-products-to-attributes/README.md)                         | Link store-product pairs to attributes |
 | [widgets-to-categories](./relations/widgets-to-categories/README.md)                                               | Curate categories inside widgets       |
 | [widgets-to-products](./relations/widgets-to-products/README.md)                                                   | Curate products inside widgets         |

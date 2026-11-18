@@ -1,9 +1,8 @@
 import {
   paykeeperAmountInMinorUnits,
+  providerMinorUnits,
   type IVerifiedPaykeeperWebhook,
 } from "@sps/backend-utils";
-import type { Repository } from "../../repository";
-import { Service as Settlement } from "../startup/settlement";
 import type { Service as PaymentIntentService } from "./index";
 import type { IPayKeeperInvoiceData } from "./paykeeper";
 
@@ -14,18 +13,14 @@ export interface IExecuteProps {
   providerInvoice: IPayKeeperInvoiceData;
 }
 
-interface IConstructorProps {
-  repository: Pick<Repository, "withPaymentIntentLocks">;
-  service: Pick<PaymentIntentService, "findById" | "update" | "billingModule">;
-}
-
 export class Service {
-  constructor(private readonly dependencies: IConstructorProps) {}
+  constructor(
+    private readonly payments: Pick<PaymentIntentService, "settlePayment">,
+  ) {}
 
   async execute(props: IExecuteProps): Promise<void> {
-    const { service, repository } = this.dependencies;
     const { event, providerInvoice } = props;
-    await new Settlement({ repository, service }).execute({
+    await this.payments.settlePayment({
       invoiceId: props.invoiceId,
       provider: "paykeeper",
       providerId: props.providerId,
@@ -33,8 +28,9 @@ export class Service {
       amount: event.amountInMinorUnits / 100,
       validate: ({ invoice, paymentIntents }) => {
         const intent = paymentIntents[0];
-        if (providerInvoice.status !== "paid")
+        if (providerInvoice.status !== "paid") {
           throw new Error("Conflict error. PayKeeper payment is not confirmed");
+        }
         if (
           String(providerInvoice.id) !== props.providerId ||
           String(providerInvoice.paymentid) !== event.id ||
@@ -43,12 +39,13 @@ export class Service {
           (providerInvoice.clientid ?? "") !== event.clientid ||
           paykeeperAmountInMinorUnits(String(providerInvoice.pay_amount)) !==
             event.amountInMinorUnits ||
-          invoice.amount * 100 !== event.amountInMinorUnits ||
-          intent.amount * 100 !== event.amountInMinorUnits
-        )
+          providerMinorUnits(invoice.amount) !== event.amountInMinorUnits ||
+          providerMinorUnits(intent.amount) !== event.amountInMinorUnits
+        ) {
           throw new Error(
             "Validation error. PayKeeper payment does not match the invoice",
           );
+        }
       },
     });
   }

@@ -1,0 +1,11 @@
+{
+  "id": "006c9d7d-0d5a-4957-ae17-07aa0d3ad6d4",
+  "createdAt": "2026-11-17T10:50:44.455Z",
+  "updatedAt": "2026-11-17T10:50:44.455Z",
+  "variant": "add-on",
+  "orderIndex": 1,
+  "className": null,
+  "sourceOfferId": "1b072236-525d-4903-9fe0-7cd5f2bbc314",
+  "targetOfferId": "96ed77b7-3c89-49bf-8eab-6913d4319bf2",
+  "recurrence": "first"
+}

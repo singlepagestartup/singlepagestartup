@@ -1,4 +1,14 @@
 "use client";
+import {
+  mutation as ecommerceModuleCatalogMutation,
+  type IMutationProps as IEcommerceModuleCatalogMutationProps,
+  context as ecommerceModuleCatalogContext,
+  type IContextProps as IEcommerceModuleCatalogContextProps,
+  offerCreate as ecommerceModuleOfferCreate,
+  attributeSet as ecommerceModuleCatalogAttributeSet,
+  type IOfferCreateProps as IEcommerceModuleOfferCreateProps,
+  type IAttributeSetProps as IEcommerceModuleCatalogAttributeSetProps,
+} from "./ecommerce-module/catalog";
 
 import {
   action as blogModuleArticleCreate,
@@ -142,6 +152,11 @@ import {
   type IProps as IEcommerceModuleProductCheckoutProps,
   type IResult as IEcommerceModuleProductCheckoutResult,
 } from "./ecommerce-module/product/checkout";
+import {
+  action as ecommerceModuleOrderSelection,
+  type IProps as IEcommerceModuleOrderSelectionProps,
+  type IResult as IEcommerceModuleOrderSelectionResult,
+} from "./ecommerce-module/order/selection";
 import {
   action as ecommerceModuleOrderRepeat,
   type IProps as IEcommerceModuleOrderRepeatProps,
@@ -449,6 +464,10 @@ import {
 } from "./host-cache/revalidate";
 
 export type IProps = {
+  IEcommerceModuleCatalogMutationProps: IEcommerceModuleCatalogMutationProps;
+  IEcommerceModuleCatalogContextProps: IEcommerceModuleCatalogContextProps;
+  IEcommerceModuleOfferCreateProps: IEcommerceModuleOfferCreateProps;
+  IEcommerceModuleCatalogAttributeSetProps: IEcommerceModuleCatalogAttributeSetProps;
   IBlogModuleArticleCreateProps: IBlogModuleArticleCreateProps;
   IBillingModuleBalanceProps: IBillingModuleBalanceProps;
   ISocialModuleProfileFindByIdAvatarFindProps: ISocialModuleProfileFindByIdAvatarFindProps;
@@ -480,6 +499,7 @@ export type IProps = {
 
   IEcommerceModuleProductCheckoutProps: IEcommerceModuleProductCheckoutProps;
   IEcommerceModuleOrderCreateProps: IEcommerceModuleOrderCreateProps;
+  IEcommerceModuleOrderSelectionProps: IEcommerceModuleOrderSelectionProps;
   IEcommerceModuleOrderRepeatProps: IEcommerceModuleOrderRepeatProps;
   IEcommerceModuleOrderUpdateProps: IEcommerceModuleOrderUpdateProps;
   IEcommerceModuleOrderCheckoutProps: IEcommerceModuleOrderCheckoutProps;
@@ -572,6 +592,7 @@ export type IResult = {
 
   IEcommerceModuleProductCheckoutResult: IEcommerceModuleProductCheckoutResult;
   IEcommerceModuleOrderCreateResult: IEcommerceModuleOrderCreateResult;
+  IEcommerceModuleOrderSelectionResult: IEcommerceModuleOrderSelectionResult;
   IEcommerceModuleOrderRepeatResult: IEcommerceModuleOrderRepeatResult;
   IEcommerceModuleOrderUpdateResult: IEcommerceModuleOrderUpdateResult;
   IEcommerceModuleOrderCheckoutResult: IEcommerceModuleOrderCheckoutResult;
@@ -631,6 +652,10 @@ export type IResult = {
 };
 
 export const api = {
+  ecommerceModuleCatalogMutation,
+  ecommerceModuleCatalogContext,
+  ecommerceModuleOfferCreate,
+  ecommerceModuleCatalogAttributeSet,
   permissionDefaults,
   hostCacheRevalidate,
   blogModuleArticleCreate,
@@ -666,6 +691,7 @@ export const api = {
 
   ecommerceModuleProductCheckout,
   ecommerceModuleOrderCreate,
+  ecommerceModuleOrderSelection,
   ecommerceModuleOrderRepeat,
   ecommerceModuleOrderUpdate,
   ecommerceModuleOrderCheckout,

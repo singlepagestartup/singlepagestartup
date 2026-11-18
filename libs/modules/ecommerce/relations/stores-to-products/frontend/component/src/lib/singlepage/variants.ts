@@ -9,6 +9,7 @@ import { Component as AdminV2Table } from "./admin-v2/table";
 import { Component as AdminV2SelectInput } from "./admin-v2/select-input";
 import { Component as AdminV2Form } from "./admin-v2/form";
 import { Component as Default } from "./default";
+import { Component as Provider } from "./provider";
 export const variants = {
   hidden: Hidden,
   find: Find,
@@ -21,4 +22,5 @@ export const variants = {
   "admin-v2-select-input": AdminV2SelectInput,
   "admin-v2-form": AdminV2Form,
   default: Default,
+  provider: Provider,
 };

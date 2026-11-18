@@ -22,7 +22,7 @@ export class Configuration extends ParentConfiguration {
           directory: dataDirectory,
         },
         seed: {
-          active: false,
+          active: true,
           module: "ecommerce",
           name: "stores-to-products-to-attributes",
           type: "relation",
@@ -47,24 +47,6 @@ export class Configuration extends ParentConfiguration {
                   storesToProductsEntity?.new?.id ||
                   data.entity.dump.storesToProductsId
                 );
-              },
-            },
-            {
-              column: "productId",
-              method: "eq",
-              value: (data) => {
-                const productSeed = data.seeds.find(
-                  (seed) =>
-                    seed.name === "product" &&
-                    seed.type === "model" &&
-                    seed.module === "ecommerce",
-                );
-
-                const productEntity = productSeed?.seeds.find(
-                  (seed) => seed.dump.id === data.entity.dump.productId,
-                );
-
-                return productEntity?.new?.id || data.entity.dump.productId;
               },
             },
             {
@@ -106,17 +88,17 @@ export class Configuration extends ParentConfiguration {
               },
             },
             {
-              field: "productId",
+              field: "attributeId",
               transform: (data) => {
                 const relationEntites = data.seeds
                   .find(
                     (seed) =>
-                      seed.name === "product" &&
+                      seed.name === "attribute" &&
                       seed.type === "model" &&
                       seed.module === "ecommerce",
                   )
                   ?.seeds?.filter(
-                    (seed) => seed.dump.id === data.entity.dump.productId,
+                    (seed) => seed.dump.id === data.entity.dump.attributeId,
                   );
 
                 return relationEntites?.[0].new.id;

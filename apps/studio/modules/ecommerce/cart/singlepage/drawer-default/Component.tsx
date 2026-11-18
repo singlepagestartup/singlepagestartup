@@ -1,4 +1,5 @@
 import type { IComponentProps, CartDrawerDefaultProps } from "./interface";
+import { ClientComponent as PurchaseDrawer } from "./ClientComponent";
 export type { CartDrawerDefaultProps } from "./interface";
 
 import { Component as SharedIcon } from "../../../../shared/icon";
@@ -121,6 +122,20 @@ function Icon(props: {
 }
 
 export function CartDrawerDefault(props?: IComponentProps) {
+  if (props?.purchaseScenario) {
+    return (
+      <PurchaseDrawer
+        key={props.purchaseScenario}
+        scenario={props.purchaseScenario}
+        isOpen={props.isOpen ?? true}
+        onClose={props.onClose}
+      />
+    );
+  }
+  return <LegacyCartDrawerDefault {...props} />;
+}
+
+function LegacyCartDrawerDefault(props?: IComponentProps) {
   const {
     items,
     isOpen,

@@ -1,0 +1,1 @@
+ALTER TABLE "sps_bg_pt_it" ALTER COLUMN "amount" SET DATA TYPE numeric(24, 8);

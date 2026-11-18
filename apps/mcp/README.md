@@ -638,3 +638,14 @@ MCP SDK and a test RBAC fixture. Hosted account connections, provider-specific
 approval screens, subscription restrictions and full API authorization must also
 be tested on the deployed endpoint. The model vendor alone does not establish
 MCP support in a particular chat application.
+
+### Seller catalogue operations
+
+`ecommerce-offer-create` delegates to the Subject seller API. It creates an offer
+for an existing Product or atomically creates a Product, owner grant, first
+offer, prices and stock. `ecommerce-catalogue-attribute-set` writes an owned
+Store rate, Product formula or offer price/stock and checks outstanding stock
+reservations. Both tools default to `dryRun: true`; applying a change requires
+`dryRun: false` and the signed-in Subject's access JWT. The supplied `subjectId`
+must match that caller. A trusted operator key alone does not choose an owner
+for these Subject operations.

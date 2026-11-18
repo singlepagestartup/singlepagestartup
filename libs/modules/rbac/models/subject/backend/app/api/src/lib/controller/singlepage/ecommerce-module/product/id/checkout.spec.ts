@@ -1,236 +1,310 @@
-/**
- * BDD Suite: rbac ecommerce product checkout controller behavior.
- *
- * Given: product checkout handler dependencies are mocked for deterministic order creation.
- * When: subject checks out directly from product page.
- * Then: handler creates order graph and delegates payment checkout with provider-specific deanonymization.
- */
-
-const orderCreateMock = jest.fn();
-const subjectsToOrdersCreateMock = jest.fn();
-const ordersToProductsCreateMock = jest.fn();
-const storesToOrdersCreateMock = jest.fn();
-const ordersToBillingCurrenciesCreateMock = jest.fn();
-
+/** Buy now uses the same exact-offer cart operation as Add to cart. */
 jest.mock("@sps/shared-utils", () => ({
   ...jest.requireActual("@sps/shared-utils"),
-  RBAC_SECRET_KEY: "rbac-secret",
+  RBAC_SECRET_KEY: "test-secret",
 }));
-
 jest.mock("@sps/backend-utils", () => ({
+  ...jest.requireActual("@sps/backend-utils"),
   getHttpErrorType: (error: Error) => ({
     status: 400,
     message: error.message,
     details: null,
   }),
 }));
-
-jest.mock("@sps/ecommerce/models/order/sdk/server", () => ({
-  api: {
-    create: (...args: unknown[]) => orderCreateMock(...args),
-  },
-}));
-
-jest.mock(
-  "@sps/rbac/relations/subjects-to-ecommerce-module-orders/sdk/server",
-  () => ({
-    api: {
-      create: (...args: unknown[]) => subjectsToOrdersCreateMock(...args),
-    },
-  }),
-);
-
-jest.mock("@sps/ecommerce/relations/orders-to-products/sdk/server", () => ({
-  api: {
-    create: (...args: unknown[]) => ordersToProductsCreateMock(...args),
-  },
-}));
-
-jest.mock("@sps/ecommerce/relations/stores-to-orders/sdk/server", () => ({
-  api: {
-    create: (...args: unknown[]) => storesToOrdersCreateMock(...args),
-  },
-}));
-
-jest.mock(
-  "@sps/ecommerce/relations/orders-to-billing-module-currencies/sdk/server",
-  () => ({
-    api: {
-      create: (...args: unknown[]) =>
-        ordersToBillingCurrenciesCreateMock(...args),
-    },
-  }),
-);
-
 import { Handler } from "./checkout";
 import { Service as ProductCheckout } from "../../../../../service/singlepage/ecommerce/product/checkout";
-
-function createContext(
-  params: Record<string, string | undefined>,
-  body: Record<string, unknown>,
-) {
-  return {
-    req: {
-      param: (name: string) => params[name],
-      parseBody: jest.fn().mockResolvedValue(body),
+function fixture() {
+  const offer = { id: "offer-a", productId: "product", storeId: "store-a" };
+  const service: any = {
+    findById: jest.fn().mockResolvedValue({ id: "subject" }),
+    subjectsToIdentities: {
+      find: jest.fn().mockResolvedValue([{ identityId: "identity" }]),
     },
-    json: jest.fn((payload: unknown) => payload),
-  } as any;
-}
-
-function createService() {
-  const service = {
-    findById: jest.fn().mockResolvedValue({ id: "subject-1" }),
-    deanonymize: jest.fn().mockResolvedValue(undefined),
-    ecommerceOrderCheckout: jest.fn().mockResolvedValue({
-      provider: "stripe",
-      checkoutUrl: "https://example.test/pay",
-    }),
+    billingModule: {
+      paymentIntent: { isProviderAllowed: jest.fn().mockReturnValue(true) },
+      currency: {
+        find: jest.fn().mockResolvedValue([{ id: "rub" }]),
+        findById: jest
+          .fn()
+          .mockResolvedValue({ id: "rub", slug: "rub", minorUnitDigits: 2 }),
+      },
+    },
     ecommerceModule: {
       product: {
         findById: jest
           .fn()
-          .mockResolvedValue({ id: "product-1", slug: "paid-course" }),
+          .mockResolvedValue({ id: "product", slug: "course" }),
       },
-      store: {
-        find: jest.fn().mockResolvedValue([{ id: "store-1" }]),
-      },
-      productsToAttributes: {
+      storesToProducts: {
         find: jest.fn().mockResolvedValue([]),
-      },
-      attributesToBillingModuleCurrencies: {
-        find: jest.fn().mockResolvedValue([]),
+        offersForProduct: jest.fn().mockResolvedValue([offer]),
+        quote: jest.fn(async (input: any) => ({
+          ...input,
+          amount: "5000",
+          currencyIds: ["rub"],
+          issues: [],
+          version: "terms-1",
+        })),
       },
     },
-    billingModule: {
-      currency: {
-        find: jest.fn().mockResolvedValue([]),
+    ecommerceModuleOrderCreate: jest
+      .fn()
+      .mockResolvedValue({ orderId: "created-order", lineId: "created-line" }),
+    ecommerceOrderCheckout: jest
+      .fn()
+      .mockResolvedValue({ billingModule: { invoices: [] } }),
+  };
+  service.ecommerceProductCheckout = (props: any) =>
+    new ProductCheckout(service).execute(props);
+  const context = (data: any = {}) =>
+    ({
+      req: {
+        param: (name: string) => (name === "id" ? "subject" : "product"),
+        parseBody: async () => ({
+          data: JSON.stringify({ provider: "dummy", ...data }),
+        }),
       },
-    },
-  } as any;
-  service.ecommerceProductCheckout = jest.fn((props) =>
-    new ProductCheckout(service).execute(props),
-  );
-  return service;
+      json: (payload: any) => payload,
+    }) as any;
+  return { offer, service, context };
 }
-
-describe("Given: ecommerce product checkout handler", () => {
-  beforeEach(() => {
-    jest.clearAllMocks();
-
-    orderCreateMock.mockResolvedValue({ id: "order-1" });
-    subjectsToOrdersCreateMock.mockResolvedValue({ id: "sto-1" });
-    ordersToProductsCreateMock.mockResolvedValue({ id: "otp-1" });
-    storesToOrdersCreateMock.mockResolvedValue({ id: "s2o-1" });
-    ordersToBillingCurrenciesCreateMock.mockResolvedValue({ id: "otbc-1" });
+it("resolves one eligible Product-only offer and delegates an atomic graph with its currency", async () => {
+  const f = fixture();
+  await new Handler(f.service).execute(f.context(), undefined);
+  expect(f.service.ecommerceModuleOrderCreate).toHaveBeenCalledWith(
+    expect.objectContaining({
+      subjectId: "subject",
+      productId: "product",
+      offerId: "offer-a",
+      storeId: "store-a",
+      billingModuleCurrencyId: "rub",
+      quantity: 1,
+    }),
+  );
+  expect(f.service.ecommerceOrderCheckout).toHaveBeenCalledWith(
+    expect.objectContaining({
+      ecommerceModule: { orders: [{ id: "created-order" }] },
+    }),
+  );
+});
+it("rejects a configured registration grant before one-step checkout creates an order", async () => {
+  const f = fixture();
+  f.service.ecommerceModule.storesToProducts.find.mockResolvedValue([
+    { ...f.offer, settings: { initialGrant: true } },
+  ]);
+  await expect(
+    new Handler(f.service).execute(f.context(), undefined),
+  ).rejects.toThrow("authentication bootstrap");
+  expect(f.service.ecommerceModuleOrderCreate).not.toHaveBeenCalled();
+  expect(f.service.ecommerceOrderCheckout).not.toHaveBeenCalled();
+});
+it("rejects ambiguous Product-only checkout before creating an Order", async () => {
+  const f = fixture();
+  f.service.ecommerceModule.storesToProducts.offersForProduct.mockResolvedValue(
+    [f.offer, { ...f.offer, id: "offer-b" }],
+  );
+  await expect(
+    new Handler(f.service).execute(f.context(), undefined),
+  ).rejects.toThrow("Choose one available store offer");
+  expect(f.service.ecommerceModuleOrderCreate).not.toHaveBeenCalled();
+});
+it("honors an explicitly selected offer when several stores sell one Product", async () => {
+  const f = fixture();
+  f.service.ecommerceModule.storesToProducts.offersForProduct.mockResolvedValue(
+    [f.offer, { ...f.offer, id: "offer-b", storeId: "store-b" }],
+  );
+  await new Handler(f.service).execute(
+    f.context({ offerId: "offer-b", quantity: 2 }),
+    undefined,
+  );
+  expect(f.service.ecommerceModuleOrderCreate).toHaveBeenCalledWith(
+    expect.objectContaining({
+      offerId: "offer-b",
+      storeId: "store-b",
+      quantity: 2,
+    }),
+  );
+});
+it("sends incomplete delivery selection to the cart without creating an unusable checkout Order", async () => {
+  const f = fixture();
+  f.service.ecommerceModule.storesToProducts.quote.mockResolvedValue({
+    amount: null,
+    currencyIds: ["rub"],
+    issues: [{ code: "delivery_required", message: "Choose delivery" }],
   });
+  await expect(
+    new Handler(f.service).execute(f.context(), undefined),
+  ).rejects.toThrow("Complete the offer selection");
+  expect(f.service.ecommerceModuleOrderCreate).not.toHaveBeenCalled();
+});
+it("requires an anonymous receipt email before creating the Order", async () => {
+  const f = fixture();
+  f.service.subjectsToIdentities.find.mockResolvedValue([]);
+  await expect(
+    new Handler(f.service).execute(f.context(), undefined),
+  ).rejects.toThrow("Email is required");
+  expect(f.service.ecommerceModuleOrderCreate).not.toHaveBeenCalled();
+});
+it("passes receipt email and provider to the owning checkout after offer creation", async () => {
+  const f = fixture();
+  await new Handler(f.service).execute(
+    f.context({ provider: "stripe", email: "buyer@example.test" }),
+    undefined,
+  );
+  expect(f.service.ecommerceOrderCheckout).toHaveBeenCalledWith(
+    expect.objectContaining({
+      provider: "stripe",
+      email: "buyer@example.test",
+    }),
+  );
+});
+it("permits Telegram Star checkout without a receipt Identity", async () => {
+  const f = fixture();
+  f.service.subjectsToIdentities.find.mockResolvedValue([]);
+  await new Handler(f.service).execute(
+    f.context({ provider: "telegram-star" }),
+    undefined,
+  );
+  expect(f.service.ecommerceOrderCheckout).toHaveBeenCalledTimes(1);
+});
 
-  it("checks out for an existing account without creating an empty email Identity", async () => {
-    const service = createService();
-    service.subjectsToIdentities = {
-      find: jest.fn().mockResolvedValue([{ identityId: "existing" }]),
-    };
-    await new Handler(service).execute(
-      createContext(
-        { id: "subject-1", productId: "product-1" },
-        {
-          data: JSON.stringify({
-            provider: "dummy",
-            storeId: "store-1",
-            billingModule: { currency: { id: "currency-1" } },
-          }),
-        },
-      ),
-      jest.fn(),
-    );
-    expect(service.deanonymize).not.toHaveBeenCalled();
-    expect(orderCreateMock).toHaveBeenCalledTimes(1);
+it("re-quotes and creates exactly the configured item and services, then checks out only its new order", async () => {
+  const f = fixture();
+  const configured = {
+    offerId: "offer-a",
+    storeId: "store-a",
+    quantity: 2,
+    billingModule: { currency: { id: "rub" } },
+    destination: {
+      address: "City Street 10",
+      region: "Area",
+      coordinates: { latitude: 60, longitude: 30 },
+    },
+    services: [
+      { offerId: "7341680e-08e1-4984-bc97-c8072d3d968a", quantity: 1 },
+    ],
+    expectedQuoteVersion: "terms-1",
+    comment: "Call before delivery",
+    email: "buyer@example.test",
+  };
+  await new Handler(f.service).execute(f.context(configured), undefined);
+  expect(f.service.ecommerceModule.storesToProducts.quote).toHaveBeenCalledWith(
+    {
+      offerId: configured.offerId,
+      quantity: configured.quantity,
+      currencyId: "rub",
+      destination: configured.destination,
+      services: configured.services,
+    },
+  );
+  expect(f.service.ecommerceModuleOrderCreate).toHaveBeenCalledTimes(1);
+  expect(f.service.ecommerceModuleOrderCreate).toHaveBeenCalledWith({
+    subjectId: "subject",
+    productId: "product",
+    offerId: "offer-a",
+    storeId: "store-a",
+    quantity: 2,
+    billingModuleCurrencyId: "rub",
+    destination: configured.destination,
+    services: configured.services,
+    expectedQuoteVersion: "terms-1",
+    comment: configured.comment,
   });
+  expect(f.service.ecommerceOrderCheckout).toHaveBeenCalledTimes(1);
+  expect(f.service.ecommerceOrderCheckout).toHaveBeenCalledWith(
+    expect.objectContaining({
+      ecommerceModule: { orders: [{ id: "created-order" }] },
+      comment: configured.comment,
+    }),
+  );
+});
 
-  it("requires email from an anonymous checkout before creating an order", async () => {
-    const service = createService();
-    service.subjectsToIdentities = { find: jest.fn().mockResolvedValue([]) };
+it("rejects a stale product-page quote before creating or checking out any order", async () => {
+  const f = fixture();
+  await expect(
+    new Handler(f.service).execute(
+      f.context({ expectedQuoteVersion: "old-terms" }),
+      undefined,
+    ),
+  ).rejects.toThrow("Offer terms changed");
+  expect(f.service.ecommerceModuleOrderCreate).not.toHaveBeenCalled();
+  expect(f.service.ecommerceOrderCheckout).not.toHaveBeenCalled();
+});
+
+it.each([
+  { expectedQuoteVersion: 17 },
+  {
+    services: [
+      { offerId: "7341680e-08e1-4984-bc97-c8072d3d968a", quantity: 0 },
+    ],
+  },
+  {
+    destination: {
+      address: "Street",
+      coordinates: { latitude: 200, longitude: 30 },
+    },
+  },
+])(
+  "rejects malformed configured purchases before quote or graph work",
+  async (data) => {
+    const f = fixture();
     await expect(
-      new Handler(service).execute(
-        createContext(
-          { id: "subject-1", productId: "product-1" },
-          { data: JSON.stringify({ provider: "dummy", storeId: "store-1" }) },
-        ),
-        jest.fn(),
-      ),
-    ).rejects.toThrow("Email is required");
-    expect(orderCreateMock).not.toHaveBeenCalled();
+      new Handler(f.service).execute(f.context(data), undefined),
+    ).rejects.toThrow("Invalid product purchase selection");
+    expect(
+      f.service.ecommerceModule.storesToProducts.quote,
+    ).not.toHaveBeenCalled();
+    expect(f.service.ecommerceModuleOrderCreate).not.toHaveBeenCalled();
+  },
+);
+
+it("preserves the same-offer cart duplicate guard and never checks out the existing cart as a fallback", async () => {
+  const f = fixture();
+  f.service.ecommerceModuleOrderCreate.mockRejectedValue(
+    new Error("Conflict error. Product is already in the cart"),
+  );
+  await expect(
+    new Handler(f.service).execute(
+      f.context({ expectedQuoteVersion: "terms-1" }),
+      undefined,
+    ),
+  ).rejects.toThrow("Product is already in the cart");
+  expect(f.service.ecommerceModuleOrderCreate).toHaveBeenCalledTimes(1);
+  expect(f.service.ecommerceOrderCheckout).not.toHaveBeenCalled();
+});
+
+it("rejects a disabled provider before creating any cart graph and allows a corrected retry", async () => {
+  const f = fixture();
+  f.service.billingModule.paymentIntent.isProviderAllowed.mockReturnValueOnce(
+    false,
+  );
+  await expect(
+    new Handler(f.service).execute(
+      f.context({ provider: "disabled" }),
+      undefined,
+    ),
+  ).rejects.toThrow("payment provider is unavailable");
+  expect(f.service.ecommerceModuleOrderCreate).not.toHaveBeenCalled();
+  await new Handler(f.service).execute(
+    f.context({ provider: "stripe" }),
+    undefined,
+  );
+  expect(f.service.ecommerceModuleOrderCreate).toHaveBeenCalledTimes(1);
+});
+
+it("rejects incompatible provider/currency precision before creating any order", async () => {
+  const f = fixture();
+  f.service.billingModule.currency.findById.mockResolvedValue({
+    id: "rub",
+    slug: "custom",
+    minorUnitDigits: 8,
   });
-
-  it("When: provider is not telegram-star Then: subject is deanonymized and checkout is created", async () => {
-    const service = createService();
-    const handler = new Handler(service);
-
-    const context = createContext(
-      { id: "subject-1", productId: "product-1" },
-      {
-        data: JSON.stringify({
-          provider: "stripe",
-          email: "user@example.test",
-          quantity: 2,
-          storeId: "store-1",
-          billingModule: { currency: { id: "currency-1" } },
-        }),
-      },
-    );
-
-    await handler.execute(context, jest.fn());
-
-    expect(orderCreateMock).toHaveBeenCalledTimes(1);
-    expect(subjectsToOrdersCreateMock).toHaveBeenCalledTimes(1);
-    expect(ordersToProductsCreateMock).toHaveBeenCalledWith(
-      expect.objectContaining({
-        data: expect.objectContaining({
-          productId: "product-1",
-          orderId: "order-1",
-          quantity: 2,
-        }),
-      }),
-    );
-    expect(service.deanonymize).toHaveBeenCalledWith({
-      id: "subject-1",
-      email: "user@example.test",
-    });
-    expect(service.ecommerceOrderCheckout).toHaveBeenCalledWith(
-      expect.objectContaining({
-        id: "subject-1",
-        provider: "stripe",
-        ecommerceModule: {
-          orders: [{ id: "order-1" }],
-        },
-      }),
-    );
-    expect(context.json).toHaveBeenCalledWith({
-      data: expect.objectContaining({
-        checkoutUrl: "https://example.test/pay",
-      }),
-    });
-  });
-
-  it("When: provider is telegram-star Then: checkout proceeds without deanonymization", async () => {
-    const service = createService();
-    const handler = new Handler(service);
-
-    const context = createContext(
-      { id: "subject-1", productId: "product-1" },
-      {
-        data: JSON.stringify({
-          provider: "telegram-star",
-          email: "user@example.test",
-          storeId: "store-1",
-          billingModule: { currency: { id: "currency-1" } },
-        }),
-      },
-    );
-
-    await handler.execute(context, jest.fn());
-
-    expect(service.deanonymize).not.toHaveBeenCalled();
-    expect(service.ecommerceOrderCheckout).toHaveBeenCalledTimes(1);
-  });
+  await expect(
+    new Handler(f.service).execute(
+      f.context({ provider: "stripe" }),
+      undefined,
+    ),
+  ).rejects.toThrow("two decimal places");
+  expect(f.service.ecommerceModuleOrderCreate).not.toHaveBeenCalled();
+  expect(f.service.ecommerceOrderCheckout).not.toHaveBeenCalled();
 });

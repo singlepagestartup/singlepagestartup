@@ -18,6 +18,7 @@ export default async function Server(props: IComponentProps) {
           isServer={false}
           variant={props.variant}
           language={props.language}
+          withOneStepCheckout={props.withOneStepCheckout}
           className={props.className}
           skeleton={props.skeleton}
           ecommerceModuleProduct={props.ecommerceModuleProduct}

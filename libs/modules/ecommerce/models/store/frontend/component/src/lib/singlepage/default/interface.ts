@@ -7,14 +7,14 @@ import {
 
 export const variant = "default" as const;
 
-export interface IComponentProps
-  extends IParentComponentProps<IModel, typeof variant> {
+export interface IComponentProps<
+  TVariant extends string = typeof variant,
+> extends IParentComponentProps<IModel, TVariant> {
   language: string;
 }
 
-export interface IComponentPropsExtended
-  extends IParentComponentPropsExtended<
-    IModel,
-    typeof variant,
-    IComponentProps
-  > {}
+export interface IComponentPropsExtended extends IParentComponentPropsExtended<
+  IModel,
+  string,
+  IComponentProps<string>
+> {}

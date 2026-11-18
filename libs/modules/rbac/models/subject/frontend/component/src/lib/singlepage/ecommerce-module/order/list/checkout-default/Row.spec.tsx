@@ -3,6 +3,7 @@ import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { Component } from "./Row";
 const mockUpdate = jest.fn();
 const mockInvalidate = jest.fn();
+const mockRemoveProps = jest.fn();
 jest.mock("@sps/rbac/models/subject/sdk/client", () => ({
   api: {
     ecommerceModuleOrderUpdate: () => ({
@@ -58,7 +59,27 @@ jest.mock("@sps/ecommerce/models/order/sdk/client", () => ({
   api: { findById: (...args: unknown[]) => mockFindOrder(...args) },
 }));
 jest.mock("@sps/rbac/models/subject/frontend/component", () => ({
-  Component: ({ label }: any) => <button type="button">{label}</button>,
+  Component: (props: any) => {
+    mockRemoveProps(props);
+    return (
+      <button type="button">
+        {props.label ??
+          (props.language === "ru" ? "Удалить из корзины" : "Remove from cart")}
+      </button>
+    );
+  },
+}));
+jest.mock("./Selection", () => ({
+  Selection: ({ line, onSelectionStateChange }: any) => (
+    <div data-testid={`selection-${line.id}`}>
+      <input
+        aria-label={`Draft ${line.id}`}
+        defaultValue="saved"
+        onChange={() => onSelectionStateChange?.(line.id, true)}
+      />
+      <span>Itemized receipt</span>
+    </div>
+  ),
 }));
 const props: any = {
   subject: { id: "owner" },
@@ -81,6 +102,7 @@ const props: any = {
 beforeEach(() => {
   mockUpdate.mockReset().mockResolvedValue({});
   mockInvalidate.mockReset().mockResolvedValue(undefined);
+  mockRemoveProps.mockClear();
 });
 it("renders the Ecommerce Order cart card with the Subject snapshot and no second order read", () => {
   const { container } = render(<Component {...props} />);
@@ -144,11 +166,13 @@ it("changes only the selected order currency and waits for the authorized cart r
   };
   const view = render(<Component {...currencyProps} />);
   expect(screen.getByText("10 $").closest("article")).toBeTruthy();
-  expect(
-    screen
-      .getByRole("button", { name: "Удалить из корзины: Курс" })
-      .closest("article"),
-  ).toBeTruthy();
+  const remove = screen.getByRole("button", {
+    name: "Удалить из корзины: Курс",
+  });
+  expect(remove.closest("article")).toBeNull();
+  expect(remove.closest("header")?.contains(screen.getByRole("article"))).toBe(
+    true,
+  );
   expect(screen.queryByText("100 ₽")).toBeNull();
   fireEvent.change(screen.getByLabelText("Валюта оплаты"), {
     target: { value: "rub" },
@@ -213,6 +237,16 @@ it("keeps the price and remove action attached to the order when several product
       .closest("article"),
   ).toBeNull();
   expect(
+    screen.getByRole("button", { name: "Remove item group" }).closest("header"),
+  ).toBe(screen.getAllByRole("article")[0].parentElement);
+  expect(mockRemoveProps).toHaveBeenCalledWith(
+    expect.objectContaining({
+      iconOnly: true,
+      data: props.subject,
+      ecommerceModuleOrder: expect.objectContaining({ id: "order" }),
+    }),
+  );
+  expect(
     screen.getAllByRole("button", { name: "Increase quantity" }),
   ).toHaveLength(2);
 });
@@ -276,6 +310,187 @@ it.each([2, 6])(
         data: {
           ordersToProducts: [{ id: "line", quantity: expectedQuantity }],
         },
+      }),
+    );
+  },
+);
+
+it("keeps the itemized receipt below the product and removes its redundant header total", () => {
+  const line = {
+    ...props.ecommerceModuleOrder.cartDetails.lines[0],
+    productId: "product",
+    offerId: "offer",
+  };
+  render(
+    <Component
+      {...props}
+      ecommerceModuleOrder={{
+        id: "order",
+        cartDetails: {
+          ...props.ecommerceModuleOrder.cartDetails,
+          lines: [line],
+          offers: [{ id: "offer", productId: "product", variant: "default" }],
+          offerQuotes: [{ offerId: "offer", productId: "product" }],
+          billingModuleCurrencyId: "rub",
+          availableCurrencyIds: ["rub"],
+          totals: [
+            { total: 100, billingModuleCurrency: { id: "rub", symbol: "₽" } },
+          ],
+        },
+      }}
+    />,
+  );
+  const article = screen.getByRole("article");
+  const receipt = screen.getByText("Itemized receipt");
+  const remove = screen.getByRole("button", {
+    name: "Удалить из корзины: Курс",
+  });
+  const header = remove.closest("header")!;
+  expect(header.lastElementChild?.contains(remove)).toBe(true);
+  expect(header.nextElementSibling?.contains(receipt)).toBe(true);
+  expect(
+    article.compareDocumentPosition(receipt) & Node.DOCUMENT_POSITION_FOLLOWING,
+  ).toBeTruthy();
+  expect(screen.queryByText("100 ₽")).toBeNull();
+});
+
+it("keeps legacy and special-offer amounts visible when there is no itemized quote", () => {
+  render(
+    <Component
+      {...props}
+      ecommerceModuleOrder={{
+        ...props.ecommerceModuleOrder,
+        cartDetails: {
+          ...props.ecommerceModuleOrder.cartDetails,
+          offers: [],
+          offerQuotes: [],
+          billingModuleCurrencyId: "rub",
+          availableCurrencyIds: ["rub"],
+          totals: [
+            { total: 100, billingModuleCurrency: { id: "rub", symbol: "₽" } },
+          ],
+        },
+      }}
+    />,
+  );
+  expect(screen.getByText("100 ₽").closest("article")).toBeTruthy();
+});
+
+it("preserves a live draft across server timestamps and reports its own order and line", () => {
+  const onOrderSelectionStateChange = jest.fn();
+  const order = {
+    ...props.ecommerceModuleOrder,
+    cartDetails: {
+      ...props.ecommerceModuleOrder.cartDetails,
+      offers: [],
+      lines: [
+        {
+          ...props.ecommerceModuleOrder.cartDetails.lines[0],
+          selectionUpdatedAt: "first",
+        },
+      ],
+    },
+  };
+  const view = render(
+    <Component
+      {...props}
+      ecommerceModuleOrder={order}
+      onOrderSelectionStateChange={onOrderSelectionStateChange}
+    />,
+  );
+  fireEvent.change(screen.getByLabelText("Draft line"), {
+    target: { value: "latest draft" },
+  });
+  expect(onOrderSelectionStateChange).toHaveBeenCalledWith(
+    "order",
+    "line",
+    true,
+  );
+  view.rerender(
+    <Component
+      {...props}
+      onOrderSelectionStateChange={onOrderSelectionStateChange}
+      ecommerceModuleOrder={{
+        ...order,
+        cartDetails: {
+          ...order.cartDetails,
+          lines: [
+            { ...order.cartDetails.lines[0], selectionUpdatedAt: "second" },
+          ],
+        },
+      }}
+    />,
+  );
+  expect((screen.getByLabelText("Draft line") as HTMLInputElement).value).toBe(
+    "latest draft",
+  );
+});
+
+it("keeps one header delete action scoped to each displayed owner and order", () => {
+  render(
+    <>
+      <Component {...props} />
+      <Component
+        {...props}
+        subject={{ id: "second-owner" }}
+        ecommerceModuleOrder={{
+          ...props.ecommerceModuleOrder,
+          id: "second-order",
+          cartDetails: {
+            ...props.ecommerceModuleOrder.cartDetails,
+            lines: [
+              {
+                ...props.ecommerceModuleOrder.cartDetails.lines[0],
+                id: "second-line",
+                product: { slug: "table", title: { ru: "Стол" } },
+              },
+            ],
+          },
+        }}
+      />
+    </>,
+  );
+  const first = screen.getByRole("button", {
+    name: "Удалить из корзины: Курс",
+  });
+  const second = screen.getByRole("button", {
+    name: "Удалить из корзины: Стол",
+  });
+  expect(first.closest("header")).not.toBe(second.closest("header"));
+  expect(mockRemoveProps).toHaveBeenCalledWith(
+    expect.objectContaining({
+      data: { id: "owner" },
+      ecommerceModuleOrder: expect.objectContaining({ id: "order" }),
+    }),
+  );
+  expect(mockRemoveProps).toHaveBeenCalledWith(
+    expect.objectContaining({
+      data: { id: "second-owner" },
+      ecommerceModuleOrder: expect.objectContaining({ id: "second-order" }),
+    }),
+  );
+});
+
+it.each([{ lines: [] }, { lines: [{ id: "unavailable", product: null }] }])(
+  "keeps an empty or unavailable order removable once",
+  ({ lines }) => {
+    render(
+      <Component
+        {...props}
+        language="en"
+        ecommerceModuleOrder={{
+          ...props.ecommerceModuleOrder,
+          cartDetails: { ...props.ecommerceModuleOrder.cartDetails, lines },
+        }}
+      />,
+    );
+    expect(
+      screen.getAllByRole("button", { name: "Remove from cart" }),
+    ).toHaveLength(1);
+    expect(mockRemoveProps).toHaveBeenCalledWith(
+      expect.objectContaining({
+        iconOnly: true,
+        ecommerceModuleOrder: expect.objectContaining({ id: "order" }),
       }),
     );
   },

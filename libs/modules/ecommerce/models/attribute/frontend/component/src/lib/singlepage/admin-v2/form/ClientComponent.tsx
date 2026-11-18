@@ -24,7 +24,9 @@ import {
 import { useEffect, useMemo, useState } from "react";
 
 export function Component(props: IComponentPropsExtended) {
-  const updateEntity = api.update();
+  const updateEntity = api.update({
+    id: props.data?.id ?? "",
+  });
   const createEntity = api.create();
 
   const { status } = useGetAdminFormState({

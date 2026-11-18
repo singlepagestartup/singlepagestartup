@@ -47,15 +47,22 @@ export class Service<
     return action.execute(props);
   }
 
+  protected insert(data: Record<string, unknown>): Promise<DTO> {
+    return this.repository.insert(data);
+  }
+
   async create(props: { data: any }): Promise<DTO> {
-    const action = new CreateAction(this.repository);
+    const action = new CreateAction({ insert: (data) => this.insert(data) });
     return action.execute(props);
   }
 
   async findOrCreate(props: {
     data: any;
   }): Promise<{ entity: DTO; statusCode: ContentfulStatusCode }> {
-    const action = new FindOrCreateAction(this.repository);
+    const action = new FindOrCreateAction({
+      find: (query) => this.repository.find(query),
+      insert: (data) => this.insert(data),
+    });
     return action.execute(props);
   }
 
@@ -64,7 +71,7 @@ export class Service<
     return action.execute(props);
   }
 
-  async update(props: { id: string; data: DTO }): Promise<DTO | null> {
+  async update(props: { id: string; data: Partial<DTO> }): Promise<DTO | null> {
     const action = new UpdateAction(this.repository);
     return action.execute(props);
   }

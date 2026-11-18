@@ -1,3 +1,6 @@
+import { Component as Service } from "./service";
+import { Component as Delivery } from "./delivery";
+import { Component as ProductPriceDefault } from "./product-price-default";
 import { Component as Hidden } from "@sps/shared-frontend-components/singlepage/hidden";
 import { Component as Find } from "./find";
 import { Component as AdminTableRow } from "./admin/table-row";
@@ -14,6 +17,9 @@ import { Component as Default } from "./default";
 import { Component as OverviewDefault } from "./overview-default";
 
 export const variants = {
+  "product-price-default": ProductPriceDefault,
+  service: Service,
+  delivery: Delivery,
   hidden: Hidden,
   find: Find,
   "admin-table-row": AdminTableRow,

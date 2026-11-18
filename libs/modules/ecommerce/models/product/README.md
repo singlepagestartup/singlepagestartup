@@ -4,12 +4,21 @@
 
 Products represent sellable items with localized content, attributes, and media attachments.
 
+A Product’s `kind` is an extensible text classification. Built-in behavior recognizes `physical`, `digital` and `service`; projects can also store values such as `tax` or `commission` and implement their behavior in the Startup layer. Its `type` selects one-time or subscription billing. Available delivery methods and add-ons come from the selected store offer.
+
 ## Fields
 
 - `id`: unique identifier (UUID).
 - `createdAt`: creation timestamp.
 - `updatedAt`: last update timestamp.
 - `variant`: display variant.
+- `kind`: nonempty product classification (default: `physical`). The admin Product form saves the Product through its model SDK. Administrators
+  assign an account through the Subject–Product relation and add an offer through
+  the Store–Product relation. The seller’s Store operation creates the Product,
+  ownership grant and offer together.
+
+Both admin forms accept custom values.
+
 - `type`: product type (default: `one_off`).
 - `slug`: URL-friendly unique identifier.
 - `title`: localized title.
@@ -20,8 +29,8 @@ Products represent sellable items with localized content, attributes, and media 
 ## Variants
 
 - `default`: product card with media, attributes, and short description.
-- `overview-default`: detailed product overview with media and attributes.
-- `price-default`: renders price attributes for a selected currency.
+- `overview-default`: detailed product overview with media and attributes. Both card variants accept a `priceSlot` for a store’s unit price. Supplying the slot hides Product price attributes from the displayed characteristics.
+- `price-default`: reads Product price attributes for `billingModuleCurrencyId`. When `calculatedPrice` is supplied, presents that amount, currency, status and issues exclusively, including unavailable or pending results. Store `product-price-default` supplies this calculated result; Product does not read incoming Store relations.
 - `cart-default`: compact product row with the first ordered default media, product link and slots for cart actions. The owning RBAC cart supplies quantities and authorized order totals.
 - `currency-toggle-group-default`: currency selector based on price attributes.
 - `find`: data-fetch wrapper for querying products.

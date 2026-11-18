@@ -4,6 +4,10 @@ export {
   insertSchema,
   selectSchema,
 } from "@sps/billing/models/currency/backend/repository/database";
+export {
+  currencyPrecision,
+  type ICurrencyPrecisionInput,
+} from "@sps/shared-utils";
 import {
   API_SERVICE_URL,
   NEXT_PUBLIC_API_SERVICE_URL,

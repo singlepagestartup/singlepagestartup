@@ -2,10 +2,11 @@ import { Service as RolesToPermissionsService } from "@sps/rbac/relations/roles-
 import { Repository as RolesToPermissionsRepository } from "@sps/rbac/relations/roles-to-permissions/backend/app/api/src/lib/repository";
 import { Configuration as RolesToPermissionsConfiguration } from "@sps/rbac/relations/roles-to-permissions/backend/app/api/src/lib/configuration";
 import { RoleDI } from "./di";
-import { app as permissionApp } from "@sps/rbac/models/permission/backend/app/api";
+import { createService as createPermissionService } from "@sps/rbac/models/permission/backend/app/api/src/lib/bootstrap";
 import type { Service as PermissionService } from "@sps/rbac/models/permission/backend/app/api/src/lib/service";
-import { Container, ContainerModule } from "inversify";
+import { ContainerModule } from "inversify";
 import {
+  createAppBootstrap,
   DI,
   ExceptionFilter,
   type IExceptionFilter,
@@ -28,22 +29,16 @@ const bindings = new ContainerModule(({ bind }) => {
     )
     .inSingletonScope();
   bind<PermissionService>(RoleDI.IPermissionService)
-    .toDynamicValue(() => permissionApp.controller.service as PermissionService)
+    .toDynamicValue(() => createPermissionService())
     .inSingletonScope();
   bind<IExceptionFilter>(DI.IExceptionFilter).to(ExceptionFilter);
   bind<App>(DI.IApp).to(App);
   bind<Controller>(DI.IController).to(Controller);
   bind<Repository>(DI.IRepository).to(Repository);
-  bind<Service>(DI.IService).to(Service);
+  bind<Service>(DI.IService).to(Service).inSingletonScope();
   bind<Configuration>(DI.IConfiguration).to(Configuration);
 });
 
-export async function bootstrap() {
-  const container = new Container();
-  container.load(bindings);
-  const app = container.get<App>(DI.IApp);
-
-  await app.init();
-
-  return { app };
-}
+export const { bootstrap, createService } = createAppBootstrap<App, Service>(
+  bindings,
+);

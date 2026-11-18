@@ -13,6 +13,14 @@ describe("is-authorized allowed routes", () => {
   const matcher = createAllowedRoutesMatcher();
   const uuid = "3f2504e0-4f89-11d3-9a0c-0305e82c3301";
 
+  it.each(["quote", "address-suggestions"])(
+    "delegates the offer %s read to the project's RBAC permission",
+    (operation) => {
+      const path = `/api/ecommerce/stores-to-products/${uuid}/${operation}`;
+      expect(matcher.matches(path, "POST")).toBe(false);
+    },
+  );
+
   /**
    * BDD Scenario: Public framework endpoints are allowed for their methods.
    */

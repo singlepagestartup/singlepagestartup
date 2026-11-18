@@ -54,7 +54,9 @@ export const Component = memo(function ProductCard(
             />
           )}
         </div>
+        {props.priceSlot}
         <Attributes
+          hidePrice={props.priceSlot != null}
           isServer={props.isServer}
           data={props.data}
           language={props.language}

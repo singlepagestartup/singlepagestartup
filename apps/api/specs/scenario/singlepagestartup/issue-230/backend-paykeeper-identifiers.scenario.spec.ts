@@ -86,10 +86,13 @@ async function webhook(
   // PayKeeper cannot send the application's operator credential.
   const response = await fetch(
     base +
-      `/api/billing/payment-intents/${providerName === "payselection-int" ? "payselection" : providerName}/webhook`,
+      `/api/rbac/subjects/ecommerce-module/orders/payment-intents/${providerName === "payselection-int" ? "payselection" : providerName}/webhook`,
     {
       method: "POST",
       headers: {
+        ...(providerName === "dummy"
+          ? { "X-RBAC-SECRET-KEY": process.env["RBAC_SECRET_KEY"]! }
+          : {}),
         "content-type": form
           ? "application/x-www-form-urlencoded"
           : "application/json",
@@ -360,6 +363,9 @@ it.each([
     const headers: Record<string, string> = {
       "content-type": "application/json",
     };
+    if (providerName === "dummy") {
+      headers["X-RBAC-SECRET-KEY"] = process.env["RBAC_SECRET_KEY"]!;
+    }
     let data: Record<string, unknown>;
     if (providerName === "cloudpayments" || providerName === "tiptoppay") {
       data = {
@@ -422,7 +428,7 @@ it.each([
     const deliver = async () => {
       const response = await fetch(
         base +
-          `/api/billing/payment-intents/${providerName === "payselection-int" ? "payselection" : providerName}/webhook`,
+          `/api/rbac/subjects/ecommerce-module/orders/payment-intents/${providerName === "payselection-int" ? "payselection" : providerName}/webhook`,
         { method: "POST", headers, body },
       );
       const result = await response.json();

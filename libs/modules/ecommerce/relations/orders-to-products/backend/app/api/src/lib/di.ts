@@ -1,4 +1,5 @@
 export const OrdersToProductsDI = {
+  IOffersService: Symbol.for("ecommerce.orders-to-products.offers.service"),
   IProductsService: Symbol.for("ecommerce.orders-to-products.products.service"),
   IAttributesService: Symbol.for(
     "ecommerce.orders-to-products.attributes.service",

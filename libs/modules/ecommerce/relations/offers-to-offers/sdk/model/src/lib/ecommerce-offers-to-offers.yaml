@@ -1,0 +1,18 @@
+allOf:
+  - $ref: "../../../../../../../../../libs/shared/backend/api/src/lib/repository/database/relation.yaml"
+  - type: object
+    properties:
+      sourceOfferId:
+        type: string
+        format: uuid
+        description: Source stores-to-products record ID (a store's Product offer).
+      targetOfferId:
+        type: string
+        format: uuid
+        description: Target stores-to-products record ID for the related service or provider offer.
+      recurrence:
+        type: string
+        enum: [first, each]
+    required:
+      - sourceOfferId
+      - targetOfferId

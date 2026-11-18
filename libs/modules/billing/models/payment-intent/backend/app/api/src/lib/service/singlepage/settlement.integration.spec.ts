@@ -19,6 +19,8 @@ import {
   Service as Settlement,
   type IExecuteProps,
 } from "./paykeeper-settlement";
+import { paymentProviderPrecision } from "@sps/billing/models/payment-intent/sdk/model";
+import { providerMinorUnits } from "@sps/backend-utils";
 
 jest.mock("@sps/shared-utils", () => ({
   ...jest.requireActual("@sps/shared-utils"),
@@ -30,6 +32,7 @@ jest.mock("stripe", () => ({
   default: jest.fn().mockImplementation(() => ({
     subscriptions: {
       retrieve: jest.fn(async () => ({
+        id: "sub_fixture",
         metadata: { paymentIntentId: mockSubscriptionIntentId },
       })),
     },
@@ -92,18 +95,29 @@ async function fixture(provider = "paykeeper", amount = 100) {
       pay_amount: "100.00",
     } as any,
   };
-  const settlement = new Settlement({ repository, service });
-  const second = new Settlement({
-    repository: new IntentRepository(new IntentConfiguration()),
+  const settlement = new Settlement(service);
+  const otherIntent = new IntentService(
+    new IntentRepository(new IntentConfiguration()),
+    service.billingModule,
+  );
+  const second = new Settlement(otherIntent);
+  return {
     service,
-  });
-  return { service, invoices, settlement, second, props, intent, invoice };
+    otherIntent,
+    invoices,
+    settlement,
+    second,
+    props,
+    intent,
+    invoice,
+  };
 }
 
 it("serializes independent instances and preserves timestamps when the same callback is retried", async () => {
   const f = await fixture();
   const invoiceWrite = jest.spyOn(f.invoices, "update");
   const intentWrite = jest.spyOn(f.service, "update");
+  const otherWrite = jest.spyOn(f.otherIntent, "update");
   await Promise.all([
     f.settlement.execute(f.props),
     f.second.execute(f.props),
@@ -111,7 +125,7 @@ it("serializes independent instances and preserves timestamps when the same call
     f.second.execute(f.props),
   ]);
   expect(invoiceWrite).toHaveBeenCalledTimes(1);
-  expect(intentWrite).toHaveBeenCalledTimes(1);
+  expect(intentWrite.mock.calls.length + otherWrite.mock.calls.length).toBe(1);
   const paid = await f.invoices.findById({ id: f.invoice.id });
   const succeeded = await f.service.findById({ id: f.intent.id });
   expect(paid?.status).toBe("paid");
@@ -183,6 +197,29 @@ it("does not revive a canceled Payment Intent", async () => {
   );
   expect((await f.invoices.findById({ id: f.invoice.id }))?.status).toBe(
     "open",
+  );
+});
+
+it("settles an exact three-place amount through dummy when PayKeeper cannot represent it", async () => {
+  const currency = { slug: "bhd", minorUnitDigits: 3 };
+  expect(() =>
+    providerMinorUnits(
+      "1.005",
+      paymentProviderPrecision("paykeeper", currency),
+    ),
+  ).toThrow();
+  expect(
+    providerMinorUnits("1.005", paymentProviderPrecision("dummy", currency)),
+  ).toBe(1005);
+  const f = await fixture("dummy", 1.005);
+  await f.service.settlePayment({
+    invoiceId: f.invoice.id,
+    provider: "dummy",
+    amount: 1.005,
+  });
+  expect((await f.invoices.findById({ id: f.invoice.id }))?.amount).toBe(1.005);
+  expect((await f.service.findById({ id: f.intent.id }))?.status).toBe(
+    "succeeded",
   );
 });
 
@@ -573,7 +610,7 @@ it("closes a completed Stripe checkout page while the asynchronous payment can s
   );
 });
 
-it("creates and settles a recurring Stripe invoice once across concurrent webhook deliveries", async () => {
+it("creates and settles the initial Stripe subscription invoice once across concurrent webhook deliveries", async () => {
   const f = await fixture("stripe");
   mockSubscriptionIntentId = f.intent.id;
   const providerId = "in_fixture_" + randomUUID();
@@ -586,6 +623,8 @@ it("creates and settles a recurring Stripe invoice once across concurrent webhoo
         object: "invoice",
         id: providerId,
         subscription: "sub_fixture",
+        billing_reason: "subscription_create",
+        currency: "usd",
         status: "paid",
         amount_due: 10000,
         amount_paid: 10000,
@@ -645,6 +684,108 @@ it("creates and settles a recurring Stripe invoice once across concurrent webhoo
       await f.invoices.delete({ id: row.id });
     }
   }
+});
+
+it("adopts a prepared renewal invoice atomically and serializes duplicate provider deliveries", async () => {
+  const f = await fixture("stripe");
+  mockSubscriptionIntentId = f.intent.id;
+  const next = await f.service.create({
+    data: { amount: 100, type: "subscription" } as any,
+  });
+  removals.push(() => f.service.delete({ id: next.id }));
+  const draft = await f.invoices.create({
+    data: { amount: 100, status: "draft", provider: "stripe" } as any,
+  });
+  removals.push(() => f.invoices.delete({ id: draft.id }));
+  const relation = new RelationService(
+    new RelationRepository(new RelationConfiguration()),
+  );
+  const link = await relation.create({
+    data: { paymentIntentId: next.id, invoiceId: draft.id } as any,
+  });
+  removals.push(() => relation.delete({ id: link.id }));
+  const providerId = "in_period_" + randomUUID();
+  const event = {
+    action: "webhook",
+    data: {
+      data: {
+        object: {
+          id: providerId,
+          object: "invoice",
+          subscription: "sub_fixture",
+          status: "paid",
+          billing_reason: "subscription_cycle",
+          currency: "usd",
+          amount_due: 10000,
+          amount_paid: 10000,
+          lines: {
+            data: [
+              {
+                currency: "usd",
+                parent: {
+                  subscription_item_details: {
+                    subscription: "sub_fixture",
+                    proration: false,
+                  },
+                },
+                period: { start: 1704067200, end: 1706745600 },
+              },
+            ],
+            has_more: false,
+          },
+        },
+      },
+    },
+  };
+  const write = jest
+    .spyOn(f.service, "update")
+    .mockRejectedValueOnce(new Error("fixture settlement failure"));
+  await expect(
+    f.service.settleStripeSubscriptionInvoice(
+      event.data.data.object as any,
+      next.id,
+      true,
+    ),
+  ).rejects.toThrow("fixture settlement failure");
+  expect(await f.invoices.findById({ id: draft.id })).toMatchObject({
+    status: "draft",
+    providerId: null,
+  });
+  expect((await f.service.findById({ id: next.id }))?.status).toBe(
+    "requires_payment_method",
+  );
+  write.mockRestore();
+  await Promise.all(
+    Array.from({ length: 4 }, () =>
+      f.service.settleStripeSubscriptionInvoice(
+        event.data.data.object as any,
+        next.id,
+        true,
+      ),
+    ),
+  );
+  const recorded = await f.invoices.find({
+    params: {
+      filters: {
+        and: [{ column: "providerId", method: "eq", value: providerId }],
+      },
+    },
+  });
+  expect(recorded).toHaveLength(1);
+  expect(recorded[0]).toMatchObject({ id: draft.id, status: "paid" });
+  expect((await f.service.findById({ id: next.id }))?.status).toBe("succeeded");
+  expect((await f.service.findById({ id: f.intent.id }))?.status).toBe(
+    "requires_payment_method",
+  );
+  const linked = await relation.find({
+    params: {
+      filters: {
+        and: [{ column: "invoiceId", method: "eq", value: draft.id }],
+      },
+    },
+  });
+  expect(linked).toHaveLength(1);
+  expect(linked[0].paymentIntentId).toBe(next.id);
 });
 
 it("does not expire an orphan that acquired a relation before the lock was taken", async () => {

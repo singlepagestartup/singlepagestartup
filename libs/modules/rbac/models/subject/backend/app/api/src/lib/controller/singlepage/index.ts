@@ -1,3 +1,7 @@
+import { Handler as OrderPaymentProvider } from "./ecommerce-module/order/payment-intent/provider";
+import { Handler as OrderPaymentCheck } from "./ecommerce-module/order/payment-intent/check";
+import { Handler as OrderPaymentWebhook } from "./ecommerce-module/order/payment-intent/provider-webhook";
+import { Handler as EcommerceCatalog } from "./ecommerce-module/catalog";
 import { Handler as BlogArticleCreate } from "./blog/article/create";
 import { Handler as FreezeSubscriptionPeriod } from "./ecommerce-module/order/freeze-subscription-period";
 import { Handler as SubjectProfileAvatarUpdate } from "./social-module/profile/find-by-id/avatar/update";
@@ -65,6 +69,7 @@ import { Handler as IdentitiesDelete } from "./identity/delete";
 import { Handler as EcommerceModuleProductsEnforce } from "./ecommerce-module/product/enforce";
 import { Handler as EcommerceModuleOrderCreate } from "./ecommerce-module/order/create";
 import { Handler as EcommerceModuleOrderRepeat } from "./ecommerce-module/order/id/repeat";
+import { Handler as EcommerceModuleOrderSelection } from "./ecommerce-module/order/id/selection";
 import { Handler as EcommerceModuleOrderIdUpdate } from "./ecommerce-module/order/id/update";
 import { Handler as EcommerceModuleOrderIdDelete } from "./ecommerce-module/order/id/delete";
 import { Handler as EcommerceModuleOrderList } from "./ecommerce-module/order/list";
@@ -142,6 +147,60 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
       isAdmin: (subjectId) => this.service.isAdmin(subjectId),
     });
     this.bindHttpRoutes([
+      {
+        method: "POST",
+        path: "/ecommerce-module/orders/payment-intents/:provider/webhook",
+        handler: (c, next) =>
+          new OrderPaymentWebhook(
+            this.service.billingModule.paymentIntent,
+            this.service.ecommerceModuleOrderStripePayment,
+          ).execute(c, next),
+      },
+      {
+        method: "POST",
+        path: "/ecommerce-module/orders/payment-intents/:uuid/check",
+        handler: (c, next) =>
+          new OrderPaymentCheck(
+            this.service.ecommerceModuleOrderPaymentCheck,
+          ).execute(c, next),
+        middlewares: [new RequestOperatorSecret().init()],
+      },
+      {
+        method: "POST",
+        path: "/ecommerce-module/orders/payment-intents/:uuid/providers/:provider",
+        handler: (c, next) =>
+          new OrderPaymentProvider(
+            this.service.ecommerceModuleOrderPaymentDispatch,
+          ).execute(c, next),
+        middlewares: [new RequestOperatorSecret().init()],
+      },
+      {
+        method: "POST",
+        path: "/:id/ecommerce-module/catalogue-mutations",
+        handler: (c) =>
+          new EcommerceCatalog(this.service, "mutation").execute(c),
+        middlewares: [new RequestSubjectIdOwner().init({ requireJwt: true })],
+      },
+      {
+        method: "GET",
+        path: "/:id/ecommerce-module/catalogue-context",
+        handler: (c) =>
+          new EcommerceCatalog(this.service, "context").execute(c),
+        middlewares: [new RequestSubjectIdOwner().init({ requireJwt: true })],
+      },
+      {
+        method: "POST",
+        path: "/:id/ecommerce-module/offers",
+        handler: (c) => new EcommerceCatalog(this.service, "offer").execute(c),
+        middlewares: [new RequestSubjectIdOwner().init({ requireJwt: true })],
+      },
+      {
+        method: "POST",
+        path: "/:id/ecommerce-module/catalogue-attributes",
+        handler: (c) =>
+          new EcommerceCatalog(this.service, "attribute").execute(c),
+        middlewares: [new RequestSubjectIdOwner().init({ requireJwt: true })],
+      },
       {
         method: "GET",
         path: "/permission-defaults",
@@ -486,6 +545,15 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
         method: "POST",
         path: "/:id/ecommerce-module/orders/:orderId/repeat",
         handler: this.ecommerceModuleOrderRepeat,
+        middlewares: [
+          new RequestSubjectIdOwner().init({ requireJwt: true }),
+          new RequestSubjectOwnsEcommerceModuleOrder(this.service).init(),
+        ],
+      },
+      {
+        method: "POST",
+        path: "/:id/ecommerce-module/orders/:orderId/selection",
+        handler: this.ecommerceModuleOrderSelection,
         middlewares: [
           new RequestSubjectIdOwner().init({ requireJwt: true }),
           new RequestSubjectOwnsEcommerceModuleOrder(this.service).init(),
@@ -1064,6 +1132,13 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
     next: unknown,
   ): Promise<Response> {
     return new EcommerceModuleOrderRepeat(this.service).execute(c, next);
+  }
+
+  async ecommerceModuleOrderSelection(
+    c: Context,
+    next: unknown,
+  ): Promise<Response> {
+    return new EcommerceModuleOrderSelection(this.service).execute(c, next);
   }
 
   async ecommerceModuleOrderIdUpdate(c: Context, next: any): Promise<Response> {

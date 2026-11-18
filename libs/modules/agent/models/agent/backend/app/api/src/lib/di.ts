@@ -83,6 +83,7 @@ export interface IHostModule {
 }
 
 export const AgentDI = {
+  IEcommerceOrderService: Symbol.for("agent.ecommerce.order.service"),
   ITelegramConversationStore: Symbol.for("agent.telegram.conversation.store"),
   ITelegramConversationRuntime: Symbol.for(
     "agent.telegram.conversation.runtime",

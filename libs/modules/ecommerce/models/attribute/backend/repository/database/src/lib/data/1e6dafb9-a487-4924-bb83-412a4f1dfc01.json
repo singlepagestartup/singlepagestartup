@@ -1,0 +1,16 @@
+{
+  "id": "1e6dafb9-a487-4924-bb83-412a4f1dfc01",
+  "createdAt": "2026-11-17T10:50:44.203Z",
+  "updatedAt": "2026-11-17T10:50:44.203Z",
+  "variant": "default",
+  "number": null,
+  "boolean": null,
+  "date": null,
+  "datetime": null,
+  "string": {
+    "en": "1",
+    "ru": "1"
+  },
+  "adminTitle": "demo-ai-chat-setup formula_version",
+  "slug": "demo-ai-chat-setup-formula_version"
+}

@@ -1,26 +1,13 @@
-/**
- * BDD Suite: add-to-cart guards and write ordering.
- *
- * Given: a subject adds a product to the cart through the subject order create route.
- * When: the product is already in an open cart, or its order currency cannot be resolved.
- * Then: the request is rejected before the first row is written, so no partial or duplicate order graph survives.
- */
-
+/** Subject add-to-cart validates the exact retail offer before graph writes. */
 const authorizationMock = jest.fn();
 const verifyMock = jest.fn();
-const orderCreateMock = jest.fn();
-const subjectsToEcommerceModuleOrdersCreateMock = jest.fn();
-const ordersToProductsCreateMock = jest.fn();
-const storesToOrdersCreateMock = jest.fn();
-const ordersToBillingModuleCurrenciesCreateMock = jest.fn();
-
 jest.mock("@sps/shared-utils", () => ({
   ...jest.requireActual("@sps/shared-utils"),
   RBAC_JWT_SECRET: "jwt-secret",
   RBAC_SECRET_KEY: "rbac-secret",
 }));
-
 jest.mock("@sps/backend-utils", () => ({
+  ...jest.requireActual("@sps/backend-utils"),
   authorization: (...args: unknown[]) => authorizationMock(...args),
   verifyJwt: (...args: unknown[]) => verifyMock(...args),
   getHttpErrorType: (error: Error) => ({
@@ -29,107 +16,73 @@ jest.mock("@sps/backend-utils", () => ({
     details: null,
   }),
 }));
-
-jest.mock("hono/http-exception", () => ({
-  HTTPException: class HTTPException extends Error {
-    status: number;
-
-    constructor(status: number, options: { message: string }) {
-      super(options.message);
-      this.status = status;
-    }
-  },
-}));
-
 import { ECOMMERCE_ORDER_LINE_QUANTITY_BOUNDS as quantityBounds } from "@sps/shared-utils";
+import { ecommerceCartSelectionSchema } from "@sps/rbac/models/subject/sdk/model";
 import { Handler } from "./create";
 import { Service as CreateCartOrder } from "../../../../service/singlepage/ecommerce/order/create";
+import { Service as OfferQuotes } from "@sps/ecommerce/relations/stores-to-products/backend/app/api/src/lib/service";
+import { Service as CalculateQuote } from "@sps/ecommerce/relations/stores-to-products/backend/app/api/src/lib/service/singlepage/quote";
 
-const NO_PRICE_ERROR =
-  "Validation error. Product has no price in an available currency";
-
-const ALREADY_IN_CART_ERROR = "Conflict error. Product is already in the cart";
-
-interface ISubjectOrder {
-  id: string;
-  type: string;
-  status: string;
-  productIds: string[];
-}
-
-function createContext(productId = "product-unpriced", quantity = 1) {
-  return {
-    req: {
-      param: (name: string) => (name === "id" ? "subject-1" : undefined),
-      parseBody: jest.fn().mockResolvedValue({
-        data: JSON.stringify({
-          productId,
-          quantity,
-        }),
-      }),
-    },
-    json: jest.fn((payload: unknown) => payload),
-  } as any;
-}
-
-/**
- * Mirrors the contract of `ecommerceModuleFindOpenCartOrderWithProduct`: it
- * answers with the order that blocks the add, and an open cart is `type: "cart"`
- * with `status: "new"`. The service's own spec covers how it reaches that answer.
- */
-function createFindOpenCartOrderWithProduct(orders: ISubjectOrder[]) {
-  return jest.fn(async (props: { subjectId: string; productId: string }) => {
-    const blocking = orders.find(
-      (order) =>
-        order.type === "cart" &&
-        order.status === "new" &&
-        order.productIds.includes(props.productId),
-    );
-
-    return blocking?.id ?? null;
-  });
-}
-
-function createService(props?: {
-  resolveOrderCurrency?: jest.Mock;
-  subjectOrders?: ISubjectOrder[];
-}) {
-  const ecommerceModuleResolveOrderCurrency =
-    props?.resolveOrderCurrency ??
-    jest.fn().mockRejectedValue(new Error(NO_PRICE_ERROR));
-  const ecommerceModuleFindOpenCartOrderWithProduct =
-    createFindOpenCartOrderWithProduct(props?.subjectOrders ?? []);
-
+function fixture() {
+  const writes = {
+    order: jest.fn().mockResolvedValue({ id: "order-new" }),
+    owner: jest.fn(),
+    line: jest.fn().mockResolvedValue({ id: "primary" }),
+    store: jest.fn().mockResolvedValue({ id: "store-link" }),
+    currency: jest.fn().mockResolvedValue({ id: "currency-link" }),
+  };
+  const offer = {
+    id: "offer-a",
+    productId: "product",
+    storeId: "store-a",
+    variant: "default",
+    configurationKey: "oak-120",
+  };
+  const quote = jest.fn(async (input: any) => ({
+    ...input,
+    productId: "product",
+    storeId: "store-a",
+    amount: "5000",
+    availableQuantity: null,
+    currencyIds: ["currency-rub"],
+    serviceOptions: [],
+    charges: [],
+    issues: [],
+    version: "terms-1",
+    expiresAt: new Date(Date.now() + 60_000).toISOString(),
+  }));
   const service: any = {
-    ecommerceModuleResolveOrderCurrency,
-    ecommerceModuleFindOpenCartOrderWithProduct,
-    findById: jest.fn().mockResolvedValue({ id: "subject-1" }),
-    subjectsToEcommerceModuleOrders: {
-      find: jest.fn().mockResolvedValue([]),
-      create: subjectsToEcommerceModuleOrdersCreateMock,
+    ecommerceModuleProductInitialGrantIncludes: jest
+      .fn()
+      .mockResolvedValue(false),
+    findById: jest.fn().mockResolvedValue({ id: "subject" }),
+    billingModule: {
+      currency: { find: jest.fn().mockResolvedValue([{ id: "currency-rub" }]) },
     },
+    ecommerceModuleFindOpenCartOrderWithProduct: jest
+      .fn()
+      .mockResolvedValue(null),
+    ecommerceModuleCartQuote: jest.fn(
+      async ({ preparedQuotes }) => preparedQuotes,
+    ),
+    subjectsToEcommerceModuleOrders: { create: writes.owner },
     ecommerceModule: {
+      ordersToBillingModulePaymentIntents: { lockOffers: jest.fn() },
       product: {
         findById: jest
           .fn()
-          .mockResolvedValue({ id: "product-priced", slug: "test-priced" }),
+          .mockResolvedValue({ id: "product", slug: "wardrobe" }),
       },
-      store: {
-        find: jest.fn().mockResolvedValue([{ id: "store-1" }]),
+      storesToProducts: {
+        offersForProduct: jest.fn().mockResolvedValue([offer]),
+        quote,
+        findById: jest.fn(),
+        quotesUnderLock: async (_inputs: any[], previews: any[]) => previews,
       },
-      ordersToProducts: {
-        find: jest.fn().mockResolvedValue([]),
-        create: ordersToProductsCreateMock,
-      },
-      order: { find: jest.fn().mockResolvedValue([]), create: orderCreateMock },
-      storesToOrders: {
-        find: jest.fn().mockResolvedValue([]),
-        create: storesToOrdersCreateMock,
-      },
-      ordersToBillingModuleCurrencies: {
-        create: ordersToBillingModuleCurrenciesCreateMock,
-        find: jest.fn().mockResolvedValue([]),
-      },
+      order: { create: writes.order },
+      ordersToProducts: { create: writes.line },
+      storesToOrders: { create: writes.store },
+      ordersToBillingModuleCurrencies: { create: writes.currency },
     },
   };
   service.ecommerceModuleOrderCreate = (props: any) =>
@@ -137,281 +90,574 @@ function createService(props?: {
       repository: { withSubjectLock: async (_scope, operation) => operation() },
       service,
     }).execute(props);
-
-  return {
-    ecommerceModuleResolveOrderCurrency,
-    ecommerceModuleFindOpenCartOrderWithProduct,
-    service,
+  const context = (data: any = {}) =>
+    ({
+      req: {
+        param: () => "subject",
+        parseBody: async () => ({
+          data: JSON.stringify({ productId: "product", quantity: 1, ...data }),
+        }),
+      },
+      json: (value: any) => value,
+    }) as any;
+  const noWrites = () => {
+    for (const write of Object.values(writes))
+      expect(write).not.toHaveBeenCalled();
   };
+  return { service, writes, offer, quote, context, noWrites };
 }
-
-function expectNoWrites() {
-  expect(orderCreateMock).not.toHaveBeenCalled();
-  expect(subjectsToEcommerceModuleOrdersCreateMock).not.toHaveBeenCalled();
-  expect(ordersToProductsCreateMock).not.toHaveBeenCalled();
-  expect(storesToOrdersCreateMock).not.toHaveBeenCalled();
-  expect(ordersToBillingModuleCurrenciesCreateMock).not.toHaveBeenCalled();
-}
-
-describe("Given: a subject adding a product with no price in an available currency", () => {
-  beforeEach(() => {
-    jest.clearAllMocks();
-    authorizationMock.mockReturnValue("token");
-    verifyMock.mockResolvedValue({ subject: { id: "subject-1" } });
-  });
-
-  /**
-   * BDD Scenario: rejected add-to-cart leaves nothing behind.
-   *
-   * Given: currency resolution rejects for the requested product.
-   * When: the create handler runs.
-   * Then: it fails with the validation error and none of the order rows are written.
-   */
-  it("When: the create handler runs Then: it rejects and writes no order rows", async () => {
-    const { service } = createService();
-    const handler = new Handler(service);
-
-    await expect(handler.execute(createContext(), jest.fn())).rejects.toThrow(
-      NO_PRICE_ERROR,
-    );
-
-    expectNoWrites();
-  });
-
-  /**
-   * BDD Scenario: the reads that preceded the writes are untouched.
-   *
-   * Given: currency resolution rejects for the requested product.
-   * When: the create handler runs.
-   * Then: store resolution and the subject lookup still run, and only the writes are skipped.
-   */
-  it("When: currency resolution fails Then: store and subject reads still run and no write follows", async () => {
-    const { service } = createService();
-    const handler = new Handler(service);
-
-    await expect(handler.execute(createContext(), jest.fn())).rejects.toThrow(
-      NO_PRICE_ERROR,
-    );
-
-    expect(service.ecommerceModule.store.find).toHaveBeenCalled();
-    expect(service.findById).toHaveBeenCalledWith({ id: "subject-1" });
-    expectNoWrites();
-  });
-
-  /**
-   * BDD Scenario: the requested currency reaches the resolution.
-   *
-   * Given: the request body carries a billing currency id.
-   * When: the create handler runs.
-   * Then: the resolution is asked for that product and that currency.
-   */
-  it("When: the request carries a currency Then: resolution receives the product and the requested currency", async () => {
-    const { service, ecommerceModuleResolveOrderCurrency } = createService();
-    const handler = new Handler(service);
-    const c = createContext();
-
-    c.req.parseBody = jest.fn().mockResolvedValue({
-      data: JSON.stringify({
-        productId: "product-unpriced",
-        billingModule: { currency: { id: "currency-requested" } },
-      }),
-    });
-
-    await expect(handler.execute(c, jest.fn())).rejects.toThrow(NO_PRICE_ERROR);
-
-    expect(ecommerceModuleResolveOrderCurrency).toHaveBeenCalledWith({
-      productId: "product-unpriced",
-      billingModuleCurrencyId: "currency-requested",
-    });
-    expectNoWrites();
-  });
+beforeEach(() => {
+  jest.clearAllMocks();
+  authorizationMock.mockReturnValue("token");
+  verifyMock.mockResolvedValue({ subject: { id: "subject" } });
 });
 
-describe("Given: a subject adding a product it may already hold", () => {
-  const PRICED_PRODUCT = "product-priced";
-
-  function createPricedService(subjectOrders: ISubjectOrder[]) {
-    return createService({
-      resolveOrderCurrency: jest.fn().mockResolvedValue("currency-1"),
-      subjectOrders,
-    });
-  }
-
-  beforeEach(() => {
-    jest.clearAllMocks();
-    authorizationMock.mockReturnValue("token");
-    verifyMock.mockResolvedValue({ subject: { id: "subject-1" } });
-    orderCreateMock.mockResolvedValue({ id: "order-new" });
-    subjectsToEcommerceModuleOrdersCreateMock.mockResolvedValue({
-      id: "subject-to-order-new",
-    });
-    ordersToProductsCreateMock.mockResolvedValue({
-      id: "order-to-product-new",
-    });
-    storesToOrdersCreateMock.mockResolvedValue({ id: "store-to-order-new" });
-    ordersToBillingModuleCurrenciesCreateMock.mockResolvedValue({
-      id: "order-to-currency-new",
-    });
+it("stores the exact offer and its owning store instead of an unrelated default store", async () => {
+  const f = fixture();
+  await new Handler(f.service).execute(
+    f.context({
+      offerId: "offer-a",
+      billingModule: { currency: { id: "currency-rub" } },
+    }),
+    undefined,
+  );
+  expect(f.writes.line).toHaveBeenCalledWith({
+    data: expect.objectContaining({
+      productId: "product",
+      offerId: "offer-a",
+      quantity: 1,
+    }),
   });
-
-  /**
-   * BDD Scenario: the same product is refused while it sits in an open cart.
-   *
-   * Given: the subject holds the product in a cart order with status new.
-   * When: the create handler runs for that product.
-   * Then: it fails with the already-in-cart conflict error and writes no order rows.
-   */
-  it("When: the product is already in an open cart Then: the request is refused and no order rows are written", async () => {
-    const { service } = createPricedService([
-      {
-        id: "order-open",
-        type: "cart",
-        status: "new",
-        productIds: [PRICED_PRODUCT],
-      },
-    ]);
-    const handler = new Handler(service);
-
-    await expect(
-      handler.execute(createContext(PRICED_PRODUCT), jest.fn()),
-    ).rejects.toThrow(ALREADY_IN_CART_ERROR);
-
-    expectNoWrites();
-  });
-
-  /**
-   * BDD Scenario: the guard runs before the currency is resolved.
-   *
-   * Given: the subject holds the product in a cart order with status new.
-   * When: the create handler runs for that product.
-   * Then: the duplicate is refused without asking for an order currency.
-   */
-  it("When: the product is already in an open cart Then: no currency is resolved", async () => {
-    const { service, ecommerceModuleResolveOrderCurrency } =
-      createPricedService([
-        {
-          id: "order-open",
-          type: "cart",
-          status: "new",
-          productIds: [PRICED_PRODUCT],
-        },
-      ]);
-    const handler = new Handler(service);
-
-    await expect(
-      handler.execute(createContext(PRICED_PRODUCT), jest.fn()),
-    ).rejects.toThrow(ALREADY_IN_CART_ERROR);
-
-    expect(ecommerceModuleResolveOrderCurrency).not.toHaveBeenCalled();
-  });
-
-  /**
-   * BDD Scenario: a checked-out order does not block a repeat purchase.
-   *
-   * Given: the subject holds the product only in a paid order that checkout moved to history.
-   * When: the create handler runs for that product.
-   * Then: the add succeeds and the full order graph is written.
-   */
-  it("When: the product sits only in a paid order Then: the add is allowed", async () => {
-    const { service } = createPricedService([
-      {
-        id: "order-paid",
-        type: "history",
-        status: "paying",
-        productIds: [PRICED_PRODUCT],
-      },
-    ]);
-    const handler = new Handler(service);
-
-    await handler.execute(createContext(PRICED_PRODUCT), jest.fn());
-
-    expect(orderCreateMock).toHaveBeenCalled();
-    expect(ordersToProductsCreateMock).toHaveBeenCalledWith(
-      expect.objectContaining({
-        data: expect.objectContaining({ productId: PRICED_PRODUCT }),
-      }),
-    );
-  });
-
-  /**
-   * BDD Scenario: a cancelled cart order does not block a new one.
-   *
-   * Given: the subject holds the product in a cart order that is no longer new.
-   * When: the create handler runs for that product.
-   * Then: the add is allowed.
-   */
-  it("When: the product sits only in a cancelled cart order Then: the add is allowed", async () => {
-    const { service } = createPricedService([
-      {
-        id: "order-canceled",
-        type: "cart",
-        status: "canceled",
-        productIds: [PRICED_PRODUCT],
-      },
-    ]);
-    const handler = new Handler(service);
-
-    await handler.execute(createContext(PRICED_PRODUCT), jest.fn());
-
-    expect(orderCreateMock).toHaveBeenCalled();
-  });
-
-  it("stores the configured maximum on the order line", async () => {
-    const { service } = createPricedService([]);
-    await new Handler(service).execute(
-      createContext(PRICED_PRODUCT, quantityBounds.max),
-      jest.fn(),
-    );
-
-    expect(ordersToProductsCreateMock).toHaveBeenCalledWith(
-      expect.objectContaining({
-        data: expect.objectContaining({ quantity: quantityBounds.max }),
-      }),
-    );
-  });
-
-  /**
-   * BDD Scenario: a different product is unaffected by an occupied cart.
-   *
-   * Given: the subject holds another product in an open cart order.
-   * When: the create handler runs for a product that cart does not hold.
-   * Then: the add is allowed and the guard was asked about the requested product.
-   */
-  it("When: a different product is requested Then: the add is allowed and the guard is asked for that product", async () => {
-    const { service, ecommerceModuleFindOpenCartOrderWithProduct } =
-      createPricedService([
-        {
-          id: "order-open",
-          type: "cart",
-          status: "new",
-          productIds: ["product-other"],
-        },
-      ]);
-    const handler = new Handler(service);
-
-    await handler.execute(createContext(PRICED_PRODUCT), jest.fn());
-
-    expect(ecommerceModuleFindOpenCartOrderWithProduct).toHaveBeenCalledWith({
-      subjectId: "subject-1",
-      productId: PRICED_PRODUCT,
-    });
-    expect(orderCreateMock).toHaveBeenCalled();
+  expect(f.writes.store).toHaveBeenCalledWith({
+    data: { storeId: "store-a", orderId: "order-new" },
   });
 });
-
-it.each([0, -1, 1.5, quantityBounds.max + 1])(
-  "refuses quantity %s before cart writes",
-  async (quantity) => {
-    jest.clearAllMocks();
-    const { service } = createService();
-    authorizationMock.mockReturnValue("token");
-    verifyMock.mockResolvedValue({ subject: { id: "subject-1" } });
-    await expect(
-      new Handler(service).execute(
-        createContext("product", quantity) as any,
-        jest.fn(),
-      ),
-    ).rejects.toThrow("Quantity");
-    expect(orderCreateMock).not.toHaveBeenCalled();
+it("rejects an ambiguous legacy add until the buyer chooses an offer", async () => {
+  const f = fixture();
+  f.service.ecommerceModule.storesToProducts.offersForProduct.mockResolvedValue(
+    [f.offer, { ...f.offer, id: "offer-b" }],
+  );
+  await expect(
+    new Handler(f.service).execute(f.context(), undefined),
+  ).rejects.toThrow("Choose one available store offer");
+  f.noWrites();
+});
+it("rejects an offer outside the requested product/store retail choices", async () => {
+  const f = fixture();
+  await expect(
+    new Handler(f.service).execute(
+      f.context({ offerId: "foreign-offer" }),
+      undefined,
+    ),
+  ).rejects.toThrow("Choose one available store offer");
+  f.noWrites();
+});
+it.each([
+  ["shipping", "first", undefined],
+  ["pickup", "each", undefined],
+  [
+    "pickup",
+    "each",
+    {
+      address: "Previous shipping address",
+      region: "Previous region",
+      coordinates: { latitude: 60, longitude: 30 },
+      pickupPointId: "old-depot",
+    },
+  ],
+] as const)(
+  "stores the server-default %s method with recurrence %s and destination %j",
+  async (receiptMethod, recurrence, destination) => {
+    const f = fixture();
+    const serviceId = "7341680e-08e1-4984-bc97-c8072d3d968a";
+    const attribute = (key: string, value: string, currencyId?: string) => ({
+      id: key,
+      key,
+      type: key === "price" ? "price" : "feature",
+      field: key === "price" ? "number" : "string",
+      number: key === "price" ? value : null,
+      text: key === "price" ? undefined : value,
+      currencyIds: currencyId ? [currencyId] : [],
+    });
+    const formula = [
+      attribute("price_formula", "unit_price * quantity"),
+      attribute("formula_version", "1"),
+    ];
+    const calculate = new CalculateQuote({
+      catalog: {
+        products: new Map([
+          [
+            "product",
+            { id: "product", title: { en: "Wardrobe" }, kind: "physical" },
+          ],
+          [
+            "delivery-product",
+            {
+              id: "delivery-product",
+              title: { en: "Delivery" },
+              kind: "service",
+            },
+          ],
+        ]),
+        offers: new Map([
+          [f.offer.id, { ...f.offer, settings: {} }],
+          [
+            serviceId,
+            {
+              id: serviceId,
+              productId: "delivery-product",
+              storeId: "contractor",
+              variant: "default",
+              settings: { receiptMethod },
+            },
+          ],
+        ]),
+        links: [
+          {
+            sourceOfferId: f.offer.id,
+            targetOfferId: serviceId,
+            variant: "delivery",
+            recurrence,
+          },
+        ],
+        providers: [],
+        currencies: [{ id: "currency-rub", slug: "rub" }],
+        offerAttributes: new Map([
+          [f.offer.id, [attribute("price", "5000", "currency-rub")]],
+          [serviceId, [attribute("price", "1000", "currency-rub")]],
+        ]),
+        productAttributes: new Map([
+          ["product", formula],
+          ["delivery-product", formula],
+        ]),
+        storeAttributes: new Map(),
+      } as any,
+      held: {},
+      precision: () => 2,
+      routing: () => ({
+        geocode: jest.fn(),
+        distance: jest.fn(),
+      }),
+      now: new Date(),
+    });
+    const quotes: OfferQuotes = Object.create(OfferQuotes.prototype);
+    Object.defineProperty(quotes, "calculateMany", {
+      value: async (inputs: any[]) =>
+        Promise.all(inputs.map((input) => calculate.execute(input))),
+    });
+    f.service.ecommerceModule.storesToProducts.quotesUnderLock =
+      quotes.quotesUnderLock.bind(quotes);
+    f.quote.mockImplementation((input) => quotes.quote(input));
+    await new Handler(f.service).execute(f.context({ destination }), undefined);
+    const prepared =
+      await f.quote.mock.results[f.quote.mock.results.length - 1].value;
+    if (receiptMethod === "shipping") {
+      expect(prepared.amount).toBeNull();
+      expect(prepared.issues).toContainEqual(
+        expect.objectContaining({
+          offerId: serviceId,
+          code: "address_required",
+        }),
+      );
+      expect(
+        prepared.charges.some((charge) => charge.offerId === serviceId),
+      ).toBe(false);
+    } else {
+      expect(prepared.amount).toBe("6000.00");
+      expect(prepared.issues).toEqual([]);
+      expect(prepared.destination).toEqual({});
+      expect(
+        prepared.charges.some((charge) => charge.offerId === serviceId),
+      ).toBe(true);
+      expect(f.writes.line).toHaveBeenNthCalledWith(1, {
+        data: expect.objectContaining({ destination: {} }),
+      });
+      expect(f.quote).toHaveBeenCalledWith(
+        expect.objectContaining({
+          destination: destination
+            ? expect.not.objectContaining({ pickupPointId: expect.anything() })
+            : undefined,
+        }),
+      );
+    }
+    expect(prepared.selectedServices).toEqual([
+      { offerId: serviceId, quantity: 1 },
+    ]);
+    expect(f.writes.order).toHaveBeenCalledTimes(1);
+    expect(f.writes.line).toHaveBeenCalledTimes(2);
+    expect(f.writes.line).toHaveBeenNthCalledWith(2, {
+      data: {
+        orderId: "order-new",
+        productId: "delivery-product",
+        offerId: serviceId,
+        parentLineId: "primary",
+        quantity: 1,
+        recurrence,
+        selectionUpdatedAt: expect.any(Date),
+      },
+    });
   },
 );
+
+it("keeps a compatible contractor alias and its schedule in an incomplete draft", async () => {
+  const f = fixture();
+  const selected = "7341680e-08e1-4984-bc97-c8072d3d968a";
+  const originalQuote = f.quote.getMockImplementation()!;
+  f.quote.mockImplementation(
+    async (input: any) =>
+      ({
+        ...(await originalQuote(input)),
+        selectedServices: [{ offerId: selected, quantity: 1 }],
+        serviceOptions: [
+          {
+            offerId: "canonical-option",
+            compatibleOfferIds: [selected],
+            productId: "delivery-product",
+            role: "delivery",
+            receiptMethod: "shipping",
+            recurrence: "each",
+            currencyIds: ["currency-rub"],
+          },
+        ],
+        charges: [],
+        amount: null,
+        issues: [
+          {
+            offerId: selected,
+            code: "address_required",
+            message: "Enter address",
+          },
+        ],
+      }) as any,
+  );
+  await new Handler(f.service).execute(f.context(), undefined);
+  expect(f.writes.line).toHaveBeenNthCalledWith(2, {
+    data: {
+      orderId: "order-new",
+      productId: "delivery-product",
+      offerId: selected,
+      parentLineId: "primary",
+      quantity: 1,
+      recurrence: "each",
+      selectionUpdatedAt: expect.any(Date),
+    },
+  });
+});
+
+it("rejects an unquoted service even when another method needs an address", async () => {
+  const f = fixture();
+  const selected = "7341680e-08e1-4984-bc97-c8072d3d968a";
+  f.quote.mockImplementation(
+    async (input: any) =>
+      ({
+        ...input,
+        productId: "product",
+        currencyIds: ["currency-rub"],
+        selectedServices: [{ offerId: selected, quantity: 1 }],
+        serviceOptions: [
+          {
+            offerId: selected,
+            productId: "delivery-product",
+            role: "delivery",
+            receiptMethod: "shipping",
+            recurrence: "first",
+            currencyIds: ["currency-rub"],
+          },
+        ],
+        charges: [],
+        amount: null,
+        issues: [
+          {
+            offerId: "another-service",
+            code: "address_required",
+            message: "Enter its address",
+          },
+        ],
+        version: "terms-1",
+        expiresAt: new Date(Date.now() + 60_000).toISOString(),
+      }) as any,
+  );
+  await expect(
+    new Handler(f.service).execute(f.context(), undefined),
+  ).rejects.toThrow("Selected service has no quoted charge");
+  f.noWrites();
+});
+it.each([
+  "insufficient_stock",
+  "configuration",
+  "currency_unavailable",
+  "delivery_required",
+  "pickup_required",
+])("blocks %s before graph writes", async (code) => {
+  const f = fixture();
+  f.service.ecommerceModuleCartQuote.mockResolvedValue([
+    {
+      currencyIds: ["currency-rub"],
+      issues: [{ code, message: "Cannot purchase this selection" }],
+    },
+  ]);
+  await expect(
+    new Handler(f.service).execute(f.context(), undefined),
+  ).rejects.toThrow("Cannot purchase this selection");
+  f.noWrites();
+});
+it("rejects a duplicate of the same offer under the subject lock", async () => {
+  const f = fixture();
+  f.service.ecommerceModuleFindOpenCartOrderWithProduct.mockResolvedValue(
+    "existing",
+  );
+  await expect(
+    new Handler(f.service).execute(f.context(), undefined),
+  ).rejects.toThrow("already in the cart");
+  expect(
+    f.service.ecommerceModuleFindOpenCartOrderWithProduct,
+  ).toHaveBeenCalledWith({
+    subjectId: "subject",
+    productId: "product",
+    offerId: "offer-a",
+  });
+  f.noWrites();
+});
+it("sends the requested currency through the offer quote", async () => {
+  const f = fixture();
+  await new Handler(f.service).execute(
+    f.context({ billingModule: { currency: { id: "currency-rub" } } }),
+    undefined,
+  );
+  expect(f.quote).toHaveBeenCalledWith(
+    expect.objectContaining({
+      offerId: "offer-a",
+      quantity: 1,
+      currencyId: "currency-rub",
+    }),
+  );
+});
+it.each([0, -1, 1.5, quantityBounds.max + 1])(
+  "rejects quantity %s before writes",
+  async (quantity) => {
+    const f = fixture();
+    await expect(
+      new Handler(f.service).execute(f.context({ quantity }), undefined),
+    ).rejects.toThrow("Quantity");
+    f.noWrites();
+  },
+);
+it("rejects another subject's access token before writes", async () => {
+  const f = fixture();
+  verifyMock.mockResolvedValue({ subject: { id: "other" } });
+  await expect(
+    new Handler(f.service).execute(f.context(), undefined),
+  ).rejects.toThrow("Only order owner");
+  f.noWrites();
+});
+
+it("stores exactly the quoted destination, quantity, currency and selected service graph once", async () => {
+  const f = fixture();
+  const serviceId = "7341680e-08e1-4984-bc97-c8072d3d968a";
+  const quote = f.quote.getMockImplementation()!;
+  f.quote.mockImplementation(
+    async (selection) =>
+      ({
+        ...(await quote(selection)),
+        serviceOptions: [{ offerId: serviceId }],
+        charges: [
+          {
+            offerId: serviceId,
+            productId: "delivery-product",
+            role: "delivery",
+            recurrence: "first",
+          },
+        ],
+      }) as any,
+  );
+  f.service.ecommerceModule.storesToProducts.findById.mockResolvedValue({
+    id: serviceId,
+    productId: "delivery-product",
+  });
+  const destination = {
+    address: "City Street 10",
+    region: "Area",
+    coordinates: { latitude: 60, longitude: 30 },
+  };
+  const services = [{ offerId: serviceId, quantity: 1 }];
+  await new Handler(f.service).execute(
+    f.context({
+      offerId: "offer-a",
+      quantity: 2,
+      billingModuleCurrencyId: "currency-rub",
+      destination,
+      services,
+      expectedQuoteVersion: "terms-1",
+      comment: "Call first",
+    }),
+    undefined,
+  );
+  expect(f.quote).toHaveBeenCalledWith({
+    offerId: "offer-a",
+    quantity: 2,
+    currencyId: "currency-rub",
+    destination,
+    services,
+  });
+  expect(f.writes.order).toHaveBeenCalledTimes(1);
+  expect(f.writes.order).toHaveBeenCalledWith({
+    data: { comment: "Call first" },
+  });
+  expect(f.writes.line).toHaveBeenCalledTimes(2);
+  expect(f.writes.line).toHaveBeenNthCalledWith(1, {
+    data: expect.objectContaining({
+      productId: "product",
+      offerId: "offer-a",
+      quantity: 2,
+      destination,
+      quoteVersion: "terms-1",
+    }),
+  });
+  expect(f.writes.line).toHaveBeenNthCalledWith(2, {
+    data: expect.objectContaining({
+      productId: "delivery-product",
+      offerId: serviceId,
+      parentLineId: "primary",
+      quantity: 1,
+      recurrence: "first",
+    }),
+  });
+  expect(f.writes.currency).toHaveBeenCalledWith({
+    data: { orderId: "order-new", billingModuleCurrencyId: "currency-rub" },
+  });
+});
+
+it("rejects stale page terms before any graph writes", async () => {
+  const f = fixture();
+  await expect(
+    new Handler(f.service).execute(
+      f.context({ expectedQuoteVersion: "old-terms" }),
+      undefined,
+    ),
+  ).rejects.toThrow("Offer terms changed");
+  f.noWrites();
+});
+
+it("rejects a malformed quote version instead of silently discarding it", async () => {
+  const f = fixture();
+  await expect(
+    new Handler(f.service).execute(
+      f.context({ expectedQuoteVersion: 123 }),
+      undefined,
+    ),
+  ).rejects.toThrow("Invalid order purchase selection");
+  expect(f.quote).not.toHaveBeenCalled();
+  f.noWrites();
+});
+
+it("leaves the graph untouched when locked quote validation detects changed terms", async () => {
+  const f = fixture();
+  f.service.ecommerceModule.storesToProducts.quotesUnderLock = jest
+    .fn()
+    .mockRejectedValue(new Error("Conflict error. Offer conditions changed"));
+  await expect(
+    new Handler(f.service).execute(
+      f.context({ expectedQuoteVersion: "terms-1" }),
+      undefined,
+    ),
+  ).rejects.toThrow("Offer conditions changed");
+  f.noWrites();
+});
+
+it("checks page-accepted terms again through the real locked-quote comparison before graph writes", async () => {
+  const f = fixture();
+  let current = await f.quote({
+    offerId: "offer-a",
+    quantity: 1,
+    currencyId: "currency-rub",
+  });
+  const quotes: OfferQuotes = Object.create(OfferQuotes.prototype);
+  const calculate = jest.fn(async () => [current]);
+  Object.defineProperty(quotes, "calculateMany", { value: calculate });
+  f.service.ecommerceModule.storesToProducts.quote = quotes.quote.bind(quotes);
+  f.service.ecommerceModule.storesToProducts.quotesUnderLock =
+    quotes.quotesUnderLock.bind(quotes);
+  f.service.ecommerceModule.ordersToBillingModulePaymentIntents.lockOffers.mockImplementation(
+    async () => {
+      current = { ...current, version: "terms-2" };
+    },
+  );
+  await expect(
+    new Handler(f.service).execute(
+      f.context({
+        billingModuleCurrencyId: "currency-rub",
+        expectedQuoteVersion: "terms-1",
+      }),
+      undefined,
+    ),
+  ).rejects.toThrow("Offer conditions changed");
+  expect(calculate).toHaveBeenCalledTimes(2);
+  f.noWrites();
+});
+
+it.each([undefined, {}])(
+  "accepts pickup cart selection without destination details: %j",
+  (destination) => {
+    const parsed = ecommerceCartSelectionSchema.safeParse({
+      action: "preview",
+      lineId: "7341680e-08e1-4984-bc97-c8072d3d968a",
+      selections: [
+        {
+          offerId: "50122f84-462d-45f6-bf3e-6e45eea0bd70",
+          currencyId: "a5e746ea-fbc7-4763-8159-1a685e0fa467",
+          quantity: 1,
+          destination,
+        },
+      ],
+    });
+    expect(parsed.success).toBe(true);
+  },
+);
+
+it("accepts a legacy cart point field while retaining validated shipping fields and stripping the point", () => {
+  const destination = {
+    address: "City Street 10",
+    region: "Area",
+    coordinates: { latitude: 60, longitude: 30 },
+  };
+  const input = {
+    action: "preview",
+    lineId: "7341680e-08e1-4984-bc97-c8072d3d968a",
+    selections: [
+      {
+        offerId: "50122f84-462d-45f6-bf3e-6e45eea0bd70",
+        currencyId: "a5e746ea-fbc7-4763-8159-1a685e0fa467",
+        quantity: 1,
+        destination: { ...destination, pickupPointId: "old-depot" },
+      },
+    ],
+  };
+  const parsed = ecommerceCartSelectionSchema.parse(input);
+  expect(parsed.selections[0].destination).toEqual(destination);
+  expect(
+    ecommerceCartSelectionSchema.safeParse({
+      ...input,
+      selections: [
+        {
+          ...input.selections[0],
+          destination: {
+            ...input.selections[0].destination,
+            coordinates: { latitude: 91, longitude: 30 },
+          },
+        },
+      ],
+    }).success,
+  ).toBe(false);
+});
+
+it("rejects database-configured registration Products through the Subject capability", async () => {
+  const f = fixture();
+  f.service.ecommerceModuleProductInitialGrantIncludes.mockResolvedValue(true);
+  await expect(
+    new Handler(f.service).execute(f.context(), undefined),
+  ).rejects.toThrow("authentication bootstrap");
+  expect(
+    f.service.ecommerceModuleProductInitialGrantIncludes,
+  ).toHaveBeenCalledWith({ productId: "product" });
+  f.noWrites();
+});

@@ -138,6 +138,12 @@ paths:
     $ref: "../../libs/modules/rbac/models/role/sdk/model/src/lib/paths.yaml#/paths/~1rbac~1roles~1{id}"
 
   # rbac/subject
+  /rbac/subjects/ecommerce-module/orders/payment-intents/{id}/providers/{provider}:
+    $ref: "../../libs/modules/rbac/models/subject/sdk/model/src/lib/paths.yaml#/paths/~1rbac~1subjects~1ecommerce-module~1orders~1payment-intents~1{id}~1providers~1{provider}"
+  /rbac/subjects/ecommerce-module/orders/payment-intents/{provider}/webhook:
+    $ref: "../../libs/modules/rbac/models/subject/sdk/model/src/lib/paths.yaml#/paths/~1rbac~1subjects~1ecommerce-module~1orders~1payment-intents~1{provider}~1webhook"
+  /rbac/subjects/ecommerce-module/orders/payment-intents/{id}/check:
+    $ref: "../../libs/modules/rbac/models/subject/sdk/model/src/lib/paths.yaml#/paths/~1rbac~1subjects~1ecommerce-module~1orders~1payment-intents~1{id}~1check"
   /rbac/subjects:
     $ref: "../../libs/modules/rbac/models/subject/sdk/model/src/lib/paths.yaml#/paths/~1rbac~1subjects"
   /rbac/subjects/count:
@@ -200,6 +206,8 @@ paths:
     $ref: "../../libs/modules/rbac/models/subject/sdk/model/src/lib/paths.yaml#/paths/~1rbac~1subjects~1{id}~1ecommerce-module~1orders~1{orderId}~1total"
   /rbac/subjects/{id}/ecommerce-module/orders/{orderId}/quantity:
     $ref: "../../libs/modules/rbac/models/subject/sdk/model/src/lib/paths.yaml#/paths/~1rbac~1subjects~1{id}~1ecommerce-module~1orders~1{orderId}~1quantity"
+  /rbac/subjects/{id}/ecommerce-module/orders/{orderId}/selection:
+    $ref: "../../libs/modules/rbac/models/subject/sdk/model/src/lib/paths.yaml#/paths/~1rbac~1subjects~1{id}~1ecommerce-module~1orders~1{orderId}~1selection"
   /rbac/subjects/{id}/ecommerce-module/orders/{orderId}/checkout:
     $ref: "../../libs/modules/rbac/models/subject/sdk/model/src/lib/paths.yaml#/paths/~1rbac~1subjects~1{id}~1ecommerce-module~1orders~1{orderId}~1checkout"
   /rbac/subjects/{id}/crm-module/form/{crmModuleFormId}/request:
@@ -408,12 +416,7 @@ paths:
     $ref: "../../libs/modules/billing/models/payment-intent/sdk/model/src/lib/paths.yaml#/paths/~1billing~1payment-intents~1count"
   /billing/payment-intents/{id}:
     $ref: "../../libs/modules/billing/models/payment-intent/sdk/model/src/lib/paths.yaml#/paths/~1billing~1payment-intents~1{id}"
-  /billing/payment-intents/{id}/{provider}:
-    $ref: "../../libs/modules/billing/models/payment-intent/sdk/model/src/lib/paths.yaml#/paths/~1billing~1payment-intents~1{id}~1{provider}"
-  /billing/payment-intents/{provider}/webhook:
-    $ref: "../../libs/modules/billing/models/payment-intent/sdk/model/src/lib/paths.yaml#/paths/~1billing~1payment-intents~1{provider}~1webhook"
-  /billing/payment-intents/{id}/check:
-    $ref: "../../libs/modules/billing/models/payment-intent/sdk/model/src/lib/paths.yaml#/paths/~1billing~1payment-intents~1{id}~1check"
+
 
   # billing/widget
   /billing/widgets:
@@ -840,6 +843,10 @@ paths:
   # ecommerce/relations/stores-to-products
   /ecommerce/stores-to-products:
     $ref: "../../libs/modules/ecommerce/relations/stores-to-products/sdk/model/src/lib/paths.yaml#/paths/~1ecommerce~1stores-to-products"
+  /ecommerce/stores-to-products/{id}/quote:
+    $ref: "../../libs/modules/ecommerce/relations/stores-to-products/sdk/model/src/lib/paths.yaml#/paths/~1ecommerce~1stores-to-products~1{id}~1quote"
+  /ecommerce/stores-to-products/{id}/address-suggestions:
+    $ref: "../../libs/modules/ecommerce/relations/stores-to-products/sdk/model/src/lib/paths.yaml#/paths/~1ecommerce~1stores-to-products~1{id}~1address-suggestions"
   /ecommerce/stores-to-products/count:
     $ref: "../../libs/modules/ecommerce/relations/stores-to-products/sdk/model/src/lib/paths.yaml#/paths/~1ecommerce~1stores-to-products~1count"
   /ecommerce/stores-to-products/{id}:
@@ -852,6 +859,13 @@ paths:
     $ref: "../../libs/modules/ecommerce/relations/stores-to-products-to-attributes/sdk/model/src/lib/paths.yaml#/paths/~1ecommerce~1stores-to-products-to-attributes~1count"
   /ecommerce/stores-to-products-to-attributes/{id}:
     $ref: "../../libs/modules/ecommerce/relations/stores-to-products-to-attributes/sdk/model/src/lib/paths.yaml#/paths/~1ecommerce~1stores-to-products-to-attributes~1{id}"
+  # ecommerce/relations/offers-to-offers
+  /ecommerce/offers-to-offers:
+    $ref: "../../libs/modules/ecommerce/relations/offers-to-offers/sdk/model/src/lib/paths.yaml#/paths/~1ecommerce~1offers-to-offers"
+  /ecommerce/offers-to-offers/count:
+    $ref: "../../libs/modules/ecommerce/relations/offers-to-offers/sdk/model/src/lib/paths.yaml#/paths/~1ecommerce~1offers-to-offers~1count"
+  /ecommerce/offers-to-offers/{id}:
+    $ref: "../../libs/modules/ecommerce/relations/offers-to-offers/sdk/model/src/lib/paths.yaml#/paths/~1ecommerce~1offers-to-offers~1{id}"
 
   # ecommerce/relations/widgets-to-categories
   /ecommerce/widgets-to-categories:
@@ -1679,6 +1693,10 @@ components:
       $ref: "../../libs/modules/ecommerce/relations/stores-to-products-to-attributes/sdk/model/src/lib/ecommerce-stores-to-products-to-attributes.yaml"
     "ecommerce-stores-to-products-to-attributes-input":
       $ref: "../../libs/modules/ecommerce/relations/stores-to-products-to-attributes/sdk/model/src/lib/ecommerce-stores-to-products-to-attributes-input.yaml"
+    "ecommerce-offers-to-offers":
+      $ref: "../../libs/modules/ecommerce/relations/offers-to-offers/sdk/model/src/lib/ecommerce-offers-to-offers.yaml"
+    "ecommerce-offers-to-offers-input":
+      $ref: "../../libs/modules/ecommerce/relations/offers-to-offers/sdk/model/src/lib/ecommerce-offers-to-offers-input.yaml"
     "ecommerce-widgets-to-categories":
       $ref: "../../libs/modules/ecommerce/relations/widgets-to-categories/sdk/model/src/lib/ecommerce-widgets-to-categories.yaml"
     "ecommerce-widgets-to-categories-input":

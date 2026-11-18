@@ -10,6 +10,7 @@
 import { QueryClient } from "@tanstack/react-query";
 import {
   appendToListQueries,
+  invalidateRouteQueries,
   patchInListQueries,
   removeFromListQueries,
 } from "./index";
@@ -521,5 +522,30 @@ describe("removeFromListQueries", () => {
     qc.setQueryData(key, null);
 
     expect(() => removeFromListQueries(qc, ROUTE, "1")).not.toThrow();
+  });
+});
+
+describe("invalidateRouteQueries", () => {
+  it("invalidates an aggregate and its quantity readers without touching neighboring scopes", async () => {
+    const qc = makeClient();
+    const route = "/api/rbac/subjects/buyer/ecommerce-module/orders";
+    const affected = [
+      [route],
+      [`${route}?currency=rub`],
+      [`${route}/order`, "variant=cart"],
+      [`${route}/quantity`],
+    ];
+    const untouched = [
+      [`${route}-other/orders/quantity`],
+      ["/api/rbac/subjects/buyer/ecommerce-module/stores"],
+      ["/api/rbac/subjects/another/ecommerce-module/orders/quantity"],
+    ];
+    for (const key of [...affected, ...untouched]) qc.setQueryData(key, 1);
+    await invalidateRouteQueries(qc, route);
+    for (const key of affected)
+      expect(qc.getQueryState(key)?.isInvalidated).toBe(true);
+    for (const key of untouched)
+      expect(qc.getQueryState(key)?.isInvalidated).toBe(false);
+    qc.clear();
   });
 });

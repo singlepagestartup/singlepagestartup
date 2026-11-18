@@ -124,3 +124,99 @@ paths:
             application/json:
               schema:
                 $ref: "ecommerce-stores-to-products.yaml"
+
+  /ecommerce/stores-to-products/{id}/quote:
+    post:
+      summary: Calculate a retail offer and its selected services
+      description: Read-only calculation. The ID identifies a stores-to-products record. POST carries the destination and service selections in a JSON body; no cart or inventory mutation occurs.
+      tags: [ecommerce-stores-to-products]
+      parameters:
+        - $ref: "../../../../../../../../../libs/shared/backend/api/src/lib/query-builder/id.yaml"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [currencyId, quantity]
+              properties:
+                currencyId: { type: string }
+                quantity: { type: integer, minimum: 1 }
+                destination:
+                  type: object
+                  properties:
+                    address: { type: string }
+                    region: { type: string }
+                services:
+                  type: array
+                  items:
+                    type: object
+                    required: [offerId, quantity]
+                    properties:
+                      offerId: { type: string, format: uuid }
+                      quantity: { type: integer, minimum: 1 }
+      responses:
+        "200":
+          description: Versioned charges, supported currencies, service options, available quantity and validation issues.
+          headers:
+            Cache-Control:
+              schema: { type: string, example: "private, no-store" }
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data: { $ref: "offer-quote.yaml" }
+        "400": { description: Invalid selection or malformed destination. }
+        "404": { description: Retail offer unavailable. }
+
+  /ecommerce/stores-to-products/{id}/address-suggestions:
+    post:
+      summary: Suggest delivery addresses for a public shipping service offer
+      description: Used by the RBAC Subject checkout address field. The ID identifies the selected shipping service's stores-to-products record. Returns suggestions without saving an address or changing the cart.
+      tags: [ecommerce-stores-to-products]
+      security: []
+      parameters:
+        - $ref: "../../../../../../../../../libs/shared/backend/api/src/lib/query-builder/id.yaml"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [query, language]
+              properties:
+                query: { type: string, minLength: 3, maxLength: 500 }
+                language: { type: string, pattern: "^[a-zA-Z]{2}$" }
+      responses:
+        "200":
+          description: Up to five formatted addresses and provider attribution. No cart changes are made.
+          headers:
+            Cache-Control:
+              schema: { type: string, example: "private, no-store" }
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data:
+                    type: object
+                    required: [suggestions]
+                    properties:
+                      suggestions:
+                        type: array
+                        maxItems: 5
+                        items: { type: string, maxLength: 500 }
+                      attribution:
+                        type: array
+                        items:
+                          type: object
+                          required: [label, url]
+                          properties:
+                            label: { type: string }
+                            url: { type: string, format: uri }
+        "400": { description: Invalid search text or language. }
+        "404": { description: Public shipping service offer unavailable. }

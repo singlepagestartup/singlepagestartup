@@ -1,8 +1,7 @@
+import { Component as RbacAdminV2Overview } from "./rbac";
 import { cn } from "@sps/shared-frontend-client-utils";
-import {
-  AdminV2Overview as EcommerceAdminV2Overview,
-  AdminV2SidebarModuleItem as EcommerceAdminV2SidebarModuleItem,
-} from "@sps/ecommerce/frontend/component";
+import { AdminV2SidebarModuleItem as EcommerceAdminV2SidebarModuleItem } from "@sps/ecommerce/frontend/component";
+import { Component as EcommerceAdminV2Overview } from "./ecommerce";
 import {
   AdminV2Overview as AgentAdminV2Overview,
   AdminV2SidebarModuleItem as AgentAdminV2SidebarModuleItem,
@@ -43,10 +42,7 @@ import {
   AdminV2Overview as KnowledgeAdminV2Overview,
   AdminV2SidebarModuleItem as KnowledgeAdminV2SidebarModuleItem,
 } from "@sps/knowledge/frontend/component";
-import {
-  AdminV2Overview as RbacAdminV2Overview,
-  AdminV2SidebarModuleItem as RbacAdminV2SidebarModuleItem,
-} from "@sps/rbac/frontend/component";
+import { AdminV2SidebarModuleItem as RbacAdminV2SidebarModuleItem } from "@sps/rbac/frontend/component";
 import {
   AdminV2Overview as SocialAdminV2Overview,
   AdminV2SidebarModuleItem as SocialAdminV2SidebarModuleItem,

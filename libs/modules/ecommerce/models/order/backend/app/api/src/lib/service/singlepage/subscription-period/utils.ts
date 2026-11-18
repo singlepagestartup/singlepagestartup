@@ -17,6 +17,9 @@ export function intervalEnd(startsAt: Date, interval: string): Date {
     case "week":
       end.setDate(end.getDate() + 7);
       break;
+    case "four_weeks":
+      end.setDate(end.getDate() + 28);
+      break;
     case "month":
       end.setMonth(end.getMonth() + 1);
       break;

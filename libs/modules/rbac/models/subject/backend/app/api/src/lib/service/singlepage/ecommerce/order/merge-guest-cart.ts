@@ -181,38 +181,49 @@ export class Service {
     const protectedProducts = new Set(
       carts
         .filter((cart) => !cart.editable)
-        .flatMap((cart) => cart.lines.map((line) => line.productId)),
+        .flatMap((cart) =>
+          cart.lines
+            .filter((line) => !line.parentLineId)
+            .map((line) => line.productId),
+        ),
     );
     const editableCarts = carts.filter(
       (cart) =>
         cart.editable &&
         (!cart.guest ||
-          !cart.lines.some((line) => protectedProducts.has(line.productId))),
+          !cart.lines.some(
+            (line) =>
+              !line.parentLineId && protectedProducts.has(line.productId),
+          )),
     );
     const incoming = new Set(
       editableCarts
         .filter((cart) => cart.guest)
-        .flatMap((cart) => cart.lines.map((line) => line.productId)),
+        .flatMap((cart) =>
+          cart.lines
+            .filter((line) => !line.parentLineId)
+            .map((line) => line.productId),
+        ),
     );
     if (!incoming.size) {
       return;
     }
-    const winners = new Map<string, ILine>();
-    // Read account rows first so identical timestamps retain the account's choice.
+    const winners = new Map<string, { guest: boolean; timestamp: number }>();
+    // A Product selection includes every split order and its child services.
+    // Account groups win exact timestamp ties.
     for (const cart of [...editableCarts].sort(
       (left, right) => Number(left.guest) - Number(right.guest),
     )) {
-      for (const line of cart.lines) {
+      for (const line of cart.lines.filter((line) => !line.parentLineId)) {
         if (!incoming.has(line.productId)) {
           continue;
         }
+        const timestamp = new Date(
+          line.offerId ? line.selectionUpdatedAt : line.updatedAt,
+        ).getTime();
         const winner = winners.get(line.productId);
-        if (
-          !winner ||
-          new Date(line.updatedAt).getTime() >
-            new Date(winner.updatedAt).getTime()
-        ) {
-          winners.set(line.productId, line);
+        if (!winner || timestamp > winner.timestamp) {
+          winners.set(line.productId, { guest: cart.guest, timestamp });
         }
       }
     }
@@ -221,15 +232,35 @@ export class Service {
         continue;
       }
       let retained = 0;
+      const primaryById = new Map(
+        cart.lines
+          .filter((line) => !line.parentLineId)
+          .map((line) => [line.id, line]),
+      );
+      const removed: ILine[] = [];
       for (const line of cart.lines) {
+        const primary = line.parentLineId
+          ? primaryById.get(line.parentLineId)
+          : line;
         const duplicate =
-          incoming.has(line.productId) &&
-          winners.get(line.productId)?.id !== line.id;
+          primary &&
+          incoming.has(primary.productId) &&
+          winners.get(primary.productId)?.guest !== cart.guest;
         if (duplicate) {
-          await ecommerceModule.ordersToProducts.delete({ id: line.id });
+          removed.push(line);
         } else {
-          retained++;
+          retained += 1;
         }
+      }
+      // Delete children first so the primary's FK cascade cannot make a later
+      // explicit delete fail halfway through the owner transaction.
+      removed.sort(
+        (left, right) =>
+          Number(Boolean(right.parentLineId)) -
+          Number(Boolean(left.parentLineId)),
+      );
+      for (const line of removed) {
+        await ecommerceModule.ordersToProducts.delete({ id: line.id });
       }
       if (!retained) {
         await ecommerceModule.order.delete({ id: cart.id });

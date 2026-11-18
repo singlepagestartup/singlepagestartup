@@ -5,5 +5,5 @@
   "variant": "default",
   "type": "HTTP",
   "method": "POST",
-  "path": "/api/billing/payment-intents/payselection-international/webhook"
+  "path": "/api/rbac/subjects/ecommerce-module/orders/payment-intents/payselection-international/webhook"
 }

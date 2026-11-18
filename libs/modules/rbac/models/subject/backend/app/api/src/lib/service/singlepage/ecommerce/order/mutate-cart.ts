@@ -1,9 +1,8 @@
-import {
-  ECOMMERCE_ORDER_LINE_QUANTITY_BOUNDS as quantityBounds,
-  INITIAL_FREE_SUBSCRIPTION_PRODUCT_SLUG,
-} from "@sps/shared-utils";
+import { Service as InitialGrantProducts } from "../../billing/initial-grant-products";
+import { ECOMMERCE_ORDER_LINE_QUANTITY_BOUNDS as quantityBounds } from "@sps/shared-utils";
 import type { Repository } from "../../../../repository";
 import type { Service as SubjectService } from "../../index";
+import { Service as SelectionService } from "./selection";
 
 export interface IExecuteProps {
   subjectId: string;
@@ -25,6 +24,83 @@ export class Service {
 
   async execute(props: IExecuteProps): Promise<void> {
     const { repository, service } = this.dependencies;
+    if (props.lines) {
+      await service.ecommerceModuleOrderAssertAccess({
+        subjectId: props.subjectId,
+        orderId: props.orderId,
+        lineIds: props.lines.map((line) => line.id),
+      });
+      const lines = await service.ecommerceModule.ordersToProducts.find({
+        params: {
+          filters: {
+            and: [{ column: "orderId", method: "eq", value: props.orderId }],
+          },
+        },
+      });
+      const primary =
+        lines?.filter(
+          (line: { parentLineId?: string | null }) => !line.parentLineId,
+        ) ?? [];
+      if (primary.length === 1 && primary[0].offerId) {
+        const currencies =
+          await service.ecommerceModule.ordersToBillingModuleCurrencies.find({
+            params: {
+              filters: {
+                and: [
+                  { column: "orderId", method: "eq", value: props.orderId },
+                ],
+              },
+            },
+          });
+        if (currencies?.length !== 1) {
+          throw new Error(
+            "Validation error. Choose an order currency before updating quantity",
+          );
+        }
+        const updates = new Map(
+          props.lines.map((line) => [line.id, line.quantity]),
+        );
+        const selection = {
+          offerId: primary[0].offerId,
+          quantity: updates.get(primary[0].id) ?? primary[0].quantity,
+          currencyId: currencies[0].billingModuleCurrencyId,
+          destination: primary[0].destination,
+          services: lines
+            .filter(
+              (line: { parentLineId?: string | null }) =>
+                line.parentLineId === primary[0].id,
+            )
+            .map((line: { id: string; offerId: string; quantity: number }) => ({
+              offerId: line.offerId,
+              quantity: updates.get(line.id) ?? line.quantity,
+            })),
+        };
+        const operation = new SelectionService(this.dependencies);
+        const preview = await operation.execute({
+          subjectId: props.subjectId,
+          orderId: props.orderId,
+          data: {
+            action: "preview",
+            lineId: primary[0].id,
+            selections: [selection],
+          },
+        });
+        await operation.execute({
+          subjectId: props.subjectId,
+          orderId: props.orderId,
+          data: {
+            action: "apply",
+            lineId: primary[0].id,
+            selections: [selection],
+            expectedVersions: preview.quotes.map((quote) => quote.version),
+            expectedSelectionUpdatedAt: new Date(
+              primary[0].selectionUpdatedAt,
+            ).toISOString(),
+          },
+        });
+        return;
+      }
+    }
     await repository.withSubjectLock(
       { subjectId: props.subjectId },
       async () => {
@@ -112,7 +188,12 @@ export class Service {
           const product = await service.ecommerceModule.product.findById({
             id: line.productId,
           });
-          if (product?.slug === INITIAL_FREE_SUBSCRIPTION_PRODUCT_SLUG) {
+          if (
+            product &&
+            (await new InitialGrantProducts(
+              service.ecommerceModule.storesToProducts,
+            ).includes(product.id))
+          ) {
             throw new Error(
               "Permission error. Initial Free cannot be changed through a cart",
             );
@@ -121,7 +202,7 @@ export class Service {
         for (const line of props.lines) {
           await service.ecommerceModule.ordersToProducts.update({
             id: line.id,
-            data: { quantity: line.quantity },
+            data: { quantity: line.quantity, selectionUpdatedAt: new Date() },
           });
         }
       },

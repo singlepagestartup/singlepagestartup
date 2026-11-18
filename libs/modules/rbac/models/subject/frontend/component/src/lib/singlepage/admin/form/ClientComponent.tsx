@@ -51,6 +51,13 @@ export function Component(props: IComponentPropsExtended) {
       status={status}
     >
       <div className="flex flex-col gap-6">
+        {" "}
+        {props.subjectsToEcommerceModuleStores
+          ? props.subjectsToEcommerceModuleStores({
+              data: props.data,
+              isServer: props.isServer,
+            })
+          : null}
         <FormField
           ui="shadcn"
           type="text"
@@ -59,7 +66,6 @@ export function Component(props: IComponentPropsExtended) {
           form={form}
           placeholder="Enter slug"
         />
-
         <FormField
           ui="shadcn"
           type="select"
@@ -122,14 +128,12 @@ export function Component(props: IComponentPropsExtended) {
               isServer: props.isServer,
             })
           : null}
-
         {props.subjectsToActions
           ? props.subjectsToActions({
               data: props.data,
               isServer: props.isServer,
             })
           : null}
-
         {props.subjectsToBillingModuleCurrencies
           ? props.subjectsToBillingModuleCurrencies({
               data: props.data,

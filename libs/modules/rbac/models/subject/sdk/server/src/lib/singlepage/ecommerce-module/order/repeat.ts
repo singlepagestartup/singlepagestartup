@@ -8,6 +8,7 @@ import {
 export interface IProps {
   id: string;
   orderId: string;
+  mode?: "next-period";
   host?: string;
   options?: Partial<NextRequestOptions>;
 }
@@ -35,6 +36,11 @@ export async function action(props: IProps): Promise<IResult> {
       ...options?.next,
     },
   };
+  if (props.mode) {
+    const body = new FormData();
+    body.set("data", JSON.stringify({ mode: props.mode }));
+    requestOptions.body = body;
+  }
 
   const res = await fetch(
     `${host}${route}/${encodeURIComponent(id)}/ecommerce-module/orders/${encodeURIComponent(orderId)}/repeat`,

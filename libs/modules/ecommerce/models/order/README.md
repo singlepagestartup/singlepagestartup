@@ -3,6 +3,8 @@
 ## Purpose
 
 Orders store cart and checkout information, including status and metadata.
+The cart quantity counts primary line quantities. Attached service lines do not
+increase the badge; a service bought as its own primary line still counts.
 
 ## Fields
 
@@ -22,18 +24,38 @@ Orders store cart and checkout information, including status and metadata.
 - `paymentFailureCanceledAt`: nullable server time identifying an automatic
   unpaid-payment cancellation. Ordinary writes cannot set it; an explicit
   cancellation clears it.
+- `subscriptionSourceOrderId`, `subscriptionSourceInvoiceId`,
+  `subscriptionSourceInterval`: server-managed source of the next delivery.
+  A unique source-order/invoice pair makes retries return the same next Order.
+- `subscriptionScheduledStartsAt`, `subscriptionScheduledEndsAt`: trusted provider
+  coverage dates. Legacy accepted dates remain unchanged when provider facts
+  establish the boundary for future periods.
+- `subscriptionProviderInvoiceId`: unique provider/Invoice identity used to
+  correlate replayed subscription events with their own Order.
+
+The Subject purchase-history response adds `purchaseDetails` to the Order.
+Its SDK interface groups saved invoice shares, receipts, the next period and
+available payment actions for the current buyer. Orders, Invoices and their
+relations supply those records.
+
+## Legacy cart and saved payments
+
+An older open cart without an offer cannot pay through a Product price.
+The buyer selects a Store on the cart line. The standard Subject selection
+operation saves the current quote and delivery before checkout can reserve stock.
+Multiple products, ambiguous offers, missing delivery or unavailable stock leave
+the cart open for correction. Existing durable historical Invoices resume their
+own payment context without a new catalog quote.
 
 ## Subscription delivery period
 
 RBAC order proceed calls the internal `acceptSubscriptionPeriod` capability
 after checking the current Subject's ownership and product Role grants. The
 Order service reads the configured interval and its own paid Invoices. It
-accepts the latest Invoice by immutable `createdAt`, then ID, using one
-conditional write for the complete period. A replay or competing retry cannot
-extend the same Invoice twice. The first period starts at confirmation;
-renewal extends the end by one interval from the later of confirmation and
-the previous end. An early renewal preserves the start of continuous paid
-coverage; a late renewal starts a new covered span at confirmation.
+records the paid period once on that Order. Each subsequent period has a new
+Order, PaymentIntent and Invoice. A provider receipt supplies its coverage
+dates for automatic billing. The local interval and previous paid deadline
+determine coverage for a separately paid period.
 
 Generic create/update cannot change period fields. Unchanged fields in existing
 full-record update payloads are removed before writing. An OPEN Invoice and an
@@ -63,6 +85,36 @@ or offered currencies change. The latest paid Invoice on a successful Payment
 Intent in the Order's currency supplies the amount and interval. Creation time
 and then Invoice ID determine the order. The Product type still selects delivery.
 A Telegram `one_off` payment can settle a subscription with its saved interval.
+New purchase snapshots supply each Order's own charges and share of a common
+Invoice. History retains seller, fulfiller, destination and service quantities
+after catalog changes. Older shared Invoices without an allocation show their
+total once with the related Orders.
+
+During the final 24 hours of a paid period, Subject Proceed prepares its next
+Order. A unique source-order/accepted-Invoice pair makes repeated cron runs,
+concurrent requests and receipt replays reuse that period. The next selection
+keeps the primary Product and services with `recurrence=each`; first-only
+services stay on the original purchase. Current prices and available stock
+must still support the selection. A changed price leaves the new cart for
+buyer confirmation; unavailable stock stops an automatic Stripe renewal.
+
+For an existing Stripe subscription contract, preparation reserves stock and
+creates the local Intent, Currency link and draft Invoice without a provider
+checkout or debit request. Stripe owns the charge schedule. Its authenticated
+Invoice adopts the draft and settles that period's reservation once. Webhooks
+and the scheduled provider reconciliation use the same correlation. Ordinary
+Stripe one-off payments and manual providers retain their hosted payment flow.
+A prepared successor is available through its owning Subject's
+`purchaseDetails.nextPeriod`, including status, dates, totals and payment URL.
+
+Cancellation stops the provider contract and closes unpaid successors, voids
+their local Invoices and releases their stock. Paid access retains its accepted
+deadline. The `four_weeks` interval is 28 days; Stripe represents it as four
+weekly intervals. A legacy digital/service subscription with one Product and
+an unambiguous payment/currency can continue using its existing Product price
+without retrofitting an offer. Ambiguous allocations and legacy physical
+stock without an offer require reconciliation.
+
 While payment is pending, the customer can still see the saved terms from a
 paid Invoice or a sole open Invoice. Reading the Order leaves its accepted
 period unchanged. Starting or renewing a period requires a confirmed payment.
@@ -78,13 +130,11 @@ The internal initial-Free zero one-off settlement retains its Product's
 subscription delivery contract. No retired price is added to the public catalog
 or new checkout through this read compatibility.
 
-Natural recurring expiry removes its grant through the internal fulfillment
-operation and sets `status=expired`, retaining its paid Invoice anchor. A later
-confirmed payment can reactivate that same unrevoked Order for a full interval.
-Role changes, credits and period acceptance share one transaction with Subject
-and Order locks; failure leaves the paid Order retryable. Notifications and
-automatic follow-up checkout run after commit. Urgent paid/cleanup work precedes
-the bounded recurring scan, which rotates by ID without changing delivery dates.
+At expiry the fulfillment service sets `status=expired` and removes access
+unless another paid Order still grants it. The expired Order keeps its paid
+Invoice. Role changes, credits and period acceptance share one transaction
+under Subject and Order locks. Notifications run after commit. The scheduler
+processes pending payments and cleanup before scanning for due renewals.
 
 Legacy delivering orders require the operator-only Subject freeze operation.
 It checks exact ownership, current product Roles and the expected previous
@@ -100,9 +150,9 @@ does not change the period.
 - `cart-default`: cart layout showing products, quantities, and totals. Pass the owner-scoped lines as `ordersToProducts` in customer views. Standalone use reads the lines with the permissions of the caller.
 - `cart-card-default` displays a cart order from the Subject’s loaded `cartDetails`. Pass the order with `dataSource="props"`, quantity controls keyed by line ID, and currency and removal controls as JSX slots. A grouped order shows its subtotal and removal action once.
 - `orders-to-products-quantity-default`: renders quantities from order-product relations.
-- `purchase-ai-chat`: purchase history row. The shared record reader loads the
-  Order; local `client.tsx`/`server.tsx` readers load SDK totals and pass typed
-  results to the view. A failed total read leaves the Order visible.
+- `purchase-ai-chat`: purchase history row. The buyer's account passes the
+  Order and its `purchaseDetails` from the Subject order list. The row shows
+  the paid period, invoice status, charges and the next payment when available.
 - `form-field-default`: writes order data into a form field.
 - `create`: client action to create a cart/order.
 - `delete`: client action to delete an order.
@@ -151,6 +201,12 @@ separate checkout validation; an omitted cart amount is not a zero-price grant.
 
 ## Payment success extension
 
+Order supplies the Order-to-Payment-Intent relation when creating Billing's
+Payment Intent service. RBAC Subject uses the resulting service for checkout,
+provider callbacks and scheduled payment checks. When a provider
+confirms payment, the invoice update and stock settlement share a transaction.
+Observer triggers the subsequent Order check after a successful webhook.
+
 The payment check route uses `controller/startup/find-by-id/check/index.ts`. Override its protected `onPaymentSucceeded({ order })` method to run project logic before persisting `paid`. The default hook does nothing. A failed hook leaves the order in `paying`, so a subsequent check can repeat the operation. Use idempotent SDK operations and keep payment confirmation independent of notification delivery.
 
 The checker locks and re-reads the Order before invoking the hook. Concurrent
@@ -176,3 +232,13 @@ cannot be inferred from payment status alone.
 Scheduled deletion retains marked payment failures and Orders with payment
 links, and rechecks status under the lifecycle lock before deleting an old
 unpaid cancellation.
+
+Checkout can reopen the exact saved payment selection across several currencies.
+It returns the original invoices and their current statuses. A paid currency
+invoice stays paid while an unpaid currency invoice retains its own payment URL;
+selecting only that remaining invoice's complete set of Orders also reuses it.
+Reverse Invoice → Payment Intent → Order checks reject an incomplete selection
+of a shared invoice. Recovery of a committed, unsent purchase uses the saved
+allocation and provider context rather than current catalog prices or retry
+request terms. An unknown provider outcome keeps the attempt and reservation
+pending for reconciliation.

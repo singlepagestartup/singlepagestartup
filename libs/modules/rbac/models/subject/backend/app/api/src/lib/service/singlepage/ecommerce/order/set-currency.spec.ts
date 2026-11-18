@@ -9,9 +9,7 @@ jest.mock("@sps/shared-backend-api", () => ({
   withConsistencyDatabase: (_tx: unknown, operation: () => Promise<void>) =>
     operation(),
 }));
-jest.mock("@sps/shared-utils", () => ({
-  INITIAL_FREE_SUBSCRIPTION_PRODUCT_SLUG: "free-subscription",
-}));
+jest.mock("@sps/shared-utils", () => ({}));
 function fixture() {
   const currencies = {
     find: jest
@@ -27,6 +25,7 @@ function fixture() {
     ecommerceModuleOrderAssertAccess: jest.fn().mockResolvedValue(undefined),
     ecommerceModuleResolveOrderCurrency: jest.fn().mockResolvedValue("usd"),
     ecommerceModule: {
+      storesToProducts: { find: jest.fn().mockResolvedValue([]) },
       ordersToBillingModulePaymentIntents: {
         find: jest.fn().mockResolvedValue([]),
       },
@@ -35,7 +34,10 @@ function fixture() {
         findById: jest.fn().mockResolvedValue({ type: "cart", status: "new" }),
       },
       ordersToProducts: {
-        find: jest.fn().mockResolvedValue([{ productId: "product" }]),
+        find: jest
+          .fn()
+          .mockResolvedValue([{ id: "line", productId: "product" }]),
+        update: jest.fn(),
       },
       product: { findById: jest.fn().mockResolvedValue({ slug: "pro" }) },
       ordersToBillingModuleCurrencies: currencies,
@@ -125,8 +127,12 @@ it("normalizes duplicate legacy associations in the same transaction", async () 
 });
 it("retains the Initial Free restriction", async () => {
   const { service, currencies, operation } = fixture();
+  service.ecommerceModule.storesToProducts.find.mockResolvedValue([
+    { productId: "product", settings: { initialGrant: true } },
+  ]);
   service.ecommerceModule.product.findById.mockResolvedValue({
-    slug: "free-subscription",
+    id: "product",
+    slug: "welcome",
   });
   await expect(operation.execute(props)).rejects.toThrow(
     "cannot be changed through a cart",

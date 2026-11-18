@@ -1,5 +1,6 @@
-import { Container, ContainerModule } from "inversify";
+import { ContainerModule } from "inversify";
 import {
+  createAppBootstrap,
   DI,
   ExceptionFilter,
   type IExceptionFilter,
@@ -20,38 +21,36 @@ import { Service as BillingPaymentIntentsToInvoicesService } from "@sps/billing/
 import { Repository as BillingPaymentIntentsToInvoicesRepository } from "@sps/billing/relations/payment-intents-to-invoices/backend/app/api/src/lib/repository";
 import { Configuration as BillingPaymentIntentsToInvoicesConfiguration } from "@sps/billing/relations/payment-intents-to-invoices/backend/app/api/src/lib/configuration";
 
+export type IBootstrapResult = Awaited<ReturnType<typeof bootstrap>>;
+
+export function createBillingModule(): IBillingModule {
+  return {
+    currency: new BillingCurrencyService(
+      new BillingCurrencyRepository(new BillingCurrencyConfiguration()),
+    ),
+    invoice: new BillingInvoiceService(
+      new BillingInvoiceRepository(new BillingInvoiceConfiguration()),
+    ),
+    paymentIntentsToInvoices: new BillingPaymentIntentsToInvoicesService(
+      new BillingPaymentIntentsToInvoicesRepository(
+        new BillingPaymentIntentsToInvoicesConfiguration(),
+      ),
+    ),
+  };
+}
+
 const bindings = new ContainerModule(({ bind }) => {
   bind<IExceptionFilter>(DI.IExceptionFilter).to(ExceptionFilter);
   bind<App>(DI.IApp).to(App);
   bind<Controller>(DI.IController).to(Controller);
   bind<Repository>(DI.IRepository).to(Repository);
-  bind<Service>(DI.IService).to(Service);
+  bind<Service>(DI.IService).to(Service).inSingletonScope();
   bind<Configuration>(DI.IConfiguration).to(Configuration);
   bind<IBillingModule>(PaymentIntentDI.IBillingModule)
-    .toDynamicValue(() => {
-      return {
-        currency: new BillingCurrencyService(
-          new BillingCurrencyRepository(new BillingCurrencyConfiguration()),
-        ),
-        invoice: new BillingInvoiceService(
-          new BillingInvoiceRepository(new BillingInvoiceConfiguration()),
-        ),
-        paymentIntentsToInvoices: new BillingPaymentIntentsToInvoicesService(
-          new BillingPaymentIntentsToInvoicesRepository(
-            new BillingPaymentIntentsToInvoicesConfiguration(),
-          ),
-        ),
-      };
-    })
+    .toDynamicValue(createBillingModule)
     .inSingletonScope();
 });
 
-export async function bootstrap() {
-  const container = new Container();
-  container.load(bindings);
-  const app = container.get<App>(DI.IApp);
-
-  await app.init();
-
-  return { app };
-}
+export const { bootstrap, createService } = createAppBootstrap<App, Service>(
+  bindings,
+);

@@ -2,6 +2,18 @@ allOf:
   - $ref: "../../../../../../../../../libs/shared/backend/api/src/lib/repository/database/relation.yaml"
   - type: object
     properties:
+      configurationKey:
+        type: string
+      settings:
+        type: object
+        description: Delivery, packaging and registration settings for this offer.
+        properties:
+          initialGrant:
+            type: boolean
+            description: An administrator can assign this offer to registered Subjects once per Product.
+          initialGrantLegacyHistory:
+            type: boolean
+            description: Recognize matching zero-price registration orders issued before grants were marked.
       sku:
         type: string
         description: Sku
