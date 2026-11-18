@@ -4,10 +4,7 @@ import type {
 } from "@sps/ecommerce/models/order/sdk/model";
 import type { Service as SubjectService } from "../../index";
 import type { IModel as IEcommerceModuleProduct } from "@sps/ecommerce/models/product/sdk/model";
-import type {
-  IModel as IPaymentLink,
-  IPurchaseSnapshot,
-} from "@sps/ecommerce/relations/orders-to-billing-module-payment-intents/sdk/model";
+import type { IModel as IPaymentLink } from "@sps/ecommerce/relations/orders-to-billing-module-payment-intents/sdk/model";
 import { moneyFromMinorUnits, moneyMinorUnits } from "@sps/backend-utils";
 
 export interface IExecuteProps {
@@ -447,13 +444,20 @@ export class Service {
       if (!intent) {
         continue;
       }
-      const charges = orderLinks
-        .filter(
-          (link) =>
-            link.billingModulePaymentIntentId === intent.id &&
-            link.purchaseSnapshot,
-        )
-        .map((link) => link.purchaseSnapshot!) as IPurchaseSnapshot[];
+      const charges = orderLinks.flatMap((link) => {
+        if (
+          link.billingModulePaymentIntentId !== intent.id ||
+          !link.purchaseSnapshot
+        ) {
+          return [];
+        }
+        return [
+          {
+            ...link.purchaseSnapshot,
+            orderLineId: link.orderLineId ?? undefined,
+          },
+        ];
+      });
       const currencyId =
         charges[0]?.currencyId ??
         currencyLinks.find((link) => link.paymentIntentId === intent.id)

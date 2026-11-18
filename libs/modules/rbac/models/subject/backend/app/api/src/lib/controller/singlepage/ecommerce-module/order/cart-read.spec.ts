@@ -20,13 +20,13 @@ jest.mock("@sps/shared-utils", () => ({
 }));
 
 jest.mock("@sps/backend-utils", () => ({
+  ...jest.requireActual("@sps/backend-utils"),
   authorization: (...args: unknown[]) => authorizationMock(...args),
   getHttpErrorType: (error: Error) => ({
     status: 400,
     message: error.message,
     details: null,
   }),
-  verifyJwt: jest.requireActual("@sps/backend-utils").verifyJwt,
 }));
 
 jest.mock("hono/jwt", () => ({
@@ -334,6 +334,96 @@ describe("Subject order history", () => {
             receipts: [{ id: "receipt", file: "/receipt.pdf" }],
           },
         },
+      ],
+    });
+  });
+
+  it("returns saved order line IDs for each charge and resolves the first product slug", async () => {
+    const { service, orderFind } = createService();
+    orderFind.mockResolvedValue([
+      { id: "order-1", type: "history", status: "paid" },
+    ]);
+    const charges = [
+      {
+        orderLineId: "delivery",
+        parentLineId: "chair",
+        charge: { role: "delivery", productId: "delivery-product" },
+      },
+      {
+        orderLineId: "chair",
+        parentLineId: null,
+        charge: { role: "product", productId: "chair-product" },
+      },
+      {
+        orderLineId: "table",
+        parentLineId: null,
+        charge: { role: "product", productId: "table-product" },
+      },
+    ];
+    service.ecommerceModule.ordersToBillingModulePaymentIntents.find.mockResolvedValue(
+      charges.map(({ orderLineId, ...purchaseSnapshot }) => ({
+        orderId: "order-1",
+        billingModulePaymentIntentId: "intent",
+        orderLineId,
+        purchaseSnapshot: {
+          ...purchaseSnapshot,
+          currencyId: "rub",
+          amount: "10.00",
+        },
+      })),
+    );
+    service.ecommerceModule.product = {
+      find: jest
+        .fn()
+        .mockResolvedValue([{ id: "chair-product", slug: "birch-chair" }]),
+    };
+    service.ecommerceModule.ordersToFileStorageModuleFiles = {
+      find: jest.fn().mockResolvedValue([]),
+    };
+    service.billingModule = {
+      paymentIntent: {
+        find: jest
+          .fn()
+          .mockResolvedValue([{ id: "intent", status: "succeeded" }]),
+      },
+      paymentIntentsToInvoices: {
+        find: jest
+          .fn()
+          .mockResolvedValue([
+            { paymentIntentId: "intent", invoiceId: "invoice" },
+          ]),
+      },
+      paymentIntentsToCurrencies: {
+        find: jest
+          .fn()
+          .mockResolvedValue([
+            { paymentIntentId: "intent", currencyId: "rub" },
+          ]),
+      },
+      invoice: {
+        find: jest.fn().mockResolvedValue([{ id: "invoice", status: "paid" }]),
+      },
+      currency: { find: jest.fn().mockResolvedValue([{ id: "rub" }]) },
+    };
+
+    const result = await new ListHandler(service).execute(
+      createContext({
+        includePurchaseDetails: "true",
+        filters: { and: [{ column: "type", method: "eq", value: "history" }] },
+      }),
+      jest.fn(),
+    );
+
+    expect(service.ecommerceModule.product.find).toHaveBeenCalledWith({
+      params: {
+        filters: {
+          and: [{ column: "id", method: "inArray", value: ["chair-product"] }],
+        },
+      },
+    });
+    expect(result).toMatchObject({
+      data: [
+        { purchaseDetails: { primaryProductSlug: "birch-chair", charges } },
       ],
     });
   });

@@ -49,7 +49,7 @@ GPT-6.2 Sol с усилием xhigh исследовал создание экз
 
 ## Incident Log
 
-<!-- incident-count: 12 -->
+<!-- incident-count: 14 -->
 
 ### Incident 1 — Загрузка undici при проверке идентичности в Bun
 
@@ -170,6 +170,26 @@ GPT-6.2 Sol с усилием xhigh исследовал создание экз
 - **Fix**: Штатный ConsistencyStore.dispatch обработал очередь на проверочной базе до нуля. Отдельный тест подтвердил доставку для обоих порядков коммита.
 - **Preventive Action**: Проверять backlog тестовой базы перед повторным запуском интеграционного теста Consistency.
 - **References**: `apps/api/specs/integration/consistency.integration.spec.ts`.
+
+### Incident 13 — ESLint отклонил импорты в реестрах
+
+- **Phase**: Implement, code review
+- **Occurrences**: 1
+- **Symptom**: В реестре Social ESLint выдал 30 ошибок `@typescript-eslint/no-require-imports`.
+- **Root Cause**: Генератор загружал фабрики через `require()` в геттерах. Аннотация `typeof import(...)` проверяла тип и не меняла способ загрузки.
+- **Fix**: Генератор создаёт именованные импорты. Геттер вызывает фабрику с текущей сборкой. В тесте Identity репозиторий подменяет только операцию записи, поэтому остальные экспорты доступны при загрузке.
+- **Preventive Action**: Проверять сгенерированные файлы линтером и отдельно загружать реестры в Bun до запуска HTTP.
+- **References**: `tools/plugins/sps-generator-plugin/src/utils/service-registries/index.ts`.
+
+### Incident 14 — Услуга отображалась выше купленного товара
+
+- **Phase**: Implement, code review
+- **Occurrences**: 1
+- **Symptom**: В одном из оплаченных заказов сборка стула стояла перед самим стулом.
+- **Root Cause**: История покупок отбрасывала `orderLineId` при чтении платежных связей. Компонент показывал строки в порядке их получения.
+- **Fix**: История возвращает ID строки заказа. Компонент показывает каждый товар вместе с услугами, чей `parentLineId` ссылается на эту строку.
+- **Preventive Action**: Проверять порядок на перемешанных строках и на двух строках одного предложения.
+- **References**: `libs/modules/ecommerce/models/order/frontend/component/src/lib/singlepage/purchase-ai-chat/Component.spec.ts`.
 
 ## Reusable Learnings
 

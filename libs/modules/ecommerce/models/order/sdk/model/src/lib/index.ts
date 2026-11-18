@@ -24,6 +24,10 @@ export interface ICartDetails {
   offers?: (IOffer & { store: IStore | null })[];
 }
 
+export interface IPurchaseCharge extends IPurchaseSnapshot {
+  orderLineId?: string;
+}
+
 /** Subject-scoped order history assembled from invoices, receipts and subscription orders. */
 export interface IPurchaseDetails {
   primaryProductSlug?: string;
@@ -45,7 +49,7 @@ export interface IPurchaseDetails {
   unpriced?: IUnpricedOrderToProduct[];
   totals: { total: number; billingModuleCurrency: IBillingModuleCurrency }[];
   receipts: IFileStorageModuleFile[];
-  charges?: IPurchaseSnapshot[];
+  charges?: IPurchaseCharge[];
   invoiceShares?: {
     invoiceId: string;
     invoiceAmount: number;
