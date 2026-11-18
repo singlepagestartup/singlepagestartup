@@ -444,7 +444,8 @@ WebSocket path reconciles other subscribed clients and derived changes.
 
 - Use `function` keyword for components
 - Clean, declarative JSX
-- Follow ESLint and Prettier configurations
+- Run `npm run lint` to check the workspace, including Studio and tools, and verify the [module dependency order](.agents/contracts/engineering/module-dependencies.md). For a single Nx project, run `npx nx run <project>:eslint:lint` if it has that target.
+- Prettier formats staged source files in the pre-commit hook. ESLint reports code issues such as duplicate imports. TypeScript may import types and runtime values separately from the same module.
 
 ### Performance
 

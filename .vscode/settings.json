@@ -10,7 +10,8 @@
     "javascriptreact",
     "typescript",
     "typescriptreact",
-    "json"
+    "json",
+    "jsonc"
   ],
   "editor.formatOnSave": true,
   "editor.codeActionsOnSave": {
@@ -27,7 +28,6 @@
   "typescript.updateImportsOnFileMove.enabled": "always",
   "typescript.validate.enable": true,
   "playwright.reuseBrowser": false,
-  "eslint.format.enable": true,
   "window.autoDetectColorScheme": true,
   "workbench.preferredLightColorTheme": "Light+",
   "workbench.preferredDarkColorTheme": "Dark+",
