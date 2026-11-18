@@ -3,7 +3,8 @@ issue_number: 416
 issue_title: "Типизированный доступ к сервисам нижележащих модулей через this.modules"
 start_date: 2026-11-18T19:53:54Z
 plan_file: thoughts/shared/plans/singlepagestartup/ISSUE-416.md
-status: in_progress
+status: complete
+completed_date: 2026-11-18T20:45:12Z
 ---
 
 # Ход реализации #416
@@ -126,3 +127,9 @@ status: in_progress
 | Общая библиотека API        | 151 тест прошёл, один ранее отключённый `Query Builder / Order By` пропущен |
 
 Наборы Nx выполнялись последовательно по проектам, без кэша. Проверки SDK, оплаты и транзакций входят также в интеграционный набор.
+
+## Pull Request
+
+[PR #417](https://github.com/singlepagestartup/singlepagestartup/pull/417) открыт в `main`. Коммит реализации — `2914e55ab9`.
+
+Задача #416 переведена в `Code Review`. [Передача PR на ревью](https://github.com/singlepagestartup/singlepagestartup/issues/416#issuecomment-6991133769).
