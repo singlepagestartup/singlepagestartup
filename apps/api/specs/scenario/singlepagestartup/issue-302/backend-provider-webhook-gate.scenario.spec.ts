@@ -81,7 +81,7 @@ describe("Given: issue-302 provider webhook gate scenario", () => {
     authenticated?: boolean;
   }) {
     return fetch(
-      `${getApiUrl()}/api/billing/payment-intents/${props.provider}/webhook`,
+      `${getApiUrl()}/api/rbac/subjects/ecommerce-module/orders/payment-intents/${props.provider}/webhook`,
       {
         method: "POST",
         headers: {

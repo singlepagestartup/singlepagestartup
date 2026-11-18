@@ -24,9 +24,10 @@ import {
 } from "@sps/ecommerce/relations/orders-to-billing-module-payment-intents/backend/repository/database";
 import { Configuration } from "../../configuration";
 import { Repository } from "../../repository";
+import { Service } from "..";
 import { bootstrap } from "../../bootstrap";
 import type { IReservationLine } from "./reservation";
-import { bootstrap as bootstrapPaymentIntent } from "@sps/billing/models/payment-intent/backend/app/api/src/lib/bootstrap";
+import { createOrderBootstrap } from "@sps/ecommerce/models/order/backend/app/api/src/lib/bootstrap";
 
 const cleanups: (() => Promise<unknown>)[] = [];
 afterEach(async () => {
@@ -77,10 +78,12 @@ async function fixture(stock = 1) {
       .where(eq(OfferAttribute.attributeId, attributeId)),
   );
   const { service: relation } = await bootstrap();
-  const { service: second } = await bootstrap();
-  const { service: intents } = await bootstrapPaymentIntent(
-    relation.paymentLifecycle,
+  const second = new Service(
+    new Repository(new Configuration()),
+    relation.attribute,
   );
+  const intents =
+    createOrderBootstrap(relation).createService().billingModule.paymentIntent;
   const invoices = intents.billingModule.invoice;
   const attempts: {
     intentId: string;

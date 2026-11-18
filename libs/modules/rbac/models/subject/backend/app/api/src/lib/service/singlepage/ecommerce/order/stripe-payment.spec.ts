@@ -1,4 +1,5 @@
-import { Service } from "./index";
+import { Service } from "@sps/billing/models/payment-intent/backend/app/api/src/lib/service/singlepage";
+import { Service as OrderStripePayment } from "./stripe-payment";
 import { withConsistencyDatabase } from "@sps/shared-backend-api";
 
 const mockRetrieveInvoice = jest.fn();
@@ -39,7 +40,7 @@ function matches(record: any, props: any) {
   });
 }
 
-function fixture(withResolver = true) {
+function fixture(throughOrder = true) {
   const root = {
     id: "root",
     amount: 100,
@@ -133,9 +134,10 @@ function fixture(withResolver = true) {
       return invoice;
     });
   const resolve = jest.fn(async () => ({ paymentIntentId: "next" }));
-  if (withResolver) {
-    service.setProviderPeriodResolver(resolve);
-  }
+  const orderPayments = new OrderStripePayment({
+    billingModule: { paymentIntent: service } as any,
+    ecommerceModuleOrderResolveProviderPeriod: resolve,
+  });
   const subscription = {
     id: "sub_contract",
     metadata: { paymentIntentId: "root" },
@@ -175,6 +177,15 @@ function fixture(withResolver = true) {
   });
   return {
     service,
+    stripe: (event: Parameters<Service["stripe"]>[0]) =>
+      throughOrder && event.action === "webhook"
+        ? orderPayments.webhook(event.data)
+        : service.stripe(event),
+    reconcile: (props: { id: string }) => orderPayments.reconcile(props),
+    checkInvoice: (invoice: Parameters<Service["checkStripeInvoice"]>[0]) =>
+      throughOrder
+        ? orderPayments.check(invoice)
+        : service.checkStripeInvoice(invoice),
     intents,
     invoices,
     links,
@@ -193,8 +204,8 @@ beforeEach(() => {
 it("adopts the next period's draft invoice and never appends a renewal to the root intent", async () => {
   const f = fixture();
   const event = { action: "webhook", data: { data: { object: f.remote } } };
-  await f.service.stripe(event as any);
-  await f.service.stripe(event as any);
+  await f.stripe(event as any);
+  await f.stripe(event as any);
   expect(f.invoiceService.create).not.toHaveBeenCalled();
   expect(f.relationService.create).not.toHaveBeenCalled();
   expect(f.invoices.get("prepared")).toMatchObject({
@@ -221,11 +232,11 @@ it.each(["subscription_cycle", "subscription_update", undefined])(
     const f = fixture(false);
     const remote = { ...f.remote, billing_reason: reason };
     await expect(
-      f.service.stripe({
+      f.stripe({
         action: "webhook",
         data: { data: { object: remote } },
       } as any),
-    ).rejects.toThrow("Subscription period resolver is required");
+    ).rejects.toThrow("Stripe renewal requires its own period order");
     expect(f.invoiceService.create).not.toHaveBeenCalled();
     expect(f.invoiceService.update).not.toHaveBeenCalled();
     expect(f.relationService.create).not.toHaveBeenCalled();
@@ -240,7 +251,7 @@ it("can settle the initial subscription invoice without a recurring period resol
     status: "open",
     providerId: "in_period",
   });
-  await f.service.stripe({
+  await f.stripe({
     action: "webhook",
     data: {
       data: { object: { ...f.remote, billing_reason: "subscription_create" } },
@@ -253,10 +264,10 @@ it("can settle the initial subscription invoice without a recurring period resol
   expect(f.intents.get("next").status).toBe("requires_payment_method");
 });
 
-it("preserves a settled legacy cycle replay without a resolver and without new writes", async () => {
+it("preserves a settled legacy cycle replay through standalone Billing and without new writes", async () => {
   const f = fixture(false);
   f.invoices.get("initial").providerId = "in_period";
-  await f.service.stripe({
+  await f.stripe({
     action: "webhook",
     data: { data: { object: f.remote } },
   } as any);
@@ -266,10 +277,10 @@ it("preserves a settled legacy cycle replay without a resolver and without new w
   expect(f.settle).not.toHaveBeenCalled();
 });
 
-it("cannot append another initial provider invoice to a settled intent without a resolver", async () => {
+it("cannot append another initial provider invoice to a settled intent through standalone Billing", async () => {
   const f = fixture(false);
   await expect(
-    f.service.stripe({
+    f.stripe({
       action: "webhook",
       data: {
         data: {
@@ -283,7 +294,7 @@ it("cannot append another initial provider invoice to a settled intent without a
   expect(f.settle).not.toHaveBeenCalled();
 });
 
-it("cannot bypass the missing-resolver fence by polling an open recurring invoice", async () => {
+it("cannot bypass the period order requirement by polling an open recurring invoice", async () => {
   const f = fixture(false);
   f.intents.get("root").status = "requires_payment_method";
   Object.assign(f.invoices.get("initial"), {
@@ -291,9 +302,9 @@ it("cannot bypass the missing-resolver fence by polling an open recurring invoic
     providerId: "in_period",
   });
   mockRetrieveInvoice.mockResolvedValue(f.remote);
-  await expect(
-    f.service.checkStripeInvoice(f.invoices.get("initial")),
-  ).rejects.toThrow("Subscription period resolver is required");
+  await expect(f.checkInvoice(f.invoices.get("initial"))).rejects.toThrow(
+    "Stripe renewal requires its own period order",
+  );
   expect(f.settle).not.toHaveBeenCalled();
   expect(f.invoiceService.update).not.toHaveBeenCalled();
 });
@@ -305,7 +316,7 @@ it("resolves the successor period before settling a polled recurring invoice", a
     providerId: "in_period",
   });
   mockRetrieveInvoice.mockResolvedValue(f.remote);
-  await f.service.checkStripeInvoice(f.invoices.get("prepared"));
+  await f.checkInvoice(f.invoices.get("prepared"));
   expect(f.resolve).toHaveBeenCalledWith(
     expect.objectContaining({ providerInvoiceId: "in_period" }),
   );
@@ -320,7 +331,7 @@ it("does not bind or settle an unresolved out-of-order receipt", async () => {
     new Error("Conflict error. Previous period is missing"),
   );
   await expect(
-    f.service.stripe({
+    f.stripe({
       action: "webhook",
       data: { data: { object: f.remote } },
     } as any),
@@ -335,7 +346,7 @@ it("does not rebind a provider invoice already associated with a different local
   f.invoices.get("initial").providerId = "in_period";
   f.invoices.get("initial").status = "open";
   await expect(
-    f.service.stripe({
+    f.stripe({
       action: "webhook",
       data: { data: { object: f.remote } },
     } as any),
@@ -346,14 +357,14 @@ it("does not rebind a provider invoice already associated with a different local
 
 it("refuses a changed prepared amount and ignores provider drafts until finalization", async () => {
   const f = fixture();
-  await f.service.stripe({
+  await f.stripe({
     action: "webhook",
     data: { data: { object: { ...f.remote, status: "draft" } } },
   } as any);
   expect(f.resolve).not.toHaveBeenCalled();
   f.invoices.get("prepared").amount = 99;
   await expect(
-    f.service.stripe({
+    f.stripe({
       action: "webhook",
       data: { data: { object: f.remote } },
     } as any),
@@ -366,7 +377,7 @@ it("does not settle when the prepared invoice disappears during adoption", async
   const f = fixture();
   f.invoiceService.update.mockResolvedValueOnce(null);
   await expect(
-    f.service.stripe({
+    f.stripe({
       action: "webhook",
       data: { data: { object: f.remote } },
     } as any),
@@ -381,7 +392,7 @@ it.each(["void", "canceled"])(
     const f = fixture();
     f.invoices.get("prepared").status = status;
     await expect(
-      f.service.stripe({
+      f.stripe({
         action: "webhook",
         data: { data: { object: f.remote } },
       } as any),
@@ -401,7 +412,7 @@ it("refuses a provider currency that differs from the saved checkout currency", 
     findById: jest.fn().mockResolvedValue({ slug: "eur" }),
   };
   await expect(
-    f.service.stripe({
+    f.stripe({
       action: "webhook",
       data: { data: { object: f.remote } },
     } as any),
@@ -414,7 +425,7 @@ it("preserves already-paid legacy renewal history without allocating another per
   const f = fixture();
   f.invoices.get("initial").providerId = "in_period";
   f.resolve.mockResolvedValueOnce({ paymentIntentId: "root" });
-  await f.service.stripe({
+  await f.stripe({
     action: "webhook",
     data: { data: { object: f.remote } },
   } as any);
@@ -443,7 +454,7 @@ it("reconciles authoritative legacy provider coverage even when its local invoic
       yield { ...f.remote, id: "in_initial" };
     },
   });
-  await f.service.reconcileSubscriptionPeriods({ id: "root" });
+  await f.reconcile({ id: "root" });
   expect(f.resolve).toHaveBeenCalledWith(
     expect.objectContaining({
       recordedPaymentIntentId: "root",
@@ -456,7 +467,7 @@ it("reconciles authoritative legacy provider coverage even when its local invoic
 
 it("recovers a lost renewal notification while checking the prepared local invoice", async () => {
   const f = fixture();
-  await f.service.checkStripeInvoice(f.invoices.get("prepared"));
+  await f.checkInvoice(f.invoices.get("prepared"));
   expect(mockListInvoices).toHaveBeenCalledWith({
     subscription: "sub_contract",
     limit: 100,
@@ -471,9 +482,7 @@ it("recovers a lost renewal notification while checking the prepared local invoi
 it("does not call the provider for reconciliation inside a business transaction", async () => {
   const f = fixture();
   await expect(
-    withConsistencyDatabase({} as any, () =>
-      f.service.reconcileSubscriptionPeriods({ id: "root" }),
-    ),
+    withConsistencyDatabase({} as any, () => f.reconcile({ id: "root" })),
   ).rejects.toThrow("requires a committed transaction");
   expect(mockRetrieveInvoice).not.toHaveBeenCalled();
 });
@@ -481,7 +490,7 @@ it("does not call the provider for reconciliation inside a business transaction"
 it("refuses any second provider submission for a prepared successor intent", async () => {
   const f = fixture();
   await expect(
-    f.service.stripe({
+    f.stripe({
       action: "create",
       entity: f.intents.get("next"),
       currency: "usd",
@@ -507,7 +516,7 @@ it("adds first-only charges to the initial Stripe invoice without recurring them
       hosted_invoice_url: "https://stripe.example/in_initial",
     },
   });
-  await f.service.stripe({
+  await f.stripe({
     action: "create",
     entity: f.intents.get("root"),
     currency: "usd",
@@ -531,4 +540,16 @@ it("adds first-only charges to the initial Stripe invoice without recurring them
     }),
     { idempotencyKey: "sps:root:subscription" },
   );
+});
+
+it("refuses to allocate a new renewal to the original contract intent", async () => {
+  const f = fixture();
+  f.resolve.mockResolvedValue({ paymentIntentId: "root" });
+  await expect(
+    f.stripe({
+      action: "webhook",
+      data: { data: { object: f.remote } },
+    } as any),
+  ).rejects.toThrow("own local subscription period");
+  expect(f.settle).not.toHaveBeenCalled();
 });

@@ -1,4 +1,27 @@
-import { IRouteRule } from "@sps/shared-utils";
+import { type IRouteRule, UUID_PATH_SUFFIX_REGEX } from "@sps/shared-utils";
+
+/** Routes whose controllers authenticate the caller and enforce resource access. */
+export const controllerGuardedRoutes: IRouteRule[] = [
+  {
+    regexPath: /^\/api\/rbac\/subjects\/host-cache\/revalidate\/?$/,
+    methods: ["POST"],
+  },
+  {
+    regexPath: /^\/api\/rbac\/subjects\/[^/]+\/blog-module\/articles\/?$/,
+    methods: ["POST"],
+  },
+  {
+    regexPath:
+      /^\/api\/rbac\/subjects\/[^/]+\/blog-module\/articles\/[^/]+\/content$/,
+    methods: ["GET"],
+  },
+  {
+    regexPath: new RegExp(
+      `^/api/rbac/subjects${UUID_PATH_SUFFIX_REGEX.source}`,
+    ),
+    methods: ["GET"],
+  },
+];
 
 /** Raw financial records require a role. Provider callbacks authenticate their notifications. */
 export const privateCommerceRoutes: IRouteRule[] = [
@@ -6,15 +29,7 @@ export const privateCommerceRoutes: IRouteRule[] = [
     regexPath:
       /^\/api\/billing\/(?:invoices|payment-intents-to-(?:invoices|currencies))(?:\/.*)?$/i,
   },
-  {
-    regexPath: /^\/api\/billing\/payment-intents(?:\/.*)?$/i,
-    methods: ["GET", "HEAD", "PUT", "PATCH", "DELETE"],
-  },
-  {
-    regexPath:
-      /^\/api\/billing\/payment-intents(?!\/[^/]+\/webhook\/?$)(?:\/.*)?$/i,
-    methods: ["POST"],
-  },
+  { regexPath: /^\/api\/billing\/payment-intents(?:\/.*)?$/i },
   {
     regexPath:
       /^\/api\/ecommerce\/(?:orders|orders-to-products|orders-to-billing-module-(?:currencies|payment-intents)|orders-to-file-storage-module-files|stores-to-orders)(?:\/.*)?$/i,
@@ -44,7 +59,7 @@ export const operatorOnlyRoutes: IRouteRule[] = [
   ...operatorOnlyCatalogueWriteRoutes,
   {
     regexPath:
-      /^\/api\/billing\/payment-intents\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\/[^/]+\/?$/i,
+      /^\/api\/rbac\/subjects\/ecommerce-module\/orders\/payment-intents\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\/(?:check|providers\/[^/]+)\/?$/i,
     methods: ["POST"],
   },
 ];

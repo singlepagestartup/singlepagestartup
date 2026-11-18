@@ -95,18 +95,29 @@ async function fixture(provider = "paykeeper", amount = 100) {
       pay_amount: "100.00",
     } as any,
   };
-  const settlement = new Settlement({ repository, service });
-  const second = new Settlement({
-    repository: new IntentRepository(new IntentConfiguration()),
+  const settlement = new Settlement(service);
+  const otherIntent = new IntentService(
+    new IntentRepository(new IntentConfiguration()),
+    service.billingModule,
+  );
+  const second = new Settlement(otherIntent);
+  return {
     service,
-  });
-  return { service, invoices, settlement, second, props, intent, invoice };
+    otherIntent,
+    invoices,
+    settlement,
+    second,
+    props,
+    intent,
+    invoice,
+  };
 }
 
 it("serializes independent instances and preserves timestamps when the same callback is retried", async () => {
   const f = await fixture();
   const invoiceWrite = jest.spyOn(f.invoices, "update");
   const intentWrite = jest.spyOn(f.service, "update");
+  const otherWrite = jest.spyOn(f.otherIntent, "update");
   await Promise.all([
     f.settlement.execute(f.props),
     f.second.execute(f.props),
@@ -114,7 +125,7 @@ it("serializes independent instances and preserves timestamps when the same call
     f.second.execute(f.props),
   ]);
   expect(invoiceWrite).toHaveBeenCalledTimes(1);
-  expect(intentWrite).toHaveBeenCalledTimes(1);
+  expect(intentWrite.mock.calls.length + otherWrite.mock.calls.length).toBe(1);
   const paid = await f.invoices.findById({ id: f.invoice.id });
   const succeeded = await f.service.findById({ id: f.intent.id });
   expect(paid?.status).toBe("paid");
@@ -693,9 +704,6 @@ it("adopts a prepared renewal invoice atomically and serializes duplicate provid
     data: { paymentIntentId: next.id, invoiceId: draft.id } as any,
   });
   removals.push(() => relation.delete({ id: link.id }));
-  f.service.setProviderPeriodResolver(async () => ({
-    paymentIntentId: next.id,
-  }));
   const providerId = "in_period_" + randomUUID();
   const event = {
     action: "webhook",
@@ -732,9 +740,13 @@ it("adopts a prepared renewal invoice atomically and serializes duplicate provid
   const write = jest
     .spyOn(f.service, "update")
     .mockRejectedValueOnce(new Error("fixture settlement failure"));
-  await expect(f.service.stripe(event as any)).rejects.toThrow(
-    "fixture settlement failure",
-  );
+  await expect(
+    f.service.settleStripeSubscriptionInvoice(
+      event.data.data.object as any,
+      next.id,
+      true,
+    ),
+  ).rejects.toThrow("fixture settlement failure");
   expect(await f.invoices.findById({ id: draft.id })).toMatchObject({
     status: "draft",
     providerId: null,
@@ -744,7 +756,13 @@ it("adopts a prepared renewal invoice atomically and serializes duplicate provid
   );
   write.mockRestore();
   await Promise.all(
-    Array.from({ length: 4 }, () => f.service.stripe(event as any)),
+    Array.from({ length: 4 }, () =>
+      f.service.settleStripeSubscriptionInvoice(
+        event.data.data.object as any,
+        next.id,
+        true,
+      ),
+    ),
   );
   const recorded = await f.invoices.find({
     params: {

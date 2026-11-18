@@ -1,4 +1,19 @@
 import {
+  action as ecommerceModuleOrderPaymentProvider,
+  type IProps as IOrderPaymentProviderProps,
+  type IResult as IOrderPaymentProviderResult,
+} from "./ecommerce-module/order/payment-intent/provider";
+import {
+  action as ecommerceModuleOrderPaymentCheck,
+  type IProps as IOrderPaymentCheckProps,
+  type IResult as IOrderPaymentCheckResult,
+} from "./ecommerce-module/order/payment-intent/check";
+import {
+  action as ecommerceModuleOrderPaymentWebhook,
+  type IProps as IOrderPaymentWebhookProps,
+  type IResult as IOrderPaymentWebhookResult,
+} from "./ecommerce-module/order/payment-intent/provider-webhook";
+import {
   mutation as ecommerceModuleCatalogMutation,
   type IMutationProps as IEcommerceModuleCatalogMutationProps,
   type IMutationResult as IEcommerceModuleCatalogMutationResult,
@@ -515,6 +530,9 @@ import {
 } from "./host-cache/revalidate";
 
 export type IProps = {
+  IOrderPaymentProviderProps: IOrderPaymentProviderProps;
+  IOrderPaymentCheckProps: IOrderPaymentCheckProps;
+  IOrderPaymentWebhookProps: IOrderPaymentWebhookProps;
   IEcommerceModuleCatalogMutationProps: IEcommerceModuleCatalogMutationProps;
   IEcommerceModuleCatalogContextProps: IEcommerceModuleCatalogContextProps;
   IEcommerceModuleOfferCreateProps: IEcommerceModuleOfferCreateProps;
@@ -625,6 +643,9 @@ export type IProps = {
 };
 
 export type IResult = {
+  IOrderPaymentProviderResult: IOrderPaymentProviderResult;
+  IOrderPaymentCheckResult: IOrderPaymentCheckResult;
+  IOrderPaymentWebhookResult: IOrderPaymentWebhookResult;
   IEcommerceModuleCatalogMutationResult: IEcommerceModuleCatalogMutationResult;
   IEcommerceModuleCatalogContextResult: IEcommerceModuleCatalogContextResult;
   IEcommerceModuleOfferCreateResult: IEcommerceModuleOfferCreateResult;
@@ -735,6 +756,9 @@ export type IResult = {
 };
 
 export const api = {
+  ecommerceModuleOrderPaymentProvider,
+  ecommerceModuleOrderPaymentCheck,
+  ecommerceModuleOrderPaymentWebhook,
   ecommerceModuleCatalogMutation,
   ecommerceModuleCatalogContext,
   ecommerceModuleOfferCreate,

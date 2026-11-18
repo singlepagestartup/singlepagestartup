@@ -47,8 +47,9 @@ globalThis.fetch=async(input,init)=>{
 const deadline=async(promise,label)=>{let timer;try{return await Promise.race([promise,new Promise((_,reject)=>{timer=setTimeout(()=>reject(Error(label+" timed out")),10000);})]);}finally{clearTimeout(timer);}};
 if(rawRedis.status!=="ready")await deadline(new Promise((done,reject)=>{rawRedis.once("ready",done);rawRedis.once("error",reject);}),"Redis readiness");
 assert.equal(await rawRedis.ping(),"PONG");
+const {app:rbac,rbacHttpCacheExcludeRoutes}=await import("@sps/rbac/backend/app/api");
 const modules={
- rbac:(await import("@sps/rbac/backend/app/api")).app,
+ rbac,
  social:(await import("@sps/social/backend/app/api")).app,
  blog:(await import("@sps/blog/backend/app/api")).app,
  ecommerce:(await import("@sps/ecommerce/backend/app/api")).app,
@@ -106,7 +107,7 @@ try{
   // Profile reads use the normal database-backed RBAC policy.
   app.use(new IsAuthorized({allowedRoutes:[...controllerGuardedRoutes,{regexPath:/^\/api\/rbac\/subjects\/[^/]+\/social-module\/.*$/,methods:["GET"]},{regexPath:/^\/api\/account-cache-control$/,methods:["GET"]}]}).init());
   app.use(new ParseQueryMiddleware().init());
-  app.use(new HTTPCache({runtime,excludedRoutes:controllerGuardedRoutes}).init());
+  app.use(new HTTPCache({runtime,excludedRoutes:rbacHttpCacheExcludeRoutes}).init());
   let calls=0;app.get("/api/account-cache-control",async c=>{calls++;const key=resourceIdentity(profileService.repository.Table)+"|reset",version=(await runtime.store.versions([key]))[key],context=consistencyContext.getStore();context.complete=true;context.dependencies.set(key,version);return c.json({data:{calls}});});
   const readExecutions=new Map();
   app.use(async(context,next)=>{if(context.req.method==="GET"&&context.req.path.startsWith("/api/social/profiles/authors"))readExecutions.set(context.req.url,(readExecutions.get(context.req.url)||0)+1);await next();});

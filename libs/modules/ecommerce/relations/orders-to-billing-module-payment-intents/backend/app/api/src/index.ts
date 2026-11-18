@@ -1,7 +1,5 @@
 import { bootstrap } from "./lib/bootstrap";
-const { app, service } = await bootstrap();
-export { app, service };
-export const orderPaymentLifecycle = service.paymentLifecycle;
+export const { app, service } = await bootstrap();
 export { bootstrap } from "./lib/bootstrap";
 export type { IBootstrapResult } from "./lib/bootstrap";
 export type { Service } from "./lib/service";

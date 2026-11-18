@@ -46,7 +46,7 @@ const bindings = new ContainerModule(({ bind }) => {
   bind<App>(DI.IApp).to(App);
   bind<Controller>(DI.IController).to(Controller);
   bind<Repository>(DI.IRepository).to(Repository);
-  bind<Service>(DI.IService).to(Service);
+  bind<Service>(DI.IService).to(Service).inSingletonScope();
   bind<Configuration>(DI.IConfiguration).to(Configuration);
   bind<OfferService>(OrdersToProductsDI.IOffersService)
     .toDynamicValue(() => createOfferService())

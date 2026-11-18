@@ -138,6 +138,12 @@ paths:
     $ref: "../../libs/modules/rbac/models/role/sdk/model/src/lib/paths.yaml#/paths/~1rbac~1roles~1{id}"
 
   # rbac/subject
+  /rbac/subjects/ecommerce-module/orders/payment-intents/{id}/providers/{provider}:
+    $ref: "../../libs/modules/rbac/models/subject/sdk/model/src/lib/paths.yaml#/paths/~1rbac~1subjects~1ecommerce-module~1orders~1payment-intents~1{id}~1providers~1{provider}"
+  /rbac/subjects/ecommerce-module/orders/payment-intents/{provider}/webhook:
+    $ref: "../../libs/modules/rbac/models/subject/sdk/model/src/lib/paths.yaml#/paths/~1rbac~1subjects~1ecommerce-module~1orders~1payment-intents~1{provider}~1webhook"
+  /rbac/subjects/ecommerce-module/orders/payment-intents/{id}/check:
+    $ref: "../../libs/modules/rbac/models/subject/sdk/model/src/lib/paths.yaml#/paths/~1rbac~1subjects~1ecommerce-module~1orders~1payment-intents~1{id}~1check"
   /rbac/subjects:
     $ref: "../../libs/modules/rbac/models/subject/sdk/model/src/lib/paths.yaml#/paths/~1rbac~1subjects"
   /rbac/subjects/count:
@@ -410,12 +416,7 @@ paths:
     $ref: "../../libs/modules/billing/models/payment-intent/sdk/model/src/lib/paths.yaml#/paths/~1billing~1payment-intents~1count"
   /billing/payment-intents/{id}:
     $ref: "../../libs/modules/billing/models/payment-intent/sdk/model/src/lib/paths.yaml#/paths/~1billing~1payment-intents~1{id}"
-  /billing/payment-intents/{id}/{provider}:
-    $ref: "../../libs/modules/billing/models/payment-intent/sdk/model/src/lib/paths.yaml#/paths/~1billing~1payment-intents~1{id}~1{provider}"
-  /billing/payment-intents/{provider}/webhook:
-    $ref: "../../libs/modules/billing/models/payment-intent/sdk/model/src/lib/paths.yaml#/paths/~1billing~1payment-intents~1{provider}~1webhook"
-  /billing/payment-intents/{id}/check:
-    $ref: "../../libs/modules/billing/models/payment-intent/sdk/model/src/lib/paths.yaml#/paths/~1billing~1payment-intents~1{id}~1check"
+
 
   # billing/widget
   /billing/widgets:

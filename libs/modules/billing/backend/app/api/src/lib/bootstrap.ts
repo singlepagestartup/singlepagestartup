@@ -7,9 +7,7 @@ import {
 } from "@sps/shared-backend-api";
 import { ContainerModule } from "inversify";
 
-export interface IBootstrapResult {
-  app: App;
-}
+export type IBootstrapResult = Awaited<ReturnType<typeof bootstrap>>;
 
 const bindings = new ContainerModule(({ bind }) => {
   bind<IExceptionFilter>(DI.IExceptionFilter).to(ExceptionFilter);

@@ -1,8 +1,8 @@
+import type { Service as StripeOrderPayment } from "../../../../../../service/singlepage/ecommerce/order/stripe-payment";
 import { Context } from "hono";
 import { HTTPException } from "hono/http-exception";
-import { Service } from "../../../service";
-import { RBAC_SECRET_KEY, STRIPE_SECRET_KEY } from "@sps/shared-utils";
-import Stripe from "stripe";
+import { Service } from "@sps/billing/models/payment-intent/backend/app/api/src/lib/service";
+import { RBAC_SECRET_KEY } from "@sps/shared-utils";
 import {
   getHttpErrorType,
   rbacSecretMatches,
@@ -12,7 +12,10 @@ import {
 export class Handler {
   service: Service;
 
-  constructor(service: Service) {
+  constructor(
+    service: Service,
+    private readonly stripePayment: Pick<StripeOrderPayment, "webhook">,
+  ) {
     this.service = service;
   }
 
@@ -85,8 +88,9 @@ export class Handler {
           !result ||
           !("acknowledgment" in result) ||
           typeof result.acknowledgment !== "string"
-        )
+        ) {
           throw new Error("Internal error. Missing PayKeeper acknowledgment");
+        }
         c.header("Cache-Control", "no-store");
         c.header("X-Robots-Tag", "noindex");
         return c.text(result.acknowledgment, 200);
@@ -95,61 +99,9 @@ export class Handler {
       let result: any;
 
       if (provider === "stripe") {
-        if (!STRIPE_SECRET_KEY) {
-          throw new Error("Configuration error. Stripe secret key not found");
-        }
-        if (
-          !data ||
-          typeof data.id !== "string" ||
-          !/^evt_[a-zA-Z0-9]+$/.test(data.id)
-        ) {
-          throw new Error("Validation error. Invalid Stripe event ID");
-        }
-
-        const stripe = new Stripe(STRIPE_SECRET_KEY);
-        const event = await stripe.events.retrieve(data.id);
-        if (
-          !event ||
-          event.id !== data.id ||
-          event.object !== "event" ||
-          typeof event.type !== "string" ||
-          !event.data?.object ||
-          typeof event.data.object.object !== "string"
-        ) {
-          throw new Error("Validation error. Invalid retrieved Stripe event");
-        }
-        const object = event.data.object.object;
-        const invoice =
-          object === "invoice" &&
-          [
-            "invoice.created",
-            "invoice.finalized",
-            "invoice.paid",
-            "invoice.payment_succeeded",
-            "invoice.payment_failed",
-            "invoice.voided",
-            "invoice.marked_uncollectible",
-            "invoice.finalization_failed",
-          ].includes(event.type);
-        const checkout =
-          object === "checkout.session" &&
-          [
-            "checkout.session.completed",
-            "checkout.session.async_payment_succeeded",
-            "checkout.session.async_payment_failed",
-            "checkout.session.expired",
-          ].includes(event.type);
-        if (invoice || checkout) {
-          if (
-            !("id" in event.data.object) ||
-            typeof event.data.object.id !== "string" ||
-            !event.data.object.id
-          ) {
-            throw new Error(
-              "Validation error. Missing Stripe payment identity",
-            );
-          }
-          await this.service.stripe({ data: event, action: "webhook" });
+        const event = await this.service.getStripePaymentEvent(data?.id);
+        if (event) {
+          await this.stripePayment.webhook(event);
         }
         c.header("Cache-Control", "no-store");
         c.header("X-Robots-Tag", "noindex");

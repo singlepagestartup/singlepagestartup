@@ -2091,3 +2091,126 @@ paths:
         "400": { description: Invalid record values or unavailable stock }
         "401": { description: A signed-in Subject is required }
         "403": { description: Permission or catalogue ownership is required }
+
+  /rbac/subjects/ecommerce-module/orders/payment-intents/{id}/providers/{provider}:
+    post:
+      tags:
+        - "rbac-subject"
+      summary: Payment intent provider
+      description: Dispatch an existing order payment intent. Requires the operator credential.
+      parameters:
+        - $ref: "../../../../../../../../../libs/shared/backend/api/src/lib/query-builder/id.yaml"
+        - name: provider
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                data:
+                  type: string
+                  description: JSON string
+                  example: '{"provider": "stripe", "currencyId": "00000000-0000-0000-0000-000000000000", "metadata": {"email": "user@example.com"}}'
+              required:
+                - data
+      responses:
+        "201":
+          description: Payment intent
+          content:
+            application/json:
+              schema:
+                $ref: "../../../../../../../../../libs/modules/billing/models/payment-intent/sdk/model/src/lib/billing-payment-intent.yaml"
+
+  /rbac/subjects/ecommerce-module/orders/payment-intents/{provider}/webhook:
+    post:
+      tags:
+        - "rbac-subject"
+      summary: Payment intent provider webhook
+      description: Authenticate the callback for the provider in the URL and apply it to the linked order payment.
+      parameters:
+        - name: provider
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { type: object, additionalProperties: true }
+          application/x-www-form-urlencoded:
+            schema: { type: object, additionalProperties: true }
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                data:
+                  type: string
+                  description: JSON string
+                  example: '{"provider": "telegram-star", "currency": "USD", "total_amount": 0, "invoice_payload": "payload", "telegram_payment_charge_id": "charge", "provider_payment_charge_id": "provider_charge"}'
+              required:
+                - data
+      responses:
+        "200":
+          description: Provider acknowledgment after authenticated processing
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - type: object
+                    properties:
+                      code:
+                        type: integer
+                        enum: [0]
+                    required: [code]
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          code:
+                            type: integer
+                            enum: [0]
+                          ok:
+                            type: boolean
+                          received:
+                            type: boolean
+                    required: [data]
+            text/plain:
+              schema:
+                type: string
+                description: PayKeeper acknowledgment
+
+  /rbac/subjects/ecommerce-module/orders/payment-intents/{id}/check:
+    post:
+      tags:
+        - "rbac-subject"
+      summary: Check payment intent
+      description: Reconcile the order payment with its provider. Requires the operator credential.
+      parameters:
+        - $ref: "../../../../../../../../../libs/shared/backend/api/src/lib/query-builder/id.yaml"
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                data:
+                  type: string
+                  description: JSON string
+                  example: "{}"
+              required:
+                - data
+      responses:
+        "200":
+          description: Payment intent
+          content:
+            application/json:
+              schema:
+                $ref: "../../../../../../../../../libs/modules/billing/models/payment-intent/sdk/model/src/lib/billing-payment-intent.yaml"

@@ -13,7 +13,8 @@ import {
   type IModel as IBillingModulePaymentIntent,
   paymentProviderPrecision,
 } from "@sps/billing/models/payment-intent/sdk/model";
-import { api as billingModulePaymentIntentApi } from "@sps/billing/models/payment-intent/sdk/server";
+import { api as subjectPaymentApi } from "@sps/rbac/models/subject/sdk/server";
+import { orderPaymentIntentsRoute } from "@sps/rbac/models/subject/sdk/model";
 import { api as broadcastModuleChannelApi } from "@sps/broadcast/models/channel/sdk/server";
 import {
   addMoney,
@@ -1311,8 +1312,8 @@ export class Service {
       exposedPaymentIntentIds.add(
         billingModulePaymentIntent.billingModulePaymentIntent.id,
       );
-      await billingModulePaymentIntentApi
-        .provider({
+      await subjectPaymentApi
+        .ecommerceModuleOrderPaymentProvider({
           id: billingModulePaymentIntent.billingModulePaymentIntent.id,
           data: {
             provider: props.provider,
@@ -1406,7 +1407,7 @@ export class Service {
           "Conflict error. Payment attempt has no trusted checkout context",
         );
       }
-      await billingModulePaymentIntentApi.provider({
+      await subjectPaymentApi.ecommerceModuleOrderPaymentProvider({
         id,
         data: {
           provider: intent.checkoutProvider,
@@ -1484,7 +1485,7 @@ export class Service {
               trigger: {
                 type: "request",
                 method: "POST",
-                url: `${NEXT_PUBLIC_API_SERVICE_URL}/api/billing/payment-intents/${scope.provider}/webhook`,
+                url: `${NEXT_PUBLIC_API_SERVICE_URL}${orderPaymentIntentsRoute}/${scope.provider}/webhook`,
               },
               pipe: [
                 {

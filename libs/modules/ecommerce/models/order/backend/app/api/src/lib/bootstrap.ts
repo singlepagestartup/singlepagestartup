@@ -1,3 +1,4 @@
+import { createService as getReservations } from "@sps/ecommerce/relations/orders-to-billing-module-payment-intents/backend/app/api/src/lib/bootstrap";
 import { ContainerModule } from "inversify";
 import {
   createAppBootstrap,
@@ -46,6 +47,10 @@ import type { Service as OrdersToBillingModulePaymentIntentsService } from "@sps
 import { Service as BillingModuleCurrencyService } from "@sps/billing/models/currency/backend/app/api/src/lib/service";
 import { Repository as BillingModuleCurrencyRepository } from "@sps/billing/models/currency/backend/app/api/src/lib/repository";
 import { Configuration as BillingModuleCurrencyConfiguration } from "@sps/billing/models/currency/backend/app/api/src/lib/configuration";
+import { createBillingModule as createPaymentIntentBillingModule } from "@sps/billing/models/payment-intent/backend/app/api/src/lib/bootstrap";
+import { Repository as PaymentIntentRepository } from "@sps/billing/models/payment-intent/backend/app/api/src/lib/repository";
+import { Configuration as PaymentIntentConfiguration } from "@sps/billing/models/payment-intent/backend/app/api/src/lib/configuration";
+import { Service as OrderPayment } from "./service/startup/payment";
 import type { Service as BillingPaymentIntentService } from "@sps/billing/models/payment-intent/backend/app/api";
 import { Service as BillingPaymentIntentsToCurrenciesService } from "@sps/billing/relations/payment-intents-to-currencies/backend/app/api/src/lib/service";
 import { Repository as BillingPaymentIntentsToCurrenciesRepository } from "@sps/billing/relations/payment-intents-to-currencies/backend/app/api/src/lib/repository";
@@ -63,9 +68,7 @@ import { Service as FindByIdCheckoutAttributesService } from "./service/startup/
 import { Service as FindByIdTotalService } from "./service/startup/find-by-id/total";
 import { Service as FindByIdQuantityService } from "./service/startup/find-by-id/quantity";
 
-export interface IBootstrapResult {
-  app: App;
-}
+export type IBootstrapResult = Awaited<ReturnType<typeof bootstrap>>;
 
 const bindings = new ContainerModule(({ bind }) => {
   bind<IExceptionFilter>(DI.IExceptionFilter).to(ExceptionFilter);
@@ -372,23 +375,30 @@ const bindings = new ContainerModule(({ bind }) => {
     .inSingletonScope();
 });
 
-export const { bootstrap, bootstrapWithService, createService } =
-  createAppBootstrap<
-    App,
-    Service,
-    [
-      reservationService: OrdersToBillingModulePaymentIntentsService,
-      paymentIntentService: BillingPaymentIntentService,
-    ]
-  >(bindings, (container, reservationService, paymentIntentService) => {
+export function createOrderBootstrap(
+  reservations?: OrdersToBillingModulePaymentIntentsService,
+  paymentIntent?: BillingPaymentIntentService,
+) {
+  return createAppBootstrap<App, Service>(bindings, (container) => {
+    const reservationService = reservations ?? getReservations();
     container
       .bind<BillingPaymentIntentService>(
         OrderDI.IBillingModulePaymentIntentService,
       )
-      .toConstantValue(paymentIntentService);
+      .toConstantValue(
+        paymentIntent ??
+          new OrderPayment(
+            new PaymentIntentRepository(new PaymentIntentConfiguration()),
+            createPaymentIntentBillingModule(),
+            reservationService,
+          ),
+      );
     container
       .bind<OrdersToBillingModulePaymentIntentsService>(
         OrderDI.IOrdersToBillingModulePaymentIntentsService,
       )
       .toConstantValue(reservationService);
   });
+}
+
+export const { bootstrap, createService } = createOrderBootstrap();

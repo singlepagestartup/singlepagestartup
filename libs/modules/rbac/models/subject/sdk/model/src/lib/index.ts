@@ -29,6 +29,7 @@ export interface IPermissionDefault {
 export const serverHost = API_SERVICE_URL;
 export const clientHost = NEXT_PUBLIC_API_SERVICE_URL;
 export const route = "/api/rbac/subjects";
+export const orderPaymentIntentsRoute = `${route}/ecommerce-module/orders/payment-intents`;
 export const variants = [
   "hidden",
   "me-account",

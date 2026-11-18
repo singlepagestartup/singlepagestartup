@@ -1,12 +1,8 @@
 import type Stripe from "stripe";
 import { currencyPrecision } from "@sps/billing/models/currency/sdk/model";
-import type {
-  IProviderPeriodReceipt,
-  IProviderPeriodResolver,
-} from "./settlement";
+import type { IProviderPeriodReceipt } from "./settlement";
 
 export interface IConstructorProps {
-  resolve: IProviderPeriodResolver;
   readLines: (invoiceId: string) => Promise<Stripe.InvoiceLineItem[]>;
 }
 
@@ -107,23 +103,6 @@ export class Service {
       initial: invoice.billing_reason === "subscription_create",
       ...(recordedPaymentIntentId ? { recordedPaymentIntentId } : {}),
     };
-    const result = await this.dependencies.resolve(receipt);
-    if (!result?.paymentIntentId) {
-      throw new Error(
-        "Conflict error. Stripe invoice local subscription period is unresolved",
-      );
-    }
-    let wrongPeriod =
-      (receipt.initial && result.paymentIntentId !== contractPaymentIntentId) ||
-      (!receipt.initial && result.paymentIntentId === contractPaymentIntentId);
-    if (recordedPaymentIntentId) {
-      wrongPeriod = result.paymentIntentId !== recordedPaymentIntentId;
-    }
-    if (wrongPeriod) {
-      throw new Error(
-        "Conflict error. Stripe invoice must belong to its own local subscription period",
-      );
-    }
-    return result;
+    return receipt;
   }
 }

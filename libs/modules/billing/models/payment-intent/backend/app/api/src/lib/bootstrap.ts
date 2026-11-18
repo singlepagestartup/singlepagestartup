@@ -11,7 +11,6 @@ import { Controller } from "./controller";
 import { Service } from "./service";
 import { App } from "./app";
 import { PaymentIntentDI, type IBillingModule } from "./di";
-import type { IPaymentLifecycle } from "./service/singlepage/settlement";
 import { Service as BillingCurrencyService } from "@sps/billing/models/currency/backend/app/api/src/lib/service";
 import { Repository as BillingCurrencyRepository } from "@sps/billing/models/currency/backend/app/api/src/lib/repository";
 import { Configuration as BillingCurrencyConfiguration } from "@sps/billing/models/currency/backend/app/api/src/lib/configuration";
@@ -22,9 +21,22 @@ import { Service as BillingPaymentIntentsToInvoicesService } from "@sps/billing/
 import { Repository as BillingPaymentIntentsToInvoicesRepository } from "@sps/billing/relations/payment-intents-to-invoices/backend/app/api/src/lib/repository";
 import { Configuration as BillingPaymentIntentsToInvoicesConfiguration } from "@sps/billing/relations/payment-intents-to-invoices/backend/app/api/src/lib/configuration";
 
-export interface IBootstrapResult {
-  app: App;
-  service: Service;
+export type IBootstrapResult = Awaited<ReturnType<typeof bootstrap>>;
+
+export function createBillingModule(): IBillingModule {
+  return {
+    currency: new BillingCurrencyService(
+      new BillingCurrencyRepository(new BillingCurrencyConfiguration()),
+    ),
+    invoice: new BillingInvoiceService(
+      new BillingInvoiceRepository(new BillingInvoiceConfiguration()),
+    ),
+    paymentIntentsToInvoices: new BillingPaymentIntentsToInvoicesService(
+      new BillingPaymentIntentsToInvoicesRepository(
+        new BillingPaymentIntentsToInvoicesConfiguration(),
+      ),
+    ),
+  };
 }
 
 const bindings = new ContainerModule(({ bind }) => {
@@ -35,32 +47,10 @@ const bindings = new ContainerModule(({ bind }) => {
   bind<Service>(DI.IService).to(Service).inSingletonScope();
   bind<Configuration>(DI.IConfiguration).to(Configuration);
   bind<IBillingModule>(PaymentIntentDI.IBillingModule)
-    .toDynamicValue(() => {
-      return {
-        currency: new BillingCurrencyService(
-          new BillingCurrencyRepository(new BillingCurrencyConfiguration()),
-        ),
-        invoice: new BillingInvoiceService(
-          new BillingInvoiceRepository(new BillingInvoiceConfiguration()),
-        ),
-        paymentIntentsToInvoices: new BillingPaymentIntentsToInvoicesService(
-          new BillingPaymentIntentsToInvoicesRepository(
-            new BillingPaymentIntentsToInvoicesConfiguration(),
-          ),
-        ),
-      };
-    })
+    .toDynamicValue(createBillingModule)
     .inSingletonScope();
 });
 
-export const { bootstrapWithService: bootstrap, createService } =
-  createAppBootstrap<App, Service, [paymentLifecycle?: IPaymentLifecycle]>(
-    bindings,
-    (container, paymentLifecycle) => {
-      if (paymentLifecycle) {
-        container
-          .bind<IPaymentLifecycle>(PaymentIntentDI.IPaymentLifecycle)
-          .toConstantValue(paymentLifecycle);
-      }
-    },
-  );
+export const { bootstrap, createService } = createAppBootstrap<App, Service>(
+  bindings,
+);

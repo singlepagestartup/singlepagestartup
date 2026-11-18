@@ -17,11 +17,11 @@ Payment intents represent an upcoming or in-progress payment with amount and sta
 
 ## Payment providers
 
-- `POST /api/billing/payment-intents/:uuid/:provider` dispatches a prepared
+- `POST /api/rbac/subjects/ecommerce-module/orders/payment-intents/:uuid/providers/:provider` dispatches a prepared
   payment using the server's operator credential. A buyer starts checkout
   and reads the payment status and payment link through their order in RBAC
   Subject.
-- `POST /api/billing/payment-intents/:provider/webhook` receives the provider's
+- `POST /api/rbac/subjects/ecommerce-module/orders/payment-intents/:provider/webhook` receives the provider's
   payment notification and settles the invoice.
 
 Both routes answer 400 for a provider that `ALLOWED_BILLING_SERVICE_PROVIDERS`
@@ -65,17 +65,13 @@ startup service. Unknown recurring providers fail explicitly and remain pending.
 
 ### Provider-managed subscription periods
 
-Stripe schedules recurring card payments. The API host calls
-`configureOrderPayments` with Ecommerce's reservation callbacks and RBAC
-Subject's period resolver. Subject owns the local subscription contract and
-creates the Order for each renewal period. Billing passes an
-authenticated receipt containing the original contract Payment Intent,
-provider subscription and invoice IDs, currency, amount, and subscription line
-coverage. The resolver returns the Payment Intent belonging to that exact
-period. Initial receipts retain the original intent; renewals use a new one.
-Billing does not import Ecommerce or RBAC.
+Stripe schedules recurring card payments. RBAC Subject resolves each verified
+subscription receipt to its period Order and Payment Intent. Billing checks the
+provider subscription, invoice ID, currency, amount and subscription lines.
+The first receipt identifies the original intent. Each renewal has its own
+intent, and a repeated receipt identifies the same period.
 
-The higher consumer can prepare the next period's Intent and its linked draft
+The Subject order service can prepare the next period's Intent and its linked draft
 Stripe Invoice before the provider debit. The draft has no `providerId` or
 payment URL. A receipt adopts that same Invoice, binds its remote ID and
 settles it through the existing atomic settlement service. Amounts and existing
@@ -87,13 +83,13 @@ An unresolved or out-of-order receipt remains retryable without attaching it to
 the original intent. Prorations, subscription updates and ambiguous coverage
 require reconciliation instead of creating a fulfillment period.
 
-`reconcileSubscriptionPeriods({ id })` reads Stripe's subscription invoices and
+The Subject order payment check reads Stripe's subscription invoices and
 uses the same receipt path after a missed notification. Checking an unbound
 draft period Invoice also runs this recovery using the original contract ID
 saved in `checkoutMetadata.providerContractPaymentIntentId`. Both operations
 read the provider outside database transactions. Already paid local invoices,
 including historical invoices of legacy subscriptions, keep their associations.
-Their receipts include a trusted `recordedPaymentIntentId`; the higher consumer
+Their receipts include a trusted `recordedPaymentIntentId`; the Subject service
 can recover the accepted legacy period's provider schedule from that exact
 invoice without changing its paid history or accepted period dates.
 Neither recovery nor checkout for a prepared successor submits another charge.
@@ -102,13 +98,10 @@ For the initial Stripe subscription,
 `checkoutMetadata.providerRecurringAmount` contains the recurring subtotal.
 The remaining first-only amount becomes an initial invoice item; Stripe's
 recurring price excludes it. Cancellation from a successor uses its trusted
-original contract ID and preserves all paid period records. The initial
-subscription Invoice can settle without a period resolver. Every unresolved
-renewal requires one, including when polling an open provider Invoice; a missing
-resolver fails before creating, associating or settling that renewal. Already
-settled legacy receipts remain read-only when no resolver is composed.
-
-## PayKeeper webhook identifiers
+original contract ID and preserves all paid period records. Standalone Billing
+can settle an initial subscription invoice or return an already settled receipt.
+For a renewal, the Subject order service identifies the period's own Payment
+Intent before Billing records payment.
 
 ## Atomic payment confirmation
 
@@ -126,7 +119,7 @@ the effective owning services in one PostgreSQL transaction. A write failure
 rolls back both statuses. Concurrent deliveries wait for the same records;
 retries preserve already completed statuses and timestamps. A canceled Invoice
 or Payment Intent without a reservation snapshot cannot be revived by a callback.
-For a new reserved purchase, the host records a late canceled payment as paid
+For a new reserved purchase, the Ecommerce order payment service records a late canceled payment as paid
 with `requires_reconciliation` on its Intent and blocks fulfillment. Multiple linked intents
 consume their allocated amount even when already succeeded, preventing a
 retry from allocating that amount again. An invoice that cannot cover all its
@@ -183,7 +176,7 @@ Provider contracts: [Stripe fulfillment](https://docs.stripe.com/checkout/fulfil
 Set `PAYKEEPER_WEBHOOK_SECRET` to the merchant's secret word (`secret_seed`) from
 PayKeeper's POST notification settings. It is independent of the application
 RBAC secret. The callback URL is
-`POST /api/billing/payment-intents/paykeeper/webhook`. The provider sends an
+`POST /api/rbac/subjects/ecommerce-module/orders/payment-intents/paykeeper/webhook`. The provider sends an
 ordinary form body; direct JSON payloads are supported as well. No internal
 RBAC credential is required by the callback contract.
 

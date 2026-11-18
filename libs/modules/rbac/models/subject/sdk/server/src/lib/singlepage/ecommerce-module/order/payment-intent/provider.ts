@@ -1,8 +1,8 @@
 import {
+  orderPaymentIntentsRoute,
   serverHost,
-  route,
-  IModel,
-} from "@sps/billing/models/payment-intent/sdk/model";
+} from "@sps/rbac/models/subject/sdk/model";
+import type { IModel } from "@sps/billing/models/payment-intent/sdk/model";
 import {
   NextRequestOptions,
   prepareFormDataToSend,
@@ -151,13 +151,13 @@ export async function action(props: IProps): Promise<IResult | undefined> {
       ...options?.headers,
     },
     next: {
-      tags: [route],
+      tags: [orderPaymentIntentsRoute],
       ...options?.next,
     },
   };
 
   const res = await fetch(
-    `${host}${route}/${id}/${data.provider}?${stringifiedQuery}`,
+    `${host}${orderPaymentIntentsRoute}/${id}/providers/${data.provider}?${stringifiedQuery}`,
     requestOptions,
   );
 

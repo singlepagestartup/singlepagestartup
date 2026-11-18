@@ -5,72 +5,62 @@ import { createAppBootstrap } from "./bootstrap";
 function fixture() {
   const makeService = jest.fn(() => ({ id: Symbol() }));
   const init = jest.fn(async () => {});
-  const makeApp = jest.fn((service: ReturnType<typeof makeService>) => ({
-    service,
-    init,
-  }));
   const bindings = new ContainerModule(({ bind }) => {
     bind(DI.IService).toDynamicValue(makeService).inSingletonScope();
-    bind(DI.IApp).toDynamicValue(({ get }) => makeApp(get(DI.IService)));
+    bind(DI.IController).toDynamicValue(({ get }) => ({
+      service: get<ReturnType<typeof makeService>>(DI.IService),
+    }));
+    bind(DI.IApp).toDynamicValue(({ get }) => ({
+      controller: get(DI.IController),
+      init,
+    }));
   });
-  const model = createAppBootstrap<
-    ReturnType<typeof makeApp>,
-    ReturnType<typeof makeService>
+  type Service = ReturnType<typeof makeService>;
+  const owner = createAppBootstrap<
+    { controller: { service: Service }; init: typeof init },
+    Service
   >(bindings);
-  return { model, makeApp, makeService, init };
+  return { owner, makeService, init };
 }
 
-it("can resolve an isolated service without constructing or starting HTTP", () => {
-  const { model, makeApp, init } = fixture();
-  expect(model.createService()).not.toBe(model.createService());
-  expect(makeApp).not.toHaveBeenCalled();
+it("shares one service before and after concurrent HTTP startup", async () => {
+  const { owner, makeService, init } = fixture();
+  const service = owner.createService();
   expect(init).not.toHaveBeenCalled();
-});
-
-it("starts a regular app once and returns only the app", async () => {
-  const { model, init, makeService } = fixture();
-  const result = await model.bootstrap();
-  expect(Object.keys(result)).toEqual(["app"]);
+  const [first, second] = await Promise.all([
+    owner.bootstrap(),
+    owner.bootstrap(),
+  ]);
+  expect(second).toBe(first);
+  expect(first.service).toBe(service);
+  expect(first.app.controller.service).toBe(service);
+  expect(owner.createService()).toBe(service);
   expect(makeService).toHaveBeenCalledTimes(1);
   expect(init).toHaveBeenCalledTimes(1);
 });
 
-it("returns the same singleton used by the app when a module exposes its service", async () => {
-  const { model, init, makeService } = fixture();
-  const { app, service } = await model.bootstrapWithService();
-  expect(service).toBe(app.service);
-  expect(makeService).toHaveBeenCalledTimes(1);
-  expect(init).toHaveBeenCalledTimes(1);
+it("keeps independent owners isolated when HTTP starts first", async () => {
+  const { owner } = fixture();
+  const result = await owner.bootstrap();
+  expect(result.service).toBe(owner.createService());
+  expect(result.app.controller.service).toBe(result.service);
+  expect(fixture().owner.createService()).not.toBe(result.service);
 });
 
-it("starts a module that only binds an app", async () => {
+it("starts an app-only module with an undefined service", async () => {
   const app = { init: jest.fn(async () => {}) };
   const bindings = new ContainerModule(({ bind }) => {
     bind(DI.IApp).toConstantValue(app);
   });
   const { bootstrap } = createAppBootstrap<typeof app>(bindings);
-  expect(await bootstrap()).toEqual({ app });
-  expect(app.init).toHaveBeenCalledTimes(1);
+  expect(await bootstrap()).toStrictEqual({ app, service: undefined });
 });
 
-it("injects the caller's dependencies into both isolated services and HTTP apps", async () => {
-  const dependency = Symbol("dependency");
-  const bindings = new ContainerModule(({ bind }) => {
-    bind(DI.IService).toDynamicValue(({ get }) => get(dependency));
-    bind(DI.IApp).toDynamicValue(({ get }) => ({
-      service: get(DI.IService),
-      init: async () => {},
-    }));
-  });
-  const model = createAppBootstrap<
-    { service: string; init(): Promise<void> },
-    string,
-    [value: string]
-  >(bindings, (container, value) => {
-    container.bind(dependency).toConstantValue(value);
-  });
-  expect(model.createService("isolated")).toBe("isolated");
-  const { app, service } = await model.bootstrapWithService("configured");
-  expect(service).toBe("configured");
-  expect(app.service).toBe(service);
+it("can retry failed HTTP initialization with the same service", async () => {
+  const { owner, init } = fixture();
+  const service = owner.createService();
+  init.mockRejectedValueOnce(new Error("startup failed"));
+  await expect(owner.bootstrap()).rejects.toThrow("startup failed");
+  expect((await owner.bootstrap()).app.controller.service).toBe(service);
+  expect(init).toHaveBeenCalledTimes(2);
 });

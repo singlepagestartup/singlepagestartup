@@ -38,9 +38,9 @@ jest.mock("@sps/ecommerce/models/order/sdk/server", () => ({
   },
 }));
 
-jest.mock("@sps/billing/models/payment-intent/sdk/server", () => ({
+jest.mock("@sps/rbac/models/subject/sdk/server", () => ({
   api: {
-    provider: (...args: unknown[]) =>
+    ecommerceModuleOrderPaymentProvider: (...args: unknown[]) =>
       mockBillingModulePaymentIntentProvider(...args),
   },
 }));
@@ -297,18 +297,16 @@ function createTestContext(props?: {
         .mockResolvedValue([{ id: "store-1", title: { en: "Seller" } }]),
     },
     storesToProducts: {
-      find: jest
-        .fn()
-        .mockResolvedValue(
-          props?.productSlug === "free-subscription"
-            ? [
-                {
-                  productId: "product-target",
-                  settings: { initialGrant: true },
-                },
-              ]
-            : [],
-        ),
+      find: jest.fn().mockResolvedValue(
+        props?.productSlug === "free-subscription"
+          ? [
+              {
+                productId: "product-target",
+                settings: { initialGrant: true },
+              },
+            ]
+          : [],
+      ),
       quoteMany: jest.fn(async (inputs) =>
         inputs.map((input) => ({
           offerId: input.offerId,
@@ -992,7 +990,7 @@ describe("Given: subject starts checkout for a product", () => {
 
       expect(firstMessagePayload.trigger.method).toBe("POST");
       expect(firstMessagePayload.trigger.url).toContain(
-        "/api/billing/payment-intents/stripe/webhook",
+        "/api/rbac/subjects/ecommerce-module/orders/payment-intents/stripe/webhook",
       );
       expect(firstMessagePayload.pipe[0].url).toContain(
         `/api/ecommerce/orders/${checkoutOrders[0].id}/check`,
@@ -1645,7 +1643,7 @@ it.each([
       {
         type: "request",
         method: "POST",
-        url: `http://localhost:4000/api/billing/payment-intents/${resume ? "paykeeper" : "stripe"}/webhook`,
+        url: `http://localhost:4000/api/rbac/subjects/ecommerce-module/orders/payment-intents/${resume ? "paykeeper" : "stripe"}/webhook`,
       },
       {
         type: "request",
@@ -1818,8 +1816,9 @@ it("fulfills through the webhook pipeline after an earlier pending check consume
   app.post("/api/ecommerce/orders/:uuid/check", (context, next) =>
     check.execute(context, next),
   );
-  app.post("/api/billing/payment-intents/stripe/webhook", (context) =>
-    context.json({ data: { ok: true } }),
+  app.post(
+    "/api/rbac/subjects/ecommerce-module/orders/payment-intents/stripe/webhook",
+    (context) => context.json({ data: { ok: true } }),
   );
   mockObserverFetch.mockImplementation((url, init) => app.request(url, init));
   const early = await app.request(`/api/ecommerce/orders/${order.id}/check`, {
@@ -1835,7 +1834,7 @@ it("fulfills through the webhook pipeline after an earlier pending check consume
   ]);
   paymentStatus = "succeeded";
   const webhook = await app.request(
-    "/api/billing/payment-intents/stripe/webhook",
+    "/api/rbac/subjects/ecommerce-module/orders/payment-intents/stripe/webhook",
     { method: "POST" },
   );
   await webhookCompleted;

@@ -2,7 +2,7 @@
  * Actual SDK requests, Hono handlers, owning services and PostgreSQL writes.
  * Nested fixture transactions use real savepoints and always roll back. The
  * observer queue and delayed dummy webhook stop at a captured transport boundary.
- * The API host configures the modules. Background workers and listeners stay stopped.
+ * The owning HTTP modules are mounted in isolation. Background workers and listeners stay stopped.
  */
 import { spawnSync } from "node:child_process";
 import { resolve } from "node:path";
@@ -28,7 +28,6 @@ assert(["localhost","127.0.0.1","::1"].includes(String(DATABASE_OPTIONS.host)),"
 assert.equal(ALLOWED_BILLING_SERVICE_PROVIDERS,"dummy");
 assert.equal(API_SERVICE_URL,"http://commerce-integration.test");
 assert(RBAC_JWT_SECRET);
-await import("./apps/api/app");
 const modules={
  rbac:(await import("@sps/rbac/backend/app/api")).app,
  ecommerce:(await import("@sps/ecommerce/backend/app/api")).app,
@@ -37,9 +36,8 @@ const modules={
 const services={};
 for(const [module,owner] of Object.entries(modules))for(const entry of owner.apps.apps)services[module+entry.route]=entry.app.controller.service;
 const service=resource=>{assert(services[resource],"Missing effective owner: "+resource);return services[resource];};
-const paymentIntents = service("billing/payment-intents");
+const paymentIntents = service("rbac/subjects").billingModule.paymentIntent;
 assert.equal(service("ecommerce/orders").billingModule.paymentIntent, paymentIntents);
-assert.equal(service("rbac/subjects").billingModule.paymentIntent, paymentIntents);
 const create=async(resource,data)=>{const row=await service(resource).create({data});assert(row?.id,resource+" did not persist an ID");return row;};
 const find=(resource,and)=>service(resource).find({params:{filters:{and}}});
 const eq=(column,value)=>({column,method:"eq",value});
@@ -57,6 +55,12 @@ const app=new Hono(),exception=new ExceptionFilter();
 app.onError(exception.catch.bind(exception));
 app.use(new ParseQueryMiddleware().init());
 for(const [module,owner] of Object.entries(modules))app.route("/api/"+module,owner.hono);
+for (const action of ["check", "providers/dummy"]) {
+ const path = "/api/rbac/subjects/ecommerce-module/orders/payment-intents/" + randomUUID() + "/" + action;
+ const res = await app.request(path, {method: "POST"});
+ assert([401,403].includes(res.status), "Payment operator route must check credentials before reading an intent");
+}
+assert.equal((await app.request("/api/billing/payment-intents/dummy/webhook", {method:"POST"})).status, 404);
 // Only the transport is adapted. Every business read/write still reaches the
 // exported production controller/service/repository with its original payload.
 globalThis.fetch=async(input,init)=>{
@@ -70,12 +74,12 @@ globalThis.fetch=async(input,init)=>{
   const form=await request.formData();observer.push(JSON.parse(String(form.get("data"))));
   return Response.json({data:{id:randomUUID(),slug:"captured-observer-transport"}});
  }
- if(url.pathname==="/api/billing/payment-intents/dummy/webhook"){
+ if(url.pathname==="/api/rbac/subjects/ecommerce-module/orders/payment-intents/dummy/webhook"){
   webhooks.push(await request.json());
   return Response.json({data:{transportSuppressed:true}});
  }
  assert(/^\/api\/(?:rbac|ecommerce|billing)\//.test(url.pathname),"Unexpected notification/provider route: "+url.pathname);
- if(/^\/api\/billing\/payment-intents\/[^/]+\/dummy$/.test(url.pathname)){
+ if(/^\/api\/rbac\/subjects\/ecommerce-module\/orders\/payment-intents\/[^/]+\/providers\/dummy$/.test(url.pathname)){
   const form=await request.clone().formData();providers.push(JSON.parse(String(form.get("data"))));
  }
  return app.fetch(request);
@@ -242,7 +246,7 @@ try{
   assert.equal((await find("rbac/subjects-to-identities",[eq("subjectId",subject.id)])).length,1,"Existing identity must be reused without notification");
   assert.equal(observer.length,6,"Each successful order registers provider, patch and check observers");
   const triggers=observer.map(message=>JSON.parse(message.payload).trigger);
-  assert.equal(triggers.filter(trigger=>trigger.method==="POST"&&trigger.url.endsWith("/api/billing/payment-intents/dummy/webhook")).length,2);
+  assert.equal(triggers.filter(trigger=>trigger.method==="POST"&&trigger.url.endsWith("/api/rbac/subjects/ecommerce-module/orders/payment-intents/dummy/webhook")).length,2);
   for(const orderId of [checkoutCart.id,quickOrder.id]){
    assert.equal(triggers.filter(trigger=>trigger.method==="PATCH"&&trigger.url.endsWith("/api/ecommerce/orders/"+orderId)).length,1);
    assert.equal(triggers.filter(trigger=>trigger.method==="POST"&&trigger.url.endsWith("/api/ecommerce/orders/"+orderId+"/check")).length,1);
@@ -254,7 +258,7 @@ try{
   while(webhooks.length<2&&Date.now()<deadline)await new Promise(done=>setTimeout(done,20));
   assert.deepEqual(webhooks.map(value=>value.data.id).sort(),[cartInvoice.id,quickInvoice.id].sort());
   assert.equal((await byId("billing/invoices",cartInvoice.id)).status,"open");assert.equal((await byId("billing/invoices",quickInvoice.id)).status,"open");
-  const sendWebhook = (invoiceId) => app.request("/api/billing/payment-intents/dummy/webhook", {
+  const sendWebhook = (invoiceId) => app.request("/api/rbac/subjects/ecommerce-module/orders/payment-intents/dummy/webhook", {
    method: "POST",
    headers: {
     "Content-Type": "application/json",

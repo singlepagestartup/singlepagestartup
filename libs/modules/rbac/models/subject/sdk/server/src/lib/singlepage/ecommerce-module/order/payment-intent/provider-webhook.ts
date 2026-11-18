@@ -1,11 +1,9 @@
 import {
+  orderPaymentIntentsRoute,
   serverHost,
-  route,
-  IModel,
-} from "@sps/billing/models/payment-intent/sdk/model";
+} from "@sps/rbac/models/subject/sdk/model";
 import {
   NextRequestOptions,
-  prepareFormDataToSend,
   responsePipe,
   transformResponseItem,
 } from "@sps/shared-utils";
@@ -17,24 +15,30 @@ export interface IProps {
   catchErrors?: boolean;
   tag?: string;
   revalidate?: number;
-  id: string;
-  params?: any;
+  params?: Record<string, unknown>;
   options?: Partial<NextRequestOptions>;
-  data: any;
+  data: {
+    provider: "telegram-star";
+    currency: string;
+    total_amount: number;
+    invoice_payload: string;
+    telegram_payment_charge_id: string;
+    provider_payment_charge_id: string;
+  };
 }
 
-export interface IResult extends IModel {}
+export interface IResult {
+  code: 0;
+}
 
 export async function action(props: IProps): Promise<IResult | undefined> {
   const productionBuild = process.env.NEXT_PHASE === PHASE_PRODUCTION_BUILD;
 
-  const { data, params, options, id, host = serverHost } = props;
+  const { data, params, options, host = serverHost } = props;
 
   const stringifiedQuery = QueryString.stringify(params, {
     encodeValuesOnly: true,
   });
-
-  const formData = prepareFormDataToSend({ data });
 
   const noCache = process.env.NEXT_PHASE === PHASE_PRODUCTION_BUILD;
   const cacheControlOptions: NextRequestOptions["headers"] = noCache
@@ -45,19 +49,20 @@ export async function action(props: IProps): Promise<IResult | undefined> {
     credentials: "include",
     ...options,
     method: "POST",
-    body: formData,
+    body: JSON.stringify(data),
     headers: {
+      "Content-Type": "application/json",
       ...cacheControlOptions,
       ...options?.headers,
     },
     next: {
-      tags: [route],
+      tags: [orderPaymentIntentsRoute],
       ...options?.next,
     },
   };
 
   const res = await fetch(
-    `${host}${route}/${id}/check?${stringifiedQuery}`,
+    `${host}${orderPaymentIntentsRoute}/${data.provider}/webhook?${stringifiedQuery}`,
     requestOptions,
   );
 

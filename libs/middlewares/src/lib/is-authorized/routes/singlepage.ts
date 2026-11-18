@@ -1,27 +1,7 @@
 import { IRouteRule, UUID_PATH_SUFFIX_REGEX } from "@sps/shared-utils";
+import { controllerGuardedRoutes } from "@sps/rbac/models/permission/backend/app/api/src/lib/service/singlepage/sensitive-routes";
 
-/** Routes whose controllers authenticate the caller and enforce resource access. */
-export const controllerGuardedRoutes: IRouteRule[] = [
-  {
-    regexPath: /^\/api\/rbac\/subjects\/host-cache\/revalidate\/?$/,
-    methods: ["POST"],
-  },
-  {
-    regexPath: /^\/api\/rbac\/subjects\/[^/]+\/blog-module\/articles\/?$/,
-    methods: ["POST"],
-  },
-  {
-    regexPath:
-      /^\/api\/rbac\/subjects\/[^/]+\/blog-module\/articles\/[^/]+\/content$/,
-    methods: ["GET"],
-  },
-  {
-    regexPath: new RegExp(
-      `^/api/rbac/subjects${UUID_PATH_SUFFIX_REGEX.source}`,
-    ),
-    methods: ["GET"],
-  },
-];
+export { controllerGuardedRoutes };
 
 /**
  * Framework routes that skip the global role check (singlepage layer).

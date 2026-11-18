@@ -51,6 +51,9 @@ it("generates distinct cross-module Widget fields without changing the lower own
     .toString();
   expect(bootstrap).toContain("export const { bootstrap, createService }");
   expect(bootstrap).toContain("createAppBootstrap<App, Service>");
+  expect(bootstrap).toContain(
+    "bind<Service>(DI.IService).to(Service).inSingletonScope()",
+  );
   const schema = tree
     .read(`${base}/backend/repository/database/src/lib/schema.ts`)!
     .toString();

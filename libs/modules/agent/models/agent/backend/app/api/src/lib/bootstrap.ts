@@ -1,3 +1,4 @@
+import { createService as getOrder } from "@sps/ecommerce/models/order/backend/app/api/src/lib/bootstrap";
 import { createService as createBroadcastChannelService } from "@sps/broadcast/models/channel/backend/app/api/src/lib/bootstrap";
 import type { Service as EcommerceOrderService } from "@sps/ecommerce/models/order/backend/app/api/src/lib/service";
 import { ContainerModule } from "inversify";
@@ -118,7 +119,7 @@ const bindings = new ContainerModule(({ bind }) => {
   bind<App>(DI.IApp).to(App);
   bind<Controller>(DI.IController).to(Controller);
   bind<Repository>(DI.IRepository).to(Repository);
-  bind<Service>(DI.IService).to(Service);
+  bind<Service>(DI.IService).to(Service).inSingletonScope();
   bind<Configuration>(DI.IConfiguration).to(Configuration);
   bind<ISocialModule>(AgentDI.ISocialModule)
     .toDynamicValue(() => {
@@ -324,20 +325,11 @@ const bindings = new ContainerModule(({ bind }) => {
     .inSingletonScope();
 });
 
-const { bootstrap: bootstrapAgent, createService } = createAppBootstrap<
-  App,
-  Service,
-  [order: EcommerceOrderService]
->(bindings, (container, order) => {
-  container
-    .bind<EcommerceOrderService>(AgentDI.IEcommerceOrderService)
-    .toConstantValue(order);
-});
-
-export { createService };
-
-export async function bootstrap() {
-  const { service: order } =
-    await import("@sps/ecommerce/models/order/backend/app/api");
-  return bootstrapAgent(order);
-}
+export const { bootstrap, createService } = createAppBootstrap<App, Service>(
+  bindings,
+  (container) => {
+    container
+      .bind<EcommerceOrderService>(AgentDI.IEcommerceOrderService)
+      .toDynamicValue(() => getOrder());
+  },
+);

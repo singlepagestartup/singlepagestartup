@@ -1,10 +1,6 @@
 import { Service } from "./stripe-period";
 
 function fixture(reason = "subscription_cycle") {
-  const resolve = jest.fn().mockResolvedValue({
-    paymentIntentId:
-      reason === "subscription_create" ? "contract-intent" : "next-intent",
-  });
   const readLines = jest.fn();
   const line = {
     currency: "usd",
@@ -30,8 +26,7 @@ function fixture(reason = "subscription_cycle") {
     metadata: { paymentIntentId: "contract-intent" },
   };
   return {
-    service: new Service({ resolve, readLines }),
-    resolve,
+    service: new Service({ readLines }),
     readLines,
     line,
     invoice,
@@ -42,9 +37,6 @@ function fixture(reason = "subscription_cycle") {
 it("uses the recurring line's coverage and immutable provider identities", async () => {
   const f = fixture();
   await expect(f.service.execute(f as any)).resolves.toEqual({
-    paymentIntentId: "next-intent",
-  });
-  expect(f.resolve).toHaveBeenCalledWith({
     provider: "stripe",
     contractPaymentIntentId: "contract-intent",
     providerSubscriptionId: "sub_contract",
@@ -66,13 +58,11 @@ it("allows first-only invoice items only on the initial subscription invoice", a
     },
   };
   f.invoice.lines.data.push(firstOnly as any);
-  await f.service.execute(f as any);
-  expect(f.resolve).toHaveBeenCalledWith(
-    expect.objectContaining({ initial: true }),
-  );
+  await expect(f.service.execute(f as any)).resolves.toMatchObject({
+    initial: true,
+  });
   f.invoice.billing_reason = "subscription_cycle";
   await expect(f.service.execute(f as any)).rejects.toThrow("reconciliation");
-  expect(f.resolve).toHaveBeenCalledTimes(1);
 });
 
 it.each(["subscription_update", "manual"])(
@@ -80,7 +70,6 @@ it.each(["subscription_update", "manual"])(
   async (reason) => {
     const f = fixture(reason);
     await expect(f.service.execute(f as any)).rejects.toThrow("reconciliation");
-    expect(f.resolve).not.toHaveBeenCalled();
   },
 );
 
@@ -94,19 +83,15 @@ it("refuses prorations, foreign subscriptions and ambiguous recurring coverage",
   f.line.parent.subscription_item_details.subscription = "sub_contract";
   f.invoice.lines.data.push(f.line);
   await expect(f.service.execute(f as any)).rejects.toThrow("reconciliation");
-  expect(f.resolve).not.toHaveBeenCalled();
 });
 
-it("reads all line pages and leaves out-of-order allocation retryable", async () => {
+it("reads all line pages to identify the recurring period", async () => {
   const f = fixture();
   f.invoice.lines.has_more = true;
   f.readLines.mockResolvedValue([f.line]);
-  f.resolve.mockRejectedValue(
-    new Error("Conflict error. Prior period is missing"),
-  );
-  await expect(f.service.execute(f as any)).rejects.toThrow(
-    "Prior period is missing",
-  );
+  await expect(f.service.execute(f as any)).resolves.toMatchObject({
+    providerInvoiceId: "in_period",
+  });
   expect(f.readLines).toHaveBeenCalledWith("in_period");
 });
 
@@ -118,13 +103,4 @@ it("checks the invoice's frozen subscription metadata against the remote contrac
     },
   });
   await expect(f.service.execute(f as any)).rejects.toThrow("identity changed");
-  expect(f.resolve).not.toHaveBeenCalled();
-});
-
-it("refuses to allocate a renewal to the original contract intent", async () => {
-  const f = fixture();
-  f.resolve.mockResolvedValue({ paymentIntentId: "contract-intent" });
-  await expect(f.service.execute(f as any)).rejects.toThrow(
-    "own local subscription period",
-  );
 });

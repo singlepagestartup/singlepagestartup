@@ -99,6 +99,7 @@ function fixture(provider = "stripe") {
         quoteMany: jest.fn().mockResolvedValue([{ amount: "120", issues: [] }]),
       },
     },
+    ecommerceModuleOrderStripePayment: { reconcile: jest.fn() },
     billingModule: {
       paymentIntentsToInvoices: {
         find: jest
@@ -112,7 +113,6 @@ function fixture(provider = "stripe") {
           ({ provider }: { provider: string }) => provider === "stripe",
         ),
         findById: jest.fn().mockResolvedValue(intent),
-        reconcileSubscriptionPeriods: jest.fn(),
         failUnpaidIntent: jest.fn(),
       },
       invoice: {
@@ -154,7 +154,7 @@ it("prepares one local Stripe payment and reuses it while reconciling provider r
     },
   );
   expect(
-    f.service.billingModule.paymentIntent.reconcileSubscriptionPeriods,
+    f.service.ecommerceModuleOrderStripePayment.reconcile,
   ).toHaveBeenCalledTimes(2);
 });
 
@@ -175,7 +175,7 @@ it("defers renewal checkout for another provider that owns subscription scheduli
     },
   );
   expect(
-    f.service.billingModule.paymentIntent.reconcileSubscriptionPeriods,
+    f.service.ecommerceModuleOrderStripePayment.reconcile,
   ).toHaveBeenCalledWith({ id: "contract" });
 });
 
@@ -186,7 +186,7 @@ it("does not recursively reconcile while resolving a provider receipt", async ()
     { skipProviderReconciliation: true },
   );
   expect(
-    f.service.billingModule.paymentIntent.reconcileSubscriptionPeriods,
+    f.service.ecommerceModuleOrderStripePayment.reconcile,
   ).not.toHaveBeenCalled();
 });
 
@@ -212,7 +212,7 @@ it("prepares a manual provider invoice through its ordinary checkout", async () 
     { manualSubscriptionPeriod: true },
   );
   expect(
-    f.service.billingModule.paymentIntent.reconcileSubscriptionPeriods,
+    f.service.ecommerceModuleOrderStripePayment.reconcile,
   ).not.toHaveBeenCalled();
 });
 
@@ -241,7 +241,7 @@ it("keeps a manual Stripe subscription period payable without inventing a remote
     { manualSubscriptionPeriod: true },
   );
   expect(
-    f.service.billingModule.paymentIntent.reconcileSubscriptionPeriods,
+    f.service.ecommerceModuleOrderStripePayment.reconcile,
   ).not.toHaveBeenCalled();
   f.service.ecommerceModule.storesToProducts.quoteMany.mockResolvedValue([
     { amount: "121", issues: [] },
@@ -270,7 +270,7 @@ it("keeps the original automatic Stripe contract when preparing the third period
     },
   );
   expect(
-    f.service.billingModule.paymentIntent.reconcileSubscriptionPeriods,
+    f.service.ecommerceModuleOrderStripePayment.reconcile,
   ).toHaveBeenCalledWith({ id: "original-contract" });
 });
 

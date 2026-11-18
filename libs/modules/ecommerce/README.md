@@ -11,10 +11,10 @@ The Ecommerce module manages product catalogs, stores, orders, and shopping cart
 - Product data, entity presentation and commercial calculations remain Ecommerce capabilities. Host contains no parallel Ecommerce Product/Order/Widget registries.
 - Ecommerce must not import RBAC subject implementation code (no reverse dependency from ecommerce to rbac).
 
-The Order bootstrap composes Billing's Payment Intent service with the
-Order-to-Payment-Intent reservation lifecycle. The Ecommerce backend API exports
-`billingApp`, which mounts that same Payment Intent app through Billing's module
-bootstrap. The API host mounts `billingApp` at the Billing route.
+Order constructs its payment service with the reservation operations from
+Orders-to-Billing-Module-Payment-Intents. RBAC Subject uses that service for
+checkout, provider callbacks and payment checks. The saved allocation links
+the verified payment to the order lines and offers whose stock it settles.
 
 ### It solves the following tasks:
 

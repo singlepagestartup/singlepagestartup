@@ -1,3 +1,4 @@
+import { Service as PaymentIntent } from "@sps/billing/models/payment-intent/backend/app/api/src/lib/service/singlepage";
 import { Hono } from "hono";
 import { Handler } from "./index";
 import { logger } from "@sps/backend-utils";
@@ -21,8 +22,9 @@ jest.mock("stripe", () => ({
 
 function fixture() {
   const service = {
+    getStripePaymentEvent: PaymentIntent.prototype.getStripePaymentEvent,
     isProviderAllowed: jest.fn().mockReturnValue(true),
-    stripe: jest.fn().mockResolvedValue({
+    webhook: jest.fn().mockResolvedValue({
       id: "private-local-invoice",
       amount: 100,
       checkoutMetadata: { private: true },
@@ -34,7 +36,7 @@ function fixture() {
   };
   const app = new Hono();
   app.post("/:provider/webhook", (c) =>
-    new Handler(service as any).execute(c, undefined),
+    new Handler(service as any, service).execute(c, undefined),
   );
   const event = {
     id: "evt_fixture",
@@ -70,10 +72,7 @@ it("uses only the API-retrieved Stripe event and acknowledges without returning 
   );
   expect(response.status).toBe(200);
   expect(mockRetrieveEvent).toHaveBeenCalledWith("evt_fixture");
-  expect(f.service.stripe).toHaveBeenCalledWith({
-    action: "webhook",
-    data: f.event,
-  });
+  expect(f.service.webhook).toHaveBeenCalledWith(f.event);
   await expect(response.json()).resolves.toEqual({ data: { received: true } });
   expect(response.headers.get("Cache-Control")).toBe("no-store");
   expect(logger.debug).not.toHaveBeenCalled();
@@ -88,7 +87,7 @@ it("acknowledges an authenticated unhandled event without running payment settle
   });
   const response = await f.post("stripe", { id: "evt_fixture" });
   expect(response.status).toBe(200);
-  expect(f.service.stripe).not.toHaveBeenCalled();
+  expect(f.service.webhook).not.toHaveBeenCalled();
   await expect(response.json()).resolves.toEqual({ data: { received: true } });
 });
 
@@ -99,7 +98,7 @@ it.each([{}, { id: 17 }, { id: "in_123" }])(
     const response = await f.post("stripe", body);
     expect(response.status).toBe(400);
     expect(mockRetrieveEvent).not.toHaveBeenCalled();
-    expect(f.service.stripe).not.toHaveBeenCalled();
+    expect(f.service.webhook).not.toHaveBeenCalled();
   },
 );
 
@@ -110,13 +109,13 @@ it.each([{ id: "evt_other" }, { object: "invoice" }, { data: null }])(
     mockRetrieveEvent.mockResolvedValue({ ...f.event, ...change });
     const response = await f.post("stripe", { id: "evt_fixture" });
     expect(response.status).toBe(400);
-    expect(f.service.stripe).not.toHaveBeenCalled();
+    expect(f.service.webhook).not.toHaveBeenCalled();
   },
 );
 
 it("keeps an out-of-order provider receipt retryable without a success acknowledgment", async () => {
   const f = fixture();
-  f.service.stripe.mockRejectedValueOnce(
+  f.service.webhook.mockRejectedValueOnce(
     new Error("Conflict error. Previous period is missing"),
   );
   const response = await f.post("stripe", { id: "evt_fixture" });

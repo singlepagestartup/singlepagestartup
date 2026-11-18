@@ -21,6 +21,7 @@ interface IConstructorProps {
     SubjectService,
     | "ecommerceModule"
     | "billingModule"
+    | "ecommerceModuleOrderStripePayment"
     | "ecommerceModuleOrderAssertAccess"
     | "ecommerceModuleOrderRepeat"
     | "ecommerceOrderCheckout"
@@ -119,7 +120,7 @@ export class Service {
       !source.subscriptionScheduledEndsAt &&
       !internal?.skipProviderReconciliation
     ) {
-      await service.billingModule.paymentIntent.reconcileSubscriptionPeriods({
+      await service.ecommerceModuleOrderStripePayment.reconcile({
         id:
           intent.checkoutMetadata?.providerContractPaymentIntentId ?? intent.id,
       });
@@ -167,7 +168,7 @@ export class Service {
         return { orderId };
       }
       if (providerManagedRenewal && !internal?.skipProviderReconciliation) {
-        await service.billingModule.paymentIntent.reconcileSubscriptionPeriods({
+        await service.ecommerceModuleOrderStripePayment.reconcile({
           id:
             intent.checkoutMetadata?.providerContractPaymentIntentId ??
             intent.id,
@@ -317,7 +318,7 @@ export class Service {
       return this.rejectPreparation(error, source.id, providerManagedRenewal);
     }
     if (providerManagedRenewal && !internal?.skipProviderReconciliation) {
-      await service.billingModule.paymentIntent.reconcileSubscriptionPeriods({
+      await service.ecommerceModuleOrderStripePayment.reconcile({
         id: contractId,
       });
     }

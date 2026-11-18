@@ -65,6 +65,8 @@ jest.mock("@sps/rbac/models/subject/sdk/server", () => {
       socialModuleProfileFindByIdChatFindByIdThreadFindByIdMessageCreate: (
         ...args: unknown[]
       ) => mockTelegramMessageCreate(...args),
+      ecommerceModuleOrderPaymentWebhook: (...args: unknown[]) =>
+        mockBillingProviderWebhook(...args),
       telegramBootstrap: (...args: unknown[]) => mockTelegramBootstrap(...args),
       telegramSyncMembership: (...args: unknown[]) =>
         mockTelegramSyncMembership(...args),
@@ -89,8 +91,6 @@ jest.mock("@sps/billing/models/invoice/sdk/server", () => ({
 jest.mock("@sps/billing/models/payment-intent/sdk/server", () => ({
   api: {
     find: (...args: unknown[]) => mockBillingPaymentIntentFind(...args),
-    providerWebhook: (...args: unknown[]) =>
-      mockBillingProviderWebhook(...args),
   },
 }));
 

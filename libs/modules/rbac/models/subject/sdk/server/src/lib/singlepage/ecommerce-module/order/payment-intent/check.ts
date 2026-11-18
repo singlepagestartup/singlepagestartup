@@ -1,9 +1,11 @@
 import {
+  orderPaymentIntentsRoute,
   serverHost,
-  route,
-} from "@sps/billing/models/payment-intent/sdk/model";
+} from "@sps/rbac/models/subject/sdk/model";
+import type { IModel } from "@sps/billing/models/payment-intent/sdk/model";
 import {
   NextRequestOptions,
+  prepareFormDataToSend,
   responsePipe,
   transformResponseItem,
 } from "@sps/shared-utils";
@@ -15,30 +17,24 @@ export interface IProps {
   catchErrors?: boolean;
   tag?: string;
   revalidate?: number;
-  params?: Record<string, unknown>;
+  id: string;
+  params?: any;
   options?: Partial<NextRequestOptions>;
-  data: {
-    provider: "telegram-star";
-    currency: string;
-    total_amount: number;
-    invoice_payload: string;
-    telegram_payment_charge_id: string;
-    provider_payment_charge_id: string;
-  };
+  data: any;
 }
 
-export interface IResult {
-  code: 0;
-}
+export interface IResult extends IModel {}
 
 export async function action(props: IProps): Promise<IResult | undefined> {
   const productionBuild = process.env.NEXT_PHASE === PHASE_PRODUCTION_BUILD;
 
-  const { data, params, options, host = serverHost } = props;
+  const { data, params, options, id, host = serverHost } = props;
 
   const stringifiedQuery = QueryString.stringify(params, {
     encodeValuesOnly: true,
   });
+
+  const formData = prepareFormDataToSend({ data });
 
   const noCache = process.env.NEXT_PHASE === PHASE_PRODUCTION_BUILD;
   const cacheControlOptions: NextRequestOptions["headers"] = noCache
@@ -49,20 +45,19 @@ export async function action(props: IProps): Promise<IResult | undefined> {
     credentials: "include",
     ...options,
     method: "POST",
-    body: JSON.stringify(data),
+    body: formData,
     headers: {
-      "Content-Type": "application/json",
       ...cacheControlOptions,
       ...options?.headers,
     },
     next: {
-      tags: [route],
+      tags: [orderPaymentIntentsRoute],
       ...options?.next,
     },
   };
 
   const res = await fetch(
-    `${host}${route}/${data.provider}/webhook?${stringifiedQuery}`,
+    `${host}${orderPaymentIntentsRoute}/${id}/check?${stringifiedQuery}`,
     requestOptions,
   );
 

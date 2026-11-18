@@ -25,5 +25,4 @@ export interface IBillingModule {
 
 export const PaymentIntentDI = {
   IBillingModule: Symbol.for("billing.payment-intent.billing.module"),
-  IPaymentLifecycle: Symbol.for("billing.payment-intent.payment.lifecycle"),
 };

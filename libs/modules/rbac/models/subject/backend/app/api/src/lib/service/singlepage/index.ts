@@ -1,3 +1,6 @@
+import { Service as OrderPaymentDispatch } from "../startup/ecommerce/order/payment-dispatch";
+import { Service as OrderPaymentCheck } from "../startup/ecommerce/order/payment-check";
+import { Service as StripeOrderPayment } from "../startup/ecommerce/order/stripe-payment";
 import { Service as ProviderPeriod } from "../startup/ecommerce/order/provider-period";
 import type { IProviderPeriodReceipt } from "@sps/billing/models/payment-intent/backend/app/api/src/lib/service/singlepage/settlement";
 import { Service as OrderRenewal } from "../startup/ecommerce/order/renewal";
@@ -728,6 +731,21 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
       identity: this.identity,
       subjectsToIdentities: this.subjectsToIdentities,
     }).execute(props);
+  }
+
+  get ecommerceModuleOrderPaymentDispatch() {
+    return new OrderPaymentDispatch(this.billingModule.paymentIntent);
+  }
+
+  get ecommerceModuleOrderPaymentCheck() {
+    return new OrderPaymentCheck(
+      this.billingModule.paymentIntent,
+      this.ecommerceModuleOrderStripePayment,
+    );
+  }
+
+  get ecommerceModuleOrderStripePayment() {
+    return new StripeOrderPayment(this);
   }
 
   async ecommerceModuleOrderResolveProviderPeriod(

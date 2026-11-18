@@ -17,9 +17,11 @@ const bindings = new ContainerModule(({ bind }) => {
   bind<App>(DI.IApp).to(App);
   bind<Controller>(DI.IController).to(Controller);
   bind<Repository>(DI.IRepository).to(Repository);
-  bind<Service>(DI.IService).toDynamicValue(
-    () => createKnowledgeServices().sourcesToFileStorageModuleFiles,
-  );
+  bind<Service>(DI.IService)
+    .toDynamicValue(
+      () => createKnowledgeServices().sourcesToFileStorageModuleFiles,
+    )
+    .inSingletonScope();
   bind<Configuration>(DI.IConfiguration).to(Configuration);
 });
 

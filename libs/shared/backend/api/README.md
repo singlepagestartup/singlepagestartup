@@ -97,18 +97,19 @@ describes private query refs, replay and browser recovery.
 
 ## Backend bootstrap
 
-Modules, models and relations declare their Inversify bindings in
+Each module, model and relation declares its Inversify bindings in
 `backend/app/api/src/lib/bootstrap.ts`. The shared `createAppBootstrap`
-loads those bindings. Calling `bootstrap()` initializes the HTTP app.
+factory owns one container per factory instance. Its `bootstrap()` initializes
+the HTTP app and returns `{ app, service }`. For a module that only mounts
+child apps, `service` is `undefined`. Concurrent and subsequent calls share
+the same successful startup.
 
-To use another entity inside a backend service, import `createService` from
-that entity's `backend/app/api/src/lib/bootstrap`. Each call creates a fresh
-container and resolves the entity's service. A caller can use a singleton
-binding to reuse that instance. Pass any dependencies required by the
-entity's factory, such as the payment services for an Order.
-
-When the HTTP app and a payment handler share a service, bind it in singleton
-scope and call `bootstrapWithService()` to get both from the same container.
+Models and relations bind `DI.IService` in singleton scope. Import
+`createService` from the entity's `src/lib/bootstrap` to get the service
+before HTTP starts. The controller and the result of `await bootstrap()` use
+this same instance. To test an Order with different payment
+dependencies, call `createOrderBootstrap(reservations, paymentIntent)`
+to create a separate owner.
 
 ## Resource descriptions
 

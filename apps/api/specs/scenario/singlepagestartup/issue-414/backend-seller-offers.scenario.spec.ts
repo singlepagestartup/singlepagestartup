@@ -565,7 +565,7 @@ it("reuses mixed-currency checkout invoices and resumes only USD after local RUB
       ?.status,
   ).toBe("open");
   const settled = await fetch(
-    `${getApiUrl()}/api/billing/payment-intents/dummy/webhook`,
+    `${getApiUrl()}/api/rbac/subjects/ecommerce-module/orders/payment-intents/dummy/webhook`,
     {
       method: "POST",
       headers: { ...operator().headers, "Content-Type": "application/json" },

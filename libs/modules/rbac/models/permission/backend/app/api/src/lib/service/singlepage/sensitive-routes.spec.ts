@@ -196,7 +196,10 @@ describe("private commerce and Subject order routes", () => {
   });
   it.each([
     ["GET", "/api/rbac/subjects/subject-id/ecommerce-module/orders"],
-    ["POST", "/api/billing/payment-intents/stripe/webhook"],
+    [
+      "POST",
+      "/api/rbac/subjects/ecommerce-module/orders/payment-intents/stripe/webhook",
+    ],
     ["POST", "/api/ecommerce/stores-to-products/offer-id/quote"],
   ])("keeps the regular permission flow for %s %s", async (method, path) => {
     await expect(service.isSensitiveRoute(path, method, path)).resolves.toBe(

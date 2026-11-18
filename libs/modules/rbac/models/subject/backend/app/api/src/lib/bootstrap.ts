@@ -1,3 +1,4 @@
+import { createService as getOrder } from "@sps/ecommerce/models/order/backend/app/api/src/lib/bootstrap";
 import { createService as createSubjectsToEcommerceModuleOrdersService } from "@sps/rbac/relations/subjects-to-ecommerce-module-orders/backend/app/api/src/lib/bootstrap";
 import { Service as EcommerceCatalog } from "./service/startup/ecommerce/catalog";
 import type { IConstructorProps as ICatalogDependencies } from "./service/singlepage/ecommerce/catalog";
@@ -770,33 +771,15 @@ const bindings = new ContainerModule(({ bind }) => {
   );
 });
 
-const { bootstrapWithService, createService } = createAppBootstrap<
-  App,
-  Service,
-  [orderPayments: OrderPaymentService, paymentIntent: PaymentIntentService]
->(bindings, (container, orderPayments, paymentIntent) => {
-  container
-    .bind<OrderPaymentService>(SubjectDI.IOrderPaymentService)
-    .toConstantValue(orderPayments);
-  container
-    .bind<PaymentIntentService>(SubjectDI.IPaymentIntentService)
-    .toConstantValue(paymentIntent);
-});
-
-export { createService };
-
-export async function bootstrap() {
-  const [orderPayments, paymentIntent] = await Promise.all([
-    import("@sps/ecommerce/relations/orders-to-billing-module-payment-intents/backend/app/api"),
-    import("@sps/billing/models/payment-intent/backend/app/api"),
-  ]);
-  const { app, service } = await bootstrapWithService(
-    orderPayments.service,
-    paymentIntent.service,
-  );
-  return {
-    app,
-    resolveOrderPaymentPeriod:
-      service.ecommerceModuleOrderResolveProviderPeriod.bind(service),
-  };
-}
+export const { bootstrap, createService } = createAppBootstrap<App, Service>(
+  bindings,
+  (container) => {
+    const order = getOrder();
+    container
+      .bind<OrderPaymentService>(SubjectDI.IOrderPaymentService)
+      .toConstantValue(order.ordersToBillingModulePaymentIntents);
+    container
+      .bind<PaymentIntentService>(SubjectDI.IPaymentIntentService)
+      .toConstantValue(order.billingModule.paymentIntent);
+  },
+);

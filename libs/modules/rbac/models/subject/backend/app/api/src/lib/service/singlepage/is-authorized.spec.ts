@@ -772,13 +772,16 @@ describe("Subject-only catalogue mutations", () => {
         permission: {
           type: "HTTP",
           method: "POST",
-          route: `/api/billing/payment-intents/${id}/dummy`,
+          route: `/api/rbac/subjects/ecommerce-module/orders/payment-intents/${id}/providers/dummy`,
         },
         authorization: { value: "catalogue-admin-allowed-jwt" },
       }),
     ).rejects.toThrow("This operation requires the operator credential");
     for (const [method, route] of [
-      ["POST", "/api/billing/payment-intents/dummy/webhook"],
+      [
+        "POST",
+        "/api/rbac/subjects/ecommerce-module/orders/payment-intents/dummy/webhook",
+      ],
       ["POST", "/api/billing/payment-intents"],
       ["PATCH", `/api/billing/payment-intents/${id}`],
       ["POST", `/api/rbac/subjects/${id}/ecommerce-module/catalogue-mutations`],
@@ -803,7 +806,7 @@ it("leaves provider webhook notifications outside the central operator-only poli
       id: "operator-policy-public-webhook",
       type: "HTTP",
       method: "POST",
-      path: "/api/billing/payment-intents/stripe/webhook",
+      path: "/api/rbac/subjects/ecommerce-module/orders/payment-intents/stripe/webhook",
     },
   });
   const service = new Service(
@@ -817,7 +820,8 @@ it("leaves provider webhook notifications outside the central operator-only poli
       permission: {
         type: "HTTP",
         method: "POST",
-        route: "/api/billing/payment-intents/stripe/webhook",
+        route:
+          "/api/rbac/subjects/ecommerce-module/orders/payment-intents/stripe/webhook",
       },
       authorization: {},
     }),
@@ -826,7 +830,8 @@ it("leaves provider webhook notifications outside the central operator-only poli
     permission: {
       type: "HTTP",
       method: "POST",
-      route: "/api/billing/payment-intents/stripe/webhook",
+      route:
+        "/api/rbac/subjects/ecommerce-module/orders/payment-intents/stripe/webhook",
     },
   });
 });

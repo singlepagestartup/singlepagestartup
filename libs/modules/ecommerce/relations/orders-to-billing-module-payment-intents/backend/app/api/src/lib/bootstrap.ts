@@ -14,10 +14,7 @@ import { OrdersToBillingModulePaymentIntentsDI } from "./di";
 import { createService as createAttributeService } from "@sps/ecommerce/models/attribute/backend/app/api/src/lib/bootstrap";
 import type { Service as AttributeService } from "@sps/ecommerce/models/attribute/backend/app/api/src/lib/service";
 
-export interface IBootstrapResult {
-  app: App;
-  service: Service;
-}
+export type IBootstrapResult = Awaited<ReturnType<typeof bootstrap>>;
 
 const bindings = new ContainerModule(({ bind }) => {
   bind<IExceptionFilter>(DI.IExceptionFilter).to(ExceptionFilter);
@@ -33,5 +30,6 @@ const bindings = new ContainerModule(({ bind }) => {
     .inSingletonScope();
 });
 
-export const { createService, bootstrapWithService: bootstrap } =
-  createAppBootstrap<App, Service>(bindings);
+export const { bootstrap, createService } = createAppBootstrap<App, Service>(
+  bindings,
+);

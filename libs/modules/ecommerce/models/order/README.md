@@ -201,9 +201,9 @@ separate checkout validation; an omitted cart amount is not a zero-price grant.
 
 ## Payment success extension
 
-Order and RBAC Subject use Billing's Payment Intent service for checkout.
-The API host connects that service to the Order-to-Payment-Intent relation for
-stock settlement, late-payment checks and reservation release. When a provider
+Order supplies the Order-to-Payment-Intent relation when creating Billing's
+Payment Intent service. RBAC Subject uses the resulting service for checkout,
+provider callbacks and scheduled payment checks. When a provider
 confirms payment, the invoice update and stock settlement share a transaction.
 Observer triggers the subsequent Order check after a successful webhook.
 

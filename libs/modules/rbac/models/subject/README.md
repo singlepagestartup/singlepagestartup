@@ -647,6 +647,32 @@ A confirmed one-off order moves from `paid` to `approving`. A subscription moves
 
 Canceling an unpaid attempt preserves the Subject's existing role grants. When a paid subscription replaces another plan, the previous plan is marked for cancellation after the new plan's first paid period is accepted. Its existing paid period keeps its original end date.
 
+### Order payment callbacks
+
+Providers send callbacks to `POST /api/rbac/subjects/ecommerce-module/orders/payment-intents/:provider/webhook`.
+The provider segment selects the verifier. The verified invoice and saved
+payment allocations identify the order, its lines and the buyer. Providers
+do not supply a Subject ID or use a buyer session. The operator credential is
+required for the corresponding `/:uuid/providers/:provider` dispatch and `/:uuid/check`
+endpoints. Buyers continue to use their own order's checkout and history.
+
+When upgrading an existing installation, edit the URL on each existing webhook
+Permission before seeding. Keep its ID and role links. The Permission seed
+looks up records by method and path. On a fresh install the seed supplies the
+new paths. Register the Subject callback URL with each external payment provider.
+The deployer builds the Payselection callback URL from the public API domain
+and the configured account's route (`payselection` or `payselection-international`).
+Payselection signs the exact registered URL. If the merchant uses a custom address,
+set `PAYSELECTION_WEBHOOK_URL` (RUB) or `PAYSELECTION_INT_WEBHOOK_URL` in the
+deployer environment. The API reads `PAYSELECTION_RUB_WEBHOOK_URL` and
+`PAYSELECTION_INT_WEBHOOK_URL`. Enable each registered route's provider name
+in `ALLOWED_BILLING_SERVICE_PROVIDERS`. Switch Telegram
+and the API to the same release. Existing payment IDs and invoice links are
+preserved. Replay any notifications the provider retained during the switch
+and check the resulting order status. Existing 24-hour Observer registrations
+for the former URL expire normally. Run the regular order and Subject checks
+after the switch to fulfil payments whose original notification was missed.
+
 ### Recording an offline payment
 
 After verifying the payment, record the paid Invoice and its successful Payment Intent in Billing. The intent must be linked to the Order and its payment currency, with the amount and terms of that purchase. The Invoice must be linked to that intent. If the order already has these records, update their statuses. The regular order check can advance a paying order to `paid`, and the Subject check can then grant the purchase.

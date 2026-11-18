@@ -16,7 +16,6 @@ import {
   RequestIdMiddleware,
   ActionLoggerMiddleware,
   BillRouteMiddleware,
-  controllerGuardedRoutes,
   OperatorSecretAttemptsMiddleware,
   ApiRateLimitMiddleware,
 } from "@sps/middlewares";
@@ -27,19 +26,12 @@ import { app as analyticApp } from "@sps/analytic/backend/app/api";
 import { app as hostApp } from "@sps/host/backend/app/api";
 import {
   app as rbacApp,
-  resolveOrderPaymentPeriod,
+  rbacHttpCacheExcludeRoutes,
 } from "@sps/rbac/backend/app/api";
-import { privateCommerceRoutes } from "@sps/rbac/models/permission/backend/app/api";
 import { app as startupApp } from "@sps/startup/backend/app/api";
 import { app as crmApp } from "@sps/crm/backend/app/api";
-import {
-  app as ecommerceApp,
-  orderPaymentLifecycle,
-} from "@sps/ecommerce/backend/app/api";
-import {
-  app as billingApp,
-  configureOrderPayments,
-} from "@sps/billing/backend/app/api";
+import { app as ecommerceApp } from "@sps/ecommerce/backend/app/api";
+import { app as billingApp } from "@sps/billing/backend/app/api";
 import { app as notificationApp } from "@sps/notification/backend/app/api";
 import { app as blogApp } from "@sps/blog/backend/app/api";
 import { app as websiteBuilderApp } from "@sps/website-builder/backend/app/api";
@@ -66,7 +58,6 @@ const apiModules = {
   agent: agentApp,
   broadcast: broadcastApp,
 };
-configureOrderPayments(orderPaymentLifecycle, resolveOrderPaymentPeriod);
 hostApp.configureRouting(apiModules);
 
 const revalidationMiddleware = new RevalidationMiddleware();
@@ -75,11 +66,7 @@ const consistencyMiddleware = new ConsistencyMiddleware({
 });
 const httpCacheMiddleware = new HTTPCacheMiddleware({
   runtime: consistencyMiddleware.runtime,
-  excludedRoutes: [
-    ...controllerGuardedRoutes,
-    ...privateCommerceRoutes,
-    { regexPath: /^\/api\/rbac\/subjects\/[^/]+\/ecommerce-module(?:\/.*)?$/i },
-  ],
+  excludedRoutes: [...rbacHttpCacheExcludeRoutes],
 });
 
 app.use(

@@ -6,7 +6,6 @@ import type { Service as AttributeService } from "@sps/ecommerce/models/attribut
 import { Repository } from "../../repository";
 import { OrdersToBillingModulePaymentIntentsDI } from "../../di";
 import { Service as Reservation } from "../startup/reservation";
-import type { IPaymentLifecycle } from "@sps/billing/models/payment-intent/backend/app/api";
 import type { IReservationLine } from "./reservation";
 
 @injectable()
@@ -17,14 +16,6 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     readonly attribute: Pick<AttributeService, "update">,
   ) {
     super(repository);
-  }
-
-  get paymentLifecycle(): IPaymentLifecycle {
-    return {
-      settle: (props) => this.settleReservations(props),
-      canRecordLatePayment: (props) => this.canRecordLatePayment(props),
-      release: (props) => this.releaseReservations(props),
-    };
   }
 
   async stockForOffers(offerIds: string[]) {

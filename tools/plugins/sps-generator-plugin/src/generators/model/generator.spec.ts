@@ -48,6 +48,9 @@ describe("GIVEN: an SPS module tree exists", () => {
     );
     expect(bootstrap).toContain("export const { bootstrap, createService }");
     expect(bootstrap).toContain("createAppBootstrap<App, Service>");
+    expect(bootstrap).toContain(
+      "bind<Service>(DI.IService).to(Service).inSingletonScope()",
+    );
 
     expect(
       readTreeFile(

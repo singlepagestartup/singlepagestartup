@@ -4,11 +4,9 @@ import { Service as PaykeeperSettlement } from "../startup/paykeeper-settlement"
 import type {
   IExecuteProps as ISettlementProps,
   IExpireProps,
-  IPaymentLifecycle,
-  IProviderPeriodResolver,
 } from "./settlement";
 import "reflect-metadata";
-import { inject, injectable, optional } from "inversify";
+import { inject, injectable } from "inversify";
 import { CRUDService, DI, consistencyContext } from "@sps/shared-backend-api";
 import {
   Table,
@@ -44,7 +42,6 @@ import { api as paymentIntentsToInvoicesApi } from "@sps/billing/relations/payme
 import { api as invoiceApi } from "@sps/billing/models/invoice/sdk/server";
 import { IModel as IInvoice } from "@sps/billing/models/invoice/sdk/model";
 import * as crypto from "crypto";
-// import { api as ecommerceOrdersToBillingModulePaymentIntentsApi } from "@sps/ecommerce/relations/orders-to-billing-module-payment-intents/sdk/server";
 import { Service as Cloudpayments } from "../startup/cloudpayments";
 import type { IServiceProceedProps as ICloudpaymentsProceedProps } from "./cloudpayments";
 import { Service as Tiptoppay } from "../startup/tiptoppay";
@@ -67,6 +64,7 @@ interface IStripeInvoiceProps {
   amount: number;
   currency?: string;
   firstPeriodOnly?: boolean;
+  usePreparedInvoice?: boolean;
   paymentUrl?: string;
   successUrl?: string | null;
   cancelUrl?: string | null;
@@ -76,15 +74,12 @@ interface IStripeInvoiceProps {
 export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
   declare repository: Repository;
   billingModule: IBillingModule;
+  protected readonly usesPreparedCheckoutInvoice: boolean = false;
   private readonly checkoutDispatch: CheckoutDispatch;
-  private providerPeriodResolver?: IProviderPeriodResolver;
 
   constructor(
     @inject(DI.IRepository) repository: Repository,
     @inject(PaymentIntentDI.IBillingModule) billingModule: IBillingModule,
-    @inject(PaymentIntentDI.IPaymentLifecycle)
-    @optional()
-    private orderReservations?: IPaymentLifecycle,
   ) {
     super(repository);
     this.billingModule = billingModule;
@@ -107,27 +102,12 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     return props.provider === "stripe";
   }
 
+  protected get settlement() {
+    return new Settlement({ repository: this.repository, service: this });
+  }
+
   settlePayment(props: ISettlementProps) {
-    return new Settlement({
-      repository: this.repository,
-      service: this,
-    }).execute(props);
-  }
-
-  get paymentLifecycle(): IPaymentLifecycle | undefined {
-    return this.orderReservations;
-  }
-
-  configureOrderPayments(
-    reservations: IPaymentLifecycle,
-    resolvePeriod: IProviderPeriodResolver,
-  ) {
-    this.orderReservations = reservations;
-    this.setProviderPeriodResolver(resolvePeriod);
-  }
-
-  setProviderPeriodResolver(resolver: IProviderPeriodResolver) {
-    this.providerPeriodResolver = resolver;
+    return this.settlement.execute(props);
   }
 
   protected override insert(data: Record<string, unknown>) {
@@ -354,10 +334,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
   }
 
   expireInvoice(props: IExpireProps) {
-    return new Settlement({
-      repository: this.repository,
-      service: this,
-    }).expire(props);
+    return this.settlement.expire(props);
   }
 
   async failUninitializedPaymentIntent(id: string, expiresBefore: Date) {
@@ -452,7 +429,10 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
             "Conflict error. Initial Stripe subscription payment was already settled",
           );
         }
-        if (!invoice && this.providerPeriodResolver) {
+        if (
+          !invoice &&
+          (props.usePreparedInvoice || this.usesPreparedCheckoutInvoice)
+        ) {
           if (intent.status === "canceled") {
             throw new Error(
               "Conflict error. Canceled subscription period requires payment reconciliation",
@@ -634,37 +614,76 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
       return current;
     } else if (session && remote.status === "complete" && invoice.paymentUrl) {
       // Checkout is closed to the buyer while an asynchronous payment is pending.
-      return new Settlement({
-        repository: this.repository,
-        service: this,
-      }).closeStripePaymentPage(reference);
+      return this.settlement.closeStripePaymentPage(reference);
     }
     return invoice;
   }
 
-  async checkStripeInvoice(invoice: IInvoice) {
-    if (
-      this.providerPeriodResolver &&
-      invoice.status === "draft" &&
-      !invoice.providerId
-    ) {
-      const links = await this.billingModule.paymentIntentsToInvoices.find({
-        params: {
-          filters: {
-            and: [{ column: "invoiceId", method: "eq", value: invoice.id }],
-          },
-        },
-      });
-      if (links?.length === 1) {
-        const intent = await this.findById({ id: links[0].paymentIntentId });
-        const contractId =
-          intent?.checkoutMetadata?.providerContractPaymentIntentId;
-        if (typeof contractId === "string") {
-          await this.reconcileSubscriptionPeriods({ id: contractId });
-        }
-      }
-      return;
+  async getStripePaymentEvent(id: unknown) {
+    if (!STRIPE_SECRET_KEY) {
+      throw new Error("Configuration error. Stripe secret key not found");
     }
+    if (typeof id !== "string" || !/^evt_[a-zA-Z0-9]+$/.test(id)) {
+      throw new Error("Validation error. Invalid Stripe event ID");
+    }
+
+    const stripe = new Stripe(STRIPE_SECRET_KEY);
+    const event = await stripe.events.retrieve(id);
+    if (
+      !event ||
+      event.id !== id ||
+      event.object !== "event" ||
+      typeof event.type !== "string" ||
+      !event.data?.object ||
+      typeof event.data.object.object !== "string"
+    ) {
+      throw new Error("Validation error. Invalid retrieved Stripe event");
+    }
+    const object = event.data.object.object;
+    const invoice =
+      object === "invoice" &&
+      [
+        "invoice.created",
+        "invoice.finalized",
+        "invoice.paid",
+        "invoice.payment_succeeded",
+        "invoice.payment_failed",
+        "invoice.voided",
+        "invoice.marked_uncollectible",
+        "invoice.finalization_failed",
+      ].includes(event.type);
+    const checkout =
+      object === "checkout.session" &&
+      [
+        "checkout.session.completed",
+        "checkout.session.async_payment_succeeded",
+        "checkout.session.async_payment_failed",
+        "checkout.session.expired",
+      ].includes(event.type);
+    if (invoice || checkout) {
+      if (
+        !("id" in event.data.object) ||
+        typeof event.data.object.id !== "string" ||
+        !event.data.object.id
+      ) {
+        throw new Error("Validation error. Missing Stripe payment identity");
+      }
+      return event;
+    }
+    return;
+  }
+
+  async checkStripeInvoice(invoice: IInvoice) {
+    const subscription = await this.checkStripeInvoiceStatus(invoice);
+    if (subscription) {
+      await this.receiveInitialStripeInvoice(
+        subscription.stripe,
+        subscription.remote,
+      );
+    }
+  }
+
+  async checkStripeInvoiceStatus(invoice: IInvoice) {
     if (invoice.status !== "open" || !invoice.providerId) {
       return;
     }
@@ -683,14 +702,15 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
         remote.parent?.subscription_details?.subscription ??
         ("subscription" in remote ? remote.subscription : undefined);
       if (subscription || remote.billing_reason?.startsWith("subscription_")) {
-        await this.receiveStripeSubscriptionInvoice(stripe, remote);
+        return { stripe, remote };
       } else {
         await this.applyStripePaymentStatus(invoice, remote);
       }
     }
+    return;
   }
 
-  private async receiveStripeSubscriptionInvoice(
+  private async readStripeSubscriptionInvoice(
     stripe: Stripe,
     remote: Stripe.Invoice,
     subscription?: Stripe.Subscription,
@@ -705,32 +725,14 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     }
     const contract =
       subscription ?? (await stripe.subscriptions.retrieve(subscriptionId));
-    if (
-      (this.providerPeriodResolver || contract.id) &&
-      contract.id !== subscriptionId
-    ) {
+    if (contract.id && contract.id !== subscriptionId) {
       throw new Error("Conflict error. Stripe subscription identity changed");
     }
-    let paymentIntentId = contract.metadata?.paymentIntentId;
+    const paymentIntentId = contract.metadata?.paymentIntentId;
     if (!paymentIntentId) {
       throw new Error(
         "Validation error. Stripe subscription payment intent is missing",
       );
-    }
-    let period: StripePeriod | undefined;
-    if (this.providerPeriodResolver) {
-      period = new StripePeriod({
-        resolve: this.providerPeriodResolver,
-        readLines: async (invoiceId) => {
-          const lines: Stripe.InvoiceLineItem[] = [];
-          for await (const line of stripe.invoices.listLineItems(invoiceId, {
-            limit: 100,
-          })) {
-            lines.push(line);
-          }
-          return lines;
-        },
-      });
     }
     // Historic subscribers can retain earlier paid invoices on their original
     // intent. A replay preserves that history without allocating a new period.
@@ -769,28 +771,71 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
           parseExactMonetaryAmount(paid.amount) ===
             remoteAmount / 10 ** currencyPrecision(remote.currency ?? "usd")
         ) {
-          if (period) {
-            await period.execute({
-              invoice: remote,
-              subscription: contract,
-              recordedPaymentIntentId: intent.id,
-            });
-          }
-          return paid;
+          return {
+            contract,
+            paymentIntentId,
+            recorded: { invoice: paid, paymentIntentId: intent.id },
+          };
         }
       }
     }
-    if (period) {
-      const resolved = await period.execute({
-        invoice: remote,
-        subscription: contract,
-      });
-      paymentIntentId = resolved.paymentIntentId;
-    } else if (remote.billing_reason !== "subscription_create") {
+    return { contract, paymentIntentId };
+  }
+
+  async readStripeOrderPeriod(
+    remote: Stripe.Invoice,
+    client?: Stripe,
+    subscription?: Stripe.Subscription,
+  ) {
+    if (!STRIPE_SECRET_KEY) {
+      throw new Error("Configuration error. Stripe secret key not found");
+    }
+    const stripe = client ?? new Stripe(STRIPE_SECRET_KEY);
+    const { contract, recorded } = await this.readStripeSubscriptionInvoice(
+      stripe,
+      remote,
+      subscription,
+    );
+    const receipt = await new StripePeriod({
+      readLines: async (invoiceId) => {
+        const lines: Stripe.InvoiceLineItem[] = [];
+        for await (const line of stripe.invoices.listLineItems(invoiceId, {
+          limit: 100,
+        })) {
+          lines.push(line);
+        }
+        return lines;
+      },
+    }).execute({
+      invoice: remote,
+      subscription: contract,
+      recordedPaymentIntentId: recorded?.paymentIntentId,
+    });
+    return { receipt, recorded: recorded?.invoice };
+  }
+
+  private async receiveInitialStripeInvoice(
+    stripe: Stripe,
+    remote: Stripe.Invoice,
+  ) {
+    const { paymentIntentId, recorded } =
+      await this.readStripeSubscriptionInvoice(stripe, remote);
+    if (recorded) {
+      return recorded.invoice;
+    }
+    if (remote.billing_reason !== "subscription_create") {
       throw new Error(
-        "Configuration error. Subscription period resolver is required for recurring Stripe invoices",
+        "Conflict error. Stripe renewal requires its own period order",
       );
     }
+    return this.settleStripeSubscriptionInvoice(remote, paymentIntentId, false);
+  }
+
+  async settleStripeSubscriptionInvoice(
+    remote: Stripe.Invoice,
+    paymentIntentId: string,
+    preparedPeriod: boolean,
+  ) {
     return this.withStripeInvoice(
       {
         paymentIntentId,
@@ -798,7 +843,8 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
         amount:
           remote.amount_due / 10 ** currencyPrecision(remote.currency ?? "usd"),
         currency: remote.currency,
-        firstPeriodOnly: !period,
+        firstPeriodOnly: !preparedPeriod,
+        usePreparedInvoice: preparedPeriod,
         paymentUrl: remote.hosted_invoice_url ?? "",
       },
       (invoice) =>
@@ -807,10 +853,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
   }
 
   /** Reads provider-owned debits after a lost notification; never submits one. */
-  async reconcileSubscriptionPeriods(props: { id: string }) {
-    if (!this.providerPeriodResolver) {
-      return;
-    }
+  async *stripeSubscriptionInvoices(props: { id: string }) {
     if (consistencyContext.getStore()?.database) {
       throw new Error(
         "Conflict error. Provider reconciliation requires a committed transaction",
@@ -873,11 +916,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
             remote.billing_reason === "subscription_cycle") &&
           remote.status !== "draft"
         ) {
-          await this.receiveStripeSubscriptionInvoice(
-            stripe,
-            remote,
-            subscription,
-          );
+          yield { stripe, remote, subscription };
         }
       }
     }
@@ -1169,14 +1208,11 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
             props.data.type === "checkout.session.async_payment_failed",
         });
       } else if (data.object === "invoice") {
-        if (this.providerPeriodResolver && data.status === "draft") {
-          return { pending: true };
-        }
         const reference = data.parent?.subscription_details?.subscription;
         const subscriptionId =
           reference ?? ("subscription" in data ? data.subscription : undefined);
         if (typeof subscriptionId === "string") {
-          return this.receiveStripeSubscriptionInvoice(stripe, data);
+          return this.receiveInitialStripeInvoice(stripe, data);
         }
       }
 
@@ -1216,27 +1252,31 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
   }
 
   async failUnpaidIntent(id: string, expectedStatus: string) {
-    await this.repository.withPaymentIntentLock(id, async () => {
-      const current = await this.findById({ id });
-      if (
-        !current ||
-        current.status !== expectedStatus ||
-        ["succeeded", "requires_reconciliation", "canceled"].includes(
-          current.status,
-        )
-      ) {
-        return;
-      }
-      await this.repository.consumeFirstByField(
-        "id",
-        id,
-        { status: "failed" },
-        {
-          and: [{ column: "status", method: "eq", value: expectedStatus }],
-        },
-      );
-      await this.paymentLifecycle?.release({ paymentIntentIds: [id] });
-    });
+    await this.repository.withPaymentIntentLock(id, () =>
+      this.markUnpaidIntentFailed(id, expectedStatus),
+    );
+  }
+
+  protected async markUnpaidIntentFailed(id: string, expectedStatus: string) {
+    const current = await this.findById({ id });
+    if (
+      !current ||
+      current.status !== expectedStatus ||
+      ["succeeded", "requires_reconciliation", "canceled"].includes(
+        current.status,
+      )
+    ) {
+      return false;
+    }
+    await this.repository.consumeFirstByField(
+      "id",
+      id,
+      { status: "failed" },
+      {
+        and: [{ column: "status", method: "eq", value: expectedStatus }],
+      },
+    );
+    return true;
   }
 
   async cloudpayments(props: ICloudpaymentsProceedProps) {
@@ -1894,11 +1934,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
   async paykeeper(props: IPaykeeperProceedProps) {
     const paykeeper = new Paykeeper({
       billingModule: this.billingModule,
-      settle: (input) =>
-        new PaykeeperSettlement({
-          repository: this.repository,
-          service: this,
-        }).execute(input),
+      settle: (input) => new PaykeeperSettlement(this).execute(input),
     });
     return paykeeper.proceed(props);
   }

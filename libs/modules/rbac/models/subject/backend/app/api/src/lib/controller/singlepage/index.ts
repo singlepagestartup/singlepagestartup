@@ -1,3 +1,6 @@
+import { Handler as OrderPaymentProvider } from "./ecommerce-module/order/payment-intent/provider";
+import { Handler as OrderPaymentCheck } from "./ecommerce-module/order/payment-intent/check";
+import { Handler as OrderPaymentWebhook } from "./ecommerce-module/order/payment-intent/provider-webhook";
 import { Handler as EcommerceCatalog } from "./ecommerce-module/catalog";
 import { Handler as BlogArticleCreate } from "./blog/article/create";
 import { Handler as FreezeSubscriptionPeriod } from "./ecommerce-module/order/freeze-subscription-period";
@@ -144,6 +147,33 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
       isAdmin: (subjectId) => this.service.isAdmin(subjectId),
     });
     this.bindHttpRoutes([
+      {
+        method: "POST",
+        path: "/ecommerce-module/orders/payment-intents/:provider/webhook",
+        handler: (c, next) =>
+          new OrderPaymentWebhook(
+            this.service.billingModule.paymentIntent,
+            this.service.ecommerceModuleOrderStripePayment,
+          ).execute(c, next),
+      },
+      {
+        method: "POST",
+        path: "/ecommerce-module/orders/payment-intents/:uuid/check",
+        handler: (c, next) =>
+          new OrderPaymentCheck(
+            this.service.ecommerceModuleOrderPaymentCheck,
+          ).execute(c, next),
+        middlewares: [new RequestOperatorSecret().init()],
+      },
+      {
+        method: "POST",
+        path: "/ecommerce-module/orders/payment-intents/:uuid/providers/:provider",
+        handler: (c, next) =>
+          new OrderPaymentProvider(
+            this.service.ecommerceModuleOrderPaymentDispatch,
+          ).execute(c, next),
+        middlewares: [new RequestOperatorSecret().init()],
+      },
       {
         method: "POST",
         path: "/:id/ecommerce-module/catalogue-mutations",

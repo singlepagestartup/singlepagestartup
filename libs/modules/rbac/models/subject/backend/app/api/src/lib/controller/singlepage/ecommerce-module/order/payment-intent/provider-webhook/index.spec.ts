@@ -57,7 +57,10 @@ describe("Given: the payment-intent provider webhook handler", () => {
     const app = new Hono();
 
     app.post("/:provider/webhook", (c) => {
-      return new Handler(props.service as any).execute(c, undefined);
+      return new Handler(props.service as any, { webhook: jest.fn() }).execute(
+        c,
+        undefined,
+      );
     });
 
     return app.request(`/${props.provider}/webhook`, {
@@ -115,7 +118,7 @@ describe("Given: the payment-intent provider webhook handler", () => {
     const service = createService({ allowedProviders: [] });
     const app = new Hono();
     app.post("/:provider/webhook", (c) =>
-      new Handler(service as any).execute(c, undefined),
+      new Handler(service as any, { webhook: jest.fn() }).execute(c, undefined),
     );
 
     const response = await app.request(`/${provider}/webhook`, {

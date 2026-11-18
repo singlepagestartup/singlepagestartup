@@ -4,10 +4,10 @@ import { Service as OrderLifecycleService } from "@sps/ecommerce/models/order/ba
  * Payment confirmation, order reads and fulfillment use the owning services.
  */
 import { api as channelApi } from "@sps/broadcast/models/channel/sdk/server";
-import { api as paymentIntentApi } from "@sps/billing/models/payment-intent/sdk/server";
+import { api as subjectPaymentApi } from "@sps/rbac/models/subject/sdk/server";
 import { randomUUID } from "node:crypto";
 import { Hono } from "hono";
-import { Handler as ProviderHandler } from "@sps/billing/models/payment-intent/backend/app/api/src/lib/controller/singlepage/provider";
+import { Handler as ProviderHandler } from "@sps/rbac/models/subject/backend/app/api/src/lib/controller/singlepage/ecommerce-module/order/payment-intent/provider";
 import { Service as Checkout } from "./checkout";
 import { Service as RetryableIds } from "./retryable-ids";
 import type { IModel as IOrderOwner } from "@sps/rbac/relations/subjects-to-ecommerce-module-orders/sdk/model";
@@ -18,8 +18,7 @@ import { RBAC_JWT_SECRET } from "@sps/shared-utils";
 import { Service as PasswordAuthentication } from "../../../startup/authentication/email-and-password";
 import { Handler as PasswordLogin } from "../../../../controller/singlepage/authentication/email-and-password/authentication";
 import { Service as MergeGuestCart } from "./merge-guest-cart";
-import { bootstrap as bootstrapOrder } from "@sps/ecommerce/models/order/backend/app/api/src/lib/bootstrap";
-import { bootstrap as bootstrapPaymentIntent } from "@sps/billing/models/payment-intent/backend/app/api/src/lib/bootstrap";
+import { createOrderBootstrap } from "@sps/ecommerce/models/order/backend/app/api/src/lib/bootstrap";
 import { createService as createReservationService } from "@sps/ecommerce/relations/orders-to-billing-module-payment-intents/backend/app/api/src/lib/bootstrap";
 import { Service as SubjectService } from "../../index";
 import { Repository as SubjectRepository } from "../../../../repository";
@@ -92,10 +91,7 @@ function track(service: any) {
 
 async function bootstrapOrderFixture() {
   const reservations = createReservationService();
-  const { service: intents } = await bootstrapPaymentIntent(
-    reservations.paymentLifecycle,
-  );
-  return bootstrapOrder(reservations, intents);
+  return createOrderBootstrap(reservations).bootstrap();
 }
 
 async function fixture(type = "one_off") {
@@ -328,7 +324,10 @@ async function fixture(type = "one_off") {
     const request = new Request(input as any, init);
     if (
       !new URL(request.url).pathname.startsWith("/api/ecommerce/orders") &&
-      !new URL(request.url).pathname.startsWith("/api/billing/")
+      !new URL(request.url).pathname.startsWith("/api/billing/") &&
+      !new URL(request.url).pathname.startsWith(
+        "/api/rbac/subjects/ecommerce-module/orders/payment-intents/",
+      )
     ) {
       throw new Error(
         `Unexpected fixture request: ${request.method} ${new URL(request.url).pathname}`,
@@ -580,7 +579,10 @@ async function committedPreparedCheckout(
       }
     });
   jest.spyOn(channelApi, "pushMessage").mockResolvedValue({} as any);
-  const provider = jest.spyOn(paymentIntentApi, "provider");
+  const provider = jest.spyOn(
+    subjectPaymentApi,
+    "ecommerceModuleOrderPaymentProvider",
+  );
   await expect(f.subject.ecommerceOrderCheckout(input)).rejects.toThrow(
     "simulated-process-stop-after-reservation-commit",
   );
@@ -642,8 +644,12 @@ it("recovers a committed unsent reservation through fresh services and sends con
       return invoice;
     });
   jest.spyOn(f.intents, "isProviderAllowed").mockReturnValue(true);
-  f.http.post("/api/billing/payment-intents/:uuid/:provider", (c, next) =>
-    new ProviderHandler(f.intents).execute(c, next),
+  f.http.post(
+    "/api/rbac/subjects/ecommerce-module/orders/payment-intents/:uuid/providers/:provider",
+    (c, next) =>
+      new ProviderHandler(
+        f.subject.ecommerceModuleOrderPaymentDispatch,
+      ).execute(c, next),
   );
   f.http.post("/api/billing/payment-intents-to-currencies", async (c) => {
     const body = await c.req.parseBody();
@@ -711,7 +717,10 @@ it("preserves an unknown provider outcome after dispatch started instead of infe
       provider: "stripe",
     }),
   ).toBeTruthy();
-  const provider = jest.spyOn(paymentIntentApi, "provider");
+  const provider = jest.spyOn(
+    subjectPaymentApi,
+    "ecommerceModuleOrderPaymentProvider",
+  );
   await expect((await freshCheckout()).execute(saved.input)).rejects.toThrow(
     "provider outcome is unknown",
   );
@@ -809,7 +818,7 @@ it("requires the buyer to select the store in an older cart before checkout can 
   ).toHaveLength(0);
   jest.spyOn(channelApi, "pushMessage").mockResolvedValue({} as any);
   jest
-    .spyOn(paymentIntentApi, "provider")
+    .spyOn(subjectPaymentApi, "ecommerceModuleOrderPaymentProvider")
     .mockImplementation(async ({ id, data }: any) => {
       const intent = await f.intents.findById({ id });
       const invoice = await f.invoices.create({
@@ -1131,7 +1140,10 @@ it("releases the committed reservation when checkout observer registration fails
   jest
     .spyOn(channelApi, "pushMessage")
     .mockRejectedValue(new Error("checkout-observer-failed"));
-  const provider = jest.spyOn(paymentIntentApi, "provider");
+  const provider = jest.spyOn(
+    subjectPaymentApi,
+    "ecommerceModuleOrderPaymentProvider",
+  );
 
   await expect(
     f.subject.ecommerceOrderCheckout({
@@ -2069,7 +2081,7 @@ it.each(["first", "each"] as const)(
     expect(edited.totals[0].total).toBe(expectedAmount);
     jest.spyOn(channelApi, "pushMessage").mockResolvedValue({} as any);
     jest
-      .spyOn(paymentIntentApi, "provider")
+      .spyOn(subjectPaymentApi, "ecommerceModuleOrderPaymentProvider")
       .mockImplementation(async ({ id, data }: any) => {
         const intent = await f.intents.findById({ id });
         const invoice = await f.invoices.create({
@@ -2208,9 +2220,6 @@ it.each(["digital", "legacy-digital", "physical", "physical-cancel"])(
         metadata: { email: "period@example.test" },
       }),
     );
-    f.intents.setProviderPeriodResolver((receipt) =>
-      f.subject.ecommerceModuleOrderResolveProviderPeriod(receipt),
-    );
     (f.proceed as any).ecommerceOrderRenewal = (props: any) =>
       f.subject.ecommerceModuleOrderRenewal(props);
     const firstStart = Math.floor(Date.now() / 1000) - 3600;
@@ -2279,10 +2288,9 @@ it.each(["digital", "legacy-digital", "physical", "physical-cancel"])(
       },
       checkout: { sessions: { create: createRemote } },
     };
-    await f.intents.stripe({
-      action: "webhook",
-      data: { data: { object: first } },
-    });
+    await f.subject.ecommerceModuleOrderStripePayment.webhook({
+      data: { object: first },
+    } as any);
     await f.check(cart.id);
     await f.proceed.execute({ subjectId: f.buyer.id });
     expect(
@@ -2322,7 +2330,10 @@ it.each(["digital", "legacy-digital", "physical", "physical-cancel"])(
     const original = await f.order.findById({ id: cart.id });
     expect(original.subscriptionPeriodInvoiceId).toBe(payment.invoice.id);
     expect(await f.grantRows()).toHaveLength(1);
-    const provider = jest.spyOn(paymentIntentApi, "provider");
+    const provider = jest.spyOn(
+      subjectPaymentApi,
+      "ecommerceModuleOrderPaymentProvider",
+    );
     const preparations = await Promise.all([
       f.subject.ecommerceModuleOrderRenewal({
         subjectId: f.buyer.id,
@@ -2400,14 +2411,12 @@ it.each(["digital", "legacy-digital", "physical", "physical-cancel"])(
     expect(provider).not.toHaveBeenCalled();
     remoteInvoices.push(cycle);
     await Promise.all([
-      f.intents.stripe({
-        action: "webhook",
-        data: { data: { object: cycle } },
-      }),
-      f.intents.stripe({
-        action: "webhook",
-        data: { data: { object: cycle } },
-      }),
+      f.subject.ecommerceModuleOrderStripePayment.webhook({
+        data: { object: cycle },
+      } as any),
+      f.subject.ecommerceModuleOrderStripePayment.webhook({
+        data: { object: cycle },
+      } as any),
     ]);
     await f.check(next[0].id);
     await f.proceed.execute({ subjectId: f.buyer.id });

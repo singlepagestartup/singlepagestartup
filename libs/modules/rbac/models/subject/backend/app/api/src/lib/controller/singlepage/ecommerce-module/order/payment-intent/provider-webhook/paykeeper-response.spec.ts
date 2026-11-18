@@ -33,7 +33,7 @@ function fixture() {
   };
   const app = new Hono();
   app.post("/:provider/webhook", (c) =>
-    new Handler(service as any).execute(c, jest.fn()),
+    new Handler(service as any, { webhook: jest.fn() }).execute(c, jest.fn()),
   );
   return { service, app };
 }

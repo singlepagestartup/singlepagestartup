@@ -3,7 +3,7 @@ import { Context } from "hono";
 import { HTTPException } from "hono/http-exception";
 import { Service } from "../../../../service";
 import { getHttpErrorType, logger } from "@sps/backend-utils";
-import { api as paymentIntentApi } from "@sps/billing/models/payment-intent/sdk/server";
+import { api as subjectApi } from "@sps/rbac/models/subject/sdk/server";
 
 export class Handler {
   service: Service;
@@ -38,7 +38,7 @@ export class Handler {
       if (notSucceededPaymentIntents?.length) {
         for (const paymentIntent of notSucceededPaymentIntents) {
           try {
-            await paymentIntentApi.check({
+            await subjectApi.ecommerceModuleOrderPaymentCheck({
               id: paymentIntent.id,
               data: {},
               options: {

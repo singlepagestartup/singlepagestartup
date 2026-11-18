@@ -1,3 +1,4 @@
+import { Service as CheckPayment } from "../../../../../../service/singlepage/ecommerce/order/payment-check";
 /**
  * BDD Suite: Billing payment-intent initialization recovery.
  *
@@ -49,12 +50,10 @@ jest.mock("@sps/billing/models/payment-intent/sdk/server", () => ({
   },
 }));
 
-import { Service } from "../../../service";
+import { Service } from "@sps/billing/models/payment-intent/backend/app/api/src/lib/service";
 import { Service as InvoiceService } from "@sps/billing/models/invoice/backend/app/api/src/lib/service";
-import {
-  Handler,
-  PAYMENT_INTENT_INITIALIZATION_GRACE_PERIOD_MS,
-} from "./index";
+import { Handler } from "./index";
+const PAYMENT_INTENT_INITIALIZATION_GRACE_PERIOD_MS = 5 * 60 * 1000;
 
 describe("Given: a payment intent has no invoice relation yet", () => {
   beforeEach(() => {
@@ -120,7 +119,9 @@ describe("Given: a payment intent has no invoice relation yet", () => {
     );
 
     await expect(
-      new Handler(service as any).execute(context as any, undefined),
+      new Handler(
+        new CheckPayment(service as any, { check: jest.fn() }),
+      ).execute(context as any, undefined),
     ).resolves.toEqual({
       data: paymentIntent,
     });
@@ -147,7 +148,9 @@ describe("Given: a payment intent has no invoice relation yet", () => {
     mockPaymentIntentUpdate.mockResolvedValue(failedPaymentIntent);
 
     await expect(
-      new Handler(service as any).execute(context as any, undefined),
+      new Handler(
+        new CheckPayment(service as any, { check: jest.fn() }),
+      ).execute(context as any, undefined),
     ).resolves.toEqual({
       data: failedPaymentIntent,
     });
@@ -236,7 +239,9 @@ describe("CloudPayments invoice reconciliation", () => {
       req: { param: () => intent.id, parseBody: async () => ({ data: "{}" }) },
       json: (value: unknown) => value,
     };
-    const handler = new Handler(service);
+    const handler = new Handler(
+      new CheckPayment(service, { check: jest.fn() }),
+    );
     const check = () => handler.execute(ctx as any, undefined);
     const provider = jest.spyOn(globalThis, "fetch");
     return { intent, invoice, settle, check, provider };

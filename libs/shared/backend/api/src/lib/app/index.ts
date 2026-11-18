@@ -1,4 +1,4 @@
-export { createAppBootstrap } from "./bootstrap";
+export { createAppBootstrap, type IAppBootstrap } from "./bootstrap";
 export {
   type IApp as IDefaultApp,
   type IAppRouteDescription,

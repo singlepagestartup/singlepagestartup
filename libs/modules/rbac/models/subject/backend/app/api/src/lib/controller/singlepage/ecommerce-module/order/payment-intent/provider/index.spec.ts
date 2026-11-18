@@ -1,3 +1,4 @@
+import { Service as Dispatch } from "../../../../../../service/singlepage/ecommerce/order/payment-dispatch";
 /**
  * BDD Suite: payment-intent payment creation gate.
  *
@@ -83,7 +84,10 @@ describe("Given: the payment-intent provider handler", () => {
     const app = new Hono();
 
     app.post("/:uuid/:provider", (c) => {
-      return new Handler(props.service as any).execute(c, undefined);
+      return new Handler(new Dispatch(props.service as any)).execute(
+        c,
+        undefined,
+      );
     });
 
     const body = new FormData();
@@ -221,7 +225,7 @@ describe("Given: the payment-intent provider handler", () => {
     jest.advanceTimersByTime(10000);
 
     expect(fetchMock).toHaveBeenCalledWith(
-      "http://api.test/api/billing/payment-intents/dummy/webhook",
+      "http://api.test/api/rbac/subjects/ecommerce-module/orders/payment-intents/dummy/webhook",
       expect.objectContaining({
         method: "POST",
         headers: expect.objectContaining({
