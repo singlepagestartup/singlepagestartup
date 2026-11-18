@@ -13,35 +13,6 @@ type TOrderListPayload = {
   data?: TSubjectOrder[];
 };
 
-async function createRecord<T extends { id: string }>(
-  path: string,
-  data: Record<string, unknown>,
-): Promise<T> {
-  const result = await expectOk<{ data?: T }>({
-    method: "POST",
-    path,
-    includeSecret: true,
-    data,
-  });
-
-  const record = result.payload?.data;
-
-  if (!record?.id) {
-    throw new Error(
-      `Create response does not contain entity id for ${path}: ${JSON.stringify(result.payload)}`,
-    );
-  }
-
-  return record;
-}
-
-async function createEntity(
-  path: string,
-  data: Record<string, unknown>,
-): Promise<string> {
-  return (await createRecord(path, data)).id;
-}
-
 async function deleteEntity(path: string, id: string): Promise<void> {
   await requestApi({
     method: "DELETE",
@@ -68,106 +39,125 @@ export type TCartScenarioFixtures = {
 export async function createCartScenarioFixtures(): Promise<TCartScenarioFixtures> {
   const cleanupTasks: Array<() => Promise<void>> = [];
 
-  const registerCleanup = (task: () => Promise<void>) => {
-    cleanupTasks.unshift(task);
-  };
+  async function createRecord<T extends { id: string }>(
+    path: string,
+    data: Record<string, unknown>,
+    shared = false,
+  ): Promise<T> {
+    const result = await expectOk<{ data?: T }>({
+      method: "POST",
+      path,
+      includeSecret: true,
+      data,
+    });
+    const record = result.payload?.data;
+
+    if (!record?.id) {
+      throw new Error(
+        `Create response does not contain entity id for ${path}: ${JSON.stringify(result.payload)}`,
+      );
+    }
+    if (!shared) {
+      cleanupTasks.unshift(() => deleteEntity(path, record.id));
+    }
+
+    return record;
+  }
+
+  async function cleanup() {
+    for (const task of cleanupTasks) {
+      try {
+        await task();
+      } catch {
+        // Cleanup is best effort to keep test reruns resilient.
+      }
+    }
+  }
 
   const randomSuffix = Date.now().toString(36);
 
-  const currency = await createRecord<ICurrency>("/api/billing/currencies", {
-    slug: `scenario-currency-${randomSuffix}`,
-    symbol: "$",
-    title: `scenario-currency-${randomSuffix}`,
-    isDefault: false,
-  });
-  const currencyId = currency.id;
-  registerCleanup(() => deleteEntity("/api/billing/currencies", currencyId));
+  try {
+    const currency = await createRecord<ICurrency>("/api/billing/currencies", {
+      slug: `scenario-currency-${randomSuffix}`,
+      symbol: "$",
+      title: `scenario-currency-${randomSuffix}`,
+      isDefault: false,
+    });
+    const store = await createRecord<IStore>("/api/ecommerce/stores", {});
+    const product = await createRecord<IProduct>("/api/ecommerce/products", {});
+    const offer = await createRecord("/api/ecommerce/stores-to-products", {
+      storeId: store.id,
+      productId: product.id,
+      sku: `scenario-offer-${randomSuffix}`,
+      variant: "default",
+    });
 
-  const store = await createRecord<IStore>("/api/ecommerce/stores", {});
-  const storeId = store.id;
-  registerCleanup(() => deleteEntity("/api/ecommerce/stores", storeId));
+    const price = await createRecord("/api/ecommerce/attributes", {
+      number: "200",
+    });
+    const priceKey = await createRecord("/api/ecommerce/attribute-keys", {
+      type: "price",
+      field: "number",
+    });
 
-  const product = await createRecord<IProduct>("/api/ecommerce/products", {});
-  const productId = product.id;
-  registerCleanup(() => deleteEntity("/api/ecommerce/products", productId));
-
-  const attributeId = await createEntity("/api/ecommerce/attributes", {
-    number: "200",
-  });
-  registerCleanup(() => deleteEntity("/api/ecommerce/attributes", attributeId));
-
-  const attributeKeyId = await createEntity("/api/ecommerce/attribute-keys", {
-    type: "price",
-    field: "number",
-  });
-  registerCleanup(() =>
-    deleteEntity("/api/ecommerce/attribute-keys", attributeKeyId),
-  );
-
-  const productsToAttributesId = await createEntity(
-    "/api/ecommerce/products-to-attributes",
-    {
-      productId,
-      attributeId,
-    },
-  );
-  registerCleanup(() =>
-    deleteEntity(
+    const productPrice = await createRecord(
       "/api/ecommerce/products-to-attributes",
-      productsToAttributesId,
-    ),
-  );
-
-  const attributeKeysToAttributesId = await createEntity(
-    "/api/ecommerce/attribute-keys-to-attributes",
-    {
-      attributeKeyId,
-      attributeId,
-    },
-  );
-  registerCleanup(() =>
-    deleteEntity(
+      { productId: product.id, attributeId: price.id },
+    );
+    await createRecord("/api/ecommerce/stores-to-products-to-attributes", {
+      storesToProductsId: offer.id,
+      attributeId: price.id,
+    });
+    const priceKeyLink = await createRecord(
       "/api/ecommerce/attribute-keys-to-attributes",
-      attributeKeysToAttributesId,
-    ),
-  );
-
-  const attributesToBillingModuleCurrenciesId = await createEntity(
-    "/api/ecommerce/attributes-to-billing-module-currencies",
-    {
-      attributeId,
-      billingModuleCurrencyId: currencyId,
-    },
-  );
-  registerCleanup(() =>
-    deleteEntity(
+      { attributeKeyId: priceKey.id, attributeId: price.id },
+    );
+    const priceCurrency = await createRecord(
       "/api/ecommerce/attributes-to-billing-module-currencies",
-      attributesToBillingModuleCurrenciesId,
-    ),
-  );
+      { attributeId: price.id, billingModuleCurrencyId: currency.id },
+    );
 
-  return {
-    currency,
-    store,
-    product,
-    currencyId,
-    storeId,
-    productId,
-    attributeId,
-    attributeKeyId,
-    productsToAttributesId,
-    attributeKeysToAttributesId,
-    attributesToBillingModuleCurrenciesId,
-    cleanup: async () => {
-      for (const task of cleanupTasks) {
-        try {
-          await task();
-        } catch {
-          // Cleanup is best effort to keep test reruns resilient.
-        }
-      }
-    },
-  };
+    for (const [slug, text] of [
+      ["price_formula", "unit_price * quantity"],
+      ["formula_version", "1"],
+    ]) {
+      // Canonical attribute keys are shared across products and offers.
+      const key = await createRecord(
+        "/api/ecommerce/attribute-keys/find-or-create",
+        { slug, type: "feature", field: "string" },
+        true,
+      );
+      const value = await createRecord("/api/ecommerce/attributes", {
+        string: { en: text },
+      });
+      await createRecord("/api/ecommerce/attribute-keys-to-attributes", {
+        attributeKeyId: key.id,
+        attributeId: value.id,
+      });
+      await createRecord("/api/ecommerce/products-to-attributes", {
+        productId: product.id,
+        attributeId: value.id,
+      });
+    }
+
+    return {
+      currency,
+      store,
+      product,
+      currencyId: currency.id,
+      storeId: store.id,
+      productId: product.id,
+      attributeId: price.id,
+      attributeKeyId: priceKey.id,
+      productsToAttributesId: productPrice.id,
+      attributeKeysToAttributesId: priceKeyLink.id,
+      attributesToBillingModuleCurrenciesId: priceCurrency.id,
+      cleanup,
+    };
+  } catch (error) {
+    await cleanup();
+    throw error;
+  }
 }
 
 export async function createCartOrder({
