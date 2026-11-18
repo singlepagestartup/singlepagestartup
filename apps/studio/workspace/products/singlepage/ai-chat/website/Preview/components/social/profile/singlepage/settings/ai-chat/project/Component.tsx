@@ -1,14 +1,14 @@
 "use client";
-import { type InputHTMLAttributes as InputHTMLAttributes } from "react";
-import { useId as useId } from "react";
-import { type ReactNode as ReactNode } from "react";
-import { Component as WebsiteBuilderModuleButton } from "../../../../../../website-builder/button/index";
 import {
+  useId,
   forwardRef as forwardRefControl,
+  useState,
+  type InputHTMLAttributes,
+  type ReactNode,
   type ButtonHTMLAttributes as ButtonControlProps,
 } from "react";
-import IconGlyphs from "../../../../../../website-builder/feature/singlepage/icon/icons.json";
-import { useState } from "react";
+import { Component as WebsiteBuilderModuleButton } from "../../../../../../website-builder/button/index";
+import IconGlyphs from "../../../../../../../../../../../../design/singlepage/interface-kit/ai-chat/icons.json";
 import { useProfiles } from "../../../scope/ai-chat/project/Profiles";
 import { Component as KnowledgeModuleSource } from "../../../../../../knowledge/source/index";
 interface IFeedbackProps {

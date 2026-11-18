@@ -1,15 +1,18 @@
-import { forwardRef as forwardRef } from "react";
-import { type SVGProps as SVGProps } from "react";
-import { twMerge as twMerge } from "tailwind-merge";
-import { Component as WebsiteBuilderModuleButton } from "../../../../website-builder/button/index";
 import {
+  forwardRef,
   forwardRef as forwardRefControl,
+  useEffect,
+  useId,
+  useRef,
+  useState,
+  type SVGProps,
   type ButtonHTMLAttributes as ButtonControlProps,
 } from "react";
-import IconGlyphs from "../../../../website-builder/feature/singlepage/icon/icons.json";
+import { twMerge as twMerge } from "tailwind-merge";
+import { Component as WebsiteBuilderModuleButton } from "../../../../website-builder/button/index";
+import IconGlyphs from "../../../../../../../../../../design/singlepage/interface-kit/ai-chat/icons.json";
 import { useStudioAccount } from "../account/Account";
 import { aiChatAccount } from "../account/fixture";
-import { useEffect, useId, useRef, useState } from "react";
 import {
   defaultRbacProfiles,
   defaultRbacUser,

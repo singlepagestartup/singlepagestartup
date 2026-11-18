@@ -1,5 +1,5 @@
 "use client";
-import IconGlyphs from "../../../../../../../website-builder/feature/singlepage/icon/icons.json";
+import IconGlyphs from "../../../../../../../../../../../../../design/singlepage/interface-kit/ai-chat/icons.json";
 import { memo } from "react";
 import type { IAIChatThread } from "../../../../overview/ai-chat/state";
 function Icon({

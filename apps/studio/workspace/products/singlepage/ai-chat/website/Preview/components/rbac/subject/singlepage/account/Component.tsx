@@ -1,5 +1,5 @@
 "use client";
-import IconGlyphs from "../../../../website-builder/feature/singlepage/icon/icons.json";
+import IconGlyphs from "../../../../../../../../../../design/singlepage/interface-kit/ai-chat/icons.json";
 import { Component as SocialModuleProfile } from "../../../../social/profile/index";
 import { useStudioAccount } from "./Account";
 import type { RbacAccountUser } from "../../../shared";

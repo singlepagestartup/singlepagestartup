@@ -1,17 +1,20 @@
 "use client";
-import { useState as useStatePresentation } from "react";
-import { useRef as useRefPresentation } from "react";
+import {
+  useState as useStatePresentation,
+  useRef as useRefPresentation,
+  forwardRef,
+  forwardRef as forwardRefControl,
+  memo,
+  useRef,
+  useState,
+  type SVGProps,
+  type ButtonHTMLAttributes as ButtonControlProps,
+  type ReactNode,
+} from "react";
 import * as AlertDialog from "@radix-ui/react-alert-dialog";
-import { forwardRef as forwardRef } from "react";
-import { type SVGProps as SVGProps } from "react";
 import { twMerge as twMerge } from "tailwind-merge";
 import { Component as WebsiteBuilderModuleButton } from "../../../../website-builder/button/index";
-import {
-  forwardRef as forwardRefControl,
-  type ButtonHTMLAttributes as ButtonControlProps,
-} from "react";
-import IconGlyphs from "../../../../website-builder/feature/singlepage/icon/icons.json";
-import { memo, useRef, useState, type ReactNode } from "react";
+import IconGlyphs from "../../../../../../../../../../design/singlepage/interface-kit/ai-chat/icons.json";
 import {
   defaultSettingsIdentities,
   formatRbacDateTime,

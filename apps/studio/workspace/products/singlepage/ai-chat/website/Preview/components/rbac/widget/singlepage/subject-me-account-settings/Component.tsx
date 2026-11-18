@@ -9,7 +9,7 @@ import {
 import * as SelectPrimitive from "@radix-ui/react-select";
 import { twMerge } from "tailwind-merge";
 import { Component as WebsiteBuilderModuleButton } from "../../../../website-builder/button/index";
-import IconGlyphs from "../../../../website-builder/feature/singlepage/icon/icons.json";
+import IconGlyphs from "../../../../../../../../../../design/singlepage/interface-kit/ai-chat/icons.json";
 import type { IAIChatServicePageContent } from "../../../../website-builder/widget/singlepage/content/ai-chat/content";
 import { Component as RbacModuleSubject } from "../../../subject/index";
 import { useStudioAccount } from "../../../subject/singlepage/account/Account";

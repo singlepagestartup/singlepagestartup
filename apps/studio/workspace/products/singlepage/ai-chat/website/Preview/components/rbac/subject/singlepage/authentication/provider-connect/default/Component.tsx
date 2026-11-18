@@ -1,14 +1,15 @@
 "use client";
-import { type InputHTMLAttributes as InputHTMLAttributes } from "react";
-import { useId as useIdPresentation } from "react";
-import { useState as useStatePresentation } from "react";
-import { Component as WebsiteBuilderModuleButton } from "../../../../../../website-builder/button/index";
 import {
+  useId as useIdPresentation,
+  useState as useStatePresentation,
   forwardRef as forwardRefControl,
+  useId,
+  useState,
+  type InputHTMLAttributes,
   type ButtonHTMLAttributes as ButtonControlProps,
 } from "react";
-import IconGlyphs from "../../../../../../website-builder/feature/singlepage/icon/icons.json";
-import { useId, useState } from "react";
+import { Component as WebsiteBuilderModuleButton } from "../../../../../../website-builder/button/index";
+import IconGlyphs from "../../../../../../../../../../../../design/singlepage/interface-kit/ai-chat/icons.json";
 import { getIdentityProviderMeta } from "../../../../../shared";
 interface ITextFieldProps extends InputHTMLAttributes<HTMLInputElement> {
   label: string;

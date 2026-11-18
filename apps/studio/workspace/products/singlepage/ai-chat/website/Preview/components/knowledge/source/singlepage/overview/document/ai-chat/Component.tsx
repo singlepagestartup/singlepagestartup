@@ -4,7 +4,7 @@ import {
   forwardRef as forwardRefControl,
   type ButtonHTMLAttributes as ButtonControlProps,
 } from "react";
-import IconGlyphs from "../../../../../../website-builder/feature/singlepage/icon/icons.json";
+import IconGlyphs from "../../../../../../../../../../../../design/singlepage/interface-kit/ai-chat/icons.json";
 import {
   Component as SourceCard,
   type ISourceCardProps,

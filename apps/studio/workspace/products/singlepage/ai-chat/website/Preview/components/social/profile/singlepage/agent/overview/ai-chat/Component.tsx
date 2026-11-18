@@ -1,20 +1,20 @@
 "use client";
-import { forwardRef as forwardRef } from "react";
-import * as SelectPrimitive from "@radix-ui/react-select";
-import { twMerge as twMerge } from "tailwind-merge";
-import { twMerge as twMergePresentation } from "tailwind-merge";
-import Markdown from "markdown-to-jsx";
-import { type InputHTMLAttributes as InputHTMLAttributes } from "react";
-import { useId as useId } from "react";
-import { Component as WebsiteBuilderModuleButton } from "../../../../../../website-builder/button/index";
 import {
+  forwardRef,
+  useId,
   forwardRef as forwardRefControl,
+  useState,
+  type InputHTMLAttributes,
   type ButtonHTMLAttributes as ButtonControlProps,
+  type FormEvent,
 } from "react";
-import IconGlyphs from "../../../../../../website-builder/feature/singlepage/icon/icons.json";
+import * as SelectPrimitive from "@radix-ui/react-select";
+import { twMerge, twMerge as twMergePresentation } from "tailwind-merge";
+import Markdown from "markdown-to-jsx";
+import { Component as WebsiteBuilderModuleButton } from "../../../../../../website-builder/button/index";
+import IconGlyphs from "../../../../../../../../../../../../design/singlepage/interface-kit/ai-chat/icons.json";
 import { Component as SocialModuleSkill } from "../../../../../skill/index";
 import * as Dialog from "@radix-ui/react-dialog";
-import { useState, type FormEvent } from "react";
 import { AI_CHAT_AGENTS, type IProjectAgent } from "./resolver";
 import { Component as ProjectAgentAvatar } from "../../avatar/ai-chat/index";
 import { knowledgeSkill } from "../../../../../skill/singlepage/overview/ai-chat/index";

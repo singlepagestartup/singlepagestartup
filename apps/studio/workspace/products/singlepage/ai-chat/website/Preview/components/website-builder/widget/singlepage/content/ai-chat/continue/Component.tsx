@@ -1,4 +1,4 @@
-import IconGlyphs from "../../../../../feature/singlepage/icon/icons.json";
+import IconGlyphs from "../../../../../../../../../../../../design/singlepage/interface-kit/ai-chat/icons.json";
 import { Component as WebsiteBuilderModuleButtonsArray } from "../../../../../buttons-array/index";
 import type { IWebsiteSection } from "../content";
 import defaultContent from "./content.json";
