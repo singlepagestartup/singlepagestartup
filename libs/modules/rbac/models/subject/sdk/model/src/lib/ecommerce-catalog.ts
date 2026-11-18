@@ -1,9 +1,21 @@
-import { insertSchema as storeInsertSchema } from "@sps/ecommerce/models/store/sdk/model";
-import { insertSchema as productInsertSchema } from "@sps/ecommerce/models/product/sdk/model";
+import {
+  insertSchema as storeInsertSchema,
+  type IModel as IStore,
+} from "@sps/ecommerce/models/store/sdk/model";
+import {
+  insertSchema as productInsertSchema,
+  type IModel as IProduct,
+} from "@sps/ecommerce/models/product/sdk/model";
 import { insertSchema as attributeInsertSchema } from "@sps/ecommerce/models/attribute/sdk/model";
 import { insertSchema as attributeKeyInsertSchema } from "@sps/ecommerce/models/attribute-key/sdk/model";
-import { insertSchema as offerInsertSchema } from "@sps/ecommerce/relations/stores-to-products/sdk/model";
-import { insertSchema as offerLinkInsertSchema } from "@sps/ecommerce/relations/offers-to-offers/sdk/model";
+import {
+  insertSchema as offerInsertSchema,
+  type IModel as IOffer,
+} from "@sps/ecommerce/relations/stores-to-products/sdk/model";
+import {
+  insertSchema as offerLinkInsertSchema,
+  type IModel as IOfferLink,
+} from "@sps/ecommerce/relations/offers-to-offers/sdk/model";
 import { insertSchema as storeAttributeInsertSchema } from "@sps/ecommerce/relations/stores-to-attributes/sdk/model";
 import { insertSchema as productAttributeInsertSchema } from "@sps/ecommerce/relations/products-to-attributes/sdk/model";
 import { insertSchema as offerAttributeInsertSchema } from "@sps/ecommerce/relations/stores-to-products-to-attributes/sdk/model";
@@ -14,11 +26,7 @@ import { insertSchema as subjectProductInsertSchema } from "@sps/rbac/relations/
 import { insertSchema as subjectOrderInsertSchema } from "@sps/rbac/relations/subjects-to-ecommerce-module-orders/sdk/model";
 import { offerSettingsInputSchema } from "@sps/ecommerce/relations/stores-to-products/sdk/model/src/lib/settings";
 import { z } from "zod";
-import type { IModel as IProduct } from "@sps/ecommerce/models/product/sdk/model";
-import type { IModel as IOffer } from "@sps/ecommerce/relations/stores-to-products/sdk/model";
-import type { IModel as IStore } from "@sps/ecommerce/models/store/sdk/model";
 import type { IModel as ICurrency } from "@sps/billing/models/currency/sdk/model";
-import type { IModel as IOfferLink } from "@sps/ecommerce/relations/offers-to-offers/sdk/model";
 
 export interface ICatalogAttributeValue {
   id: string;

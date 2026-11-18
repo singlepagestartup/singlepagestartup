@@ -140,7 +140,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     let remaining = text;
 
     while (remaining.length > limit) {
-      let slice = remaining.slice(0, limit);
+      const slice = remaining.slice(0, limit);
       let splitIndex = Math.max(
         slice.lastIndexOf("\n"),
         slice.lastIndexOf(" "),

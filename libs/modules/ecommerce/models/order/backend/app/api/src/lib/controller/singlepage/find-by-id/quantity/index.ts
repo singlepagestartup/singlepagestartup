@@ -25,7 +25,7 @@ export class Handler {
       }
 
       return await withConsistencySnapshot(async () => {
-        let entity = await this.service.findById({ id });
+        const entity = await this.service.findById({ id });
 
         if (!entity) {
           throw new Error("Not Found error. Order not found");

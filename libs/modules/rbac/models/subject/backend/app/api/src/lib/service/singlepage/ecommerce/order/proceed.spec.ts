@@ -884,7 +884,7 @@ describe("settled subscription retry cycles", () => {
       period.assertPayment(props);
     service.ecommerceModule.order.acceptSubscriptionPeriod = (props) =>
       period.execute(props);
-    let grants: any[] = [];
+    const grants: any[] = [];
     service.subjectsToRoles.find = jest.fn(async () => grants);
     service.subjectsToRoles.create = jest.fn(async ({ data }) => {
       const grant = { id: "grant", ...data };

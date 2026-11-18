@@ -556,7 +556,7 @@ function configFiles(
     throw new Error(
       "Multiple OpenCode configs found; keep one project config before generating MCP settings",
     );
-  let destination = existing[0] || join(root, "opencode.json");
+  const destination = existing[0] || join(root, "opencode.json");
   const original = textAt(destination);
   const document = parseJson(original);
   const version = opencodeVersion(args, values, document);

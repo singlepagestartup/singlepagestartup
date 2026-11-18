@@ -1,6 +1,8 @@
-import { REGISTRATION_GRANT_VARIANT } from "@sps/shared-utils";
+import {
+  REGISTRATION_GRANT_VARIANT,
+  ECOMMERCE_ORDER_LINE_QUANTITY_BOUNDS as quantityBounds,
+} from "@sps/shared-utils";
 import { Service as InitialGrantProducts } from "../../billing/initial-grant-products";
-import { ECOMMERCE_ORDER_LINE_QUANTITY_BOUNDS as quantityBounds } from "@sps/shared-utils";
 import type { IModel as IOrder } from "@sps/ecommerce/models/order/sdk/model";
 import type { IModel as IOrderLine } from "@sps/ecommerce/relations/orders-to-products/sdk/model";
 import type { IOfferQuote } from "@sps/ecommerce/relations/stores-to-products/sdk/model";

@@ -10,7 +10,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { variants, insertSchema } from "@sps/host/models/page/sdk/model";
 import { Component as ParentAdminForm } from "@sps/shared-frontend-components/singlepage/admin-v2/form/Component";
 import { useGetAdminFormState } from "@sps/shared-frontend-client-hooks";
-import { useRef } from "react";
+import { useRef, useEffect, useMemo, useState } from "react";
 import { MetadataField } from "@sps/shared-frontend-components/singlepage/admin/metadata-editor/field";
 import {
   Tabs,
@@ -18,7 +18,6 @@ import {
   TabsList,
   TabsTrigger,
 } from "@sps/shared-ui-shadcn";
-import { useEffect, useMemo, useState } from "react";
 
 export function Component(props: IComponentPropsExtended) {
   const expectedMetadata = useRef(props.data?.metadata || {});

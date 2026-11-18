@@ -1,5 +1,4 @@
-import { REGISTRATION_GRANT_VARIANT } from "@sps/shared-utils";
-import { RBAC_SECRET_KEY } from "@sps/shared-utils";
+import { REGISTRATION_GRANT_VARIANT, RBAC_SECRET_KEY } from "@sps/shared-utils";
 import { Service as InitialGrantProducts } from "./initial-grant-products";
 import { consistencyContext } from "@sps/shared-backend-api";
 import { isSupportedOrderInterval } from "@sps/ecommerce/models/order/backend/app/api/src/lib/service/singlepage/find-by-id/checkout-attributes";

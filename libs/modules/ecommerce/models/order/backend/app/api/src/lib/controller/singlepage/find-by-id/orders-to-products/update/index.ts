@@ -41,7 +41,7 @@ export class Handler {
 
       const data = JSON.parse(body["data"]);
 
-      let entity = await this.service.findById({ id });
+      const entity = await this.service.findById({ id });
 
       if (!entity) {
         throw new Error("Not Found error. Order not found");

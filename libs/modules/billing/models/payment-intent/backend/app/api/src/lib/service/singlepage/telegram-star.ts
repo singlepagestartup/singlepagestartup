@@ -49,7 +49,7 @@ export class Service {
     }
 
     if (props.action === "create") {
-      let invoice = await invoiceApi.create({
+      const invoice = await invoiceApi.create({
         data: {
           amount: props.entity.amount,
           status: "open",
