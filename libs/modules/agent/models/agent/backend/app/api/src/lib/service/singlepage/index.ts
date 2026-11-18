@@ -170,10 +170,10 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
   ) {
     super(repository);
     this.telegramConversationRuntime = telegramConversationRuntime;
-    const agent = this;
+    const getBroadcastModule = () => this.modules.broadcast;
     this.agentRun = new AgentRun({
       get broadcastModule() {
-        return agent.modules.broadcast;
+        return getBroadcastModule();
       },
     });
     this.cronQueue = new CronQueue(repository, this.agentRun);

@@ -1,4 +1,8 @@
-import { REGISTRATION_GRANT_VARIANT } from "@sps/shared-utils";
+import {
+  createMemoryCache,
+  RBAC_SECRET_KEY,
+  REGISTRATION_GRANT_VARIANT,
+} from "@sps/shared-utils";
 import { createModules } from "@sps/rbac/backend/app/api/src/lib/modules";
 import { Service as InitialGrantProducts } from "../../billing/initial-grant-products";
 import { isConfirmedInvoice } from "@sps/billing/models/payment-intent/sdk/model";
@@ -7,7 +11,6 @@ import {
   DI,
   type FindServiceProps,
 } from "@sps/shared-backend-api";
-import { createMemoryCache, RBAC_SECRET_KEY } from "@sps/shared-utils";
 import { IModel as IEcommerceModuleOrder } from "@sps/ecommerce/models/order/sdk/model";
 import { api } from "@sps/rbac/models/subject/sdk/server";
 import { IModel as IEcommerceModuleAttributesToBillingModuleCurrencies } from "@sps/ecommerce/relations/attributes-to-billing-module-currencies/sdk/model";

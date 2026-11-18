@@ -4,14 +4,16 @@ import { inject, injectable, unmanaged } from "inversify";
 import { DI } from "../../di/constants";
 import type { IExceptionFilter } from "../../filters";
 import type { IDumpResult, ISeedResult } from "../../configuration";
-import type { IAppRouteDescription } from "../default/interface";
 import {
   defaultAppAssembly,
   getOwningAssembly,
   type IAppAssembly,
   type IAppBootstrap,
 } from "../bootstrap";
-import type { IApp as IDefaultApp } from "../default/interface";
+import type {
+  IAppRouteDescription,
+  IApp as IDefaultApp,
+} from "../default/interface";
 import type { IApp, IModuleApps, IModuleChildApp } from "./interface";
 
 export type { IApp, IModuleApps, IModuleAppEntry } from "./interface";
