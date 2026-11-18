@@ -221,6 +221,7 @@ export class Service extends CRUDService<typeof Table.$inferSelect> {
         value: props.configurationKey,
       });
     }
-    return this.find({ params: { filters: { and: filters } } });
+    const offers = await this.find({ params: { filters: { and: filters } } });
+    return offers.filter((offer) => offer.settings?.initialGrant !== true);
   }
 }

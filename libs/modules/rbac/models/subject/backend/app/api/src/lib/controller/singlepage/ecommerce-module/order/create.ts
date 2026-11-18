@@ -1,6 +1,5 @@
 import {
   ECOMMERCE_ORDER_LINE_QUANTITY_BOUNDS as quantityBounds,
-  INITIAL_FREE_SUBSCRIPTION_PRODUCT_SLUG,
   RBAC_JWT_SECRET,
   RBAC_SECRET_KEY,
 } from "@sps/shared-utils";
@@ -81,7 +80,11 @@ export class Handler {
       if (!product) {
         throw new Error("Not Found error. Product not found");
       }
-      if (product.slug === INITIAL_FREE_SUBSCRIPTION_PRODUCT_SLUG) {
+      if (
+        await this.service.ecommerceModuleProductInitialGrantIncludes({
+          productId: product.id,
+        })
+      ) {
         throw new Error(
           "Permission error. Initial Free is available only through authentication bootstrap",
         );

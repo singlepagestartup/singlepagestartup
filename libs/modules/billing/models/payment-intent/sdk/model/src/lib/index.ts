@@ -3,7 +3,6 @@ import type { outputSchema } from "@sps/billing/models/payment-intent/backend/re
 export type IModel = z.infer<typeof outputSchema>;
 export {
   type IInsertSchema,
-  type ISelectSchema as IInternalModel,
   insertSchema,
   selectSchema,
   outputSchema,

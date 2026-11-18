@@ -18,6 +18,3 @@ export const ECOMMERCE_ORDER_LINE_QUANTITY_BOUNDS = {
   min: 1,
   max: orderLineMaxQuantity(),
 } as const;
-
-export const ECOMMERCE_INITIAL_FREE_STORE_ID =
-  process.env["ECOMMERCE_INITIAL_FREE_STORE_ID"]?.trim();

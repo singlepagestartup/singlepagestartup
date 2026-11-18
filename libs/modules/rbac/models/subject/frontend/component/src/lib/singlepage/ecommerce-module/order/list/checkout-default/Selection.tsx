@@ -61,9 +61,16 @@ export function Selection(props: ISelectionProps) {
     (line) => line.parentLineId === props.line.id && line.offerId,
   );
 
+  // Renewal lineage selects the scoped reader. Its server verifies paid fulfillment.
+  const renewal = Boolean(
+    props.ecommerceModuleOrder.subscriptionSourceOrderId ||
+    props.ecommerceModuleOrder.subscriptionSourceInvoiceId,
+  );
+  const requiresStoreSelection = !renewal && !props.line.offerId;
+
   function savedDraft(): IDraft {
     return {
-      offerId: props.line.offerId ?? original?.offerId ?? "",
+      offerId: props.line.offerId ?? (renewal ? (original?.offerId ?? "") : ""),
       currencyId: props.details.billingModuleCurrencyId ?? "",
       quantity: String(props.line.quantity),
       address: props.line.destination?.address ?? "",
@@ -124,6 +131,7 @@ export function Selection(props: ISelectionProps) {
     (offer) =>
       offer.productId === props.line.productId &&
       offer.variant === "default" &&
+      offer.settings?.initialGrant !== true &&
       (props.line.product?.kind !== "service" ||
         offer.settings?.standalone === true),
   );
@@ -164,11 +172,6 @@ export function Selection(props: ISelectionProps) {
         Number(count) > 0 &&
         Number(count) <= quantity,
     );
-  // Renewal lineage selects the scoped reader. Its server verifies paid fulfillment.
-  const renewal = Boolean(
-    props.ecommerceModuleOrder.subscriptionSourceOrderId ||
-    props.ecommerceModuleOrder.subscriptionSourceInvoiceId,
-  );
   const discoverySignature = JSON.stringify(discoverySelection);
   const publicDiscovery = offerApi.quote({
     data: discoverySelection,
@@ -697,12 +700,24 @@ export function Selection(props: ISelectionProps) {
     props.line.quoteVersion !== original.version,
   );
   useEffect(() => {
-    if (priceStale || unavailableCurrency) reportBlocked(true);
-  }, [priceStale, unavailableCurrency]);
+    if (
+      priceStale ||
+      unavailableCurrency ||
+      (requiresStoreSelection && !receipt?.applied)
+    ) {
+      reportBlocked(true);
+    }
+  }, [
+    priceStale,
+    unavailableCurrency,
+    requiresStoreSelection,
+    receipt?.applied,
+  ]);
   const receiptReady =
     !unsaved &&
     !awaitingRefresh &&
     !priceStale &&
+    (!requiresStoreSelection || receipt?.applied) &&
     !unavailableCurrency &&
     currentReceipt?.amount !== null &&
     currentReceipt?.amount !== undefined &&

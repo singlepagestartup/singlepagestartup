@@ -1,7 +1,6 @@
-import {
-  ECOMMERCE_ORDER_LINE_QUANTITY_BOUNDS as quantityBounds,
-  INITIAL_FREE_SUBSCRIPTION_PRODUCT_SLUG,
-} from "@sps/shared-utils";
+import { REGISTRATION_GRANT_VARIANT } from "@sps/shared-utils";
+import { Service as InitialGrantProducts } from "../../billing/initial-grant-products";
+import { ECOMMERCE_ORDER_LINE_QUANTITY_BOUNDS as quantityBounds } from "@sps/shared-utils";
 import type { IModel as IOrder } from "@sps/ecommerce/models/order/sdk/model";
 import type { IModel as IOrderLine } from "@sps/ecommerce/relations/orders-to-products/sdk/model";
 import type { IOfferQuote } from "@sps/ecommerce/relations/stores-to-products/sdk/model";
@@ -161,7 +160,11 @@ export class Service {
               "Validation error. Source order product is unavailable",
             );
           }
-          if (product.slug === INITIAL_FREE_SUBSCRIPTION_PRODUCT_SLUG) {
+          if (
+            await new InitialGrantProducts(
+              service.ecommerceModule.storesToProducts,
+            ).includes(product.id)
+          ) {
             throw new Error(
               "Permission error. Initial Free is available only through authentication bootstrap",
             );
@@ -611,7 +614,12 @@ export class Service {
         "Conflict error. Legacy physical subscription needs an offer for stock reservation",
       );
     }
-    if (line.product?.slug === INITIAL_FREE_SUBSCRIPTION_PRODUCT_SLUG) {
+    if (
+      extended.variant === REGISTRATION_GRANT_VARIANT ||
+      (await new InitialGrantProducts(
+        service.ecommerceModule.storesToProducts,
+      ).includes(line.productId))
+    ) {
       throw new Error("Permission error. Initial Free cannot be renewed");
     }
     const [shared, currencies, stores] = await Promise.all([

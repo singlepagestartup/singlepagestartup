@@ -1,3 +1,4 @@
+import type { IModel as IOffer } from "@sps/ecommerce/relations/stores-to-products/sdk/model";
 import { randomUUID } from "node:crypto";
 import { compileTariffFormula } from "@sps/backend-utils";
 import type { FindServiceProps } from "@sps/shared-backend-api";
@@ -296,6 +297,24 @@ export class Service {
     if (admin ?? (await this.dependencies.isAdmin(subjectId))) {
       return;
     }
+    if (type === "offer" || type === "product") {
+      const offers = await this.find("stores-to-products", {
+        [type === "offer" ? "id" : "productId"]: id,
+      });
+      if (
+        offers.some(
+          (offer) =>
+            (offer.settings as IOffer["settings"] | undefined)?.initialGrant ===
+              true ||
+            (offer.settings as IOffer["settings"] | undefined)
+              ?.initialGrantLegacyHistory === true,
+        )
+      ) {
+        throw new Error(
+          "Permission error. Registration grants require an administrator",
+        );
+      }
+    }
     if (type === "offer") {
       const offer = await this.record("stores-to-products", id);
       await this.assertOwner(subjectId, "store", String(offer.storeId), false);
@@ -531,6 +550,20 @@ export class Service {
       return;
     }
     if (props.entity === "stores-to-products") {
+      const previousSettings = previous?.settings as
+        IOffer["settings"] | undefined;
+      const settings = data.settings as IOffer["settings"] | undefined;
+      if (
+        !admin &&
+        (previousSettings?.initialGrant === true ||
+          settings?.initialGrant === true ||
+          previousSettings?.initialGrantLegacyHistory === true ||
+          settings?.initialGrantLegacyHistory === true)
+      ) {
+        throw new Error(
+          "Permission error. Registration grants require an administrator",
+        );
+      }
       for (const storeId of [
         ...new Set(
           [previous?.storeId, data.storeId].filter(Boolean).map(String),
@@ -565,12 +598,7 @@ export class Service {
           String(link.sourceOfferId),
         );
         if (link.variant === "fulfilled-by") {
-          await this.assertOwner(
-            subjectId,
-            "store",
-            String(source.storeId),
-            admin,
-          );
+          await this.assertOwner(subjectId, "offer", source.id, admin);
         } else {
           await this.assertOwner(
             subjectId,
@@ -1177,6 +1205,15 @@ export class Service {
     data: ICatalogCreateOfferInput;
   }): Promise<ICatalogCreateOfferResult> {
     const input = catalogCreateOfferSchema.parse(props.data);
+    if (
+      (input.settings?.initialGrant ||
+        input.settings?.initialGrantLegacyHistory) &&
+      !(await this.dependencies.isAdmin(props.subjectId))
+    ) {
+      throw new Error(
+        "Permission error. Registration grants require an administrator",
+      );
+    }
     return this.dependencies.repository.withCatalogLock(
       [
         "ecommerce-catalog",

@@ -48,7 +48,7 @@ export function moneyFromMinorUnits(value: bigint, precision = 8): number {
   return amount;
 }
 
-export function moneyNumber(value: MoneyAmount): number {
+export function parseExactMonetaryAmount(value: MoneyAmount): number {
   return moneyFromMinorUnits(moneyMinorUnits(value));
 }
 

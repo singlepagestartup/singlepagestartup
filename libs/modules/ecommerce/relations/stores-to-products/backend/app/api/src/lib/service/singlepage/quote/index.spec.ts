@@ -156,6 +156,19 @@ function fixture(digits = 2, fulfillmentAlreadySatisfied = false) {
   return { service, catalog, held, routing, attr, formula, addOption };
 }
 describe("per-offer quote", () => {
+  it("excludes registration grants from retail quotes while keeping ordinary digital offers", async () => {
+    const { catalog, service } = fixture();
+    const digital = catalog.products.get("wardrobe")!;
+    digital.kind = "digital";
+    const offer = catalog.offers.get("wardrobe")!;
+    offer.settings = { standalone: false };
+    expect((await service.execute(input)).amount).not.toBeNull();
+    offer.settings = { ...offer.settings, initialGrant: true };
+    await expect(service.execute(input)).rejects.toThrow(
+      "Retail offer is unavailable",
+    );
+  });
+
   it("rejects two independently valid fulfillment services in a direct request", async () => {
     const { service, catalog, addOption } = fixture();
     addOption("pickup", "delivery", "pickup", { rub: "0" }, "unit_price");

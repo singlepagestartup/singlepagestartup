@@ -1,7 +1,7 @@
 import type { Context } from "hono";
 import { HTTPException } from "hono/http-exception";
 import { z } from "zod";
-import { MUTATION_SKIPPED_CONTEXT_KEY } from "@sps/shared-utils";
+import { READ_ONLY_OPERATION_CONTEXT_KEY } from "@sps/shared-utils";
 import { getHttpErrorType } from "@sps/backend-utils";
 import type { Service } from "../../../service";
 
@@ -45,7 +45,7 @@ const selection = z
 export class Handler {
   constructor(private readonly service: Service) {}
   async execute(c: Context) {
-    c.set(MUTATION_SKIPPED_CONTEXT_KEY, true);
+    c.set(READ_ONLY_OPERATION_CONTEXT_KEY, true);
     c.header("Cache-Control", "private, no-store");
     const id = z.string().uuid().safeParse(c.req.param("uuid"));
     const input = selection.safeParse(await c.req.json().catch(() => null));

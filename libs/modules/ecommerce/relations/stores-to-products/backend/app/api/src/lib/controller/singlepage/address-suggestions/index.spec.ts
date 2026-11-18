@@ -1,25 +1,25 @@
 import { Hono } from "hono";
-import { MUTATION_SKIPPED_CONTEXT_KEY } from "@sps/shared-utils";
+import { READ_ONLY_OPERATION_CONTEXT_KEY } from "@sps/shared-utils";
 import { Handler } from "./index";
 
 const suggest = jest.fn();
 const uuid = "3f2504e0-4f89-11d3-9a0c-0305e82c3301";
-let skipped: unknown;
+let readOnly: unknown;
 const app = new Hono<{
-  Variables: Record<typeof MUTATION_SKIPPED_CONTEXT_KEY, boolean>;
+  Variables: Record<typeof READ_ONLY_OPERATION_CONTEXT_KEY, boolean>;
 }>();
 app.use("*", async (c, next) => {
   await next();
-  skipped = c.get(MUTATION_SKIPPED_CONTEXT_KEY);
+  readOnly = c.get(READ_ONLY_OPERATION_CONTEXT_KEY);
 });
 app.post("/:uuid/address-suggestions", (c) =>
   new Handler({ addressSuggestions: suggest } as any).execute(c),
 );
 beforeEach(() => {
   suggest.mockReset().mockResolvedValue({ suggestions: ["Main Street 1"] });
-  skipped = undefined;
+  readOnly = undefined;
 });
-it("performs a private no-store read with mutation side effects suppressed", async () => {
+it("executes the address lookup and classifies the POST as a private no-store read", async () => {
   const response = await app.request(`/${uuid}/address-suggestions`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -27,7 +27,7 @@ it("performs a private no-store read with mutation side effects suppressed", asy
   });
   expect(response.status).toBe(200);
   expect(response.headers.get("Cache-Control")).toBe("private, no-store");
-  expect(skipped).toBe(true);
+  expect(readOnly).toBe(true);
   expect(await response.json()).toEqual({
     data: { suggestions: ["Main Street 1"] },
   });

@@ -149,6 +149,7 @@ it("reconciles both legacy clients after exact-offer Product checkout through th
         })),
       },
       storesToProducts: {
+        find: jest.fn().mockResolvedValue([]),
         offersForProduct: jest.fn(async () => [
           { id: "offer", productId: "product", storeId: "store" },
         ]),

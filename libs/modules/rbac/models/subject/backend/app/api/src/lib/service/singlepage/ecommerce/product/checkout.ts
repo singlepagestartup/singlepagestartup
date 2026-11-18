@@ -1,9 +1,7 @@
+import { Service as InitialGrantProducts } from "../../billing/initial-grant-products";
 import type { Service as SubjectService } from "../../index";
 import type { IEcommerceProductCheckoutInput } from "@sps/rbac/models/subject/sdk/model";
-import {
-  ECOMMERCE_ORDER_LINE_QUANTITY_BOUNDS as quantityBounds,
-  INITIAL_FREE_SUBSCRIPTION_PRODUCT_SLUG,
-} from "@sps/shared-utils";
+import { ECOMMERCE_ORDER_LINE_QUANTITY_BOUNDS as quantityBounds } from "@sps/shared-utils";
 import { z } from "zod";
 import { providerMinorUnits } from "@sps/backend-utils";
 import { paymentProviderPrecision } from "@sps/billing/models/payment-intent/sdk/model";
@@ -59,7 +57,11 @@ export class Service {
     if (!product) {
       throw new Error("Not Found error. Product not found");
     }
-    if (product.slug === INITIAL_FREE_SUBSCRIPTION_PRODUCT_SLUG) {
+    if (
+      await new InitialGrantProducts(
+        this.service.ecommerceModule.storesToProducts,
+      ).includes(product.id)
+    ) {
       throw new Error(
         "Permission error. Initial Free is available only through authentication bootstrap",
       );

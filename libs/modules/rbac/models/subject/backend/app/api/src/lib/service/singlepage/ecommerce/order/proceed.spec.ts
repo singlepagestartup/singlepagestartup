@@ -557,7 +557,7 @@ describe("durable subscription grant revocation", () => {
 
   it("does not apply referral bonuses to the exact initial 3000 Free grant", async () => {
     const { service, order } = lifecycle("paid", false, false);
-    order().ordersToProducts[0].product.slug = "free-subscription";
+    order().variant = "registration-grant";
     service.subjectsToIdentities.find = jest.fn(
       async () => [{ subjectId: "subject" }] as any,
     );
@@ -623,6 +623,7 @@ it("never renews internal Free and preserves all wallet balances on completion",
   await service.delivered({
     order: { id: "free-order", status: "delivered" } as any,
     extendedOrder: {
+      variant: "registration-grant",
       id: "free-order",
       checkoutAttributesByCurrency: {
         amount: 0,
@@ -699,6 +700,7 @@ function createService(props?: {
       },
     } as any,
     {
+      storesToProducts: { find: jest.fn().mockResolvedValue([]) },
       order: {
         find: ecommerceModuleOrderFind,
         findByIdExtended: jest.fn(),

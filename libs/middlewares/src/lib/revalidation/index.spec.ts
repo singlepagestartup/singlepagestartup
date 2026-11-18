@@ -10,6 +10,10 @@
 import { Middleware } from "./index";
 import { Hono } from "hono";
 import { websocketManager } from "@sps/backend-utils";
+import {
+  MUTATION_SKIPPED_CONTEXT_KEY,
+  READ_ONLY_OPERATION_CONTEXT_KEY,
+} from "@sps/shared-utils";
 
 jest.mock("@sps/backend-utils", () => {
   return {
@@ -96,6 +100,42 @@ it("broadcasts a successful mutation without sending a second Host invalidation"
   } finally {
     fetch.mockRestore();
   }
+});
+
+it("executes a read-only POST without publishing a mutation notification", async () => {
+  jest.mocked(websocketManager.broadcastMessage).mockClear();
+  const calculate = jest.fn(() => ({ amount: "10.00" }));
+  const app = new Hono<{
+    Variables: Record<typeof READ_ONLY_OPERATION_CONTEXT_KEY, boolean>;
+  }>();
+  app.use(new Middleware().init());
+  app.post("/api/example/items/quote", (c) => {
+    c.set(READ_ONLY_OPERATION_CONTEXT_KEY, true);
+    return c.json({ data: calculate() });
+  });
+  const response = await app.request("/api/example/items/quote", {
+    method: "POST",
+  });
+  expect(await response.json()).toEqual({ data: { amount: "10.00" } });
+  expect(calculate).toHaveBeenCalledTimes(1);
+  expect(websocketManager.broadcastMessage).not.toHaveBeenCalled();
+});
+
+it("keeps duplicate mutations free of HTTP mutation notifications", async () => {
+  jest.mocked(websocketManager.broadcastMessage).mockClear();
+  const app = new Hono<{
+    Variables: Record<typeof MUTATION_SKIPPED_CONTEXT_KEY, boolean>;
+  }>();
+  app.use(new Middleware().init());
+  app.post("/api/example/items/selection", (c) => {
+    c.set(MUTATION_SKIPPED_CONTEXT_KEY, true);
+    return c.json({ data: { applied: false } });
+  });
+  const response = await app.request("/api/example/items/selection", {
+    method: "POST",
+  });
+  expect(await response.json()).toEqual({ data: { applied: false } });
+  expect(websocketManager.broadcastMessage).not.toHaveBeenCalled();
 });
 
 function intersects(a: string[], b: string[]): boolean {

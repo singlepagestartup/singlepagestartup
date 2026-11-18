@@ -64,6 +64,7 @@ jest.mock("node:dns/promises", () => ({
 import { Hono } from "hono";
 import { lookup } from "node:dns/promises";
 import { Middleware } from "./index";
+import { READ_ONLY_OPERATION_CONTEXT_KEY } from "@sps/shared-utils";
 
 const mockLookup = lookup as unknown as jest.Mock;
 const originalFetch = globalThis.fetch;
@@ -118,6 +119,23 @@ beforeEach(() => {
 
 afterEach(() => {
   globalThis.fetch = originalFetch;
+});
+
+it("returns a read-only POST result without consulting observer pipelines", async () => {
+  const app = new Hono<{
+    Variables: Record<typeof READ_ONLY_OPERATION_CONTEXT_KEY, boolean>;
+  }>();
+  app.use(new Middleware().init());
+  app.post("/api/example/items/quote", (c) => {
+    c.set(READ_ONLY_OPERATION_CONTEXT_KEY, true);
+    return c.json({ data: { amount: "10.00" } });
+  });
+  const response = await app.request("/api/example/items/quote", {
+    method: "POST",
+  });
+  expect(await response.json()).toEqual({ data: { amount: "10.00" } });
+  expect(mockChannelFind).not.toHaveBeenCalled();
+  expect(mockFetch).not.toHaveBeenCalled();
 });
 
 describe("Given: checkout stored a pipeline step on the API's own origin", () => {

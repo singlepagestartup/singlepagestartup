@@ -6,7 +6,14 @@ allOf:
         type: string
       settings:
         type: object
-        description: Delivery rules and package measurements for this retail offer.
+        description: Delivery, packaging and registration settings for this offer.
+        properties:
+          initialGrant:
+            type: boolean
+            description: An administrator can assign this offer to registered Subjects once per Product.
+          initialGrantLegacyHistory:
+            type: boolean
+            description: Recognize matching zero-price registration orders issued before grants were marked.
       sku:
         type: string
         description: Sku

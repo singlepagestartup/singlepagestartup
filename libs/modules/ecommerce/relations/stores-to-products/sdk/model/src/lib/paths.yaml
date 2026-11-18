@@ -128,6 +128,7 @@ paths:
   /ecommerce/stores-to-products/{id}/quote:
     post:
       summary: Calculate a retail offer and its selected services
+      description: Read-only calculation. The ID identifies a stores-to-products record. POST carries the destination and service selections in a JSON body; no cart or inventory mutation occurs.
       tags: [ecommerce-stores-to-products]
       parameters:
         - $ref: "../../../../../../../../../libs/shared/backend/api/src/lib/query-builder/id.yaml"
@@ -173,6 +174,7 @@ paths:
   /ecommerce/stores-to-products/{id}/address-suggestions:
     post:
       summary: Suggest delivery addresses for a public shipping service offer
+      description: Used by the RBAC Subject checkout address field. The ID identifies the selected shipping service's stores-to-products record. Returns suggestions without saving an address or changing the cart.
       tags: [ecommerce-stores-to-products]
       security: []
       parameters:

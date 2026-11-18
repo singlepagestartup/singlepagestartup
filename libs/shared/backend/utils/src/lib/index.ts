@@ -95,7 +95,7 @@ export { compileTariffFormula, type ITariffFormula } from "./tariff-formula";
 export {
   moneyMinorUnits,
   moneyFromMinorUnits,
-  moneyNumber,
+  parseExactMonetaryAmount,
   providerMinorUnits,
   addMoney,
   type MoneyAmount,

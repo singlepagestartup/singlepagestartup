@@ -5,7 +5,7 @@ import { Table } from "./schema";
 import { z } from "zod";
 
 export const insertSchema = createInsertSchema(Table, {
-  kind: z.enum(["physical", "digital", "service"]).optional(),
+  kind: z.string().trim().min(1).optional(),
   metadata: entityMetadataSchema.optional(),
 }).extend({
   title: z.record(z.string(), z.any()).default({}),

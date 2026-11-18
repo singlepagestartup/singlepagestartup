@@ -39,11 +39,6 @@ export const controllerGuardedRoutes: IRouteRule[] = [
 export const allowedRoutes: IRouteRule[] = [
   ...controllerGuardedRoutes,
   {
-    regexPath:
-      /^\/api\/ecommerce\/stores-to-products\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\/(quote|address-suggestions)\/?$/,
-    methods: ["POST"],
-  },
-  {
     regexPath: /^\/favicon\.ico$/,
     methods: ["GET"],
   },

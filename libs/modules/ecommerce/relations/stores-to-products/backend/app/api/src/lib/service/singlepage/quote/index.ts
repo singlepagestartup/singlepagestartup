@@ -13,176 +13,6 @@ import type {
 } from "@sps/ecommerce/relations/stores-to-products/sdk/model";
 import type { IDeliveryRouting } from "./routing";
 
-export function stockQuantity(attributes: IOfferAttribute[]): number | null {
-  const stock = attributes.filter(
-    (attribute) => attribute.key === "stock_quantity",
-  );
-  if (!stock.length) {
-    return null;
-  }
-  const value = stock[0].number;
-  if (
-    stock.length !== 1 ||
-    stock[0].field !== "number" ||
-    stock[0].currencyIds.length ||
-    value === null ||
-    !/^\d+(?:\.0+)?$/.test(value) ||
-    !Number.isSafeInteger(Number(value))
-  ) {
-    throw new Error("Invalid stock_quantity setting");
-  }
-  return Number(value);
-}
-
-function textSetting(attributes: IOfferAttribute[], key: string): string {
-  const rows = attributes.filter((attribute) => attribute.key === key);
-  if (rows.length !== 1 || !rows[0].text?.trim()) {
-    throw new Error("Missing or ambiguous " + key);
-  }
-  return rows[0].text.trim();
-}
-
-function numberSetting(rows: IOfferAttribute[], name: string): string {
-  if (
-    rows.length !== 1 ||
-    rows[0].number === null ||
-    !/^\d+(?:\.\d+)?$/.test(rows[0].number) ||
-    rows[0].field !== "number"
-  ) {
-    throw new Error("Missing or ambiguous " + name);
-  }
-  return rows[0].number;
-}
-
-function priceFor(rows: IOfferAttribute[], currencyId: string) {
-  return numberSetting(
-    rows.filter(
-      (row) =>
-        row.type === "price" &&
-        row.currencyIds.length === 1 &&
-        row.currencyIds[0] === currencyId,
-    ),
-    "unit_price",
-  );
-}
-
-function servicedSubtotal(
-  amount: string,
-  quantity: number,
-  servicedQuantity: number,
-  digits: number,
-) {
-  const scale = Decimal.pow(10, digits);
-  const units = new Decimal(amount).times(scale);
-  return units
-    .divToInt(quantity)
-    .times(servicedQuantity)
-    .plus(Decimal.min(units.mod(quantity), servicedQuantity))
-    .div(scale)
-    .toFixed();
-}
-
-function coefficient(
-  rows: IOfferAttribute[],
-  name: string,
-  currencyId: string,
-) {
-  const candidates = rows.filter((row) => row.key === name);
-  const scoped = candidates.filter(
-    (row) => row.currencyIds.length === 1 && row.currencyIds[0] === currencyId,
-  );
-  if (scoped.length || !name.endsWith("_percent")) {
-    return numberSetting(scoped, name);
-  }
-  return numberSetting(
-    candidates.filter((row) => !row.currencyIds.length),
-    name,
-  );
-}
-
-const measurementNames = [
-  "length_cm",
-  "width_cm",
-  "height_cm",
-  "weight_kg",
-] as const;
-function packageInput(offer: IModel, name: string, quantity: number): string {
-  const packages = offer.settings.packages;
-  if (
-    !packages?.length ||
-    packages.some((box) => !Number.isSafeInteger(box.count) || box.count < 1)
-  ) {
-    throw new Error("Missing package data for " + name);
-  }
-  const indexed =
-    /^package_([1-9][0-9]*)_(length_cm|width_cm|height_cm|weight_kg|count)$/.exec(
-      name,
-    );
-  if (indexed) {
-    const box = packages[Number(indexed[1]) - 1];
-    if (!box) {
-      throw new Error("Missing package: " + indexed[1]);
-    }
-    const field = indexed[2] as keyof typeof box;
-    const raw = String(box[field] ?? "");
-    if (!/^\d+(?:\.\d+)?$/.test(raw) || new Decimal(raw).lte(0)) {
-      throw new Error("Missing package measurement: " + name);
-    }
-    return raw;
-  }
-  let total = new Decimal(0);
-  for (const box of packages) {
-    const value = (key: (typeof measurementNames)[number]) => {
-      if (
-        !box[key] ||
-        !/^\d+(?:\.\d+)?$/.test(box[key]) ||
-        new Decimal(box[key]).lte(0)
-      ) {
-        throw new Error("Missing package measurement: " + key);
-      }
-      return new Decimal(box[key]);
-    };
-    if (name === "total_weight_kg") {
-      total = total.plus(value("weight_kg").times(box.count).times(quantity));
-    } else if (name === "total_volume_cm3") {
-      total = total.plus(
-        value("length_cm")
-          .times(value("width_cm"))
-          .times(value("height_cm"))
-          .times(box.count)
-          .times(quantity),
-      );
-    } else {
-      const key = measurementNames.find((key) => key === name);
-      if (!key || packages.length !== 1) {
-        throw new Error(
-          "Per-box dimension is ambiguous for multiple package types: " + name,
-        );
-      }
-      return value(key).toFixed();
-    }
-  }
-  return total.toFixed();
-}
-
-const runtimeInputs = new Set([
-  "quantity",
-  "serviced_qty",
-  "serviced_subtotal",
-  "distance_km",
-  "unit_price",
-  "total_weight_kg",
-  "total_volume_cm3",
-  ...measurementNames,
-]);
-function isRuntimeInput(name: string) {
-  return (
-    runtimeInputs.has(name) ||
-    /^package_[1-9][0-9]*_(length_cm|width_cm|height_cm|weight_kg|count)$/.test(
-      name,
-    )
-  );
-}
 interface IDependencies {
   catalog: IOfferCatalog;
   held: Record<string, number>;
@@ -203,6 +33,23 @@ interface IPricePreviewProps {
 }
 
 export class Service {
+  private readonly measurementNames = [
+    "length_cm",
+    "width_cm",
+    "height_cm",
+    "weight_kg",
+  ] as const;
+  private readonly runtimeInputs = new Set([
+    "quantity",
+    "serviced_qty",
+    "serviced_subtotal",
+    "distance_km",
+    "unit_price",
+    "total_weight_kg",
+    "total_volume_cm3",
+    ...this.measurementNames,
+  ]);
+
   constructor(private readonly deps: IDependencies) {}
 
   async execute(request: IOfferQuoteInput): Promise<IOfferQuote> {
@@ -301,9 +148,9 @@ export class Service {
       const coefficients = catalog.storeAttributes.get(offer.storeId) ?? [];
       try {
         const formula = compileTariffFormula(
-          textSetting(productAttrs, "price_formula"),
+          this.textSetting(productAttrs, "price_formula"),
         );
-        textSetting(productAttrs, "formula_version");
+        this.textSetting(productAttrs, "formula_version");
         formulas.set(offer.id, formula);
         const supported = catalog.currencies
           .filter((entry) => {
@@ -311,19 +158,19 @@ export class Service {
               const pricedCoefficient = coefficients.some(
                 (row) =>
                   formula.variables.includes(row.key) &&
-                  !isRuntimeInput(row.key) &&
+                  !this.isRuntimeInput(row.key) &&
                   !row.key.endsWith("_percent") &&
                   row.currencyIds.length === 1 &&
                   row.currencyIds[0] === entry.id,
               );
               if (!pricedCoefficient) {
-                priceFor(attrs(offer.id), entry.id);
+                this.priceFor(attrs(offer.id), entry.id);
               }
               for (const name of formula.variables) {
                 if (name === "unit_price") {
-                  priceFor(attrs(offer.id), entry.id);
-                } else if (!isRuntimeInput(name)) {
-                  coefficient(coefficients, name, entry.id);
+                  this.priceFor(attrs(offer.id), entry.id);
+                } else if (!this.isRuntimeInput(name)) {
+                  this.coefficient(coefficients, name, entry.id);
                 }
               }
               return true;
@@ -340,7 +187,7 @@ export class Service {
       }
     };
     const available = (offer: IModel) => {
-      const stock = stockQuantity(attrs(offer.id));
+      const stock = this.stockQuantity(attrs(offer.id));
       return stock === null ? null : Math.max(0, stock - (held[offer.id] ?? 0));
     };
     const options: IOfferServiceOption[] = [];
@@ -493,8 +340,8 @@ export class Service {
         result.availableQuantity = max;
       }
       const productAttrs = catalog.productAttributes.get(offer.productId) ?? [];
-      const formula = textSetting(productAttrs, "price_formula");
-      const formulaVersion = textSetting(productAttrs, "formula_version");
+      const formula = this.textSetting(productAttrs, "price_formula");
+      const formulaVersion = this.textSetting(productAttrs, "formula_version");
       const compiled = compileTariffFormula(formula);
       if (!currency || !supportedCurrencies(offer).includes(currency.id)) {
         throw new Error("Offer cannot be priced in the selected currency");
@@ -538,12 +385,12 @@ export class Service {
         } else if (name === "serviced_qty") {
           inputs[name] = String(choice.quantity);
         } else if (name === "unit_price") {
-          inputs[name] = priceFor(attrs(offer.id), currency.id);
+          inputs[name] = this.priceFor(attrs(offer.id), currency.id);
         } else if (name === "serviced_subtotal") {
           if (!charge) {
             throw new Error("Missing main product charge");
           }
-          inputs[name] = servicedSubtotal(
+          inputs[name] = this.servicedSubtotal(
             charge.amount,
             input.quantity,
             choice.quantity,
@@ -561,10 +408,10 @@ export class Service {
             .routing()
             .distance(origin, geocoded, settings.routeProfile ?? "drive");
           inputs[name] = new Decimal(metres).div(1000).toFixed();
-        } else if (isRuntimeInput(name)) {
-          inputs[name] = packageInput(main, name, input.quantity);
+        } else if (this.isRuntimeInput(name)) {
+          inputs[name] = this.packageInput(main, name, input.quantity);
         } else {
-          inputs[name] = coefficient(
+          inputs[name] = this.coefficient(
             catalog.storeAttributes.get(offer.storeId) ?? [],
             name,
             currency.id,
@@ -584,7 +431,7 @@ export class Service {
         lineId: choice.lineId,
         role,
         recurrence: link?.recurrence ?? "each",
-        stockQuantity: stockQuantity(attrs(offer.id)),
+        stockQuantity: this.stockQuantity(attrs(offer.id)),
         availableQuantity: max,
         amount,
         formula,
@@ -801,6 +648,165 @@ export class Service {
     return result;
   }
 
+  private stockQuantity(attributes: IOfferAttribute[]): number | null {
+    const stock = attributes.filter(
+      (attribute) => attribute.key === "stock_quantity",
+    );
+    if (!stock.length) {
+      return null;
+    }
+    const value = stock[0].number;
+    if (
+      stock.length !== 1 ||
+      stock[0].field !== "number" ||
+      stock[0].currencyIds.length ||
+      value === null ||
+      !/^\d+(?:\.0+)?$/.test(value) ||
+      !Number.isSafeInteger(Number(value))
+    ) {
+      throw new Error("Invalid stock_quantity setting");
+    }
+    return Number(value);
+  }
+
+  private textSetting(attributes: IOfferAttribute[], key: string): string {
+    const rows = attributes.filter((attribute) => attribute.key === key);
+    if (rows.length !== 1 || !rows[0].text?.trim()) {
+      throw new Error("Missing or ambiguous " + key);
+    }
+    return rows[0].text.trim();
+  }
+
+  private numberSetting(rows: IOfferAttribute[], name: string): string {
+    if (
+      rows.length !== 1 ||
+      rows[0].number === null ||
+      !/^\d+(?:\.\d+)?$/.test(rows[0].number) ||
+      rows[0].field !== "number"
+    ) {
+      throw new Error("Missing or ambiguous " + name);
+    }
+    return rows[0].number;
+  }
+
+  private priceFor(rows: IOfferAttribute[], currencyId: string) {
+    return this.numberSetting(
+      rows.filter(
+        (row) =>
+          row.type === "price" &&
+          row.currencyIds.length === 1 &&
+          row.currencyIds[0] === currencyId,
+      ),
+      "unit_price",
+    );
+  }
+
+  private servicedSubtotal(
+    amount: string,
+    quantity: number,
+    servicedQuantity: number,
+    digits: number,
+  ) {
+    const scale = Decimal.pow(10, digits);
+    const units = new Decimal(amount).times(scale);
+    return units
+      .divToInt(quantity)
+      .times(servicedQuantity)
+      .plus(Decimal.min(units.mod(quantity), servicedQuantity))
+      .div(scale)
+      .toFixed();
+  }
+
+  private coefficient(
+    rows: IOfferAttribute[],
+    name: string,
+    currencyId: string,
+  ) {
+    const candidates = rows.filter((row) => row.key === name);
+    const scoped = candidates.filter(
+      (row) =>
+        row.currencyIds.length === 1 && row.currencyIds[0] === currencyId,
+    );
+    if (scoped.length || !name.endsWith("_percent")) {
+      return this.numberSetting(scoped, name);
+    }
+    return this.numberSetting(
+      candidates.filter((row) => !row.currencyIds.length),
+      name,
+    );
+  }
+
+  private packageInput(offer: IModel, name: string, quantity: number): string {
+    const packages = offer.settings.packages;
+    if (
+      !packages?.length ||
+      packages.some((box) => !Number.isSafeInteger(box.count) || box.count < 1)
+    ) {
+      throw new Error("Missing package data for " + name);
+    }
+    const indexed =
+      /^package_([1-9][0-9]*)_(length_cm|width_cm|height_cm|weight_kg|count)$/.exec(
+        name,
+      );
+    if (indexed) {
+      const box = packages[Number(indexed[1]) - 1];
+      if (!box) {
+        throw new Error("Missing package: " + indexed[1]);
+      }
+      const field = indexed[2] as keyof typeof box;
+      const raw = String(box[field] ?? "");
+      if (!/^\d+(?:\.\d+)?$/.test(raw) || new Decimal(raw).lte(0)) {
+        throw new Error("Missing package measurement: " + name);
+      }
+      return raw;
+    }
+    let total = new Decimal(0);
+    for (const box of packages) {
+      const value = (
+        key: "length_cm" | "width_cm" | "height_cm" | "weight_kg",
+      ) => {
+        if (
+          !box[key] ||
+          !/^\d+(?:\.\d+)?$/.test(box[key]) ||
+          new Decimal(box[key]).lte(0)
+        ) {
+          throw new Error("Missing package measurement: " + key);
+        }
+        return new Decimal(box[key]);
+      };
+      if (name === "total_weight_kg") {
+        total = total.plus(value("weight_kg").times(box.count).times(quantity));
+      } else if (name === "total_volume_cm3") {
+        total = total.plus(
+          value("length_cm")
+            .times(value("width_cm"))
+            .times(value("height_cm"))
+            .times(box.count)
+            .times(quantity),
+        );
+      } else {
+        const key = this.measurementNames.find((key) => key === name);
+        if (!key || packages.length !== 1) {
+          throw new Error(
+            "Per-box dimension is ambiguous for multiple package types: " +
+              name,
+          );
+        }
+        return value(key).toFixed();
+      }
+    }
+    return total.toFixed();
+  }
+
+  private isRuntimeInput(name: string) {
+    return (
+      this.runtimeInputs.has(name) ||
+      /^package_[1-9][0-9]*_(length_cm|width_cm|height_cm|weight_kg|count)$/.test(
+        name,
+      )
+    );
+  }
+
   private serviceKey(offer: IModel, link: IOfferCatalog["links"][number]) {
     const { catalog } = this.deps;
     const provider = catalog.providers.find(
@@ -862,12 +868,12 @@ export class Service {
         if (name === "quantity" || name === "serviced_qty") {
           inputs[name] = "1";
         } else if (
-          isRuntimeInput(name) &&
+          this.isRuntimeInput(name) &&
           name !== "unit_price" &&
           name !== "distance_km" &&
           name !== "serviced_subtotal"
         ) {
-          inputs[name] = packageInput(main, name, 1);
+          inputs[name] = this.packageInput(main, name, 1);
         }
       }
       return formula.evaluate(inputs).toFixed(digits, Decimal.ROUND_HALF_UP);
@@ -926,13 +932,13 @@ export class Service {
           }
           dynamic = true;
           inputs[name] = {
-            min: servicedSubtotal(
+            min: this.servicedSubtotal(
               props.productCharge.amount,
               props.quantity,
               1,
               precision(props.currency),
             ),
-            max: servicedSubtotal(
+            max: this.servicedSubtotal(
               props.productCharge.amount,
               props.quantity,
               maximum,
@@ -957,17 +963,19 @@ export class Service {
           inputs[name] = { min: "0" };
         } else if (name === "unit_price") {
           inputs[name] = exact(
-            priceFor(
+            this.priceFor(
               catalog.offerAttributes.get(props.offer.id) ?? [],
               props.currency.id,
             ),
           );
-        } else if (isRuntimeInput(name)) {
+        } else if (this.isRuntimeInput(name)) {
           dynamic = true;
-          inputs[name] = exact(packageInput(props.main, name, props.quantity));
+          inputs[name] = exact(
+            this.packageInput(props.main, name, props.quantity),
+          );
         } else {
           inputs[name] = exact(
-            coefficient(
+            this.coefficient(
               catalog.storeAttributes.get(props.offer.storeId) ?? [],
               name,
               props.currency.id,
@@ -1002,7 +1010,7 @@ export class Service {
     if (
       formula.variables.some(
         (name) =>
-          isRuntimeInput(name) &&
+          this.isRuntimeInput(name) &&
           name !== "serviced_qty" &&
           name !== "unit_price",
       )
@@ -1016,6 +1024,6 @@ export class Service {
   }
 
   private retail(offer: IModel) {
-    return offer.variant === "default";
+    return offer.variant === "default" && offer.settings?.initialGrant !== true;
   }
 }

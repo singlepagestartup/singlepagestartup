@@ -579,3 +579,109 @@ test("Subject mutations create caller ownership and reject foreign edits and own
     en: "Admin store",
   });
 });
+
+describe("registration configuration", () => {
+  test.each(["initialGrant", "initialGrantLegacyHistory"])(
+    "a seller cannot enable %s in either catalogue entry point",
+    async (flag) => {
+      const { service, tables } = setup();
+      const save = jest.fn();
+      await expect(
+        service.mutate(
+          {
+            entity: "stores-to-products",
+            method: "PATCH",
+            id: offerId,
+            subjectId: owner,
+            data: { settings: { [flag]: true } },
+          },
+          save,
+        ),
+      ).rejects.toThrow("require an administrator");
+      await expect(
+        service.createOffer({
+          subjectId: owner,
+          data: {
+            productId,
+            storeId,
+            prices: [{ currencyId, amount: "0" }],
+            settings: { [flag]: true },
+          },
+        }),
+      ).rejects.toThrow("require an administrator");
+      expect(save).not.toHaveBeenCalled();
+      expect(tables["stores-to-products"]).toHaveLength(1);
+    },
+  );
+
+  test("only an administrator can change an assigned Product, its credits or its associations", async () => {
+    const { service, tables } = setup();
+    tables["stores-to-products"][0].settings = { initialGrant: true };
+    const attributeId = randomUUID();
+    tables.attributes.push({ id: attributeId, number: "3000" });
+    tables["products-to-attributes"].push({
+      id: randomUUID(),
+      productId,
+      attributeId,
+    });
+    const save = jest.fn(async () => ({}));
+    for (const mutation of [
+      {
+        entity: "products",
+        method: "PATCH",
+        id: productId,
+        data: { title: { en: "Changed" } },
+        subjectId: other,
+      },
+      {
+        entity: "attributes",
+        method: "PATCH",
+        id: attributeId,
+        data: { number: "9000" },
+        subjectId: other,
+      },
+      {
+        entity: "products-to-attributes",
+        method: "POST",
+        data: { productId, attributeId },
+        subjectId: other,
+      },
+      {
+        entity: "stores-to-products",
+        method: "PATCH",
+        id: offerId,
+        data: { settings: { initialGrant: false } },
+        subjectId: owner,
+      },
+    ]) {
+      await expect(service.mutate(mutation, save)).rejects.toThrow(
+        "require an administrator",
+      );
+    }
+    await expect(
+      service.setAttribute({
+        subjectId: other,
+        data: {
+          owner: { type: "product", id: productId },
+          key: "topup",
+          field: "number",
+          type: "topup",
+          number: "9000",
+          currencyId,
+        },
+      }),
+    ).rejects.toThrow("require an administrator");
+    expect(save).not.toHaveBeenCalled();
+    await service.mutate(
+      {
+        entity: "stores-to-products",
+        method: "PATCH",
+        id: offerId,
+        data: { settings: { initialGrant: false } },
+        subjectId: admin,
+      },
+      save,
+    );
+    expect(save).toHaveBeenCalledTimes(1);
+  });
+});

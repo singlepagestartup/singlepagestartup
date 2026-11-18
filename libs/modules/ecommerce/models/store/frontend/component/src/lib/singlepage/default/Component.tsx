@@ -16,11 +16,7 @@ import {
 } from "@sps/shared-ui-shadcn";
 import { saveLanguageContext } from "@sps/shared-utils";
 
-export function Component(
-  props: Omit<IComponentPropsExtended, "variant"> & {
-    variant: "default" | "service" | "delivery";
-  },
-) {
+export function Component(props: IComponentPropsExtended) {
   const href = saveLanguageContext(
     `/ecommerce/stores/${props.data.slug}`,
     props.language,
@@ -32,7 +28,7 @@ export function Component(
       data-module="ecommerce"
       data-model="store"
       data-id={props.data?.id || ""}
-      data-variant={props.variant}
+      data-variant={props.dataVariant ?? props.variant}
       href={href}
       className={cn("flex flex-col w-full cursor-pointer", props.className)}
     >

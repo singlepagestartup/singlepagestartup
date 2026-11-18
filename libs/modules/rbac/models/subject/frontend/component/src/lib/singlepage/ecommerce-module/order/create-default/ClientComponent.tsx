@@ -92,6 +92,7 @@ export function Component(props: IComponentPropsExtended) {
     (offer) =>
       offer.productId === props.ecommerceModuleProduct.id &&
       offer.variant === "default" &&
+      offer.settings?.initialGrant !== true &&
       (!props.ecommerceModuleStore ||
         offer.storeId === props.ecommerceModuleStore.id) &&
       !props.excludedOfferIds?.includes(offer.id) &&

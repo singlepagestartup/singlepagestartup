@@ -114,6 +114,9 @@ jest.mock("@sps/ecommerce/models/product/frontend/component", () => ({
     );
   },
 }));
+jest.mock("@sps/ecommerce/models/store/frontend/component", () => ({
+  Component: () => <span>REAL-SDK-PRICE</span>,
+}));
 jest.mock("@sps/ecommerce/relations/stores-to-products/sdk/client", () => ({
   api: {
     find: () => ({

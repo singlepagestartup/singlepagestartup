@@ -11,11 +11,7 @@ export const fields = {
   createdAt: pgCore.timestamp("created_at").notNull().defaultNow(),
   updatedAt: pgCore.timestamp("updated_at").notNull().defaultNow(),
   variant: pgCore.text("variant").notNull().default("default"),
-  kind: pgCore
-    .text("kind")
-    .$type<"physical" | "digital" | "service">()
-    .notNull()
-    .default("physical"),
+  kind: pgCore.text("kind").notNull().default("physical"),
   type: pgCore.text("type").notNull().default("one_off"),
   slug: pgCore
     .text("slug")

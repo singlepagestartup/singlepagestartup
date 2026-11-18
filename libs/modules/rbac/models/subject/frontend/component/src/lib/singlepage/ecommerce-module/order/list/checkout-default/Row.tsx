@@ -1,9 +1,9 @@
 "use client";
+import { REGISTRATION_GRANT_VARIANT } from "@sps/shared-utils";
 import { memo, useCallback, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { api } from "@sps/rbac/models/subject/sdk/client";
 import { route } from "@sps/rbac/models/subject/sdk/model";
-import { INITIAL_FREE_SUBSCRIPTION_PRODUCT_SLUG } from "@sps/shared-utils";
 import { Icon, Select } from "@sps/ui-adapter";
 import { Component as EcommerceModuleOrder } from "@sps/ecommerce/models/order/frontend/component";
 import { Component as Subject } from "@sps/rbac/models/subject/frontend/component";
@@ -142,8 +142,7 @@ function Quantity(props: IQuantityProps) {
   const increase = useCallback(() => {
     void change(props.line.quantity + 1);
   }, [change, props.line.quantity]);
-  const locked =
-    props.line.product?.slug === INITIAL_FREE_SUBSCRIPTION_PRODUCT_SLUG;
+  const locked = props.line.variant === REGISTRATION_GRANT_VARIANT;
   return (
     <div>
       <div

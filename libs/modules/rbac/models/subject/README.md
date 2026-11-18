@@ -998,19 +998,41 @@ permits startup specialization; controllers do not construct ProfileSkills.
 `ecommerceProductCheckout` creates the Product checkout graph and delegates to
 `ecommerceOrderCheckout`, which performs payment checkout and retains its
 compensation behavior. The Product HTTP handler and both order-renewal paths use
-the same public capability. Authentication and Telegram initial-Free grants use
-a separate direct-Service transaction for the zero-price graph and settlement.
-That operation grants 3000 credits once, rejects an ambient outer transaction
-and dispatches effects after its own commit. It does not invoke HTTP checkout
-or renew the Free allowance. The public HTTP checkout retains its Subject JWT ownership
-check. Proceed receives a deferred DI callback so resolving Subject and Proceed
-does not form a constructor cycle, and startup Subject methods remain effective.
+the same public capability. Authentication and Telegram registration grants use a direct-Service transaction
+for their zero-price order graphs and settlement. Each configured Product is
+issued once per registered Subject. The operation rejects an ambient outer
+transaction and dispatches effects after its own commit. It does not invoke
+HTTP checkout or renew registration allowances. The public HTTP checkout retains
+its Subject JWT ownership check. Proceed receives a deferred DI callback so
+resolving Subject and Proceed does not form a constructor cycle, and startup
+Subject methods remain effective.
 
-The initial Free order belongs to the seeded Single Page Shop. A deployment
-with a different issuing Store can set `ECOMMERCE_INITIAL_FREE_STORE_ID` in
-the API environment. A single custom Store remains the default until a second
-Store is added. Set the variable to the original Store ID before adding another
-seller in that deployment.
+Configure registration grants on Store–Product associations with
+`settings.initialGrant: true`. Each association selects its exact issuing Store
+and Product. Zero, one or several Products may be configured; assigning one
+Product to several issuing offers is a configuration error. Products use their
+zero-price attributes and Billing currencies. Subscriptions also require a
+supported interval; optional top-up attributes define their credit amounts and
+currencies. Physical Products require a fulfillment flow and cannot use this
+bootstrap. Only administrators and operators may change a configured grant
+Product, its attributes or its issuing association.
+
+The standard seed assigns the digital Free subscription to Single Page Shop and
+keeps its 3000 Token allowance in Product attributes. Configure other projects
+through the owning catalogue SDK and export the records with the standard dump.
+The standard seed remaps the association's Store and Product IDs. No Store ID,
+Product slug or credit amount is selected from environment variables or code.
+
+Orders carry `variant="registration-grant"` after issuance. Repeated sign-in,
+disabling the association, or selecting a different issuing Store does not issue
+the Product again. The standard association also sets `initialGrantLegacyHistory: true` to recognize
+its earlier private bootstrap graphs by their single Product, issuing Store,
+Currency and zero settlement. This migration setting is for an internal Product
+whose matching history was issued only by bootstrap. Leave it unset for other
+Products: their ordinary purchase history does not consume a registration grant.
+Recognized legacy grants keep their order and settlement IDs. Completed
+registration Orders do not renew, and existing paid Orders retain their payment
+behavior.
 
 The extracted Product service retains model and relation SDK mutations. Their
 API middleware bumps HTTP-cache generations before publishing WebSocket events,
@@ -1155,6 +1177,10 @@ shown only after checkout returns them.
 Order processing resolves its service through `service/startup/ecommerce/order/proceed`. Override protected `getAdminNotificationSubjectIds()` there to select a project channel; the shared default selects unique admin subjects. A dedicated notification recipient does not need an admin role. Configure service actors with `variant="agent"` and an identity through runtime SDKs.
 
 ## Seller catalogue
+
+The Subject catalogue service supplies the seller’s editing form with the stores,
+offers and attributes they can manage. On save it verifies ownership of the
+affected records and writes the offer and its relations in one transaction.
 
 A signed-in Subject creates an offer through `ecommerceModuleOfferCreate`
 (`POST /:id/ecommerce-module/offers`). The operation accepts either an existing

@@ -64,7 +64,7 @@ export const catalogCreateOfferSchema = z
         adminTitle: z.string().max(200).optional(),
         shortDescription: localized.optional(),
         description: localized.optional(),
-        kind: z.enum(["physical", "digital", "service"]),
+        kind: productInsertSchema.shape.kind.unwrap(),
         type: z.enum(["one_off", "subscription"]).default("one_off"),
         formula: z.string().min(1).max(2000),
         formulaVersion: z.string().min(1).max(100).default("1"),

@@ -5,4 +5,5 @@ allOf:
     properties:
       kind:
         type: string
-        enum: [physical, digital, service]
+        minLength: 1
+        description: Product classification, such as physical, digital, service, tax or commission. Startup projects may define additional values.

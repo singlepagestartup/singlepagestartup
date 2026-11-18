@@ -3,7 +3,6 @@ import type { Service as SubjectService } from "../../index";
 import type { Repository } from "../../../../repository";
 import type { IModel as IOrderIntent } from "@sps/ecommerce/relations/orders-to-billing-module-payment-intents/sdk/model";
 import { moneyMinorUnits } from "@sps/backend-utils";
-import type { IInternalModel as IPaymentIntent } from "@sps/billing/models/payment-intent/sdk/model";
 import type { IModel as IInvoice } from "@sps/billing/models/invoice/sdk/model";
 import type { IBillingModule, IEcommerceModule } from "../../../../di";
 
@@ -189,14 +188,13 @@ export class Service {
               ),
             ),
           ];
-          const intents: IPaymentIntent[] =
-            await billingModule.paymentIntent.find({
-              params: {
-                filters: {
-                  and: [{ column: "id", method: "inArray", value: intentIds }],
-                },
+          const intents = await billingModule.paymentIntent.find({
+            params: {
+              filters: {
+                and: [{ column: "id", method: "inArray", value: intentIds }],
               },
-            });
+            },
+          });
           const invoiceLinks =
             await billingModule.paymentIntentsToInvoices.find({
               params: {

@@ -1,6 +1,7 @@
 import {
   IRouteRule,
   MUTATION_SKIPPED_CONTEXT_KEY,
+  READ_ONLY_OPERATION_CONTEXT_KEY,
   NEXT_PUBLIC_API_SERVICE_URL,
   prepareFormDataToSend,
   RBAC_SECRET_KEY,
@@ -57,6 +58,7 @@ export class Middleware {
 
       if (
         c.get(MUTATION_SKIPPED_CONTEXT_KEY) ||
+        c.get(READ_ONLY_OPERATION_CONTEXT_KEY) ||
         this.skippedRoutesMatcher.matches(path)
       ) {
         return;

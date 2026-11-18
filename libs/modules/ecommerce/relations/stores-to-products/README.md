@@ -35,7 +35,24 @@ An offer with no `stock_quantity` link has unlimited stock. A present link suppl
 
 Adapters may also implement `suggestAddresses(query, language, regionIds, signal)`, returning `{ suggestions: string[], attribution?: { label, url }[] }`. The public `POST /api/ecommerce/stores-to-products/:uuid/address-suggestions` operation accepts a search string of 3–500 characters and a two-letter language code for a public shipping service offer. Its client and server SDK operation is `api.addressSuggestions`. An adapter with no autocomplete method returns an empty list and the address field accepts manual entry. The configured offer supplies the region restrictions. Geoapify uses its autocomplete endpoint and returns at most five formatted, distinct matching addresses with provider and data-source attribution.
 
+The RBAC Subject checkout's `DeliveryAddress` component calls this SDK operation
+after the buyer types at least three characters and pauses for 300 ms. It passes
+the selected shipping service's `stores-to-products.id`. Selecting a suggestion
+updates the checkout's address field; manual entry remains available. The quote
+service geocodes the submitted address when the tariff needs regional coverage
+or road distance, and checks any configured region restrictions. The suggestion
+operation only returns address text and attribution. Checkout saves the buyer's
+completed selection through its separate Subject operation.
+
 SPS sends the search text in a POST body. Responses use `Cache-Control: private, no-store`. The client hook forwards cancellation, disables automatic retries and removes its query when the field unmounts. Render the returned attribution links near the suggestions: [Geoapify's terms](https://www.geoapify.com/terms-and-conditions/#attribution) require OpenStreetMap attribution and Geoapify attribution on the Free plan.
+
+Quote and address-suggestion POSTs are read operations. Their JSON bodies keep
+addresses out of request URLs and support a quote's service selections. The
+handlers set `READ_ONLY_OPERATION_CONTEXT_KEY` so HTTP mutation middleware does
+not broadcast changes, invoke observer pipelines or store a mutation action.
+Both handlers still validate the request and execute their services. Actual
+cart changes belong to the Subject operations; database Consistency continues
+to track committed writes independently of this HTTP classification.
 
 `api.quote` on both relation SDKs returns the component charges, amount, selectable services and currencies, availability, expiry and a version for confirmation. A quote with issues has a null amount. An explicitly free tariff returns zero. The private preview accepts quantity, currency, destination and selected service quantities. `selectedServices` returns the authoritative choices even when a missing shipping address prevents a charge. With no explicit fulfillment choice, the server selects the cheapest available method in the requested currency. It compares exact charges when their inputs are available and verified starting amounts while a shipping address is missing. A method without a verified amount ranks after priced choices. An explicit valid choice stays selected.
 
@@ -50,6 +67,34 @@ The framework seed includes seller prices for five token packages and the Pro su
 Each token package and Pro also offers two demo services from Single Page Shop. Accelerated electronic account credit costs 20 RUB or 0.25 USD. AI chat setup costs 50 RUB or 0.60 USD per selected unit. Accelerated credit is the configured fulfillment choice and its charge is included in the complete selection; AI chat setup is optional. These demo services do not perform external fulfillment. Their service Products use one-time billing, their offer links charge only the first subscription cycle, and neither needs a postal address. Both services accept either currency when the main offer supports it.
 
 The demo services use the existing store, currency and attribute-key seeds. Their snapshots contain no Subject ownership records or local account references. Store owners can manage their offers through the catalogue; shared Product metadata remains subject to the Product ownership rules.
+
+## Registration grants
+
+Set `settings.initialGrant: true` through an administrator's catalogue mutation
+to issue this association's Product from its Store during authentication.
+An installation may configure zero, one or several grants. Each Product must
+have one issuing association; duplicate assignments fail before any grant is
+written. Buyers receive the grant through their Subject during authentication.
+
+Registration uses the Product's zero-price attributes and their Billing
+currencies. Subscriptions require a supported interval. Product top-up
+attributes and role links determine the issued credits and access. Physical
+Products need fulfillment and use the ordinary purchase flow. The registration
+operation creates no stock reservation or shipping request.
+
+Only an administrator or operator may enable or change this setting, edit a
+configured Product's attributes or change its associations. Hidden offers do not
+issue new grants. A saved registration Order prevents another issuance of the
+same Product even after its association is disabled or moved to another Store.
+`initialGrantLegacyHistory: true` opts an internal Product into recognition of
+its earlier private, zero-price bootstrap orders. Both flags require an
+administrator. The standard Free association includes this migration setting;
+leave it unset when ordinary purchases of a Product must remain separate from
+registration grants. Recognition checks the single Product, Store, Currency and
+zero settlement graph and preserves its saved IDs.
+
+Export these associations with the normal dump and load them with the normal
+seed; the relation's seed configuration remaps both endpoint IDs.
 
 ## Variants
 

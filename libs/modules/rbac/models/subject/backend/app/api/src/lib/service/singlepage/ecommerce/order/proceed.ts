@@ -1,10 +1,8 @@
+import { REGISTRATION_GRANT_VARIANT } from "@sps/shared-utils";
+import { Service as InitialGrantProducts } from "../../billing/initial-grant-products";
 import { isConfirmedInvoice } from "@sps/billing/models/payment-intent/sdk/model";
 import { DI, type FindServiceProps } from "@sps/shared-backend-api";
-import {
-  createMemoryCache,
-  INITIAL_FREE_SUBSCRIPTION_PRODUCT_SLUG,
-  RBAC_SECRET_KEY,
-} from "@sps/shared-utils";
+import { createMemoryCache, RBAC_SECRET_KEY } from "@sps/shared-utils";
 import { IModel as IEcommerceModuleOrder } from "@sps/ecommerce/models/order/sdk/model";
 import { api } from "@sps/rbac/models/subject/sdk/server";
 import { IModel as IEcommerceModuleAttributesToBillingModuleCurrencies } from "@sps/ecommerce/relations/attributes-to-billing-module-currencies/sdk/model";
@@ -292,7 +290,7 @@ export class Service {
               productsRolesIds.every((roleId) =>
                 existingRolesIds?.includes(roleId),
               )) &&
-            !this.isInitialFree(extendedOrder)
+            !(await this.isInitialFree(extendedOrder))
           ) {
             try {
               await this.ecommerceOrderRenewal({
@@ -714,14 +712,38 @@ export class Service {
       .map((line) => ({ ...line, quantity: purchased.get(line.id)! }));
   }
 
-  private isInitialFree(order: IExtendedEcommerceModuleOrder) {
-    return order.ordersToProducts.some(
-      (line) => line.product.slug === INITIAL_FREE_SUBSCRIPTION_PRODUCT_SLUG,
+  private async isInitialFree(order: IExtendedEcommerceModuleOrder) {
+    if (order.variant === REGISTRATION_GRANT_VARIANT) {
+      return true;
+    }
+    if (!order.ordersToProducts.length) {
+      return false;
+    }
+    if (
+      order.ordersToProducts.some((line) => line.offerId) ||
+      order.checkoutAttributesByCurrency.amount !== 0 ||
+      order.ordersToBillingModulePaymentIntents.some(
+        ({ billingModulePaymentIntent: intent }) =>
+          intent.amount > 0 ||
+          intent.paymentIntentsToInvoices.some(
+            ({ invoice }) => invoice.amount > 0,
+          ),
+      )
+    ) {
+      return false;
+    }
+    return new InitialGrantProducts(
+      this.ecommerceModule.storesToProducts,
+    ).includesAny(
+      order.ordersToProducts.map((line) => line.productId),
+      { legacyHistoryOnly: true },
     );
   }
 
   private async freeDeliveryEligible(props: ILifecycleProps) {
-    if (!this.isInitialFree(props.extendedOrder)) return true;
+    if (!(await this.isInitialFree(props.extendedOrder))) {
+      return true;
+    }
     if (
       props.extendedOrder.ordersToProducts.length !== 1 ||
       Number(props.extendedOrder.ordersToProducts[0].quantity ?? 1) !== 1
@@ -882,7 +904,7 @@ export class Service {
       return;
     }
 
-    const free = this.isInitialFree(props.extendedOrder);
+    const free = await this.isInitialFree(props.extendedOrder);
     if (free && !(await this.freeDeliveryEligible(props))) {
       return;
     }
@@ -1016,15 +1038,6 @@ export class Service {
       }
     }
 
-    if (
-      free &&
-      (topupCurrencies.length !== 1 ||
-        topupCurrencies[0].billingModuleCurrency.slug !== "token" ||
-        Number(topupCurrencies[0].amount) !== 3000)
-    )
-      throw new Error(
-        "Configuration error. Initial Free requires exactly 3000 Token credits",
-      );
     if (topupCurrencies.length) {
       const subjectsToBillingModuleCurrencies =
         await this.subjectsToBillingModuleCurrencies.find({
@@ -1343,7 +1356,7 @@ export class Service {
     }
 
     const recurring =
-      !this.isInitialFree(props.extendedOrder) &&
+      !(await this.isInitialFree(props.extendedOrder)) &&
       props.extendedOrder.checkoutAttributesByCurrency.type === "subscription";
     await this.ecommerceModule.order.update({
       id: props.extendedOrder.id,

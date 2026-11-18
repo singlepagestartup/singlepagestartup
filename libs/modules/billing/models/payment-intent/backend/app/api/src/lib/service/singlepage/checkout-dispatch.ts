@@ -1,5 +1,5 @@
 import { consistencyContext } from "@sps/shared-backend-api";
-import { moneyNumber } from "@sps/backend-utils";
+import { parseExactMonetaryAmount } from "@sps/backend-utils";
 import {
   privateCheckoutFields,
   type Table,
@@ -53,7 +53,9 @@ export class Service {
       delete writable[field];
     }
     if (writable.amount !== undefined) {
-      writable.amount = moneyNumber(writable.amount as string | number);
+      writable.amount = parseExactMonetaryAmount(
+        writable.amount as string | number,
+      );
       if (
         record &&
         ["prepared", "dispatching", "exposed"].includes(

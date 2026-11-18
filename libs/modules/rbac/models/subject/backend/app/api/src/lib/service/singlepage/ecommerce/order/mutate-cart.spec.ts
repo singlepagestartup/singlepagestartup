@@ -9,6 +9,7 @@ function fixture() {
       find: jest.fn().mockResolvedValue(owners),
     },
     ecommerceModule: {
+      storesToProducts: { find: jest.fn().mockResolvedValue([]) },
       order: {
         lockForLifecycle: jest.fn(),
         findById: jest.fn().mockResolvedValue(order),

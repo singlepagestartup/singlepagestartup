@@ -1,7 +1,5 @@
-import {
-  ECOMMERCE_ORDER_LINE_QUANTITY_BOUNDS as quantityBounds,
-  INITIAL_FREE_SUBSCRIPTION_PRODUCT_SLUG,
-} from "@sps/shared-utils";
+import { Service as InitialGrantProducts } from "../../billing/initial-grant-products";
+import { ECOMMERCE_ORDER_LINE_QUANTITY_BOUNDS as quantityBounds } from "@sps/shared-utils";
 import type { Repository } from "../../../../repository";
 import type { Service as SubjectService } from "../../index";
 import { Service as SelectionService } from "./selection";
@@ -190,7 +188,12 @@ export class Service {
           const product = await service.ecommerceModule.product.findById({
             id: line.productId,
           });
-          if (product?.slug === INITIAL_FREE_SUBSCRIPTION_PRODUCT_SLUG) {
+          if (
+            product &&
+            (await new InitialGrantProducts(
+              service.ecommerceModule.storesToProducts,
+            ).includes(product.id))
+          ) {
             throw new Error(
               "Permission error. Initial Free cannot be changed through a cart",
             );

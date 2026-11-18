@@ -752,7 +752,7 @@ it("rejects buyer-written dispatch state and recovery metadata through generic P
   ).toEqual(saved.intent.checkoutMetadata);
 });
 
-it("prepares one unambiguous legacy offer for confirmation, then reserves the current purchase", async () => {
+it("requires the buyer to select the store in an older cart before checkout can reserve stock", async () => {
   const f = await fixture();
   const cart = await f.createCart();
   const [line] = (await f.graph(cart.id)).products;
@@ -768,8 +768,27 @@ it("prepares one unambiguous legacy offer for confirmation, then reserves the cu
     ecommerceModule: { orders: [{ id: cart.id }] },
   };
   await expect(f.subject.ecommerceOrderCheckout(input)).rejects.toThrow(
-    "Confirm the updated store offer",
+    "Select and save a store offer",
   );
+  expect((await f.graph(cart.id)).products[0].offerId).toBeNull();
+  await f.subject.ecommerceModuleOrderSelection({
+    subjectId: f.buyer.id,
+    orderId: cart.id,
+    data: {
+      action: "save",
+      lineId: line.id,
+      selections: [
+        {
+          offerId: line.offerId!,
+          currencyId: f.money.id,
+          quantity: line.quantity,
+        },
+      ],
+      expectedSelectionUpdatedAt: new Date(
+        line.selectionUpdatedAt,
+      ).toISOString(),
+    },
+  });
   const prepared = await f.graph(cart.id);
   expect(prepared.products[0].offerId).toBe(line.offerId);
   expect(prepared.entity).toMatchObject({ type: "cart", status: "new" });

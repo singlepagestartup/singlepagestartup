@@ -1,5 +1,5 @@
 import type { IModel as IInvoice } from "@sps/billing/models/invoice/sdk/model";
-import type { IInternalModel as IPaymentIntent } from "@sps/billing/models/payment-intent/sdk/model";
+import type { ISelectSchema as IPaymentIntent } from "@sps/billing/models/payment-intent/backend/repository/database";
 import type { Repository } from "../../repository";
 import type { Service as PaymentIntentService } from "./index";
 import { moneyMinorUnits } from "@sps/backend-utils";

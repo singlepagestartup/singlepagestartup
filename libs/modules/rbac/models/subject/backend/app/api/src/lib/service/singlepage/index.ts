@@ -52,6 +52,7 @@ import { Service as ProfileOwnership } from "../startup/social-module/profile/ow
 import { Service as ProfileSkills } from "../startup/social-module/profile/skills";
 import type { IForDocumentProps as IProfileDocumentSkillProps } from "./social-module/profile/skills";
 import { Service as AuthenticationMe } from "../startup/authentication/me";
+import { Service as InitialGrantProducts } from "./billing/initial-grant-products";
 import { Service as FreeSubscription } from "../startup/billing/free-subscription";
 import type { IConstructorProps as IFreeSubscriptionDependencies } from "./billing/free-subscription";
 import { Service as BlogArticleCreate } from "../startup/blog/article/create";
@@ -650,6 +651,14 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
       await new MergeGuestCart(this).execute({ subjectId, guestToken });
     }
     return result;
+  }
+
+  async ecommerceModuleProductInitialGrantIncludes(props: {
+    productId: string;
+  }) {
+    return new InitialGrantProducts(
+      this.ecommerceModule.storesToProducts,
+    ).includes(props.productId);
   }
 
   async freeSubscriptionEnsure(props: { subjectId: string }) {

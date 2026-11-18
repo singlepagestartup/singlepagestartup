@@ -53,6 +53,9 @@ export const RBAC_PRIVILEGED_CONTEXT_KEY = "rbac.privileged";
 /** A route acknowledged a duplicate without executing its mutation. */
 export const MUTATION_SKIPPED_CONTEXT_KEY = "mutation.skipped";
 
+/** A POST handler performs a read and must not publish HTTP mutation effects. */
+export const READ_ONLY_OPERATION_CONTEXT_KEY = "operation.read-only";
+
 export * from "./knowledge";
 export * from "./open-router";
 
@@ -71,9 +74,8 @@ export * from "./file-preview";
 export * from "./ai-context";
 
 export {
-  INITIAL_FREE_SEEDED_STORE_ID,
-  INITIAL_FREE_SUBSCRIPTION_PRODUCT_SLUG,
   PRODUCT_TECHNICAL_ATTRIBUTE_SLUGS,
+  REGISTRATION_GRANT_VARIANT,
 } from "./ecommerce";
 
 export * from "./agent";

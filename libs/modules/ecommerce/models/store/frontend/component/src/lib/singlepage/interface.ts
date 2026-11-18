@@ -1,5 +1,6 @@
 import type { IComponentProps as IServiceProps } from "./service/interface";
 import type { IComponentProps as IDeliveryProps } from "./delivery/interface";
+import type { IComponentProps as IProductPriceDefaultProps } from "./product-price-default/interface";
 import { IComponentProps as IHiddenComponentProps } from "@sps/shared-frontend-components/singlepage/hidden/interface";
 import { IComponentProps as IFindComponentProps } from "./find/interface";
 import { IComponentProps as IAdminTableRowComponentProps } from "./admin/table-row/interface";
@@ -16,6 +17,7 @@ import { IComponentProps as IDefaultComponentProps } from "./default/interface";
 import { IComponentProps as IOverviewDefaultComponentProps } from "./overview-default/interface";
 
 export type IComponentProps =
+  | IProductPriceDefaultProps
   | IServiceProps
   | IDeliveryProps
   | IHiddenComponentProps

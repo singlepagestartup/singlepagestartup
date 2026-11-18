@@ -67,6 +67,7 @@ bootstrap. The API host mounts `billingApp` at the Billing route.
 | [stores-to-attributes](./relations/stores-to-attributes/README.md)                                                 | Link stores to attributes              |
 | [stores-to-orders](./relations/stores-to-orders/README.md)                                                         | Link stores to orders                  |
 | [stores-to-products](./relations/stores-to-products/README.md)                                                     | Link stores to products                |
+| [offers-to-offers](./relations/offers-to-offers/README.md)                                                         | Link offers to services and providers  |
 | [stores-to-products-to-attributes](./relations/stores-to-products-to-attributes/README.md)                         | Link store-product pairs to attributes |
 | [widgets-to-categories](./relations/widgets-to-categories/README.md)                                               | Curate categories inside widgets       |
 | [widgets-to-products](./relations/widgets-to-products/README.md)                                                   | Curate products inside widgets         |

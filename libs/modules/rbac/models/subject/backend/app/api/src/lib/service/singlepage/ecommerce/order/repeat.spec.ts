@@ -1,8 +1,5 @@
 import { Service } from "./repeat";
-import {
-  ECOMMERCE_ORDER_LINE_QUANTITY_BOUNDS as quantityBounds,
-  INITIAL_FREE_SUBSCRIPTION_PRODUCT_SLUG,
-} from "@sps/shared-utils";
+import { ECOMMERCE_ORDER_LINE_QUANTITY_BOUNDS as quantityBounds } from "@sps/shared-utils";
 
 const props = {
   subjectId: "subject",
@@ -46,6 +43,7 @@ function fixture() {
       .fn()
       .mockResolvedValue("currency"),
     ecommerceModule: {
+      storesToProducts: { find: jest.fn().mockResolvedValue([]) },
       order: {
         find: jest.fn().mockResolvedValue(carts),
         findById: jest.fn(async ({ id }: { id: string }) => {
@@ -220,9 +218,12 @@ it.each([0, -1, 1.5, quantityBounds.max + 1])(
 
 it("rejects Initial Free before replacing the cart", async () => {
   const f = fixture();
+  f.service.ecommerceModule.storesToProducts.find.mockResolvedValue([
+    { productId: "product-a", settings: { initialGrant: true } },
+  ]);
   f.service.ecommerceModule.product.findById.mockResolvedValue({
     id: "product-a",
-    slug: INITIAL_FREE_SUBSCRIPTION_PRODUCT_SLUG,
+    slug: "welcome",
   });
   await expect(f.operation.execute(props)).rejects.toThrow(
     "authentication bootstrap",

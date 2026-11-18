@@ -543,6 +543,20 @@ function deferred<T>() {
   return { promise, resolve, reject };
 }
 
+it("requires an explicit store for an older cart line even when a quote is available", () => {
+  const onSelectionStateChange = jest.fn();
+  renderSelection({
+    ...props,
+    line: { ...props.line, offerId: null },
+    onSelectionStateChange,
+  });
+  expect(
+    screen.getByRole("combobox", { name: "Магазин" }).textContent,
+  ).toContain("Выберите магазин");
+  expect(onSelectionStateChange).toHaveBeenCalledWith("line", true);
+  expect(mockMutation).not.toHaveBeenCalled();
+});
+
 it("shows one itemized server receipt on mount without writing or confirmation controls", async () => {
   const onSelectionStateChange = jest.fn();
   const onSelectionPendingChange = jest.fn();

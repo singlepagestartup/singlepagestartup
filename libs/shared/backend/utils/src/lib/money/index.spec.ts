@@ -1,14 +1,14 @@
 import {
   addMoney,
   moneyMinorUnits,
-  moneyNumber,
+  parseExactMonetaryAmount,
   providerMinorUnits,
 } from "./index";
 
 describe("exact monetary amounts", () => {
   it("preserves integer amounts and fractional main units", () => {
-    expect(moneyNumber(5000)).toBe(5000);
-    expect(moneyNumber("12.34")).toBe(12.34);
+    expect(parseExactMonetaryAmount(5000)).toBe(5000);
+    expect(parseExactMonetaryAmount("12.34")).toBe(12.34);
     expect(addMoney(0.1, 0.2)).toBe(0.3);
     expect(providerMinorUnits(12.34)).toBe(1234);
     expect(providerMinorUnits("20.00", 0)).toBe(20);
@@ -27,11 +27,11 @@ describe("exact monetary amounts", () => {
       Infinity,
       -1,
     ]) {
-      expect(() => moneyNumber(value)).toThrow();
+      expect(() => parseExactMonetaryAmount(value)).toThrow();
     }
     expect(() => providerMinorUnits("1.001")).toThrow();
     expect(() => providerMinorUnits("1.5", 0)).toThrow();
     expect(() => providerMinorUnits("90071992547409.92")).toThrow();
-    expect(() => moneyNumber("9007199254740990.01")).toThrow();
+    expect(() => parseExactMonetaryAmount("9007199254740990.01")).toThrow();
   });
 });

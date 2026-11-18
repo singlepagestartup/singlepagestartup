@@ -33,11 +33,16 @@ increase the badge; a service bought as its own primary line still counts.
 - `subscriptionProviderInvoiceId`: unique provider/Invoice identity used to
   correlate replayed subscription events with their own Order.
 
+The Subject purchase-history response adds `purchaseDetails` to the Order.
+Its SDK interface groups saved invoice shares, receipts, the next period and
+available payment actions for the current buyer. Orders, Invoices and their
+relations supply those records.
+
 ## Legacy cart and saved payments
 
 An older open cart without an offer cannot pay through a Product price.
-One product with one retail offer is prepared under the Subject and offer locks,
-then requires confirmation of its current quote before a new payment attempt.
+The buyer selects a Store on the cart line. The standard Subject selection
+operation saves the current quote and delivery before checkout can reserve stock.
 Multiple products, ambiguous offers, missing delivery or unavailable stock leave
 the cart open for correction. Existing durable historical Invoices resume their
 own payment context without a new catalog quote.

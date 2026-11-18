@@ -18,7 +18,7 @@ import { IModel as IInvoice } from "@sps/billing/models/invoice/sdk/model";
 import {
   verifyPaykeeperWebhook,
   providerMinorUnits,
-  moneyNumber,
+  parseExactMonetaryAmount,
 } from "@sps/backend-utils";
 import type { IBillingModule } from "../../di";
 import type { IExecuteProps as ISettlementProps } from "./paykeeper-settlement";
@@ -547,7 +547,7 @@ export class Service {
     for (const order of metadata.ecommerceModule.orders) {
       if (order.purchaseCharges) {
         for (const charge of order.purchaseCharges) {
-          const sum = moneyNumber(charge.amount);
+          const sum = parseExactMonetaryAmount(charge.amount);
           providerMinorUnits(sum);
           cartItems.push({
             name: charge.title,
@@ -597,8 +597,9 @@ export class Service {
             price: providerMinorUnits(productPrice) / 100,
             quantity: quantity,
             sum:
-              providerMinorUnits(moneyNumber(String(productPrice * quantity))) /
-              100,
+              providerMinorUnits(
+                parseExactMonetaryAmount(String(productPrice * quantity)),
+              ) / 100,
             tax: "none",
             item_type: "goods",
             payment_type: "full",

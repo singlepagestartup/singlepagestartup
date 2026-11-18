@@ -42,10 +42,7 @@ properties:
           maxLength: 100000
       kind:
         type: string
-        enum:
-          - physical
-          - digital
-          - service
+        minLength: 1
       type:
         default: one_off
         type: string
@@ -107,6 +104,10 @@ properties:
     default: {}
     type: object
     properties:
+      initialGrant:
+        type: boolean
+      initialGrantLegacyHistory:
+        type: boolean
       standalone:
         type: boolean
       requiredDelivery:

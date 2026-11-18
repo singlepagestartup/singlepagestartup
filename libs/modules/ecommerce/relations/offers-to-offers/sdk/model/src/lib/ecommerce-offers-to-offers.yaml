@@ -5,11 +5,11 @@ allOf:
       sourceOfferId:
         type: string
         format: uuid
-        description: Selling offer ID
+        description: Source stores-to-products record ID (a store's Product offer).
       targetOfferId:
         type: string
         format: uuid
-        description: Related service or provider offer ID
+        description: Target stores-to-products record ID for the related service or provider offer.
       recurrence:
         type: string
         enum: [first, each]

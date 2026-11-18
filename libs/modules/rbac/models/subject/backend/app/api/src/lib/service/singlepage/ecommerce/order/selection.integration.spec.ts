@@ -7,7 +7,6 @@ import { getPostgresClient } from "@sps/shared-backend-database-config";
 import { Repository as SubjectRepository } from "../../../../repository";
 import { Configuration as SubjectConfiguration } from "../../../../configuration";
 import { Service as Selection } from "./selection";
-import { Service as CheckoutLegacy } from "./checkout-legacy";
 import { Service as Access } from "./access";
 import { Service as MergeGuestCart } from "./merge-guest-cart";
 import type { IEcommerceCartSelection } from "@sps/rbac/models/subject/sdk/model";
@@ -510,7 +509,7 @@ it("retains exact contractor service aliases on a seller change and persists the
   ]);
 });
 
-it("prepares a legacy primary and its default contractor service for confirmation together", async () => {
+it("saves an older cart line and its default delivery through the standard selection", async () => {
   const f = await fixture();
   f.sharedServices();
   const source = await f.order(1);
@@ -518,21 +517,18 @@ it("prepares a legacy primary and its default contractor service for confirmatio
     id: source.primary.id,
     data: { offerId: null },
   });
-  f.services.offer.offersForProduct = jest
-    .fn()
-    .mockResolvedValue([f.offers[0][0]]);
-  const operation = new CheckoutLegacy({
-    repository: f.subjects,
-    ecommerceModule: f.subjectService.ecommerceModule,
-    owners: f.services.owner,
+  await f.operation().execute({
+    subjectId: f.subject.id,
+    orderId: source.order.id,
+    data: {
+      action: "save",
+      lineId: legacy.id,
+      selections: [{ ...f.selected(0, 1), services: [] }],
+      expectedSelectionUpdatedAt: new Date(
+        legacy.selectionUpdatedAt,
+      ).toISOString(),
+    },
   });
-  await expect(
-    operation.execute({
-      subjectId: f.subject.id,
-      orders: [source.order],
-      lines: [legacy],
-    }),
-  ).rejects.toThrow("Confirm the updated store offer and charges");
   const lines = await f.services.line.find(f.byOrder(source.order.id));
   expect(lines).toHaveLength(2);
   expect(lines).toContainEqual(

@@ -1,6 +1,6 @@
 import * as pgCore from "drizzle-orm/pg-core";
 import { sql } from "drizzle-orm";
-import { Table as Offer } from "@sps/ecommerce/relations/stores-to-products/backend/repository/database";
+import { Table as StoresToProducts } from "@sps/ecommerce/relations/stores-to-products/backend/repository/database";
 
 export const moduleName = "sps_ee";
 export const table = "offers_to_offers";
@@ -18,11 +18,11 @@ export const Table = pgTable(
     sourceOfferId: pgCore
       .uuid("source_offer_id")
       .notNull()
-      .references(() => Offer.id, { onDelete: "cascade" }),
+      .references(() => StoresToProducts.id, { onDelete: "cascade" }),
     targetOfferId: pgCore
       .uuid("target_offer_id")
       .notNull()
-      .references(() => Offer.id, { onDelete: "cascade" }),
+      .references(() => StoresToProducts.id, { onDelete: "cascade" }),
     recurrence: pgCore
       .text("recurrence")
       .$type<"first" | "each">()

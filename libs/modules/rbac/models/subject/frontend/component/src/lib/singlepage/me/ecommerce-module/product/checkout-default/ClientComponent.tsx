@@ -12,6 +12,7 @@ import { ReceiptEmail } from "../../../../ecommerce-module/order/checkout-defaul
 import { CheckoutForm } from "../../../../ecommerce-module/order/checkout-default/CheckoutForm";
 import { FormField } from "@sps/ui-adapter";
 import { Component as Product } from "@sps/ecommerce/models/product/frontend/component";
+import { Component as Store } from "@sps/ecommerce/models/store/frontend/component";
 import { cn, formatCurrencyAmount } from "@sps/shared-frontend-client-utils";
 import { ArrowRight, CreditCard } from "lucide-react";
 import type {
@@ -51,17 +52,18 @@ function CheckoutPrice(props: ICheckoutPriceProps) {
     name: "billingModule.currency.id",
   });
   const quantity = useWatch({ control: props.form.control, name: "quantity" });
+  const storeId = useWatch({ control: props.form.control, name: "storeId" });
   return currencyId ? (
     <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl bg-muted p-4 text-sm">
       <span className="text-muted-foreground">
         {props.language === "ru" ? "Цена за единицу" : "Unit price"}
       </span>
       <div className="flex items-center gap-2 font-semibold">
-        <Product
+        <Store
           isServer={false}
-          variant="price-default"
-          dataSource="props"
-          data={props.product}
+          variant="product-price-default"
+          product={props.product}
+          storeId={storeId}
           billingModuleCurrencyId={currencyId}
           language={props.language}
         />

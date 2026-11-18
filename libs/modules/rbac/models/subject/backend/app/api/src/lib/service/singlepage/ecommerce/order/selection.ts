@@ -1,7 +1,5 @@
-import {
-  ECOMMERCE_ORDER_LINE_QUANTITY_BOUNDS as quantityBounds,
-  INITIAL_FREE_SUBSCRIPTION_PRODUCT_SLUG,
-} from "@sps/shared-utils";
+import { Service as InitialGrantProducts } from "../../billing/initial-grant-products";
+import { ECOMMERCE_ORDER_LINE_QUANTITY_BOUNDS as quantityBounds } from "@sps/shared-utils";
 import type {
   IOfferQuote,
   IOfferQuoteInput,
@@ -192,7 +190,12 @@ export class Service {
     const product = await service.ecommerceModule.product.findById({
       id: primary.productId,
     });
-    if (!product || product.slug === INITIAL_FREE_SUBSCRIPTION_PRODUCT_SLUG) {
+    if (
+      !product ||
+      (await new InitialGrantProducts(
+        service.ecommerceModule.storesToProducts,
+      ).includes(product.id))
+    ) {
       throw new Error(
         "Permission error. This product cannot be edited through the cart",
       );

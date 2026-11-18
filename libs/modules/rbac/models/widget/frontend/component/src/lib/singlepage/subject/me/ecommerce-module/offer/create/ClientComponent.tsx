@@ -206,11 +206,13 @@ export function Component(props: IComponentPropsExtended) {
               </label>
               <label className={label}>
                 Kind
-                <select name="kind" className={field}>
-                  <option value="physical">Physical</option>
-                  <option value="digital">Digital</option>
-                  <option value="service">Service</option>
-                </select>
+                <input
+                  name="kind"
+                  className={field}
+                  defaultValue="physical"
+                  placeholder="physical, digital, service, tax, commission…"
+                  required
+                />
               </label>
               <label className={label}>
                 Billing period

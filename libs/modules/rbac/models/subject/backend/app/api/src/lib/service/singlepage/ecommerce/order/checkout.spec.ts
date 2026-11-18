@@ -26,7 +26,6 @@ jest.mock("@sps/shared-utils", () => ({
   ...jest.requireActual("@sps/shared-utils"),
   RBAC_SECRET_KEY: "test-rbac-secret",
   NEXT_PUBLIC_API_SERVICE_URL: "http://localhost:4000",
-  INITIAL_FREE_SUBSCRIPTION_PRODUCT_SLUG: "free-subscription",
 }));
 
 jest.mock("@sps/ecommerce/models/order/sdk/server", () => ({
@@ -298,6 +297,18 @@ function createTestContext(props?: {
         .mockResolvedValue([{ id: "store-1", title: { en: "Seller" } }]),
     },
     storesToProducts: {
+      find: jest
+        .fn()
+        .mockResolvedValue(
+          props?.productSlug === "free-subscription"
+            ? [
+                {
+                  productId: "product-target",
+                  settings: { initialGrant: true },
+                },
+              ]
+            : [],
+        ),
       quoteMany: jest.fn(async (inputs) =>
         inputs.map((input) => ({
           offerId: input.offerId,

@@ -53,7 +53,11 @@ import { Service as Paykeeper } from "../startup/paykeeper";
 import type { IServiceProceedProps as IPaykeeperProceedProps } from "./paykeeper";
 import { Service as TelegramStar } from "../startup/telegram-star";
 import type { IServiceProceedProps as ITelegramStarProps } from "./telegram-star";
-import { logger, moneyNumber, providerMinorUnits } from "@sps/backend-utils";
+import {
+  logger,
+  parseExactMonetaryAmount,
+  providerMinorUnits,
+} from "@sps/backend-utils";
 import { currencyPrecision } from "@sps/billing/models/currency/sdk/model";
 import { PaymentIntentDI, type IBillingModule } from "../../di";
 
@@ -392,10 +396,13 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
         if (!intent) {
           throw new Error("Not Found error. Payment intent not found");
         }
-        if (!props.providerId || moneyNumber(props.amount) < 0) {
+        if (!props.providerId || parseExactMonetaryAmount(props.amount) < 0) {
           throw new Error("Validation error. Invalid Stripe invoice");
         }
-        if (moneyNumber(intent.amount) !== moneyNumber(props.amount)) {
+        if (
+          parseExactMonetaryAmount(intent.amount) !==
+          parseExactMonetaryAmount(props.amount)
+        ) {
           throw new Error(
             "Conflict error. Stripe invoice amount differs from its local payment intent",
           );
@@ -494,7 +501,10 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
             }
             const draft = drafts[0];
             if (draft) {
-              if (moneyNumber(draft.amount) !== moneyNumber(props.amount)) {
+              if (
+                parseExactMonetaryAmount(draft.amount) !==
+                parseExactMonetaryAmount(props.amount)
+              ) {
                 throw new Error(
                   "Conflict error. Stripe invoice amount differs from its prepared period invoice",
                 );
@@ -528,7 +538,10 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
             },
           });
         }
-        if (moneyNumber(invoice.amount) !== moneyNumber(props.amount)) {
+        if (
+          parseExactMonetaryAmount(invoice.amount) !==
+          parseExactMonetaryAmount(props.amount)
+        ) {
           throw new Error("Conflict error. Stripe invoice amount changed");
         }
         const links = await this.billingModule.paymentIntentsToInvoices.find({
@@ -741,7 +754,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
         if (
           intent?.status === "succeeded" &&
           contractId === paymentIntentId &&
-          moneyNumber(paid.amount) ===
+          parseExactMonetaryAmount(paid.amount) ===
             remoteAmount / 10 ** currencyPrecision(remote.currency ?? "usd")
         ) {
           if (period) {

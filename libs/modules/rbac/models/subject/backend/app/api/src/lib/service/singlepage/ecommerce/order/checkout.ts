@@ -1,9 +1,8 @@
+import { Service as InitialGrantProducts } from "../../billing/initial-grant-products";
 import { Service as CheckoutClaim } from "../../../startup/ecommerce/order/checkout-claim";
-import { Service as CheckoutLegacy } from "../../../startup/ecommerce/order/checkout-legacy";
 import type { Repository } from "../../../../repository";
 import { Service as SubjectsToEcommerceModuleOrdersService } from "@sps/rbac/relations/subjects-to-ecommerce-module-orders/backend/app/api/src/lib/service";
 import {
-  INITIAL_FREE_SUBSCRIPTION_PRODUCT_SLUG,
   NEXT_PUBLIC_API_SERVICE_URL,
   RBAC_SECRET_KEY,
 } from "@sps/shared-utils";
@@ -18,7 +17,7 @@ import { api as billingModulePaymentIntentApi } from "@sps/billing/models/paymen
 import { api as broadcastModuleChannelApi } from "@sps/broadcast/models/channel/sdk/server";
 import {
   addMoney,
-  moneyNumber,
+  parseExactMonetaryAmount,
   moneyFromMinorUnits,
   moneyMinorUnits,
   providerMinorUnits,
@@ -225,15 +224,20 @@ export class Service {
       }
     }
 
-    await new CheckoutLegacy({
-      repository: this.dependencies.repository,
-      ecommerceModule: this.ecommerceModule,
-      owners: this.subjectsToEcommerceModuleOrders,
-    }).execute({
-      subjectId: props.id,
-      orders: ecommerceModuleOrders,
-      lines: ordersToProducts,
-    });
+    const hasUnselectedOffer = ecommerceModuleOrders.some(
+      (order) =>
+        order.type === "cart" &&
+        order.status === "new" &&
+        !order.subscriptionSourceOrderId &&
+        ordersToProducts.some(
+          (line) => line.orderId === order.id && !line.offerId,
+        ),
+    );
+    if (hasUnselectedOffer) {
+      throw new Error(
+        "Conflict error. Select and save a store offer in the cart before payment",
+      );
+    }
 
     const ecommerceModuleProducts = await this.ecommerceModule.product.find({
       params: {
@@ -256,9 +260,9 @@ export class Service {
     }
 
     if (
-      ecommerceModuleProducts.some(
-        (product) => product.slug === INITIAL_FREE_SUBSCRIPTION_PRODUCT_SLUG,
-      )
+      await new InitialGrantProducts(
+        this.ecommerceModule.storesToProducts,
+      ).includesAny(ecommerceModuleProducts.map((product) => product.id))
     ) {
       throw new Error(
         "Permission error. Initial Free is available only through authentication bootstrap",
@@ -735,7 +739,7 @@ export class Service {
         }
       }
       checkoutAttributesByOrderId.set(order.id, {
-        amount: moneyNumber(quote.amount),
+        amount: parseExactMonetaryAmount(quote.amount),
         type,
         interval,
       });

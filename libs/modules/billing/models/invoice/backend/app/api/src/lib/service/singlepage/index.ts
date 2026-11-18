@@ -2,7 +2,7 @@ import "reflect-metadata";
 import { injectFromBase, injectable } from "inversify";
 import { CRUDService } from "@sps/shared-backend-api";
 import { Table } from "@sps/billing/models/invoice/backend/repository/database";
-import { moneyNumber } from "@sps/backend-utils";
+import { parseExactMonetaryAmount } from "@sps/backend-utils";
 import type { Repository } from "../../repository";
 
 @injectable()
@@ -14,7 +14,10 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     if (data.amount === undefined) {
       return { ...data };
     }
-    return { ...data, amount: moneyNumber(data.amount as string | number) };
+    return {
+      ...data,
+      amount: parseExactMonetaryAmount(data.amount as string | number),
+    };
   }
 
   protected override insert(data: Record<string, unknown>) {

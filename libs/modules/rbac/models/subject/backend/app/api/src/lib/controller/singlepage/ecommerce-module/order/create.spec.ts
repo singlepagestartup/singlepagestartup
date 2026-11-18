@@ -52,6 +52,9 @@ function fixture() {
     expiresAt: new Date(Date.now() + 60_000).toISOString(),
   }));
   const service: any = {
+    ecommerceModuleProductInitialGrantIncludes: jest
+      .fn()
+      .mockResolvedValue(false),
     findById: jest.fn().mockResolvedValue({ id: "subject" }),
     billingModule: {
       currency: { find: jest.fn().mockResolvedValue([{ id: "currency-rub" }]) },
@@ -645,4 +648,16 @@ it("accepts a legacy cart point field while retaining validated shipping fields 
       ],
     }).success,
   ).toBe(false);
+});
+
+it("rejects database-configured registration Products through the Subject capability", async () => {
+  const f = fixture();
+  f.service.ecommerceModuleProductInitialGrantIncludes.mockResolvedValue(true);
+  await expect(
+    new Handler(f.service).execute(f.context(), undefined),
+  ).rejects.toThrow("authentication bootstrap");
+  expect(
+    f.service.ecommerceModuleProductInitialGrantIncludes,
+  ).toHaveBeenCalledWith({ productId: "product" });
+  f.noWrites();
 });

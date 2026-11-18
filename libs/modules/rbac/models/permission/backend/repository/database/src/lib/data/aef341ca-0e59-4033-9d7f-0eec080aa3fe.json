@@ -1,0 +1,9 @@
+{
+  "id": "aef341ca-0e59-4033-9d7f-0eec080aa3fe",
+  "createdAt": "2026-11-17T23:37:41.965Z",
+  "updatedAt": "2026-11-17T23:37:41.965Z",
+  "variant": "default",
+  "type": "HTTP",
+  "method": "POST",
+  "path": "/api/ecommerce/stores-to-products/:uuid/address-suggestions"
+}

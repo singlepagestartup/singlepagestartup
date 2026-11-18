@@ -4,6 +4,7 @@ import {
   IRouteRule,
   ITopicRule,
   MUTATION_SKIPPED_CONTEXT_KEY,
+  READ_ONLY_OPERATION_CONTEXT_KEY,
   resolveTopicsForPath,
   RouteMatcher,
   singlepageTopicRules,
@@ -90,6 +91,7 @@ export class Middleware {
 
       if (
         c.get(MUTATION_SKIPPED_CONTEXT_KEY) ||
+        c.get(READ_ONLY_OPERATION_CONTEXT_KEY) ||
         this.notRevalidatingRoutesMatcher.matches(reqPath, method)
       ) {
         return;

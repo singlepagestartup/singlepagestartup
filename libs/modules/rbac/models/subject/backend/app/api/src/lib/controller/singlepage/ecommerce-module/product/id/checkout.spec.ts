@@ -36,6 +36,7 @@ function fixture() {
           .mockResolvedValue({ id: "product", slug: "course" }),
       },
       storesToProducts: {
+        find: jest.fn().mockResolvedValue([]),
         offersForProduct: jest.fn().mockResolvedValue([offer]),
         quote: jest.fn(async (input: any) => ({
           ...input,
@@ -85,6 +86,17 @@ it("resolves one eligible Product-only offer and delegates an atomic graph with 
       ecommerceModule: { orders: [{ id: "created-order" }] },
     }),
   );
+});
+it("rejects a configured registration grant before one-step checkout creates an order", async () => {
+  const f = fixture();
+  f.service.ecommerceModule.storesToProducts.find.mockResolvedValue([
+    { ...f.offer, settings: { initialGrant: true } },
+  ]);
+  await expect(
+    new Handler(f.service).execute(f.context(), undefined),
+  ).rejects.toThrow("authentication bootstrap");
+  expect(f.service.ecommerceModuleOrderCreate).not.toHaveBeenCalled();
+  expect(f.service.ecommerceOrderCheckout).not.toHaveBeenCalled();
 });
 it("rejects ambiguous Product-only checkout before creating an Order", async () => {
   const f = fixture();

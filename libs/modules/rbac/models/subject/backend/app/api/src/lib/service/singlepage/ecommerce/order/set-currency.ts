@@ -1,6 +1,6 @@
+import { Service as InitialGrantProducts } from "../../billing/initial-grant-products";
 import { getDrizzle } from "@sps/shared-backend-database-config";
 import { withConsistencyDatabase } from "@sps/shared-backend-api";
-import { INITIAL_FREE_SUBSCRIPTION_PRODUCT_SLUG } from "@sps/shared-utils";
 import type { Service as SubjectService } from "../../index";
 
 export interface IExecuteProps {
@@ -105,7 +105,9 @@ export class Service {
           });
           if (
             !product ||
-            product.slug === INITIAL_FREE_SUBSCRIPTION_PRODUCT_SLUG
+            (await new InitialGrantProducts(
+              service.ecommerceModule.storesToProducts,
+            ).includes(product.id))
           ) {
             throw new Error(
               "Permission error. This product cannot be changed through a cart",

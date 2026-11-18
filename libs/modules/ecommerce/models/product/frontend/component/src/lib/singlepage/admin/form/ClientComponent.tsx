@@ -37,6 +37,7 @@ export function Component(props: IComponentPropsExtended) {
       title: props.data?.title || {},
       description: props.data?.description || {},
       shortDescription: props.data?.shortDescription || {},
+      kind: props.data?.kind || "physical",
       type: props.data?.type || "one_off",
       slug: props.data?.slug || randomWordsGenerator({ type: "slug" }),
       adminTitle:
@@ -138,6 +139,14 @@ export function Component(props: IComponentPropsExtended) {
           label="Slug"
           form={form}
           placeholder="Type slug"
+        />
+        <FormField
+          ui="shadcn"
+          type="text"
+          label="Kind"
+          name="kind"
+          form={form}
+          placeholder="physical, digital, service, tax, commission…"
         />
         <FormField
           ui="shadcn"

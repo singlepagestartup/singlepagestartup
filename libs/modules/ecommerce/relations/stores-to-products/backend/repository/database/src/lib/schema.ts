@@ -3,6 +3,8 @@ import { Table as Store } from "@sps/ecommerce/models/store/backend/repository/d
 import { Table as Product } from "@sps/ecommerce/models/product/backend/repository/database";
 
 export interface IOfferSettings {
+  initialGrant?: boolean;
+  initialGrantLegacyHistory?: boolean;
   standalone?: boolean;
   requiredDelivery?: boolean;
   receiptMethod?: "shipping" | "pickup" | "electronic";
