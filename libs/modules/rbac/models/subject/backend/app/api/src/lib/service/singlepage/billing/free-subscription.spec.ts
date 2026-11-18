@@ -257,13 +257,41 @@ it("issues several arbitrary Products from their configured Stores once", async 
   expect(dependencies.fulfillPaidOrderInTransaction).toHaveBeenCalledTimes(2);
 });
 
-it("rejects duplicate Product assignments across Stores before creating a graph", async () => {
-  const { service, offers, tables } = fixture();
-  offers.push({ ...offers[0], id: "duplicate", storeId: "other-store" });
-  await expect(service.execute({ id: "owner" })).rejects.toThrow(
-    "exactly one issuing Store",
+it("issues the same Product once per marked Store even when one Store has two marked SKUs", async () => {
+  const { service, offers, catalogStores, tables } = fixture();
+  catalogStores.push({ id: "other-store" });
+  offers.push({ ...offers[0], id: "other-offer", storeId: "other-store" });
+  offers.push({ ...offers[0], id: "another-sku" });
+  await service.execute({ id: "owner" });
+  expect(await service.execute({ id: "owner" })).toBeNull();
+  expect(tables.stores.map((link) => link.storeId).sort()).toEqual([
+    "other-store",
+    "store",
+  ]);
+  for (const table of ["order", "lines", "intents", "invoices", "balances"]) {
+    expect(tables[table]).toHaveLength(2);
+  }
+});
+
+it("assigns storeless registration history to the legacy issuer before granting at a second Store", async () => {
+  const { service, offers, catalogStores, tables } = fixture();
+  await service.execute({ id: "owner" });
+  const originalOrder = tables.stores.pop().orderId;
+  catalogStores.push({ id: "other-store" });
+  offers.unshift({
+    ...offers[0],
+    id: "other-offer",
+    storeId: "other-store",
+    settings: { initialGrant: true, initialGrantLegacyHistory: false },
+  });
+  expect(
+    (await service.execute({ id: "owner" }))?.billingModule.invoices,
+  ).toHaveLength(1);
+  expect(tables.stores).toContainEqual(
+    expect.objectContaining({ orderId: originalOrder, storeId: "store" }),
   );
-  expect(tables.order).toHaveLength(0);
+  expect(await service.execute({ id: "owner" })).toBeNull();
+  expect(tables.order).toHaveLength(2);
 });
 
 it("ignores hidden and unmarked offers", async () => {
@@ -473,7 +501,7 @@ it("rejects a caller-owned ambient transaction before any writes or effects", as
   expect(dependencies.dispatchPaidEffects).not.toHaveBeenCalled();
 });
 
-it("retains the consumed grant after disabling and reassigning its Store", async () => {
+it("keeps the original Order and grants once from a newly assigned Store", async () => {
   const { service, offers, catalogStores, tables, dependencies } = fixture();
   await service.execute({ id: "owner" });
   offers[0].settings.initialGrant = false;
@@ -482,9 +510,15 @@ it("retains the consumed grant after disabling and reassigning its Store", async
   catalogStores.push({ id: "new-store" });
   offers[0].storeId = "new-store";
   offers[0].settings.initialGrant = true;
+  expect(
+    (await service.execute({ id: "owner" }))?.billingModule.invoices,
+  ).toHaveLength(1);
+  expect(tables.stores.map((link) => link.storeId)).toEqual([
+    "store",
+    "new-store",
+  ]);
   expect(await service.execute({ id: "owner" })).toBeNull();
-  expect(tables.stores[0].storeId).toBe("store");
-  expect(dependencies.fulfillPaidOrderInTransaction).toHaveBeenCalledTimes(1);
+  expect(dependencies.fulfillPaidOrderInTransaction).toHaveBeenCalledTimes(2);
 });
 
 it("marks an existing zero-price legacy grant without crediting it again", async () => {

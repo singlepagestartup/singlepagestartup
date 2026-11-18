@@ -2,10 +2,8 @@
 
 ## Purpose
 
-Links subjects to ecommerce orders. Human admin form saves and deletions use
-the current Subject catalogue API, whose service requires administrator access
-for ownership changes. Raw infrastructure writes require the operator
-credential, including when a user holds an administrator role or explicit raw write grant.
+Links subjects to ecommerce orders. The admin form writes this relation through its own SDK. The API checks the
+caller’s permission for the requested method and relation route.
 
 ## Fields
 

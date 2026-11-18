@@ -1,5 +1,4 @@
 "use client";
-import { useCatalogueMutationOptions } from "@sps/rbac/frontend/component/src/lib/admin-v2/catalogue-mutations";
 
 import { IComponentPropsExtended, variant, IModel } from "./interface";
 import { api } from "@sps/rbac/relations/subjects-to-ecommerce-module-stores/sdk/client";
@@ -19,17 +18,8 @@ import { Component as EcommerceModuleStore } from "@sps/ecommerce/models/store/f
 export function Component(props: IComponentPropsExtended) {
   const updateEntity = api.update({
     id: props.data?.id ?? "",
-    ...useCatalogueMutationOptions({
-      entity: "subjects-to-ecommerce-module-stores",
-      method: "PATCH",
-    }),
   });
-  const createEntity = api.create(
-    useCatalogueMutationOptions({
-      entity: "subjects-to-ecommerce-module-stores",
-      method: "POST",
-    }),
-  );
+  const createEntity = api.create();
 
   const { status } = useGetAdminFormState({
     updateEntity,

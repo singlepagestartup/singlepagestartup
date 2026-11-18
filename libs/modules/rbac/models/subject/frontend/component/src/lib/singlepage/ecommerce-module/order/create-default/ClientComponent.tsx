@@ -10,13 +10,17 @@ import { Select } from "@sps/ui-adapter";
 import { cn, formatCurrencyAmount } from "@sps/shared-frontend-client-utils";
 import { ECOMMERCE_ORDER_LINE_QUANTITY_BOUNDS as quantityBounds } from "@sps/shared-utils";
 import type { IEcommerceCartSelection } from "@sps/rbac/models/subject/sdk/model";
-import type { IOfferServiceOption } from "@sps/ecommerce/relations/stores-to-products/sdk/model";
+import {
+  getEligibleRetailOffers,
+  type IOfferServiceOption,
+} from "@sps/ecommerce/relations/stores-to-products/sdk/model";
 import { DeliveryAddress } from "../list/checkout-default/DeliveryAddress";
 import {
   ServiceCard,
   ServiceOptions,
 } from "../list/checkout-default/ServiceCard";
 import { QuantityInput } from "../list/checkout-default/QuantityInput";
+import { useOfferPriceSelection } from "./OfferPrice";
 import type { IComponentPropsExtended, IConfiguredPurchase } from "./interface";
 
 interface IServiceIntent {
@@ -27,6 +31,7 @@ interface IServiceIntent {
 interface IDraft {
   offerId: string;
   currencyId: string;
+  manualPriceSelection: boolean;
   quantity: string;
   address: string;
   method: string;
@@ -46,6 +51,7 @@ export function Component(props: IComponentPropsExtended) {
     return {
       offerId: "",
       currencyId: "",
+      manualPriceSelection: false,
       quantity: "1",
       address: "",
       method: "",
@@ -88,23 +94,18 @@ export function Component(props: IComponentPropsExtended) {
       },
     },
   });
-  const offers = (offersQuery.data ?? []).filter(
-    (offer) =>
-      offer.productId === props.ecommerceModuleProduct.id &&
-      offer.variant === "default" &&
-      offer.settings?.initialGrant !== true &&
-      (!props.ecommerceModuleStore ||
-        offer.storeId === props.ecommerceModuleStore.id) &&
-      !props.excludedOfferIds?.includes(offer.id) &&
-      (props.ecommerceModuleProduct.kind !== "service" ||
-        offer.settings?.standalone === true),
-  );
-  const selected =
-    offers.find((offer) => offer.id === draft.offerId) ??
-    (!draft.offerId && offers.length === 1 ? offers[0] : undefined);
-  const requestedOffer =
-    offers.find((offer) => offer.id === requestedDraft.offerId) ??
-    (!requestedDraft.offerId && offers.length === 1 ? offers[0] : undefined);
+  const offers = getEligibleRetailOffers({
+    offers: offersQuery.data ?? [],
+    product: props.ecommerceModuleProduct,
+    storeId: props.ecommerceModuleStore?.id,
+  }).filter((offer) => !props.excludedOfferIds?.includes(offer.id));
+  function offerForDraft(value: IDraft) {
+    return value.offerId
+      ? offers.find((offer) => offer.id === value.offerId)
+      : offers[0];
+  }
+  const selected = offerForDraft(draft);
+  const requestedOffer = offerForDraft(requestedDraft);
   const storeIds = [...new Set(offers.map((offer) => offer.storeId))];
   const stores = storeApi.find({
     params: {
@@ -483,6 +484,16 @@ export function Component(props: IComponentPropsExtended) {
     props.excludedOfferIds?.length && !offersQuery.isPending && !offers.length,
   );
   const hideWhenIdle = Boolean(props.hideConfiguration || allOffersExcluded);
+  useOfferPriceSelection(
+    draft.manualPriceSelection && !hideWhenIdle && selected && draft.currencyId
+      ? {
+          productId: props.ecommerceModuleProduct.id,
+          storeId: selected.storeId,
+          offerId: selected.id,
+          billingModuleCurrencyId: draft.currencyId,
+        }
+      : null,
+  );
 
   return (
     <div
@@ -533,11 +544,15 @@ export function Component(props: IComponentPropsExtended) {
                       (ru ? "Загружаем…" : "Loading…"),
                   }))}
                   onValueChange={(currencyId) =>
-                    edit((value) => ({ ...value, currencyId }))
+                    edit((value) => ({
+                      ...value,
+                      currencyId,
+                      manualPriceSelection: true,
+                    }))
                   }
                 />
               </div>
-              <div className="col-span-2 flex min-w-0 flex-wrap items-baseline justify-end gap-x-1.5 gap-y-0.5 @[420px]:col-span-1 @[420px]:min-h-12 @[420px]:items-center">
+              <div className="col-span-2 flex min-w-0 flex-col items-end justify-center gap-0.5 text-right leading-tight @[420px]:col-span-1 @[420px]:min-h-12">
                 <output
                   aria-label={ru ? "Цена за 1 шт." : "Unit price"}
                   className="min-w-0 break-words text-sm font-semibold tabular-nums"
@@ -604,6 +619,7 @@ export function Component(props: IComponentPropsExtended) {
                   edit((value) => ({
                     ...value,
                     offerId,
+                    manualPriceSelection: true,
                     services: {},
                     transfer: [
                       ...Object.entries(value.services).map(

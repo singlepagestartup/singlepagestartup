@@ -26,6 +26,7 @@ export interface ICartDetails {
 
 /** Subject-scoped order history assembled from invoices, receipts and subscription orders. */
 export interface IPurchaseDetails {
+  primaryProductSlug?: string;
   /** Whether the Subject may retry an unfinished payment by replacing the cart. */
   canRepeatPayment?: boolean;
   canPayNextPeriod?: boolean;

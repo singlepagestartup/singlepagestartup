@@ -47,6 +47,13 @@ const input =
 const button =
   "min-h-11 rounded-xl border border-border bg-card px-4 py-2 text-sm font-medium text-foreground hover:bg-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground disabled:cursor-not-allowed disabled:opacity-50";
 
+// Page and drawer editors can request the same recovery before either receives
+// the shared cart refetch. Share only that in-flight write, never entity data.
+const selectionSaves = new WeakMap<
+  object,
+  Map<string, Promise<IEcommerceCartSelectionResult>>
+>();
+
 export function Selection(props: ISelectionProps) {
   const ru = props.language === "ru";
   const controlId = useId();
@@ -57,10 +64,6 @@ export function Selection(props: ISelectionProps) {
     props.details.offerQuotes?.find(
       (quote) => quote.productId === props.line.productId,
     );
-  const children = props.details.lines.filter(
-    (line) => line.parentLineId === props.line.id && line.offerId,
-  );
-
   // Renewal lineage selects the scoped reader. Its server verifies paid fulfillment.
   const renewal = Boolean(
     props.ecommerceModuleOrder.subscriptionSourceOrderId ||
@@ -68,15 +71,20 @@ export function Selection(props: ISelectionProps) {
   );
   const requiresStoreSelection = !renewal && !props.line.offerId;
 
-  function savedDraft(): IDraft {
+  function savedDraft(line = props.line, details = props.details): IDraft {
+    const sourceQuote =
+      details.offerQuotes?.find((quote) => quote.offerId === line.offerId) ??
+      details.offerQuotes?.find((quote) => quote.productId === line.productId);
     return {
-      offerId: props.line.offerId ?? (renewal ? (original?.offerId ?? "") : ""),
-      currencyId: props.details.billingModuleCurrencyId ?? "",
-      quantity: String(props.line.quantity),
-      address: props.line.destination?.address ?? "",
-      region: props.line.destination?.region ?? "",
+      offerId: line.offerId ?? (renewal ? (sourceQuote?.offerId ?? "") : ""),
+      currencyId: details.billingModuleCurrencyId ?? "",
+      quantity: String(line.quantity),
+      address: line.destination?.address ?? "",
+      region: line.destination?.region ?? "",
       services: Object.fromEntries(
-        children.map((child) => [child.offerId!, String(child.quantity)]),
+        details.lines
+          .filter((child) => child.parentLineId === line.id && child.offerId)
+          .map((child) => [child.offerId!, String(child.quantity)]),
       ),
       transfer: null,
     };
@@ -104,11 +112,16 @@ export function Selection(props: ISelectionProps) {
   const mounted = useRef(false);
   const debounce = useRef<ReturnType<typeof setTimeout> | null>(null);
   const conflict = useRef(false);
+  const automaticPriceRecovery = useRef(false);
+  const automaticRevision = useRef<number | null>(null);
+  const refreshedTimestamp = useRef("");
   const refresh = useRef<{ revision: number; timestamp: string } | null>(null);
   const selectionUpdatedAt = useRef(
     new Date(props.line.selectionUpdatedAt).toISOString(),
   );
   const observedSelectionUpdatedAt = useRef(selectionUpdatedAt.current);
+  const latestProps = useRef(props);
+  latestProps.current = props;
   const callback = useRef(props.onSelectionStateChange);
   callback.current = props.onSelectionStateChange;
   const pendingCallback = useRef(props.onSelectionPendingChange);
@@ -434,6 +447,7 @@ export function Selection(props: ISelectionProps) {
     )
       return;
     selectionUpdatedAt.current = next;
+    automaticPriceRecovery.current = false;
     setDraft(() => savedDraft());
     setReceipt(null);
   }, [props.line.selectionUpdatedAt]);
@@ -450,6 +464,12 @@ export function Selection(props: ISelectionProps) {
         refresh.current = null;
         setAwaitingRefresh(false);
         if (latest) {
+          if (automaticRevision.current === expected.revision) {
+            selectionUpdatedAt.current = received;
+            setDraft(() => savedDraft());
+            setReceipt(null);
+            return;
+          }
           appliedRevision.current = expected.revision - 1;
           conflict.current = true;
           setError(
@@ -470,8 +490,14 @@ export function Selection(props: ISelectionProps) {
     }
   }, [props.line.selectionUpdatedAt, awaitingRefresh, pending]);
 
-  function edit(update: (current: IDraft) => IDraft, wait = false) {
+  function edit(
+    update: (current: IDraft) => IDraft,
+    wait = false,
+    automatic = false,
+  ) {
     const nextRevision = ++revision.current;
+    if (!automatic) automaticPriceRecovery.current = false;
+    if (automatic) automaticRevision.current = nextRevision;
     if (debounce.current) clearTimeout(debounce.current);
     reportBlocked(true);
     conflict.current = false;
@@ -574,16 +600,33 @@ export function Selection(props: ISelectionProps) {
 
     async function save() {
       try {
-        const result = await selectionMutation.mutateAsync({
+        const request = {
           id: props.subject.id,
           orderId: props.ecommerceModuleOrder.id,
           data: {
-            action: "save",
+            action: "save" as const,
             lineId: props.line.id,
             selections: requested,
             expectedSelectionUpdatedAt: selectionUpdatedAt.current,
           },
-        });
+        };
+        let active = selectionSaves.get(queries);
+        if (!active) {
+          active = new Map();
+          selectionSaves.set(queries, active);
+        }
+        const key = JSON.stringify(request);
+        const automatic = automaticRevision.current === currentRevision;
+        let operation = automatic ? active.get(key) : undefined;
+        if (!operation) {
+          operation = selectionMutation.mutateAsync(request);
+          if (automatic) active.set(key, operation);
+          const release = () => {
+            if (active.get(key) === operation) active.delete(key);
+          };
+          void operation.then(release, release);
+        }
+        const result = await operation;
         if (!mounted.current) return;
         if (result.applied && result.selectionUpdatedAt) {
           selectionUpdatedAt.current = result.selectionUpdatedAt;
@@ -603,6 +646,54 @@ export function Selection(props: ISelectionProps) {
         if (!mounted.current || currentRevision !== revision.current) return;
         const message = cause instanceof Error ? cause.message : "";
         conflict.current = /Cart selection changed/i.test(message);
+        if (
+          conflict.current &&
+          automaticRevision.current === currentRevision &&
+          (await refreshCart()) &&
+          mounted.current &&
+          currentRevision === revision.current
+        ) {
+          const snapshots = queries.getQueriesData<
+            ISelectionProps["ecommerceModuleOrder"][]
+          >({
+            queryKey: [`${route}/${props.subject.id}/ecommerce-module/orders`],
+          });
+          const candidates = [
+            {
+              line: latestProps.current.line,
+              details: latestProps.current.details,
+            },
+            ...snapshots.flatMap(([, orders]) =>
+              (orders ?? []).flatMap((order) =>
+                order.id === props.ecommerceModuleOrder.id && order.cartDetails
+                  ? order.cartDetails.lines
+                      .filter((line) => line.id === props.line.id)
+                      .map((line) => ({ line, details: order.cartDetails! }))
+                  : [],
+              ),
+            ),
+          ].sort(
+            (first, second) =>
+              new Date(second.line.selectionUpdatedAt).getTime() -
+              new Date(first.line.selectionUpdatedAt).getTime(),
+          );
+          const latest = candidates[0];
+          const timestamp = new Date(
+            latest.line.selectionUpdatedAt,
+          ).toISOString();
+          if (Date.parse(timestamp) > Date.parse(selectionUpdatedAt.current)) {
+            selectionUpdatedAt.current = timestamp;
+            appliedRevision.current = currentRevision;
+            setDraft(() => savedDraft(latest.line, latest.details));
+            setReceipt(null);
+            conflict.current = false;
+            refresh.current = { revision: currentRevision, timestamp };
+            refreshedTimestamp.current = timestamp;
+            setAwaitingRefresh(true);
+            return;
+          }
+        }
+        if (!mounted.current || currentRevision !== revision.current) return;
         setError(
           conflict.current
             ? ru
@@ -626,7 +717,7 @@ export function Selection(props: ISelectionProps) {
       }
     }
     void save();
-  }, [draft, readyRevision, pending, validInput]);
+  }, [draft, readyRevision, pending, validInput, refreshing]);
 
   function retry() {
     if (conflict.current) {
@@ -645,6 +736,7 @@ export function Selection(props: ISelectionProps) {
         { queryKey: [`${route}/${props.subject.id}/ecommerce-module/orders`] },
         { throwOnError: true },
       );
+      return true;
     } catch {
       if (mounted.current) {
         setRefreshError(
@@ -653,10 +745,20 @@ export function Selection(props: ISelectionProps) {
             : "Could not refresh the cart. Please retry.",
         );
       }
+      return false;
     } finally {
       if (mounted.current) setRefreshing(false);
     }
   }
+
+  useEffect(() => {
+    if (pending || refreshing) return;
+    const expected = refresh.current;
+    if (expected && refreshedTimestamp.current !== expected.timestamp) {
+      refreshedTimestamp.current = expected.timestamp;
+      void refreshCart();
+    }
+  }, [pending, refreshing, awaitingRefresh, props.line.selectionUpdatedAt]);
 
   function storeTitle(id: string) {
     const offer = props.details.offers?.find((offer) => offer.id === id);
@@ -700,6 +802,32 @@ export function Selection(props: ISelectionProps) {
     props.line.quoteVersion !== original.version,
   );
   useEffect(() => {
+    if (!priceStale) {
+      if (!unsaved && !awaitingRefresh && !saving.current)
+        automaticPriceRecovery.current = false;
+      return;
+    }
+    if (
+      unsaved ||
+      awaitingRefresh ||
+      saving.current ||
+      error ||
+      !validInput ||
+      !canPersist(draft)
+    )
+      return;
+    if (automaticPriceRecovery.current) {
+      setError(
+        ru
+          ? "Цена снова изменилась. Повторите сохранение."
+          : "The price changed again. Retry saving.",
+      );
+      return;
+    }
+    automaticPriceRecovery.current = true;
+    edit((current) => current, false, true);
+  }, [priceStale, unsaved, awaitingRefresh, validInput, draft, error]);
+  useEffect(() => {
     if (
       priceStale ||
       unavailableCurrency ||
@@ -722,6 +850,9 @@ export function Selection(props: ISelectionProps) {
     currentReceipt?.amount !== null &&
     currentReceipt?.amount !== undefined &&
     receiptIssues.length === 0;
+  useEffect(() => {
+    if (receiptReady && !pending && !error) reportBlocked(false);
+  }, [receiptReady, pending, error]);
   const productCharge = currentReceipt?.charges.find(
     (charge) => charge.role === "product" && charge.offerId === draft.offerId,
   );
@@ -795,7 +926,7 @@ export function Selection(props: ISelectionProps) {
             }))}
           />
         </div>
-        <div className="col-span-2 flex min-w-0 flex-wrap items-baseline justify-end gap-x-1.5 gap-y-0.5 @[420px]:col-span-1 @[420px]:min-h-12 @[420px]:items-center">
+        <div className="col-span-2 flex min-w-0 flex-col items-end justify-center gap-0.5 text-right leading-tight @[420px]:col-span-1 @[420px]:min-h-12">
           <output
             aria-label={ru ? "Цена за 1 шт." : "Unit price"}
             className="min-w-0 break-words text-sm font-semibold tabular-nums"
@@ -1052,23 +1183,7 @@ export function Selection(props: ISelectionProps) {
           </button>
         </div>
       ) : null}
-      {priceStale && !unsaved && !awaitingRefresh ? (
-        <div className="space-y-2">
-          <p className="text-xs text-muted-foreground">
-            {ru
-              ? "Цена или условия изменились."
-              : "The price or terms have changed."}
-          </p>
-          <button
-            type="button"
-            className={button}
-            onClick={() => edit((current) => current)}
-          >
-            {ru ? "Обновить цену" : "Refresh price"}
-          </button>
-        </div>
-      ) : null}
-      {(awaitingRefresh || conflict.current) && !pending ? (
+      {(awaitingRefresh || conflict.current) && !pending && !refreshing ? (
         <div className="space-y-2">
           {refreshError ? (
             <p role="alert" className="text-xs text-destructive">

@@ -1971,11 +1971,14 @@ it("keeps the saved amount in total, extended and Subject history readers after 
     (await f.order.findByIdExtended({ id: cart.id }))
       .checkoutAttributesByCurrency.amount,
   ).toBe(100);
+  const currentSlug = `renamed-${f.item.id}`;
+  await f.order.product.update({ id: f.item.id, data: { slug: currentSlug } });
   const history = await f.subject.ecommerceModuleOrderPurchaseDetails({
     subjectId: f.buyer.id,
     orders: [await f.order.findById({ id: cart.id })],
   });
   expect(history[0].purchaseDetails.totals[0].total).toBe(100);
+  expect(history[0].purchaseDetails.primaryProductSlug).toBe(currentSlug);
   expect(history[0].purchaseDetails.charges?.[0].amount).toBe("100.00");
   expect((await f.invoices.findById({ id: payment.invoice.id })).amount).toBe(
     100,

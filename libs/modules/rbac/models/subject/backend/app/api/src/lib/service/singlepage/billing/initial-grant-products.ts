@@ -8,6 +8,12 @@ export class Service {
   async find(): Promise<IOffer[]> {
     const offers: IOffer[] = await this.offers.find({
       params: {
+        orderBy: {
+          and: [
+            { column: "createdAt", method: "asc" },
+            { column: "id", method: "asc" },
+          ],
+        },
         filters: {
           and: [
             { column: "settings->>initialGrant", method: "eq", value: "true" },

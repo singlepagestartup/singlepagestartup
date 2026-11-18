@@ -40,8 +40,8 @@ export const privateCommerceRoutes: IRouteRule[] = [
   },
 ];
 
-/** Catalogue writes use Subject operations for every end user; raw writes require the operator credential. */
-export const operatorOnlyCatalogueWriteRoutes: IRouteRule[] = [
+/** Catalogue and ownership writes require a granted role, including on role-less permission records. */
+const catalogueWriteRoutes: IRouteRule[] = [
   {
     regexPath:
       /^\/api\/ecommerce\/(stores|products|attributes|attribute-keys|stores-to-products|stores-to-attributes|products-to-attributes|stores-to-products-to-attributes|attribute-keys-to-attributes|attributes-to-billing-module-currencies|offers-to-offers)(?:\/[^/]+)?\/?$/i,
@@ -56,7 +56,6 @@ export const operatorOnlyCatalogueWriteRoutes: IRouteRule[] = [
 
 /** End-user permissions cannot grant these infrastructure operations. */
 export const operatorOnlyRoutes: IRouteRule[] = [
-  ...operatorOnlyCatalogueWriteRoutes,
   {
     regexPath:
       /^\/api\/rbac\/subjects\/ecommerce-module\/orders\/payment-intents\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\/(?:check|providers\/[^/]+)\/?$/i,
@@ -114,5 +113,5 @@ export const sensitiveRoutes: IRouteRule[] = [
     regexPath: /^\/api\/rbac\/roles(\/.*)?$/i,
     methods: ["GET"],
   },
-  ...operatorOnlyCatalogueWriteRoutes,
+  ...catalogueWriteRoutes,
 ];

@@ -29,6 +29,23 @@ export interface IConfiguratorActions {
   hideWhenIdle: boolean;
 }
 
+export interface IOfferPriceProviderProps {
+  children: ReactNode;
+}
+
+export interface IOfferPriceProps extends IOfferPriceProviderProps {
+  product: IEcommerceModuleProduct;
+  storeId?: string;
+  language: string;
+}
+
+export interface IOfferPriceSelection {
+  productId: string;
+  storeId?: string;
+  offerId: string;
+  billingModuleCurrencyId: string;
+}
+
 export interface IComponentProps extends IParentComponentProps<
   IModel,
   typeof variant
@@ -54,3 +71,10 @@ export interface IComponentPropsExtended extends IParentComponentPropsExtended<
   typeof variant,
   IComponentProps
 > {}
+
+export interface IProductWithOfferPriceProps extends IOfferPriceProps {
+  variant: "default" | "overview-default";
+  isServer: boolean;
+  topSlot?: ReactNode;
+  middleSlot?: ReactNode;
+}

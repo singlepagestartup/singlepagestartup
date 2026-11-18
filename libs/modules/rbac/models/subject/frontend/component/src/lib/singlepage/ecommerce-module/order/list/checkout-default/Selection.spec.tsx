@@ -21,7 +21,11 @@ import type {
 const mockMutation = jest.fn();
 const mockPreview = jest.fn();
 const mockInvalidate = jest.fn();
-const mockQueryClient = { invalidateQueries: mockInvalidate };
+const mockCachedOrders = jest.fn();
+const mockQueryClient = {
+  invalidateQueries: mockInvalidate,
+  getQueriesData: mockCachedOrders,
+};
 const mockQuoteRead = jest.fn();
 let mockPublish:
   ((request: any, result: IEcommerceCartSelectionResult) => void) | undefined;
@@ -401,6 +405,7 @@ beforeEach(() => {
   mockDiscovery.clear();
   mockPublish = undefined;
   mockInvalidate.mockReset().mockResolvedValue(undefined);
+  mockCachedOrders.mockReset().mockReturnValue([]);
   mockPreview.mockReset().mockImplementation(async ({ data }) => ({
     ...mockResult(data.selections),
     applied: false,
@@ -1211,7 +1216,7 @@ it("adopts refreshed server receipts without writing when the buyer has not edit
 });
 
 it.each([null, "old-terms"])(
-  "offers explicit price recovery for saved quote version %s without writing on mount",
+  "automatically updates stale saved quote version %s without a price button",
   async (quoteVersion) => {
     const onSelectionStateChange = jest.fn();
     renderSelection({
@@ -1219,12 +1224,9 @@ it.each([null, "old-terms"])(
       line: { ...line, quoteVersion },
       onSelectionStateChange,
     });
-    expect(screen.getByText("Цена или условия изменились.")).toBeTruthy();
     expect(receipt().queryByText("8 000 ₽")).toBeNull();
     expect(onSelectionStateChange).toHaveBeenLastCalledWith("line", true);
-    await settleDebounce();
-    expect(mockMutation).not.toHaveBeenCalled();
-    fireEvent.click(screen.getByRole("button", { name: "Обновить цену" }));
+    expect(screen.queryByRole("button", { name: "Обновить цену" })).toBeNull();
     await waitFor(() => expect(mockMutation).toHaveBeenCalledTimes(1));
     expect(mockMutation.mock.calls[0][0].data).toEqual(
       expect.objectContaining({
@@ -1242,6 +1244,305 @@ it.each([null, "old-terms"])(
     expect(screen.queryByRole("button", { name: "Обновить цену" })).toBeNull();
   },
 );
+
+it("starts a new automatic cycle when the tariff changes again after a completed price refresh", async () => {
+  let version = "tariff-one";
+  mockMutation.mockImplementation(async ({ data }) => {
+    const result = mockResult(data.selections);
+    result.quotes[0].version = version;
+    return result;
+  });
+  const onSelectionStateChange = jest.fn();
+  const initial = {
+    ...props,
+    line: { ...line, quoteVersion: "old-terms" },
+    details: {
+      ...props.details,
+      offerQuotes: [{ ...mockQuote(), version }],
+    },
+    onSelectionStateChange,
+  };
+  const view = renderSelection(initial);
+  await waitFor(() =>
+    expect(onSelectionStateChange).toHaveBeenLastCalledWith("line", false),
+  );
+  expect(mockMutation).toHaveBeenCalledTimes(1);
+  const first = await mockMutation.mock.results[0].value;
+  const snapshot = savedSnapshot(
+    initial,
+    mockMutation.mock.calls[0][0].data.selections[0],
+    first,
+  );
+  version = "tariff-two";
+  snapshot.details.offerQuotes = [{ ...first.quotes[0], version }];
+  view.rerender(<Selection {...snapshot} />);
+  await waitFor(() => expect(mockMutation).toHaveBeenCalledTimes(2));
+  await waitFor(() =>
+    expect(onSelectionStateChange).toHaveBeenLastCalledWith("line", false),
+  );
+  expect(mockMutation.mock.calls[1][0].data.expectedSelectionUpdatedAt).toBe(
+    first.selectionUpdatedAt,
+  );
+  await settleDebounce();
+  expect(mockMutation).toHaveBeenCalledTimes(2);
+  expect(
+    screen.queryByRole("button", { name: "Повторить сохранение" }),
+  ).toBeNull();
+});
+
+it.each([false, true])(
+  "automatically reconciles a quote changed after an edit with bounded retries (keeps changing: %s)",
+  async (keepsChanging) => {
+    const onSelectionStateChange = jest.fn();
+    const initial = { ...props, onSelectionStateChange };
+    const view = renderSelection(initial);
+    let saves = 0;
+    mockPublish = (request, result) => {
+      const snapshot = savedSnapshot(
+        initial,
+        request.data.selections[0],
+        result,
+      );
+      if (++saves === 1 || keepsChanging) {
+        snapshot.details.offerQuotes = [
+          { ...result.quotes[0], version: `new-terms-${saves}` },
+        ];
+      }
+      view.rerender(<Selection {...snapshot} />);
+    };
+    fireEvent.click(screen.getByRole("checkbox", { name: "Сборка" }));
+    await waitFor(() => expect(mockMutation).toHaveBeenCalledTimes(2));
+    expect(mockMutation.mock.calls[1][0].data.selections).toEqual(
+      mockMutation.mock.calls[0][0].data.selections,
+    );
+    const first = await mockMutation.mock.results[0].value;
+    expect(mockMutation.mock.calls[1][0].data.expectedSelectionUpdatedAt).toBe(
+      first.selectionUpdatedAt,
+    );
+    if (keepsChanging) {
+      expect(
+        await screen.findByText("Цена снова изменилась. Повторите сохранение."),
+      ).toBeTruthy();
+      expect(onSelectionStateChange).toHaveBeenLastCalledWith("line", true);
+      expect(receipt().queryByText("6 000 ₽")).toBeNull();
+    } else {
+      await waitFor(() => expect(receipt().getByText("6 000 ₽")).toBeTruthy());
+      expect(onSelectionStateChange).toHaveBeenLastCalledWith("line", false);
+    }
+    await settleDebounce();
+    expect(mockMutation).toHaveBeenCalledTimes(2);
+    expect(screen.queryByRole("button", { name: "Обновить цену" })).toBeNull();
+  },
+);
+
+it("keeps a failed automatic price refresh retryable without a request loop", async () => {
+  mockMutation.mockRejectedValueOnce(new Error("Network unavailable"));
+  renderSelection({ ...props, line: { ...line, quoteVersion: "old-terms" } });
+  expect(await screen.findByText("Network unavailable")).toBeTruthy();
+  await settleDebounce();
+  expect(mockMutation).toHaveBeenCalledTimes(1);
+  fireEvent.click(screen.getByRole("button", { name: "Повторить сохранение" }));
+  await waitFor(() => expect(receipt().getByText("8 000 ₽")).toBeTruthy());
+  expect(mockMutation).toHaveBeenCalledTimes(2);
+});
+
+it("adopts the newer authorized selection after an automatic price conflict without replaying its old choices", async () => {
+  const onSelectionStateChange = jest.fn();
+  const initial = {
+    ...props,
+    line: { ...line, quoteVersion: "old-terms" },
+    onSelectionStateChange,
+  };
+  const selected = {
+    offerId: "offer-b",
+    currencyId: "usd",
+    quantity: 3,
+    destination: { address: "New address", region: "new-region" },
+    services: [
+      { offerId: "delivery-b", quantity: 1 },
+      { offerId: "assembly-b", quantity: 2 },
+    ],
+  };
+  const snapshot = savedSnapshot(
+    initial,
+    selected,
+    mockResult([selected], "2026-11-17T00:00:30.000Z"),
+  );
+  mockMutation.mockRejectedValueOnce(new Error("Cart selection changed"));
+  mockCachedOrders.mockReturnValue([
+    [
+      ["/api/rbac/subjects/subject/ecommerce-module/orders"],
+      [{ id: "order", cartDetails: snapshot.details }],
+    ],
+  ]);
+  const view = render(<Selection {...initial} />);
+  await waitFor(() => expect(mockCachedOrders).toHaveBeenCalledTimes(1));
+  expect(mockInvalidate).toHaveBeenCalledTimes(1);
+  expect(onSelectionStateChange).toHaveBeenLastCalledWith("line", true);
+  expect(
+    (screen.getByRole("spinbutton", { name: "Количество" }) as HTMLInputElement)
+      .value,
+  ).toBe("3");
+  view.rerender(<Selection {...snapshot} />);
+  await waitFor(() =>
+    expect(onSelectionStateChange).toHaveBeenLastCalledWith("line", false),
+  );
+  expect(
+    (screen.getByLabelText("Адрес доставки") as HTMLInputElement).value,
+  ).toBe("New address");
+  expect(
+    (
+      screen.getByRole("spinbutton", {
+        name: "Количество единиц услуги",
+      }) as HTMLInputElement
+    ).value,
+  ).toBe("2");
+  expect(
+    screen.getByRole("combobox", { name: "Магазин" }).textContent,
+  ).toContain("Магазин Б");
+  expect(
+    screen.getByRole("combobox", { name: "Валюта" }).textContent,
+  ).toContain("USD");
+  await settleDebounce();
+  expect(mockMutation).toHaveBeenCalledTimes(1);
+  expect(mockInvalidate).toHaveBeenCalledTimes(1);
+  expect(
+    screen.queryByRole("button", { name: "Повторить сохранение" }),
+  ).toBeNull();
+});
+
+it("adopts another window's selection when it overtakes a delayed automatic price save", async () => {
+  const pending = deferred<IEcommerceCartSelectionResult>();
+  mockMutation.mockImplementationOnce(() => pending.promise);
+  const onSelectionStateChange = jest.fn();
+  const initial = {
+    ...props,
+    line: { ...line, quoteVersion: "old-terms" },
+    onSelectionStateChange,
+  };
+  const view = render(<Selection {...initial} />);
+  await waitFor(() => expect(mockMutation).toHaveBeenCalledTimes(1));
+  const selected = {
+    offerId: "offer-b",
+    currencyId: "rub",
+    quantity: 3,
+    destination: { address: "Another window's address" },
+    services: [{ offerId: "delivery-b", quantity: 1 }],
+  };
+  const snapshot = savedSnapshot(
+    initial,
+    selected,
+    mockResult([selected], "2026-11-17T00:00:30.000Z"),
+  );
+  view.rerender(<Selection {...snapshot} />);
+  await act(async () =>
+    pending.resolve(
+      mockResult(
+        mockMutation.mock.calls[0][0].data.selections,
+        "2026-11-17T00:00:10.000Z",
+      ),
+    ),
+  );
+  await waitFor(() =>
+    expect(onSelectionStateChange).toHaveBeenLastCalledWith("line", false),
+  );
+  expect(
+    (screen.getByRole("spinbutton", { name: "Количество" }) as HTMLInputElement)
+      .value,
+  ).toBe("3");
+  expect(
+    (screen.getByLabelText("Адрес доставки") as HTMLInputElement).value,
+  ).toBe("Another window's address");
+  expect(
+    screen
+      .getByRole("checkbox", { name: "Сборка" })
+      .getAttribute("aria-checked"),
+  ).toBe("false");
+  await settleDebounce();
+  expect(mockMutation).toHaveBeenCalledTimes(1);
+});
+
+it("shares an automatic price save between mounted page and drawer editors", async () => {
+  const pending = deferred<IEcommerceCartSelectionResult>();
+  mockMutation.mockImplementationOnce(() => pending.promise);
+  const onPageState = jest.fn();
+  const onDrawerState = jest.fn();
+  const initial = { ...props, line: { ...line, quoteVersion: "old-terms" } };
+  const editors = (current: any) => (
+    <>
+      <Selection {...current} onSelectionStateChange={onPageState} />
+      <Selection {...current} onSelectionStateChange={onDrawerState} />
+    </>
+  );
+  const view = render(editors(initial));
+  await waitFor(() => expect(mockMutation).toHaveBeenCalledTimes(1));
+  const selected = mockMutation.mock.calls[0][0].data.selections[0];
+  const result = mockResult([selected]);
+  view.rerender(editors(savedSnapshot(initial, selected, result)));
+  await act(async () => pending.resolve(result));
+  await waitFor(() =>
+    expect(onPageState).toHaveBeenLastCalledWith("line", false),
+  );
+  expect(onDrawerState).toHaveBeenLastCalledWith("line", false);
+  await settleDebounce();
+  expect(mockMutation).toHaveBeenCalledTimes(1);
+});
+
+it("preserves a manual edit made while automatic conflict recovery is reading another window's selection", async () => {
+  const refetch = deferred<void>();
+  mockInvalidate.mockImplementationOnce(() => refetch.promise);
+  mockMutation
+    .mockRejectedValueOnce(new Error("Cart selection changed"))
+    .mockRejectedValueOnce(new Error("Cart selection changed"));
+  const initial = { ...props, line: { ...line, quoteVersion: "old-terms" } };
+  const view = render(<Selection {...initial} />);
+  await waitFor(() => expect(mockInvalidate).toHaveBeenCalledTimes(1));
+  fireEvent.change(screen.getByRole("spinbutton", { name: "Количество" }), {
+    target: { value: "4" },
+  });
+  const selected = {
+    offerId: "offer-a",
+    currencyId: "rub",
+    quantity: 3,
+    destination: line.destination,
+    services: [
+      { offerId: "delivery-a", quantity: 1 },
+      { offerId: "assembly-a", quantity: 1 },
+    ],
+  };
+  const snapshot = savedSnapshot(
+    initial,
+    selected,
+    mockResult([selected], "2026-11-17T00:00:30.000Z"),
+  );
+  view.rerender(<Selection {...snapshot} />);
+  await act(async () => refetch.resolve());
+  expect(
+    await screen.findByText(/Позиция изменилась в другом окне/),
+  ).toBeTruthy();
+  expect(
+    (screen.getByRole("spinbutton", { name: "Количество" }) as HTMLInputElement)
+      .value,
+  ).toBe("4");
+  expect(mockMutation).toHaveBeenCalledTimes(2);
+  expect(mockMutation.mock.calls[1][0].data.selections[0].quantity).toBe(4);
+  await settleDebounce();
+  expect(mockMutation).toHaveBeenCalledTimes(2);
+  mockPublish = (request, result) =>
+    view.rerender(
+      <Selection
+        {...savedSnapshot(snapshot, request.data.selections[0], result)}
+      />,
+    );
+  fireEvent.click(screen.getByRole("button", { name: "Повторить сохранение" }));
+  await waitFor(() => expect(mockMutation).toHaveBeenCalledTimes(3));
+  expect(mockMutation.mock.calls[2][0].data).toEqual(
+    expect.objectContaining({
+      expectedSelectionUpdatedAt: "2026-11-17T00:00:30.000Z",
+      selections: [expect.objectContaining({ quantity: 4 })],
+    }),
+  );
+});
 
 it("keeps checkout blocked after a successful write until the authoritative list matches and retries only the cart refresh", async () => {
   const onSelectionStateChange = jest.fn();
@@ -1272,7 +1573,7 @@ it("keeps checkout blocked after a successful write until the authoritative list
   expect(onSelectionStateChange).toHaveBeenLastCalledWith("line", true);
   expect(mockMutation).toHaveBeenCalledTimes(1);
   fireEvent.click(screen.getByRole("button", { name: "Обновить корзину" }));
-  await waitFor(() => expect(mockInvalidate).toHaveBeenCalledTimes(2));
+  await waitFor(() => expect(mockInvalidate).toHaveBeenCalledTimes(3));
   expect(mockInvalidate).toHaveBeenLastCalledWith(
     { queryKey: ["/api/rbac/subjects/subject/ecommerce-module/orders"] },
     { throwOnError: true },
@@ -1525,6 +1826,7 @@ it("ignores a legacy pickup point while changing the selected store and blocks s
       { offerId: "assembly-a", quantity: 1 },
     ],
   };
+  savedLine.quoteVersion = mockQuote("a", selected).version;
   mockMutation.mockImplementation(async ({ data }) => {
     const result = mockResult(data.selections);
     const selection = data.selections[0];
@@ -2180,6 +2482,7 @@ it("uses authenticated renewal previews without re-adding a paid first-period fu
   };
   renderSelection({
     ...props,
+    line: { ...line, quoteVersion: renewalQuote(selection).version },
     ecommerceModuleOrder: {
       id: "order",
       subscriptionSourceOrderId: "paid-source",

@@ -5,8 +5,8 @@ import { api as identityApi } from "@sps/rbac/models/identity/sdk/server";
 import { api as subjectsToIdentitiesApi } from "@sps/rbac/relations/subjects-to-identities/sdk/server";
 import { api as permissionApi } from "@sps/rbac/models/permission/sdk/server";
 import { api as roleApi } from "@sps/rbac/models/role/sdk/server";
+import { api as productOwnersApi } from "@sps/rbac/relations/subjects-to-ecommerce-module-products/sdk/server";
 import { api as subjectsToRolesApi } from "@sps/rbac/relations/subjects-to-roles/sdk/server";
-import { api as rolesToPermissionsApi } from "@sps/rbac/relations/roles-to-permissions/sdk/server";
 import { api as storeApi } from "@sps/ecommerce/models/store/sdk/server";
 import { api as productApi } from "@sps/ecommerce/models/product/sdk/server";
 import { api as offerApi } from "@sps/ecommerce/relations/stores-to-products/sdk/server";
@@ -56,13 +56,11 @@ async function create(
   const entity =
     api === storeApi
       ? "stores"
-      : api === productApi
-        ? "products"
-        : api === offerApi
-          ? "stores-to-products"
-          : api === linksApi
-            ? "offers-to-offers"
-            : undefined;
+      : api === offerApi
+        ? "stores-to-products"
+        : api === linksApi
+          ? "offers-to-offers"
+          : undefined;
   const record =
     subjectId && entity
       ? await subjectApi.ecommerceModuleCatalogMutation({
@@ -942,8 +940,8 @@ it("quotes the same contractor services for guests and buyers when the retail st
   );
 });
 
-it("requires Subject mutations for an explicitly granted admin and retains held-stock checks", async () => {
-  const admin = await actor("catalogue-raw-admin");
+async function adminActor(name: string) {
+  const admin = await actor(name);
   const existing = await roleApi.find({
     params: {
       filters: { and: [{ column: "slug", method: "eq", value: "admin" }] },
@@ -954,6 +952,87 @@ it("requires Subject mutations for an explicitly granted admin and retains held-
     existing?.[0] ??
     (await create(roleApi, { slug: "admin", title: "Administrator" }));
   await create(subjectsToRolesApi, { subjectId: admin.id, roleId: role.id });
+  return admin;
+}
+
+it("allows direct Product CRUD for admin, denies a buyer and creates no owner or offer", async () => {
+  const admin = await adminActor("catalogue-raw-admin");
+  const buyer = await actor("catalogue-raw-buyer");
+  const slug = `issue414-direct-product-${suffix}`;
+  await expect(
+    productApi.create({ data: { slug }, options: buyer.options }),
+  ).rejects.toThrow("Permission error");
+  const product = await productApi.create({
+    data: { slug },
+    options: admin.options,
+  });
+  cleanup.unshift(async () => {
+    const products = await productApi.find({
+      params: {
+        filters: { and: [{ column: "id", method: "eq", value: product.id }] },
+      },
+      options: operator(),
+    });
+    if (products?.length) {
+      await productApi.delete({ id: product.id, options: operator() });
+    }
+  });
+  const ownerFilter = {
+    column: "ecommerceModuleProductId",
+    method: "eq",
+    value: product.id,
+  } as const;
+  const productFilter = {
+    column: "productId",
+    method: "eq",
+    value: product.id,
+  } as const;
+  expect(
+    await productOwnersApi.find({
+      params: { filters: { and: [ownerFilter] } },
+      options: operator(),
+    }),
+  ).toEqual([]);
+  expect(
+    await offerApi.find({
+      params: { filters: { and: [productFilter] } },
+      options: operator(),
+    }),
+  ).toEqual([]);
+  const ownership = {
+    subjectId: buyer.id,
+    ecommerceModuleProductId: product.id,
+    variant: "owner",
+  };
+  await expect(
+    productOwnersApi.create({ data: ownership, options: buyer.options }),
+  ).rejects.toThrow("Permission error");
+  const grant = await productOwnersApi.create({
+    data: ownership,
+    options: admin.options,
+  });
+  expect(grant).toMatchObject(ownership);
+  await expect(
+    productApi.update({
+      id: product.id,
+      data: { adminTitle: "Buyer" },
+      options: buyer.options,
+    }),
+  ).rejects.toThrow("Permission error");
+  const updated = await productApi.update({
+    id: product.id,
+    data: { adminTitle: "Admin" },
+    options: admin.options,
+  });
+  expect(updated.adminTitle).toBe("Admin");
+  await expect(
+    productApi.delete({ id: product.id, options: buyer.options }),
+  ).rejects.toThrow("Permission error");
+  await productApi.delete({ id: product.id, options: admin.options });
+});
+
+it("retains held-stock checks on the scoped seller operation", async () => {
+  const admin = await adminActor("catalogue-stock-admin");
   const store = await create(storeApi, {
     slug: `issue414-raw-admin-${suffix}`,
   });
@@ -1004,26 +1083,6 @@ it("requires Subject mutations for an explicitly granted admin and retains held-
     reservationQuantity: 2,
     reservationStatus: "held",
   });
-  const permission = await create(permissionApi, {
-    type: "HTTP",
-    method: "PATCH",
-    path: `/api/ecommerce/attributes/${stock!.id}`,
-  });
-  await create(rolesToPermissionsApi, {
-    roleId: role.id,
-    permissionId: permission.id,
-  });
-  await expect(
-    attributeApi.update({
-      id: stock!.id,
-      data: { number: "1" },
-      options: admin.options,
-    }),
-  ).rejects.toThrow("This operation requires the operator credential");
-  expect(
-    (await attributeApi.findById({ id: stock!.id, options: operator() }))
-      ?.number,
-  ).toBe("3");
   const mutate = (number: string) =>
     subjectApi.ecommerceModuleCatalogMutation({
       id: admin.id,

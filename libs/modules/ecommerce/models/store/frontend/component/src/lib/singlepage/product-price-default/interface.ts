@@ -13,6 +13,8 @@ export interface IComponentProps extends ISpsComponentBase {
   product: IProduct;
   storeId?: IOffer["storeId"];
   offerId?: IOffer["id"];
+  /** Catalog display quotes one unit and omits checkout validation messages. */
+  readOnly?: boolean;
   quantity?: IOfferQuote["quantity"];
   billingModuleCurrencyId?: IOfferQuote["currencyId"];
   language: string;
@@ -22,7 +24,8 @@ export interface IComponentProps extends ISpsComponentBase {
 
 export interface IComponentPropsExtended extends IComponentProps {
   quote?: IOfferQuote;
+  selectedOffer?: IOffer;
+  storeTitle?: string;
   currencySymbol?: string;
   pending: boolean;
-  selectionRequired: boolean;
 }

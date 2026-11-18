@@ -15,6 +15,7 @@ import { CheckoutForm } from "../../checkout-default/CheckoutForm";
 import { Component as Row } from "./Row";
 import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { OrderComment } from "../../checkout-default/OrderComment";
 import { useIsFetching, useIsMutating } from "@tanstack/react-query";
 import { route } from "@sps/rbac/models/subject/sdk/model";
@@ -292,9 +293,18 @@ function Checkout(props: IComponentPropsExtended) {
             if (!orders.length) {
               checkoutSnapshot.current = { orders, blocked: true };
               return (
-                <p className="px-6 py-12 text-sm text-muted-foreground">
-                  {text.emptyCart}
-                </p>
+                <div className="flex flex-1 flex-col items-center justify-center gap-5 px-6 py-8 text-center">
+                  <Image
+                    src="/images/empty-cart.webp"
+                    alt=""
+                    width={512}
+                    height={512}
+                    className="size-40 max-w-full object-contain mix-blend-multiply sm:size-48 dark:hue-rotate-180 dark:invert dark:mix-blend-screen"
+                  />
+                  <p className="text-base font-medium text-foreground">
+                    {text.emptyCart}
+                  </p>
+                </div>
               );
             }
             // Combine server-calculated amounts from the same authorized snapshot as the rows.

@@ -1,5 +1,4 @@
 "use client";
-import { useCatalogueMutationOptions } from "@sps/rbac/frontend/component/src/lib/admin-v2/catalogue-mutations";
 
 import { memo, useCallback } from "react";
 import { IComponentPropsExtended } from "./interface";
@@ -10,12 +9,7 @@ import { Component as ParentComponent } from "@sps/shared-frontend-components/si
 export const Component = memo(function Component(
   props: IComponentPropsExtended,
 ) {
-  const { mutate: deleteRecord } = api.delete(
-    useCatalogueMutationOptions({
-      entity: "subjects-to-ecommerce-module-stores",
-      method: "DELETE",
-    }),
-  );
+  const { mutate: deleteRecord } = api.delete();
   const onDelete = useCallback(() => {
     if (props.data?.id) deleteRecord({ id: props.data.id });
   }, [deleteRecord, props.data?.id]);

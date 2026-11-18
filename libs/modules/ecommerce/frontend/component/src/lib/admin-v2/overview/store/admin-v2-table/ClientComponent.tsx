@@ -25,7 +25,6 @@ export function Component(props: IComponentProps) {
               isServer={false}
               data={formProps.data}
               variant="admin-v2-form"
-              storeOfferCreate={props.storeOfferCreate}
             />
           );
         }}

@@ -23,7 +23,7 @@ Seller rates such as `dispatch_fee` and `rate_per_km` are Store attributes. An o
 - `default`: store card with attributes and description.
 - `overview-default`: overview card wrapper for store pages.
 - `service`, `delivery`: saved Store classification strings with the default card presentation.
-- `product-price-default`: reads `stores-to-products.find` and `quote`, resolves the currency through its SDK and passes the result to Product `price-default`. Client and server readers share that result contract. The shared record reader cannot express these dependent operations. Supply a loaded `product`, with optional `storeId`, `offerId`, quantity and currency. Multiple eligible offers require a selection.
+- `product-price-default`: reads `stores-to-products.find` and `quote`, resolves the currency through its SDK and passes the result to Product `price-default`. Client and server readers share that result contract. The shared record reader cannot express these dependent operations. Supply a loaded `product`, with optional `storeId`, `offerId`, quantity and currency. Without an explicit offer, the reader uses the earliest eligible Store–Product link by creation time, with the link ID breaking ties. A store page limits that choice to its own offers. Catalog cards display the store name and its quoted price for one unit.
 - `find`: data-fetch wrapper for querying stores.
 - `admin-form`: admin create/edit form for localized fields and metadata.
 - `admin-select-input`: admin select input for choosing a store.

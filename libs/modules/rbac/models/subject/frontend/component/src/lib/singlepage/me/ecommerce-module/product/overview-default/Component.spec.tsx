@@ -14,6 +14,13 @@ import { render } from "@testing-library/react";
 
 const rbacSpy = jest.fn();
 const ecommerceProductSpy = jest.fn();
+const storePriceSpy = jest.fn();
+jest.mock("@sps/ecommerce/models/store/frontend/component", () => ({
+  Component: (props: any) => {
+    storePriceSpy(props);
+    return null;
+  },
+}));
 
 jest.mock("@sps/rbac/models/subject/frontend/component", () => ({
   Component: (props: any) => {
@@ -25,7 +32,12 @@ jest.mock("@sps/rbac/models/subject/frontend/component", () => ({
 jest.mock("@sps/ecommerce/models/product/frontend/component", () => ({
   Component: (props: any) => {
     ecommerceProductSpy(props);
-    return <div>{props.children}</div>;
+    return (
+      <div>
+        {props.priceSlot}
+        {props.children}
+      </div>
+    );
   },
 }));
 
@@ -64,6 +76,14 @@ describe("Given: RBAC ecommerce product overview component", () => {
       }),
     );
 
+    expect(storePriceSpy).toHaveBeenCalledWith(
+      expect.objectContaining({
+        variant: "product-price-default",
+        storeId: "store-1",
+        product: expect.objectContaining({ id: "product-1" }),
+        readOnly: true,
+      }),
+    );
     expect(ecommerceProductSpy).toHaveBeenCalledWith(
       expect.objectContaining({
         variant: "overview-default",

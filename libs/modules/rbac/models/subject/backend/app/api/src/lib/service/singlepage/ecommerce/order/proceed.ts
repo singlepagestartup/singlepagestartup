@@ -801,13 +801,39 @@ export class Service {
         },
       },
     });
-    const freeIds = [...new Set(lines.map((line) => line.orderId))];
+    let freeIds = [...new Set(lines.map((line) => line.orderId))];
+    if (freeIds.length > 1) {
+      const storeLinks = await this.ecommerceModule.storesToOrders.find({
+        params: {
+          filters: {
+            and: [{ column: "orderId", method: "inArray", value: freeIds }],
+          },
+        },
+      });
+      const issuer = storeLinks.find((link) => link.orderId === props.order.id);
+      if (issuer) {
+        const linkedOrders = new Set(storeLinks.map((link) => link.orderId));
+        const sameStore = new Set(
+          storeLinks
+            .filter((link) => link.storeId === issuer.storeId)
+            .map((link) => link.orderId),
+        );
+        freeIds = freeIds.filter(
+          (id) => sameStore.has(id) || !linkedOrders.has(id),
+        );
+      }
+    }
     const orders = await this.ecommerceModule.order.find({
       params: {
         filters: { and: [{ column: "id", method: "inArray", value: freeIds }] },
       },
     });
-    const candidates = orders.filter((order) => freeIds.includes(order.id));
+    const candidates = orders.filter(
+      (order) =>
+        freeIds.includes(order.id) &&
+        (props.order.variant !== REGISTRATION_GRANT_VARIANT ||
+          order.variant === REGISTRATION_GRANT_VARIANT),
+    );
     if (
       candidates.some(
         (order) =>

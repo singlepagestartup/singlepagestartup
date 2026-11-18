@@ -526,6 +526,22 @@ describe("seller catalogue ownership and atomic writes", () => {
   });
 });
 
+test("a signed-in buyer cannot create a standalone Product through the seller mutation", async () => {
+  const { service, tables } = setup();
+  const count = tables.products.length;
+  await expect(
+    service.mutation({
+      subjectId: randomUUID(),
+      data: {
+        entity: "products",
+        method: "POST",
+        data: { slug: "standalone" },
+      },
+    }),
+  ).rejects.toThrow("Create a seller product through a store offer");
+  expect(tables.products).toHaveLength(count);
+});
+
 test("Subject mutations create caller ownership and reject foreign edits and ownership grants", async () => {
   const { service, tables } = setup();
   const store = await service.mutation({

@@ -1,6 +1,12 @@
 export type * from "./quote";
 export type * from "./address-suggestions";
 export {
+  getEligibleRetailOffers,
+  selectRetailOffer,
+  type IEligibleRetailOffersInput,
+  type ISelectRetailOfferInput,
+} from "./retail-offer";
+export {
   type ISelectSchema as IModel,
   type IInsertSchema,
   offerSettingsSchema,

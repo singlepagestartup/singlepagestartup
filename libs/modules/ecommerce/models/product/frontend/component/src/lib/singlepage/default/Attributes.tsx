@@ -77,6 +77,9 @@ export function Component(props: IProductAttributesProps) {
                                 .filter(
                                   (key) =>
                                     key.id === link.attributeKeyId &&
+                                    !(
+                                      props.hidePrice && key.type === "price"
+                                    ) &&
                                     !PRODUCT_TECHNICAL_ATTRIBUTE_SLUGS.includes(
                                       key.slug,
                                     ),

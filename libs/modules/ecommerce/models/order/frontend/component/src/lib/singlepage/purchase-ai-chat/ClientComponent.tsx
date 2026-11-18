@@ -1,10 +1,14 @@
 "use client";
 import { internationalization } from "@sps/shared-configuration";
 import { memo } from "react";
+import Link from "next/link";
 import { Component as OrdersToFileStorageModuleFiles } from "@sps/ecommerce/relations/orders-to-file-storage-module-files/frontend/component";
 import { Component as FileStorageModuleFile } from "@sps/file-storage/models/file/frontend/component";
 import { Icon } from "@sps/ui-adapter";
-import { NEXT_PUBLIC_API_SERVICE_URL } from "@sps/shared-utils";
+import {
+  NEXT_PUBLIC_API_SERVICE_URL,
+  saveLanguageContext,
+} from "@sps/shared-utils";
 import type { IComponentPropsExtended, IReceiptProps } from "./interface";
 
 const statuses: Record<string, { ru: string; en: string; color: string }> = {
@@ -117,6 +121,9 @@ export const Component = memo(function Component(
   const primaryCharge = savedCharges.find(
     (snapshot) => snapshot.charge.role === "product",
   );
+  const title =
+    primaryCharge?.charge.title ?? (ru ? "Покупка услуги" : "Service purchase");
+  const productSlug = props.purchaseDetails?.primaryProductSlug;
   const invoiceShares = props.purchaseDetails?.invoiceShares ?? [];
   const legacyShared = invoiceShares.some(
     (share) => share.amount === null && !share.showSharedTotal,
@@ -174,8 +181,20 @@ export const Component = memo(function Component(
     >
       <div>
         <p className="text-sm font-semibold">
-          {primaryCharge?.charge.title ??
-            (ru ? "Покупка услуги" : "Service purchase")}{" "}
+          {productSlug ? (
+            <Link
+              href={saveLanguageContext(
+                `/ecommerce/products/${encodeURIComponent(productSlug)}`,
+                language,
+                internationalization.languages,
+              )}
+              className="rounded underline decoration-muted-foreground/50 underline-offset-2 hover:decoration-current focus-visible:outline-2 focus-visible:outline-offset-2"
+            >
+              {title}
+            </Link>
+          ) : (
+            title
+          )}{" "}
           <span
             className={`ml-2 inline-flex rounded-full px-2 py-1 text-xs font-medium ${status?.color ?? "bg-muted text-muted-foreground"}`}
           >

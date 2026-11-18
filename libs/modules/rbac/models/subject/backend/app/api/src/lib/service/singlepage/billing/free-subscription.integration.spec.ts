@@ -631,6 +631,64 @@ it("uses the database associations to issue a subscription and a one-off Product
   expect((await f.balance()).amount).toBe("3175");
 });
 
+it("settles a separate registration Order and credits for each Store issuing the same Product", async () => {
+  const f = await fixture();
+  const first = await f.free.execute({ id: f.subject.id });
+  const store = await f.services.store.create({
+    data: { slug: `issue415-issuer-${randomUUID()}` },
+  });
+  await f.services.offers.create({
+    data: {
+      productId: f.freeProduct.id,
+      storeId: store.id,
+      sku: `issue415-gift-${randomUUID()}`,
+      settings: { initialGrant: true },
+    },
+  });
+  const attempts = await Promise.all([
+    f.free.execute({ id: f.subject.id }),
+    f.free.execute({ id: f.subject.id }),
+  ]);
+  const invoices = [first, ...attempts].flatMap(
+    (result) => result?.billingModule.invoices ?? [],
+  );
+  expect(invoices).toHaveLength(2);
+  expect(new Set(invoices.map((invoice) => invoice.id)).size).toBe(2);
+  const owners = await f.services.owners.find({
+    params: {
+      filters: {
+        and: [{ column: "subjectId", method: "eq", value: f.subject.id }],
+      },
+    },
+  });
+  const orderIds = owners.map(
+    (owner: { ecommerceModuleOrderId: string }) => owner.ecommerceModuleOrderId,
+  );
+  const filters = {
+    params: {
+      filters: {
+        and: [{ column: "orderId", method: "inArray", value: orderIds }],
+      },
+    },
+  };
+  const issuers = await f.services.stores.find(filters);
+  const paymentLinks = await f.services.orderIntents.find(filters);
+  expect(new Set(orderIds).size).toBe(2);
+  expect(
+    new Set(issuers.map((link: { storeId: string }) => link.storeId)).size,
+  ).toBe(2);
+  expect(
+    new Set(
+      paymentLinks.map(
+        (link: { billingModulePaymentIntentId: string }) =>
+          link.billingModulePaymentIntentId,
+      ),
+    ).size,
+  ).toBe(2);
+  expect(await f.free.execute({ id: f.subject.id })).toBeNull();
+  expect((await f.balance()).amount).toBe("6000");
+});
+
 it("permits registration without any configured grants", async () => {
   const f = await fixture();
   const offers = await f.services.offers.find({

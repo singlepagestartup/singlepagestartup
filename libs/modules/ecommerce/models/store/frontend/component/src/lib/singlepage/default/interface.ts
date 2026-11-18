@@ -7,17 +7,14 @@ import {
 
 export const variant = "default" as const;
 
-export interface IComponentProps extends IParentComponentProps<
-  IModel,
-  typeof variant
-> {
+export interface IComponentProps<
+  TVariant extends string = typeof variant,
+> extends IParentComponentProps<IModel, TVariant> {
   language: string;
-  /** Classification marker used by Store card variants sharing this view. */
-  dataVariant?: IModel["variant"];
 }
 
 export interface IComponentPropsExtended extends IParentComponentPropsExtended<
   IModel,
-  typeof variant,
-  IComponentProps
+  string,
+  IComponentProps<string>
 > {}

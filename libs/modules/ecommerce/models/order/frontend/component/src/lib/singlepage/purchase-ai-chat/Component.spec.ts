@@ -108,6 +108,44 @@ describe("Paid purchase details", () => {
     expect(html).not.toContain("Чек");
     expect(html).not.toContain("href=");
   });
+  it.each(["ru", "en"])(
+    "links the saved product title to its current %s page",
+    (language) => {
+      const html = renderToStaticMarkup(
+        createElement(Component, {
+          isServer: false,
+          variant: "purchase-ai-chat",
+          dataSource: "props",
+          language,
+          data: {
+            id: "purchase",
+            status: "paid",
+            createdAt: "2026-11-17",
+          } as any,
+          purchaseDetails: {
+            totals: [],
+            receipts: [],
+            primaryProductSlug: "birch-chair",
+            charges: [
+              {
+                charge: { role: "delivery", title: "Доставка" },
+                destination: {},
+              },
+              {
+                charge: { role: "product", title: "Стул «Берёза»" },
+                destination: {},
+              },
+            ] as any,
+          },
+        }),
+      );
+      expect(html).toMatch(
+        new RegExp(
+          `<a [^>]*href="/${language}/ecommerce/products/birch-chair"[^>]*>Стул «Берёза»</a>`,
+        ),
+      );
+    },
+  );
   it("renders the period and the next payment supplied by the buyer's Subject", () => {
     const html = renderToStaticMarkup(
       createElement(Component, {

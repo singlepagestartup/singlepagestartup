@@ -244,6 +244,12 @@ export const catalogMutationSchema = z
   })
   .strict()
   .superRefine((input, context) => {
+    if (input.entity === "products" && input.method === "POST") {
+      context.addIssue({
+        code: "custom",
+        message: "Create a seller product through a store offer",
+      });
+    }
     if ((input.method === "POST") === Boolean(input.recordId)) {
       context.addIssue({
         code: "custom",

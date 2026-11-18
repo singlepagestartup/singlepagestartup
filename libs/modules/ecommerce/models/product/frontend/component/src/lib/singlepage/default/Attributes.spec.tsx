@@ -4,6 +4,7 @@ import { render, screen } from "@testing-library/react";
 const attributeKeys = [
   {
     id: "formula",
+    type: "default",
     slug: "price_formula",
     field: "string",
     title: { en: "Formula" },
@@ -109,5 +110,35 @@ it("counts only buyer attributes when collapsing the remaining characteristics",
   } finally {
     attributeKeys.splice(3);
     attributes.splice(3);
+  }
+});
+
+it("shows the product price attribute only when there is no store price slot", () => {
+  attributeKeys.push({
+    id: "legacy",
+    slug: "rub",
+    type: "price",
+    field: "string",
+    title: { ru: "Цена" },
+  });
+  attributes.push({
+    id: "legacy",
+    attributeId: "legacy",
+    string: { ru: "99 ₽" },
+  });
+  try {
+    const props = {
+      data: { id: "product" } as any,
+      isServer: false,
+      language: "ru",
+    };
+    const view = render(<Component {...props} />);
+    expect(screen.getByText("99 ₽")).toBeTruthy();
+    view.rerender(<Component {...props} hidePrice />);
+    expect(screen.queryByText("99 ₽")).toBeNull();
+    expect(screen.getByText("Цвет")).toBeTruthy();
+  } finally {
+    attributeKeys.pop();
+    attributes.pop();
   }
 });

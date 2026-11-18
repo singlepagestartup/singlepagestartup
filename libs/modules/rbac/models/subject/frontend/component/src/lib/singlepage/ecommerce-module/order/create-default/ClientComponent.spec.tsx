@@ -11,7 +11,10 @@ import {
 const mockCreate = jest.fn();
 const mockRefetch = jest.fn();
 const mockQuoteRead = jest.fn();
+const mockCardPriceRead = jest.fn();
 let mockOffers: any[];
+let mockCurrencyIds: string[] = [];
+let mockPrices: Record<string, string> = {};
 let mockLoading = false;
 let mockIssues: any[] = [];
 let mockAmount = "5000";
@@ -39,13 +42,15 @@ jest.mock("@sps/ecommerce/relations/stores-to-products/sdk/client", () => ({
     }),
     quote: ({ data }: any) => {
       mockQuoteRead(data);
+      const amount =
+        mockPrices[`${data.offerId}:${data.currencyId}`] ?? mockAmount;
       return {
         data: data.offerId
           ? {
               ...data,
               currencyId: mockQuotedCurrency ?? data.currencyId,
-              amount: mockAmount,
-              currencyIds: ["rub"],
+              amount,
+              currencyIds: mockCurrencyIds,
               availableQuantity: 5,
               serviceOptions: mockServices,
               selectedServices: mockSelectedServices?.(data),
@@ -81,7 +86,7 @@ jest.mock("@sps/ecommerce/relations/stores-to-products/sdk/client", () => ({
                   offerId: data.offerId,
                   role: "product",
                   quantity: data.quantity,
-                  amount: mockAmount,
+                  amount,
                   unitAmount: mockUnitAmount,
                   inputs:
                     mockUnitInput === undefined
@@ -115,7 +120,25 @@ jest.mock("@sps/ecommerce/models/store/sdk/client", () => ({
   },
 }));
 jest.mock("@sps/billing/models/currency/sdk/client", () => ({
-  api: { find: () => ({ data: [{ id: "rub", slug: "rub", symbol: "₽" }] }) },
+  api: {
+    find: () => ({
+      data: mockCurrencyIds.map((id) => ({
+        id,
+        slug: id,
+        symbol: id === "eur" ? "€" : "₽",
+      })),
+    }),
+  },
+}));
+jest.mock("@sps/ecommerce/models/store/frontend/component", () => ({
+  Component: (props: any) => {
+    mockCardPriceRead(props);
+    return (
+      <output aria-label="Цена карточки">
+        {mockPrices[`${props.offerId}:${props.billingModuleCurrencyId}`]}
+      </output>
+    );
+  },
 }));
 jest.mock("@sps/shared-frontend-client-utils", () => ({
   ...jest.requireActual("@sps/shared-frontend-client-utils"),
@@ -174,6 +197,7 @@ jest.mock("../list/checkout-default/DeliveryAddress", () => ({
   ),
 }));
 import { Component } from "./ClientComponent";
+import { OfferPrice, OfferPriceProvider } from "./OfferPrice";
 const props: any = {
   data: { id: "subject" },
   language: "ru",
@@ -191,6 +215,9 @@ beforeEach(() => {
   mockCreate.mockReset().mockResolvedValue({});
   mockRefetch.mockReset().mockResolvedValue({});
   mockQuoteRead.mockClear();
+  mockCardPriceRead.mockClear();
+  mockCurrencyIds = ["rub"];
+  mockPrices = {};
   mockOffers = [
     {
       id: "offer-a",
@@ -198,6 +225,7 @@ beforeEach(() => {
       productId: "product",
       storeId: "store-a",
       sku: "A",
+      createdAt: "2024-06-02T00:00:00.000Z",
     },
   ];
   mockLoading = false;
@@ -232,20 +260,72 @@ it("submits the exact unique retail offer with a supported currency", async () =
   );
   expect(await screen.findByText("Товар в корзине.")).toBeTruthy();
 });
-it("requires a store choice when two offers sell the same Product", async () => {
+it("selects the earliest retail store and its server price when several stores sell the Product", async () => {
   mockOffers.push({
     id: "offer-b",
     variant: "default",
     productId: "product",
     storeId: "store-b",
     sku: "B",
+    createdAt: "2024-06-01T00:00:00.000Z",
   });
-  render(<Component {...props} />);
+  mockUnitAmount = "4123.45";
+  const slot = jest.fn((_configuration: any, _actions: any) => null);
+  render(<Component {...props} checkoutSlot={slot} />);
+  expect((screen.getByLabelText("Магазин") as HTMLSelectElement).value).toBe(
+    "offer-b",
+  );
+  await waitFor(() =>
+    expect(screen.getByLabelText("Цена за 1 шт.").textContent).toMatch(
+      /4\s123,45 ₽/,
+    ),
+  );
+  expect(mockQuoteRead.mock.calls.at(-1)![0].offerId).toBe("offer-b");
+  expect(slot.mock.calls.at(-1)![0]).toMatchObject({
+    storeId: "store-b",
+    selection: { offerId: "offer-b" },
+  });
+  fireEvent.click(screen.getByRole("button", { name: "Добавить в корзину" }));
+  await waitFor(() =>
+    expect(mockCreate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          offerId: "offer-b",
+          storeId: "store-b",
+        }),
+      }),
+    ),
+  );
+});
+it("keeps an explicit store choice when offers refetch or an earlier offer appears", async () => {
+  mockOffers.push({
+    id: "offer-b",
+    variant: "default",
+    productId: "product",
+    storeId: "store-b",
+    sku: "B",
+    createdAt: "2024-06-03T00:00:00.000Z",
+  });
+  const view = render(<Component {...props} />);
   const button = screen.getByRole("button", { name: "Добавить в корзину" });
-  expect(button.hasAttribute("disabled")).toBe(true);
+  expect((screen.getByLabelText("Магазин") as HTMLSelectElement).value).toBe(
+    "offer-a",
+  );
   fireEvent.change(screen.getByLabelText("Магазин"), {
     target: { value: "offer-b" },
   });
+  mockOffers = [
+    ...mockOffers.toReversed(),
+    {
+      ...mockOffers[0],
+      id: "offer-earlier",
+      createdAt: "2024-01-01T00:00:00.000Z",
+    },
+  ];
+  view.rerender(<Component {...props} />);
+  expect((screen.getByLabelText("Магазин") as HTMLSelectElement).value).toBe(
+    "offer-b",
+  );
   await waitFor(() => expect(button.hasAttribute("disabled")).toBe(false));
   fireEvent.click(button);
   await waitFor(() =>
@@ -258,6 +338,124 @@ it("requires a store choice when two offers sell the same Product", async () => 
       }),
     ),
   );
+});
+it("updates the card and form price together after a manual store or currency choice", async () => {
+  mockCurrencyIds = ["rub", "eur"];
+  mockPrices = {
+    "offer-a:rub": "5000",
+    "offer-b:rub": "8100",
+    "offer-b:eur": "7200",
+  };
+  mockOffers.push({
+    ...mockOffers[0],
+    id: "offer-b",
+    storeId: "store-b",
+    createdAt: "2024-06-03T00:00:00.000Z",
+  });
+  render(
+    <OfferPriceProvider>
+      <OfferPrice product={props.ecommerceModuleProduct} language="ru">
+        <span>Server-rendered price</span>
+      </OfferPrice>
+      <Component {...props} />
+    </OfferPriceProvider>,
+  );
+  expect(screen.getByText("Server-rendered price")).toBeTruthy();
+  expect(mockCardPriceRead).not.toHaveBeenCalled();
+  fireEvent.change(screen.getByLabelText("Магазин"), {
+    target: { value: "offer-b" },
+  });
+  await waitFor(() =>
+    expect(screen.getByLabelText("Цена карточки").textContent).toBe("8100"),
+  );
+  expect(screen.getByLabelText("Цена за 1 шт.").textContent).toMatch(
+    /8\s100 ₽/,
+  );
+  expect(mockCardPriceRead.mock.calls.at(-1)![0]).toMatchObject({
+    isServer: false,
+    variant: "product-price-default",
+    product: props.ecommerceModuleProduct,
+    storeId: "store-b",
+    offerId: "offer-b",
+    billingModuleCurrencyId: "rub",
+    language: "ru",
+    readOnly: true,
+  });
+  expect(screen.queryByText("Server-rendered price")).toBeNull();
+  fireEvent.change(screen.getByLabelText("Валюта"), {
+    target: { value: "eur" },
+  });
+  await waitFor(() =>
+    expect(screen.getByLabelText("Цена карточки").textContent).toBe("7200"),
+  );
+  expect(screen.getByLabelText("Цена за 1 шт.").textContent).toMatch(
+    /7\s200 €/,
+  );
+  expect(mockCardPriceRead.mock.calls.at(-1)![0]).toMatchObject({
+    offerId: "offer-b",
+    billingModuleCurrencyId: "eur",
+  });
+  mockCardPriceRead.mockClear();
+  fireEvent.change(screen.getByLabelText("Количество"), {
+    target: { value: "2" },
+  });
+  await waitFor(() =>
+    expect(mockQuoteRead.mock.calls.at(-1)![0].quantity).toBe(2),
+  );
+  expect(mockCardPriceRead).not.toHaveBeenCalled();
+});
+it("restores the original card price when a manually configured form hides or unmounts", async () => {
+  mockCurrencyIds = ["rub", "eur"];
+  mockPrices = { "offer-a:eur": "4000" };
+  const purchase = (visible: boolean, mounted = true) => (
+    <OfferPriceProvider>
+      <OfferPrice product={props.ecommerceModuleProduct} language="ru">
+        <span>Server-rendered price</span>
+      </OfferPrice>
+      {mounted && <Component {...props} hideConfiguration={!visible} />}
+    </OfferPriceProvider>
+  );
+  const view = render(purchase(true));
+  fireEvent.change(screen.getByLabelText("Валюта"), {
+    target: { value: "eur" },
+  });
+  expect(screen.getByLabelText("Цена карточки").textContent).toBe("4000");
+  view.rerender(purchase(false));
+  expect(screen.getByText("Server-rendered price")).toBeTruthy();
+  expect(screen.queryByLabelText("Цена карточки")).toBeNull();
+  view.rerender(purchase(true));
+  expect(screen.getByLabelText("Цена карточки").textContent).toBe("4000");
+  view.rerender(purchase(true, false));
+  await waitFor(() =>
+    expect(screen.getByText("Server-rendered price")).toBeTruthy(),
+  );
+  expect(screen.queryByLabelText("Цена карточки")).toBeNull();
+});
+it("isolates the card price between separate product providers", () => {
+  mockCurrencyIds = ["rub", "eur"];
+  mockPrices = { "offer-a:eur": "4000" };
+  render(
+    <>
+      {["First card", "Second card"].map((name) => (
+        <section aria-label={name} key={name}>
+          <OfferPriceProvider>
+            <OfferPrice product={props.ecommerceModuleProduct} language="ru">
+              <span>Server-rendered price</span>
+            </OfferPrice>
+            <Component {...props} />
+          </OfferPriceProvider>
+        </section>
+      ))}
+    </>,
+  );
+  const first = within(screen.getByRole("region", { name: "First card" }));
+  const second = within(screen.getByRole("region", { name: "Second card" }));
+  fireEvent.change(first.getByLabelText("Валюта"), {
+    target: { value: "eur" },
+  });
+  expect(first.getByLabelText("Цена карточки").textContent).toBe("4000");
+  expect(second.getByText("Server-rendered price")).toBeTruthy();
+  expect(second.queryByLabelText("Цена карточки")).toBeNull();
 });
 it("blocks stock and configuration errors locally", () => {
   mockIssues = [

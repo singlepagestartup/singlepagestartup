@@ -681,66 +681,67 @@ describe("roleless Chat access", () => {
   );
 });
 
-describe("Subject-only catalogue mutations", () => {
+describe("catalogue write permissions", () => {
   const id = "00000000-0000-4000-8000-000000000414";
-  it.each(["explicit", "wildcard"])(
-    "refuses raw catalogue and ownership mutations even with an %s admin grant",
-    async (grant) => {
-      const permissionService = createPermissionService(
-        grant === "wildcard"
-          ? {
-              rootPermission: {
-                id: "catalogue-admin-root",
-                method: "*",
-                path: "*",
-              },
-            }
-          : { permission: { id: "catalogue-admin-explicit" } },
-      );
+  it.each([
+    ["explicit", "/api/ecommerce/stores", "admin", "admin", true],
+    ["wildcard", "/api/ecommerce/products", "admin", "admin", true],
+    ["unrelated role", "/api/ecommerce/attributes", "buyer", "admin", false],
+    [
+      "role-less permission",
+      "/api/ecommerce/stores-to-products",
+      "buyer",
+      undefined,
+      false,
+    ],
+    [
+      "anonymous",
+      "/api/rbac/subjects-to-ecommerce-module-products",
+      undefined,
+      "admin",
+      false,
+    ],
+  ] as const)(
+    "checks the %s grant for direct catalogue writes",
+    async (grant, resource, actorRole, permissionRole, allowed) => {
+      const actor = `catalogue-${grant}`;
+      (verify as jest.Mock).mockResolvedValue({ subject: { id: actor } });
+      const permission = { id: `grant-${actor}`, path: resource };
       const service = new Service(
-        permissionService as any,
+        createPermissionService(
+          grant === "wildcard"
+            ? { rootPermission: { ...permission, method: "*", path: "*" } }
+            : { permission },
+        ) as any,
         {
           find: jest
             .fn()
-            .mockResolvedValue([{ roleId: "catalogue-role-admin" }]),
+            .mockResolvedValue(
+              permissionRole ? [{ roleId: permissionRole }] : [],
+            ),
         } as any,
         {
           find: jest
             .fn()
-            .mockResolvedValue([{ roleId: "catalogue-role-admin" }]),
+            .mockResolvedValue(actorRole ? [{ roleId: actorRole }] : []),
         } as any,
         createSubjectRepository({ tokensValidAfter: null }) as any,
       );
-      for (const resource of [
-        "/api/ecommerce/stores",
-        "/api/ecommerce/products",
-        "/api/ecommerce/attributes",
-        "/api/ecommerce/attribute-keys",
-        "/api/ecommerce/stores-to-products",
-        "/api/ecommerce/offers-to-offers",
-        "/api/ecommerce/stores-to-attributes",
-        "/api/ecommerce/products-to-attributes",
-        "/api/ecommerce/stores-to-products-to-attributes",
-        "/api/ecommerce/attribute-keys-to-attributes",
-        "/api/ecommerce/attributes-to-billing-module-currencies",
-        "/api/rbac/subjects-to-ecommerce-module-stores",
-        "/api/rbac/subjects-to-ecommerce-module-products",
-        "/api/rbac/subjects-to-ecommerce-module-orders",
+      for (const [method, suffix] of [
+        ["POST", ""],
+        ["PATCH", `/${id}`],
+        ["DELETE", `/${id}`],
       ]) {
-        for (const method of ["POST", "PATCH", "PUT", "DELETE"]) {
-          for (const suffix of ["", `/${id}`, "/bulk", "/find-or-create"]) {
-            await expect(
-              service.execute({
-                permission: { type: "HTTP", method, route: resource + suffix },
-                authorization: { value: "catalogue-admin-jwt" },
-              }),
-            ).rejects.toThrow(
-              "This operation requires the operator credential",
-            );
-          }
+        const check = service.execute({
+          permission: { type: "HTTP", method, route: resource + suffix },
+          authorization: { value: actorRole ? `jwt-${actor}` : undefined },
+        });
+        if (allowed) {
+          await expect(check).resolves.toEqual({ ok: true });
+        } else {
+          await expect(check).rejects.toThrow("Permission error.");
         }
       }
-      expect(permissionService.resolveByRoute).not.toHaveBeenCalled();
     },
   );
   it("preserves wildcard admin access to Subject catalogue operations, reads and other modules", async () => {

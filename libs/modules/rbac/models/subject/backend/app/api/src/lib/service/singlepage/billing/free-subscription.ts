@@ -104,10 +104,33 @@ export class Service {
           const previousIds = [
             ...new Set<string>(lines.map((line) => line.orderId)),
           ];
+          const storeLinks = previousIds.length
+            ? await this.dependencies.ecommerceModule.storesToOrders.find({
+                params: {
+                  filters: {
+                    and: [
+                      {
+                        column: "orderId",
+                        method: "inArray",
+                        value: previousIds,
+                      },
+                    ],
+                  },
+                },
+              })
+            : [];
+          const storeOrderIds = new Set(storeLinks.map((link) => link.orderId));
+          const issuingOrderIds = new Set(
+            storeLinks
+              .filter((link) => link.storeId === config.storeId)
+              .map((link) => link.orderId),
+          );
           const matchingOrders = await Promise.all(
-            previousIds.map((id) =>
-              this.dependencies.ecommerceModule.order.findById({ id }),
-            ),
+            previousIds
+              .filter((id) => issuingOrderIds.has(id) || !storeOrderIds.has(id))
+              .map((id) =>
+                this.dependencies.ecommerceModule.order.findById({ id }),
+              ),
           );
           if (matchingOrders.some((order) => !order)) {
             throw new Error(
@@ -143,6 +166,11 @@ export class Service {
             )
           ) {
             for (const order of previous) {
+              if (!storeOrderIds.has(order.id)) {
+                await this.dependencies.ecommerceModule.storesToOrders.create({
+                  data: { orderId: order.id, storeId: config.storeId },
+                });
+              }
               if (order.variant !== REGISTRATION_GRANT_VARIANT) {
                 await this.dependencies.ecommerceModule.order.update({
                   id: order.id,
@@ -228,15 +256,15 @@ export class Service {
     const offers = await new InitialGrantProducts(
       ecommerceModule.storesToProducts,
     ).find();
-    const configurations: IConfiguration[] = [];
-    const productIds = new Set<string>();
+    const configurations = new Map<string, IConfiguration>();
     for (const offer of offers) {
-      if (productIds.has(offer.productId)) {
-        throw new Error(
-          "Configuration error. A registration Product must have exactly one issuing Store offer",
-        );
+      const key = `${offer.productId}:${offer.storeId}`;
+      const configured = configurations.get(key);
+      if (configured) {
+        configured.legacyHistory ||=
+          offer.settings?.initialGrantLegacyHistory === true;
+        continue;
       }
-      productIds.add(offer.productId);
       const [product, store]: [IProduct, unknown] = await Promise.all([
         ecommerceModule.product.findByIdExtended({ id: offer.productId }),
         ecommerceModule.store.findById({ id: offer.storeId }),
@@ -319,14 +347,18 @@ export class Service {
           "Configuration error. Registration requires a Currency and subscriptions require a valid interval",
         );
       }
-      configurations.push({
+      configurations.set(key, {
         productId: product.id,
         storeId: offer.storeId,
         currencyId: currency.id,
         legacyHistory: offer.settings?.initialGrantLegacyHistory === true,
       });
     }
-    return configurations;
+    // Earlier grants can lack a Store link. Give their legacy issuer first
+    // claim, preserving the association creation order within each group.
+    return [...configurations.values()].sort(
+      (left, right) => Number(right.legacyHistory) - Number(left.legacyHistory),
+    );
   }
 
   private async ensureOrderGraph(

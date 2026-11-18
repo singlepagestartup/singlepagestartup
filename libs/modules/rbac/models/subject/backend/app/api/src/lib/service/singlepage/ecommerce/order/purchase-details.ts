@@ -3,6 +3,7 @@ import type {
   IPurchaseDetails,
 } from "@sps/ecommerce/models/order/sdk/model";
 import type { Service as SubjectService } from "../../index";
+import type { IModel as IEcommerceModuleProduct } from "@sps/ecommerce/models/product/sdk/model";
 import type {
   IModel as IPaymentLink,
   IPurchaseSnapshot,
@@ -39,6 +40,32 @@ export class Service {
       subjectId,
       orders.map((order) => order.id),
     );
+    const productIdByOrder = new Map<string, string>();
+    for (const [orderId, payment] of saved) {
+      const product = payment.charges?.find(
+        ({ charge }) => charge.role === "product",
+      );
+      if (product) {
+        productIdByOrder.set(orderId, product.charge.productId);
+      }
+    }
+    const products: Pick<IEcommerceModuleProduct, "id" | "slug">[] =
+      productIdByOrder.size
+        ? await service.ecommerceModule.product.find({
+            params: {
+              filters: {
+                and: [
+                  {
+                    column: "id",
+                    method: "inArray",
+                    value: [...new Set(productIdByOrder.values())],
+                  },
+                ],
+              },
+            },
+          })
+        : [];
+    const slugByProduct = new Map(products.map(({ id, slug }) => [id, slug]));
     const nextBySource = new Map<string, IPurchaseDetails["nextPeriod"]>();
     const periodOrderIds = orders
       .filter((order) => order.subscriptionPeriodInvoiceId)
@@ -181,6 +208,7 @@ export class Service {
     })[] = [];
     for (const order of orders) {
       const payment = saved.get(order.id);
+      const productId = productIdByOrder.get(order.id);
       const totals = payment
         ? { totals: payment.totals, unpriced: [] }
         : await service.ecommerceModule.order.findByIdTotal({ id: order.id });
@@ -190,6 +218,9 @@ export class Service {
       purchases.push({
         ...order,
         purchaseDetails: {
+          primaryProductSlug: productId
+            ? slugByProduct.get(productId)
+            : undefined,
           canRepeatPayment: retryableIds.has(order.id),
           ...(nextBySource.has(order.id)
             ? { nextPeriod: nextBySource.get(order.id) }

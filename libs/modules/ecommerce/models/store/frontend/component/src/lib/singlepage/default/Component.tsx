@@ -28,7 +28,7 @@ export function Component(props: IComponentPropsExtended) {
       data-module="ecommerce"
       data-model="store"
       data-id={props.data?.id || ""}
-      data-variant={props.dataVariant ?? props.variant}
+      data-variant={props.variant}
       href={href}
       className={cn("flex flex-col w-full cursor-pointer", props.className)}
     >

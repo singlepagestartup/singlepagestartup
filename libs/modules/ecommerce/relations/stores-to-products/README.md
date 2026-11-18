@@ -70,11 +70,11 @@ The demo services use the existing store, currency and attribute-key seeds. Thei
 
 ## Registration grants
 
-Set `settings.initialGrant: true` through an administrator's catalogue mutation
-to issue this association's Product from its Store during authentication.
-An installation may configure zero, one or several grants. Each Product must
-have one issuing association; duplicate assignments fail before any grant is
-written. Buyers receive the grant through their Subject during authentication.
+An administrator can set `settings.initialGrant: true` on a Store–Product
+association. During authentication the Subject creates one registration Order
+per marked Store and Product. If two Stores issue the same Product, the buyer
+receives two Orders, each with its own PaymentIntent and Invoice. Multiple
+marked SKUs for the same Product in one Store count as one grant.
 
 Registration uses the Product's zero-price attributes and their Billing
 currencies. Subscriptions require a supported interval. Product top-up
@@ -84,8 +84,8 @@ operation creates no stock reservation or shipping request.
 
 Only an administrator or operator may enable or change this setting, edit a
 configured Product's attributes or change its associations. Hidden offers do not
-issue new grants. A saved registration Order prevents another issuance of the
-same Product even after its association is disabled or moved to another Store.
+issue new grants. A saved registration Order records which Store issued the
+Product. Re-enabling a grant at that Store preserves the original Order.
 `initialGrantLegacyHistory: true` opts an internal Product into recognition of
 its earlier private, zero-price bootstrap orders. Both flags require an
 administrator. The standard Free association includes this migration setting;

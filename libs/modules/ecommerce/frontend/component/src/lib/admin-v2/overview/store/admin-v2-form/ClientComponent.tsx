@@ -16,9 +16,6 @@ export function Component(props: IComponentProps) {
       isServer={false}
       data={props.data}
       variant="admin-v2-form"
-      offerCreate={
-        props.data?.id ? props.storeOfferCreate?.(props.data.id) : undefined
-      }
       storesToAttributes={({ data }) => {
         if (!data) {
           return;

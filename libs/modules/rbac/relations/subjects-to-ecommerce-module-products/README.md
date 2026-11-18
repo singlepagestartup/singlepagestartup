@@ -6,12 +6,11 @@ Links subjects to ecommerce products.
 
 `variant="owner"` identifies the Subject that can edit the shared Product
 description and versioned price formula after the route permission check. Each
-Product has one owner grant; an administrator can edit any Product. The server assigns a new Product to its authenticated creator.
+Product has one owner grant; an administrator can edit any Product. The seller’s Subject operation assigns a new Product to its authenticated creator.
 Creating another store’s offer for the Product does not create an owner grant.
 Existing `default` associations retain their presentation and purchase behavior.
-Human admin forms change ownership through the current Subject catalogue API,
-which requires an administrator. Raw infrastructure changes require the operator
-credential, including when a user holds an administrator role or explicit raw write grant.
+The admin form writes this relation through its own SDK. The API checks the
+caller’s permission for the requested method and relation route.
 
 ## Fields
 

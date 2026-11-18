@@ -51,6 +51,8 @@ contains `offerId`, quantity, `currencyId`, destination and selected service off
 IDs with quantities. Each request accepts one selection and one destination for
 the entire quantity. Previously saved orders remain individually editable. The cart uses
 `save` when a buyer changes a service, store, quantity, currency or destination.
+If the saved quote is out of date, an open cart automatically saves the complete
+selection at the current price. Checkout waits for the updated order total.
 The server quotes that selection, checks `expectedSelectionUpdatedAt` and writes
 the order in one request. The response contains the itemized quotes and the
 updated primary line timestamp for the next edit. An incomplete or unavailable
@@ -1035,8 +1037,8 @@ Subject methods remain effective.
 
 Configure registration grants on Store–Product associations with
 `settings.initialGrant: true`. Each association selects its exact issuing Store
-and Product. Zero, one or several Products may be configured; assigning one
-Product to several issuing offers is a configuration error. Products use their
+and Product. The Subject receives a separate Order, PaymentIntent and Invoice
+for each marked Store issuing the Product. Products use their
 zero-price attributes and Billing currencies. Subscriptions also require a
 supported interval; optional top-up attributes define their credit amounts and
 currencies. Physical Products require a fulfillment flow and cannot use this
@@ -1049,9 +1051,9 @@ through the owning catalogue SDK and export the records with the standard dump.
 The standard seed remaps the association's Store and Product IDs. No Store ID,
 Product slug or credit amount is selected from environment variables or code.
 
-Orders carry `variant="registration-grant"` after issuance. Repeated sign-in,
-disabling the association, or selecting a different issuing Store does not issue
-the Product again. The standard association also sets `initialGrantLegacyHistory: true` to recognize
+Orders carry `variant="registration-grant"` after issuance. Repeated sign-in
+reuses the recorded grant for each Store and Product. The standard association
+also sets `initialGrantLegacyHistory: true` to recognize
 its earlier private bootstrap graphs by their single Product, issuing Store,
 Currency and zero settlement. This migration setting is for an internal Product
 whose matching history was issued only by bootstrap. Leave it unset for other
@@ -1226,36 +1228,22 @@ Physical deletion of a referenced offer is refused.
 `ecommerceModuleCatalogMutation` creates, updates or deletes a catalogue model
 or relation through `POST /:id/ecommerce-module/catalogue-mutations`. Its input
 names the entity, operation and record ID; record values follow that entity's
-SDK schema. Store and Product creation assigns the current Subject as owner.
+SDK schema. Creating a Store through this operation assigns the current
+Subject as its owner.
 Ownership grants require an administrator. All seller routes pass the normal
 permission check, require a signed-in caller matching `:id`, then verify
-catalogue ownership in the Subject service. Every end user, including an
-administrator with a wildcard or explicit raw write grant, uses Subject
-catalogue operations. Raw catalogue writes require the operator credential.
-Public reads, offer quotes and address suggestions retain their existing access.
+catalogue ownership in the Subject service. Sellers create a Product through the
+Store offer operation, which saves the Product, offer, prices and ownership
+links in one transaction.
 
-The operator-only rule covers `POST`, `PATCH`, `PUT` and `DELETE` for raw
-`stores`, `products`, `attributes`, `attribute-keys`, `stores-to-products`,
-`offers-to-offers` and the Store/Product/offer attribute relations, including
-attribute-key and currency links. It also covers raw
-`subjects-to-ecommerce-module-stores`, `subjects-to-ecommerce-module-products`
-and `subjects-to-ecommerce-module-orders` writes. Collection, item, bulk and
-find-or-create paths follow the same rule.
-
-The Host admin composition wraps Ecommerce and RBAC admin views in the RBAC
-catalogue-admin Widget.
-Its explicit mutation provider sends catalogue form saves and row deletions
-through Subject operations, including administrator edits to held stock.
-The owning Ecommerce SDK hooks retain their query-cache updates. Generic SDKs
-outside that composition retain the operator transport for framework tools.
-
-Admin v2 exposes creation in Ecommerce → Product and Store → Create offer.
-“Edit existing offers, rates and services” edits prices, stock/unlimited,
-coefficients, formula/version, box counts/dimensions/gross weight, receipt rules
-and delivery/add-on/provider links. The RBAC Widget owns the current Subject,
-form and mutations; Host supplies it to the Ecommerce admin through explicit
-slots. The existing Store–Product admin form also edits configuration and
-packaging without changing the offer endpoints.
+Admin v2 uses the SDK of the model or relation being edited. The API checks
+the role's permission for the HTTP method and path. A catalogue or ownership
+write requires a role grant, including when the resolved permission has no
+roles attached. In the default configuration the admin role holds the wildcard
+grant. Saving the Product form creates one Product. An administrator can assign
+its owner later through the Subject–Product relation form. Direct Attribute
+edits use the model’s validation. The seller’s stock operation also checks
+outstanding reservations.
 
 Buyers read cart and payment details through `GET /api/rbac/subjects/:id/ecommerce-module/orders`.
 The purchase view requests `includePurchaseDetails=true` with a history filter.

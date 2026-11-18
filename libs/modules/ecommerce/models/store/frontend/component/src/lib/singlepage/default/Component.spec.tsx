@@ -36,10 +36,12 @@ jest.mock(
 jest.mock("@sps/ecommerce/models/attribute-key/frontend/component", () => ({
   Component: () => null,
 }));
+import { Component as Default } from "./Component";
 import { Component as Service } from "../service/Component";
 import { Component as Delivery } from "../delivery/Component";
 
 it.each([
+  { variant: "workshop", View: Default },
   { variant: "service" as const, View: Service },
   { variant: "delivery" as const, View: Delivery },
 ])(
@@ -48,7 +50,7 @@ it.each([
     const { container } = render(
       <View
         isServer={false}
-        variant={variant as never}
+        variant={variant}
         data={{ id: "store", slug: "example" } as any}
         language="en"
       />,
