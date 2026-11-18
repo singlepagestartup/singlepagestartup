@@ -46,6 +46,11 @@ it("generates distinct cross-module Widget fields without changing the lower own
     else process.env.NX_DRY_RUN = previous;
   }
   const base = "libs/modules/rbac/relations/probe-widgets-to-widgets";
+  const bootstrap = tree
+    .read(`${base}/backend/app/api/src/lib/bootstrap.ts`)!
+    .toString();
+  expect(bootstrap).toContain("export const { bootstrap, createService }");
+  expect(bootstrap).toContain("createAppBootstrap<App, Service>");
   const schema = tree
     .read(`${base}/backend/repository/database/src/lib/schema.ts`)!
     .toString();

@@ -26,7 +26,7 @@ import { Configuration } from "../../configuration";
 import { Repository } from "../../repository";
 import { bootstrap } from "../../bootstrap";
 import type { IReservationLine } from "./reservation";
-import { bootstrap as bootstrapOrder } from "@sps/ecommerce/models/order/backend/app/api/src/lib/bootstrap";
+import { bootstrap as bootstrapPaymentIntent } from "@sps/billing/models/payment-intent/backend/app/api/src/lib/bootstrap";
 
 const cleanups: (() => Promise<unknown>)[] = [];
 afterEach(async () => {
@@ -78,7 +78,9 @@ async function fixture(stock = 1) {
   );
   const { service: relation } = await bootstrap();
   const { service: second } = await bootstrap();
-  const { orderPaymentIntentService: intents } = await bootstrapOrder();
+  const { service: intents } = await bootstrapPaymentIntent(
+    relation.paymentLifecycle,
+  );
   const invoices = intents.billingModule.invoice;
   const attempts: {
     intentId: string;

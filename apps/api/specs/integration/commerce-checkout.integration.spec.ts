@@ -2,7 +2,7 @@
  * Actual SDK requests, Hono handlers, owning services and PostgreSQL writes.
  * Nested fixture transactions use real savepoints and always roll back. The
  * observer queue and delayed dummy webhook stop at a captured transport boundary.
- * No app.ts jobs, notification delivery or external payment provider starts here.
+ * The API host configures the modules. Background workers and listeners stay stopped.
  */
 import { spawnSync } from "node:child_process";
 import { resolve } from "node:path";
@@ -28,15 +28,18 @@ assert(["localhost","127.0.0.1","::1"].includes(String(DATABASE_OPTIONS.host)),"
 assert.equal(ALLOWED_BILLING_SERVICE_PROVIDERS,"dummy");
 assert.equal(API_SERVICE_URL,"http://commerce-integration.test");
 assert(RBAC_JWT_SECRET);
-const commerce = await import("@sps/ecommerce/backend/app/api");
+await import("./apps/api/app");
 const modules={
  rbac:(await import("@sps/rbac/backend/app/api")).app,
- ecommerce:commerce.app,
- billing:commerce.billingApp,
+ ecommerce:(await import("@sps/ecommerce/backend/app/api")).app,
+ billing:(await import("@sps/billing/backend/app/api")).app,
 };
 const services={};
 for(const [module,owner] of Object.entries(modules))for(const entry of owner.apps.apps)services[module+entry.route]=entry.app.controller.service;
 const service=resource=>{assert(services[resource],"Missing effective owner: "+resource);return services[resource];};
+const paymentIntents = service("billing/payment-intents");
+assert.equal(service("ecommerce/orders").billingModule.paymentIntent, paymentIntents);
+assert.equal(service("rbac/subjects").billingModule.paymentIntent, paymentIntents);
 const create=async(resource,data)=>{const row=await service(resource).create({data});assert(row?.id,resource+" did not persist an ID");return row;};
 const find=(resource,and)=>service(resource).find({params:{filters:{and}}});
 const eq=(column,value)=>({column,method:"eq",value});
@@ -251,18 +254,31 @@ try{
   while(webhooks.length<2&&Date.now()<deadline)await new Promise(done=>setTimeout(done,20));
   assert.deepEqual(webhooks.map(value=>value.data.id).sort(),[cartInvoice.id,quickInvoice.id].sort());
   assert.equal((await byId("billing/invoices",cartInvoice.id)).status,"open");assert.equal((await byId("billing/invoices",quickInvoice.id)).status,"open");
-  // The module's mounted payment service must settle commerce reservations
-  // without importing the API host or replacing its lifecycle in the fixture.
+  const sendWebhook = (invoiceId) => app.request("/api/billing/payment-intents/dummy/webhook", {
+   method: "POST",
+   headers: {
+    "Content-Type": "application/json",
+    "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+   },
+   body: JSON.stringify({ data: { id: invoiceId } }),
+  });
+  const reservations = service("ecommerce/orders-to-billing-module-payment-intents");
+  const interrupted = spyOn(reservations, "settleReservations")
+   .mockRejectedValueOnce(Error("fixture-settlement-interrupted"));
+  try {
+   const failed = await sendWebhook(cartInvoice.id);
+   assert(failed.status >= 400);
+   assert.match(await failed.text(), /fixture-settlement-interrupted/);
+   assert.equal((await byId("billing/invoices", cartInvoice.id)).status, "open");
+   const [allocation] = await find("ecommerce/orders-to-billing-module-payment-intents", [eq("orderId", checkoutCart.id)]);
+   assert.equal(allocation.reservationStatus, "held");
+   assert.equal(Number((await byId("ecommerce/attributes", stock.id)).number), 20);
+  } finally {
+   interrupted.mockRestore();
+  }
   for (const invoice of [cartInvoice, quickInvoice]) {
    for (let attempt = 0; attempt < 2; attempt++) {
-    const response = await app.request("/api/billing/payment-intents/dummy/webhook", {
-     method: "POST",
-     headers: {
-      "Content-Type": "application/json",
-      "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-     },
-     body: JSON.stringify({ data: { id: invoice.id } }),
-    });
+    const response = await sendWebhook(invoice.id);
     const responseBody = await response.text();
     assert.equal(response.status, 200, responseBody);
    }

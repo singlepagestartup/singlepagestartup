@@ -1,5 +1,6 @@
-import { Container, ContainerModule } from "inversify";
+import { ContainerModule } from "inversify";
 import {
+  createAppBootstrap,
   DI,
   ExceptionFilter,
   type IExceptionFilter,
@@ -10,25 +11,22 @@ import { Controller } from "./controller";
 import { Service } from "./service";
 import { App } from "./app";
 
-import type { Service as BroadcastChannelService } from "@sps/broadcast/models/channel/backend/app/api/src/lib/service";
 import {
   NotificationDI,
   type IBroadcastModule,
   type ITemplateService,
 } from "./di";
-import { app as broadcastChannelApp } from "@sps/broadcast/models/channel/backend/app/api";
+import { createService as createBroadcastChannelService } from "@sps/broadcast/models/channel/backend/app/api/src/lib/bootstrap";
 
-import type { Service as TemplateService } from "@sps/notification/models/template/backend/app/api/src/lib/service";
-import { app as templateApp } from "@sps/notification/models/template/backend/app/api";
+import { createService as createTemplateService } from "@sps/notification/models/template/backend/app/api/src/lib/bootstrap";
 
 const bindings = new ContainerModule(({ bind }) => {
   bind<ITemplateService>(NotificationDI.ITemplateService)
-    .toDynamicValue(() => templateApp.controller.service as TemplateService)
+    .toDynamicValue(() => createTemplateService())
     .inSingletonScope();
   bind<IBroadcastModule>(NotificationDI.IBroadcastModule)
     .toDynamicValue(() => ({
-      channel: broadcastChannelApp.controller
-        .service as BroadcastChannelService,
+      channel: createBroadcastChannelService(),
     }))
     .inSingletonScope();
   bind<IExceptionFilter>(DI.IExceptionFilter).to(ExceptionFilter);
@@ -39,12 +37,6 @@ const bindings = new ContainerModule(({ bind }) => {
   bind<Configuration>(DI.IConfiguration).to(Configuration);
 });
 
-export async function bootstrap() {
-  const container = new Container();
-  container.load(bindings);
-  const app = container.get<App>(DI.IApp);
-
-  await app.init();
-
-  return { app };
-}
+export const { bootstrap, createService } = createAppBootstrap<App, Service>(
+  bindings,
+);

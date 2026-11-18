@@ -1,5 +1,6 @@
-import { Container, ContainerModule } from "inversify";
+import { ContainerModule } from "inversify";
 import {
+  createAppBootstrap,
   DI,
   ExceptionFilter,
   type IExceptionFilter,
@@ -32,19 +33,5 @@ const bindings = new ContainerModule(({ bind }) => {
     .inSingletonScope();
 });
 
-export function createService(): Service {
-  const container = new Container();
-  container.load(bindings);
-  return container.get<Service>(DI.IService);
-}
-
-export async function bootstrap(): Promise<IBootstrapResult> {
-  const container = new Container();
-  container.load(bindings);
-  const app = container.get<App>(DI.IApp);
-  const service = container.get<Service>(DI.IService);
-
-  await app.init();
-
-  return { app, service };
-}
+export const { createService, bootstrapWithService: bootstrap } =
+  createAppBootstrap<App, Service>(bindings);

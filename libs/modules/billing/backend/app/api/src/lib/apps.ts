@@ -1,9 +1,6 @@
 import { DefaultApp } from "@sps/shared-backend-api";
 import { app as widgetApp } from "@sps/billing/models/widget/backend/app/api";
-import {
-  app as defaultPaymentIntentApp,
-  type App as PaymentIntentApp,
-} from "@sps/billing/models/payment-intent/backend/app/api";
+import { app as paymentIntentApp } from "@sps/billing/models/payment-intent/backend/app/api";
 import { app as invoiceApp } from "@sps/billing/models/invoice/backend/app/api";
 import { app as currencyApp } from "@sps/billing/models/currency/backend/app/api";
 import { app as paymentIntentsToCurrenciesApp } from "@sps/billing/relations/payment-intents-to-currencies/backend/app/api";
@@ -13,9 +10,7 @@ export class Apps {
   apps: { type: "model" | "relation"; route: string; app: DefaultApp<any> }[] =
     [];
 
-  constructor(
-    private readonly paymentIntentApp: PaymentIntentApp = defaultPaymentIntentApp,
-  ) {
+  constructor() {
     this.bindApps();
   }
 
@@ -28,7 +23,7 @@ export class Apps {
     this.apps.push({
       type: "model",
       route: "/payment-intents",
-      app: this.paymentIntentApp,
+      app: paymentIntentApp,
     });
     this.apps.push({
       type: "model",

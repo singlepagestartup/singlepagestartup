@@ -201,12 +201,11 @@ separate checkout validation; an omitted cart amount is not a zero-price grant.
 
 ## Payment success extension
 
-The Order bootstrap supplies reservation settlement, late-payment validation and
-release callbacks when it constructs Billing's Payment Intent app. It binds the
-returned service as the Order service's `billingModule.paymentIntent` and exports
-it as `orderPaymentIntentService` for higher consumers. The Ecommerce module
-mounts the same model app in its exported `billingApp`, so provider callbacks,
-checkout failures and Order payment operations use one configured lifecycle.
+Order and RBAC Subject use Billing's Payment Intent service for checkout.
+The API host connects that service to the Order-to-Payment-Intent relation for
+stock settlement, late-payment checks and reservation release. When a provider
+confirms payment, the invoice update and stock settlement share a transaction.
+Observer triggers the subsequent Order check after a successful webhook.
 
 The payment check route uses `controller/startup/find-by-id/check/index.ts`. Override its protected `onPaymentSucceeded({ order })` method to run project logic before persisting `paid`. The default hook does nothing. A failed hook leaves the order in `paying`, so a subsequent check can repeat the operation. Use idempotent SDK operations and keep payment confirmation independent of notification delivery.
 

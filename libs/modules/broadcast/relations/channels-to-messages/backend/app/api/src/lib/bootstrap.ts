@@ -1,5 +1,6 @@
-import { Container, ContainerModule } from "inversify";
+import { ContainerModule } from "inversify";
 import {
+  createAppBootstrap,
   DI,
   ExceptionFilter,
   type IExceptionFilter,
@@ -10,8 +11,7 @@ import { Controller } from "./controller";
 import { Service } from "./service";
 import { App } from "./app";
 import { ChannelsToMessagesDI, type IMessageService } from "./di";
-import { app as messageApp } from "@sps/broadcast/models/message/backend/app/api";
-import type { Service as BroadcastModuleMessage } from "@sps/broadcast/models/message/backend/app/api/src/lib/service";
+import { createService as createMessageService } from "@sps/broadcast/models/message/backend/app/api/src/lib/bootstrap";
 
 const bindings = new ContainerModule(({ bind }) => {
   bind<IExceptionFilter>(DI.IExceptionFilter).to(ExceptionFilter);
@@ -21,18 +21,10 @@ const bindings = new ContainerModule(({ bind }) => {
   bind<Service>(DI.IService).to(Service);
   bind<Configuration>(DI.IConfiguration).to(Configuration);
   bind<IMessageService>(ChannelsToMessagesDI.IMessageService)
-    .toDynamicValue(
-      () => messageApp.controller.service as BroadcastModuleMessage,
-    )
+    .toDynamicValue(() => createMessageService())
     .inSingletonScope();
 });
 
-export async function bootstrap() {
-  const container = new Container();
-  container.load(bindings);
-  const app = container.get<App>(DI.IApp);
-
-  await app.init();
-
-  return { app };
-}
+export const { bootstrap, createService } = createAppBootstrap<App, Service>(
+  bindings,
+);

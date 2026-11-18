@@ -1,9 +1,8 @@
-import { app as broadcastChannelApp } from "@sps/broadcast/models/channel/backend/app/api";
-import { app as ecommerceOrderApp } from "@sps/ecommerce/models/order/backend/app/api";
+import { createService as createBroadcastChannelService } from "@sps/broadcast/models/channel/backend/app/api/src/lib/bootstrap";
 import type { Service as EcommerceOrderService } from "@sps/ecommerce/models/order/backend/app/api/src/lib/service";
-import type { Service as BroadcastChannelService } from "@sps/broadcast/models/channel/backend/app/api/src/lib/service";
-import { Container, ContainerModule } from "inversify";
+import { ContainerModule } from "inversify";
 import {
+  createAppBootstrap,
   CRUDService,
   DI,
   ExceptionFilter,
@@ -95,8 +94,7 @@ import { Repository as NotificationNotificationRepository } from "@sps/notificat
 import { Configuration as NotificationNotificationConfiguration } from "@sps/notification/models/notification/backend/app/api/src/lib/configuration";
 import { Repository as FileStorageFileRepository } from "@sps/file-storage/models/file/backend/app/api/src/lib/repository";
 import { Configuration as FileStorageFileConfiguration } from "@sps/file-storage/models/file/backend/app/api/src/lib/configuration";
-import { Service as BroadcastMessageService } from "@sps/broadcast/models/message/backend/app/api/src/lib/service";
-import { app as broadcastMessageApp } from "@sps/broadcast/models/message/backend/app/api";
+import { createService as createBroadcastMessageService } from "@sps/broadcast/models/message/backend/app/api/src/lib/bootstrap";
 import { Repository as BroadcastChannelsToMessagesRepository } from "@sps/broadcast/relations/channels-to-messages/backend/app/api/src/lib/repository";
 import { Configuration as BroadcastChannelsToMessagesConfiguration } from "@sps/broadcast/relations/channels-to-messages/backend/app/api/src/lib/configuration";
 import { Repository as HostPageRepository } from "@sps/host/models/page/backend/app/api/src/lib/repository";
@@ -226,9 +224,9 @@ const bindings = new ContainerModule(({ bind }) => {
     })
     .inSingletonScope();
   bind<IEcommerceModule>(AgentDI.IEcommerceModule)
-    .toDynamicValue(() => {
+    .toDynamicValue(({ get }) => {
       return {
-        order: ecommerceOrderApp.controller.service as EcommerceOrderService,
+        order: get<EcommerceOrderService>(AgentDI.IEcommerceOrderService),
         product: new CRUDService<any>(
           new EcommerceProductRepository(new EcommerceProductConfiguration()),
         ),
@@ -305,10 +303,8 @@ const bindings = new ContainerModule(({ bind }) => {
   bind<IBroadcastModule>(AgentDI.IBroadcastModule)
     .toDynamicValue(() => {
       return {
-        channel: broadcastChannelApp.controller
-          .service as BroadcastChannelService,
-        message: broadcastMessageApp.controller
-          .service as BroadcastMessageService,
+        channel: createBroadcastChannelService(),
+        message: createBroadcastMessageService(),
         channelsToMessages: new CRUDService<any>(
           new BroadcastChannelsToMessagesRepository(
             new BroadcastChannelsToMessagesConfiguration(),
@@ -328,12 +324,20 @@ const bindings = new ContainerModule(({ bind }) => {
     .inSingletonScope();
 });
 
+const { bootstrap: bootstrapAgent, createService } = createAppBootstrap<
+  App,
+  Service,
+  [order: EcommerceOrderService]
+>(bindings, (container, order) => {
+  container
+    .bind<EcommerceOrderService>(AgentDI.IEcommerceOrderService)
+    .toConstantValue(order);
+});
+
+export { createService };
+
 export async function bootstrap() {
-  const container = new Container();
-  container.load(bindings);
-  const app = container.get<App>(DI.IApp);
-
-  await app.init();
-
-  return { app };
+  const { service: order } =
+    await import("@sps/ecommerce/models/order/backend/app/api");
+  return bootstrapAgent(order);
 }

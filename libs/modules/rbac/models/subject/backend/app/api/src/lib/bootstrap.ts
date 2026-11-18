@@ -1,27 +1,25 @@
-import { app as catalogSubjectsToEcommerceModuleOrdersApp } from "@sps/rbac/relations/subjects-to-ecommerce-module-orders/backend/app/api";
+import { createService as createSubjectsToEcommerceModuleOrdersService } from "@sps/rbac/relations/subjects-to-ecommerce-module-orders/backend/app/api/src/lib/bootstrap";
 import { Service as EcommerceCatalog } from "./service/startup/ecommerce/catalog";
 import type { IConstructorProps as ICatalogDependencies } from "./service/singlepage/ecommerce/catalog";
-import { app as ecommerceStoreApp } from "@sps/ecommerce/models/store/backend/app/api";
-import { app as catalogProductApp } from "@sps/ecommerce/models/product/backend/app/api";
-import { app as catalogAttributeApp } from "@sps/ecommerce/models/attribute/backend/app/api";
-import { app as catalogAttributeKeyApp } from "@sps/ecommerce/models/attribute-key/backend/app/api";
-import { app as catalogCurrencyApp } from "@sps/billing/models/currency/backend/app/api";
+import { createService as createEcommerceStoreService } from "@sps/ecommerce/models/store/backend/app/api/src/lib/bootstrap";
+import { createService as createProductService } from "@sps/ecommerce/models/product/backend/app/api/src/lib/bootstrap";
+import { createService as createAttributeService } from "@sps/ecommerce/models/attribute/backend/app/api/src/lib/bootstrap";
+import { createService as createAttributeKeyService } from "@sps/ecommerce/models/attribute-key/backend/app/api/src/lib/bootstrap";
+import { createService as createCurrencyService } from "@sps/billing/models/currency/backend/app/api/src/lib/bootstrap";
 import { createService as createOfferService } from "@sps/ecommerce/relations/stores-to-products/backend/app/api/src/lib/bootstrap";
-import { app as catalogOffersToOffersApp } from "@sps/ecommerce/relations/offers-to-offers/backend/app/api";
-import { app as catalogStoresToAttributesApp } from "@sps/ecommerce/relations/stores-to-attributes/backend/app/api";
-import { app as catalogProductsToAttributesApp } from "@sps/ecommerce/relations/products-to-attributes/backend/app/api";
-import { app as catalogStoresToProductsToAttributesApp } from "@sps/ecommerce/relations/stores-to-products-to-attributes/backend/app/api";
-import { app as catalogAttributeKeysToAttributesApp } from "@sps/ecommerce/relations/attribute-keys-to-attributes/backend/app/api";
-import { app as catalogAttributesToBillingModuleCurrenciesApp } from "@sps/ecommerce/relations/attributes-to-billing-module-currencies/backend/app/api";
-import { app as catalogSubjectsToEcommerceModuleStoresApp } from "@sps/rbac/relations/subjects-to-ecommerce-module-stores/backend/app/api";
-import { app as catalogSubjectsToEcommerceModuleProductsApp } from "@sps/rbac/relations/subjects-to-ecommerce-module-products/backend/app/api";
-import { app as catalogSubjectsToRoles } from "@sps/rbac/relations/subjects-to-roles/backend/app/api";
-import { app as roleApp } from "@sps/rbac/models/role/backend/app/api";
-import { app as broadcastChannelApp } from "@sps/broadcast/models/channel/backend/app/api";
-import type { Service as BroadcastChannelService } from "@sps/broadcast/models/channel/backend/app/api/src/lib/service";
-import { app as notificationTopicApp } from "@sps/notification/models/topic/backend/app/api";
-import type { Service as NotificationTopicService } from "@sps/notification/models/topic/backend/app/api/src/lib/service";
-import { app as notificationNotificationApp } from "@sps/notification/models/notification/backend/app/api";
+import { createService as createOffersToOffersService } from "@sps/ecommerce/relations/offers-to-offers/backend/app/api/src/lib/bootstrap";
+import { createService as createStoresToAttributesService } from "@sps/ecommerce/relations/stores-to-attributes/backend/app/api/src/lib/bootstrap";
+import { createService as createProductsToAttributesService } from "@sps/ecommerce/relations/products-to-attributes/backend/app/api/src/lib/bootstrap";
+import { createService as createStoresToProductsToAttributesService } from "@sps/ecommerce/relations/stores-to-products-to-attributes/backend/app/api/src/lib/bootstrap";
+import { createService as createAttributeKeysToAttributesService } from "@sps/ecommerce/relations/attribute-keys-to-attributes/backend/app/api/src/lib/bootstrap";
+import { createService as createAttributesToBillingModuleCurrenciesService } from "@sps/ecommerce/relations/attributes-to-billing-module-currencies/backend/app/api/src/lib/bootstrap";
+import { createService as createSubjectsToEcommerceModuleStoresService } from "@sps/rbac/relations/subjects-to-ecommerce-module-stores/backend/app/api/src/lib/bootstrap";
+import { createService as createSubjectsToEcommerceModuleProductsService } from "@sps/rbac/relations/subjects-to-ecommerce-module-products/backend/app/api/src/lib/bootstrap";
+import { createService as createSubjectsToRolesService } from "@sps/rbac/relations/subjects-to-roles/backend/app/api/src/lib/bootstrap";
+import { createService as createRoleService } from "@sps/rbac/models/role/backend/app/api/src/lib/bootstrap";
+import { createService as createBroadcastChannelService } from "@sps/broadcast/models/channel/backend/app/api/src/lib/bootstrap";
+import { createService as createNotificationTopicService } from "@sps/notification/models/topic/backend/app/api/src/lib/bootstrap";
+import { createService as createNotificationNotificationService } from "@sps/notification/models/notification/backend/app/api/src/lib/bootstrap";
 import { Service as SecurityNotifications } from "./service/startup/security-notifications";
 import { Service as CrmFormService } from "@sps/crm/models/form/backend/app/api/src/lib/service";
 import { Service as CrmRequestService } from "@sps/crm/models/request/backend/app/api/src/lib/service";
@@ -44,8 +42,9 @@ import { Configuration as CrmStepsToInputsConfiguration } from "@sps/crm/relatio
 import { Service as CrmInputsToOptionsService } from "@sps/crm/relations/inputs-to-options/backend/app/api/src/lib/service";
 import { Repository as CrmInputsToOptionsRepository } from "@sps/crm/relations/inputs-to-options/backend/app/api/src/lib/repository";
 import { Configuration as CrmInputsToOptionsConfiguration } from "@sps/crm/relations/inputs-to-options/backend/app/api/src/lib/configuration";
-import { Container, ContainerModule } from "inversify";
+import { ContainerModule } from "inversify";
 import {
+  createAppBootstrap,
   CRUDService,
   DI,
   ExceptionFilter,
@@ -57,18 +56,18 @@ import { Controller } from "./controller";
 import { Service } from "./service";
 import { App } from "./app";
 import { createService as createSocialProfileService } from "@sps/social/models/profile/backend/app/api/src/lib/bootstrap";
-import { app as blogArticleApp } from "@sps/blog/models/article/backend/app/api";
-import { app as blogCategoryApp } from "@sps/blog/models/category/backend/app/api";
-import { app as blogCategoriesToArticlesApp } from "@sps/blog/relations/categories-to-articles/backend/app/api";
-import { app as socialProfilesToArticlesApp } from "@sps/social/relations/profiles-to-blog-module-articles/backend/app/api";
-import { app as subjectsToArticlesApp } from "@sps/rbac/relations/subjects-to-blog-module-articles/backend/app/api";
-import { orderPaymentIntentService } from "@sps/ecommerce/models/order/backend/app/api";
-import { app as billingInvoiceApp } from "@sps/billing/models/invoice/backend/app/api";
-import { app as billingPaymentIntentsToCurrenciesApp } from "@sps/billing/relations/payment-intents-to-currencies/backend/app/api";
-import { app as billingPaymentIntentsToInvoicesApp } from "@sps/billing/relations/payment-intents-to-invoices/backend/app/api";
-import { app as ecommerceStoresToOrdersApp } from "@sps/ecommerce/relations/stores-to-orders/backend/app/api";
-import { app as ecommerceOrdersToCurrenciesApp } from "@sps/ecommerce/relations/orders-to-billing-module-currencies/backend/app/api";
-import { service as ordersToBillingModulePaymentIntents } from "@sps/ecommerce/relations/orders-to-billing-module-payment-intents/backend/app/api";
+import { createService as createBlogArticleService } from "@sps/blog/models/article/backend/app/api/src/lib/bootstrap";
+import { createService as createBlogCategoryService } from "@sps/blog/models/category/backend/app/api/src/lib/bootstrap";
+import { createService as createBlogCategoriesToArticlesService } from "@sps/blog/relations/categories-to-articles/backend/app/api/src/lib/bootstrap";
+import { createService as createSocialProfilesToArticlesService } from "@sps/social/relations/profiles-to-blog-module-articles/backend/app/api/src/lib/bootstrap";
+import { createService as createSubjectsToArticlesService } from "@sps/rbac/relations/subjects-to-blog-module-articles/backend/app/api/src/lib/bootstrap";
+import type { Service as PaymentIntentService } from "@sps/billing/models/payment-intent/backend/app/api/src/lib/service";
+import { createService as createBillingInvoiceService } from "@sps/billing/models/invoice/backend/app/api/src/lib/bootstrap";
+import { createService as createBillingPaymentIntentsToCurrenciesService } from "@sps/billing/relations/payment-intents-to-currencies/backend/app/api/src/lib/bootstrap";
+import { createService as createBillingPaymentIntentsToInvoicesService } from "@sps/billing/relations/payment-intents-to-invoices/backend/app/api/src/lib/bootstrap";
+import { createService as createEcommerceStoresToOrdersService } from "@sps/ecommerce/relations/stores-to-orders/backend/app/api/src/lib/bootstrap";
+import { createService as createEcommerceOrdersToCurrenciesService } from "@sps/ecommerce/relations/orders-to-billing-module-currencies/backend/app/api/src/lib/bootstrap";
+import type { Service as OrderPaymentService } from "@sps/ecommerce/relations/orders-to-billing-module-payment-intents/backend/app/api/src/lib/service";
 import {
   SubjectDI,
   type IBlogModule,
@@ -200,7 +199,6 @@ import { Service as BillingPaymentIntentsToCurrenciesService } from "@sps/billin
 import { Repository as BillingPaymentIntentsToInvoicesRepository } from "@sps/billing/relations/payment-intents-to-invoices/backend/app/api/src/lib/repository";
 import { Configuration as BillingPaymentIntentsToInvoicesConfiguration } from "@sps/billing/relations/payment-intents-to-invoices/backend/app/api/src/lib/configuration";
 import { Service as BillingPaymentIntentsToInvoicesService } from "@sps/billing/relations/payment-intents-to-invoices/backend/app/api/src/lib/service";
-import { Service as NotificationNotificationService } from "@sps/notification/models/notification/backend/app/api/src/lib/service";
 import { Repository as NotificationTemplateRepository } from "@sps/notification/models/template/backend/app/api/src/lib/repository";
 import { Configuration as NotificationTemplateConfiguration } from "@sps/notification/models/template/backend/app/api/src/lib/configuration";
 import { Repository as NotificationTopicsToNotificationsRepository } from "@sps/notification/relations/topics-to-notifications/backend/app/api/src/lib/repository";
@@ -219,69 +217,69 @@ import { Configuration as CrmFormsToRequestsConfiguration } from "@sps/crm/relat
 
 const bindings = new ContainerModule(({ bind }) => {
   const offers = createOfferService();
+  const rolesService = createRoleService();
+  const subjectRolesService = createSubjectsToRolesService();
+  const storeService = createEcommerceStoreService();
   bind<EcommerceCatalog>(SubjectDI.IEcommerceCatalogService)
-    .toDynamicValue(
-      () =>
-        new EcommerceCatalog({
-          repository: new Repository(new Configuration()),
-          entities: {
-            "orders-to-products": new CRUDService(
-              new EcommerceOrdersToProductsRepository(
-                new EcommerceOrdersToProductsConfiguration(),
-              ),
+    .toDynamicValue(({ get }) => {
+      const ordersToBillingModulePaymentIntents = get<OrderPaymentService>(
+        SubjectDI.IOrderPaymentService,
+      );
+      return new EcommerceCatalog({
+        repository: new Repository(new Configuration()),
+        entities: {
+          "orders-to-products": new CRUDService(
+            new EcommerceOrdersToProductsRepository(
+              new EcommerceOrdersToProductsConfiguration(),
             ),
-            "orders-to-billing-module-payment-intents":
-              ordersToBillingModulePaymentIntents,
-            "subjects-to-ecommerce-module-orders":
-              catalogSubjectsToEcommerceModuleOrdersApp.controller.service,
-            stores: ecommerceStoreApp.controller.service,
-            products: catalogProductApp.controller.service,
-            attributes: catalogAttributeApp.controller.service,
-            "attribute-keys": catalogAttributeKeyApp.controller.service,
-            currencies: catalogCurrencyApp.controller.service,
-            "stores-to-products": offers,
-            "offers-to-offers": catalogOffersToOffersApp.controller.service,
-            "stores-to-attributes":
-              catalogStoresToAttributesApp.controller.service,
-            "products-to-attributes":
-              catalogProductsToAttributesApp.controller.service,
-            "stores-to-products-to-attributes":
-              catalogStoresToProductsToAttributesApp.controller.service,
-            "attribute-keys-to-attributes":
-              catalogAttributeKeysToAttributesApp.controller.service,
-            "attributes-to-billing-module-currencies":
-              catalogAttributesToBillingModuleCurrenciesApp.controller.service,
-            "subjects-to-ecommerce-module-stores":
-              catalogSubjectsToEcommerceModuleStoresApp.controller.service,
-            "subjects-to-ecommerce-module-products":
-              catalogSubjectsToEcommerceModuleProductsApp.controller.service,
-          } as unknown as ICatalogDependencies["entities"],
-          isAdmin: async (subjectId) => {
-            const roles = await roleApp.controller.service.find({
-              params: {
-                filters: {
-                  and: [{ column: "slug", method: "eq", value: "admin" }],
-                },
+          ),
+          "orders-to-billing-module-payment-intents":
+            ordersToBillingModulePaymentIntents,
+          "subjects-to-ecommerce-module-orders":
+            createSubjectsToEcommerceModuleOrdersService(),
+          stores: storeService,
+          products: createProductService(),
+          attributes: createAttributeService(),
+          "attribute-keys": createAttributeKeyService(),
+          currencies: createCurrencyService(),
+          "stores-to-products": offers,
+          "offers-to-offers": createOffersToOffersService(),
+          "stores-to-attributes": createStoresToAttributesService(),
+          "products-to-attributes": createProductsToAttributesService(),
+          "stores-to-products-to-attributes":
+            createStoresToProductsToAttributesService(),
+          "attribute-keys-to-attributes":
+            createAttributeKeysToAttributesService(),
+          "attributes-to-billing-module-currencies":
+            createAttributesToBillingModuleCurrenciesService(),
+          "subjects-to-ecommerce-module-stores":
+            createSubjectsToEcommerceModuleStoresService(),
+          "subjects-to-ecommerce-module-products":
+            createSubjectsToEcommerceModuleProductsService(),
+        } as unknown as ICatalogDependencies["entities"],
+        isAdmin: async (subjectId) => {
+          const roles = await rolesService.find({
+            params: {
+              filters: {
+                and: [{ column: "slug", method: "eq", value: "admin" }],
               },
-            });
-            const ids = roles.map((role) => role.id);
-            const links = await catalogSubjectsToRoles.controller.service.find({
-              params: {
-                filters: {
-                  and: [
-                    { column: "subjectId", method: "eq", value: subjectId },
-                  ],
-                },
+            },
+          });
+          const ids = roles.map((role) => role.id);
+          const links = await subjectRolesService.find({
+            params: {
+              filters: {
+                and: [{ column: "subjectId", method: "eq", value: subjectId }],
               },
-            });
-            return links.some(
-              (link) =>
-                link.subjectId === subjectId && ids.includes(link.roleId),
-            );
-          },
-          stock: ordersToBillingModulePaymentIntents,
-        }),
-    )
+            },
+          });
+          return links.some(
+            (link) => link.subjectId === subjectId && ids.includes(link.roleId),
+          );
+        },
+        stock: ordersToBillingModulePaymentIntents,
+      });
+    })
     .inSingletonScope();
 
   bind<IExceptionFilter>(DI.IExceptionFilter).to(ExceptionFilter);
@@ -291,19 +289,18 @@ const bindings = new ContainerModule(({ bind }) => {
   bind<Service>(DI.IService).to(Service).inSingletonScope();
   bind<Configuration>(DI.IConfiguration).to(Configuration);
   bind<IBlogModule>(SubjectDI.IBlogModule).toConstantValue({
-    article: blogArticleApp.controller.service,
-    category: blogCategoryApp.controller.service,
-    categoriesToArticles: blogCategoriesToArticlesApp.controller.service,
+    article: createBlogArticleService(),
+    category: createBlogCategoryService(),
+    categoriesToArticles: createBlogCategoriesToArticlesService(),
   });
   bind(SubjectDI.ISubjectsToBlogModuleArticlesService).toConstantValue(
-    subjectsToArticlesApp.controller.service,
+    createSubjectsToArticlesService(),
   );
   bind<ISocialModule>(SubjectDI.ISocialModule)
     .toDynamicValue(() => {
       return {
         profile: createSocialProfileService(),
-        profilesToBlogModuleArticles:
-          socialProfilesToArticlesApp.controller.service,
+        profilesToBlogModuleArticles: createSocialProfilesToArticlesService(),
         skill: new CRUDService<any>(
           new SocialSkillRepository(new SocialSkillConfiguration()),
         ),
@@ -406,8 +403,13 @@ const bindings = new ContainerModule(({ bind }) => {
     })
     .inSingletonScope();
   bind<IEcommerceModule>(SubjectDI.IEcommerceModule)
-    .toDynamicValue(() => {
-      const store = ecommerceStoreApp.controller.service;
+    .toDynamicValue(({ get }) => {
+      const ordersToBillingModulePaymentIntents = get<OrderPaymentService>(
+        SubjectDI.IOrderPaymentService,
+      );
+      const paymentIntentService = get<PaymentIntentService>(
+        SubjectDI.IPaymentIntentService,
+      );
       const attribute = new CRUDService<any>(
         new EcommerceAttributeRepository(new EcommerceAttributeConfiguration()),
       );
@@ -416,9 +418,9 @@ const bindings = new ContainerModule(({ bind }) => {
           new EcommerceAttributeKeyConfiguration(),
         ),
       );
-      const storesToOrders = ecommerceStoresToOrdersApp.controller.service;
+      const storesToOrders = createEcommerceStoresToOrdersService();
       const ordersToBillingModuleCurrencies =
-        ecommerceOrdersToCurrenciesApp.controller.service;
+        createEcommerceOrdersToCurrenciesService();
       const ordersToFileStorageModuleFiles = new CRUDService<any>(
         new EcommerceOrdersToFileStorageModuleFilesRepository(
           new EcommerceOrdersToFileStorageModuleFilesConfiguration(),
@@ -519,7 +521,7 @@ const bindings = new ContainerModule(({ bind }) => {
         productsToFileStorageModuleFiles as any,
         ordersToBillingModulePaymentIntents,
         billingCurrency,
-        orderPaymentIntentService,
+        paymentIntentService,
         billingPaymentIntentsToCurrencies,
         billingPaymentIntentsToInvoices,
         billingInvoice,
@@ -529,7 +531,7 @@ const bindings = new ContainerModule(({ bind }) => {
       );
 
       return {
-        store,
+        store: storeService,
         order,
         product,
         storesToProducts: offers,
@@ -548,27 +550,27 @@ const bindings = new ContainerModule(({ bind }) => {
     })
     .inSingletonScope();
   bind<IBillingModule>(SubjectDI.IBillingModule)
-    .toDynamicValue(() => {
+    .toDynamicValue(({ get }) => {
       return {
         currency: new CRUDService<any>(
           new BillingCurrencyRepository(new BillingCurrencyConfiguration()),
         ),
-        paymentIntent: orderPaymentIntentService,
+        paymentIntent: get<PaymentIntentService>(
+          SubjectDI.IPaymentIntentService,
+        ),
         paymentIntentsToCurrencies:
-          billingPaymentIntentsToCurrenciesApp.controller.service,
-        invoice: billingInvoiceApp.controller.service,
+          createBillingPaymentIntentsToCurrenciesService(),
+        invoice: createBillingInvoiceService(),
         paymentIntentsToInvoices:
-          billingPaymentIntentsToInvoicesApp.controller.service,
+          createBillingPaymentIntentsToInvoicesService(),
       };
     })
     .inSingletonScope();
   bind<INotificationModule>(SubjectDI.INotificationModule)
     .toDynamicValue(() => {
       return {
-        topic: notificationTopicApp.controller
-          .service as NotificationTopicService,
-        notification: notificationNotificationApp.controller
-          .service as NotificationNotificationService,
+        topic: createNotificationTopicService(),
+        notification: createNotificationNotificationService(),
         template: new CRUDService<any>(
           new NotificationTemplateRepository(
             new NotificationTemplateConfiguration(),
@@ -641,8 +643,7 @@ const bindings = new ContainerModule(({ bind }) => {
   bind<IBroadcastModule>(SubjectDI.IBroadcastModule)
     .toDynamicValue(() => {
       return {
-        channel: broadcastChannelApp.controller
-          .service as BroadcastChannelService,
+        channel: createBroadcastChannelService(),
       };
     })
     .inSingletonScope();
@@ -655,7 +656,7 @@ const bindings = new ContainerModule(({ bind }) => {
     )
     .inSingletonScope();
   bind<RoleService>(SubjectDI.IRoleService)
-    .toDynamicValue(() => roleApp.controller.service as RoleService)
+    .toDynamicValue(() => rolesService)
     .inSingletonScope();
   bind<PermissionService>(SubjectDI.IPermissionService)
     .toDynamicValue(
@@ -769,15 +770,33 @@ const bindings = new ContainerModule(({ bind }) => {
   );
 });
 
-export async function bootstrap() {
-  const container = new Container();
-  container.load(bindings);
-  const app = container.get<App>(DI.IApp);
-  await app.init();
-  const subjectService = container.get<Service>(DI.IService);
-  orderPaymentIntentService.setProviderPeriodResolver((receipt) =>
-    subjectService.ecommerceModuleOrderResolveProviderPeriod(receipt),
-  );
+const { bootstrapWithService, createService } = createAppBootstrap<
+  App,
+  Service,
+  [orderPayments: OrderPaymentService, paymentIntent: PaymentIntentService]
+>(bindings, (container, orderPayments, paymentIntent) => {
+  container
+    .bind<OrderPaymentService>(SubjectDI.IOrderPaymentService)
+    .toConstantValue(orderPayments);
+  container
+    .bind<PaymentIntentService>(SubjectDI.IPaymentIntentService)
+    .toConstantValue(paymentIntent);
+});
 
-  return { app };
+export { createService };
+
+export async function bootstrap() {
+  const [orderPayments, paymentIntent] = await Promise.all([
+    import("@sps/ecommerce/relations/orders-to-billing-module-payment-intents/backend/app/api"),
+    import("@sps/billing/models/payment-intent/backend/app/api"),
+  ]);
+  const { app, service } = await bootstrapWithService(
+    orderPayments.service,
+    paymentIntent.service,
+  );
+  return {
+    app,
+    resolveOrderPaymentPeriod:
+      service.ecommerceModuleOrderResolveProviderPeriod.bind(service),
+  };
 }

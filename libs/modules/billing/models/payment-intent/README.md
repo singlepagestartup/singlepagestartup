@@ -65,9 +65,10 @@ startup service. Unknown recurring providers fail explicitly and remain pending.
 
 ### Provider-managed subscription periods
 
-Stripe owns scheduled card debits. The application composes the effective
-Payment Intent service with `setProviderPeriodResolver`; the higher consumer
-owns the local subscription contract and period Orders. Billing passes an
+Stripe schedules recurring card payments. The API host calls
+`configureOrderPayments` with Ecommerce's reservation callbacks and RBAC
+Subject's period resolver. Subject owns the local subscription contract and
+creates the Order for each renewal period. Billing passes an
 authenticated receipt containing the original contract Payment Intent,
 provider subscription and invoice IDs, currency, amount, and subscription line
 coverage. The resolver returns the Payment Intent belonging to that exact

@@ -1,5 +1,6 @@
-import { Container, ContainerModule } from "inversify";
+import { ContainerModule } from "inversify";
 import {
+  createAppBootstrap,
   DI,
   ExceptionFilter,
   type IExceptionFilter,
@@ -52,20 +53,14 @@ const bindings = new ContainerModule(({ bind }) => {
     .inSingletonScope();
 });
 
-export async function bootstrap(
-  paymentLifecycle?: IPaymentLifecycle,
-): Promise<IBootstrapResult> {
-  const container = new Container();
-  container.load(bindings);
-  if (paymentLifecycle) {
-    container
-      .bind<IPaymentLifecycle>(PaymentIntentDI.IPaymentLifecycle)
-      .toConstantValue(paymentLifecycle);
-  }
-  const app = container.get<App>(DI.IApp);
-  const service = container.get<Service>(DI.IService);
-
-  await app.init();
-
-  return { app, service };
-}
+export const { bootstrapWithService: bootstrap, createService } =
+  createAppBootstrap<App, Service, [paymentLifecycle?: IPaymentLifecycle]>(
+    bindings,
+    (container, paymentLifecycle) => {
+      if (paymentLifecycle) {
+        container
+          .bind<IPaymentLifecycle>(PaymentIntentDI.IPaymentLifecycle)
+          .toConstantValue(paymentLifecycle);
+      }
+    },
+  );

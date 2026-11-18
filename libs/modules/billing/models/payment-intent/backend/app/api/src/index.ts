@@ -1,6 +1,8 @@
 import { bootstrap } from "./lib/bootstrap";
-const { app } = await bootstrap();
-export { app };
+const { app, service } = await bootstrap();
+export { app, service };
+export const configureOrderPayments =
+  service.configureOrderPayments.bind(service);
 export { bootstrap } from "./lib/bootstrap";
 export type { IBootstrapResult } from "./lib/bootstrap";
 export type { App } from "./lib/app";

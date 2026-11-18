@@ -42,6 +42,13 @@ describe("GIVEN: an SPS module tree exists", () => {
       name: "codex-probe",
     });
 
+    const bootstrap = readTreeFile(
+      tree,
+      "libs/modules/ecommerce/models/codex-probe/backend/app/api/src/lib/bootstrap.ts",
+    );
+    expect(bootstrap).toContain("export const { bootstrap, createService }");
+    expect(bootstrap).toContain("createAppBootstrap<App, Service>");
+
     expect(
       readTreeFile(
         tree,

@@ -19,6 +19,8 @@ import { Service as PasswordAuthentication } from "../../../startup/authenticati
 import { Handler as PasswordLogin } from "../../../../controller/singlepage/authentication/email-and-password/authentication";
 import { Service as MergeGuestCart } from "./merge-guest-cart";
 import { bootstrap as bootstrapOrder } from "@sps/ecommerce/models/order/backend/app/api/src/lib/bootstrap";
+import { bootstrap as bootstrapPaymentIntent } from "@sps/billing/models/payment-intent/backend/app/api/src/lib/bootstrap";
+import { createService as createReservationService } from "@sps/ecommerce/relations/orders-to-billing-module-payment-intents/backend/app/api/src/lib/bootstrap";
 import { Service as SubjectService } from "../../index";
 import { Repository as SubjectRepository } from "../../../../repository";
 import { Configuration as SubjectConfiguration } from "../../../../configuration";
@@ -88,6 +90,14 @@ function track(service: any) {
   return service;
 }
 
+async function bootstrapOrderFixture() {
+  const reservations = createReservationService();
+  const { service: intents } = await bootstrapPaymentIntent(
+    reservations.paymentLifecycle,
+  );
+  return bootstrapOrder(reservations, intents);
+}
+
 async function fixture(type = "one_off") {
   const suffix = randomUUID();
   const subjectRepository = new SubjectRepository(new SubjectConfiguration());
@@ -98,7 +108,7 @@ async function fixture(type = "one_off") {
   const stranger = await subjects.create({
     data: { slug: `retry-stranger-${suffix}` },
   });
-  const { app: orderApp } = await bootstrapOrder();
+  const { app: orderApp } = await bootstrapOrderFixture();
   const order = track(orderApp.controller.service) as any;
   const createNextPeriodCart = order.createNextPeriodCart.bind(order);
   jest
@@ -502,7 +512,7 @@ async function fixture(type = "one_off") {
 }
 
 async function freshCheckout() {
-  const { app } = await bootstrapOrder();
+  const { app } = await bootstrapOrderFixture();
   const freshOrder = app.controller.service as any;
   const subjectRepository = new SubjectRepository(new SubjectConfiguration());
   const subjects = new CRUDService(subjectRepository);

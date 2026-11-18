@@ -95,6 +95,21 @@ documented in [providers-db](../../../providers/db/README.md). The
 [transport contract](../../../middlewares/src/lib/revalidation/README.md)
 describes private query refs, replay and browser recovery.
 
+## Backend bootstrap
+
+Modules, models and relations declare their Inversify bindings in
+`backend/app/api/src/lib/bootstrap.ts`. The shared `createAppBootstrap`
+loads those bindings. Calling `bootstrap()` initializes the HTTP app.
+
+To use another entity inside a backend service, import `createService` from
+that entity's `backend/app/api/src/lib/bootstrap`. Each call creates a fresh
+container and resolves the entity's service. A caller can use a singleton
+binding to reuse that instance. Pass any dependencies required by the
+entity's factory, such as the payment services for an Order.
+
+When the HTTP app and a payment handler share a service, bind it in singleton
+scope and call `bootstrapWithService()` to get both from the same container.
+
 ## Resource descriptions
 
 DatabaseRepository.describe returns serializable table, column and foreign-key

@@ -84,7 +84,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     @inject(PaymentIntentDI.IBillingModule) billingModule: IBillingModule,
     @inject(PaymentIntentDI.IPaymentLifecycle)
     @optional()
-    readonly paymentLifecycle?: IPaymentLifecycle,
+    private orderReservations?: IPaymentLifecycle,
   ) {
     super(repository);
     this.billingModule = billingModule;
@@ -112,6 +112,18 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
       repository: this.repository,
       service: this,
     }).execute(props);
+  }
+
+  get paymentLifecycle(): IPaymentLifecycle | undefined {
+    return this.orderReservations;
+  }
+
+  configureOrderPayments(
+    reservations: IPaymentLifecycle,
+    resolvePeriod: IProviderPeriodResolver,
+  ) {
+    this.orderReservations = reservations;
+    this.setProviderPeriodResolver(resolvePeriod);
   }
 
   setProviderPeriodResolver(resolver: IProviderPeriodResolver) {

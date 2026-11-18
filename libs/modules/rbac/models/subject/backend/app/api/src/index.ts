@@ -1,4 +1,4 @@
 import { bootstrap } from "./lib/bootstrap";
-const { app } = await bootstrap();
-export { app };
+const { app, resolveOrderPaymentPeriod } = await bootstrap();
+export { app, resolveOrderPaymentPeriod };
 export { bootstrap } from "./lib/bootstrap";

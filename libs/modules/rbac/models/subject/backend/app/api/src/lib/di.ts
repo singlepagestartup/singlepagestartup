@@ -198,6 +198,8 @@ export interface IBroadcastModule {
 }
 
 export const SubjectDI = {
+  IOrderPaymentService: Symbol.for("rbac.subject.order-payment.service"),
+  IPaymentIntentService: Symbol.for("rbac.subject.payment-intent.service"),
   IEcommerceCatalogService: Symbol.for(
     "rbac.subject.ecommerce-catalog.service",
   ),
