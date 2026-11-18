@@ -3,9 +3,9 @@ issue_number: 416
 issue_title: "Типизированный доступ к сервисам нижележащих модулей через this.modules"
 repository: singlepagestartup
 created_at: 2026-11-18T19:15:00Z
-last_updated: 2026-11-18T19:23:00Z
+last_updated: 2026-11-18T20:30:00Z
 status: active
-current_phase: research
+current_phase: implement
 ---
 
 # Процесс работы над типизацией сервисов
@@ -18,10 +18,10 @@ current_phase: research
 
 - Create: completed
 - Research: completed
-- Plan: not_started
-- Implement: not_started
-- Current phase: research
-- Next step: проверка исследования, затем Core 20.
+- Plan: completed
+- Implement: in_progress
+- Current phase: implement
+- Next step: выполнить четыре этапа, проверить результат и передать PR на ревью.
 
 ## Phase Notes
 
@@ -37,11 +37,17 @@ GPT-6.2 Sol с усилием xhigh исследовал создание экз
 
 ### Plan
 
+Все четыре этапа согласованы. План задаёт критерии для пути Agent → Order, генерации разрешённых зависимостей, переноса сервисов с особыми условиями сборки и проверки всех модулей. Отдельные проверки охватывают изоляцию подмен, реэкспорты своего модуля, оплату, откат Knowledge и доступ покупателя к заказу.
+
+Полный текст доступен для ревью в [файле плана](../../plans/singlepagestartup/ISSUE-416.md) и в [комментарии к задаче](https://github.com/singlepagestartup/singlepagestartup/issues/416#issuecomment-6989394546).
+
 ### Implement
+
+[Ход реализации](../../handoffs/singlepagestartup/ISSUE-416-progress.md). Начальный статус в Project — `Ready for Dev`, текущий — `In Dev`.
 
 ## Incident Log
 
-<!-- incident-count: 1 -->
+<!-- incident-count: 12 -->
 
 ### Incident 1 — Загрузка undici при проверке идентичности в Bun
 
@@ -52,6 +58,116 @@ GPT-6.2 Sol с усилием xhigh исследовал создание экз
 - **Fix**: Проба идентичности выполнилась с локальной заглушкой в памяти процесса. Сетевые операции в этой пробе не проверялись.
 - **Preventive Action**: Для воспроизведения отделять тест сборки объектов от проверки транспортного адаптера.
 - **References**: libs/shared/backend/api/src/lib/app/bootstrap.spec.ts, раздел проверок в исследовании.
+
+### Incident 2 — Сеть при загрузке конфигурации GitHub
+
+- **Phase**: Plan
+- **Occurrences**: 1
+- **Symptom**: `load_config.sh` вернул имя репозитория вместе с ошибками соединения с GitHub.
+- **Root Cause**: Песочница ограничивает доступ к GitHub при загрузке конфигурации.
+- **Fix**: Повторная загрузка с сетевым доступом подтвердила `singlepagestartup/singlepagestartup`. Помощники прочитали статус и перевели задачу в `Plan in Progress`.
+- **Preventive Action**: Запускать начальную проверку конфигурации с тем же сетевым доступом, что и проверку статуса.
+- **References**: `.claude/helpers/load_config.sh`, `.claude/helpers/get_issue_status.sh`.
+
+### Incident 3 — Модели двух исследовательских ролей недоступны
+
+- **Phase**: Plan
+- **Occurrences**: 2
+- **Symptom**: Роли `codebase-analyzer` и `codebase-pattern-finder` завершились до чтения исходников.
+- **Root Cause**: Аккаунт не поддерживает модели `gpt-5.4` и `gpt-5.4-mini`, указанные для этих ролей.
+- **Fix**: Два агента с моделью текущей сессии проверили время жизни сервисов и точки расширения генератора.
+- **Preventive Action**: При таком ответе передавать тот же вопрос агенту с доступной моделью.
+- **References**: `.codex/agents/codebase-analyzer.toml`, `.codex/agents/codebase-pattern-finder.toml`.
+
+### Incident 4 — Подмена с зависимостями другой сборки
+
+- **Phase**: Implement
+- **Occurrences**: 1
+- **Symptom**: Передача уже собранного Order как подмены переносила объект между независимыми сборками.
+- **Root Cause**: Привязка к сборке принадлежит экземпляру.
+- **Fix**: Для подготовленного сервиса использовать фабрику `overrideServiceWith`, которая получает целевую сборку. Общие тесты проверяют один вызов фабрики и идентичность с контроллером.
+- **Preventive Action**: Проверять две одновременно работающие сборки.
+- **References**: `libs/shared/backend/api/src/lib/app/bootstrap.spec.ts`.
+
+### Incident 5 — Несовместимый тип дочернего приложения
+
+- **Phase**: Implement
+- **Occurrences**: 1
+- **Symptom**: Компилятор отклонил привязку всех 161 сущностей к модулям HTTP.
+- **Root Cause**: Обёртка монтирования зависела от типа метода создания записи в контроллере.
+- **Fix**: Для монтирования использовать интерфейс дочернего приложения с нужными HTTP-операциями. После исправлений API компилируется.
+- **Preventive Action**: Проверять общий тип монтирования на полном составе модулей.
+- **References**: `libs/shared/backend/api/src/lib/app/module/interface.ts`, `apps/api/tsconfig.json`.
+
+### Incident 6 — Цикл Ecommerce при сборке каталога и связей предложений
+
+- **Phase**: Implement
+- **Occurrences**: 1
+- **Symptom**: Анализатор обнаружил взаимное получение StoresToProducts и OffersToOffers.
+- **Root Cause**: Каталог использует связи предложений, а проверка записи связи запрашивала сам каталог.
+- **Fix**: Каталог получает связи из своей сборки. Запись связи читает сохранённые предложения через репозиторий под действующей блокировкой. Для собственной видимости предложений доступен типизированный reader.
+- **Preventive Action**: Проверять обе точки входа и два направления ссылки с настоящими фабриками.
+- **References**: `libs/modules/ecommerce/README.md`.
+
+### Incident 7 — Транзакция Knowledge теряла подмену родителя
+
+- **Phase**: Implement
+- **Occurrences**: 1
+- **Symptom**: Явно собранный Chunk получал File из стандартной сборки, а внутри транзакции терял стороннюю подмену Notification.
+- **Root Cause**: Самостоятельная сборка транзакции знала только о пяти участниках, а явный граф не связывал их с общим владельцем.
+- **Fix**: Привязать участники явного графа к его сборке. Дочерняя сборка транзакции заменяет пять участников и делегирует остальные владельцу.
+- **Preventive Action**: Сравнивать ссылки на участника транзакции и отдельный сервис родителя.
+- **References**: `libs/modules/knowledge/backend/app/api/src/lib/composition.spec.ts`.
+
+### Incident 8 — Пропущенные ленивые вызовы фабрик
+
+- **Phase**: Implement
+- **Occurrences**: 1
+- **Symptom**: Первый анализатор циклов пропускал обращение к владельцу через переменную с require.
+- **Root Cause**: Проверка искала привязку только в статическом импорте.
+- **Fix**: Учитывать синхронный вызов фабрики через require и её локальное имя. Импорт в асинхронной команде проверяется на направление и владение.
+- **Preventive Action**: Проверять цикл сборки, отложенную команду и одноимённое связывание в другой функции.
+- **References**: `tools/agents/module-dependencies.test.mjs`.
+
+### Incident 9 — В тестовом проекте генератора отсутствовал порядок модулей
+
+- **Phase**: Implement
+- **Occurrences**: 1
+- **Symptom**: Тесты генератора останавливались при проверке позиции модуля.
+- **Root Cause**: Старые фикстуры виртуального дерева не содержали утверждённого списка модулей.
+- **Fix**: Добавить список в тестовые деревья и проверить создание, повтор и удаление с тем же контрактом, что в проекте.
+- **Preventive Action**: Выполнять генератор на виртуальном дереве с его обязательными входами.
+- **References**: `tools/plugins/sps-generator-plugin/src/utils/service-registries/index.spec.ts`.
+
+### Incident 10 — Тест зачисления пропускал чтение предложения
+
+- **Phase**: Implement
+- **Occurrences**: 1
+- **Symptom**: Вместо ожидаемой ошибки зачисления тест получал ошибку чтения find у undefined.
+- **Root Cause**: Ручная сборка в исходном тесте передавала только Order. Операция проверяет также StoresToProducts.
+- **Fix**: Передать запрос предложений, который возвращает пустой список для синтетического заказа. На PostgreSQL повтор операции зачисляет сумму один раз.
+- **Preventive Action**: Воспроизводить ветвь ошибки с действительными зависимостями операции.
+- **References**: `libs/modules/rbac/models/subject/backend/app/api/src/lib/service/singlepage/ecommerce/order/proceed.integration.spec.ts`.
+
+### Incident 11 — Jest ожидал соединения Redis после завершения проверок
+
+- **Phase**: Implement
+- **Occurrences**: 1
+- **Symptom**: Отдельные прогоны RBAC и Social выводили итог всех проверок и продолжали ждать.
+- **Root Cause**: Существующие тесты контроллеров создают Redis-клиенты. Открытые соединения остались после всех утверждений.
+- **Fix**: Сверить результат Jest и локальные сокеты. Для полных наборов использовать --runInBand и --forceExit.
+- **Preventive Action**: Отличать ошибку утверждения от открытого ресурса после завершения теста.
+- **References**: `libs/modules/rbac/models/subject/backend/app/api/src/lib/controller/singlepage/index.spec.ts`.
+
+### Incident 12 — Тест доставки Consistency на повторно использованной базе
+
+- **Phase**: Implement
+- **Occurrences**: 1
+- **Symptom**: Общий интеграционный прогон завершился до доставки двух проверяемых событий. После него в outbox тестовой копии оставалось 1940 необработанных записей.
+- **Root Cause**: Тест за ограниченное число итераций читает очередь, общую для всех проверок на этой копии базы. Предыдущие прогоны оставили в ней события.
+- **Fix**: Штатный ConsistencyStore.dispatch обработал очередь на проверочной базе до нуля. Отдельный тест подтвердил доставку для обоих порядков коммита.
+- **Preventive Action**: Проверять backlog тестовой базы перед повторным запуском интеграционного теста Consistency.
+- **References**: `apps/api/specs/integration/consistency.integration.spec.ts`.
 
 ## Reusable Learnings
 

@@ -1,3 +1,4 @@
+import { createModules } from "../modules";
 import { Service as OrderPaymentDispatch } from "../startup/ecommerce/order/payment-dispatch";
 import { Service as OrderPaymentCheck } from "../startup/ecommerce/order/payment-check";
 import { Service as StripeOrderPayment } from "../startup/ecommerce/order/stripe-payment";
@@ -40,8 +41,8 @@ import type { IExecuteProps as IEcommerceOrderAccessProps } from "./ecommerce/or
 import { Service as CrmFormRequestCreate } from "../startup/crm/form/request";
 import type { IExecuteProps as ICrmFormRequestCreateProps } from "./crm/form/request";
 import "reflect-metadata";
-import { inject, injectable } from "inversify";
-import { CRUDService, DI } from "@sps/shared-backend-api";
+import { inject, injectable, optional } from "inversify";
+import { CRUDService, defaultAppAssembly, DI } from "@sps/shared-backend-api";
 import { Repository } from "../../repository";
 import { verify } from "hono/jwt";
 import { requestHostRevalidation } from "@sps/backend-utils";
@@ -182,6 +183,10 @@ import { Service as PermissionDefaults } from "../startup/permission-defaults";
 
 @injectable()
 export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
+  get modules() {
+    return this.appAssembly.getOrCreate(createModules);
+  }
+
   declare repository: Repository;
   blogModule: IBlogModule;
   subjectsToBlogModuleArticles: SubjectsToBlogModuleArticlesService;
@@ -210,14 +215,21 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     @inject(SubjectDI.ISecurityNotificationsService)
     private readonly securityNotifications: SecurityNotifications,
     @inject(DI.IRepository) repository: Repository,
-    @inject(SubjectDI.ISocialModule) socialModule: ISocialModule,
+    @inject(SubjectDI.ISocialModule)
+    @optional()
+    socialModule: ISocialModule | undefined,
     @inject(SubjectDI.IEcommerceModule) ecommerceModule: IEcommerceModule,
     @inject(SubjectDI.IBillingModule) billingModule: IBillingModule,
     @inject(SubjectDI.INotificationModule)
-    notificationModule: INotificationModule,
-    @inject(SubjectDI.IFileStorageModule) fileStorageModule: IFileStorageModule,
-    @inject(SubjectDI.ICrmModule) crmModule: ICrmModule,
-    @inject(SubjectDI.IBroadcastModule) broadcastModule: IBroadcastModule,
+    @optional()
+    notificationModule: INotificationModule | undefined,
+    @inject(SubjectDI.IFileStorageModule)
+    @optional()
+    fileStorageModule: IFileStorageModule | undefined,
+    @inject(SubjectDI.ICrmModule) @optional() crmModule: ICrmModule | undefined,
+    @inject(SubjectDI.IBroadcastModule)
+    @optional()
+    broadcastModule: IBroadcastModule | undefined,
     @inject(SubjectDI.IIdentityService) identity: IdentityService,
     @inject(SubjectDI.IRoleService) role: RoleService,
     @inject(SubjectDI.IPermissionService) permission: PermissionService,
@@ -241,20 +253,24 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     subjectsToEcommerceModuleOrders: SubjectsToEcommerceModuleOrdersService,
     @inject(SubjectDI.ISubjectsToBillingModuleCurrenciesService)
     subjectsToBillingModuleCurrencies: SubjectsToBillingModuleCurrenciesService,
-    @inject(SubjectDI.IBlogModule) blogModule: IBlogModule,
+    @inject(SubjectDI.IBlogModule)
+    @optional()
+    blogModule: IBlogModule | undefined,
     @inject(SubjectDI.ISubjectsToBlogModuleArticlesService)
     subjectsToBlogModuleArticles: SubjectsToBlogModuleArticlesService,
     @inject(SubjectDI.IEcommerceCatalogService)
     readonly ecommerceCatalog: EcommerceCatalog,
+    @inject(DI.IAppAssembly) @optional() assembly = defaultAppAssembly,
   ) {
     super(repository);
-    this.socialModule = socialModule;
+    const modules = assembly.getOrCreate(createModules);
+    this.socialModule = socialModule ?? modules.social;
     this.ecommerceModule = ecommerceModule;
     this.billingModule = billingModule;
-    this.notificationModule = notificationModule;
-    this.fileStorageModule = fileStorageModule;
-    this.crmModule = crmModule;
-    this.broadcastModule = broadcastModule;
+    this.notificationModule = notificationModule ?? modules.notification;
+    this.fileStorageModule = fileStorageModule ?? modules.fileStorage;
+    this.crmModule = crmModule ?? modules.crm;
+    this.broadcastModule = broadcastModule ?? modules.broadcast;
     this.identity = identity;
     this.role = role;
     this.permission = permission;
@@ -268,7 +284,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     this.subjectsToRoles = subjectsToRoles;
     this.subjectsToEcommerceModuleOrders = subjectsToEcommerceModuleOrders;
     this.subjectsToBillingModuleCurrencies = subjectsToBillingModuleCurrencies;
-    this.blogModule = blogModule;
+    this.blogModule = blogModule ?? modules.blog;
     this.subjectsToBlogModuleArticles = subjectsToBlogModuleArticles;
   }
 

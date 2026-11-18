@@ -1,3 +1,4 @@
+import { createModules } from "../modules";
 import "reflect-metadata";
 import { Service as BoundedDelivery } from "../startup/bounded-delivery";
 import type { ISendBoundedNotification } from "./bounded-delivery";
@@ -9,6 +10,10 @@ import { TopicDI, type INotificationModule } from "../../di";
 
 @injectable()
 export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
+  get modules() {
+    return this.appAssembly.getOrCreate(createModules);
+  }
+
   notificationModule: INotificationModule;
 
   constructor(

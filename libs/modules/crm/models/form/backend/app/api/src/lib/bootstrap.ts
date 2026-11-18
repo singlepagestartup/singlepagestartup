@@ -1,13 +1,6 @@
-import { Service as RequestService } from "@sps/crm/models/request/backend/app/api/src/lib/service";
-import { Repository as RequestRepository } from "@sps/crm/models/request/backend/app/api/src/lib/repository";
-import { Configuration as RequestConfiguration } from "@sps/crm/models/request/backend/app/api/src/lib/configuration";
-import { Service as FormsToRequestsService } from "@sps/crm/relations/forms-to-requests/backend/app/api/src/lib/service";
-import { Repository as FormsToRequestsRepository } from "@sps/crm/relations/forms-to-requests/backend/app/api/src/lib/repository";
-import { Configuration as FormsToRequestsConfiguration } from "@sps/crm/relations/forms-to-requests/backend/app/api/src/lib/configuration";
 import { ContainerModule } from "inversify";
 import {
   createAppBootstrap,
-  CRUDService,
   DI,
   ExceptionFilter,
   type IExceptionFilter,
@@ -17,49 +10,48 @@ import { Repository } from "./repository";
 import { Controller } from "./controller";
 import { Service } from "./service";
 import { App } from "./app";
+import { createModules } from "./service/modules";
 import {
   FormDI,
   type INotificationModule,
   type ISubmissionServices,
 } from "./di";
-import { Repository as NotificationTopicRepository } from "@sps/notification/models/topic/backend/app/api/src/lib/repository";
-import { Configuration as NotificationTopicConfiguration } from "@sps/notification/models/topic/backend/app/api/src/lib/configuration";
-import { Repository as NotificationTemplateRepository } from "@sps/notification/models/template/backend/app/api/src/lib/repository";
-import { Configuration as NotificationTemplateConfiguration } from "@sps/notification/models/template/backend/app/api/src/lib/configuration";
 
 const bindings = new ContainerModule(({ bind }) => {
   bind<IExceptionFilter>(DI.IExceptionFilter).to(ExceptionFilter);
   bind<App>(DI.IApp).to(App);
-  bind<Controller>(DI.IController).to(Controller);
+  bind<Controller>(DI.IController).to(Controller).inSingletonScope();
   bind<Repository>(DI.IRepository).to(Repository);
   bind<Service>(DI.IService).to(Service).inSingletonScope();
   bind<Configuration>(DI.IConfiguration).to(Configuration);
-  bind<ISubmissionServices>(FormDI.ISubmissionServices)
-    .toDynamicValue(() => ({
-      request: new RequestService(
-        new RequestRepository(new RequestConfiguration()),
-      ),
-      formsToRequests: new FormsToRequestsService(
-        new FormsToRequestsRepository(new FormsToRequestsConfiguration()),
-      ),
-    }))
-    .inSingletonScope();
-  bind<INotificationModule>(FormDI.INotificationModule)
-    .toDynamicValue(() => {
-      return {
-        topic: new CRUDService<any>(
-          new NotificationTopicRepository(new NotificationTopicConfiguration()),
-        ),
-        template: new CRUDService<any>(
-          new NotificationTemplateRepository(
-            new NotificationTemplateConfiguration(),
-          ),
-        ),
-      };
-    })
-    .inSingletonScope();
 });
 
-export const { bootstrap, createService } = createAppBootstrap<App, Service>(
+export const serviceBootstrap = createAppBootstrap<App, Service>(
   bindings,
+  (container, assembly) => {
+    const { crm, notification } = assembly.getOrCreate(createModules);
+    container
+      .bind<ISubmissionServices>(FormDI.ISubmissionServices)
+      .toDynamicValue(() => ({
+        get request() {
+          return crm.request;
+        },
+        get formsToRequests() {
+          return crm.formsToRequests;
+        },
+      }))
+      .inSingletonScope();
+    container
+      .bind<INotificationModule>(FormDI.INotificationModule)
+      .toDynamicValue(() => ({
+        get topic() {
+          return notification.topic;
+        },
+        get template() {
+          return notification.template;
+        },
+      }))
+      .inSingletonScope();
+  },
 );
+export const { bootstrap, createService } = serviceBootstrap;

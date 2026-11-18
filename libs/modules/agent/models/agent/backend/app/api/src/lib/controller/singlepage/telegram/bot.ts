@@ -133,7 +133,7 @@ export class Handler {
 
     let socialModuleAction;
     try {
-      socialModuleAction = await this.service.socialModule.action.findById({
+      socialModuleAction = await this.service.modules.social.action.findById({
         id: actionId,
       });
     } catch (error) {
@@ -149,7 +149,7 @@ export class Handler {
     }
 
     const socialModuleChatsToActions =
-      await this.service.socialModule.chatsToActions.find({
+      await this.service.modules.social.chatsToActions.find({
         params: {
           filters: {
             and: [
@@ -169,7 +169,7 @@ export class Handler {
       });
     }
 
-    const socialModuleChat = await this.service.socialModule.chat.findById({
+    const socialModuleChat = await this.service.modules.social.chat.findById({
       id: socialModuleChatsToActions[0].chatId,
     });
 
@@ -255,7 +255,7 @@ export class Handler {
     }
 
     const socialModuleProfilesToChats =
-      await this.service.socialModule.profilesToChats.find({
+      await this.service.modules.social.profilesToChats.find({
         params: {
           filters: {
             and: [
@@ -275,21 +275,23 @@ export class Handler {
       });
     }
 
-    const socialModuleProfiles = await this.service.socialModule.profile.find({
-      params: {
-        filters: {
-          and: [
-            {
-              column: "id",
-              method: "inArray",
-              value: socialModuleProfilesToChats.map(
-                (entity) => entity.profileId,
-              ),
-            },
-          ],
+    const socialModuleProfiles = await this.service.modules.social.profile.find(
+      {
+        params: {
+          filters: {
+            and: [
+              {
+                column: "id",
+                method: "inArray",
+                value: socialModuleProfilesToChats.map(
+                  (entity) => entity.profileId,
+                ),
+              },
+            ],
+          },
         },
       },
-    });
+    );
 
     if (!socialModuleProfiles?.length) {
       return c.json({
@@ -298,7 +300,7 @@ export class Handler {
     }
 
     const socialModuleProfilesToActions =
-      await this.service.socialModule.profilesToActions.find({
+      await this.service.modules.social.profilesToActions.find({
         params: {
           filters: {
             and: [
@@ -385,7 +387,7 @@ export class Handler {
     }
 
     const socialModuleMessage =
-      await this.service.socialModule.message.findById({
+      await this.service.modules.social.message.findById({
         id: props.data.rbacModuleAction.payload?.result.data.id,
       });
 
@@ -426,11 +428,10 @@ export class Handler {
 
     return Boolean(
       audioTranscription &&
-        typeof audioTranscription === "object" &&
-        (audioTranscription as Record<string, unknown>).status ===
-          "completed" &&
-        (audioTranscription as Record<string, unknown>).agentTrigger ===
-          AUDIO_TRANSCRIPTION_ACTION_TYPE,
+      typeof audioTranscription === "object" &&
+      (audioTranscription as Record<string, unknown>).status === "completed" &&
+      (audioTranscription as Record<string, unknown>).agentTrigger ===
+        AUDIO_TRANSCRIPTION_ACTION_TYPE,
     );
   }
 
@@ -445,20 +446,22 @@ export class Handler {
 
     if (!props.socialModuleMessage.description?.trim()) {
       const attachmentRelations =
-        await this.service.socialModule.messagesToFileStorageModuleFiles.find({
-          params: {
-            filters: {
-              and: [
-                {
-                  column: "messageId",
-                  method: "eq",
-                  value: props.socialModuleMessage.id,
-                },
-              ],
+        await this.service.modules.social.messagesToFileStorageModuleFiles.find(
+          {
+            params: {
+              filters: {
+                and: [
+                  {
+                    column: "messageId",
+                    method: "eq",
+                    value: props.socialModuleMessage.id,
+                  },
+                ],
+              },
+              limit: 1,
             },
-            limit: 1,
           },
-        });
+        );
 
       if (!attachmentRelations?.length) {
         return false;
@@ -469,7 +472,7 @@ export class Handler {
 
     if (!socialModuleChat) {
       const socialModuleChatsToMessages =
-        await this.service.socialModule.chatsToMessages.find({
+        await this.service.modules.social.chatsToMessages.find({
           params: {
             filters: {
               and: [
@@ -487,7 +490,7 @@ export class Handler {
         return false;
       }
 
-      socialModuleChat = await this.service.socialModule.chat.findById({
+      socialModuleChat = await this.service.modules.social.chat.findById({
         id: socialModuleChatsToMessages[0].chatId,
       });
     }
@@ -497,7 +500,7 @@ export class Handler {
     }
 
     const socialModuleProfilesToChats =
-      await this.service.socialModule.profilesToChats.find({
+      await this.service.modules.social.profilesToChats.find({
         params: {
           filters: {
             and: [
@@ -515,28 +518,30 @@ export class Handler {
       return false;
     }
 
-    const socialModuleProfiles = await this.service.socialModule.profile.find({
-      params: {
-        filters: {
-          and: [
-            {
-              column: "id",
-              method: "inArray",
-              value: socialModuleProfilesToChats.map(
-                (entity) => entity.profileId,
-              ),
-            },
-          ],
+    const socialModuleProfiles = await this.service.modules.social.profile.find(
+      {
+        params: {
+          filters: {
+            and: [
+              {
+                column: "id",
+                method: "inArray",
+                value: socialModuleProfilesToChats.map(
+                  (entity) => entity.profileId,
+                ),
+              },
+            ],
+          },
         },
       },
-    });
+    );
 
     if (!socialModuleProfiles?.length) {
       return false;
     }
 
     const socialModuleProfilesToMessages =
-      await this.service.socialModule.profilesToMessages.find({
+      await this.service.modules.social.profilesToMessages.find({
         params: {
           filters: {
             and: [

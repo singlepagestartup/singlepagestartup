@@ -10,33 +10,38 @@ import { Repository } from "./repository";
 import { Controller } from "./controller";
 import { Service } from "./service";
 import { App } from "./app";
-
+import { createModules } from "./service/modules";
 import {
   NotificationDI,
   type IBroadcastModule,
   type ITemplateService,
 } from "./di";
-import { createService as createBroadcastChannelService } from "@sps/broadcast/models/channel/backend/app/api/src/lib/bootstrap";
-
-import { createService as createTemplateService } from "@sps/notification/models/template/backend/app/api/src/lib/bootstrap";
 
 const bindings = new ContainerModule(({ bind }) => {
-  bind<ITemplateService>(NotificationDI.ITemplateService)
-    .toDynamicValue(() => createTemplateService())
-    .inSingletonScope();
-  bind<IBroadcastModule>(NotificationDI.IBroadcastModule)
-    .toDynamicValue(() => ({
-      channel: createBroadcastChannelService(),
-    }))
-    .inSingletonScope();
   bind<IExceptionFilter>(DI.IExceptionFilter).to(ExceptionFilter);
   bind<App>(DI.IApp).to(App);
-  bind<Controller>(DI.IController).to(Controller);
+  bind<Controller>(DI.IController).to(Controller).inSingletonScope();
   bind<Repository>(DI.IRepository).to(Repository);
   bind<Service>(DI.IService).to(Service).inSingletonScope();
   bind<Configuration>(DI.IConfiguration).to(Configuration);
 });
 
-export const { bootstrap, createService } = createAppBootstrap<App, Service>(
+export const serviceBootstrap = createAppBootstrap<App, Service>(
   bindings,
+  (container, assembly) => {
+    const { notification, broadcast } = assembly.getOrCreate(createModules);
+    container
+      .bind<ITemplateService>(NotificationDI.ITemplateService)
+      .toDynamicValue(() => notification.template)
+      .inSingletonScope();
+    container
+      .bind<IBroadcastModule>(NotificationDI.IBroadcastModule)
+      .toDynamicValue(() => ({
+        get channel() {
+          return broadcast.channel;
+        },
+      }))
+      .inSingletonScope();
+  },
 );
+export const { bootstrap, createService } = serviceBootstrap;

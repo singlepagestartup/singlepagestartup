@@ -1,5 +1,16 @@
 # Agent Model
 
+## Backend service
+
+Agent startup subclasses that declare a constructor call
+`super(repository, telegramConversationRuntime)`. Agent obtains domain
+services from its API assembly. Startup methods can use `this.modules.social`,
+`this.modules.rbac`, `this.modules.ecommerce`, `this.modules.billing`,
+`this.modules.broadcast`, `this.modules.host`, `this.modules.notification` and
+`this.modules.fileStorage` in place of the former constructor groups and
+fields. The `ecommerceModule` accessor still resolves the scoped Ecommerce
+group.
+
 ## Purpose
 
 Agents define automated jobs (cron-like tasks) with a title, interval, and

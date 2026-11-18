@@ -1,4 +1,3 @@
-import { DeliveryRepository } from "./repository/delivery";
 import { ContainerModule } from "inversify";
 import {
   createAppBootstrap,
@@ -11,31 +10,35 @@ import { Repository } from "./repository";
 import { Controller } from "./controller";
 import { Service } from "./service";
 import { App } from "./app";
+import { createModules } from "./service/modules";
 import { ChannelDI } from "./di";
-import { Service as MessageService } from "@sps/broadcast/models/message/backend/app/api/src/lib/service";
-import { createService as createMessageService } from "@sps/broadcast/models/message/backend/app/api/src/lib/bootstrap";
+import { DeliveryRepository } from "./repository/delivery";
 import { Configuration as MessageConfiguration } from "@sps/broadcast/models/message/backend/app/api/src/lib/configuration";
-import { Service as ChannelsToMessagesService } from "@sps/broadcast/relations/channels-to-messages/backend/app/api/src/lib/service";
-import { createService as createChannelsToMessagesService } from "@sps/broadcast/relations/channels-to-messages/backend/app/api/src/lib/bootstrap";
 
 const bindings = new ContainerModule(({ bind }) => {
   bind<IExceptionFilter>(DI.IExceptionFilter).to(ExceptionFilter);
   bind<App>(DI.IApp).to(App);
-  bind<Controller>(DI.IController).to(Controller);
+  bind<Controller>(DI.IController).to(Controller).inSingletonScope();
   bind<Repository>(DI.IRepository).to(Repository);
   bind<Service>(DI.IService).to(Service).inSingletonScope();
   bind<Configuration>(DI.IConfiguration).to(Configuration);
   bind<DeliveryRepository>(ChannelDI.IDeliveryRepository)
     .toDynamicValue(() => new DeliveryRepository(new MessageConfiguration()))
     .inSingletonScope();
-  bind<MessageService>(ChannelDI.IMessageService)
-    .toDynamicValue(() => createMessageService())
-    .inSingletonScope();
-  bind<ChannelsToMessagesService>(ChannelDI.IChannelsToMessagesService)
-    .toDynamicValue(() => createChannelsToMessagesService())
-    .inSingletonScope();
 });
 
-export const { bootstrap, createService } = createAppBootstrap<App, Service>(
+export const serviceBootstrap = createAppBootstrap<App, Service>(
   bindings,
+  (container, assembly) => {
+    const { broadcast } = assembly.getOrCreate(createModules);
+    container
+      .bind(ChannelDI.IMessageService)
+      .toDynamicValue(() => broadcast.message)
+      .inSingletonScope();
+    container
+      .bind(ChannelDI.IChannelsToMessagesService)
+      .toDynamicValue(() => broadcast.channelsToMessages)
+      .inSingletonScope();
+  },
 );
+export const { bootstrap, createService } = serviceBootstrap;

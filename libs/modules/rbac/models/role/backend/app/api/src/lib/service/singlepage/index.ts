@@ -1,3 +1,4 @@
+import { createModules } from "../modules";
 import "reflect-metadata";
 import { inject, injectable } from "inversify";
 import { CRUDService, DI } from "@sps/shared-backend-api";
@@ -12,6 +13,10 @@ import type { IPublicResourceIdsParams } from "@sps/rbac/models/role/sdk/model";
 
 @injectable()
 export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
+  get modules() {
+    return this.appAssembly.getOrCreate(createModules);
+  }
+
   constructor(
     @inject(DI.IRepository) repository: Repository,
     @inject(RoleDI.IPermissionService)

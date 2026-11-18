@@ -1,30 +1,34 @@
-import { app as button } from "@sps/website-builder/models/button/backend/app/api";
-import { app as buttonsArray } from "@sps/website-builder/models/buttons-array/backend/app/api";
-import { app as feature } from "@sps/website-builder/models/feature/backend/app/api";
-import { app as logotype } from "@sps/website-builder/models/logotype/backend/app/api";
-import { app as slide } from "@sps/website-builder/models/slide/backend/app/api";
-import { app as slider } from "@sps/website-builder/models/slider/backend/app/api";
-import { app as widget } from "@sps/website-builder/models/widget/backend/app/api";
-import { app as buttonsArraysToButtons } from "@sps/website-builder/relations/buttons-arrays-to-buttons/backend/app/api";
-import { app as buttonsToFileStorageModuleWidgets } from "@sps/website-builder/relations/buttons-to-file-storage-module-files/backend/app/api";
-import { app as featuresToButtonsArrays } from "@sps/website-builder/relations/features-to-buttons-arrays/backend/app/api";
-import { app as featuresToFileStorageModuleFiles } from "@sps/website-builder/relations/features-to-file-storage-module-files/backend/app/api";
-import { app as logotypesToFileStorageModuleWidgets } from "@sps/website-builder/relations/logotypes-to-file-storage-module-files/backend/app/api";
-import { app as slidersToSlides } from "@sps/website-builder/relations/sliders-to-slides/backend/app/api";
-import { app as slidesToButtonsArrays } from "@sps/website-builder/relations/slides-to-buttons-arrays/backend/app/api";
-import { app as slidesToFileStorageModuleWidgets } from "@sps/website-builder/relations/slides-to-file-storage-module-files/backend/app/api";
-import { app as widgetsToButtonsArrays } from "@sps/website-builder/relations/widgets-to-buttons-arrays/backend/app/api";
-import { app as widgetsToFeatures } from "@sps/website-builder/relations/widgets-to-features/backend/app/api";
-import { app as widgetsToFileStorageModuleWidgets } from "@sps/website-builder/relations/widgets-to-file-storage-module-files/backend/app/api";
-import { app as widgetsToLogotypes } from "@sps/website-builder/relations/widgets-to-logotypes/backend/app/api";
-import { app as widgetsToSliders } from "@sps/website-builder/relations/widgets-to-sliders/backend/app/api";
-import { DefaultApp } from "@sps/shared-backend-api";
+import { serviceBootstrap as button } from "@sps/website-builder/models/button/backend/app/api/src/lib/bootstrap";
+import { serviceBootstrap as buttonsArray } from "@sps/website-builder/models/buttons-array/backend/app/api/src/lib/bootstrap";
+import { serviceBootstrap as feature } from "@sps/website-builder/models/feature/backend/app/api/src/lib/bootstrap";
+import { serviceBootstrap as logotype } from "@sps/website-builder/models/logotype/backend/app/api/src/lib/bootstrap";
+import { serviceBootstrap as slide } from "@sps/website-builder/models/slide/backend/app/api/src/lib/bootstrap";
+import { serviceBootstrap as slider } from "@sps/website-builder/models/slider/backend/app/api/src/lib/bootstrap";
+import { serviceBootstrap as widget } from "@sps/website-builder/models/widget/backend/app/api/src/lib/bootstrap";
+import { serviceBootstrap as buttonsArraysToButtons } from "@sps/website-builder/relations/buttons-arrays-to-buttons/backend/app/api/src/lib/bootstrap";
+import { serviceBootstrap as buttonsToFileStorageModuleWidgets } from "@sps/website-builder/relations/buttons-to-file-storage-module-files/backend/app/api/src/lib/bootstrap";
+import { serviceBootstrap as featuresToButtonsArrays } from "@sps/website-builder/relations/features-to-buttons-arrays/backend/app/api/src/lib/bootstrap";
+import { serviceBootstrap as featuresToFileStorageModuleFiles } from "@sps/website-builder/relations/features-to-file-storage-module-files/backend/app/api/src/lib/bootstrap";
+import { serviceBootstrap as logotypesToFileStorageModuleWidgets } from "@sps/website-builder/relations/logotypes-to-file-storage-module-files/backend/app/api/src/lib/bootstrap";
+import { serviceBootstrap as slidersToSlides } from "@sps/website-builder/relations/sliders-to-slides/backend/app/api/src/lib/bootstrap";
+import { serviceBootstrap as slidesToButtonsArrays } from "@sps/website-builder/relations/slides-to-buttons-arrays/backend/app/api/src/lib/bootstrap";
+import { serviceBootstrap as slidesToFileStorageModuleWidgets } from "@sps/website-builder/relations/slides-to-file-storage-module-files/backend/app/api/src/lib/bootstrap";
+import { serviceBootstrap as widgetsToButtonsArrays } from "@sps/website-builder/relations/widgets-to-buttons-arrays/backend/app/api/src/lib/bootstrap";
+import { serviceBootstrap as widgetsToFeatures } from "@sps/website-builder/relations/widgets-to-features/backend/app/api/src/lib/bootstrap";
+import { serviceBootstrap as widgetsToFileStorageModuleWidgets } from "@sps/website-builder/relations/widgets-to-file-storage-module-files/backend/app/api/src/lib/bootstrap";
+import { serviceBootstrap as widgetsToLogotypes } from "@sps/website-builder/relations/widgets-to-logotypes/backend/app/api/src/lib/bootstrap";
+import { serviceBootstrap as widgetsToSliders } from "@sps/website-builder/relations/widgets-to-sliders/backend/app/api/src/lib/bootstrap";
+import {
+  createModuleChildApp,
+  defaultAppAssembly,
+  type IAppAssembly,
+  type IModuleAppEntry,
+} from "@sps/shared-backend-api";
 
 export class Apps {
-  apps: { type: "model" | "relation"; route: string; app: DefaultApp<any> }[] =
-    [];
+  apps: IModuleAppEntry[] = [];
 
-  constructor() {
+  constructor(private readonly assembly: IAppAssembly = defaultAppAssembly) {
     this.bindApps();
   }
 
@@ -32,102 +36,117 @@ export class Apps {
     this.apps.push({
       type: "model",
       route: "/logotypes",
-      app: logotype,
+      app: createModuleChildApp(logotype, this.assembly),
     });
     this.apps.push({
       type: "model",
       route: "/buttons-arrays",
-      app: buttonsArray,
+      app: createModuleChildApp(buttonsArray, this.assembly),
     });
     this.apps.push({
       type: "model",
       route: "/buttons",
-      app: button,
+      app: createModuleChildApp(button, this.assembly),
     });
     this.apps.push({
       type: "model",
       route: "/features",
-      app: feature,
+      app: createModuleChildApp(feature, this.assembly),
     });
     this.apps.push({
       type: "model",
       route: "/slides",
-      app: slide,
+      app: createModuleChildApp(slide, this.assembly),
     });
     this.apps.push({
       type: "model",
       route: "/sliders",
-      app: slider,
+      app: createModuleChildApp(slider, this.assembly),
     });
     this.apps.push({
       type: "model",
       route: "/widgets",
-      app: widget,
+      app: createModuleChildApp(widget, this.assembly),
     });
     this.apps.push({
       type: "relation",
       route: "/buttons-arrays-to-buttons",
-      app: buttonsArraysToButtons,
+      app: createModuleChildApp(buttonsArraysToButtons, this.assembly),
     });
     this.apps.push({
       type: "relation",
       route: "/widgets-to-features",
-      app: widgetsToFeatures,
+      app: createModuleChildApp(widgetsToFeatures, this.assembly),
     });
     this.apps.push({
       type: "relation",
       route: "/widgets-to-logotypes",
-      app: widgetsToLogotypes,
+      app: createModuleChildApp(widgetsToLogotypes, this.assembly),
     });
     this.apps.push({
       type: "relation",
       route: "/features-to-file-storage-module-files",
-      app: featuresToFileStorageModuleFiles,
+      app: createModuleChildApp(
+        featuresToFileStorageModuleFiles,
+        this.assembly,
+      ),
     });
     this.apps.push({
       type: "relation",
       route: "/widgets-to-buttons-arrays",
-      app: widgetsToButtonsArrays,
+      app: createModuleChildApp(widgetsToButtonsArrays, this.assembly),
     });
     this.apps.push({
       type: "relation",
       route: "/widgets-to-file-storage-module-files",
-      app: widgetsToFileStorageModuleWidgets,
+      app: createModuleChildApp(
+        widgetsToFileStorageModuleWidgets,
+        this.assembly,
+      ),
     });
     this.apps.push({
       type: "relation",
       route: "/logotypes-to-file-storage-module-files",
-      app: logotypesToFileStorageModuleWidgets,
+      app: createModuleChildApp(
+        logotypesToFileStorageModuleWidgets,
+        this.assembly,
+      ),
     });
     this.apps.push({
       type: "relation",
       route: "/widgets-to-sliders",
-      app: widgetsToSliders,
+      app: createModuleChildApp(widgetsToSliders, this.assembly),
     });
     this.apps.push({
       type: "relation",
       route: "/sliders-to-slides",
-      app: slidersToSlides,
+      app: createModuleChildApp(slidersToSlides, this.assembly),
     });
     this.apps.push({
       type: "relation",
       route: "/slides-to-buttons-arrays",
-      app: slidesToButtonsArrays,
+      app: createModuleChildApp(slidesToButtonsArrays, this.assembly),
     });
     this.apps.push({
       type: "relation",
       route: "/slides-to-file-storage-module-files",
-      app: slidesToFileStorageModuleWidgets,
+      app: createModuleChildApp(
+        slidesToFileStorageModuleWidgets,
+        this.assembly,
+      ),
     });
     this.apps.push({
       type: "relation",
       route: "/buttons-to-file-storage-module-files",
-      app: buttonsToFileStorageModuleWidgets,
+      app: createModuleChildApp(
+        buttonsToFileStorageModuleWidgets,
+        this.assembly,
+      ),
     });
     this.apps.push({
       type: "relation",
       route: "/features-to-buttons-arrays",
-      app: featuresToButtonsArrays,
+      app: createModuleChildApp(featuresToButtonsArrays, this.assembly),
     });
   }
 }

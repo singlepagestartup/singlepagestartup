@@ -4,7 +4,7 @@ import type { Service as OrderPaymentRelationService } from "@sps/ecommerce/rela
 import type { Service as BroadcastChannelService } from "@sps/broadcast/models/channel/backend/app/api/src/lib/service";
 import type { Service as NotificationTopicService } from "@sps/notification/models/topic/backend/app/api/src/lib/service";
 import type { Service as NotificationService } from "@sps/notification/models/notification/backend/app/api/src/lib/service";
-import type { Service as EcommerceOrderService } from "@sps/ecommerce/models/order/backend/app/api/src/lib/service";
+import type { createService as createOrder } from "@sps/ecommerce/models/order/backend/app/api/src/lib/bootstrap";
 import type { ICartDetails } from "@sps/ecommerce/models/order/sdk/model";
 import type { Service as CrmFormService } from "@sps/crm/models/form/backend/app/api/src/lib/service";
 import type { Service as CrmRequestService } from "@sps/crm/models/request/backend/app/api/src/lib/service";
@@ -34,12 +34,13 @@ export interface IExtendedReadService extends IReadService {
   findByIdExtended: (props: { id: string }) => Promise<any>;
 }
 
+/** Stable Order operations accepted by the positional Subject constructors. */
 export interface IEcommerceOrderReadService
   extends
     IExtendedReadService,
     ICreateDeleteService,
     Pick<
-      EcommerceOrderService,
+      ReturnType<typeof createOrder>,
       | "acceptSubscriptionPeriod"
       | "createNextPeriodCart"
       | "configureNextPeriod"
@@ -190,8 +191,6 @@ export interface IBroadcastModule {
 }
 
 export const SubjectDI = {
-  IOrderPaymentService: Symbol.for("rbac.subject.order-payment.service"),
-  IPaymentIntentService: Symbol.for("rbac.subject.payment-intent.service"),
   IEcommerceCatalogService: Symbol.for(
     "rbac.subject.ecommerce-catalog.service",
   ),

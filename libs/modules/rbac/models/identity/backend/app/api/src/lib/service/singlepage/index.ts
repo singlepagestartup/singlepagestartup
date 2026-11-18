@@ -1,3 +1,4 @@
+import { createModules } from "@sps/rbac/backend/app/api/src/lib/modules";
 import "reflect-metadata";
 import { injectFromBase, injectable } from "inversify";
 import { CRUDService } from "@sps/shared-backend-api";
@@ -40,6 +41,10 @@ const PASSWORD_RESET_LIFETIME_MS = 60 * 60 * 1000;
 @injectable()
 @injectFromBase()
 export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
+  get modules() {
+    return this.appAssembly.getOrCreate(createModules);
+  }
+
   /**
    * Rejects a credential column the generic update path would otherwise write
    * verbatim (issue #270). The admin form posts the whole model back, so an

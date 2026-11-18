@@ -1,3 +1,4 @@
+import { createModules } from "../modules";
 import "reflect-metadata";
 import { injectFromBase, injectable } from "inversify";
 import {
@@ -11,7 +12,11 @@ import {
   SEO_SITEMAP_MAX_CANDIDATES,
 } from "@sps/shared-utils";
 import { Service as RoutingService } from "../startup/routing";
-import type { IRouteSource } from "./routing";
+import {
+  getPageRouteSourceProvider,
+  type IRouteSource,
+  type RouteSourceProvider,
+} from "./routing";
 import type { IPageUrl } from "@sps/host/models/page/sdk/model";
 import { Service as SeoService } from "../startup/seo";
 
@@ -25,14 +30,40 @@ export interface FindByUrlServiceProps extends Partial<FindByIdServiceProps> {
 @injectable()
 @injectFromBase()
 export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
-  routing = new RoutingService();
-  readonly seo = new SeoService({
+  get modules() {
+    return this.appAssembly.getOrCreate(createModules);
+  }
+
+  private routeSourceProvider?: RouteSourceProvider;
+  private scopedRouting = new RoutingService();
+  private explicitRouting?: RoutingService;
+  private readonly seoService = new SeoService({
     findByUrl: (props) => this.findByUrl(props),
   });
 
+  get routing() {
+    if (this.explicitRouting) {
+      return this.explicitRouting;
+    }
+    const provider = getPageRouteSourceProvider(this.appAssembly);
+    if (provider !== this.routeSourceProvider) {
+      this.routeSourceProvider = provider;
+      this.scopedRouting = new RoutingService(provider);
+    }
+    return this.scopedRouting;
+  }
+
+  set routing(routing: RoutingService) {
+    this.explicitRouting = routing;
+  }
+
+  get seo() {
+    this.seoService.routing = this.routing;
+    return this.seoService;
+  }
+
   configureRouting(sources: IRouteSource[]) {
     this.routing = new RoutingService(sources);
-    this.seo.routing = this.routing;
   }
 
   protected async routePages() {

@@ -1,3 +1,4 @@
+import { createModules } from "../modules";
 import "reflect-metadata";
 import { inject, injectable } from "inversify";
 import { CRUDService, DI } from "@sps/shared-backend-api";
@@ -9,6 +10,10 @@ import { AttributeDI } from "../../di";
 
 @injectable()
 export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
+  get modules() {
+    return this.appAssembly.getOrCreate(createModules);
+  }
+
   attributesToBillingModuleCurrencies: AttributesToBillingModuleCurrenciesService;
   billingModuleCurrencies: BillingModuleCurrencyService;
 

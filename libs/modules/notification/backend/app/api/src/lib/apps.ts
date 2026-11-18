@@ -1,16 +1,20 @@
-import { app as notification } from "@sps/notification/models/notification/backend/app/api";
-import { app as widget } from "@sps/notification/models/widget/backend/app/api";
-import { app as topic } from "@sps/notification/models/topic/backend/app/api";
-import { app as template } from "@sps/notification/models/template/backend/app/api";
-import { app as topicsToNotifications } from "@sps/notification/relations/topics-to-notifications/backend/app/api";
-import { app as notificationsToTemplates } from "@sps/notification/relations/notifications-to-templates/backend/app/api";
-import { DefaultApp } from "@sps/shared-backend-api";
+import { serviceBootstrap as notification } from "@sps/notification/models/notification/backend/app/api/src/lib/bootstrap";
+import { serviceBootstrap as widget } from "@sps/notification/models/widget/backend/app/api/src/lib/bootstrap";
+import { serviceBootstrap as topic } from "@sps/notification/models/topic/backend/app/api/src/lib/bootstrap";
+import { serviceBootstrap as template } from "@sps/notification/models/template/backend/app/api/src/lib/bootstrap";
+import { serviceBootstrap as topicsToNotifications } from "@sps/notification/relations/topics-to-notifications/backend/app/api/src/lib/bootstrap";
+import { serviceBootstrap as notificationsToTemplates } from "@sps/notification/relations/notifications-to-templates/backend/app/api/src/lib/bootstrap";
+import {
+  createModuleChildApp,
+  defaultAppAssembly,
+  type IAppAssembly,
+  type IModuleAppEntry,
+} from "@sps/shared-backend-api";
 
 export class Apps {
-  apps: { type: "model" | "relation"; route: string; app: DefaultApp<any> }[] =
-    [];
+  apps: IModuleAppEntry[] = [];
 
-  constructor() {
+  constructor(private readonly assembly: IAppAssembly = defaultAppAssembly) {
     this.bindApps();
   }
 
@@ -18,32 +22,32 @@ export class Apps {
     this.apps.push({
       type: "model",
       route: "/notifications",
-      app: notification,
+      app: createModuleChildApp(notification, this.assembly),
     });
     this.apps.push({
       type: "model",
       route: "/widgets",
-      app: widget,
+      app: createModuleChildApp(widget, this.assembly),
     });
     this.apps.push({
       type: "model",
       route: "/topics",
-      app: topic,
+      app: createModuleChildApp(topic, this.assembly),
     });
     this.apps.push({
       type: "relation",
       route: "/topics-to-notifications",
-      app: topicsToNotifications,
+      app: createModuleChildApp(topicsToNotifications, this.assembly),
     });
     this.apps.push({
       type: "model",
       route: "/templates",
-      app: template,
+      app: createModuleChildApp(template, this.assembly),
     });
     this.apps.push({
       type: "relation",
       route: "/notifications-to-templates",
-      app: notificationsToTemplates,
+      app: createModuleChildApp(notificationsToTemplates, this.assembly),
     });
   }
 }

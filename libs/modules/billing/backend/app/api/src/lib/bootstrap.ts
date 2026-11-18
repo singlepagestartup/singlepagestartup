@@ -1,6 +1,8 @@
 import { App } from "./app";
+import { Apps } from "./apps";
 import {
   createAppBootstrap,
+  createModuleBootstrap,
   DI,
   ExceptionFilter,
   type IExceptionFilter,
@@ -14,4 +16,8 @@ const bindings = new ContainerModule(({ bind }) => {
   bind<App>(DI.IApp).to(App);
 });
 
-export const { bootstrap } = createAppBootstrap<App>(bindings);
+export const moduleBootstrap = createModuleBootstrap(
+  createAppBootstrap<App>(bindings),
+  (assembly) => new Apps(assembly),
+);
+export const { bootstrap } = moduleBootstrap;

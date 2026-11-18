@@ -9,6 +9,7 @@ import {
 } from "@sps/shared-utils";
 import type {
   FindServiceProps,
+  IAppAssembly,
   IResourceDescription,
 } from "@sps/shared-backend-api";
 
@@ -28,11 +29,46 @@ export interface IRouteRelation {
   targetKey: string;
 }
 
+export type RouteSourceProvider = () => IRouteSource[];
+
+interface IRouteSourceConfiguration {
+  provider?: RouteSourceProvider;
+}
+
+function createRouteSourceConfiguration(): IRouteSourceConfiguration {
+  return {};
+}
+
+export function configurePageRouteSources(
+  assembly: IAppAssembly,
+  provider: RouteSourceProvider,
+): void {
+  assembly.getOrCreate(createRouteSourceConfiguration).provider = provider;
+}
+
+export function getPageRouteSourceProvider(assembly: IAppAssembly) {
+  return assembly.getOrCreate(createRouteSourceConfiguration).provider;
+}
+
 /** Registered API contracts describe URL sources; publication belongs to Page. */
 export class Service {
-  private readonly sources: Map<string, IRouteSource>;
-  constructor(sources: IRouteSource[] = []) {
-    this.sources = new Map(sources.map((source) => [source.name, source]));
+  private resolvedSources?: Map<string, IRouteSource>;
+
+  constructor(
+    private readonly routeSources: IRouteSource[] | RouteSourceProvider = [],
+  ) {}
+
+  private get sources() {
+    if (!this.resolvedSources) {
+      const sources =
+        typeof this.routeSources === "function"
+          ? this.routeSources()
+          : this.routeSources;
+      this.resolvedSources = new Map(
+        sources.map((source) => [source.name, source]),
+      );
+    }
+    return this.resolvedSources;
   }
 
   relation(name: string, source: string): IRouteRelation {

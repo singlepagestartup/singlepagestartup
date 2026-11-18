@@ -1,3 +1,4 @@
+import { createModules } from "../modules";
 import "reflect-metadata";
 import { inject, injectable } from "inversify";
 import { CRUDService, DI } from "@sps/shared-backend-api";
@@ -15,6 +16,10 @@ import type {
 
 @injectable()
 export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
+  get modules() {
+    return this.appAssembly.getOrCreate(createModules);
+  }
+
   chat: ChatService;
   profilesToChats: ProfilesToChatsService;
 

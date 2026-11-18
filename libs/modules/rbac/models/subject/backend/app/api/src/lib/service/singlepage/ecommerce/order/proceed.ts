@@ -1,7 +1,12 @@
 import { REGISTRATION_GRANT_VARIANT } from "@sps/shared-utils";
+import { createModules } from "@sps/rbac/backend/app/api/src/lib/modules";
 import { Service as InitialGrantProducts } from "../../billing/initial-grant-products";
 import { isConfirmedInvoice } from "@sps/billing/models/payment-intent/sdk/model";
-import { DI, type FindServiceProps } from "@sps/shared-backend-api";
+import {
+  defaultAppAssembly,
+  DI,
+  type FindServiceProps,
+} from "@sps/shared-backend-api";
 import { createMemoryCache, RBAC_SECRET_KEY } from "@sps/shared-utils";
 import { IModel as IEcommerceModuleOrder } from "@sps/ecommerce/models/order/sdk/model";
 import { api } from "@sps/rbac/models/subject/sdk/server";
@@ -10,7 +15,7 @@ import { IModel as ISubjectsToRoles } from "@sps/rbac/relations/subjects-to-role
 import { type IResult as IEcommerceOrderResult } from "@sps/ecommerce/models/order/sdk/server";
 import { IModel as IBillingModuleCurrency } from "@sps/billing/models/currency/sdk/model";
 import { IModel as IFileStorageModuleFile } from "@sps/file-storage/models/file/sdk/model";
-import { inject, injectable } from "inversify";
+import { inject, injectable, optional } from "inversify";
 import {
   SubjectDI,
   type IEcommerceModule,
@@ -141,10 +146,13 @@ export class Service {
 
   constructor(
     @inject(DI.IRepository) repository: Repository,
-    @inject(SubjectDI.ISocialModule) socialModule: ISocialModule,
+    @inject(SubjectDI.ISocialModule)
+    @optional()
+    socialModule: ISocialModule | undefined,
     @inject(SubjectDI.IEcommerceModule) ecommerceModule: IEcommerceModule,
     @inject(SubjectDI.INotificationModule)
-    notificationModule: INotificationModule,
+    @optional()
+    notificationModule: INotificationModule | undefined,
     @inject(SubjectDI.IIdentityService) identity: IdentityService,
     @inject(SubjectDI.IRoleService) role: RoleService,
     @inject(SubjectDI.IRolesToEcommerceModuleProductsService)
@@ -163,11 +171,13 @@ export class Service {
     readonly ecommerceProductCheckout: IEcommerceProductCheckout,
     @inject(SubjectDI.IEcommerceOrderRenewal)
     readonly ecommerceOrderRenewal: IRenewal = async () => ({}),
+    @inject(DI.IAppAssembly) @optional() assembly = defaultAppAssembly,
   ) {
+    const modules = assembly.getOrCreate(createModules);
     this.repository = repository;
-    this.socialModule = socialModule;
+    this.socialModule = socialModule ?? modules.social;
     this.ecommerceModule = ecommerceModule;
-    this.notificationModule = notificationModule;
+    this.notificationModule = notificationModule ?? modules.notification;
     this.identity = identity;
     this.role = role;
     this.rolesToEcommerceModuleProducts = rolesToEcommerceModuleProducts;

@@ -66,6 +66,7 @@ const openRouterStatusMetadata = {
 
 function createService() {
   const service = Object.create(Service.prototype) as Service;
+  Object.defineProperty(service, "modules", { value: {} });
 
   (service as any).resolveThreadIdForMessageInChat = jest
     .fn()
@@ -78,7 +79,7 @@ function createService() {
   (service as any).telegramBotPremiumMessageWithKeyboardCreate = jest
     .fn()
     .mockResolvedValue(undefined);
-  (service as any).rbacModule = {
+  (service as any).modules.rbac = {
     rolesToEcommerceModuleProducts: {
       find: jest.fn().mockResolvedValue([
         {
@@ -190,10 +191,11 @@ describe("Given: agent OpenRouter reply fallback and prompt gating", () => {
    */
   it("marks Telegram bot command inputs as excluded from OpenRouter", async () => {
     const service = Object.create(Service.prototype) as Service;
+    Object.defineProperty(service, "modules", { value: {} });
     const commandReply = jest.fn().mockResolvedValue(undefined);
 
     mockedSocialMessageUpdate.mockResolvedValue({ id: "message-command" });
-    (service as any).rbacModule = {
+    (service as any).modules.rbac = {
       subjectsToSocialModuleProfiles: {
         find: jest.fn().mockResolvedValue([{ subjectId: "bot-subject" }]),
       },
@@ -260,11 +262,12 @@ describe("Given: agent OpenRouter reply fallback and prompt gating", () => {
    */
   it("marks active Telegram assistant input before consuming an avatar", async () => {
     const service = Object.create(Service.prototype) as Service;
+    Object.defineProperty(service, "modules", { value: {} });
     const handleMessage = jest.fn().mockResolvedValue(undefined);
     const transport = {};
 
     mockedSocialMessageUpdate.mockResolvedValue({ id: "message-avatar" });
-    (service as any).rbacModule = {
+    (service as any).modules.rbac = {
       subjectsToSocialModuleProfiles: {
         find: jest.fn().mockResolvedValue([{ subjectId: "bot-subject" }]),
       },
@@ -369,10 +372,11 @@ describe("Given: agent OpenRouter reply fallback and prompt gating", () => {
    */
   it("lets ordinary prompts reach AI while the assistant menu is idle", async () => {
     const service = Object.create(Service.prototype) as Service;
+    Object.defineProperty(service, "modules", { value: {} });
     const handleMessage = jest.fn();
     const openRouterReplyMessageCreate = jest.fn().mockResolvedValue(undefined);
 
-    (service as any).rbacModule = {
+    (service as any).modules.rbac = {
       subjectsToSocialModuleProfiles: {
         find: jest.fn().mockResolvedValue([{ subjectId: "reply-subject" }]),
       },
@@ -502,7 +506,7 @@ describe("Given: agent OpenRouter reply fallback and prompt gating", () => {
     const service = createService();
     const statusMessage = { id: "subscription-status-message" };
 
-    (service as any).rbacModule.subjectsToRoles.find = jest
+    (service as any).modules.rbac.subjectsToRoles.find = jest
       .fn()
       .mockResolvedValue([]);
     mockedThreadMessageCreate.mockResolvedValue(statusMessage);
@@ -979,13 +983,14 @@ describe("Given: agent OpenRouter reply fallback and prompt gating", () => {
     "routes %s chat AI profiles through OpenRouter only",
     async (chatVariant, profileSlug) => {
       const service = Object.create(Service.prototype) as Service;
+      Object.defineProperty(service, "modules", { value: {} });
       const openRouterReplyMessageCreate = jest
         .fn()
         .mockResolvedValue(undefined);
 
       (service as any).openRouterReplyMessageCreate =
         openRouterReplyMessageCreate;
-      (service as any).rbacModule = {
+      (service as any).modules.rbac = {
         subjectsToSocialModuleProfiles: {
           find: jest.fn().mockResolvedValue([
             {
@@ -1041,6 +1046,7 @@ describe("Given: agent OpenRouter reply fallback and prompt gating", () => {
    */
   it("suppresses OpenRouter only for the active Telegram editor key", async () => {
     const service = Object.create(Service.prototype) as Service;
+    Object.defineProperty(service, "modules", { value: {} });
     const openRouterReplyMessageCreate = jest.fn().mockResolvedValue(undefined);
     const getConversation = jest
       .fn()
@@ -1068,7 +1074,7 @@ describe("Given: agent OpenRouter reply fallback and prompt gating", () => {
         threadId: "thread-1",
         senderProfileId: props.messageFromSocialModuleProfile.id,
       }));
-    (service as any).rbacModule = {
+    (service as any).modules.rbac = {
       subjectsToSocialModuleProfiles: {
         find: jest.fn().mockResolvedValue([
           {
@@ -1138,6 +1144,7 @@ describe("Given: agent OpenRouter reply fallback and prompt gating", () => {
    */
   it("routes direct /learn only to an artificial-intelligence profile", async () => {
     const service = Object.create(Service.prototype) as Service;
+    Object.defineProperty(service, "modules", { value: {} });
     const openRouterReplyMessageCreate = jest.fn().mockResolvedValue(undefined);
     const telegramBotCommandReplyMessageCreate = jest
       .fn()
@@ -1147,7 +1154,7 @@ describe("Given: agent OpenRouter reply fallback and prompt gating", () => {
       openRouterReplyMessageCreate;
     (service as any).telegramBotCommandReplyMessageCreate =
       telegramBotCommandReplyMessageCreate;
-    (service as any).rbacModule = {
+    (service as any).modules.rbac = {
       subjectsToSocialModuleProfiles: {
         find: jest.fn().mockResolvedValue([
           {
@@ -1217,10 +1224,10 @@ describe("Given web AI Chat uses token billing and Telegram uses subscription ga
         name: "Channel",
         link: "https://t.me/example",
       });
-    (svc as any).rbacModule.role.find.mockResolvedValue([
+    (svc as any).modules.rbac.role.find.mockResolvedValue([
       { id: "subscriber", slug: "required-telegram-channel-subscriber" },
     ]);
-    (svc as any).rbacModule.subjectsToRoles.find.mockResolvedValue([]);
+    (svc as any).modules.rbac.subjectsToRoles.find.mockResolvedValue([]);
     (
       svc as any
     ).statusMessages.openRouterRequiredTelegamChannelSubscriptionError = {

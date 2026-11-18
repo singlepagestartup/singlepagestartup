@@ -5,8 +5,13 @@
  * Then: shared composition preserves routing, lifecycle order and type filters.
  */
 import { Hono } from "hono";
-import { Container, inject, injectable } from "inversify";
-import { App } from "./index";
+import { Container, ContainerModule, inject, injectable } from "inversify";
+import { App, createModuleBootstrap, createModuleChildApp } from "./index";
+import {
+  createAppAssembly,
+  createAppBootstrap,
+  type IAppAssembly,
+} from "../bootstrap";
 import type { IApp, IModuleApps, IModuleAppEntry } from "./interface";
 import type { IExceptionFilter } from "../../filters";
 import { DI } from "../../di/constants";
@@ -48,6 +53,47 @@ it("uses the same nested prefixes for HTTP routing and serializable descriptions
   const response = await root.hono.request("/catalog/items");
   expect(response.status).toBe(200);
   expect(await response.json()).toEqual({ data: "item" });
+});
+
+it("describes scoped child routes before starting HTTP and mounts the same app", async () => {
+  const init = jest.fn(async () => {});
+  const childApp = { ...child(), init };
+  const leafBindings = new ContainerModule(({ bind }) => {
+    bind(DI.IApp).toConstantValue(childApp);
+  });
+  const owner = createAppBootstrap<typeof childApp>(leafBindings);
+  function createApps(assembly: IAppAssembly): IModuleApps {
+    return {
+      apps: [
+        {
+          type: "model",
+          route: "/items",
+          app: createModuleChildApp(owner, assembly),
+        },
+      ],
+    };
+  }
+  const moduleBindings = new ContainerModule(({ bind }) => {
+    bind(DI.IApp).toDynamicValue(
+      ({ get }) => new App(filter, () => createApps(get(DI.IAppAssembly))),
+    );
+  });
+  const module = createModuleBootstrap(
+    createAppBootstrap<App>(moduleBindings),
+    createApps,
+  );
+  const assembly = createAppAssembly();
+  expect(module.describeRoutes(assembly)).toEqual([
+    { route: "/items", resource },
+  ]);
+  expect(init).not.toHaveBeenCalled();
+
+  const { app } = await module.bootstrap(assembly);
+  expect(app.apps.apps[0].app).toBe(childApp);
+  expect(app.describeRoutes()).toEqual(module.describeRoutes(assembly));
+  const response = await app.hono.request("/items");
+  expect(response.status).toBe(200);
+  expect(init).toHaveBeenCalledTimes(1);
 });
 
 it("waits for module configuration before mounting routes and uses its error filter", async () => {
@@ -115,11 +161,9 @@ it("preserves dump and seed type filters and flattens child results", async () =
 });
 
 it("resolves a derived module through its interface without constructing the registry early", async () => {
-  const create = jest.fn(
-    (): IModuleApps => ({
-      apps: [{ type: "model", route: "/items", app: child() }],
-    }),
-  );
+  const create = jest.fn((): IModuleApps => ({
+    apps: [{ type: "model", route: "/items", app: child() }],
+  }));
   @injectable()
   class Derived extends App {
     constructor(

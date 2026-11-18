@@ -1,3 +1,4 @@
+import { createModules } from "../modules";
 import { Service as FulfillmentQuoteOptionsService } from "../startup/fulfillment-quote-options";
 import { Service as CartDetailsService } from "../startup/find-by-id/cart-details";
 import "reflect-metadata";
@@ -48,6 +49,10 @@ export type IExtendedEcommerceModuleOrder = IGetExtendedResult;
 
 @injectable()
 export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
+  get modules() {
+    return this.appAssembly.getOrCreate(createModules);
+  }
+
   declare repository: Repository;
   billingModule: {
     currency: BillingCurrencyService;

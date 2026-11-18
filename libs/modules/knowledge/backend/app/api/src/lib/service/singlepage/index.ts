@@ -7,7 +7,8 @@ import { LlmChatClient } from "../../generation";
 import { KnowledgeIndexer } from "../../indexer";
 import { LlmModelClient } from "../../models";
 import type { Service as SourceService } from "@sps/knowledge/models/source/backend/app/api/src/lib/service";
-import { createKnowledgeServices } from "../../composition";
+import { createService as createSource } from "@sps/knowledge/models/source/backend/app/api/src/lib/bootstrap";
+import type { IAppAssembly } from "@sps/shared-backend-api";
 import {
   DEFAULT_KNOWLEDGE_GENERATION_MODEL_SLUG,
   KnowledgeGenerationModelSlug,
@@ -30,12 +31,13 @@ export class Service {
 
   constructor(props?: {
     source?: SourceService;
+    assembly?: IAppAssembly;
     embeddingClient?: IKnowledgeEmbeddingClient;
     generationClient?: LlmChatClient;
     modelClient?: LlmModelClient;
   }) {
     const config = getKnowledgeConfiguration();
-    this.source = props?.source || createKnowledgeServices().source;
+    this.source = props?.source ?? createSource(props?.assembly);
     this.embeddingClient =
       props?.embeddingClient || createKnowledgeEmbeddingClient();
     this.generationClient =

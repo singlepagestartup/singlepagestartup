@@ -10,32 +10,26 @@ import { Repository } from "./repository";
 import { Controller } from "./controller";
 import { Service } from "./service";
 import { App } from "./app";
+import { createModules } from "./service/modules";
 import { PermissionDI } from "./di";
-import { Service as PermissionsToBillingModuleCurrenciesService } from "@sps/rbac/relations/permissions-to-billing-module-currencies/backend/app/api/src/lib/service";
-import { Repository as PermissionsToBillingModuleCurrenciesRepository } from "@sps/rbac/relations/permissions-to-billing-module-currencies/backend/app/api/src/lib/repository";
-import { Configuration as PermissionsToBillingModuleCurrenciesConfiguration } from "@sps/rbac/relations/permissions-to-billing-module-currencies/backend/app/api/src/lib/configuration";
 
 const bindings = new ContainerModule(({ bind }) => {
   bind<IExceptionFilter>(DI.IExceptionFilter).to(ExceptionFilter);
   bind<App>(DI.IApp).to(App);
-  bind<Controller>(DI.IController).to(Controller);
+  bind<Controller>(DI.IController).to(Controller).inSingletonScope();
   bind<Repository>(DI.IRepository).to(Repository);
   bind<Service>(DI.IService).to(Service).inSingletonScope();
   bind<Configuration>(DI.IConfiguration).to(Configuration);
-  bind<PermissionsToBillingModuleCurrenciesService>(
-    PermissionDI.IPermissionsToBillingModuleCurrenciesService,
-  )
-    .toDynamicValue(
-      () =>
-        new PermissionsToBillingModuleCurrenciesService(
-          new PermissionsToBillingModuleCurrenciesRepository(
-            new PermissionsToBillingModuleCurrenciesConfiguration(),
-          ),
-        ),
-    )
-    .inSingletonScope();
 });
 
-export const { bootstrap, createService } = createAppBootstrap<App, Service>(
+export const serviceBootstrap = createAppBootstrap<App, Service>(
   bindings,
+  (container, assembly) => {
+    const { rbac } = assembly.getOrCreate(createModules);
+    container
+      .bind(PermissionDI.IPermissionsToBillingModuleCurrenciesService)
+      .toDynamicValue(() => rbac.permissionsToBillingModuleCurrencies)
+      .inSingletonScope();
+  },
 );
+export const { bootstrap, createService } = serviceBootstrap;

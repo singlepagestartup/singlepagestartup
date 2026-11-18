@@ -1,14 +1,18 @@
-import { app as channel } from "@sps/broadcast/models/channel/backend/app/api";
-import { app as message } from "@sps/broadcast/models/message/backend/app/api";
-import { app as channelsToMessages } from "@sps/broadcast/relations/channels-to-messages/backend/app/api";
+import { serviceBootstrap as channel } from "@sps/broadcast/models/channel/backend/app/api/src/lib/bootstrap";
+import { serviceBootstrap as message } from "@sps/broadcast/models/message/backend/app/api/src/lib/bootstrap";
+import { serviceBootstrap as channelsToMessages } from "@sps/broadcast/relations/channels-to-messages/backend/app/api/src/lib/bootstrap";
 
-import { DefaultApp } from "@sps/shared-backend-api";
+import {
+  createModuleChildApp,
+  defaultAppAssembly,
+  type IAppAssembly,
+  type IModuleAppEntry,
+} from "@sps/shared-backend-api";
 
 export class Apps {
-  apps: { type: "model" | "relation"; route: string; app: DefaultApp<any> }[] =
-    [];
+  apps: IModuleAppEntry[] = [];
 
-  constructor() {
+  constructor(private readonly assembly: IAppAssembly = defaultAppAssembly) {
     this.bindApps();
   }
 
@@ -16,17 +20,17 @@ export class Apps {
     this.apps.push({
       type: "model",
       route: "/channels",
-      app: channel,
+      app: createModuleChildApp(channel, this.assembly),
     });
     this.apps.push({
       type: "model",
       route: "/messages",
-      app: message,
+      app: createModuleChildApp(message, this.assembly),
     });
     this.apps.push({
       type: "relation",
       route: "/channels-to-messages",
-      app: channelsToMessages,
+      app: createModuleChildApp(channelsToMessages, this.assembly),
     });
   }
 }

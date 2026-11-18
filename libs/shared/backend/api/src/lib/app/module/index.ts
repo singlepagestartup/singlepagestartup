@@ -5,14 +5,75 @@ import { DI } from "../../di/constants";
 import type { IExceptionFilter } from "../../filters";
 import type { IDumpResult, ISeedResult } from "../../configuration";
 import type { IAppRouteDescription } from "../default/interface";
-import type { IApp, IModuleApps } from "./interface";
+import {
+  defaultAppAssembly,
+  getOwningAssembly,
+  type IAppAssembly,
+  type IAppBootstrap,
+} from "../bootstrap";
+import type { IApp as IDefaultApp } from "../default/interface";
+import type { IApp, IModuleApps, IModuleChildApp } from "./interface";
 
 export type { IApp, IModuleApps, IModuleAppEntry } from "./interface";
 
+export function describeModuleRoutes(
+  registry: IModuleApps,
+): IAppRouteDescription[] {
+  return registry.apps.flatMap(({ route, app }) =>
+    app
+      .describeRoutes()
+      .map((entry) => ({ ...entry, route: route + entry.route })),
+  );
+}
+
+export function createModuleChildApp(
+  owner: IAppBootstrap<IModuleChildApp, unknown>,
+  assembly: IAppAssembly,
+): IModuleChildApp {
+  let started: IModuleChildApp | undefined;
+  async function prepare() {
+    const { app } = await owner.bootstrap(assembly);
+    started = app;
+    return app;
+  }
+  return {
+    prepare,
+    describeRoutes: () => owner.describeRoutes(assembly),
+    get hono() {
+      if (!started) {
+        throw new Error("Initialize the module before mounting its routes");
+      }
+      return started.hono;
+    },
+    async dump(props) {
+      const app = await prepare();
+      return app.dump(props);
+    },
+    async seed(props) {
+      const app = await prepare();
+      return app.seed(props);
+    },
+  };
+}
+
+export function createModuleBootstrap<TApp extends IDefaultApp>(
+  owner: IAppBootstrap<TApp, undefined>,
+  createApps: (assembly: IAppAssembly) => IModuleApps,
+): IAppBootstrap<TApp, undefined> {
+  return {
+    ...owner,
+    describeRoutes(requestedAssembly = defaultAppAssembly) {
+      const assembly = getOwningAssembly(owner, requestedAssembly);
+      return describeModuleRoutes(assembly.getOrCreate(createApps));
+    },
+  };
+}
+
 @injectable()
-export class App<APPS extends IModuleApps = IModuleApps, ENV extends Env = Env>
-  implements IApp<APPS, ENV>
-{
+export class App<
+  APPS extends IModuleApps = IModuleApps,
+  ENV extends Env = Env,
+> implements IApp<APPS, ENV> {
   hono: Hono<ENV>;
   apps!: APPS;
 
@@ -25,6 +86,13 @@ export class App<APPS extends IModuleApps = IModuleApps, ENV extends Env = Env>
 
   async init(): Promise<void> {
     this.apps = this.createApps();
+    await Promise.all(
+      this.apps.apps.map(async (entry) => {
+        if (entry.app.prepare) {
+          entry.app = await entry.app.prepare();
+        }
+      }),
+    );
     await this.configureApps();
     this.useRoutes();
     this.hono.onError(this.exceptionFilter.catch.bind(this.exceptionFilter));
@@ -33,11 +101,7 @@ export class App<APPS extends IModuleApps = IModuleApps, ENV extends Env = Env>
   protected configureApps(): void | Promise<void> {}
 
   describeRoutes(): IAppRouteDescription[] {
-    return this.apps.apps.flatMap(({ route, app }) =>
-      app
-        .describeRoutes()
-        .map((entry) => ({ ...entry, route: route + entry.route })),
-    );
+    return describeModuleRoutes(this.apps);
   }
 
   useRoutes(): void {

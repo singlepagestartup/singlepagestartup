@@ -1,99 +1,11 @@
-import type { Service as BroadcastChannelService } from "@sps/broadcast/models/channel/backend/app/api/src/lib/service";
-import type { Service as BroadcastMessageService } from "@sps/broadcast/models/message/backend/app/api/src/lib/service";
-import type { Service as EcommerceOrderService } from "@sps/ecommerce/models/order/backend/app/api/src/lib/service";
-export interface IReadService {
-  find: (props?: any) => Promise<any>;
-  findById: (props: { id: string }) => Promise<any>;
-}
-
 export type {
   ITelegramConversationRuntime,
   ITelegramConversationStore,
 } from "./service/singlepage/telegram-conversation";
 
-export interface IHostPageReadService extends IReadService {
-  urls: (props?: any) => Promise<any>;
-}
-
-export interface ISocialModule {
-  profile: IReadService;
-  chat: IReadService;
-  thread: IReadService;
-  message: IReadService;
-  action: IReadService;
-  profilesToChats: IReadService;
-  profilesToMessages: IReadService;
-  profilesToActions: IReadService;
-  chatsToThreads: IReadService;
-  chatsToMessages: IReadService;
-  chatsToActions: IReadService;
-  threadsToMessages: IReadService;
-  threadsToActions: IReadService;
-  profilesToFileStorageModuleFiles: IReadService;
-  messagesToFileStorageModuleFiles: IReadService;
-}
-
-export interface IRbacModule {
-  subject: IReadService;
-  role: IReadService;
-  subjectsToIdentities: IReadService;
-  subjectsToSocialModuleProfiles: IReadService;
-  subjectsToRoles: IReadService;
-  rolesToEcommerceModuleProducts: IReadService;
-}
-
-export interface IEcommerceModule {
-  order: IReadService &
-    Pick<EcommerceOrderService, "deleteCanceledWithoutPayment">;
-  product: IReadService;
-  attribute: IReadService;
-  attributeKey: IReadService;
-  productsToAttributes: IReadService;
-  productsToFileStorageModuleFiles: IReadService;
-  attributeKeysToAttributes: IReadService;
-  attributesToBillingModuleCurrencies: IReadService;
-}
-
-export interface IBillingModule {
-  currency: IReadService;
-  paymentIntent: IReadService;
-  invoice: IReadService;
-}
-
-export interface INotificationModule {
-  notification: IReadService;
-}
-
-export interface IFileStorageModule {
-  file: IReadService;
-}
-
-export interface IBroadcastModule {
-  channel: IReadService &
-    Pick<
-      BroadcastChannelService,
-      "queue" | "deleteExpired" | "transientChannelMessages"
-    >;
-  message: Pick<BroadcastMessageService, "find" | "findById">;
-  channelsToMessages: IReadService;
-}
-
-export interface IHostModule {
-  page: IHostPageReadService;
-}
-
 export const AgentDI = {
-  IEcommerceOrderService: Symbol.for("agent.ecommerce.order.service"),
   ITelegramConversationStore: Symbol.for("agent.telegram.conversation.store"),
   ITelegramConversationRuntime: Symbol.for(
     "agent.telegram.conversation.runtime",
   ),
-  ISocialModule: Symbol.for("agent.social.module"),
-  IRbacModule: Symbol.for("agent.rbac.module"),
-  IEcommerceModule: Symbol.for("agent.ecommerce.module"),
-  IBillingModule: Symbol.for("agent.billing.module"),
-  INotificationModule: Symbol.for("agent.notification.module"),
-  IFileStorageModule: Symbol.for("agent.file-storage.module"),
-  IBroadcastModule: Symbol.for("agent.broadcast.module"),
-  IHostModule: Symbol.for("agent.host.module"),
 };

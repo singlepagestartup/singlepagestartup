@@ -1,5 +1,85 @@
 import { Service as SourceService } from "@sps/knowledge/models/source/backend/app/api/src/lib/service";
+import { Service as ChunkService } from "@sps/knowledge/models/chunk/backend/app/api/src/lib/service";
+import { Service as LinkService } from "@sps/knowledge/relations/sources-to-chunks/backend/app/api/src/lib/service";
+import { Service as FileService } from "@sps/file-storage/models/file/backend/app/api/src/lib/service";
+import { serviceBootstrap as sourceOwner } from "@sps/knowledge/models/source/backend/app/api/src/lib/bootstrap";
+import { serviceBootstrap as chunkOwner } from "@sps/knowledge/models/chunk/backend/app/api/src/lib/bootstrap";
+import { serviceBootstrap as attachmentOwner } from "@sps/knowledge/relations/sources-to-file-storage-module-files/backend/app/api/src/lib/bootstrap";
+import { serviceBootstrap as templateOwner } from "@sps/notification/models/template/backend/app/api/src/lib/bootstrap";
+import { Service as TemplateService } from "@sps/notification/models/template/backend/app/api/src/lib/service";
+import { createAppAssembly } from "@sps/shared-backend-api";
 import { createKnowledgeServices } from "./composition";
+import { moduleBootstrap } from "./bootstrap";
+import { KnowledgeIndexer } from "./indexer";
+
+it("uses the module assembly's Source and Chunk on the status HTTP route", async () => {
+  const source = new SourceService({} as never);
+  const chunk = new ChunkService({} as never);
+  jest.spyOn(source, "count").mockResolvedValue(2);
+  jest.spyOn(chunk, "count").mockResolvedValue(7);
+  const assembly = createAppAssembly(({ overrideService }) => {
+    overrideService(sourceOwner, source);
+    overrideService(chunkOwner, chunk);
+  });
+  await expect(
+    sourceOwner.createService(assembly).getStatus(),
+  ).resolves.toEqual({
+    sources: 2,
+    chunks: 7,
+  });
+
+  const { app } = await moduleBootstrap.bootstrap(assembly);
+  const { app: sourceApp } = await sourceOwner.bootstrap(assembly);
+  expect(app.apps.apps.find(({ route }) => route === "/sources")?.app).toBe(
+    sourceApp,
+  );
+  const response = await app.hono.request("/status");
+  expect(response.status).toBe(200);
+  await expect(response.json()).resolves.toMatchObject({
+    data: { sources: 2, chunks: 7 },
+  });
+});
+
+it("resolves each explicit graph's File without rebinding its existing services", () => {
+  const chunk = new ChunkService({} as never);
+  const firstFile = new FileService({} as never);
+  const secondFile = new FileService({} as never);
+  const first = createKnowledgeServices({
+    chunk,
+    fileStorageModule: { file: firstFile },
+  });
+  const second = createKnowledgeServices({
+    chunk,
+    fileStorageModule: { file: secondFile },
+  });
+  expect(first.chunk).toBe(chunk);
+  expect(second.chunk).not.toBe(chunk);
+  expect(first.chunk.modules.fileStorage.file).toBe(firstFile);
+  expect(second.chunk.modules.fileStorage.file).toBe(secondFile);
+});
+
+it("resolves the attachment relation before acquiring its scoped Source command", async () => {
+  const source = new SourceService({} as never);
+  const record = { id: "attachment", sourceId: "source" };
+  const mutate = jest.spyOn(source, "mutateFileRelation").mockResolvedValue({
+    relation: record,
+  } as Awaited<ReturnType<SourceService["mutateFileRelation"]>>);
+  const createSource = jest.fn(() => source);
+  const assembly = createAppAssembly(({ overrideServiceWith }) =>
+    overrideServiceWith(sourceOwner, createSource),
+  );
+
+  const relation = attachmentOwner.createService(assembly);
+  expect(createSource).not.toHaveBeenCalled();
+  await expect(
+    relation.create({ data: { sourceId: "source" } }),
+  ).resolves.toEqual(record);
+  expect(createSource).toHaveBeenCalledTimes(1);
+  expect(mutate).toHaveBeenCalledWith({
+    action: "create",
+    data: { sourceId: "source" },
+  });
+});
 
 function sourceFixture() {
   const fresh = {
@@ -96,6 +176,54 @@ it("reads scoped retrieval inside the shared snapshot capability", async () => {
   ).toEqual([expect.objectContaining({ sourceId: "allowed" })]);
   expect(readSnapshot).toHaveBeenCalledTimes(1);
 });
+
+it("resolves the transaction File and the parent override through a Chunk startup method", async () => {
+  const transaction = { id: "snapshot" };
+  const source = new SourceService({
+    readSnapshot: async (operation: (tx: unknown) => Promise<unknown>) =>
+      operation(transaction),
+    freshHeaders: async () => [{ id: "source", title: "Document" }],
+  } as never);
+  const file = new FileService({} as never);
+  const chunk = new ChunkService({} as never);
+  const links = new LinkService({} as never);
+  const template = new TemplateService({} as never);
+  const assembly = createAppAssembly(({ overrideService }) =>
+    overrideService(templateOwner, template),
+  );
+  jest
+    .spyOn(links, "forSources")
+    .mockResolvedValue([{ sourceId: "source", chunkId: "chunk" }] as Awaited<
+      ReturnType<typeof links.forSources>
+    >);
+  const search = jest.spyOn(chunk, "search").mockImplementation(async function (
+    this: ChunkService,
+  ) {
+    expect(this.modules.fileStorage.file).not.toBe(file);
+    expect(this.modules.fileStorage.file.repository).toMatchObject({
+      db: transaction,
+    });
+    expect(this.modules.notification.template).toBe(template);
+    expect(this.modules.notification.template.repository).not.toHaveProperty(
+      "db",
+    );
+    return [];
+  });
+  createKnowledgeServices({
+    assembly,
+    source,
+    chunk,
+    fileStorageModule: { file },
+    sourcesToChunks: links,
+    processing: false,
+  });
+
+  await expect(
+    source.searchChunks({ embedding: [1], topK: 1, sourceIds: ["source"] }),
+  ).resolves.toEqual([]);
+  expect(search).toHaveBeenCalledTimes(1);
+  expect(file.repository).not.toHaveProperty("db");
+});
 it("traverses the effective relation service for files instead of accessing its repository", async () => {
   const f = sourceFixture();
   expect(await f.source.sourceFiles("allowed")).toEqual([
@@ -158,6 +286,49 @@ it("commits without application-level publisher wiring", async () => {
     ).id,
   ).toBe("source");
   expect(transaction).toHaveBeenCalledTimes(1);
+});
+
+it("processes a saved Source once after commit and skips processing on rollback", async () => {
+  const events: string[] = [];
+  let rollBack = false;
+  const record = {
+    id: "source",
+    title: "Document",
+    content: "Body",
+  };
+  const source = new SourceService({
+    transaction: async (operation: (tx: unknown) => Promise<unknown>) => {
+      const result = await operation({});
+      if (rollBack) {
+        events.push("rollback");
+        throw new Error("commit failed");
+      }
+      events.push("commit");
+      return result;
+    },
+    insert: async () => record,
+    findFirstByField: async () => record,
+  } as never);
+  const index = jest
+    .spyOn(KnowledgeIndexer.prototype, "index")
+    .mockImplementation(async () => {
+      events.push("index");
+      return {} as Awaited<ReturnType<KnowledgeIndexer["index"]>>;
+    });
+  try {
+    createKnowledgeServices({ source });
+    await expect(source.create({ data: record })).resolves.toEqual(record);
+    expect(events).toEqual(["commit", "index"]);
+
+    rollBack = true;
+    await expect(source.create({ data: record })).rejects.toThrow(
+      "commit failed",
+    );
+    expect(events).toEqual(["commit", "index", "rollback"]);
+    expect(index).toHaveBeenCalledTimes(1);
+  } finally {
+    index.mockRestore();
+  }
 });
 
 it("expands global vector candidates past stale results without reading every Source or restricting the global HNSW query", async () => {

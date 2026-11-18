@@ -1,3 +1,4 @@
+import { createModules } from "../modules";
 import "reflect-metadata";
 import { inject, injectable } from "inversify";
 import { CRUDService, DI } from "@sps/shared-backend-api";
@@ -28,6 +29,10 @@ const previewRoutes = new WeakMap<IOfferQuote, QuoteRoutes>();
 
 @injectable()
 export class Service extends CRUDService<typeof Table.$inferSelect> {
+  get modules() {
+    return this.appAssembly.getOrCreate(createModules);
+  }
+
   constructor(
     @inject(DI.IRepository) readonly repository: Repository,
     @inject(OfferDI.ICatalogService) readonly catalog: Catalog,

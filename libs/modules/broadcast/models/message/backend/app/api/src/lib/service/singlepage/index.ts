@@ -1,3 +1,4 @@
+import { createModules } from "@sps/broadcast/backend/app/api/src/lib/modules";
 import "reflect-metadata";
 import { inject, injectable } from "inversify";
 import { CRUDService, DI, type IRepository } from "@sps/shared-backend-api";
@@ -8,6 +9,10 @@ import { MessageDI } from "../../di";
 
 @injectable()
 export class Service extends CRUDService<ISelectSchema> {
+  get modules() {
+    return this.appAssembly.getOrCreate(createModules);
+  }
+
   declare repository: Repository;
   private nextCleanup = 0;
 

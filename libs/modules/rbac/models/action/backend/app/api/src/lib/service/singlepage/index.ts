@@ -1,3 +1,4 @@
+import { createModules } from "@sps/rbac/backend/app/api/src/lib/modules";
 import "reflect-metadata";
 import { inject, injectable } from "inversify";
 import {
@@ -18,6 +19,10 @@ export type IConsumeProps = {
 
 @injectable()
 export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
+  get modules() {
+    return this.appAssembly.getOrCreate(createModules);
+  }
+
   constructor(@inject(DI.IRepository) repository: Repository) {
     super(repository);
   }

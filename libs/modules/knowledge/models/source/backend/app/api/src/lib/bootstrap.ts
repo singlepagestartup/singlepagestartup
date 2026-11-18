@@ -1,9 +1,10 @@
-import { createKnowledgeServices } from "@sps/knowledge/backend/app/api/src/lib/composition";
+import { configureScopedKnowledgeSource } from "@sps/knowledge/backend/app/api/src/lib/composition/source";
 import { ContainerModule } from "inversify";
 import {
   createAppBootstrap,
   DI,
   ExceptionFilter,
+  type IAppAssembly,
   type IExceptionFilter,
 } from "@sps/shared-backend-api";
 import { Configuration } from "./configuration";
@@ -15,14 +16,21 @@ import { App } from "./app";
 const bindings = new ContainerModule(({ bind }) => {
   bind<IExceptionFilter>(DI.IExceptionFilter).to(ExceptionFilter);
   bind<App>(DI.IApp).to(App);
-  bind<Controller>(DI.IController).to(Controller);
+  bind<Controller>(DI.IController).to(Controller).inSingletonScope();
   bind<Repository>(DI.IRepository).to(Repository);
   bind<Service>(DI.IService)
-    .toDynamicValue(() => createKnowledgeServices().source)
-    .inSingletonScope();
+    .to(Service)
+    .inSingletonScope()
+    .onActivation(({ get }, service) => {
+      configureScopedKnowledgeSource(
+        service,
+        get<IAppAssembly>(DI.IAppAssembly),
+        serviceBootstrap,
+      );
+      return service;
+    });
   bind<Configuration>(DI.IConfiguration).to(Configuration);
 });
 
-export const { bootstrap, createService } = createAppBootstrap<App, Service>(
-  bindings,
-);
+export const serviceBootstrap = createAppBootstrap<App, Service>(bindings);
+export const { bootstrap, createService } = serviceBootstrap;

@@ -1,3 +1,4 @@
+import { createModules } from "../modules";
 import { Service as DeliveryQueue } from "../startup/delivery-queue";
 import { DeliveryRepository } from "../../repository/delivery";
 import "reflect-metadata";
@@ -15,6 +16,10 @@ import { ChannelDI } from "../../di";
 
 @injectable()
 export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
+  get modules() {
+    return this.appAssembly.getOrCreate(createModules);
+  }
+
   readonly queue: DeliveryQueue;
   messages: MessageService;
   channelsToMessages: ChannelsToMessagesService;

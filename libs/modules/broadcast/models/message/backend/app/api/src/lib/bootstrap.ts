@@ -17,7 +17,7 @@ import { Table } from "@sps/broadcast/models/message/backend/repository/database
 const bindings = new ContainerModule(({ bind }) => {
   bind<IExceptionFilter>(DI.IExceptionFilter).to(ExceptionFilter);
   bind<App>(DI.IApp).to(App);
-  bind<Controller>(DI.IController).to(Controller);
+  bind<Controller>(DI.IController).to(Controller).inSingletonScope();
   bind<Repository>(DI.IRepository).to(Repository);
   bind<Service>(DI.IService).to(Service).inSingletonScope();
   bind<Configuration>(DI.IConfiguration).to(Configuration);
@@ -29,6 +29,5 @@ const bindings = new ContainerModule(({ bind }) => {
     .inSingletonScope();
 });
 
-export const { bootstrap, createService } = createAppBootstrap<App, Service>(
-  bindings,
-);
+export const serviceBootstrap = createAppBootstrap<App, Service>(bindings);
+export const { bootstrap, createService } = serviceBootstrap;

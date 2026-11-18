@@ -9,13 +9,16 @@ import { readFileSync } from "node:fs";
 import path from "node:path";
 import { modelGenerator } from "./generator";
 import { relationGenerator } from "../relation/generator";
+import { moduleDependencyContract } from "../../utils/service-registries";
 
 it("generates Startup model and relation targets with the complete migration contract", async () => {
   const tree = createTreeWithEmptyWorkspace();
+  tree.write(moduleDependencyContract, "1. `startup`\n");
   const root = path.resolve(__dirname, "../../../../../..");
   for (const relative of [
     "project.json",
     "backend/app/api/src/lib/apps.ts",
+    "backend/app/api/src/lib/bootstrap.ts",
     "frontend/component/src/lib/admin/Component.tsx",
     "frontend/component/src/lib/admin/widget/Component.tsx",
     "models/widget/frontend/component/src/lib/singlepage/admin/form/interface.ts",

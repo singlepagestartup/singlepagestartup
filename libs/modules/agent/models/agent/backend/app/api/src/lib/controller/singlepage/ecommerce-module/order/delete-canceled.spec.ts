@@ -10,7 +10,9 @@ it("excludes recoverable payment cancellations and delegates deletion to the loc
   const find = jest.fn().mockResolvedValue([{ id: "old-canceled" }]);
   const remove = jest.fn().mockResolvedValue(undefined);
   const service = {
-    ecommerceModule: { order: { find, deleteCanceledWithoutPayment: remove } },
+    modules: {
+      ecommerce: { order: { find, deleteCanceledWithoutPayment: remove } },
+    },
   };
   await new Handler(service as any).execute(
     { json: (value: unknown) => value } as any,

@@ -2,6 +2,7 @@ import "reflect-metadata";
 import {
   DI,
   ModuleApp,
+  type IAppAssembly,
   type IExceptionFilter,
   type IModuleApp,
 } from "@sps/shared-backend-api";
@@ -14,15 +15,14 @@ export interface IApp extends IModuleApp<Apps> {
 
 @injectable()
 export class App extends ModuleApp<Apps> implements IApp {
-  constructor(@inject(DI.IExceptionFilter) exceptionFilter: IExceptionFilter) {
-    super(exceptionFilter, () => new Apps());
+  constructor(
+    @inject(DI.IExceptionFilter) exceptionFilter: IExceptionFilter,
+    @inject(DI.IAppAssembly) assembly: IAppAssembly,
+  ) {
+    super(exceptionFilter, () => new Apps(assembly));
   }
 
   async resolveSubjectId(token: string): Promise<string> {
     return this.apps.resolveSubjectId(token);
-  }
-
-  protected override configureApps(): void {
-    this.apps.configure();
   }
 }

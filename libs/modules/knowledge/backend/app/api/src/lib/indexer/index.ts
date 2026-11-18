@@ -3,7 +3,7 @@ import {
   IKnowledgeEmbeddingClient,
 } from "../embedding";
 import type { Service as SourceService } from "@sps/knowledge/models/source/backend/app/api/src/lib/service";
-import { createKnowledgeServices } from "../composition";
+import { createService as createSource } from "@sps/knowledge/models/source/backend/app/api/src/lib/bootstrap";
 import { KnowledgeIndexResult } from "../types";
 import {
   discoverContentFiles,
@@ -22,7 +22,7 @@ export class KnowledgeIndexer {
   private embeddingClient: IKnowledgeEmbeddingClient;
 
   constructor(props?: KnowledgeIndexerProps) {
-    this.source = props?.source || createKnowledgeServices().source;
+    this.source = props?.source ?? createSource();
     this.embeddingClient =
       props?.embeddingClient || createKnowledgeEmbeddingClient();
   }

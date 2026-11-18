@@ -1,3 +1,4 @@
+import { createModules } from "../modules";
 import { z } from "zod";
 import { Service as Settlement } from "../startup/settlement";
 import { Service as PaykeeperSettlement } from "../startup/paykeeper-settlement";
@@ -72,6 +73,10 @@ interface IStripeInvoiceProps {
 
 @injectable()
 export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
+  get modules() {
+    return this.appAssembly.getOrCreate(createModules);
+  }
+
   declare repository: Repository;
   billingModule: IBillingModule;
   protected readonly usesPreparedCheckoutInvoice: boolean = false;

@@ -1,3 +1,4 @@
+import { createModules } from "../modules";
 import type { Repository } from "../../repository";
 import "reflect-metadata";
 import { inject, injectable } from "inversify";
@@ -11,6 +12,10 @@ import { ChannelsToMessagesDI, type IMessageService } from "../../di";
 
 @injectable()
 export class Service extends CRUDService<ISelectSchema> {
+  get modules() {
+    return this.appAssembly.getOrCreate(createModules);
+  }
+
   constructor(
     @inject(DI.IRepository) repository: Repository,
     @inject(ChannelsToMessagesDI.IMessageService)

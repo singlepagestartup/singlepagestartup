@@ -15,6 +15,7 @@ describe("Telegram assistant persisted editor files", () => {
    */
   it("When: a TXT attachment is resolved Then: its content remains available", async () => {
     const service = Object.create(Service.prototype) as Service;
+    Object.defineProperty(service, "modules", { value: {} });
     const relationsFind = jest
       .fn()
       .mockResolvedValue([{ fileStorageModuleFileId: "file-1" }]);
@@ -32,10 +33,10 @@ describe("Telegram assistant persisted editor files", () => {
       ok: true,
       blob: async () => new Blob([content], { type: "text/plain" }),
     }) as any;
-    (service as any).socialModule = {
+    (service as any).modules.social = {
       messagesToFileStorageModuleFiles: { find: relationsFind },
     };
-    (service as any).fileStorageModule = {
+    (service as any).modules.fileStorage = {
       file: { findById: fileFindById },
     };
 

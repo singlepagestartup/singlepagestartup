@@ -1,3 +1,4 @@
+import { createModules } from "../modules";
 import "reflect-metadata";
 import { injectFromBase, injectable } from "inversify";
 import { CRUDService } from "@sps/shared-backend-api";
@@ -5,4 +6,8 @@ import { Table } from "@sps/social/relations/chats-to-actions/backend/repository
 
 @injectable()
 @injectFromBase()
-export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {}
+export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
+  get modules() {
+    return this.appAssembly.getOrCreate(createModules);
+  }
+}

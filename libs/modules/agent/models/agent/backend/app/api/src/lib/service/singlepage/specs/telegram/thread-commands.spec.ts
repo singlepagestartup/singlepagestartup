@@ -80,6 +80,7 @@ function createService(props?: {
   };
 }) {
   const service = Object.create(Service.prototype) as Service;
+  Object.defineProperty(service, "modules", { value: {} });
 
   (service as any).getMessageFromRbacModuleSubject = jest
     .fn()
@@ -92,7 +93,7 @@ function createService(props?: {
   (service as any).resolveThreadIdForMessageInChat = jest
     .fn()
     .mockResolvedValue("thread-current");
-  (service as any).socialModule = {
+  (service as any).modules.social = {
     thread: {
       findById: jest.fn().mockResolvedValue(
         props?.currentThread || {

@@ -12,6 +12,7 @@ import {
   telegramBotServiceMessages,
 } from "@sps/shared-utils";
 import { CRUDService, DI } from "@sps/shared-backend-api";
+import { createModules } from "@sps/agent/backend/app/api/src/lib/modules";
 import { Table } from "@sps/agent/models/agent/backend/repository/database";
 import { Repository } from "../../repository";
 import { IModel as ISocialModuleProfile } from "@sps/social/models/profile/sdk/model";
@@ -40,18 +41,7 @@ import {
 } from "@sps/file-storage/models/file/sdk/model";
 import { api as notificationNotificationApi } from "@sps/notification/models/notification/sdk/server";
 import { blobifyFiles, logger, signJwt } from "@sps/backend-utils";
-import {
-  AgentDI,
-  type IBillingModule,
-  type IBroadcastModule,
-  type IEcommerceModule,
-  type IFileStorageModule,
-  type IHostModule,
-  type INotificationModule,
-  type IRbacModule,
-  type ISocialModule,
-  type ITelegramConversationRuntime,
-} from "../../di";
+import { AgentDI, type ITelegramConversationRuntime } from "../../di";
 import {
   type ITelegramRequiredSubscriptionChannelConfiguration,
   resolveTelegramRequiredSubscriptionChannelConfiguration,
@@ -161,43 +151,31 @@ export interface ITelegramPublishedCommand {
 
 @injectable()
 export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
-  socialModule: ISocialModule;
-  rbacModule: IRbacModule;
-  ecommerceModule: IEcommerceModule;
-  billingModule: IBillingModule;
-  broadcastModule: IBroadcastModule;
-  hostModule: IHostModule;
-  notificationModule: INotificationModule;
-  fileStorageModule: IFileStorageModule;
   telegramConversationRuntime: ITelegramConversationRuntime;
   agentRun: AgentRun;
   cronQueue: CronQueue;
 
+  get modules() {
+    return this.appAssembly.getOrCreate(createModules);
+  }
+
+  get ecommerceModule() {
+    return this.modules.ecommerce;
+  }
+
   constructor(
     @inject(DI.IRepository) repository: Repository,
-    @inject(AgentDI.ISocialModule) socialModule: ISocialModule,
-    @inject(AgentDI.IRbacModule) rbacModule: IRbacModule,
-    @inject(AgentDI.IEcommerceModule) ecommerceModule: IEcommerceModule,
-    @inject(AgentDI.IBillingModule) billingModule: IBillingModule,
-    @inject(AgentDI.IBroadcastModule) broadcastModule: IBroadcastModule,
-    @inject(AgentDI.IHostModule) hostModule: IHostModule,
-    @inject(AgentDI.INotificationModule)
-    notificationModule: INotificationModule,
-    @inject(AgentDI.IFileStorageModule) fileStorageModule: IFileStorageModule,
     @inject(AgentDI.ITelegramConversationRuntime)
     telegramConversationRuntime: ITelegramConversationRuntime,
   ) {
     super(repository);
-    this.socialModule = socialModule;
-    this.rbacModule = rbacModule;
-    this.ecommerceModule = ecommerceModule;
-    this.billingModule = billingModule;
-    this.broadcastModule = broadcastModule;
-    this.hostModule = hostModule;
-    this.notificationModule = notificationModule;
-    this.fileStorageModule = fileStorageModule;
     this.telegramConversationRuntime = telegramConversationRuntime;
-    this.agentRun = new AgentRun({ broadcastModule });
+    const agent = this;
+    this.agentRun = new AgentRun({
+      get broadcastModule() {
+        return agent.modules.broadcast;
+      },
+    });
     this.cronQueue = new CronQueue(repository, this.agentRun);
   }
 
@@ -529,7 +507,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     }
 
     const rbacModuleSubjectsToSocialModuleProfiles =
-      await this.rbacModule.subjectsToSocialModuleProfiles.find({
+      await this.modules.rbac.subjectsToSocialModuleProfiles.find({
         params: {
           filters: {
             and: [
@@ -556,7 +534,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
       return;
     }
 
-    const rbacModuleSubject = await this.rbacModule.subject.findById({
+    const rbacModuleSubject = await this.modules.rbac.subject.findById({
       id: rbacModuleSubjectsToSocialModuleProfiles[0].subjectId,
     });
 
@@ -900,7 +878,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
 
   protected async resolveTelegramAssistantProfileAvatar(profileId: string) {
     const relations =
-      await this.socialModule.profilesToFileStorageModuleFiles.find({
+      await this.modules.social.profilesToFileStorageModuleFiles.find({
         params: {
           filters: {
             and: [{ column: "profileId", method: "eq", value: profileId }],
@@ -918,7 +896,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     const relation = relations?.[0];
     let file;
     if (relation?.fileStorageModuleFileId) {
-      file = await this.fileStorageModule.file.findById({
+      file = await this.modules.fileStorage.file.findById({
         id: relation.fileStorageModuleFileId,
       });
     } else {
@@ -928,7 +906,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
       file?.variant === defaultSocialModulePersonalAssistantVariant;
 
     if (!this.isTelegramAssistantAvatarImage(file)) {
-      const defaultFiles = await this.fileStorageModule.file.find({
+      const defaultFiles = await this.modules.fileStorage.file.find({
         params: {
           filters: {
             and: [
@@ -999,7 +977,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     message: ISocialModuleMessage,
   ) {
     const relations =
-      await this.socialModule.messagesToFileStorageModuleFiles.find({
+      await this.modules.social.messagesToFileStorageModuleFiles.find({
         params: {
           filters: {
             and: [{ column: "messageId", method: "eq", value: message.id }],
@@ -1017,7 +995,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
       return;
     }
 
-    const file = await this.fileStorageModule.file.findById({
+    const file = await this.modules.fileStorage.file.findById({
       id: relation.fileStorageModuleFileId,
     });
 
@@ -1025,13 +1003,15 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
       return;
     }
 
+    const title =
+      "title" in file && typeof file.title === "string" && file.title;
     const url = String(file.file).includes("http")
       ? String(file.file)
       : `${NEXT_PUBLIC_API_SERVICE_URL}/public${file.file}`;
     const files = await blobifyFiles({
       files: [
         {
-          title: file.title || file.adminTitle || file.id,
+          title: title || file.adminTitle || file.id,
           extension:
             file.extension ||
             String(file.file).split("?")[0].split(".").pop() ||
@@ -1078,7 +1058,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
       secretKey: RBAC_SECRET_KEY,
     });
 
-    const socialModuleThread = await this.socialModule.thread.findById({
+    const socialModuleThread = await this.modules.social.thread.findById({
       id: socialModuleThreadId,
     });
 
@@ -1540,7 +1520,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
         throw new Error("Configuration error. RBAC_SECRET_KEY is missing.");
       }
 
-      const notifications = await this.notificationModule.notification.find({
+      const notifications = await this.modules.notification.notification.find({
         params: {
           filters: {
             and: [
@@ -1599,7 +1579,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
       throw new Error("Configuration error. RBAC_SECRET_KEY not set");
     }
 
-    const notifications = await this.notificationModule.notification.find({
+    const notifications = await this.modules.notification.notification.find({
       params: {
         filters: {
           and: [
@@ -1646,7 +1626,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     }
 
     const generateTemplateSocilaModuleMessageAttachmentStartFiles =
-      await this.fileStorageModule.file.find({
+      await this.modules.fileStorage.file.find({
         params: {
           filters: {
             and: [
@@ -1824,7 +1804,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     };
 
     const telegramStarBillingModuleCurrencies =
-      await this.billingModule.currency.find({
+      await this.modules.billing.currency.find({
         params: {
           filters: {
             and: [
@@ -1903,7 +1883,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
       await this.getMessageFromRbacModuleSubject(props);
 
     const telegramStarBillingModuleCurrencies =
-      await this.billingModule.currency.find({
+      await this.modules.billing.currency.find({
         params: {
           filters: {
             and: [
@@ -1988,7 +1968,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
       await this.getMessageFromRbacModuleSubject(props);
 
     const rbacModuleRolesToEcommerceModuleProducts =
-      await this.rbacModule.rolesToEcommerceModuleProducts.find({});
+      await this.modules.rbac.rolesToEcommerceModuleProducts.find({});
 
     if (!rbacModuleRolesToEcommerceModuleProducts?.length) {
       return this.telegramBotReplyMessageCreate({
@@ -1999,7 +1979,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
       });
     }
 
-    const rbacModulePayableRoles = await this.rbacModule.role.find({
+    const rbacModulePayableRoles = await this.modules.rbac.role.find({
       params: {
         filters: {
           and: [
@@ -2027,7 +2007,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     }
 
     const rbacModuleSubjectsToProSubscriberRoles =
-      await this.rbacModule.subjectsToRoles.find({
+      await this.modules.rbac.subjectsToRoles.find({
         params: {
           filters: {
             and: [
@@ -2057,7 +2037,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
       description: "",
     };
 
-    const ecommerceModuleProducts = await this.ecommerceModule.product.find({
+    const ecommerceModuleProducts = await this.modules.ecommerce.product.find({
       params: {
         filters: {
           and: [
@@ -2104,7 +2084,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
         extendedProduct.id;
 
       const telegramStarBillingModuleCurrencies =
-        await this.billingModule.currency.find({
+        await this.modules.billing.currency.find({
           params: {
             filters: {
               and: [
@@ -2319,9 +2299,9 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
         await this.getMessageFromRbacModuleSubject(props);
 
       const rbacModuleRolesToEcommerceModuleProducts =
-        await this.rbacModule.rolesToEcommerceModuleProducts.find({});
+        await this.modules.rbac.rolesToEcommerceModuleProducts.find({});
 
-      const rbacModuleRoles = await this.rbacModule.role.find({});
+      const rbacModuleRoles = await this.modules.rbac.role.find({});
 
       if (!rbacModuleRoles?.length) {
         throw new Error("Not found error. 'rbacModuleRoles' is empty.");
@@ -2335,7 +2315,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
           .includes(role.id);
       });
 
-      const rbacSubjectsToRoles = await this.rbacModule.subjectsToRoles.find({
+      const rbacSubjectsToRoles = await this.modules.rbac.subjectsToRoles.find({
         params: {
           filters: {
             and: [
@@ -2617,7 +2597,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     secretKey: string;
   }): Promise<string> {
     const socialModuleChatsToThreads =
-      await this.socialModule.chatsToThreads.find({
+      await this.modules.social.chatsToThreads.find({
         params: {
           filters: {
             and: [
@@ -2652,7 +2632,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     }
 
     const socialModuleThreadsToMessages =
-      await this.socialModule.threadsToMessages.find({
+      await this.modules.social.threadsToMessages.find({
         params: {
           filters: {
             and: [
@@ -2742,7 +2722,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     });
 
     const socialModuleChatsToThreads =
-      await this.socialModule.chatsToThreads.find({
+      await this.modules.social.chatsToThreads.find({
         params: {
           filters: {
             and: [
@@ -2772,7 +2752,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
       return defaultThread.id;
     }
 
-    const socialModuleThreads = await this.socialModule.thread.find({
+    const socialModuleThreads = await this.modules.social.thread.find({
       params: {
         filters: {
           and: [
@@ -2819,7 +2799,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     });
 
     const socialModuleChatsToMessages =
-      await this.socialModule.chatsToMessages.find({
+      await this.modules.social.chatsToMessages.find({
         params: {
           filters: {
             and: [
@@ -2852,7 +2832,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     }
 
     const socialModuleChatsToThreads =
-      await this.socialModule.chatsToThreads.find({
+      await this.modules.social.chatsToThreads.find({
         params: {
           filters: {
             and: [
@@ -2876,7 +2856,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     chatThreadIdsSet.add(socialModuleDefaultThread.id);
 
     const socialModuleThreadsToMessages =
-      await this.socialModule.threadsToMessages.find({
+      await this.modules.social.threadsToMessages.find({
         params: {
           filters: {
             and: [
@@ -2936,7 +2916,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     secretKey: string;
   }) {
     const socialModuleChatsToThreads =
-      await this.socialModule.chatsToThreads.find({
+      await this.modules.social.chatsToThreads.find({
         params: {
           filters: {
             and: [
@@ -2958,7 +2938,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
         .filter((threadId): threadId is string => Boolean(threadId)) || [];
 
     if (threadIds.length) {
-      const socialModuleThreads = await this.socialModule.thread.find({
+      const socialModuleThreads = await this.modules.social.thread.find({
         params: {
           filters: {
             and: [
@@ -3017,9 +2997,10 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
       throw new Error("Configuration error. RBAC_SECRET_KEY not set");
     }
 
-    const ecommerceModuleProduct = await this.ecommerceModule.product.findById({
-      id: props.id,
-    });
+    const ecommerceModuleProduct =
+      await this.modules.ecommerce.product.findById({
+        id: props.id,
+      });
 
     if (!ecommerceModuleProduct) {
       throw new Error("Not found error. 'ecommerceModuleProduct' not found");
@@ -3030,7 +3011,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     })[] = [];
 
     const foundEcommerceModuleProductsToFileStorageFiles =
-      await this.ecommerceModule.productsToFileStorageModuleFiles.find({
+      await this.modules.ecommerce.productsToFileStorageModuleFiles.find({
         params: {
           filters: {
             and: [
@@ -3051,7 +3032,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
 
     if (foundEcommerceModuleProductsToFileStorageFiles?.length) {
       const foundFileStorageModuleFiles =
-        await this.fileStorageModule.file.find({
+        await this.modules.fileStorage.file.find({
           params: {
             filters: {
               and: [
@@ -3093,7 +3074,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     }
 
     const ecommerceModuleProdctsToAttributes =
-      await this.ecommerceModule.productsToAttributes.find({
+      await this.modules.ecommerce.productsToAttributes.find({
         params: {
           filters: {
             and: [
@@ -3113,8 +3094,8 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
       );
     }
 
-    const ecommerceModuleAttributes = await this.ecommerceModule.attribute.find(
-      {
+    const ecommerceModuleAttributes =
+      await this.modules.ecommerce.attribute.find({
         params: {
           filters: {
             and: [
@@ -3130,15 +3111,14 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
             ],
           },
         },
-      },
-    );
+      });
 
     if (!ecommerceModuleAttributes?.length) {
       throw new Error("Not found error. 'ecommerceModuleAttributes' not found");
     }
 
     const ecommerceModuleAttributeKeysToAttributes =
-      await this.ecommerceModule.attributeKeysToAttributes.find({
+      await this.modules.ecommerce.attributeKeysToAttributes.find({
         params: {
           filters: {
             and: [
@@ -3163,7 +3143,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     }
 
     const ecommerceModuleAttributeKeys =
-      await this.ecommerceModule.attributeKey.find({
+      await this.modules.ecommerce.attributeKey.find({
         params: {
           filters: {
             and: [
@@ -3188,7 +3168,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     }
 
     const ecommerceModuleAttributesToBillingModuleCurrencies =
-      await this.ecommerceModule.attributesToBillingModuleCurrencies.find({
+      await this.modules.ecommerce.attributesToBillingModuleCurrencies.find({
         params: {
           filters: {
             and: [
@@ -3212,7 +3192,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
       );
     }
 
-    const billingModuleCurrencies = await this.billingModule.currency.find({
+    const billingModuleCurrencies = await this.modules.billing.currency.find({
       params: {
         filters: {
           and: [
@@ -3328,7 +3308,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     }
 
     const messageFromRbacModuleSubjectsToSocialModuleProfiles =
-      await this.rbacModule.subjectsToSocialModuleProfiles.find({
+      await this.modules.rbac.subjectsToSocialModuleProfiles.find({
         params: {
           filters: {
             and: [
@@ -3366,7 +3346,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
       );
     }
 
-    const messageFromSubject = await this.rbacModule.subject.findById({
+    const messageFromSubject = await this.modules.rbac.subject.findById({
       id: messageFromRbacModuleSubjectsToSocialModuleProfiles[0].subjectId,
     });
 

@@ -2,7 +2,12 @@ import "reflect-metadata";
 import { injectFromBase, injectable } from "inversify";
 import { CRUDService } from "@sps/shared-backend-api";
 import { Table } from "<%= relation_repository_database_import_path %>";
+import { createModules } from "@sps/<%= module_name %>/backend/app/api/src/lib/modules";
 
 @injectable()
 @injectFromBase()
-export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {}
+export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
+  get modules() {
+    return this.appAssembly.getOrCreate(createModules);
+  }
+}

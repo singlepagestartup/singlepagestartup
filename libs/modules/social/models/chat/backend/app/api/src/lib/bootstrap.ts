@@ -10,37 +10,30 @@ import { Repository } from "./repository";
 import { Controller } from "./controller";
 import { Service } from "./service";
 import { App } from "./app";
+import { createModules } from "./service/modules";
 import { ChatDI } from "./di";
-import { Service as MessageService } from "@sps/social/models/message/backend/app/api/src/lib/service";
-import { Repository as MessageRepository } from "@sps/social/models/message/backend/app/api/src/lib/repository";
-import { Configuration as MessageConfiguration } from "@sps/social/models/message/backend/app/api/src/lib/configuration";
-import { Service as ChatsToMessagesService } from "@sps/social/relations/chats-to-messages/backend/app/api/src/lib/service";
-import { Repository as ChatsToMessagesRepository } from "@sps/social/relations/chats-to-messages/backend/app/api/src/lib/repository";
-import { Configuration as ChatsToMessagesConfiguration } from "@sps/social/relations/chats-to-messages/backend/app/api/src/lib/configuration";
 
 const bindings = new ContainerModule(({ bind }) => {
   bind<IExceptionFilter>(DI.IExceptionFilter).to(ExceptionFilter);
   bind<App>(DI.IApp).to(App);
-  bind<Controller>(DI.IController).to(Controller);
+  bind<Controller>(DI.IController).to(Controller).inSingletonScope();
   bind<Repository>(DI.IRepository).to(Repository);
   bind<Service>(DI.IService).to(Service).inSingletonScope();
   bind<Configuration>(DI.IConfiguration).to(Configuration);
-  bind<MessageService>(ChatDI.IMessagesService)
-    .toDynamicValue(
-      () =>
-        new MessageService(new MessageRepository(new MessageConfiguration())),
-    )
-    .inSingletonScope();
-  bind<ChatsToMessagesService>(ChatDI.IChatsToMessagesService)
-    .toDynamicValue(
-      () =>
-        new ChatsToMessagesService(
-          new ChatsToMessagesRepository(new ChatsToMessagesConfiguration()),
-        ),
-    )
-    .inSingletonScope();
 });
 
-export const { bootstrap, createService } = createAppBootstrap<App, Service>(
+export const serviceBootstrap = createAppBootstrap<App, Service>(
   bindings,
+  (container, assembly) => {
+    const { social } = assembly.getOrCreate(createModules);
+    container
+      .bind(ChatDI.IMessagesService)
+      .toDynamicValue(() => social.message)
+      .inSingletonScope();
+    container
+      .bind(ChatDI.IChatsToMessagesService)
+      .toDynamicValue(() => social.chatsToMessages)
+      .inSingletonScope();
+  },
 );
+export const { bootstrap, createService } = serviceBootstrap;

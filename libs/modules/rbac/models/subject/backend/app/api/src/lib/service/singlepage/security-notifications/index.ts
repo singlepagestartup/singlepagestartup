@@ -1,5 +1,7 @@
 import "reflect-metadata";
-import { inject, injectable } from "inversify";
+import { inject, injectable, optional } from "inversify";
+import { defaultAppAssembly, DI } from "@sps/shared-backend-api";
+import { createModules } from "@sps/rbac/backend/app/api/src/lib/modules";
 import { Provider } from "@sps/providers-kv";
 import {
   KV_PROVIDER,
@@ -52,6 +54,8 @@ interface IRecipient {
 // window replaces an undelivered old summary; there is no per-request backlog.
 @injectable()
 export class Service {
+  private readonly notifications: INotificationModule;
+  private readonly broadcast: IBroadcastModule;
   private readonly events = new SecurityEvents(
     new Provider({ type: KV_PROVIDER }),
   );
@@ -64,10 +68,16 @@ export class Service {
     private readonly subjectsToIdentities: IReadService,
     @inject(SubjectDI.IIdentityService) private readonly identity: IReadService,
     @inject(SubjectDI.INotificationModule)
-    private readonly notifications: INotificationModule,
+    @optional()
+    notifications: INotificationModule | undefined,
     @inject(SubjectDI.IBroadcastModule)
-    private readonly broadcast: IBroadcastModule,
+    @optional()
+    broadcast: IBroadcastModule | undefined,
+    @inject(DI.IAppAssembly) @optional() assembly = defaultAppAssembly,
   ) {
+    const modules = assembly.getOrCreate(createModules);
+    this.notifications = notifications ?? modules.notification;
+    this.broadcast = broadcast ?? modules.broadcast;
     if (
       !Number.isSafeInteger(SECURITY_NOTIFICATION_FAILURE_THRESHOLD) ||
       SECURITY_NOTIFICATION_FAILURE_THRESHOLD < 1

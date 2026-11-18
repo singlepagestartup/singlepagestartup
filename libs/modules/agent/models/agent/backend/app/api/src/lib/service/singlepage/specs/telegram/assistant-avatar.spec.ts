@@ -12,14 +12,15 @@ function createService(props: {
   defaultFiles?: Array<Record<string, unknown>>;
 }) {
   const service = Object.create(Service.prototype) as Service;
+  Object.defineProperty(service, "modules", { value: {} });
   const relationsFind = jest.fn().mockResolvedValue(props.relations || []);
   const fileFindById = jest.fn().mockResolvedValue(props.file);
   const fileFind = jest.fn().mockResolvedValue(props.defaultFiles || []);
 
-  (service as any).socialModule = {
+  (service as any).modules.social = {
     profilesToFileStorageModuleFiles: { find: relationsFind },
   };
-  (service as any).fileStorageModule = {
+  (service as any).modules.fileStorage = {
     file: { find: fileFind, findById: fileFindById },
   };
 

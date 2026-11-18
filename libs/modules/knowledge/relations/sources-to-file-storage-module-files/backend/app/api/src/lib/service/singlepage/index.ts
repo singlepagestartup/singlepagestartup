@@ -1,3 +1,4 @@
+import { createModules } from "@sps/knowledge/backend/app/api/src/lib/modules";
 import "reflect-metadata";
 import { injectFromBase, injectable } from "inversify";
 import { CRUDService } from "@sps/shared-backend-api";
@@ -5,6 +6,7 @@ import { Table } from "@sps/knowledge/relations/sources-to-file-storage-module-f
 import type { Repository } from "../../repository";
 import type { Service as FileStorageFileService } from "@sps/file-storage/models/file/backend/app/api/src/lib/service";
 import { assertKnowledgeAttachmentBytes } from "@sps/backend-utils";
+import { overlayServices } from "@sps/knowledge/backend/app/api/src/lib/service/utils";
 type Relation = typeof Table.$inferSelect;
 export interface IFileRelationMutation {
   action: "create" | "update" | "delete";
@@ -19,9 +21,29 @@ export interface IFileRelationServices {
 @injectable()
 @injectFromBase()
 export class Service extends CRUDService<Relation> {
+  get modules() {
+    const modules = this.appAssembly.getOrCreate(createModules);
+    const services = this.services;
+    if (!services) {
+      return modules;
+    }
+    this.scopedModules ??= overlayServices(modules, {
+      get fileStorage() {
+        return overlayServices(modules.fileStorage, {
+          get file() {
+            return services.fileStorageFile;
+          },
+        });
+      },
+    });
+    return this.scopedModules;
+  }
+
+  private scopedModules?: ReturnType<typeof createModules>;
   private services?: IFileRelationServices;
   configure(services: IFileRelationServices) {
     this.services = services;
+    this.scopedModules = undefined;
   }
   async create(props: { data: any }): Promise<Relation> {
     if (!this.services)
@@ -109,7 +131,7 @@ export class Service extends CRUDService<Relation> {
       throw new Error(
         "Configuration error. Knowledge file relation services are not configured.",
       );
-    const files = await this.services.fileStorageFile.find({
+    const files = await this.modules.fileStorage.file.find({
       params: {
         filters: {
           and: [
@@ -131,7 +153,7 @@ export class Service extends CRUDService<Relation> {
           mimeType: file.mimeType || undefined,
         });
         assertKnowledgeAttachmentBytes({
-          bytes: await this.services!.fileStorageFile.readBytes(file),
+          bytes: await this.modules.fileStorage.file.readBytes(file),
           name: file.file,
           mimeType: file.mimeType || undefined,
         });

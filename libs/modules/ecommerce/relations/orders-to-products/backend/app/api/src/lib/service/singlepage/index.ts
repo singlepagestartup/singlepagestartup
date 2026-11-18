@@ -1,3 +1,4 @@
+import { createModules } from "../modules";
 import type { IOrderLineTotals } from "@sps/ecommerce/relations/orders-to-products/sdk/model";
 import type { Service as OfferService } from "@sps/ecommerce/relations/stores-to-products/backend/app/api/src/lib/service";
 import type { IQuoteOptions } from "@sps/ecommerce/relations/stores-to-products/backend/app/api/src/lib/service/singlepage";
@@ -19,6 +20,10 @@ import { OrdersToProductsDI } from "../../di";
 
 @injectable()
 export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
+  get modules() {
+    return this.appAssembly.getOrCreate(createModules);
+  }
+
   product: ProductService;
   attribute: AttributeService;
   attributeKey: AttributeKeyService;

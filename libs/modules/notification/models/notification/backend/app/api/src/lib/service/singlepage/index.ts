@@ -1,3 +1,4 @@
+import { createModules } from "../modules";
 import {
   NotificationDI,
   type IBroadcastModule,
@@ -35,6 +36,10 @@ type INotificationAttachment = NonNullable<IModel["attachments"]>[number];
 
 @injectable()
 export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
+  get modules() {
+    return this.appAssembly.getOrCreate(createModules);
+  }
+
   declare repository: Repository;
   constructor(
     @inject(DI.IRepository) repository: Repository,

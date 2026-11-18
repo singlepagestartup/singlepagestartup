@@ -1,7 +1,7 @@
 import { RBAC_SECRET_KEY } from "@sps/shared-utils";
 import { Context } from "hono";
 import { HTTPException } from "hono/http-exception";
-import { Service } from "../../../../service";
+import type { Service } from "../../../../service";
 import { getHttpErrorType, logger } from "@sps/backend-utils";
 
 export class Handler {
@@ -20,7 +20,8 @@ export class Handler {
       logger.info("Ecommerce module order delete canceled started");
       const createdBefore = new Date(Date.now() - 2 * 24 * 60 * 60 * 1000);
 
-      const canceledOrders = await this.service.ecommerceModule.order.find({
+      const orderService = this.service.modules.ecommerce.order;
+      const canceledOrders = await orderService.find({
         params: {
           filters: {
             and: [
@@ -47,12 +48,10 @@ export class Handler {
       if (canceledOrders?.length) {
         for (const order of canceledOrders) {
           try {
-            await this.service.ecommerceModule.order.deleteCanceledWithoutPayment(
-              {
-                id: order.id,
-                createdBefore,
-              },
-            );
+            await orderService.deleteCanceledWithoutPayment({
+              id: order.id,
+              createdBefore,
+            });
           } catch (error: any) {
             // logger.error("Ecommerce module order check failed", {
             //   error: error,

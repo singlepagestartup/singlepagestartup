@@ -1,37 +1,41 @@
-import { app as offersToOffersApp } from "@sps/ecommerce/relations/offers-to-offers/backend/app/api";
-import { app as categoriesToWebsiteBuilderModuleWidgets } from "@sps/ecommerce/relations/categories-to-website-builder-module-widgets/backend/app/api";
-import { DefaultApp } from "@sps/shared-backend-api";
-import { app as widgetApp } from "@sps/ecommerce/models/widget/backend/app/api";
-import { app as storeApp } from "@sps/ecommerce/models/store/backend/app/api";
-import { app as productApp } from "@sps/ecommerce/models/product/backend/app/api";
-import { app as categoryApp } from "@sps/ecommerce/models/category/backend/app/api";
-import { app as orderApp } from "@sps/ecommerce/models/order/backend/app/api";
-import { app as attributeApp } from "@sps/ecommerce/models/attribute/backend/app/api";
-import { app as attributeKeyApp } from "@sps/ecommerce/models/attribute-key/backend/app/api";
-import { app as attributesToAttributeKeysApp } from "@sps/ecommerce/relations/attribute-keys-to-attributes/backend/app/api";
-import { app as productsToAttributesApp } from "@sps/ecommerce/relations/products-to-attributes/backend/app/api";
-import { app as ordersToProductsApp } from "@sps/ecommerce/relations/orders-to-products/backend/app/api";
-import { app as ordersToBillingPaymentIntentsApp } from "@sps/ecommerce/relations/orders-to-billing-module-payment-intents/backend/app/api";
-import { app as ordersToBillingCurrenciesApp } from "@sps/ecommerce/relations/orders-to-billing-module-currencies/backend/app/api";
-import { app as ordersToFileStorageModuleFiles } from "@sps/ecommerce/relations/orders-to-file-storage-module-files/backend/app/api";
-import { app as storesToProductsApp } from "@sps/ecommerce/relations/stores-to-products/backend/app/api";
-import { app as storesToOrdersApp } from "@sps/ecommerce/relations/stores-to-orders/backend/app/api";
-import { app as storesToProductsToAttributesApp } from "@sps/ecommerce/relations/stores-to-products-to-attributes/backend/app/api";
-import { app as storesToAttributesApp } from "@sps/ecommerce/relations/stores-to-attributes/backend/app/api";
-import { app as categoriesToProductsApp } from "@sps/ecommerce/relations/categories-to-products/backend/app/api";
-import { app as productsToFileStorageModuleWidgetsApp } from "@sps/ecommerce/relations/products-to-file-storage-module-files/backend/app/api";
-import { app as productsToWebsiteBuilderModuleWidgetsApp } from "@sps/ecommerce/relations/products-to-website-builder-module-widgets/backend/app/api";
-import { app as categoriesToFileStorageModuleWidgetsApp } from "@sps/ecommerce/relations/categories-to-file-storage-module-files/backend/app/api";
-import { app as widgetsToCategoriesApp } from "@sps/ecommerce/relations/widgets-to-categories/backend/app/api";
-import { app as widgetsToProductsApp } from "@sps/ecommerce/relations/widgets-to-products/backend/app/api";
-import { app as widgetsToStoresApp } from "@sps/ecommerce/relations/widgets-to-stores/backend/app/api";
-import { app as attributesToBillingModuleCurrenciesApp } from "@sps/ecommerce/relations/attributes-to-billing-module-currencies/backend/app/api";
+import { serviceBootstrap as offersToOffersApp } from "@sps/ecommerce/relations/offers-to-offers/backend/app/api/src/lib/bootstrap";
+import { serviceBootstrap as categoriesToWebsiteBuilderModuleWidgets } from "@sps/ecommerce/relations/categories-to-website-builder-module-widgets/backend/app/api/src/lib/bootstrap";
+import {
+  createModuleChildApp,
+  defaultAppAssembly,
+  type IAppAssembly,
+  type IModuleAppEntry,
+} from "@sps/shared-backend-api";
+import { serviceBootstrap as widgetApp } from "@sps/ecommerce/models/widget/backend/app/api/src/lib/bootstrap";
+import { serviceBootstrap as storeApp } from "@sps/ecommerce/models/store/backend/app/api/src/lib/bootstrap";
+import { serviceBootstrap as productApp } from "@sps/ecommerce/models/product/backend/app/api/src/lib/bootstrap";
+import { serviceBootstrap as categoryApp } from "@sps/ecommerce/models/category/backend/app/api/src/lib/bootstrap";
+import { serviceBootstrap as orderApp } from "@sps/ecommerce/models/order/backend/app/api/src/lib/bootstrap";
+import { serviceBootstrap as attributeApp } from "@sps/ecommerce/models/attribute/backend/app/api/src/lib/bootstrap";
+import { serviceBootstrap as attributeKeyApp } from "@sps/ecommerce/models/attribute-key/backend/app/api/src/lib/bootstrap";
+import { serviceBootstrap as attributesToAttributeKeysApp } from "@sps/ecommerce/relations/attribute-keys-to-attributes/backend/app/api/src/lib/bootstrap";
+import { serviceBootstrap as productsToAttributesApp } from "@sps/ecommerce/relations/products-to-attributes/backend/app/api/src/lib/bootstrap";
+import { serviceBootstrap as ordersToProductsApp } from "@sps/ecommerce/relations/orders-to-products/backend/app/api/src/lib/bootstrap";
+import { serviceBootstrap as ordersToBillingPaymentIntentsApp } from "@sps/ecommerce/relations/orders-to-billing-module-payment-intents/backend/app/api/src/lib/bootstrap";
+import { serviceBootstrap as ordersToBillingCurrenciesApp } from "@sps/ecommerce/relations/orders-to-billing-module-currencies/backend/app/api/src/lib/bootstrap";
+import { serviceBootstrap as ordersToFileStorageModuleFiles } from "@sps/ecommerce/relations/orders-to-file-storage-module-files/backend/app/api/src/lib/bootstrap";
+import { serviceBootstrap as storesToProductsApp } from "@sps/ecommerce/relations/stores-to-products/backend/app/api/src/lib/bootstrap";
+import { serviceBootstrap as storesToOrdersApp } from "@sps/ecommerce/relations/stores-to-orders/backend/app/api/src/lib/bootstrap";
+import { serviceBootstrap as storesToProductsToAttributesApp } from "@sps/ecommerce/relations/stores-to-products-to-attributes/backend/app/api/src/lib/bootstrap";
+import { serviceBootstrap as storesToAttributesApp } from "@sps/ecommerce/relations/stores-to-attributes/backend/app/api/src/lib/bootstrap";
+import { serviceBootstrap as categoriesToProductsApp } from "@sps/ecommerce/relations/categories-to-products/backend/app/api/src/lib/bootstrap";
+import { serviceBootstrap as productsToFileStorageModuleWidgetsApp } from "@sps/ecommerce/relations/products-to-file-storage-module-files/backend/app/api/src/lib/bootstrap";
+import { serviceBootstrap as productsToWebsiteBuilderModuleWidgetsApp } from "@sps/ecommerce/relations/products-to-website-builder-module-widgets/backend/app/api/src/lib/bootstrap";
+import { serviceBootstrap as categoriesToFileStorageModuleWidgetsApp } from "@sps/ecommerce/relations/categories-to-file-storage-module-files/backend/app/api/src/lib/bootstrap";
+import { serviceBootstrap as widgetsToCategoriesApp } from "@sps/ecommerce/relations/widgets-to-categories/backend/app/api/src/lib/bootstrap";
+import { serviceBootstrap as widgetsToProductsApp } from "@sps/ecommerce/relations/widgets-to-products/backend/app/api/src/lib/bootstrap";
+import { serviceBootstrap as widgetsToStoresApp } from "@sps/ecommerce/relations/widgets-to-stores/backend/app/api/src/lib/bootstrap";
+import { serviceBootstrap as attributesToBillingModuleCurrenciesApp } from "@sps/ecommerce/relations/attributes-to-billing-module-currencies/backend/app/api/src/lib/bootstrap";
 
 export class Apps {
-  apps: { type: "model" | "relation"; route: string; app: DefaultApp<any> }[] =
-    [];
+  apps: IModuleAppEntry[] = [];
 
-  constructor() {
+  constructor(private readonly assembly: IAppAssembly = defaultAppAssembly) {
     this.bindApps();
   }
 
@@ -39,137 +43,155 @@ export class Apps {
     this.apps.push({
       type: "relation",
       route: "/categories-to-website-builder-module-widgets",
-      app: categoriesToWebsiteBuilderModuleWidgets,
+      app: createModuleChildApp(
+        categoriesToWebsiteBuilderModuleWidgets,
+        this.assembly,
+      ),
     });
     this.apps.push({
       type: "model",
       route: "/widgets",
-      app: widgetApp,
+      app: createModuleChildApp(widgetApp, this.assembly),
     });
     this.apps.push({
       type: "model",
       route: "/stores",
-      app: storeApp,
+      app: createModuleChildApp(storeApp, this.assembly),
     });
     this.apps.push({
       type: "model",
       route: "/products",
-      app: productApp,
+      app: createModuleChildApp(productApp, this.assembly),
     });
     this.apps.push({
       type: "model",
       route: "/categories",
-      app: categoryApp,
+      app: createModuleChildApp(categoryApp, this.assembly),
     });
     this.apps.push({
       type: "model",
       route: "/orders",
-      app: orderApp,
+      app: createModuleChildApp(orderApp, this.assembly),
     });
     this.apps.push({
       type: "model",
       route: "/attributes",
-      app: attributeApp,
+      app: createModuleChildApp(attributeApp, this.assembly),
     });
     this.apps.push({
       type: "model",
       route: "/attribute-keys",
-      app: attributeKeyApp,
+      app: createModuleChildApp(attributeKeyApp, this.assembly),
     });
     this.apps.push({
       type: "relation",
       route: "/attribute-keys-to-attributes",
-      app: attributesToAttributeKeysApp,
+      app: createModuleChildApp(attributesToAttributeKeysApp, this.assembly),
     });
     this.apps.push({
       type: "relation",
       route: "/products-to-attributes",
-      app: productsToAttributesApp,
+      app: createModuleChildApp(productsToAttributesApp, this.assembly),
     });
     this.apps.push({
       type: "relation",
       route: "/orders-to-products",
-      app: ordersToProductsApp,
+      app: createModuleChildApp(ordersToProductsApp, this.assembly),
     });
     this.apps.push({
       type: "relation",
       route: "/orders-to-billing-module-payment-intents",
-      app: ordersToBillingPaymentIntentsApp,
+      app: createModuleChildApp(
+        ordersToBillingPaymentIntentsApp,
+        this.assembly,
+      ),
     });
     this.apps.push({
       type: "relation",
       route: "/orders-to-billing-module-currencies",
-      app: ordersToBillingCurrenciesApp,
+      app: createModuleChildApp(ordersToBillingCurrenciesApp, this.assembly),
     });
     this.apps.push({
       type: "relation",
       route: "/orders-to-file-storage-module-files",
-      app: ordersToFileStorageModuleFiles,
+      app: createModuleChildApp(ordersToFileStorageModuleFiles, this.assembly),
     });
     this.apps.push({
       type: "relation",
       route: "/categories-to-products",
-      app: categoriesToProductsApp,
+      app: createModuleChildApp(categoriesToProductsApp, this.assembly),
     });
     this.apps.push({
       type: "relation",
       route: "/stores-to-products",
-      app: storesToProductsApp,
+      app: createModuleChildApp(storesToProductsApp, this.assembly),
     });
     this.apps.push({
       type: "relation",
       route: "/stores-to-orders",
-      app: storesToOrdersApp,
+      app: createModuleChildApp(storesToOrdersApp, this.assembly),
     });
     this.apps.push({
       type: "relation",
       route: "/stores-to-products-to-attributes",
-      app: storesToProductsToAttributesApp,
+      app: createModuleChildApp(storesToProductsToAttributesApp, this.assembly),
     });
     this.apps.push({
       type: "relation",
       route: "/stores-to-attributes",
-      app: storesToAttributesApp,
+      app: createModuleChildApp(storesToAttributesApp, this.assembly),
     });
     this.apps.push({
       type: "relation",
       route: "/products-to-file-storage-module-files",
-      app: productsToFileStorageModuleWidgetsApp,
+      app: createModuleChildApp(
+        productsToFileStorageModuleWidgetsApp,
+        this.assembly,
+      ),
     });
     this.apps.push({
       type: "relation",
       route: "/products-to-website-builder-module-widgets",
-      app: productsToWebsiteBuilderModuleWidgetsApp,
+      app: createModuleChildApp(
+        productsToWebsiteBuilderModuleWidgetsApp,
+        this.assembly,
+      ),
     });
     this.apps.push({
       type: "relation",
       route: "/categories-to-file-storage-module-files",
-      app: categoriesToFileStorageModuleWidgetsApp,
+      app: createModuleChildApp(
+        categoriesToFileStorageModuleWidgetsApp,
+        this.assembly,
+      ),
     });
     this.apps.push({
       type: "relation",
       route: "/widgets-to-categories",
-      app: widgetsToCategoriesApp,
+      app: createModuleChildApp(widgetsToCategoriesApp, this.assembly),
     });
     this.apps.push({
       type: "relation",
       route: "/widgets-to-products",
-      app: widgetsToProductsApp,
+      app: createModuleChildApp(widgetsToProductsApp, this.assembly),
     });
     this.apps.push({
       type: "relation",
       route: "/widgets-to-stores",
-      app: widgetsToStoresApp,
+      app: createModuleChildApp(widgetsToStoresApp, this.assembly),
     });
     this.apps.push({
       type: "relation",
       route: "/attributes-to-billing-module-currencies",
-      app: attributesToBillingModuleCurrenciesApp,
+      app: createModuleChildApp(
+        attributesToBillingModuleCurrenciesApp,
+        this.assembly,
+      ),
     });
     this.apps.push({
       type: "relation",
       route: "/offers-to-offers",
-      app: offersToOffersApp,
+      app: createModuleChildApp(offersToOffersApp, this.assembly),
     });
   }
 }

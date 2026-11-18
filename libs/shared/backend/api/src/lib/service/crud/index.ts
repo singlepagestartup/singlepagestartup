@@ -17,15 +17,60 @@ import { IService } from "../interface";
 import { FindServiceProps } from "../../services/interfaces";
 import { IDumpResult, ISeedResult } from "../../configuration";
 import { ContentfulStatusCode } from "hono/utils/http-status";
+import {
+  bindServiceAppAssembly,
+  defaultAppAssembly,
+  type IAppAssembly,
+} from "../../app/bootstrap";
+
+const serviceAppAssembly = Symbol("serviceAppAssembly");
 
 @injectable()
 export class Service<
   DTO extends Record<string, unknown>,
 > implements IService<DTO> {
   repository: IRepository;
+  private [serviceAppAssembly]?: IAppAssembly;
 
   constructor(@inject(DI.IRepository) repository: IRepository) {
     this.repository = repository;
+  }
+
+  protected get appAssembly(): IAppAssembly {
+    return this[serviceAppAssembly] ?? defaultAppAssembly;
+  }
+
+  withRepository(repository: IRepository, assembly = this.appAssembly): this {
+    const scoped: this = Object.assign(
+      Object.create(Object.getPrototypeOf(this)),
+      this,
+      {
+        repository,
+      },
+    );
+    scoped[serviceAppAssembly] = assembly;
+    return scoped;
+  }
+
+  withAppAssembly(assembly: IAppAssembly): this {
+    const previous = this[serviceAppAssembly];
+    if (previous && previous !== assembly) {
+      return this.withRepository(this.repository, assembly);
+    }
+    this[bindServiceAppAssembly](assembly);
+    return this;
+  }
+
+  [bindServiceAppAssembly](assembly: IAppAssembly): void {
+    const previous = this[serviceAppAssembly];
+    if (previous && previous !== assembly) {
+      throw new Error(
+        "A service instance already belongs to another API assembly",
+      );
+    }
+    if (!previous) {
+      this[serviceAppAssembly] = assembly;
+    }
   }
 
   describe() {

@@ -150,6 +150,7 @@ describe("paid order atomic fulfillment", () => {
           },
           update: ({ id, data }) => orders.updateFirstByField("id", id, data),
         },
+        storesToProducts: { find: async () => [] },
       } as any,
       { template: { find: async () => [] } } as any,
       {} as any,

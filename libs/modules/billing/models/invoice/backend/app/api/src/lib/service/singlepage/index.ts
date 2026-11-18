@@ -1,3 +1,4 @@
+import { createModules } from "@sps/billing/backend/app/api/src/lib/modules";
 import "reflect-metadata";
 import { injectFromBase, injectable } from "inversify";
 import { CRUDService } from "@sps/shared-backend-api";
@@ -8,6 +9,10 @@ import type { Repository } from "../../repository";
 @injectable()
 @injectFromBase()
 export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
+  get modules() {
+    return this.appAssembly.getOrCreate(createModules);
+  }
+
   declare repository: Repository;
 
   private normalizeAmount<T extends Record<string, unknown>>(data: T) {

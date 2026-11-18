@@ -25,6 +25,7 @@ function createServiceWithMocks(props?: {
   threadsToMessages?: any[];
 }) {
   const service = Object.create(Service.prototype) as Service;
+  Object.defineProperty(service, "modules", { value: {} });
   const chatsToMessagesFind: FindMock = jest
     .fn()
     .mockResolvedValue(props?.chatsToMessages);
@@ -35,7 +36,7 @@ function createServiceWithMocks(props?: {
     .fn()
     .mockResolvedValue(props?.threadsToMessages);
 
-  (service as any).socialModule = {
+  (service as any).modules.social = {
     chatsToMessages: { find: chatsToMessagesFind },
     chatsToThreads: { find: chatsToThreadsFind },
     threadsToMessages: { find: threadsToMessagesFind },

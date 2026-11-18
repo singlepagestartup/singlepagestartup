@@ -1,3 +1,4 @@
+import { createModules } from "@sps/rbac/backend/app/api/src/lib/modules";
 import "reflect-metadata";
 import { injectFromBase, injectable } from "inversify";
 import { CRUDService } from "@sps/shared-backend-api";
@@ -12,6 +13,10 @@ export interface IUpdateAmountIfUnchangedProps {
 @injectable()
 @injectFromBase()
 export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
+  get modules() {
+    return this.appAssembly.getOrCreate(createModules);
+  }
+
   async updateAmountIfUnchanged(
     props: IUpdateAmountIfUnchangedProps,
   ): Promise<(typeof Table)["$inferSelect"] | undefined> {

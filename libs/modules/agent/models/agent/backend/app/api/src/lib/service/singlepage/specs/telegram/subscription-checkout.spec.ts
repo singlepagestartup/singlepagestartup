@@ -37,6 +37,7 @@ const mockedEcommerceModuleProductCheckout =
 
 function createService() {
   const service = Object.create(Service.prototype) as Service;
+  Object.defineProperty(service, "modules", { value: {} });
 
   (service as any).extendedEcommerceModuleProduct = jest
     .fn()
@@ -54,7 +55,7 @@ function createService() {
   (service as any).telegramBotReplyMessageCreate = jest
     .fn()
     .mockResolvedValue(undefined);
-  (service as any).billingModule = {
+  (service as any).modules.billing = {
     currency: {
       find: jest.fn().mockResolvedValue([
         {

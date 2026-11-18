@@ -38,7 +38,7 @@ export class Handler {
 
       this.supersedeCheckedAt = Date.now();
 
-      const urls = await this.service.hostModule.page.urls();
+      const urls = await this.service.modules.host.page.urls();
       const hostServiceUrl = HOST_SERVICE_URL.replace(/\/+$/, "");
 
       let consecutiveFailures = 0;

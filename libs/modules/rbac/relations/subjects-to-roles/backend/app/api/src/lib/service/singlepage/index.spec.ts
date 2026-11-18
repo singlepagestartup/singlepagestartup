@@ -1,4 +1,7 @@
 import { Service } from "./index";
+import { createAppAssembly } from "@sps/shared-backend-api";
+import { bootstrap, createService } from "../../bootstrap";
+import { Service as StartupRevocation } from "@sps/rbac/models/subject/backend/app/api/src/lib/service/startup/ecommerce/order/role-revocation";
 function fixture() {
   let current: { id: string; subjectId: string; roleId: string } | null = {
     id: "grant",
@@ -31,7 +34,11 @@ it("fails closed when a new service instance is not configured for revocation", 
   await expect(service.delete({ id: "grant" })).rejects.toThrow(
     "not configured",
   );
+  await expect(
+    service.update({ id: "grant", data: { roleId: "other" } as never }),
+  ).rejects.toThrow("not configured");
   expect(repository.deleteFirstByField).not.toHaveBeenCalled();
+  expect(repository.updateFirstByField).not.toHaveBeenCalled();
 });
 it("marks matching orders before deleting a grant inside the owning transaction", async () => {
   const { service, repository, dependencies } = fixture();
@@ -47,6 +54,32 @@ it("marks matching orders before deleting a grant inside the owning transaction"
   expect(dependencies.revoke.mock.invocationCallOrder[0]).toBeLessThan(
     repository.deleteFirstByField.mock.invocationCallOrder[0],
   );
+});
+it("uses startup revocation before HTTP and serves the same relation after startup", async () => {
+  const assembly = createAppAssembly();
+  const scoped = createService(assembly);
+  const direct = fixture();
+  const http = fixture();
+  const revoke = jest
+    .spyOn(StartupRevocation.prototype, "revoke")
+    .mockResolvedValue();
+  try {
+    scoped.repository = direct.repository as never;
+    await scoped.delete({ id: "grant" });
+    expect(revoke).toHaveBeenCalledTimes(1);
+    expect(direct.repository.deleteFirstByField).toHaveBeenCalledTimes(1);
+    expect(createService()).not.toBe(scoped);
+
+    scoped.repository = http.repository as never;
+    const { app } = await bootstrap(assembly);
+    expect(app.controller.service).toBe(scoped);
+    const response = await app.hono.request("/grant", { method: "DELETE" });
+    expect(response.status).toBe(200);
+    expect(revoke).toHaveBeenCalledTimes(2);
+    expect(http.repository.deleteFirstByField).toHaveBeenCalledTimes(1);
+  } finally {
+    revoke.mockRestore();
+  }
 });
 it("does not delete or reassign the grant when marking revocation fails", async () => {
   const { service, repository, dependencies } = fixture();

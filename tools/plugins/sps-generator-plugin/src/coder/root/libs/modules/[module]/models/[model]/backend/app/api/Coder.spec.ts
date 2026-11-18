@@ -29,7 +29,7 @@ describe("Coder", () => {
     this.apps.push({
       type: "model",
       route: "/wide-slide-route",
-      app: wideSlideRoute,
+      app: createModuleChildApp(wideSlideRoute, this.assembly),
     });
   }
 }`;
@@ -58,13 +58,13 @@ describe("Coder", () => {
     this.apps.push({
       type: "model",
       route: "/wide-slide-route",
-      app: wideSlideRoute,
+      app: createModuleChildApp(wideSlideRoute, this.assembly),
     });
     
     this.apps.push({
       type: "model",
       route: "/layouts",
-      app: layouts,
+      app: createModuleChildApp(layouts, this.assembly),
     });
   }
 }`;
@@ -72,7 +72,7 @@ describe("Coder", () => {
       const result = string.replace(regex, "");
       const normalizedResult = result.replace(/\s+/g, " ").trim();
       const normalizedExpected =
-        'export class Apps { apps: { type: "model" | "relation"; route: string; app: DefaultApp<any> }[] = []; constructor() { this.bindApps(); } bindApps() {this.apps.push({ type: "model", route: "/layouts", app: layouts, }); } }'
+        'export class Apps { apps: { type: "model" | "relation"; route: string; app: DefaultApp<any> }[] = []; constructor() { this.bindApps(); } bindApps() {this.apps.push({ type: "model", route: "/layouts", app: createModuleChildApp(layouts, this.assembly), }); } }'
           .replace(/\s+/g, " ")
           .trim();
 
@@ -85,7 +85,7 @@ describe("Coder", () => {
     this.apps.push({
       type: "model",
       route: "/wide-slide-route",
-      app: wideSlideRoute,
+      app: createModuleChildApp(wideSlideRoute, this.assembly),
     });`;
 
       expect(content).toBe(expected);
@@ -103,7 +103,7 @@ describe("Coder", () => {
     it("should match the regex for import statement", () => {
       const regex = importApp.onRemove.regex;
 
-      const string = `import { app as wideSlideRoute } from "@sps/website-builder/models/slide/backend/app/root";
+      const string = `import { serviceBootstrap as wideSlideRoute } from "@sps/website-builder/models/slide/backend/app/root/src/lib/bootstrap";
 import { app as layouts } from "@sps/website-builder-models-layout-backend-app";`;
 
       expect(string).toMatch(regex);
@@ -112,7 +112,7 @@ import { app as layouts } from "@sps/website-builder-models-layout-backend-app";
     it("should generate correct import statement", () => {
       const content = importApp.onCreate.content;
       const expected =
-        'import { app as wideSlideRoute } from "@sps/website-builder/models/slide/backend/app/root";';
+        'import { serviceBootstrap as wideSlideRoute } from "@sps/website-builder/models/slide/backend/app/root/src/lib/bootstrap";';
 
       expect(content).toBe(expected);
     });

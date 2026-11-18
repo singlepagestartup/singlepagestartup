@@ -1,3 +1,4 @@
+import { createModules } from "@sps/crm/backend/app/api/src/lib/modules";
 import "reflect-metadata";
 import { injectFromBase, injectable } from "inversify";
 import { CRUDService } from "@sps/shared-backend-api";
@@ -9,6 +10,10 @@ export type TNotificationStatus = "queued" | "sent" | "failed";
 @injectable()
 @injectFromBase()
 export class Service extends CRUDService<Request> {
+  get modules() {
+    return this.appAssembly.getOrCreate(createModules);
+  }
+
   private owner() {
     return this.repository as Repository;
   }
