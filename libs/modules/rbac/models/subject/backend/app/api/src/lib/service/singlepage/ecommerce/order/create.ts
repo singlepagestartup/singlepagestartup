@@ -1,5 +1,5 @@
 import type { Repository } from "../../../../repository";
-import type { Service as SubjectService } from "../../index";
+import type { SubjectServiceDependencies } from "../../index";
 import type { IEcommerceCartSelection } from "@sps/rbac/models/subject/sdk/model";
 
 export interface IExecuteProps {
@@ -17,8 +17,7 @@ export interface IExecuteProps {
 
 interface IConstructorProps {
   repository: Pick<Repository, "withSubjectLock">;
-  service: Pick<
-    SubjectService,
+  service: SubjectServiceDependencies<
     | "ecommerceModule"
     | "billingModule"
     | "subjectsToEcommerceModuleOrders"

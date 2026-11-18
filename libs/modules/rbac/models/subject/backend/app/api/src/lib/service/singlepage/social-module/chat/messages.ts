@@ -1,4 +1,4 @@
-import type { Service as SubjectService } from "../../index";
+import type { SubjectServiceDependencies } from "../../index";
 import type {
   IModel,
   IChatMessage,
@@ -8,8 +8,7 @@ import { Service as Presentations } from "../../../startup/social-module/chat/pr
 
 export class Service {
   constructor(
-    readonly service: Pick<
-      SubjectService,
+    readonly service: SubjectServiceDependencies<
       "socialModule" | "fileStorageModule"
     >,
   ) {}

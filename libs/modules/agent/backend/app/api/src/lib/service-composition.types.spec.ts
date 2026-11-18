@@ -18,7 +18,7 @@ function addServiceMember(file: string, member: string) {
   return source.slice(0, position) + member + source.slice(position);
 }
 
-it("infers the Order startup method in Agent and preserves the Subject constructor port", () => {
+it("infers startup methods and limits module access inside service operations", () => {
   const root = process.cwd();
   const agentStartup = resolve(
     root,
@@ -27,6 +27,14 @@ it("infers the Order startup method in Agent and preserves the Subject construct
   const orderStartup = resolve(
     root,
     "libs/modules/ecommerce/models/order/backend/app/api/src/lib/service/startup/index.ts",
+  );
+  const cartOrderCreate = resolve(
+    root,
+    "libs/modules/rbac/models/subject/backend/app/api/src/lib/service/singlepage/ecommerce/order/create.ts",
+  );
+  const formStartup = resolve(
+    root,
+    "libs/modules/crm/models/form/backend/app/api/src/lib/service/startup/index.ts",
   );
   const agentSource = addServiceMember(
     agentStartup,
@@ -96,9 +104,35 @@ it("infers the Order startup method in Agent and preserves the Subject construct
   }
 `,
   );
+  const cartOrderSource = `${readFileSync(cartOrderCreate, "utf8")}
+export function probeOrderRegistry(service: ConstructorParameters<typeof Service>[0]["service"]) {
+  type Request = (typeof import("@sps/crm/models/request/backend/repository/database").Table)["$inferSelect"];
+  const form = service.modules.crm.form.startupContractProbe({ formId: "form" });
+  const request = service.modules.crm.request.findSubmission({ key: "key", digest: "digest" });
+  const exactResults: (
+    (<T>() => T extends [typeof form, typeof request] ? 1 : 2) extends
+    (<T>() => T extends [{ readonly formId: string }, Promise<Request | undefined>] ? 1 : 2)
+      ? true : false
+  ) = true;
+  service.modules.crm.form.startupContractProbe("wrong form argument");
+  service.modules.crm.request.findSubmission("wrong request argument");
+  service.modules.agent;
+  return { form, request, exactResults };
+}
+`;
+  const formSource = addServiceMember(
+    formStartup,
+    `
+  startupContractProbe(props: { formId: string }) {
+    return { formId: props.formId } as const;
+  }
+`,
+  );
   const files = new Map([
     [agentStartup, agentSource],
     [orderStartup, orderSource],
+    [cartOrderCreate, cartOrderSource],
+    [formStartup, formSource],
   ]);
   const configFile = resolve(root, "tsconfig.base.json");
   const config = ts.readConfigFile(configFile, ts.sys.readFile);
@@ -158,6 +192,23 @@ it("infers the Order startup method in Agent and preserves the Subject construct
         file: agentStartup,
         start: agentSource.indexOf('"wrong legacy argument"'),
       }),
+      expect.objectContaining({
+        code: 2345,
+        file: cartOrderCreate,
+        start: cartOrderSource.indexOf('"wrong form argument"'),
+      }),
+      expect.objectContaining({
+        code: 2345,
+        file: cartOrderCreate,
+        start: cartOrderSource.indexOf('"wrong request argument"'),
+      }),
+      expect.objectContaining({
+        code: 2339,
+        file: cartOrderCreate,
+        start:
+          cartOrderSource.indexOf("service.modules.agent") +
+          "service.modules.".length,
+      }),
     ]);
 
     const method = "startupContractProbe";
@@ -170,6 +221,20 @@ it("infers the Order startup method in Agent and preserves the Subject construct
         fileName: orderStartup,
         textSpan: {
           start: orderSource.indexOf(`${method}(`),
+          length: method.length,
+        },
+      }),
+    ]);
+
+    const formDefinitions = languageService.getDefinitionAtPosition(
+      cartOrderCreate,
+      cartOrderSource.indexOf(`form.${method}(`) + "form.".length,
+    );
+    expect(formDefinitions).toEqual([
+      expect.objectContaining({
+        fileName: formStartup,
+        textSpan: {
+          start: formSource.indexOf(`${method}(`),
           length: method.length,
         },
       }),

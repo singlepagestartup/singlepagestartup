@@ -11,7 +11,12 @@ import { Handler as ProviderHandler } from "@sps/rbac/models/subject/backend/app
 import { Service as Checkout } from "./checkout";
 import { Service as RetryableIds } from "./retryable-ids";
 import type { IModel as IOrderOwner } from "@sps/rbac/relations/subjects-to-ecommerce-module-orders/sdk/model";
-import { CRUDService, consistencyContext } from "@sps/shared-backend-api";
+import {
+  CRUDService,
+  consistencyContext,
+  createAppAssembly,
+} from "@sps/shared-backend-api";
+import { createModules } from "../../../modules";
 import { getPostgresClient } from "@sps/shared-backend-database-config";
 import { logger, signJwt } from "@sps/backend-utils";
 import { RBAC_JWT_SECRET } from "@sps/shared-utils";
@@ -537,6 +542,7 @@ async function freshCheckout() {
     .spyOn(ecommerceModule.storesToProducts, "quoteMany")
     .mockRejectedValue(new Error("Recovery must not re-quote"));
   const paymentRecords = new RetryableIds({
+    modules: createAppAssembly().getOrCreate(createModules),
     subjectsToEcommerceModuleOrders: owners,
     ecommerceModule,
     billingModule: freshOrder.billingModule,

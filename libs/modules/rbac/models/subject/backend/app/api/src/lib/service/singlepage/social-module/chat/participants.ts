@@ -1,4 +1,4 @@
-import type { Service as SubjectService } from "../../index";
+import type { SubjectServiceDependencies } from "../../index";
 import type { IModel as ISocialModuleProfile } from "@sps/social/models/profile/sdk/model";
 
 export interface IExecuteProps {
@@ -7,7 +7,7 @@ export interface IExecuteProps {
 
 /** The caller must establish Chat access before expanding its participants. */
 export class Service {
-  constructor(readonly service: Pick<SubjectService, "socialModule">) {}
+  constructor(readonly service: SubjectServiceDependencies<"socialModule">) {}
 
   async execute(props: IExecuteProps): Promise<ISocialModuleProfile[]> {
     if (!props.socialModuleChatId) {

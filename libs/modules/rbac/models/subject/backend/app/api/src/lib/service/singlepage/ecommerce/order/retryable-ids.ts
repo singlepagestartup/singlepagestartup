@@ -5,6 +5,7 @@ import type { IModel as IPaymentIntent } from "@sps/billing/models/payment-inten
 import type { IModel as IInvoice } from "@sps/billing/models/invoice/sdk/model";
 import type { IReadService } from "../../../../di";
 import type { Service as SubjectsToOrdersService } from "@sps/rbac/relations/subjects-to-ecommerce-module-orders/backend/app/api/src/lib/service";
+import type { SubjectServiceDependencies } from "../../index";
 
 export interface IExecuteProps {
   orders: Pick<
@@ -18,7 +19,7 @@ export interface IExecuteProps {
   >[];
 }
 
-interface IConstructorProps {
+interface IConstructorProps extends SubjectServiceDependencies {
   subjectsToEcommerceModuleOrders: Pick<SubjectsToOrdersService, "find">;
   ecommerceModule: {
     ordersToBillingModulePaymentIntents: Pick<IReadService, "find">;

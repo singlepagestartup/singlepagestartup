@@ -191,6 +191,16 @@ GPT-6.2 Sol с усилием xhigh исследовал создание экз
 - **Preventive Action**: Проверять порядок на перемешанных строках и на двух строках одного предложения.
 - **References**: `libs/modules/ecommerce/models/order/frontend/component/src/lib/singlepage/purchase-ai-chat/Component.spec.ts`.
 
+### Incident 15 — Тип вложенной операции Subject скрывал реестр сервисов
+
+- **Phase**: Implement, code review
+- **Occurrences**: 1
+- **Symptom**: В RBAC Subject и его контроллере был доступен `modules.crm`. В операции создания заказа обращение к тому же реестру давало TS2339.
+- **Root Cause**: Вложенная операция получала Subject с типом `Pick`, который перечислял пять свойств и пропускал `modules`.
+- **Fix**: Общий тип операций, принимающих Subject, включает обязательное свойство `modules` с типом реестра владельца. Существующие подмены зависимостей корзины сохраняют свои точки вызова.
+- **Preventive Action**: Проверять доступ к методам startup и ограничения порядка модулей через тип параметра реальной операции.
+- **References**: `libs/modules/rbac/models/subject/backend/app/api/src/lib/service/singlepage/ecommerce/order/create.ts`.
+
 ## Reusable Learnings
 
 Для проверки доступности метода startup достаточно виртуального исходника TypeScript. Для проверки идентичности нужен отдельный запуск с реальными биндингами.

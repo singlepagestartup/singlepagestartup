@@ -1,6 +1,10 @@
 import { Service } from "@sps/billing/models/payment-intent/backend/app/api/src/lib/service/singlepage";
 import { Service as OrderStripePayment } from "./stripe-payment";
-import { withConsistencyDatabase } from "@sps/shared-backend-api";
+import {
+  createAppAssembly,
+  withConsistencyDatabase,
+} from "@sps/shared-backend-api";
+import { createModules } from "../../../modules";
 
 const mockRetrieveInvoice = jest.fn();
 const mockRetrieveSubscription = jest.fn();
@@ -135,6 +139,7 @@ function fixture(throughOrder = true) {
     });
   const resolve = jest.fn(async () => ({ paymentIntentId: "next" }));
   const orderPayments = new OrderStripePayment({
+    modules: createAppAssembly().getOrCreate(createModules),
     billingModule: { paymentIntent: service } as any,
     ecommerceModuleOrderResolveProviderPeriod: resolve,
   });

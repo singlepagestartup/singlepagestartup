@@ -3,15 +3,14 @@ import type {
   IModel as IOffer,
   IOfferQuoteInput,
 } from "@sps/ecommerce/relations/stores-to-products/sdk/model";
-import type { Service as SubjectService } from "../../index";
+import type { SubjectServiceDependencies } from "../../index";
 
 export interface IExecuteProps {
   subjectId: string;
   orderId: string;
 }
 export interface IConstructorProps {
-  service: Pick<
-    SubjectService,
+  service: SubjectServiceDependencies<
     | "ecommerceModule"
     | "ecommerceModuleOrderAssertAccess"
     | "ecommerceModuleCartQuote"

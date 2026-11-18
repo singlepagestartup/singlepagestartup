@@ -5,7 +5,7 @@ import type { IModel as IOwner } from "@sps/rbac/relations/subjects-to-ecommerce
 import type { IModel as IOrder } from "@sps/ecommerce/models/order/sdk/model";
 import type { IModel as IOrderIntent } from "@sps/ecommerce/relations/orders-to-billing-module-payment-intents/sdk/model";
 import type { IModel as ILine } from "@sps/ecommerce/relations/orders-to-products/sdk/model";
-import type { Service as SubjectService } from "../../index";
+import type { SubjectServiceDependencies } from "../../index";
 
 interface ICart {
   id: string;
@@ -17,8 +17,7 @@ interface ICart {
 
 export class Service {
   constructor(
-    private readonly service: Pick<
-      SubjectService,
+    private readonly service: SubjectServiceDependencies<
       | "repository"
       | "subjectsToIdentities"
       | "subjectsToEcommerceModuleOrders"

@@ -1,4 +1,4 @@
-import type { Service as SubjectService } from "../index";
+import type { SubjectServiceDependencies } from "../index";
 
 export interface IBalance {
   amount: string;
@@ -7,8 +7,7 @@ export interface IBalance {
 
 export class Service {
   constructor(
-    readonly service: Pick<
-      SubjectService,
+    readonly service: SubjectServiceDependencies<
       "billingModule" | "subjectsToBillingModuleCurrencies"
     >,
   ) {}

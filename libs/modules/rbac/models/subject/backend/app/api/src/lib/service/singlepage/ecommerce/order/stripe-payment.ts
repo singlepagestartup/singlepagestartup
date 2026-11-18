@@ -1,11 +1,10 @@
 import type Stripe from "stripe";
 import type { IModel as IInvoice } from "@sps/billing/models/invoice/sdk/model";
-import type { Service as Subject } from "../../index";
+import type { SubjectServiceDependencies } from "../../index";
 
 export class Service {
   constructor(
-    private readonly subject: Pick<
-      Subject,
+    private readonly subject: SubjectServiceDependencies<
       "billingModule" | "ecommerceModuleOrderResolveProviderPeriod"
     >,
   ) {}

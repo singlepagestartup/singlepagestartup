@@ -10,6 +10,12 @@ Subjects represent visitors, registered accounts and actors, and connect identit
 - Frontend variants such as `me-ecommerce-module-product-cart-default`, `me-ecommerce-module-product-checkout-default`, and `me-ecommerce-module-cart-default` are the supported entry points for host/cart behavior.
 - Dependency direction is one-way: `rbac > ecommerce`. RBAC may compose ecommerce SDK/components; ecommerce must not import RBAC subject implementation.
 
+When a backend operation narrows the Subject service to selected members,
+`SubjectServiceDependencies<Keys>` from `backend/app/api/src/lib/service/singlepage`
+keeps the generated `service.modules` registry available alongside those
+members. The registry resolves services from the Subject's API assembly,
+including startup overrides bound there.
+
 ### Current-Subject cart components
 
 The cart sheet, Product cart actions and Product checkout use the public variants

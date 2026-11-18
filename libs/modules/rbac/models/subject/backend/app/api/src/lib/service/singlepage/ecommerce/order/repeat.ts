@@ -7,7 +7,7 @@ import type { IModel as IOrder } from "@sps/ecommerce/models/order/sdk/model";
 import type { IModel as IOrderLine } from "@sps/ecommerce/relations/orders-to-products/sdk/model";
 import type { IOfferQuote } from "@sps/ecommerce/relations/stores-to-products/sdk/model";
 import type { Repository } from "../../../../repository";
-import type { Service as SubjectService } from "../../index";
+import type { SubjectServiceDependencies } from "../../index";
 import { randomUUID } from "node:crypto";
 import type { IModel as IPaymentLink } from "@sps/ecommerce/relations/orders-to-billing-module-payment-intents/sdk/model";
 
@@ -23,8 +23,7 @@ export interface IResult {
 
 export interface IConstructorProps {
   repository: Pick<Repository, "withSubjectLock">;
-  service: Pick<
-    SubjectService,
+  service: SubjectServiceDependencies<
     | "ecommerceModule"
     | "billingModule"
     | "subjectsToEcommerceModuleOrders"

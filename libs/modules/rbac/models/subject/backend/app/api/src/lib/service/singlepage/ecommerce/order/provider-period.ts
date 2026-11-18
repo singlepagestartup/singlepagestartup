@@ -1,13 +1,12 @@
 import type { IProviderPeriodReceipt } from "@sps/billing/models/payment-intent/backend/app/api/src/lib/service/singlepage/settlement";
-import type { Service as SubjectService } from "../../index";
+import type { SubjectServiceDependencies } from "../../index";
 import type { Repository } from "../../../../repository";
 import type { IModel as IOrder } from "@sps/ecommerce/models/order/sdk/model";
 import { moneyMinorUnits } from "@sps/backend-utils";
 
 interface IConstructorProps {
   repository: Pick<Repository, "withSubjectLock">;
-  service: Pick<
-    SubjectService,
+  service: SubjectServiceDependencies<
     | "ecommerceModule"
     | "billingModule"
     | "subjectsToEcommerceModuleOrders"

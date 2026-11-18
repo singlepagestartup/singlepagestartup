@@ -1,7 +1,7 @@
 import { Service as InitialGrantProducts } from "../../billing/initial-grant-products";
 import { ECOMMERCE_ORDER_LINE_QUANTITY_BOUNDS as quantityBounds } from "@sps/shared-utils";
 import type { Repository } from "../../../../repository";
-import type { Service as SubjectService } from "../../index";
+import type { SubjectServiceDependencies } from "../../index";
 import { Service as SelectionService } from "./selection";
 
 export interface IExecuteProps {
@@ -11,8 +11,7 @@ export interface IExecuteProps {
 }
 export interface IConstructorProps {
   repository: Pick<Repository, "withSubjectLock">;
-  service: Pick<
-    SubjectService,
+  service: SubjectServiceDependencies<
     | "ecommerceModule"
     | "subjectsToEcommerceModuleOrders"
     | "ecommerceModuleOrderAssertAccess"

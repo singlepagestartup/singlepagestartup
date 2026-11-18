@@ -181,6 +181,9 @@ import type { IExecuteProps as ISocialModuleProfileAvatarUpdateProps } from "./s
 
 import { Service as PermissionDefaults } from "../startup/permission-defaults";
 
+export type SubjectServiceDependencies<Keys extends keyof Service = never> =
+  Pick<Service, "modules" | Keys>;
+
 @injectable()
 export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
   get modules() {

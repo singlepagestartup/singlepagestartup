@@ -1,4 +1,4 @@
-import type { Service as SubjectService } from "../../index";
+import type { SubjectServiceDependencies } from "../../index";
 
 export interface IExecuteProps {
   id: string;
@@ -6,8 +6,7 @@ export interface IExecuteProps {
   data: { expectedUpdatedAt: string };
 }
 export interface IConstructorProps {
-  service: Pick<
-    SubjectService,
+  service: SubjectServiceDependencies<
     | "subjectsToEcommerceModuleOrders"
     | "subjectsToRoles"
     | "rolesToEcommerceModuleProducts"

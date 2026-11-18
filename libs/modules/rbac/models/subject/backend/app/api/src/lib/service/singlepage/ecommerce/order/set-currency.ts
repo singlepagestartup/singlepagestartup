@@ -1,7 +1,7 @@
 import { Service as InitialGrantProducts } from "../../billing/initial-grant-products";
 import { getDrizzle } from "@sps/shared-backend-database-config";
 import { withConsistencyDatabase } from "@sps/shared-backend-api";
-import type { Service as SubjectService } from "../../index";
+import type { SubjectServiceDependencies } from "../../index";
 
 export interface IExecuteProps {
   subjectId: string;
@@ -9,8 +9,7 @@ export interface IExecuteProps {
   currencyId: string;
 }
 export interface IConstructorProps {
-  service: Pick<
-    SubjectService,
+  service: SubjectServiceDependencies<
     | "ecommerceModule"
     | "ecommerceModuleOrderAssertAccess"
     | "ecommerceModuleResolveOrderCurrency"

@@ -11,7 +11,7 @@ import type {
   IEcommerceCartSelectionResult,
 } from "@sps/rbac/models/subject/sdk/model";
 import type { Repository } from "../../../../repository";
-import type { Service as SubjectService } from "../../index";
+import type { SubjectServiceDependencies } from "../../index";
 
 export interface IExecuteProps {
   subjectId: string;
@@ -27,8 +27,7 @@ export interface IQuoteProps {
 }
 export interface IConstructorProps {
   repository: Pick<Repository, "withSubjectLock">;
-  service: Pick<
-    SubjectService,
+  service: SubjectServiceDependencies<
     | "ecommerceModule"
     | "subjectsToEcommerceModuleOrders"
     | "ecommerceModuleOrderAssertAccess"

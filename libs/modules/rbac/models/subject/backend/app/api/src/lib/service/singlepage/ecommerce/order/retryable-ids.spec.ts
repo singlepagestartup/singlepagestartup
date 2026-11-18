@@ -1,3 +1,5 @@
+import { createAppAssembly } from "@sps/shared-backend-api";
+import { createModules } from "../../../modules";
 import { Service, type IExecuteProps } from "./retryable-ids";
 
 function history(id: string, status: string): IExecuteProps["orders"][number] {
@@ -22,6 +24,7 @@ function setup() {
   };
   return {
     service: new Service({
+      modules: createAppAssembly().getOrCreate(createModules),
       ecommerceModule,
       billingModule,
       subjectsToEcommerceModuleOrders,

@@ -2,7 +2,7 @@ import type {
   IModel as IEcommerceModuleOrder,
   IPurchaseDetails,
 } from "@sps/ecommerce/models/order/sdk/model";
-import type { Service as SubjectService } from "../../index";
+import type { SubjectServiceDependencies } from "../../index";
 import type { IModel as IEcommerceModuleProduct } from "@sps/ecommerce/models/product/sdk/model";
 import type { IModel as IPaymentLink } from "@sps/ecommerce/relations/orders-to-billing-module-payment-intents/sdk/model";
 import { moneyFromMinorUnits, moneyMinorUnits } from "@sps/backend-utils";
@@ -13,8 +13,7 @@ export interface IExecuteProps {
 }
 
 interface IConstructorProps {
-  service: Pick<
-    SubjectService,
+  service: SubjectServiceDependencies<
     | "ecommerceModuleOrderPurchasePayments"
     | "ecommerceModule"
     | "billingModule"

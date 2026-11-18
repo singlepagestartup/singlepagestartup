@@ -1,4 +1,4 @@
-import type { Service as SubjectService } from "../../index";
+import type { SubjectServiceDependencies } from "../../index";
 import type { Repository } from "../../../../repository";
 import type { IModel as IOrder } from "@sps/ecommerce/models/order/sdk/model";
 import type { IModel as IPaymentLink } from "@sps/ecommerce/relations/orders-to-billing-module-payment-intents/sdk/model";
@@ -17,8 +17,7 @@ export interface IResult {
 export type IRenewal = (props: IExecuteProps) => Promise<IResult>;
 interface IConstructorProps {
   repository: Pick<Repository, "withSubjectLock">;
-  service: Pick<
-    SubjectService,
+  service: SubjectServiceDependencies<
     | "ecommerceModule"
     | "billingModule"
     | "ecommerceModuleOrderStripePayment"

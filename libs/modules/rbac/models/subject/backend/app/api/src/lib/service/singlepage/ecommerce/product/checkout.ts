@@ -1,5 +1,5 @@
 import { Service as InitialGrantProducts } from "../../billing/initial-grant-products";
-import type { Service as SubjectService } from "../../index";
+import type { SubjectServiceDependencies } from "../../index";
 import type { IEcommerceProductCheckoutInput } from "@sps/rbac/models/subject/sdk/model";
 import { ECOMMERCE_ORDER_LINE_QUANTITY_BOUNDS as quantityBounds } from "@sps/shared-utils";
 import { z } from "zod";
@@ -13,8 +13,7 @@ export interface IExecuteProps {
 }
 export type ICheckout = (props: IExecuteProps) => Promise<unknown>;
 export interface IConstructorProps {
-  service: Pick<
-    SubjectService,
+  service: SubjectServiceDependencies<
     | "findById"
     | "subjectsToIdentities"
     | "ecommerceModule"

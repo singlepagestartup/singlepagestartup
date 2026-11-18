@@ -10,6 +10,7 @@ import type {
   IModel as IProfile,
   IAuthorSummary,
 } from "@sps/social/models/profile/sdk/model";
+import type { SubjectServiceDependencies } from "../../index";
 interface IRead<T> {
   find(props?: FindServiceProps): Promise<T[]>;
   findById(props: { id: string }): Promise<T | null | undefined>;
@@ -32,7 +33,7 @@ interface ICategoryLink {
   categoryId: string;
   articleId: string;
 }
-export interface IDependencies {
+export interface IDependencies extends SubjectServiceDependencies {
   repository: {
     withSubjectLock<T>(
       scope: { subjectId: string },

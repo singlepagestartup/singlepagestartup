@@ -1,10 +1,10 @@
-import type { Service as SubjectService } from "../../index";
+import type { SubjectServiceDependencies } from "../../index";
 import type { IModel, IChatAction } from "@sps/social/models/action/sdk/model";
 import { Service as Presentations } from "../../../startup/social-module/chat/presentations";
 
 /** The caller must prove Chat access before supplying its selected Actions. */
 export class Service {
-  constructor(readonly service: Pick<SubjectService, "socialModule">) {}
+  constructor(readonly service: SubjectServiceDependencies<"socialModule">) {}
 
   async enrich(actions: IModel[]): Promise<IChatAction[]> {
     if (!actions.length) return [];
