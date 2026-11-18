@@ -183,28 +183,27 @@ function orderByName(left: IEntity, right: IEntity) {
   return left.name.localeCompare(right.name);
 }
 
-function entityGetters(entities: IEntity[]) {
+function entityAccess(entities: IEntity[]) {
+  const imports: string[] = [];
   const properties: string[] = [];
   const used = new Set<string>();
   for (const entity of entities) {
-    const { propertyName } = names(entity.name);
+    const { className, propertyName } = names(entity.name);
     if (used.has(propertyName)) {
       throw new Error(
         `Duplicate service registry key ${entity.module}.${propertyName}`,
       );
     }
     used.add(propertyName);
-    const bootstrap = `@sps/${entityId(entity)}/${appLib}/bootstrap`;
+    const factory = `create${className}Service`;
+    imports.push(
+      `import { createService as ${factory} } from "@sps/${entityId(entity)}/${appLib}/bootstrap";`,
+    );
     properties.push(
-      [
-        `get ${propertyName}() {`,
-        `  const owner: typeof import("${bootstrap}") = require("${bootstrap}");`,
-        "  return owner.createService(assembly);",
-        "},",
-      ].join("\n"),
+      `get ${propertyName}() {\n  return ${factory}(assembly);\n},`,
     );
   }
-  return properties;
+  return { imports, properties };
 }
 
 function renderProperties(properties: string[], depth: number) {
@@ -256,8 +255,7 @@ function writeModuleViews(
     tree,
     `${directory}/services.ts`,
     renderAccess({
-      imports: [],
-      properties: entityGetters(entities),
+      ...entityAccess(entities),
       factory: "createServices",
     }),
   );
@@ -286,16 +284,18 @@ function writeEntityView(tree: Tree, entity: IEntity, dependencies: IEntity[]) {
   const directory = `${entity.directory}/${appLib}/service`;
   const localView = `${directory}/modules.ts`;
   if (dependencies.length) {
+    const { imports, properties } = entityAccess(dependencies);
     writeChanged(
       tree,
       localView,
       renderAccess({
         imports: [
           `import { createModules as createLowerModules } from "${lowerView}";`,
+          ...imports,
         ],
         properties: [
           "...assembly.getOrCreate(createLowerModules),",
-          `${names(entity.module).propertyName}: {\n${renderProperties(entityGetters(dependencies), 2)}\n},`,
+          `${names(entity.module).propertyName}: {\n${renderProperties(properties, 2)}\n},`,
         ],
         factory: "createModules",
       }),

@@ -158,6 +158,10 @@ it("generates scoped, typed registries and refreshes them when entities change",
     const ownerServices = `libs/modules/sales/${registryPath}/services.ts`;
     const receiptView = `libs/modules/sales/models/receipt/${servicePath}/modules.ts`;
     const initial = read(tree, ownerServices);
+    const relationFactory =
+      'import { createService as createReceiptsToDetailsService } from "@sps/sales/relations/receipts-to-details/backend/app/api/src/lib/bootstrap";';
+    expect(initial).toContain(relationFactory);
+    expect(read(tree, receiptView)).toContain(relationFactory);
     synchronizeServiceRegistries(tree);
     await relationGenerator(tree, { ...salesRelation, action: "create" });
     expect(read(tree, ownerServices)).toBe(initial);
