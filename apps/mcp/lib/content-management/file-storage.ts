@@ -1,3 +1,4 @@
+import type { IModel as IFile } from "@sps/file-storage/models/file/sdk/model";
 import {
   API_SERVICE_URL,
   responsePipe,
@@ -166,7 +167,7 @@ async function uploadBase64FileRecord(props: {
     body: formData,
   });
 
-  const json = await responsePipe<{ data: Record<string, any> }>({ res });
+  const json = await responsePipe<{ data: IFile }>({ res });
 
   return transformResponseItem(json);
 }

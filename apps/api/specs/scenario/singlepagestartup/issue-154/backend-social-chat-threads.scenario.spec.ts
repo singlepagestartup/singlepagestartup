@@ -8,12 +8,8 @@
 
 import { api as subjectApi } from "@sps/rbac/models/subject/sdk/server";
 import { api as socialModuleProfileApi } from "@sps/social/models/profile/sdk/server";
-import { api as socialModuleMessageApi } from "@sps/social/models/message/sdk/server";
-import { api as socialModuleChatsToMessagesApi } from "@sps/social/relations/chats-to-messages/sdk/server";
-import { api as socialModuleChatsToThreadsApi } from "@sps/social/relations/chats-to-threads/sdk/server";
-import { api as socialModuleProfilesToMessagesApi } from "@sps/social/relations/profiles-to-messages/sdk/server";
-import { api as socialModuleThreadsToMessagesApi } from "@sps/social/relations/threads-to-messages/sdk/server";
 import { api as subjectsToSocialModuleProfilesApi } from "@sps/rbac/relations/subjects-to-social-module-profiles/sdk/server";
+import type { IModel as ISocialModuleChat } from "@sps/social/models/chat/sdk/model";
 import { IModel as ISocialModuleThread } from "@sps/social/models/thread/sdk/model";
 import { loadScenarioEnv, getApiUrl, getRequiredEnv } from "./test-utils/env";
 
@@ -37,7 +33,9 @@ describe("Given: issue-154 social chat thread scenario", () => {
   };
 
   const parseStatus = (error: unknown) => {
-    const err = error as any;
+    const err = error as
+      | { status?: unknown; cause?: { status?: unknown }; message?: unknown }
+      | undefined;
 
     if (typeof err?.status === "number") {
       return err.status;
@@ -59,7 +57,13 @@ describe("Given: issue-154 social chat thread scenario", () => {
     return 500;
   };
 
-  const getChatId = (chatPayload: any) => {
+  const getChatId = (
+    chatPayload:
+      | (Partial<Pick<ISocialModuleChat, "id">> & {
+          socialModuleChat?: Pick<ISocialModuleChat, "id">;
+        })
+      | undefined,
+  ) => {
     const chatId = chatPayload?.id || chatPayload?.socialModuleChat?.id;
 
     if (!chatId) {

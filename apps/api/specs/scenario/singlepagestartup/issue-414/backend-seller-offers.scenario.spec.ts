@@ -48,8 +48,13 @@ const operator = () => ({
 });
 
 async function create(
-  api: any,
-  data: Record<string, unknown>,
+  api: {
+    create: (
+      props: Parameters<typeof storeApi.create>[0],
+    ) => Promise<{ id: string }>;
+    delete: (props: Parameters<typeof storeApi.delete>[0]) => Promise<unknown>;
+  },
+  data: Parameters<typeof storeApi.create>[0]["data"],
   options: { headers: Record<string, string> } = operator(),
 ) {
   const subjectId = actors.get(options.headers.Authorization);
@@ -72,11 +77,12 @@ async function create(
   cleanup.unshift(async () => {
     try {
       await api.delete({ id: record.id, options: operator() });
-    } catch (error: any) {
+    } catch (error) {
+      const failure = error as { status?: unknown; message?: unknown };
       if (
-        error.status !== 404 &&
-        !String(error.message).includes("not found") &&
-        !String(error.message).includes("Not Found")
+        failure.status !== 404 &&
+        !String(failure.message).includes("not found") &&
+        !String(failure.message).includes("Not Found")
       ) {
         throw error;
       }
@@ -115,11 +121,18 @@ async function actor(name: string): Promise<IActor> {
   };
 }
 
-async function captureAttributes(api: any, column: string, id: string) {
+async function captureAttributes(
+  api: typeof productAttributesApi | typeof offerAttributesApi,
+  column: "productId" | "storesToProductsId",
+  id: string,
+) {
   const rows = await api.find({
     params: { filters: { and: [{ column, method: "eq", value: id }] } },
     options: operator(),
   });
+  if (!rows) {
+    throw new Error("Could not read captured product or offer attributes");
+  }
   for (const row of rows) {
     attributes.add(row.attributeId);
     const links = await keyAttributesApi.find({
@@ -838,7 +851,7 @@ it("quotes the same contractor services for guests and buyers when the retail st
   await expect(
     offerApi.update({
       id: mainA.offer.id,
-      data: { variant: "hidden", operator: true } as any,
+      data: { variant: "hidden", operator: true },
       options: buyer.options,
     }),
   ).rejects.toThrow();

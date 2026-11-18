@@ -17,7 +17,7 @@ import {
   getCartQuantityRaw,
   type TCartScenarioFixtures,
 } from "./test-utils/fixtures";
-import { expectOk, requestApi } from "./test-utils/http";
+import { requestApi } from "./test-utils/http";
 import { waitForCondition } from "./test-utils/polling";
 
 async function clearHttpCache() {

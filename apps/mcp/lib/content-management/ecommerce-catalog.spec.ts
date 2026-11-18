@@ -27,18 +27,42 @@ test("offer dry run validates the complete graph without a write", async () => {
 });
 test("offer apply delegates to the same Subject operation with caller credentials", async () => {
   const subjectId = randomUUID();
+  const productId = randomUUID();
+  const now = new Date();
+  const common = { createdAt: now, updatedAt: now, variant: "default" };
   const action = jest
     .spyOn(subjectApi, "ecommerceModuleOfferCreate")
     .mockResolvedValue({
-      product: { id: "product" },
-      offer: { id: "offer" },
-    } as any);
+      product: {
+        ...common,
+        id: productId,
+        kind: "physical",
+        type: "one_off",
+        slug: "test-product",
+        adminTitle: "Test product",
+        title: {},
+        shortDescription: {},
+        description: {},
+        metadata: {},
+      },
+      offer: {
+        ...common,
+        id: randomUUID(),
+        productId,
+        storeId: randomUUID(),
+        sku: "test-offer",
+        orderIndex: 0,
+        className: null,
+        configurationKey: "",
+        settings: {},
+      },
+    });
   const headers = { Authorization: "Bearer caller-access-token" };
-  await createEcommerceOffer(
+  const result = await createEcommerceOffer(
     {
       subjectId,
       data: {
-        productId: randomUUID(),
+        productId,
         prices: [{ currencyId: randomUUID(), amount: "5000" }],
       },
       dryRun: false,
@@ -48,6 +72,10 @@ test("offer apply delegates to the same Subject operation with caller credential
   expect(action).toHaveBeenCalledWith(
     expect.objectContaining({ id: subjectId, options: { headers } }),
   );
+  expect(result).toMatchObject({
+    product: { id: productId },
+    offer: { productId },
+  });
 });
 test("stock dry run rejects fractional values and mismatched ownership scope", async () => {
   for (const ownerType of ["store", "offer"]) {

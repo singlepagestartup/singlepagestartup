@@ -6,6 +6,7 @@
  */
 import { renderToStaticMarkup } from "react-dom/server";
 import { api as pageApi } from "@sps/host/models/page/sdk/server";
+import type { Component as HostPage } from "@sps/host/models/page/frontend/component";
 import Page, {
   revalidate,
   dynamicParams,
@@ -19,7 +20,11 @@ jest.mock("@sps/shared-configuration", () => ({
   internationalization: { languages: [{ code: "en" }, { code: "ru" }] },
 }));
 jest.mock("@sps/host/models/page/frontend/component", () => ({
-  Component: ({ variant, url, language }: any) => (
+  Component: ({
+    variant,
+    url,
+    language,
+  }: Extract<Parameters<typeof HostPage>[0], { variant: "document" }>) => (
     <main data-variant={variant} lang={language}>
       {url}
     </main>
@@ -36,9 +41,25 @@ const request = (language: string, url: string[] = []) => ({
 });
 beforeEach(() => {
   jest.clearAllMocks();
-  jest
-    .mocked(pageApi.resolvePageSeo)
-    .mockResolvedValue({ metadata: { title: "SEO" } } as any);
+  jest.mocked(pageApi.resolvePageSeo).mockResolvedValue({
+    metadata: { title: "SEO" },
+    page: {
+      id: "about-page",
+      slug: "about",
+      url: "/about",
+      title: "About",
+      variant: "default",
+      language: "en",
+      adminTitle: "About",
+      createdAt: new Date(0),
+      updatedAt: new Date(0),
+      description: null,
+      className: null,
+      metadata: {},
+      routeParams: {},
+    },
+    structuredData: [],
+  });
 });
 it("enables on-demand ISR without enumerating all user-owned entities", async () => {
   expect(revalidate).toBe(3600);

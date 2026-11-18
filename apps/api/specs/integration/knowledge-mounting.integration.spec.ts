@@ -1,4 +1,3 @@
-/* eslint-disable quotes */
 /**
  * BDD Suite: api/knowledge mounting integration.
  *

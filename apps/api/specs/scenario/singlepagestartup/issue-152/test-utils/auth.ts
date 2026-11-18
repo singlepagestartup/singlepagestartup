@@ -1,3 +1,4 @@
+import type { IResult as ISubjectResult } from "@sps/rbac/models/subject/sdk/server";
 import { getRequiredEnv } from "./env";
 import { expectOk } from "./http";
 
@@ -8,13 +9,12 @@ type TAuthenticationPayload = {
 };
 
 type TMePayload = {
-  data?: {
-    id?: string;
-  };
+  data?: ISubjectResult["IAuthenticationMeResult"];
 };
 
 export type TScenarioSubject = {
   id: string;
+  subject: NonNullable<ISubjectResult["IAuthenticationMeResult"]>;
   jwt: string;
   email: string;
 };
@@ -46,16 +46,17 @@ export async function authenticateScenarioSubject(): Promise<TScenarioSubject> {
     token: jwt,
   });
 
-  const subjectId = me.payload?.data?.id;
+  const subject = me.payload?.data;
 
-  if (!subjectId) {
+  if (!subject?.id) {
     throw new Error(
       `Authentication me payload does not include subject id: ${JSON.stringify(me.payload)}`,
     );
   }
 
   return {
-    id: subjectId,
+    id: subject.id,
+    subject,
     jwt,
     email,
   };

@@ -6,6 +6,7 @@
  */
 import React from "react";
 import { renderToStaticMarkup } from "react-dom/server";
+import type { IComponentProps } from "./singlepage/generate-template-ecommerce-order-receipt-default/interface";
 jest.mock("@sps/shared-utils", () => ({
   NEXT_PUBLIC_API_SERVICE_URL: "http://localhost:4002",
 }));
@@ -54,7 +55,7 @@ it("selects a startup receipt override through the public registry", () => {
       "./singlepage/generate-template-ecommerce-order-receipt-default",
     ).Component;
     variants["generate-template-ecommerce-order-receipt-default"] = (
-      props: any,
+      props: IComponentProps,
     ) =>
       React.createElement(Base, {
         ...props,

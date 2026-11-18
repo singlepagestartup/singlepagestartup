@@ -25,7 +25,7 @@ const authHeaders = {
   Authorization: "Bearer test-jwt",
 };
 
-function createApi(records: Record<string, any>[] = []) {
+function createApi(records: Record<string, unknown>[] = []) {
   return {
     find: jest.fn(async () => records),
     count: jest.fn(async () => records.length),

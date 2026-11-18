@@ -1,10 +1,7 @@
+import type { IModel as ICurrency } from "@sps/billing/models/currency/sdk/model";
+import type { IModel as IProduct } from "@sps/ecommerce/models/product/sdk/model";
+import type { IModel as IStore } from "@sps/ecommerce/models/store/sdk/model";
 import { expectOk, requestApi } from "./http";
-
-type TEntityPayload = {
-  data?: {
-    id?: string;
-  };
-};
 
 type TSubjectOrder = {
   id: string;
@@ -16,26 +13,33 @@ type TOrderListPayload = {
   data?: TSubjectOrder[];
 };
 
-async function createEntity(
+async function createRecord<T extends { id: string }>(
   path: string,
   data: Record<string, unknown>,
-): Promise<string> {
-  const result = await expectOk<TEntityPayload>({
+): Promise<T> {
+  const result = await expectOk<{ data?: T }>({
     method: "POST",
     path,
     includeSecret: true,
     data,
   });
 
-  const id = result.payload?.data?.id;
+  const record = result.payload?.data;
 
-  if (!id) {
+  if (!record?.id) {
     throw new Error(
       `Create response does not contain entity id for ${path}: ${JSON.stringify(result.payload)}`,
     );
   }
 
-  return id;
+  return record;
+}
+
+async function createEntity(
+  path: string,
+  data: Record<string, unknown>,
+): Promise<string> {
+  return (await createRecord(path, data)).id;
 }
 
 async function deleteEntity(path: string, id: string): Promise<void> {
@@ -47,6 +51,9 @@ async function deleteEntity(path: string, id: string): Promise<void> {
 }
 
 export type TCartScenarioFixtures = {
+  currency: ICurrency;
+  store: IStore;
+  product: IProduct;
   currencyId: string;
   storeId: string;
   productId: string;
@@ -67,18 +74,21 @@ export async function createCartScenarioFixtures(): Promise<TCartScenarioFixture
 
   const randomSuffix = Date.now().toString(36);
 
-  const currencyId = await createEntity("/api/billing/currencies", {
+  const currency = await createRecord<ICurrency>("/api/billing/currencies", {
     slug: `scenario-currency-${randomSuffix}`,
     symbol: "$",
     title: `scenario-currency-${randomSuffix}`,
     isDefault: false,
   });
+  const currencyId = currency.id;
   registerCleanup(() => deleteEntity("/api/billing/currencies", currencyId));
 
-  const storeId = await createEntity("/api/ecommerce/stores", {});
+  const store = await createRecord<IStore>("/api/ecommerce/stores", {});
+  const storeId = store.id;
   registerCleanup(() => deleteEntity("/api/ecommerce/stores", storeId));
 
-  const productId = await createEntity("/api/ecommerce/products", {});
+  const product = await createRecord<IProduct>("/api/ecommerce/products", {});
+  const productId = product.id;
   registerCleanup(() => deleteEntity("/api/ecommerce/products", productId));
 
   const attributeId = await createEntity("/api/ecommerce/attributes", {
@@ -137,6 +147,9 @@ export async function createCartScenarioFixtures(): Promise<TCartScenarioFixture
   );
 
   return {
+    currency,
+    store,
+    product,
     currencyId,
     storeId,
     productId,

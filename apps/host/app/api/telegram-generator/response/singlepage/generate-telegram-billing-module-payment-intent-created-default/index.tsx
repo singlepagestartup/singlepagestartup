@@ -2,7 +2,7 @@ import { IResponseProps } from "./interface";
 
 export { type IResponseProps } from "./interface";
 
-export function response(props: IResponseProps) {
+export function response(_props: IResponseProps) {
   // delete props.data.socialModule.message.messagesToFileStorageModuleFiles;
 
   return {
