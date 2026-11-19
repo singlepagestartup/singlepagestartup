@@ -529,7 +529,7 @@ describe("durable subscription grant revocation", () => {
         amount: "5000",
       },
     ]);
-    let amount = "1200";
+    let amount = "120000.000000000001";
     const wallet = {
       id: "wallet",
       subjectId: "subject",
@@ -553,9 +553,9 @@ describe("durable subscription grant revocation", () => {
       credit;
     await service.execute({ subjectId: "subject" });
     expect(order().subscriptionPeriodInvoiceId).toBe("invoice-b");
-    expect(amount).toBe("6200");
+    expect(amount).toBe("125000.000000000001");
     await service.execute({ subjectId: "subject" });
-    expect(amount).toBe("6200");
+    expect(amount).toBe("125000.000000000001");
     expect(credit).toHaveBeenCalledTimes(1);
   });
 

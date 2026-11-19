@@ -48,6 +48,42 @@ beforeAll(async () => {
     amount: "50",
   });
 });
+it("pages through every receipt even when wallet operations share a timestamp", async () => {
+  const historyStore = randomUUID();
+  const db = getDrizzle({});
+  await db.insert(Store).values({ id: historyStore });
+  try {
+    await db.insert(Operation).values(
+      Array.from({ length: 103 }, (_, i) => ({
+        storeId: historyStore,
+        currencyId,
+        taskId,
+        actorId: senderId,
+        senderId,
+        recipientId,
+        amount: "1",
+        purpose: "history",
+        operationKey: String(i),
+        kind: "transfer" as const,
+        state: "posted" as const,
+      })),
+    );
+    const ledger = service.module.subjectsToWalletOperations;
+    const first = await ledger.history(historyStore);
+    expect(first.items).toHaveLength(100);
+    if (!first.nextCursor) throw new Error("Expected a second ledger page");
+    const second = await ledger.history(historyStore, first.nextCursor);
+    expect(second.items).toHaveLength(3);
+    expect(second.nextCursor).toBeNull();
+    expect(
+      new Set([...first.items, ...second.items].map((row) => row.id)).size,
+    ).toBe(103);
+    expect((await ledger.history(storeId, first.nextCursor)).items).toEqual([]);
+  } finally {
+    await db.delete(Operation).where(eq(Operation.storeId, historyStore));
+    await db.delete(Store).where(eq(Store.id, historyStore));
+  }
+});
 afterAll(async () => {
   const db = getDrizzle({});
   await db.delete(Operation).where(eq(Operation.storeId, storeId));
@@ -185,15 +221,13 @@ it("shares the run and task ceilings across paid steps and funding wallets", asy
   const payers = [randomUUID(), randomUUID()];
   const db = getDrizzle({});
   await db.insert(Subject).values(payers.map((id) => ({ id })));
-  await db
-    .insert(Balance)
-    .values(
-      payers.map((subjectId) => ({
-        subjectId,
-        billingModuleCurrencyId: currencyId,
-        amount: "80",
-      })),
-    );
+  await db.insert(Balance).values(
+    payers.map((subjectId) => ({
+      subjectId,
+      billingModuleCurrencyId: currencyId,
+      amount: "80",
+    })),
+  );
   try {
     const base = {
       ...input,

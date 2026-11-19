@@ -104,6 +104,8 @@ export function Settings({
             copy={copy}
           />
           <SpendPanel
+            key={subjectId + ":" + storeId}
+            subjectId={subjectId}
             data={result.data}
             storeId={storeId}
             pending={pending}
@@ -640,12 +642,14 @@ function AssignmentForm({
 }
 
 function SpendPanel({
+  subjectId,
   data,
   storeId,
   command,
   pending,
   copy,
 }: {
+  subjectId: string;
   data: IProviderSettings;
   storeId: string;
   command: TCommand;
@@ -653,9 +657,14 @@ function SpendPanel({
   copy: TLabels;
 }) {
   const [task, setTask] = useState("");
-  const taskIds = [...new Set(data.operations.map(({ taskId }) => taskId))];
-  const operations = data.operations.filter(
-    ({ taskId }) => taskId === (task || taskIds[0]),
+  const [cursors, setCursors] = useState<string[]>([]);
+  const before = cursors.at(-1);
+  const pageQuery = api.providerConnections({ id: subjectId, storeId, before });
+  const page = before ? pageQuery.data : data;
+  const taskIds = [...new Set(page?.operations.map(({ taskId }) => taskId))];
+  const selectedTask = taskIds.includes(task) ? task : taskIds[0];
+  const operations = (page?.operations ?? []).filter(
+    ({ taskId }) => taskId === selectedTask,
   );
   return (
     <section className={panelClass}>
@@ -663,7 +672,20 @@ function SpendPanel({
         <Wallet aria-hidden="true" className="size-5" />{" "}
         {copy("Бюджет и расходы задачи", "Work budget and spend")}
       </h3>
-      {!taskIds.length && (
+      {before && pageQuery.isPending && (
+        <p role="status">
+          {copy("Загружаем операции…", "Loading transactions…")}
+        </p>
+      )}
+      {before && pageQuery.isError && (
+        <p role="alert">
+          {copy(
+            "Не удалось загрузить операции.",
+            "Could not load transactions.",
+          )}
+        </p>
+      )}
+      {page && !taskIds.length && (
         <p className="mt-3 text-sm text-muted-foreground">
           {copy(
             "Резервов и переводов пока нет.",
@@ -677,7 +699,7 @@ function SpendPanel({
           <select
             aria-label={copy("Задача", "Task")}
             className={inputClass}
-            value={task || taskIds[0]}
+            value={selectedTask ?? ""}
             onChange={(event) => setTask(event.currentTarget.value)}
           >
             {taskIds.map((id) => (
@@ -737,6 +759,32 @@ function SpendPanel({
           </li>
         ))}
       </ul>
+      {(before || page?.nextCursor) && (
+        <nav
+          aria-label={copy("Страницы операций", "Transaction pages")}
+          className="mt-4 flex flex-wrap gap-2"
+        >
+          <Button
+            type="button"
+            variant="outline"
+            disabled={!before}
+            onClick={() => setCursors((previous) => previous.slice(0, -1))}
+          >
+            {copy("Новые операции", "Newer transactions")}
+          </Button>
+          <Button
+            type="button"
+            variant="outline"
+            disabled={!page?.nextCursor}
+            onClick={() => {
+              const cursor = page?.nextCursor;
+              if (cursor) setCursors((previous) => [...previous, cursor]);
+            }}
+          >
+            {copy("Предыдущие операции", "Older transactions")}
+          </Button>
+        </nav>
+      )}
     </section>
   );
 }

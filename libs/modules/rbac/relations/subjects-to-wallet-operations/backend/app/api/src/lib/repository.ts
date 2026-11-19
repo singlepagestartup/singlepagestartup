@@ -1,12 +1,32 @@
 import "reflect-metadata";
 import { injectFromBase, injectable } from "inversify";
-import { and, eq, or, sql } from "drizzle-orm";
+import { and, desc, eq, or, sql } from "drizzle-orm";
 import { DatabaseRepository } from "@sps/shared-backend-api";
 import { Table } from "@sps/rbac/relations/subjects-to-wallet-operations/backend/repository/database";
 
 @injectable()
 @injectFromBase()
 export class Repository extends DatabaseRepository<typeof Table> {
+  async history(storeId: string, before?: string) {
+    const pageSize = 100;
+    const earlier = before
+      ? sql`(${Table.createdAt}, ${Table.id}) < (
+      select ${Table.createdAt}, ${Table.id} from ${Table}
+      where ${Table.storeId} = ${storeId} and ${Table.id} = ${before})`
+      : undefined;
+    const rows = await this.db
+      .select()
+      .from(Table)
+      .where(and(eq(Table.storeId, storeId), earlier))
+      .orderBy(desc(Table.createdAt), desc(Table.id))
+      .limit(pageSize + 1);
+    const items = rows.slice(0, pageSize);
+    return {
+      items,
+      nextCursor: rows.length > pageSize ? items[pageSize - 1].id : null,
+    };
+  }
+
   pendingReconciliations(limit: number, storeId?: string) {
     return this.db
       .select()
@@ -16,6 +36,11 @@ export class Repository extends DatabaseRepository<typeof Table> {
           storeId ? eq(Table.storeId, storeId) : undefined,
           sql`(${Table.providerWork} ->> 'reconcileRequested' = 'true'
         OR ${Table.providerWork} ->> 'state' IN ('received','settled')
+        OR (${Table.providerWork} ->> 'state' = 'unknown' AND (
+          ${Table.providerWork} ->> 'resolution' IS NOT NULL
+          OR (${Table.providerWork} ->> 'provider' = 'openrouter'
+            AND ${Table.providerWork} ->> 'providerRequestId' IS NOT NULL
+            AND (${Table.providerWork} ->> 'checkedAt' IS NULL OR ${Table.updatedAt} < now() - interval '10 minutes'))))
         OR (${Table.providerWork} ->> 'state' = 'dispatching' AND ${Table.updatedAt} < now() - interval '3 minutes'))`,
         ),
       )

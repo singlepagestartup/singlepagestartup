@@ -24,7 +24,7 @@ function authorized(props: IProps) {
 }
 export function providerConnections(props: IProps) {
   return useQuery({
-    queryKey: settingsKey(props),
+    queryKey: [...settingsKey(props), props.before ?? null],
     enabled: Boolean(props.id && props.storeId),
     queryFn: () => api.providerConnections(authorized(props)),
     staleTime: 0,

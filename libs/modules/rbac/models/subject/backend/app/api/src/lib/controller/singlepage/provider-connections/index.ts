@@ -1,4 +1,5 @@
 import type { Context } from "hono";
+import { z } from "zod";
 import { HTTPException } from "hono/http-exception";
 import { getHttpErrorType } from "@sps/backend-utils";
 import { connectionCommand } from "@sps/rbac/models/subject/sdk/model/src/lib/provider-connections";
@@ -28,9 +29,18 @@ export class Handler {
         });
       }
       if (c.req.method === "GET") {
-        return c.json({
-          data: await this.service.providerConnections.list(id, storeId),
-        });
+        const cursor = z.uuid().optional().safeParse(c.req.query("before"));
+        if (!cursor.success) {
+          throw new HTTPException(422, {
+            message: "Invalid wallet history cursor",
+          });
+        }
+        const data = await this.service.providerConnections.list(
+          id,
+          storeId,
+          cursor.data,
+        );
+        return c.json({ data });
       }
       const body = await c.req.json().catch(() => null);
       const parsed = connectionCommand.safeParse(body?.data);

@@ -2221,6 +2221,8 @@ paths:
     get:
       tags: [rbac-subject]
       summary: Read a store owner's connections, assistants and wallet receipts
+      parameters:
+        - { name: before, in: query, required: false, schema: { type: string, format: uuid }, description: Return receipts older than the last ID on the previous page }
       responses:
         "200": { description: Private owner-scoped metadata and charges }
         "403": { description: Store ownership required }

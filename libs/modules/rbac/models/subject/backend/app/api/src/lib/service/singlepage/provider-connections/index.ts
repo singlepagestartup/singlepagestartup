@@ -180,7 +180,7 @@ export class ProviderConnections {
     };
   }
 
-  async list(actorId: string, storeId: string) {
+  async list(actorId: string, storeId: string, before?: string) {
     await this.assertOwner(actorId, storeId);
     const filters = {
       and: [{ column: "storeId", method: "eq" as const, value: storeId }],
@@ -220,14 +220,11 @@ export class ProviderConnections {
         },
       ),
     );
-    const operations =
-      await this.subject.module.subjectsToWalletOperations.find({
-        params: {
-          filters,
-          orderBy: { and: [{ column: "createdAt", method: "desc" }] },
-          limit: 100,
-        },
-      });
+    const { items: operations, nextCursor } =
+      await this.subject.module.subjectsToWalletOperations.history(
+        storeId,
+        before,
+      );
     const links =
       await this.subject.module.subjectsToEcommerceModuleStores.find({
         params: {
@@ -250,7 +247,13 @@ export class ProviderConnections {
         return { id: link.subjectId, label: assistant?.slug ?? link.subjectId };
       }),
     );
-    return { connections: visible, assignments, operations, assistants };
+    return {
+      connections: visible,
+      assignments,
+      operations,
+      assistants,
+      nextCursor,
+    };
   }
 
   async change(actorId: string, input: IConnectionCommand) {

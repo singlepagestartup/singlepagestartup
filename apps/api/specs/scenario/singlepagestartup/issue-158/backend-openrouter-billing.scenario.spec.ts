@@ -349,6 +349,56 @@ it.each([
           });
           expect(reconciled?.providerWork?.state).toBe("failed");
           expect(external).toHaveBeenCalledTimes(2);
+          if (provider === "openrouter") {
+            const text = "Check a generation with delayed usage";
+            const next = await rbac.subject.customerWork.execute(customer.id, {
+              operation: "message",
+              storeId,
+              taskId: task.id,
+              operationKey: randomUUID(),
+              text,
+            });
+            const message = next.messages.find((row) => row.body === text);
+            if (!message)
+              throw new Error("Missing message for automatic reconciliation");
+            const event = await rbac.subject.customerWork.pendingForMessage({
+              threadId: next.threadId,
+              messageId: message.id,
+            });
+            if (!event)
+              throw new Error("Missing assigned reconciliation event");
+            const generationId = "known-generation-418";
+            external.mockResolvedValueOnce(
+              Response.json({ id: generationId }, { status: 502 }),
+            );
+            const interrupted = await service.dispatch(event);
+            expect(interrupted.state).toBe("unknown");
+            external.mockImplementationOnce(async (url, init) => {
+              expect(String(url)).toBe(
+                "https://openrouter.ai/api/v1/generation?id=" + generationId,
+              );
+              expect(init?.method ?? "GET").toBe("GET");
+              return Response.json({
+                data: {
+                  id: generationId,
+                  total_cost: 0.0004,
+                  native_tokens_prompt: 12,
+                  native_tokens_completion: 6,
+                },
+              });
+            });
+            await service.reconcile(30, storeId);
+            const updated = await connections.list(owner.id, storeId);
+            const entry = updated.operations.find(
+              (op) => op.providerWork?.attemptId === interrupted.id,
+            );
+            expect(entry).toMatchObject({
+              state: "settled",
+              providerWork: { basis: "provider", state: "failed" },
+            });
+            await service.reconcile(30, storeId);
+            expect(external).toHaveBeenCalledTimes(4);
+          }
           throw rollback;
         }),
       );

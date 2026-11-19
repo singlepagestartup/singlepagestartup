@@ -12,6 +12,7 @@ import {
 export interface IProps {
   id: string;
   storeId: string;
+  before?: string;
   host?: string;
   options?: Partial<NextRequestOptions>;
 }
@@ -32,7 +33,11 @@ async function request<T>(
   const path = [props.id, "stores", props.storeId, "provider-connections"]
     .map(encodeURIComponent)
     .join("/");
-  const res = await fetch(`${props.host ?? serverHost}${route}/${path}`, {
+  const url = new URL(`${props.host ?? serverHost}${route}/${path}`);
+  if (!data && props.before) {
+    url.searchParams.set("before", props.before);
+  }
+  const res = await fetch(url.toString(), {
     ...props.options,
     method: data ? "POST" : "GET",
     credentials: "include",

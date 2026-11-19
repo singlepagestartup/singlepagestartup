@@ -115,6 +115,7 @@ export type IProviderCapability = z.infer<typeof providerCapability>;
 export type IProviderTerms = z.infer<typeof providerTerms>;
 
 export interface IProviderSettings {
+  nextCursor: string | null;
   assistants: Array<{ id: string; label: string }>;
   connections: Array<
     Pick<

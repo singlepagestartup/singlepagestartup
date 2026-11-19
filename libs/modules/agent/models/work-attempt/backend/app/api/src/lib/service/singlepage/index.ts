@@ -541,6 +541,14 @@ export class Service extends CRUDService<IModel> {
         12,
         Decimal.ROUND_HALF_UP,
       );
+      if (compute.gt(current.maximum)) {
+        // Store settings and funding acquire the store lock before the wallet locks.
+        await this.modules.rbac.subject.providerConnections.suspend(
+          current.storeId,
+          current.connectionId,
+          current.credentialVersion,
+        );
+      }
       const receipts = await this.modules.rbac.subject.workLedger.settle({
         storeId: current.storeId,
         reservationKey: reservationKey(current.id),
@@ -549,14 +557,6 @@ export class Service extends CRUDService<IModel> {
         workAmount: work.toFixed(),
         providerAmount: cost.toFixed(),
       });
-      if (compute.gt(current.maximum)) {
-        // The external cost is already durable. Suspend the affected binding before another request.
-        await this.modules.rbac.subject.providerConnections.suspend(
-          current.storeId,
-          current.connectionId,
-          current.credentialVersion,
-        );
-      }
       return this.change({
         id: current.id,
         data: {

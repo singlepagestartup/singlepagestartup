@@ -14,6 +14,9 @@ export class Service extends CRUDService<IModel> {
   pendingReconciliations(limit: number, storeId?: string) {
     return this.repository.pendingReconciliations(limit, storeId);
   }
+  history(storeId: string, before?: string) {
+    return this.repository.history(storeId, before);
+  }
 
   obligations(
     senderId: string,
