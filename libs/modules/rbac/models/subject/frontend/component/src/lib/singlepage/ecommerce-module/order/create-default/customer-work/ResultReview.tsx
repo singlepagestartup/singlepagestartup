@@ -255,6 +255,43 @@ export function ResultReview({ subjectId, work, language }: IProps) {
           {work.trackingNumber}
         </p>
       )}
+      {work.expertArchive && work.expertArchive.length > 0 && (
+        <section
+          aria-label={
+            ru
+              ? "Характеристики на момент покупки"
+              : "Specifications at purchase"
+          }
+          className="grid gap-2"
+        >
+          <h3 className="text-sm font-semibold">
+            {ru
+              ? "Характеристики на момент покупки"
+              : "Specifications at purchase"}
+          </h3>
+          {work.expertArchive.map(
+            ({ sourceId, versionDigest, title, content }) => (
+              <details
+                key={sourceId}
+                className="rounded-lg border border-border px-3"
+              >
+                <summary className="flex min-h-11 cursor-pointer items-center break-words text-sm font-medium">
+                  {title}
+                </summary>
+                <p className="whitespace-pre-wrap break-words pb-3 text-sm">
+                  {content}
+                </p>
+                <dl className="grid gap-1 border-t border-border py-2 text-xs text-muted-foreground">
+                  <dt>{ru ? "ID источника" : "Source ID"}</dt>
+                  <dd className="break-all font-mono">{sourceId}</dd>
+                  <dt>{ru ? "Хеш версии" : "Version hash"}</dt>
+                  <dd className="break-all font-mono">{versionDigest}</dd>
+                </dl>
+              </details>
+            ),
+          )}
+        </section>
+      )}
       {work.result && (
         <Button
           type="button"

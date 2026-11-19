@@ -5,6 +5,9 @@ import { Component as ChildComponent } from "./Component";
 import type { IComponentProps } from "./interface";
 import Client from "./client";
 export default async function Server(props: IComponentProps) {
+  if (props.socialModuleThreadId) {
+    return <Client {...props} isServer={false} apiProps={undefined} />;
+  }
   return (
     <AuthenticationMe
       isServer={true}

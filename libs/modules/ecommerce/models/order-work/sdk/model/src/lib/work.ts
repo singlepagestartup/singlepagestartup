@@ -132,6 +132,19 @@ export interface IOrderWorkPayment extends IOrderWorkCheckout {
   paidAt: string;
 }
 
+interface IOrderWorkExpertSourceSnapshot {
+  sourceId: string;
+  versionDigest: string;
+  title: string;
+  content: string;
+}
+
+export type IOrderWorkExpertArchive = IOrderWorkExpertSourceSnapshot[];
+
+export type TReadOrderWorkExpertArchive = (
+  scope: IOrderWorkScope,
+) => Promise<IOrderWorkExpertArchive>;
+
 export interface IOrderPhysicalEvidence extends IOrderWorkScope {
   operationKey: string;
   actorId: string;

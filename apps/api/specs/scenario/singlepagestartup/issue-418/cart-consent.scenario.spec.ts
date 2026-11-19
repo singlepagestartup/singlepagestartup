@@ -2,6 +2,7 @@ import { randomBytes, randomUUID } from "node:crypto";
 import { mkdtemp, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { eq } from "drizzle-orm";
 import {
   createAppAssembly,
   withConsistencyDatabase,
@@ -13,6 +14,7 @@ import {
 } from "@sps/shared-backend-database-config";
 import { createService } from "@sps/agent/models/work-attempt/backend/app/api/src/lib/bootstrap";
 import { Table as Wallet } from "@sps/rbac/relations/subjects-to-billing-module-currencies/backend/repository/database";
+import { Table as PaymentIntent } from "@sps/billing/models/payment-intent/backend/repository/database";
 import { api as subjectApi } from "@sps/rbac/models/subject/sdk/server";
 import { Provider as KvProvider } from "@sps/providers-kv";
 import { KV_PROVIDER } from "@sps/shared-utils";
@@ -51,13 +53,17 @@ afterAll(async () => {
   }
 });
 
-it("offers 300 RUB with store-funded work, then adds and checks out exactly the buyer-approved item", async () => {
+it("checks out the buyer-approved 300 RUB selection and preserves only that purchase’s expert specification", async () => {
   try {
     await getDrizzle({}).transaction((tx) =>
       withConsistencyDatabase(tx, async () => {
         const worker = createService(createAppAssembly());
-        const { rbac, ecommerce, crm, billing, social } = worker.modules;
+        const { rbac, ecommerce, crm, billing, social, knowledge } =
+          worker.modules;
         const subject = rbac.subject;
+        ecommerce.order.configureExpertArchive((scope) =>
+          subject.orderWork.captureExpertArchive(scope),
+        );
         const owner = await subject.create({ data: {} });
         const buyer = await subject.create({ data: {} });
         const stranger = await subject.create({ data: {} });
@@ -109,6 +115,85 @@ it("offers 300 RUB with store-funded work, then adds and checks out exactly the 
         const topUp = await createOffer(store.id, "Account top-up");
         const unrelatedOffer = await createOffer(store.id, "Separate item");
         const foreign = await createOffer(otherStore.id, "Other store top-up");
+        const expert = await social.profile.create({
+          data: {
+            variant: "artificial-intelligence",
+            title: { en: "Account expert" },
+          },
+        });
+        await social.profilesToEcommerceModuleProducts.create({
+          data: {
+            profileId: expert.id,
+            storeId: store.id,
+            offerId: topUp.offer.id,
+            variant: "store-expert",
+          },
+        });
+        const specification = await knowledge.source.upsertSourceBySlug({
+          slug: `cart-specification-${randomUUID()}`,
+          title: "Top-up conditions",
+          content: "Top-up conditions version A",
+        });
+        const specificationLink = {
+          profileId: expert.id,
+          knowledgeModuleSourceId: specification.id,
+          offerId: topUp.offer.id,
+          variant: "product-specification" as const,
+        };
+        await expect(
+          social.profilesToKnowledgeModuleSources.create({
+            data: { ...specificationLink, storeId: otherStore.id },
+          }),
+        ).rejects.toThrow(/offer.*store/i);
+        await social.profilesToKnowledgeModuleSources.create({
+          data: { ...specificationLink, storeId: store.id },
+        });
+        const privateNote = await knowledge.source.upsertSourceBySlug({
+          slug: `cart-private-note-${randomUUID()}`,
+          title: "Personal note",
+          content: "Customer information must stay private",
+          variant: "customer-memory",
+        });
+        await expect(
+          social.profilesToKnowledgeModuleSources.create({
+            data: {
+              ...specificationLink,
+              storeId: store.id,
+              knowledgeModuleSourceId: privateNote.id,
+            },
+          }),
+        ).rejects.toThrow(/specification needs content/i);
+        const orderDraft = await crm.funnel.saveDraft({
+          storeId: store.id,
+          name: "Top-up purchases",
+          kind: "physical-order",
+          bindings: { offerIds: [topUp.offer.id] },
+          definition: {
+            initialStageId: "payment",
+            stages: [
+              {
+                id: "payment",
+                name: "Awaiting payment",
+                actions: [
+                  {
+                    id: "paid",
+                    name: "Paid",
+                    actors: ["system"],
+                    evidence: ["payment"],
+                    outcome: "completed",
+                  },
+                ],
+              },
+            ],
+          },
+        });
+        await crm.funnel.publish({
+          storeId: store.id,
+          funnelId: orderDraft.id,
+          expectedRevision: orderDraft.revision,
+          actorId: owner.id,
+          operationKey: randomUUID(),
+        });
         const unrelated = await subject.ecommerceModuleOrderCreate({
           subjectId: buyer.id,
           storeId: store.id,
@@ -224,7 +309,11 @@ it("offers 300 RUB with store-funded work, then adds and checks out exactly the 
         }
         const consultation = await ask();
         const run = await submit(consultation.taskId, consultation.threadId);
-        const { cartOffers } = await subject.customerWork.contextForRun(run);
+        const { cartOffers, messages: originalContext } =
+          await subject.customerWork.contextForRun(run);
+        expect(
+          originalContext.map(({ content }) => content).join("\n"),
+        ).toContain("Top-up conditions version A");
         expect(cartOffers).toEqual([
           {
             offerId: topUp.offer.id,
@@ -360,11 +449,66 @@ it("offers 300 RUB with store-funded work, then adds and checks out exactly the 
           }),
         ).toHaveLength(0);
 
+        const purchase = await ecommerce.order.work.findByOrder(orderId!);
+        expect(purchase?.storeId).toBe(store.id);
+        const purchaseScope = {
+          orderId: orderId!,
+          storeId: store.id,
+          taskId: purchase!.taskId,
+        };
+        const readPurchase = () =>
+          subject.orderWork.read(buyer.id, purchaseScope);
+        expect((await readPurchase()).expertArchive).toBeUndefined();
+        const intentId = paymentClaims[0].billingModulePaymentIntentId;
+        await tx
+          .update(PaymentIntent)
+          .set({ status: "succeeded" })
+          .where(eq(PaymentIntent.id, intentId));
+        const invoice = await billing.invoice.create({
+          data: { amount: 300, status: "paid", provider: "dummy" },
+        });
+        await billing.paymentIntentsToInvoices.create({
+          data: { paymentIntentId: intentId, invoiceId: invoice.id },
+        });
+        const paying = await ecommerce.order.findById({ id: orderId! });
+        const settle = {
+          id: orderId!,
+          expectedStatus: "paying",
+          expectedUpdatedAt: paying!.updatedAt,
+          onPaymentSucceeded: async () => {},
+        };
+        await ecommerce.order.completePaymentStatus(settle);
+        const archived = [
+          {
+            sourceId: specification.id,
+            versionDigest: specification.contentHash,
+            title: specification.title,
+            content: "Top-up conditions version A",
+          },
+        ];
+        expect((await readPurchase()).expertArchive).toEqual(archived);
+        await expect(
+          subject.orderWork.read(stranger.id, purchaseScope),
+        ).rejects.toThrow();
+        await knowledge.source.updateSource({
+          sourceId: specification.id,
+          content: "Top-up conditions version B",
+        });
+        await ecommerce.order.completePaymentStatus(settle);
+        expect((await readPurchase()).expertArchive).toEqual(archived);
+
         const expiryConsultation = await ask();
         const expiryRun = await submit(
           expiryConsultation.taskId,
           expiryConsultation.threadId,
         );
+        const { messages: newContext } =
+          await subject.customerWork.contextForRun(expiryRun);
+        const currentContext = newContext
+          .map(({ content }) => content)
+          .join("\n");
+        expect(currentContext).toContain("Top-up conditions version B");
+        expect(currentContext).not.toContain("Top-up conditions version A");
         const expiryId = randomUUID();
         const delivered = await subject.customerWork.deliverReply({
           ...expiryRun,

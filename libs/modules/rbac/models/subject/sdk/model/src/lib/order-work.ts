@@ -1,5 +1,8 @@
 import { z } from "zod";
-import type { TWorkFulfillmentState } from "@sps/ecommerce/models/order-work/sdk/model";
+import type {
+  IOrderWorkExpertArchive,
+  TWorkFulfillmentState,
+} from "@sps/ecommerce/models/order-work/sdk/model";
 
 export const orderWorkScopeSchema = z.object({
   storeId: z.uuid(),
@@ -59,6 +62,7 @@ export interface IOrderWorkView {
   receipt: IOrderArtifact | null;
   deliveryStatus: "pending" | "available";
   trackingNumber: string | null;
+  expertArchive?: IOrderWorkExpertArchive;
 }
 
 export function orderWorkPath(subjectId: string, orderId: string) {

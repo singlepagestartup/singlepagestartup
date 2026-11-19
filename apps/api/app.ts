@@ -28,6 +28,7 @@ import {
   moduleBootstrap as hostApp,
 } from "@sps/host/backend/app/api/src/lib/bootstrap";
 import { moduleBootstrap as rbacApp } from "@sps/rbac/backend/app/api/src/lib/bootstrap";
+import { createService as createSubjectService } from "@sps/rbac/models/subject/backend/app/api/src/lib/bootstrap";
 import { rbacHttpCacheExcludeRoutes } from "@sps/rbac/models/permission/backend/app/api/src/lib/service/singlepage/http-cache-exclude-routes";
 import { moduleBootstrap as startupApp } from "@sps/startup/backend/app/api/src/lib/bootstrap";
 import { moduleBootstrap as crmApp } from "@sps/crm/backend/app/api/src/lib/bootstrap";
@@ -70,10 +71,15 @@ const mountedModules = await Promise.all(
 );
 const { app: rbac } = await rbacApp.bootstrap(defaultAppAssembly);
 const ecommerce = defaultAppAssembly.getOrCreate(createEcommerceServices);
+ecommerce.order.configureExpertArchive((scope) =>
+  createSubjectService(defaultAppAssembly).orderWork.captureExpertArchive(
+    scope,
+  ),
+);
 defaultAppAssembly
   .getOrCreate(createFileStorageServices)
-  .file.configureCommerceReceiptGuard((ids) =>
-    ecommerce.order.work.protectedReceiptFileIds(ids),
+  .file.configureCommerceReceiptGuard((files) =>
+    ecommerce.order.work.protectedReceiptFileIds(files),
   );
 
 const revalidationMiddleware = new RevalidationMiddleware();
@@ -88,7 +94,7 @@ const httpCacheMiddleware = new HTTPCacheMiddleware({
 app.use(
   cors({
     origin: resolveCorsOrigin,
-    allowMethods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    allowMethods: ["GET", "HEAD", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     allowHeaders: [
       "X-CSRF-Token",
       "X-Requested-With",

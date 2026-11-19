@@ -136,6 +136,9 @@ export class Service extends CRUDService<Source> {
       },
     });
   }
+  specificationSnapshots(ids: string[]) {
+    return this.owner().specificationSnapshots(ids);
+  }
   listSourcesForIndex(props?: { sourceId?: string; limit?: number }) {
     return this.find({
       params: {

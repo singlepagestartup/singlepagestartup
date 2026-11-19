@@ -5,6 +5,7 @@ import {
   type IWorkFunding,
 } from "@sps/crm/models/funnel/sdk/model";
 import { supportsNestedWork } from "@sps/shared-third-parties";
+import { CUSTOMER_WORK_OFFER_CHOICE_REQUIRED } from "@sps/shared-utils";
 import Decimal from "decimal.js";
 import type { IModel as SocialMessage } from "@sps/social/models/message/sdk/model";
 import type { IModel as SocialProfile } from "@sps/social/models/profile/sdk/model";
@@ -1475,9 +1476,7 @@ export class Service {
       }
     }
     if (candidates.length > 1) {
-      throw new Error(
-        "Conflict error. Choose a store offer to start this conversation",
-      );
+      throw new Error(CUSTOMER_WORK_OFFER_CHOICE_REQUIRED);
     }
     return candidates[0] ?? null;
   }

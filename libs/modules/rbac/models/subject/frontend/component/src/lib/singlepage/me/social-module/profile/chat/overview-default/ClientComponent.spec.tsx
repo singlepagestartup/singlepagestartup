@@ -1,5 +1,7 @@
 import { renderToStaticMarkup } from "react-dom/server";
 let mockProfiles: any[] = [];
+let mockWork: { chatId: string } | undefined;
+const mockPrivateThread = jest.fn();
 const mockRead = jest.fn();
 const mockOverview = jest.fn();
 jest.mock("@sps/rbac/models/subject/frontend/component", () => ({
@@ -17,13 +19,62 @@ jest.mock("@sps/rbac/models/subject/frontend/component", () => ({
     throw Error("Unexpected reader: " + props.variant);
   },
 }));
+jest.mock("@sps/rbac/models/subject/sdk/client", () => ({
+  api: {
+    customerWorkForThread: (input: unknown) => {
+      mockPrivateThread(input);
+      return { data: mockWork, isPending: false };
+    },
+  },
+}));
+jest.mock("../../../../../authentication/me-default/client", () => ({
+  __esModule: true,
+  default: ({
+    children,
+  }: {
+    children: (session: {
+      data: { id: string };
+      authenticated: boolean;
+    }) => React.ReactNode;
+  }) => children({ data: { id: "verified-guest" }, authenticated: false }),
+}));
+jest.mock(
+  "../../../../../social-module/profile/chat/message/list/default/components/CustomerWork",
+  () => ({
+    CustomerWorkView: () => <span>Private customer conversation</span>,
+  }),
+);
 import { Component } from "./Component";
+import Client from "./client";
 beforeEach(() => {
   jest.clearAllMocks();
+  mockWork = undefined;
   mockProfiles = [
     { id: "ai", variant: "artificial-intelligence" },
     { id: "personal", variant: "default" },
   ];
+});
+
+it("opens the exact verified guest thread and declines mismatched chat ids", () => {
+  mockWork = { chatId: "own-chat" };
+  function thread(chatId: string) {
+    return renderToStaticMarkup(
+      <Client
+        variant="me-social-module-profile-chat-overview-default"
+        isServer={false}
+        language="en"
+        socialModuleChatId={chatId}
+        socialModuleThreadId="own-thread"
+      />,
+    );
+  }
+  expect(thread("own-chat")).toContain("Private customer conversation");
+  expect(mockPrivateThread).toHaveBeenCalledWith({
+    id: "verified-guest",
+    threadId: "own-thread",
+  });
+  expect(thread("another-chat")).not.toContain("Private customer conversation");
+  expect(mockOverview).not.toHaveBeenCalled();
 });
 it("uses the Subject profile reader scoped to this chat and renders one preferred identity", () => {
   const html = renderToStaticMarkup(

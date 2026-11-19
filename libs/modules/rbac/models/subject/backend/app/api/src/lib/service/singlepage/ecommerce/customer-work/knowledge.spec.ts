@@ -70,26 +70,9 @@ function fixture() {
       projectId: "north",
     },
   ];
-  const expertLinks = [
-    {
-      profileId: "expert",
-      storeId: "store-1",
-      offerId: "offer-1",
-      variant: "store-expert",
-    },
-    {
-      profileId: "other-expert",
-      storeId: "store-1",
-      ecommerceModuleProductId: "phone",
-      variant: "store-expert",
-    },
-    {
-      profileId: "other-store-expert",
-      storeId: "store-2",
-      offerId: "offer-1",
-      variant: "store-expert",
-    },
-  ];
+  const resolveStoreExpert = jest
+    .fn<Promise<{ conflict: boolean; profileId?: string }>, [unknown]>()
+    .mockResolvedValue({ conflict: false, profileId: "expert" });
   const find =
     <Row extends Record<string, unknown>>(rows: Row[]) =>
     async ({
@@ -122,7 +105,7 @@ function fixture() {
     authenticationMe: async () => ({ authenticated: true }),
     modules: {
       social: {
-        profilesToEcommerceModuleProducts: { find: find(expertLinks) },
+        profilesToEcommerceModuleProducts: { resolveStoreExpert },
         profile: {
           findById: async () => ({
             id: "expert",
@@ -178,7 +161,7 @@ function fixture() {
     scope,
     source,
     publicSource,
-    expertLinks,
+    resolveStoreExpert,
     projectRead,
   };
 }
@@ -186,7 +169,8 @@ function fixture() {
 afterEach(() => jest.restoreAllMocks());
 
 it("uses the current offer expert and only the buyer's selected store and brand memory", async () => {
-  const { service, task, scope, publicSource, source } = fixture();
+  const { service, task, scope, publicSource, source, resolveStoreExpert } =
+    fixture();
   const original = await service.context(
     task,
     scope,
@@ -196,6 +180,11 @@ it("uses the current offer expert and only the buyer's selected store and brand 
   expect(original.content).toContain("Use formal address for North");
   expect(original.content).not.toMatch(/South|Another shop|Another buyer/);
   expect(source.findSourcesByIds).toHaveBeenCalledWith(["same-brand"]);
+  expect(resolveStoreExpert).toHaveBeenCalledWith({
+    storeId: task.storeId,
+    offerId: task.offerId,
+    productId: task.productId,
+  });
   expect(original.knowledgeSourceIds).toEqual(["specification"]);
   expect(original.sourceVersions).toEqual([
     { id: "specification", version: "version-a" },
@@ -244,14 +233,14 @@ it("rejects direct changes to another project or customer's note", async () => {
 });
 
 it("withdraws project memory on the next read and rejects competing offer experts", async () => {
-  const { service, task, scope, projectRead, expertLinks } = fixture();
+  const { service, task, scope, projectRead, resolveStoreExpert } = fixture();
   projectRead.mockResolvedValue([]);
   const current = await service.context(task, scope, "battery");
   expect(current.content).not.toContain("Use formal address for North");
   expect(current.sourceVersions).toEqual([
     { id: "specification", version: "version-a" },
   ]);
-  expertLinks.push({ ...expertLinks[0], profileId: "competing-expert" });
+  resolveStoreExpert.mockResolvedValue({ conflict: true });
   await expect(service.context(task, scope, "battery")).rejects.toThrow(
     "competing expert assignments",
   );

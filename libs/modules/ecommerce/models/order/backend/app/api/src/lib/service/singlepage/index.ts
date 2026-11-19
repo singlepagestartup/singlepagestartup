@@ -32,6 +32,7 @@ import { Service as BillingPaymentIntentService } from "@sps/billing/models/paym
 import { Service as SubscriptionPeriodService } from "../startup/subscription-period";
 import { Service as LifecycleService } from "../startup/lifecycle";
 import { Service as OrderWork } from "./work";
+import type { TReadOrderWorkExpertArchive } from "@sps/ecommerce/models/order-work/sdk/model";
 import { parseExactMonetaryAmount } from "@sps/backend-utils";
 import type {
   IExecuteProps as ISubscriptionPeriodProps,
@@ -42,6 +43,8 @@ export type IExtendedEcommerceModuleOrder = IGetExtendedResult;
 
 @injectable()
 export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
+  private readExpertArchive?: TReadOrderWorkExpertArchive;
+
   get modules() {
     return this.appAssembly.getOrCreate(createModules);
   }
@@ -51,7 +54,11 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
   }
 
   get work() {
-    return new OrderWork(this);
+    return new OrderWork(this, this.readExpertArchive);
+  }
+
+  configureExpertArchive(read: TReadOrderWorkExpertArchive) {
+    this.readExpertArchive = read;
   }
 
   declare repository: Repository;

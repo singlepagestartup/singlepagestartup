@@ -2,7 +2,9 @@ import * as pgCore from "drizzle-orm/pg-core";
 import { Table as Profile } from "@sps/social/models/profile/backend/repository/database";
 import { Table as Source } from "@sps/knowledge/models/source/backend/repository/database";
 import { Table as Store } from "@sps/ecommerce/models/store/backend/repository/database";
+import { Table as Offer } from "@sps/ecommerce/relations/stores-to-products/backend/repository/database";
 import { Table as Thread } from "@sps/social/models/thread/backend/repository/database";
+import { sql } from "drizzle-orm";
 
 export const moduleName = "sl";
 export const table = "ps_to_ke_me_ss_gch";
@@ -21,6 +23,9 @@ export const Table = pgTable(
     storeId: pgCore
       .uuid("store_id")
       .references(() => Store.id, { onDelete: "cascade" }),
+    offerId: pgCore
+      .uuid("offer_id")
+      .references(() => Offer.id, { onDelete: "cascade" }),
     projectId: pgCore
       .uuid("project_id")
       .references(() => Thread.id, { onDelete: "cascade" }),
@@ -40,5 +45,12 @@ export const Table = pgTable(
     memoryScope: pgCore
       .index("sl_profile_source_scope")
       .on(table.profileId, table.storeId, table.projectId),
+    specificationScope: pgCore
+      .index("sl_profile_source_specification_scope")
+      .on(table.profileId, table.storeId, table.offerId, table.variant),
+    specificationRequiredScope: pgCore.check(
+      "sl_profile_source_specification_required_scope",
+      sql`${table.variant} <> 'product-specification' OR (${table.storeId} IS NOT NULL AND ${table.offerId} IS NOT NULL AND ${table.projectId} IS NULL)`,
+    ),
   }),
 );

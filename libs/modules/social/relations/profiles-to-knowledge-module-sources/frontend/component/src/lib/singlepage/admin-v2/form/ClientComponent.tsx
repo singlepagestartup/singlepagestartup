@@ -2,7 +2,7 @@
 
 import { IComponentPropsExtended, variant, IModel } from "./interface";
 import { api } from "@sps/social/relations/profiles-to-knowledge-module-sources/sdk/client";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
@@ -14,6 +14,8 @@ import { Component as ParentAdminForm } from "@sps/shared-frontend-components/si
 import { useGetAdminFormState } from "@sps/shared-frontend-client-hooks";
 import { Component as Profile } from "@sps/social/models/profile/frontend/component";
 import { Component as Source } from "@sps/knowledge/models/source/frontend/component";
+import { Component as Store } from "@sps/ecommerce/models/store/frontend/component";
+import { Component as Offer } from "@sps/ecommerce/relations/stores-to-products/frontend/component";
 
 export function Component(props: IComponentPropsExtended) {
   const updateEntity = api.update();
@@ -32,6 +34,8 @@ export function Component(props: IComponentPropsExtended) {
       orderIndex: props.data?.orderIndex || 0,
       profileId: props.data?.profileId || "",
       knowledgeModuleSourceId: props.data?.knowledgeModuleSourceId || "",
+      storeId: props.data?.storeId ?? null,
+      offerId: props.data?.offerId ?? null,
     },
   });
 
@@ -96,7 +100,41 @@ export function Component(props: IComponentPropsExtended) {
           formFieldName="knowledgeModuleSourceId"
           form={form}
         />
+        <SpecificationScope form={form} />
       </div>
     </ParentAdminForm>
+  );
+}
+
+function SpecificationScope({
+  form,
+}: {
+  form: ReturnType<typeof useForm<z.infer<typeof insertSchema>>>;
+}) {
+  if (
+    useWatch({ control: form.control, name: "variant" }) !==
+    "product-specification"
+  ) {
+    return null;
+  }
+  return (
+    <>
+      <Store
+        isServer={false}
+        variant="admin-v2-select-input"
+        formFieldName="storeId"
+        form={form}
+      />
+      <Offer
+        isServer={false}
+        variant="admin-v2-select-input"
+        formFieldName="offerId"
+        form={form}
+      />
+      <p className="text-sm text-muted-foreground">
+        Buyers will see a copy of this specification in their order after
+        payment.
+      </p>
+    </>
   );
 }

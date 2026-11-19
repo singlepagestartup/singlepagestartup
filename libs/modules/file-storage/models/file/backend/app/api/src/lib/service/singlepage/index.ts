@@ -17,26 +17,25 @@ import {
 } from "@sps/shared-utils";
 import { Provider } from "@sps/providers-file-storage";
 import fs from "fs/promises";
-import type { Repository } from "../../repository";
+import type { Repository, TCommerceReceiptGuard } from "../../repository";
 import { isLegacyOrderReceipt } from "@sps/file-storage/models/file/sdk/model";
 
 @injectable()
 @injectFromBase()
 export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
-  private commerceReceiptGuard?: (ids: string[]) => Promise<Set<string>>;
+  declare repository: Repository;
 
-  configureCommerceReceiptGuard(
-    guard: (ids: string[]) => Promise<Set<string>>,
-  ) {
-    this.commerceReceiptGuard = guard;
+  configureCommerceReceiptGuard(guard: TCommerceReceiptGuard) {
+    this.repository.commerceReceiptGuard = guard;
   }
 
   async isProtectedPublicReceipt(
-    file: Pick<typeof Table.$inferSelect, "id" | "adminTitle">,
+    file: Pick<typeof Table.$inferSelect, "id" | "file" | "adminTitle">,
   ) {
     return (
       isLegacyOrderReceipt(file) ||
-      (await this.commerceReceiptGuard?.([file.id]))?.has(file.id) === true
+      (await this.repository.commerceReceiptGuard?.([file]))?.has(file.id) ===
+        true
     );
   }
 
@@ -44,10 +43,40 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     const files = (await this.find(props)).filter(
       (file) => !isLegacyOrderReceipt(file),
     );
-    const protectedIds = await this.commerceReceiptGuard?.(
-      files.map(({ id }) => id),
+    return this.repository.withoutCommerceReceipts(files);
+  }
+
+  storedObjectKey(location: string) {
+    if (/^https?:\/\//i.test(location)) {
+      return location;
+    }
+    return path.normalize(
+      location.replace(/^\/+/, "").replace(/^public\//, ""),
     );
-    return files.filter(({ id }) => !protectedIds?.has(id));
+  }
+
+  findStoredObjectMetadata(locations: string[]) {
+    const candidates = [
+      ...new Set(
+        locations.flatMap((location) => {
+          const key = this.storedObjectKey(location);
+          if (/^https?:\/\//i.test(key)) {
+            return [key];
+          }
+          return [location, key, `/${key}`, `public/${key}`, `/public/${key}`];
+        }),
+      ),
+    ];
+    if (!candidates.length) {
+      return Promise.resolve([]);
+    }
+    return this.find({
+      params: {
+        filters: {
+          and: [{ column: "file", method: "inArray", value: candidates }],
+        },
+      },
+    });
   }
 
   imageGeneratorUrl(data: {
@@ -124,9 +153,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
 
       return Buffer.from(buffer);
     }
-    const relative = path.normalize(
-      file.file.replace(/^\/+/, "").replace(/^public\//, ""),
-    );
+    const relative = this.storedObjectKey(file.file);
     if (relative.startsWith("..")) {
       throw new Error("Validation error. Invalid file-storage path.");
     }
@@ -187,9 +214,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
       return;
     }
 
-    const relative = path.normalize(
-      location.replace(/^\/+/, "").replace(/^public\//, ""),
-    );
+    const relative = this.storedObjectKey(location);
     if (!relative || relative.startsWith("..") || path.isAbsolute(relative)) {
       throw new Error("Validation error. Invalid legacy receipt path");
     }

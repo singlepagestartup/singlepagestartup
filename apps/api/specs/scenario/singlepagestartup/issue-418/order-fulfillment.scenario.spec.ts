@@ -1,5 +1,7 @@
 import { randomUUID } from "node:crypto";
-import { eq } from "drizzle-orm";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+import { and, eq } from "drizzle-orm";
 import { createAppAssembly } from "@sps/shared-backend-api";
 import { signJwt } from "@sps/backend-utils";
 import {
@@ -20,10 +22,13 @@ import { Table as PublicFile } from "@sps/file-storage/models/file/backend/repos
 import { Table as PaymentIntent } from "@sps/billing/models/payment-intent/backend/repository/database";
 import { Table as WalletOperation } from "@sps/rbac/relations/subjects-to-wallet-operations/backend/repository/database";
 import { Table as WalletBalance } from "@sps/rbac/relations/subjects-to-billing-module-currencies/backend/repository/database";
+import { Table as BroadcastMessage } from "@sps/broadcast/models/message/backend/repository/database";
+import { Table as BroadcastDelivery } from "@sps/broadcast/relations/channels-to-messages/backend/repository/database";
 import type { IFunnelStage } from "@sps/crm/models/funnel/sdk/model";
 import { Provider as KvProvider } from "@sps/providers-kv";
 import { KV_PROVIDER } from "@sps/shared-utils";
 import { getApiUrl, getRequiredEnv } from "../issue-154/test-utils/env";
+import type { ISaveFunnelDraft } from "@sps/crm/models/funnel/sdk/model";
 
 const cleanup: Array<() => Promise<unknown>> = [];
 const by = (column: string, value: string) => ({
@@ -203,6 +208,53 @@ async function fixture(kind: "individual-service" | "physical-order") {
     }),
   );
   const initialStageId = "initial";
+  const deliveryStages: ISaveFunnelDraft["definition"]["stages"] =
+    kind === "physical-order"
+      ? [
+          {
+            id: "delivery",
+            name: "Awaiting assembly",
+            actions: [
+              {
+                id: "prepare",
+                name: "Begin assembly",
+                actors: ["system"],
+                evidence: ["delivery"],
+                deliveryStage: "preparing",
+                nextStageId: "shipping",
+              },
+            ],
+          },
+          {
+            id: "shipping",
+            name: "Assembling",
+            actions: [
+              {
+                id: "ship",
+                name: "Ship",
+                actors: ["system"],
+                evidence: ["delivery"],
+                deliveryStage: "in-transit",
+                nextStageId: "carrier",
+              },
+            ],
+          },
+          {
+            id: "carrier",
+            name: "With carrier",
+            actions: [
+              {
+                id: "deliver",
+                name: "Hand over",
+                actors: ["system"],
+                evidence: ["delivery"],
+                deliveryStage: "delivered",
+                outcome: "completed",
+              },
+            ],
+          },
+        ]
+      : [];
   const draft = await crm.funnel.saveDraft({
     storeId: store.id,
     name: `Fixture ${kind}`,
@@ -244,19 +296,7 @@ async function fixture(kind: "individual-service" | "physical-order") {
             },
           ],
         },
-        {
-          id: "delivery",
-          name: "Fulfillment",
-          actions: [
-            {
-              id: "delivered",
-              name: "Handed over",
-              actors: ["system"],
-              evidence: ["delivery"],
-              outcome: "completed",
-            },
-          ],
-        },
+        ...deliveryStages,
       ],
     },
   });
@@ -318,16 +358,21 @@ async function fixture(kind: "individual-service" | "physical-order") {
       method: "POST",
       headers: operator(),
     });
-  const accept = (resultVersionId: string) =>
-    request(
-      route,
-      json(buyer.headers, {
-        ...scope,
-        operation: "accept",
-        resultVersionId,
-        operationKey: randomUUID(),
-      }),
-    );
+  const accept = async (resultVersionId: string) => {
+    const command = json(buyer.headers, {
+      ...scope,
+      operation: "accept",
+      resultVersionId,
+      operationKey: randomUUID(),
+    });
+    const response = await request(route, command);
+    if (response.status === 503) {
+      // The shared rate limiter may briefly refuse a request when its KV store is busy.
+      await new Promise((resolve) => setTimeout(resolve, 1100));
+      return request(route, command);
+    }
+    return response;
+  };
   return {
     assembly,
     subjects,
@@ -685,9 +730,48 @@ it("freezes the invoiced version, survives an interrupted worker, and protects G
         data: { variant: "hidden" },
       }),
   );
-  // A new assembly reads the committed PostgreSQL outbox after the first process stopped.
-  const worker = createWorker(createAppAssembly());
-  await worker.consumePayments();
+  const channel = f.subjects.modules.broadcast.channel;
+  const eventChannel = await channel.findOrCreate({
+    data: { slug: "order-work-payments", title: "Order work payments" },
+  });
+  const key = `order-work-payment:${before!.paid!.id}`;
+  await f.work.publishPaymentEvents(eventChannel.entity.id);
+  const [interrupted] = await channel.queue.reserve({
+    channelId: eventChannel.entity.id,
+    concurrency: 30,
+    leaseSeconds: 60,
+    schedule: {
+      keys: [key],
+      select: (states) =>
+        states.map((state) => ({ key, previous: state.receipt })),
+    },
+  });
+  expect(interrupted).toBeDefined();
+  cleanup.push(() =>
+    f.db
+      .delete(BroadcastMessage)
+      .where(eq(BroadcastMessage.id, interrupted.id)),
+  );
+  expect(await channel.queue.start(interrupted)).toBe(true);
+  await createWorker(createAppAssembly()).consumePayments();
+  expect((await f.work.findByOrder(f.orderId))?.deliveredAt).toBeNull();
+
+  // Expire the stopped worker's lease without waiting for wall clock time.
+  await f.db
+    .update(BroadcastDelivery)
+    .set({ leaseUntil: new Date(0) })
+    .where(
+      and(
+        eq(BroadcastDelivery.channelId, interrupted.channelId),
+        eq(BroadcastDelivery.deliveryKey, key),
+        eq(BroadcastDelivery.receipt, interrupted.receipt),
+      ),
+    );
+  await createWorker(createAppAssembly()).consumePayments();
+  const [recovered] = await channel.queue.states(eventChannel.entity.id, [key]);
+  expect(recovered.finishedAt).toBeInstanceOf(Date);
+  expect(recovered.receipt).not.toBe(interrupted.receipt);
+  expect(await channel.queue.acknowledge(interrupted)).toBe(false);
   await createWorker(createAppAssembly()).consumePayments();
   const view = await f.getWork();
   expect(view).toMatchObject({
@@ -753,6 +837,7 @@ it("records the physical status in order and CRM and deduplicates handing it ove
   expect((await f.check()).ok).toBe(true);
   await createWorker(createAppAssembly()).consumePayments();
   const managerRoute = orderWorkPath(f.manager.id, f.orderId) + "/fulfillment";
+  const workerRoute = orderWorkPath(f.stranger.id, f.orderId) + "/fulfillment";
   const prepare = {
     ...f.scope,
     stage: "preparing",
@@ -769,6 +854,23 @@ it("records the physical status in order and CRM and deduplicates handing it ove
   expect((await f.ecommerce.order.findById({ id: f.orderId }))?.status).toBe(
     "packaging",
   );
+  const packing = await f.crm.task.get(f.scope);
+  expect(packing.stageId).toBe("shipping");
+  await f.subjects.module.subjectsToEcommerceModuleStores.create({
+    data: {
+      subjectId: f.stranger.id,
+      ecommerceModuleStoreId: f.scope.storeId,
+      variant: "crm-worker",
+    },
+  });
+  await f.crm.task.assign({
+    ...f.scope,
+    actorId: f.manager.id,
+    expectedRevision: packing.revision,
+    assigneeId: f.stranger.id,
+    assigneeKind: "human",
+    operationKey: randomUUID(),
+  });
   const ship = {
     ...f.scope,
     stage: "in-transit",
@@ -777,7 +879,11 @@ it("records the physical status in order and CRM and deduplicates handing it ove
   };
   expect(
     (await request(managerRoute, json(f.manager.headers, ship))).status,
+  ).toBe(403);
+  expect(
+    (await request(workerRoute, json(f.stranger.headers, ship))).status,
   ).toBe(200);
+  expect((await f.crm.task.get(f.scope)).stageId).toBe("carrier");
   expect((await f.getWork()).trackingNumber).toBe("TEST-418");
   const handoff = {
     ...f.scope,
@@ -786,12 +892,12 @@ it("records the physical status in order and CRM and deduplicates handing it ove
     operationKey: randomUUID(),
   };
   const delivered = await request(
-    managerRoute,
-    json(f.manager.headers, handoff),
+    workerRoute,
+    json(f.stranger.headers, handoff),
   );
   const duplicate = await request(
-    managerRoute,
-    json(f.manager.headers, handoff),
+    workerRoute,
+    json(f.stranger.headers, handoff),
   );
   expect([delivered.status, duplicate.status]).toEqual([200, 200]);
   expect(await delivered.json()).toEqual(await duplicate.json());
@@ -800,10 +906,11 @@ it("records the physical status in order and CRM and deduplicates handing it ove
     "delivered",
   );
   expect((await f.work.findByOrder(f.orderId))?.fulfillment).toHaveLength(3);
+  expect((await f.crm.task.get(f.scope)).status).toBe("closed");
 });
 
 it("withdraws an existing public receipt and publishes the verified copy only for its buyer", async () => {
-  const { mkdir, readFile, unlink, writeFile } =
+  const { mkdir, mkdtemp, readFile, rm, unlink, writeFile } =
     await import("node:fs/promises");
   const f = await fixture("physical-order");
   const order = await f.ecommerce.order.create({
@@ -823,6 +930,18 @@ it("withdraws an existing public receipt and publishes the verified copy only fo
   );
   await mkdir(`apps/api/public/${folder}`, { recursive: true });
   await writeFile(pathname, bytes);
+  const alias = await file.create({
+    data: {
+      file: `/public/${folder}/${name}`,
+      adminTitle: "Ordinary metadata for the same object",
+      mimeType: "image/png",
+      extension: "png",
+      size: bytes.length,
+    },
+  });
+  cleanup.push(() =>
+    f.db.delete(PublicFile).where(eq(PublicFile.id, alias.id)),
+  );
   const source = await file.create({
     data: {
       file: `/${folder}/${name}`,
@@ -852,14 +971,40 @@ it("withdraws an existing public receipt and publishes the verified copy only fo
   });
   for (const method of ["GET", "HEAD"]) {
     expect((await request(publicPath, { method })).status).toBe(404);
-    expect(
-      (
-        await request(`/api/file-storage/files/${source.id}/content`, {
-          method,
-          headers: operator(),
-        })
-      ).status,
-    ).toBe(404);
+    for (const { id } of [source, alias]) {
+      expect(
+        (
+          await request(`/api/file-storage/files/${id}/content`, {
+            method,
+            headers: operator(),
+          })
+        ).status,
+      ).toBe(404);
+      expect(
+        (
+          await request(`/api/file-storage/files/${id}`, {
+            method,
+            headers: operator(),
+          })
+        ).status,
+      ).toBe(404);
+    }
+  }
+  const dump = file.repository.configuration.repository.dump;
+  const seedDirectory = dump.directory;
+  const temporaryDirectory = await mkdtemp(join(tmpdir(), "sps-order-dump-"));
+  file.configureCommerceReceiptGuard((files) =>
+    f.work.protectedReceiptFileIds(files),
+  );
+  try {
+    dump.directory = temporaryDirectory;
+    const result = await file.dump();
+    expect(result.dumps.length).toBeGreaterThan(0);
+    expect(result.dumps.map(({ id }) => id)).not.toContain(source.id);
+    expect(result.dumps.map(({ id }) => id)).not.toContain(alias.id);
+  } finally {
+    dump.directory = seedDirectory;
+    await rm(temporaryDirectory, { recursive: true, force: true });
   }
   const migration = f.subjects.orderWork.legacyReceipts;
   const dryRun = await migration.migrate(source.id, false);
@@ -888,4 +1033,31 @@ it("withdraws an existing public receipt and publishes the verified copy only fo
   );
   expect(denied.ok).toBe(false);
   expect((await request(publicPath)).status).toBe(404);
+
+  const orphanName = `issue418-orphan-${randomUUID()}.png`;
+  const orphanPath = `apps/api/public/${folder}/${orphanName}`;
+  await writeFile(orphanPath, bytes);
+  const orphan = await file.create({
+    data: {
+      file: `/${folder}/${orphanName}`,
+      adminTitle: `Ecommerce Module | Order ${randomUUID()} | Receipt`,
+      mimeType: "image/png",
+      extension: "png",
+      size: bytes.length,
+    },
+  });
+  const held = await migration.migrate(orphan.id, true);
+  cleanup.push(async () => {
+    await f.db.delete(PublicFile).where(eq(PublicFile.id, orphan.id));
+    await privateFile.delete({ id: held.privateFileId! });
+    await unlink(orphanPath).catch(() => undefined);
+  });
+  expect(held).toMatchObject({ status: "quarantined", digest: dryRun.digest });
+  await expect(readFile(orphanPath)).rejects.toMatchObject({ code: "ENOENT" });
+  await expect(migration.migrate(orphan.id, true)).resolves.toEqual(held);
+  const orphanArtifact =
+    orderWorkPath(f.buyer.id, order.id) + `/artifacts/${held.privateFileId}`;
+  expect((await request(orphanArtifact, { headers: f.buyer.headers })).ok).toBe(
+    false,
+  );
 });

@@ -3,6 +3,7 @@ import type {
   ICustomerWorkMemory,
   TCustomerWorkCommand,
 } from "@sps/rbac/models/subject/sdk/model";
+import { EXPERT_ORDER_SPECIFICATION_LIMIT } from "@sps/shared-utils";
 import type { Service as SubjectService } from "../../index";
 import { Service as Projects } from "../../social-module/profile/projects";
 import { criteria } from "./utils";
@@ -231,50 +232,59 @@ export class Service {
     return true;
   }
 
-  async expert(task: Pick<CrmTask, "storeId" | "productId" | "offerId">) {
-    const byStore = await this.social.profilesToEcommerceModuleProducts.find(
-      criteria({
-        storeId: task.storeId,
-        variant: "store-expert",
+  expert(task: Pick<CrmTask, "storeId" | "productId" | "offerId">) {
+    const { storeId, productId, offerId } = task;
+    return this.social.profilesToEcommerceModuleProducts.resolveStoreExpert({
+      storeId,
+      productId,
+      offerId,
+    });
+  }
+
+  private async specificationIds(task: CrmTask, profileId: string) {
+    if (!task.offerId) {
+      return [];
+    }
+    const links = await this.social.profilesToKnowledgeModuleSources.find({
+      params: {
+        ...criteria({
+          profileId,
+          storeId: task.storeId,
+          offerId: task.offerId,
+          variant: "product-specification",
+        }).params,
+        limit: EXPERT_ORDER_SPECIFICATION_LIMIT,
+        orderBy: {
+          and: [
+            { column: "orderIndex", method: "asc" },
+            { column: "id", method: "asc" },
+          ],
+        },
+      },
+    });
+    return links.map(({ knowledgeModuleSourceId }) => knowledgeModuleSourceId);
+  }
+
+  async archive(task: CrmTask) {
+    const expert = await this.expert(task);
+    if (!expert.profileId || !task.offerId) {
+      return [];
+    }
+    const [profile, offer] = await Promise.all([
+      this.social.profile.findById({ id: expert.profileId }),
+      this.subject.modules.ecommerce.storesToProducts.findById({
+        id: task.offerId,
       }),
-    );
-    const categoryLinks = task.productId
-      ? await this.subject.modules.ecommerce.categoriesToProducts.find(
-          criteria({ productId: task.productId }),
-        )
-      : [];
-    const categoryIds = new Set(
-      categoryLinks.map(({ categoryId }) => categoryId),
-    );
-    const eligible = [
-      byStore.filter(
-        (r) =>
-          r.offerId &&
-          r.offerId === task.offerId &&
-          !r.categoryId &&
-          !r.ecommerceModuleProductId,
-      ),
-      byStore.filter(
-        (r) =>
-          r.ecommerceModuleProductId &&
-          r.ecommerceModuleProductId === task.productId &&
-          !r.offerId &&
-          !r.categoryId,
-      ),
-      byStore.filter(
-        (r) =>
-          r.categoryId &&
-          categoryIds.has(r.categoryId) &&
-          !r.offerId &&
-          !r.ecommerceModuleProductId,
-      ),
-    ];
-    const first = eligible.find((rows) => rows.length > 0) ?? [];
-    const profiles = new Set(first.map(({ profileId }) => profileId));
-    return {
-      conflict: profiles.size > 1,
-      profileId: profiles.size === 1 ? first[0].profileId : undefined,
-    };
+    ]);
+    if (
+      profile?.variant !== "artificial-intelligence" ||
+      offer?.storeId !== task.storeId ||
+      offer.productId !== task.productId
+    ) {
+      return [];
+    }
+    const ids = await this.specificationIds(task, expert.profileId);
+    return this.sources.specificationSnapshots(ids);
   }
 
   async context(
@@ -317,6 +327,10 @@ export class Service {
         const method = profile.description?.ru || profile.description?.en;
         if (method) {
           instructions.push(method.slice(0, 2000));
+        }
+        const specifications = await this.specificationIds(task, profile.id);
+        for (const id of specifications) {
+          sourceIds.add(id);
         }
         const links = await this.social.profilesToKnowledgeModuleSources.find(
           criteria({ profileId: profile.id, variant: "default" }),

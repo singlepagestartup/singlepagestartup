@@ -41,6 +41,20 @@ export class Service {
     });
   }
 
+  async assertFulfillmentStaff(actorId: string, storeId: string) {
+    const grants = await this.grants({ subjectId: actorId, storeId });
+    if (
+      !grants.some(
+        ({ variant }) =>
+          variant === "crm-worker" || managerVariants.has(variant),
+      )
+    ) {
+      throw new Error(
+        "Permission error. Store staff access required to record fulfillment",
+      );
+    }
+  }
+
   private async access(actorId: string, storeId: string) {
     const [grants, admin] = await Promise.all([
       this.grants({ subjectId: actorId, storeId }),

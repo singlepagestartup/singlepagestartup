@@ -77,6 +77,7 @@ export {
   PRODUCT_TECHNICAL_ATTRIBUTE_SLUGS,
   REGISTRATION_GRANT_VARIANT,
 } from "./ecommerce";
+export { CUSTOMER_WORK_OFFER_CHOICE_REQUIRED } from "./ecommerce";
 
 export * from "./agent";
 

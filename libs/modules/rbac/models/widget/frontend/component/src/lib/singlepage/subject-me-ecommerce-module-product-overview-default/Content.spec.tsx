@@ -4,6 +4,7 @@ import { Component } from "./Content";
 const product = { id: "product-1", title: { en: "Public product" } };
 const reads = jest.fn();
 const subjectReads = jest.fn();
+const quoteReaders = jest.fn();
 jest.mock("@sps/ecommerce/models/product/frontend/component", () => ({
   Component: (props: any) => {
     if (props.variant === "find") {
@@ -36,12 +37,10 @@ jest.mock("@sps/rbac/models/subject/frontend/component", () => ({
   },
 }));
 jest.mock("@sps/ecommerce/models/store/frontend/component", () => ({
-  Component: ({ product, variant, readOnly }: any) =>
-    variant === "product-price-default" &&
-    readOnly &&
-    product.id === "product-1"
-      ? "Quoted unit price"
-      : null,
+  Component: (props: any) => {
+    quoteReaders(props);
+    return null;
+  },
 }));
 jest.mock("@sps/shared-ui-shadcn", () => ({
   CardHeader: ({ children }: any) => children,
@@ -56,7 +55,14 @@ it("renders product H1 while session-dependent actions are absent", () => {
     />,
   );
   expect(html).toContain("<h1>Public product</h1>");
-  expect(html).toContain("Quoted unit price");
+  expect(quoteReaders).toHaveBeenCalledWith(
+    expect.objectContaining({
+      isServer: false,
+      product,
+      readOnly: true,
+      variant: "product-price-default",
+    }),
+  );
   for (const variant of [
     "ecommerce-module-product-category-default",
     "ecommerce-module-product-profile-default",

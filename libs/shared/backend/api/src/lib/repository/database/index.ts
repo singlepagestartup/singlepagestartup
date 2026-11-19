@@ -543,6 +543,10 @@ export class Database<
     return data;
   }
 
+  protected selectDumpRecords(records: T["$inferSelect"][]) {
+    return Promise.resolve(records);
+  }
+
   async dump(): Promise<IDumpResult> {
     const result: IDumpResult = {
       module: this.configuration.repository.seed.module,
@@ -557,7 +561,9 @@ export class Database<
 
     const { include, directory } = this.configuration.repository.dump;
     const records = await this.find();
-    const entities = include ? records.filter(include) : records;
+    const entities = await this.selectDumpRecords(
+      include ? records.filter(include) : records,
+    );
 
     await fs.mkdir(directory, { recursive: true });
     const seedFiles = await fs.readdir(directory);

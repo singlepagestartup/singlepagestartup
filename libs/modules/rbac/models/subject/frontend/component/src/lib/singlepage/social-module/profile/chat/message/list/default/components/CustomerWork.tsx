@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { api } from "@sps/rbac/models/subject/sdk/client";
+import type { ICustomerWorkView } from "@sps/rbac/models/subject/sdk/model";
 import { Discussion } from "../../../../../../../ecommerce-module/order/create-default/customer-work/Discussion";
 
 interface IProps {
@@ -11,7 +12,6 @@ interface IProps {
 }
 
 export function CustomerWork({ subjectId, threadId, language }: IProps) {
-  const router = useRouter();
   const ru = language === "ru";
   const result = api.customerWorkForThread({ id: subjectId, threadId });
   if (result.isError) {
@@ -29,6 +29,18 @@ export function CustomerWork({ subjectId, threadId, language }: IProps) {
       </p>
     );
   }
+  return (
+    <CustomerWorkView subjectId={subjectId} language={language} work={work} />
+  );
+}
+
+export function CustomerWorkView({
+  subjectId,
+  language,
+  work,
+}: Omit<IProps, "threadId"> & { work: ICustomerWorkView }) {
+  const router = useRouter();
+  const ru = language === "ru";
   const productPath =
     work.productSlug &&
     `/${language}/ecommerce/products/${encodeURIComponent(work.productSlug)}`;

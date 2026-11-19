@@ -102,6 +102,10 @@ const catalogueWriteRoutes: IRouteRule[] = [
 export const operatorOnlyRoutes: IRouteRule[] = [
   {
     regexPath:
+      /^\/api\/ecommerce\/(?:order-works|orders-to-order-works)(?:\/.*)?$/i,
+  },
+  {
+    regexPath:
       /^\/api\/rbac\/subjects\/ecommerce-module\/orders\/payment-intents\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\/(?:check|providers\/[^/]+)\/?$/i,
     methods: ["POST"],
   },

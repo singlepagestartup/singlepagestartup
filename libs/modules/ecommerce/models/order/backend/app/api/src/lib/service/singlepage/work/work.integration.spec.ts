@@ -1,5 +1,5 @@
 import { randomUUID } from "node:crypto";
-import { eq } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 import { createAppAssembly } from "@sps/shared-backend-api";
 import {
   getDrizzle,
@@ -29,7 +29,7 @@ afterAll(async () => {
   resetPostgresClient();
 });
 
-it("freezes the checkout version, confirms the order atomically, and delivers the frozen file once after a retry", async () => {
+async function verifySettlement(source: "available" | "unavailable") {
   const order = createOrder(createAppAssembly());
   const db = getDrizzle({});
   const entity = await order.create({ data: {} });
@@ -56,6 +56,21 @@ it("freezes the checkout version, confirms the order atomically, and delivers th
     storeId: randomUUID(),
     customerId: randomUUID(),
   };
+  const archive = [
+    {
+      sourceId: randomUUID(),
+      versionDigest: "test-source-version",
+      title: "Purchased model",
+      content: "Specifications at settlement",
+    },
+  ];
+  const capture = jest.fn(async () => {
+    if (source === "unavailable") {
+      await order.repository.db.execute(sql`select 1 / 0`);
+    }
+    return archive;
+  });
+  order.configureExpertArchive(capture);
   await order.work.register({ ...scope, kind: "individual-service" });
   const checkout = {
     orderId: entity.id,
@@ -156,6 +171,7 @@ it("freezes the checkout version, confirms the order atomically, and delivers th
   await expect(order.completePaymentStatus(finalize)).rejects.toThrow(
     "does not match an authorized order attempt",
   );
+  expect(capture).not.toHaveBeenCalled();
   await db
     .update(PaymentIntent)
     .set({ amount: 25 })
@@ -176,6 +192,10 @@ it("freezes the checkout version, confirms the order atomically, and delivers th
     paymentIntentId: intent.id,
     customerId: scope.customerId,
   });
+  expect(paid?.paid).not.toHaveProperty("expertArchive");
+  expect(paid?.expertArchive).toEqual(source === "available" ? archive : []);
+  expect(capture).toHaveBeenCalledTimes(1);
+  expect(capture).toHaveBeenCalledWith(scope);
   expect(paid?.acceptedVersionId).toBe(second.id);
   expect((await order.work.resultPriceForOrder(entity.id))?.price).toBe(
     "25.00000000",
@@ -205,6 +225,8 @@ it("freezes the checkout version, confirms the order atomically, and delivers th
     db.delete(PrivateFile).where(eq(PrivateFile.id, delivered.receiptFileId!)),
   );
   await order.work.deliver(saved, grant, receipt);
+  expect(capture).toHaveBeenCalledTimes(1);
+  expect(delivered.expertArchive).toEqual(paid?.expertArchive);
   expect(grant).toHaveBeenCalledTimes(1);
   expect(grant).toHaveBeenCalledWith(
     expect.objectContaining({ resultVersionId: first.id }),
@@ -215,4 +237,9 @@ it("freezes the checkout version, confirms the order atomically, and delivers th
     id: delivered.resultFileId!,
   });
   expect(file?.bytes.toString()).toBe("original 1");
-});
+}
+
+it.each(["available", "unavailable"] as const)(
+  "freezes and delivers the checkout version once with an %s expert source",
+  verifySettlement,
+);

@@ -3,6 +3,7 @@ import { sql } from "drizzle-orm";
 import type {
   IOrderPhysicalEvent,
   IOrderWorkDecision,
+  IOrderWorkExpertArchive,
   IOrderWorkPayment,
   IOrderWorkVersion,
   TWorkFulfillmentState,
@@ -43,6 +44,9 @@ export const Table = pgTable(
       .default([]),
     acceptedVersionId: pgCore.uuid("accepted_version_id"),
     paid: pgCore.jsonb("paid").$type<IOrderWorkPayment>(),
+    expertArchive: pgCore
+      .jsonb("expert_archive")
+      .$type<IOrderWorkExpertArchive>(),
     deliveredAt: pgCore.timestamp("delivered_at", { precision: 3 }),
     receiptFileId: pgCore.uuid("receipt_file_id"),
     resultFileId: pgCore.uuid("result_file_id"),

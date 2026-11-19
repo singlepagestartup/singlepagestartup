@@ -4,6 +4,7 @@ import type {
   IModel as IOrderWork,
   IOrderWorkArtifact,
   IOrderWorkPayment,
+  IOrderWorkExpertArchive,
   IOrderWorkPurchaseQuote,
   TOrderWorkPriceBasis,
   IOrderWorkScope as IInternalScope,
@@ -24,6 +25,7 @@ import {
   priceResultCharges,
 } from "./utils";
 import { LegacyReceipts } from "./receipts";
+import { Service as CustomerKnowledge } from "../../customer-work/knowledge";
 
 interface IPurchase extends IOrderWorkScope {
   orderId: string;
@@ -68,6 +70,22 @@ export class Service {
     });
   }
 
+  async captureExpertArchive(
+    scope: IInternalScope,
+  ): Promise<IOrderWorkExpertArchive> {
+    const task = await this.subject.modules.crm.task.findById({
+      id: scope.taskId,
+    });
+    if (
+      task?.storeId !== scope.storeId ||
+      task.customerId !== scope.customerId ||
+      task.orderId !== scope.orderId
+    ) {
+      return [];
+    }
+    return new CustomerKnowledge(this.subject).archive(task);
+  }
+
   private describe(customerId: string, work: IOrderWork): IOrderWorkView {
     const descriptor = (id: string): IOrderArtifact => ({
       id,
@@ -94,6 +112,10 @@ export class Service {
       trackingNumber:
         work.fulfillment.find((event) => event.stage === "in-transit")
           ?.trackingNumber ?? null,
+      expertArchive:
+        work.paid && work.expertArchive?.length
+          ? work.expertArchive
+          : undefined,
     };
   }
 
@@ -714,10 +736,10 @@ export class Service {
   ) {
     const tasks = this.subject.modules.crm.task;
     return tasks.withTask(input, async (task) => {
-      await this.subject.crmWorkspace.detail(actorId, {
-        storeId: task.storeId,
-        taskId: task.id,
-      });
+      await this.subject.crmWorkspace.assertFulfillmentStaff(
+        actorId,
+        task.storeId,
+      );
       if (
         task.orderId !== input.orderId ||
         task.assigneeId !== actorId ||

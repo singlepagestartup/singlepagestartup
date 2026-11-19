@@ -21,7 +21,7 @@ export function ProductWithOfferPrice(props: IProductWithOfferPriceProps) {
             language={props.language}
           >
             <Store
-              isServer={props.isServer}
+              isServer={false}
               variant="product-price-default"
               product={props.product}
               storeId={props.storeId}

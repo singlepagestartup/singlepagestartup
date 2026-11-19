@@ -1,0 +1,1 @@
+ALTER TABLE "sps_ee_order_work" ADD COLUMN "expert_archive" jsonb;

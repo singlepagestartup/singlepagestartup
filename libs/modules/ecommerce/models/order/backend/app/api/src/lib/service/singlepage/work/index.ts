@@ -19,6 +19,7 @@ import type {
   IOrderWorkVersion,
   IPublishOrderWorkResult,
   IRegisterOrderWork,
+  TReadOrderWorkExpertArchive,
 } from "@sps/ecommerce/models/order-work/sdk/model";
 import type { Service as Order } from "../index";
 
@@ -31,7 +32,10 @@ function contentHash(bytes: Uint8Array) {
 }
 
 export class Service {
-  constructor(private readonly order: Order) {}
+  constructor(
+    private readonly order: Order,
+    private readonly readExpertArchive?: TReadOrderWorkExpertArchive,
+  ) {}
 
   private get records() {
     return this.order.module.orderWork;
@@ -117,39 +121,44 @@ export class Service {
     return this.records.byOrder(orderId);
   }
 
-  async isProtectedLegacyReceipt(
-    input: { id: string } | { relativePath: string },
-  ) {
-    const files = this.order.modules.fileStorage.file;
-    const [file] =
-      "id" in input
-        ? [await files.findById({ id: input.id })]
-        : await files.find({
-            params: {
-              filters: {
-                and: [
-                  {
-                    column: "file",
-                    method: "inArray",
-                    value: [
-                      `/${input.relativePath}`,
-                      `/public/${input.relativePath}`,
-                      input.relativePath,
-                    ],
-                  },
-                ],
-              },
-              limit: 1,
-            },
-          });
-    if (!file || isLegacyOrderReceipt(file)) {
-      return Boolean(file);
+  async isProtectedLegacyReceipt(input: { relativePath: string }) {
+    const files =
+      await this.order.modules.fileStorage.file.findStoredObjectMetadata([
+        input.relativePath,
+      ]);
+    if (files.some(isLegacyOrderReceipt)) {
+      return true;
     }
-    const protectedIds = await this.protectedReceiptFileIds([file.id]);
-    return protectedIds.has(file.id);
+    const protectedIds = await this.linkedReceiptFileIds(
+      files.map(({ id }) => id),
+    );
+    return protectedIds.size > 0;
   }
 
-  async protectedReceiptFileIds(ids: string[]) {
+  async protectedReceiptFileIds(files: Array<{ id: string; file: string }>) {
+    const storage = this.order.modules.fileStorage.file;
+    const metadata = await storage.findStoredObjectMetadata(
+      files.map(({ file }) => file),
+    );
+    const ids = [...new Set([...files, ...metadata].map(({ id }) => id))];
+    const linkedIds = await this.linkedReceiptFileIds(ids);
+    const protectedLocations = new Set(
+      metadata
+        .filter((file) => isLegacyOrderReceipt(file) || linkedIds.has(file.id))
+        .map(({ file }) => storage.storedObjectKey(file)),
+    );
+    return new Set(
+      files
+        .filter(
+          ({ id, file }) =>
+            linkedIds.has(id) ||
+            protectedLocations.has(storage.storedObjectKey(file)),
+        )
+        .map(({ id }) => id),
+    );
+  }
+
+  private async linkedReceiptFileIds(ids: string[]) {
     if (!ids.length) {
       return new Set<string>();
     }
@@ -513,7 +522,12 @@ export class Service {
     )) {
       const payment = await this.settlement(record, id);
       if (payment) {
-        await this.records.revise(record.id, { paid: payment, state: "paid" });
+        const expertArchive = await this.captureExpertArchive(record);
+        await this.records.revise(record.id, {
+          paid: payment,
+          expertArchive,
+          state: "paid",
+        });
         return payment;
       }
     }
@@ -521,6 +535,26 @@ export class Service {
     throw new Error(
       "Conflict error. The confirmed payment does not match an authorized order attempt",
     );
+  }
+
+  private async captureExpertArchive(work: IOrderWorkScope) {
+    const read = this.readExpertArchive;
+    if (!read) {
+      return null;
+    }
+
+    const { orderId, storeId, taskId, customerId } = work;
+    try {
+      return await this.order.repository.withArchiveSavepoint(() =>
+        read({ orderId, storeId, taskId, customerId }),
+      );
+    } catch {
+      logger.warn({
+        event: "ecommerce.order-work.expert-archive-failed",
+        orderId,
+      });
+      return [];
+    }
   }
 
   private async settlement(
