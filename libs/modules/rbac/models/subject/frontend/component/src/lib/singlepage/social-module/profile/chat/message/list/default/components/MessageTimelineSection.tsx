@@ -7,7 +7,7 @@ import { useMessageThreadScroll } from "../hooks/use-message-thread-scroll";
 import { useThreadMessages } from "../hooks/use-thread-messages";
 import type { ThreadMessagesCache } from "../hooks/use-thread-messages-refetch";
 import { createSocialModuleMessagesAndActionsQuery } from "../timeline";
-import { getTimelineSignature } from "../utils";
+import { getTimelineSignature, isChatAccessError } from "../utils";
 import { api } from "@sps/rbac/models/subject/sdk/client";
 import type { IModel as ISocialModuleProfile } from "@sps/social/models/profile/sdk/model";
 import { memo, useEffect, useMemo, type MutableRefObject } from "react";
@@ -52,32 +52,42 @@ export const MessageTimelineSection = memo(function MessageTimelineSection(
   props: MessageTimelineSectionProps,
 ) {
   const {
-    data: socialModuleMessages,
+    data: loadedMessages,
+    error: messagesError,
     isLoading: socialModuleMessagesIsLoading,
   } = useThreadMessages(props, props.isCustomerWork ? 3000 : false);
-  const { data: socialModuleActions, isLoading: socialModuleActionsIsLoading } =
-    api.socialModuleProfileFindByIdChatFindByIdActionFind({
-      id: props.subjectId,
-      socialModuleProfileId: props.socialModuleProfileId,
-      socialModuleChatId: props.socialModuleChatId,
-      params: {
-        socialModuleThreadId: props.socialModuleThreadId,
-        orderBy: {
-          and: [
-            {
-              column: "createdAt",
-              method: "asc",
-            },
-          ],
-        },
+  const {
+    data: loadedActions,
+    error: actionsError,
+    isLoading: socialModuleActionsIsLoading,
+  } = api.socialModuleProfileFindByIdChatFindByIdActionFind({
+    id: props.subjectId,
+    socialModuleProfileId: props.socialModuleProfileId,
+    socialModuleChatId: props.socialModuleChatId,
+    params: {
+      socialModuleThreadId: props.socialModuleThreadId,
+      orderBy: {
+        and: [
+          {
+            column: "createdAt",
+            method: "asc",
+          },
+        ],
       },
-      options: {
-        headers: {
-          "Cache-Control": "no-store",
-        },
+    },
+    options: {
+      headers: {
+        "Cache-Control": "no-store",
       },
-    });
+    },
+  });
 
+  const socialModuleMessages = isChatAccessError(messagesError)
+    ? undefined
+    : loadedMessages;
+  const socialModuleActions = isChatAccessError(actionsError)
+    ? undefined
+    : loadedActions;
   const socialModuleMessagesAndActionsQuery = useMemo(() => {
     return createSocialModuleMessagesAndActionsQuery({
       socialModuleMessages,

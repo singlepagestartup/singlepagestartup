@@ -28,6 +28,9 @@ export function action(props: IProps) {
   const topics = [
     `social.chats.${props.socialModuleChatId}.threads`,
     "social.threads",
+    "social.threads-to-crm-module-tasks",
+    "social.threads-to-ecommerce-module-products",
+    "ecommerce.products",
   ];
   // Merge caller meta last but never let it clobber topics (issue #195): a
   // project passing reactQueryOptions.meta must not silently drop the realtime

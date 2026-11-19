@@ -45,22 +45,16 @@ Each external call has an attempt ID and a reserved maximum. Settlement records 
 
 AI Chat composers accumulate file selections in one horizontally scrolling row
 above the text field. Cards have previews, removal, drag reordering and arrow
-controls. Cmd+Enter or Ctrl+Enter submits; Enter inserts a line.
-The document target selector is hidden; section discussion can still set the
-Source target. New message and Knowledge uploads accept PNG, JPG, WebP, GIF,
+controls. Enter submits the message. Shift+Enter inserts a line.
+New message and Knowledge uploads accept PNG, JPG, WebP, GIF,
 PDF, TXT, MD, CSV and JSON. Both pickers and RBAC endpoints reject other formats,
 including SVG. Previously stored SVG images remain readable and are rendered
 as PNG for model input without changing their originals.
 The Knowledge sidebar shows two file cards in two columns. Show more expands
 all remaining rows vertically. Each card opens the original File and can
 unlink it from that Source; its pending state is scoped to the selected file.
-Sent messages and document proposals show attachments in a horizontally
-scrolling gallery, in submission order; each card opens the original File.
-Proposal replies link every proposed File without duplicating its stored bytes.
-Their `knowledge.documentProposalFileIds` metadata marks these links as previews;
-OpenRouter receives the originals from user messages without repeating the
-assistant's gallery in the model context.
-Confirmation transfers the same complete File list to the Source. Background
+Sent messages show attachments in a horizontally scrolling gallery in
+submission order. Each card opens the original File. Background
 refetches retain mounted chat records. New replies scroll to the latest message;
 loading previews keeps that position unless the user has scrolled to older messages.
 The text field starts at 128 px and can be resized vertically from its bottom
@@ -68,32 +62,22 @@ right corner, between 96 px and the smaller of half the viewport or 480 px.
 The project frame fills the viewport below the header and page margins. The
 composer can scroll within three quarters of the conversation pane, leaving
 the message history accessible when the input and attachment strip are tall.
-The submitted order is preserved in message-file relations. A successful
-document proposal completes the generation loop; its exact text and attachments
-remain pending until a later confirmation. Revising that proposal preserves its
-attachments. A revision request makes the earlier proposal unconfirmable with
-`needs_revision` status; its files remain available if generation must be retried.
-Draft and revision requests require a successful proposal tool call before the
-generation loop reports completion. Confirmed updates attach new files while retaining existing Source
-attachments and indexing the saved content.
+The submitted order is preserved in message-file relations.
 
 When the replying `social.profile` invokes a linked skill, profile Knowledge search, or MCP tool, the bounded tool loop emits presentation-safe lifecycle events. RBAC lazily creates one `social.action` with `variant="ai-execution"` for that run, relates it to the current chat, thread, and replying profile, and updates the same action through requested, running, succeeded/failed, and terminal states. The typed action payload contains only safe labels, tool/server identifiers, normalized status, timestamps, result byte counts, and message/profile/run ids; it never contains tool arguments/results, bearer credentials, prompts, hidden reasoning, or stack traces. Existing WebSocket invalidation updates the specialized conversation row in place. Runs without tool calls create no execution action, and progress persistence cannot prevent the final `social.profile` reply.
 
 `profile_knowledge_files` lists a linked Source's attachment IDs and current
 content hash in pages. An explicit current request to remove an attachment
-exposes `profile_knowledge_file_detach`, including in document threads where
-generic MCP and direct text writes remain disabled. The tool uses the scoped
-RBAC Files SDK, validates the document target, and checks the Source hash and
-attachment list inside the database transaction. Detachment retains the stored
+exposes `profile_knowledge_file_detach`. The tool uses the scoped RBAC Files SDK
+and checks the Source hash and attachment list inside the database transaction. Detachment retains the stored
 File and chat attachments, preserves human notes, and rebuilds materials and
 the index. Detachment returns after the database write with `analysisPending`
 when rebuilding remains unfinished. A separate scoped reanalysis request
 publishes completion through the existing cache and WebSocket middleware.
 The model reports the unlink separately from index readiness; analysis errors
 leave the Source unindexed and are logged without retrying the removal.
-Attachment requests neither approve a pending text proposal nor replace it.
 
-RBAC also owns profile-scoped document operations for the Social chat sidebar:
+RBAC owns the profile-scoped Knowledge routes used by the Social chat sidebar.
 
 ```text
 GET /api/rbac/subjects/:id/social-module/profiles/:socialModuleProfileId/knowledge/sources

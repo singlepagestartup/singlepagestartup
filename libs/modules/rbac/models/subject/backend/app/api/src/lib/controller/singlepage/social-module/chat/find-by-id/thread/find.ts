@@ -3,6 +3,7 @@ import { Context } from "hono";
 import { HTTPException } from "hono/http-exception";
 import { Service } from "../../../../../../service";
 import { getHttpErrorType } from "@sps/backend-utils";
+import { Service as ThreadContext } from "../../../../../../service/singlepage/social-module/chat/thread-context";
 
 export class Handler {
   service: Service;
@@ -82,9 +83,10 @@ export class Handler {
         },
       );
 
-      return c.json({
-        data: socialModuleThreads,
-      });
+      const data = await new ThreadContext(this.service).enrich(
+        socialModuleThreads,
+      );
+      return c.json({ data });
     } catch (error: any) {
       const { status, message, details } = getHttpErrorType(error);
       throw new HTTPException(status, { message, cause: details });

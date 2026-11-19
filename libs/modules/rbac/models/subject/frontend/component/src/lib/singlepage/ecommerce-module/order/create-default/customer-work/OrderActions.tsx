@@ -12,9 +12,17 @@ interface IProps {
   subjectId: string;
   work: ICustomerWorkView;
   language: string;
+  productTitle?: string;
+  managerOnly?: boolean;
 }
 
-export function OrderActions({ subjectId, work, language }: IProps) {
+export function OrderActions({
+  subjectId,
+  work,
+  language,
+  productTitle,
+  managerOnly,
+}: IProps) {
   const ru = language === "ru";
   const [error, setError] = useState("");
   const retry = useRef<{ payload: string; key: string } | undefined>(undefined);
@@ -56,6 +64,29 @@ export function OrderActions({ subjectId, work, language }: IProps) {
     }
   }
 
+  if (managerOnly) {
+    return (
+      <div className="grid min-w-0 gap-2 justify-items-start">
+        {work.status !== "closed" && work.assignment === "assistant" && (
+          <Button
+            type="button"
+            variant="outline"
+            className="min-h-11 justify-self-start"
+            disabled={mutation.isPending}
+            onClick={() => void change("handoff")}
+          >
+            {ru ? "Позвать менеджера" : "Ask for a manager"}
+          </Button>
+        )}
+        {error && (
+          <p role="alert" className="text-sm text-destructive">
+            {error}
+          </p>
+        )}
+      </div>
+    );
+  }
+
   const query = new URLSearchParams();
   if (work.offerId) query.set("offer", work.offerId);
   if (!work.orderId) query.set("consultation", work.taskId);
@@ -67,7 +98,7 @@ export function OrderActions({ subjectId, work, language }: IProps) {
           className="inline-flex min-h-11 items-center underline"
           href={`/${language}/ecommerce/products/${encodeURIComponent(work.productSlug)}?${query}`}
         >
-          {ru ? "К предложению" : "Back to offer"}
+          {productTitle || (ru ? "Открыть предложение" : "View offer")}
         </Link>
       )}
       {work.cartProposal && (
@@ -165,17 +196,6 @@ export function OrderActions({ subjectId, work, language }: IProps) {
             {ru ? "Подтвердить лимит" : "Approve limit"}
           </Button>
         </form>
-      )}
-      {work.status !== "closed" && work.assignment === "assistant" && (
-        <Button
-          type="button"
-          variant="outline"
-          className="min-h-11 justify-self-start"
-          disabled={mutation.isPending}
-          onClick={() => void change("handoff")}
-        >
-          {ru ? "Позвать менеджера" : "Ask for a manager"}
-        </Button>
       )}
       {error && (
         <p role="alert" className="text-sm text-destructive">

@@ -27,13 +27,15 @@ export class Handler {
       );
       const body = await parseRequestBody(c);
       const payload = normalizeSkillPayload(body);
-      const professionProfileId = getPrivateAIChatSkillProfileId(payload.slug);
+      const privateSkillProfileId = getPrivateAIChatSkillProfileId(
+        payload.slug,
+      );
       if (
-        professionProfileId &&
-        professionProfileId !== targetSocialModuleProfileId
+        privateSkillProfileId &&
+        privateSkillProfileId !== targetSocialModuleProfileId
       )
         throw new Error(
-          "Authorization error. This document skill belongs to another profile.",
+          "Authorization error. This private skill belongs to another profile.",
         );
       const skillIds = await findProfileSkillIds({
         service: this.service,

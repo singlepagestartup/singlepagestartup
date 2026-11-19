@@ -2,15 +2,25 @@
 
 import Link from "next/link";
 import type { Ref } from "react";
-import { ClipboardList, Package, Paperclip } from "lucide-react";
+import {
+  ClipboardList,
+  FileCheck,
+  LockKeyhole,
+  Package,
+  UserRound,
+} from "lucide-react";
 import { api } from "@sps/rbac/models/subject/sdk/client";
+import type { ICustomerWorkView } from "@sps/rbac/models/subject/sdk/model";
 import { OrderActions } from "../../../../../../../ecommerce-module/order/create-default/customer-work/OrderActions";
 import { PersonalNotes } from "../../../../../../../ecommerce-module/order/create-default/customer-work/PersonalNotes";
 import { ResultReview } from "../../../../../../../ecommerce-module/order/create-default/customer-work/ResultReview";
+import { ThreadContextCard } from "./ThreadContextCard";
+import { isChatAccessError } from "../utils";
 
 interface IProps {
   subjectId: string;
-  threadId: string;
+  work: ICustomerWorkView;
+  productTitle?: string;
   language: string;
   resultSectionRef: Ref<HTMLElement>;
   selectedVersionId?: string;
@@ -18,34 +28,17 @@ interface IProps {
 }
 
 export function ThreadCustomerWork(props: IProps) {
-  const { subjectId, threadId, language } = props;
+  const { subjectId, work, language } = props;
   const ru = language === "ru";
-  const workResult = api.customerWorkForThread({ id: subjectId, threadId });
-  const work = workResult.isError ? undefined : workResult.data;
   const orderResult = api.orderWork.read({
     id: subjectId,
-    storeId: work?.storeId ?? "",
-    taskId: work?.taskId ?? "",
-    orderId: work?.orderId ?? "",
+    storeId: work.storeId,
+    taskId: work.taskId,
+    orderId: work.orderId ?? "",
   });
-  const order = orderResult.isError ? undefined : orderResult.data;
-
-  if (workResult.isError) {
-    return (
-      <p role="alert" className="text-sm text-destructive">
-        {ru
-          ? "Не удалось загрузить данные задачи."
-          : "Could not load task details."}
-      </p>
-    );
-  }
-  if (!work) {
-    return (
-      <p role="status" className="text-sm text-muted-foreground">
-        {ru ? "Загружаем данные задачи…" : "Loading task details…"}
-      </p>
-    );
-  }
+  const order = isChatAccessError(orderResult.error)
+    ? undefined
+    : orderResult.data;
 
   const status = {
     active: ru ? "В работе" : "In progress",
@@ -61,33 +54,25 @@ export function ThreadCustomerWork(props: IProps) {
     work.orderId && work.productSlug
       ? `/${language}/ecommerce/products/${encodeURIComponent(work.productSlug)}#order-${encodeURIComponent(work.orderId)}`
       : undefined;
-  const orderLink = orderHref ? (
-    <Link
-      href={orderHref}
-      className="min-h-9 content-center justify-self-start rounded-md text-sm underline underline-offset-4"
-    >
-      {ru ? "Открыть заказ" : "View order"}
-    </Link>
-  ) : null;
-  const awaitingPayment = order?.state === "awaiting-payment";
-  const showResult =
-    orderResult.isPending ||
-    orderResult.isError ||
-    (order &&
-      (order.state !== "awaiting-result" ||
-        order.versions.length > 0 ||
-        order.result ||
-        order.receipt ||
-        order.trackingNumber ||
-        order.expertArchive));
+  const showOrder = Boolean(
+    work.orderId ||
+    work.productSlug ||
+    work.cartProposal ||
+    (work.status !== "closed" && work.customerPays),
+  );
+  const showResult = Boolean(
+    order &&
+    (order.state !== "awaiting-result" ||
+      order.versions.length > 0 ||
+      order.result ||
+      order.receipt ||
+      order.trackingNumber ||
+      order.expertArchive),
+  );
 
   return (
     <>
-      <section className="grid min-w-0 gap-3">
-        <h4 className="flex items-center gap-2 text-sm font-semibold">
-          <ClipboardList className="size-4 shrink-0" aria-hidden="true" />
-          {ru ? "Задача" : "Task"}
-        </h4>
+      <ThreadContextCard icon={ClipboardList} title={ru ? "Задача" : "Task"}>
         <dl className="grid grid-cols-[auto_minmax(0,1fr)] gap-x-3 gap-y-2 text-sm">
           <dt className="text-muted-foreground">{ru ? "Статус" : "Status"}</dt>
           <dd>{status}</dd>
@@ -106,67 +91,90 @@ export function ThreadCustomerWork(props: IProps) {
           </dt>
           <dd className="break-words">{work.operator || assignment}</dd>
         </dl>
-      </section>
-      <section className="grid min-w-0 gap-3">
-        <h4 className="flex items-center gap-2 text-sm font-semibold">
-          <Package className="size-4 shrink-0" aria-hidden="true" />
-          {work.orderId
-            ? ru
-              ? "Заказ"
-              : "Order"
-            : ru
-              ? "Консультация"
-              : "Consultation"}
-        </h4>
-        {!awaitingPayment && orderLink}
-        <OrderActions subjectId={subjectId} work={work} language={language} />
-      </section>
-      {work.orderId && showResult && (
-        <section
-          ref={props.resultSectionRef}
-          tabIndex={-1}
-          className="grid min-w-0 gap-3"
+      </ThreadContextCard>
+      {showOrder && (
+        <ThreadContextCard
+          icon={Package}
+          title={
+            work.orderId
+              ? ru
+                ? "Заказ"
+                : "Order"
+              : ru
+                ? "Предложение"
+                : "Offer"
+          }
         >
-          <h4 className="flex items-center gap-2 text-sm font-semibold">
-            <Paperclip className="size-4 shrink-0" aria-hidden="true" />
-            {ru ? "Результат заказа" : "Order result"}
-          </h4>
-          {order && (
-            <ResultReview
+          <OrderActions
+            subjectId={subjectId}
+            work={work}
+            productTitle={props.productTitle}
+            language={language}
+          />
+          {orderHref && (
+            <Link
+              href={orderHref}
+              className="min-h-9 content-center justify-self-start rounded-md text-sm underline underline-offset-4"
+            >
+              {ru ? "Открыть заказ" : "View order"}
+            </Link>
+          )}
+        </ThreadContextCard>
+      )}
+      {order && showResult && (
+        <ThreadContextCard
+          icon={FileCheck}
+          title={ru ? "Результат заказа" : "Order result"}
+          sectionRef={props.resultSectionRef}
+        >
+          <ResultReview
+            subjectId={subjectId}
+            work={order}
+            language={language}
+            selectedVersionId={props.selectedVersionId}
+            onVersionSelect={props.onVersionSelect}
+          />
+        </ThreadContextCard>
+      )}
+      {work.orderId &&
+        orderResult.isError &&
+        !isChatAccessError(orderResult.error) && (
+          <p role="alert" className="text-sm text-destructive">
+            {ru
+              ? "Не удалось загрузить результат заказа."
+              : "Could not load the order result."}
+          </p>
+        )}
+      {(work.assignment === "manager" ||
+        (work.assignment === "assistant" && work.status !== "closed")) && (
+        <ThreadContextCard icon={UserRound} title={ru ? "Менеджер" : "Manager"}>
+          {work.assignment === "manager" ? (
+            <p className="break-words text-sm">
+              {work.operator ||
+                (ru ? "Менеджер подключён." : "A manager has joined.")}
+            </p>
+          ) : (
+            <OrderActions
               subjectId={subjectId}
-              work={order}
+              work={work}
               language={language}
-              selectedVersionId={props.selectedVersionId}
-              onVersionSelect={props.onVersionSelect}
+              managerOnly
             />
           )}
-          {awaitingPayment && orderLink}
-          {orderResult.isError && (
-            <p role="alert" className="text-sm text-destructive">
-              {ru
-                ? "Не удалось загрузить результат заказа."
-                : "Could not load the order result."}
-            </p>
-          )}
-          {orderResult.isPending && (
-            <p role="status" className="text-sm text-muted-foreground">
-              {ru ? "Загружаем результат заказа…" : "Loading the order result…"}
-            </p>
-          )}
-        </section>
+        </ThreadContextCard>
       )}
       {work.memory && (
-        <section className="grid min-w-0 gap-3">
-          <h4 className="text-sm font-semibold">
-            {ru ? "Знания" : "Knowledge"}
-          </h4>
+        <ThreadContextCard
+          icon={LockKeyhole}
+          title={ru ? "Личные заметки" : "Private notes"}
+        >
           <PersonalNotes
             subjectId={subjectId}
             work={work}
             memory={work.memory}
             language={language}
           />
-        </section>
+        </ThreadContextCard>
       )}
     </>
   );

@@ -1,7 +1,6 @@
 export { Service } from "./startup";
 export type {
   ICrmModuleFormRequestCreateProps,
-  ISocialModuleProfileDocumentSkillFindProps,
   IEcommerceProductCheckoutProps,
   IAiContextService,
   IAiContextServiceProps,

@@ -13,9 +13,6 @@ export interface IComponentProps extends IParent<IModel, typeof variant> {
   };
   messages: React.ReactNode;
   composer: React.ReactNode;
-  isDocument?: boolean;
-  knowledge?: React.ReactNode;
-  documentDownload?: React.ReactNode;
   context?: React.ReactNode;
   navigation?: React.ReactNode;
 }

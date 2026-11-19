@@ -27,10 +27,10 @@ export const Component = memo(function Component(
       prefetch={false}
       aria-current={isActive ? "page" : undefined}
       onNavigate={
-        props.onSelectChat
+        isActive && props.onSelectCurrentChat
           ? (event) => {
-              if (isActive) event.preventDefault();
-              props.onSelectChat?.();
+              event.preventDefault();
+              props.onSelectCurrentChat?.();
             }
           : undefined
       }
@@ -38,12 +38,12 @@ export const Component = memo(function Component(
       data-model="subject"
       data-variant={props.variant}
       className={cn(
-        "flex min-h-14 w-full min-w-0 items-center gap-3 rounded-lg px-3 py-2.5 text-left transition focus-visible:outline-2 focus-visible:outline-offset-2",
+        "flex min-h-14 w-full min-w-0 items-center gap-3 rounded-lg px-2 py-2.5 text-left transition focus-visible:outline-2 focus-visible:outline-offset-2",
         isActive ? "bg-muted text-foreground" : "hover:bg-muted/70",
         props.className,
       )}
     >
-      <div className="grid size-9 shrink-0 place-items-center rounded-lg border border-border bg-card text-muted-foreground">
+      <div className="grid size-9 shrink-0 place-items-center rounded-full bg-muted text-muted-foreground">
         <MessageCircle className="size-4" aria-hidden="true" />
       </div>
       <div className="min-w-0 flex-1">

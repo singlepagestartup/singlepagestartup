@@ -81,11 +81,9 @@ export class Handler {
       }
 
       if (data.metadata?.aiChatDocument !== undefined) {
-        data.metadata.aiChatDocument =
-          await this.service.socialModuleChatLifecycleValidateDocument({
-            socialModuleChatId,
-            document: data.metadata.aiChatDocument,
-          });
+        throw new Error(
+          "Validation error. Thread documents are no longer supported",
+        );
       }
 
       let telegramTopic;

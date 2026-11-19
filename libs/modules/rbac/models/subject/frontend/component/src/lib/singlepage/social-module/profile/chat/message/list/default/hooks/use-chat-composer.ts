@@ -13,8 +13,6 @@ import { toast } from "sonner";
 
 interface UseChatComposerProps {
   isCustomerWork: boolean;
-  isDocument?: boolean;
-  documentSourceId?: string;
   clearSelectedSkills: () => void;
   markShouldScrollToBottom: () => void;
   openRouterModelId: string;
@@ -75,9 +73,6 @@ export function useChatComposer(props: UseChatComposerProps) {
     const appliedSkillIds = [...props.selectedSkillIds];
     const isKnowledgeSearchSelected = hasKnowledgeMention(data.description);
     const messageMetadata = {
-      ...(props.documentSourceId
-        ? { aiChatDocumentSourceId: props.documentSourceId }
-        : {}),
       ...(appliedSkillIds.length
         ? {
             socialSkillMentions: appliedSkillIds.map((skillId) => {
@@ -107,8 +102,7 @@ export function useChatComposer(props: UseChatComposerProps) {
               modelId: props.openRouterModelId || "auto",
               reasoning: props.openRouterReasoning || "auto",
               skillIds: appliedSkillIds,
-              useKnowledgeSearch:
-                Boolean(props.isDocument) || isKnowledgeSearchSelected,
+              useKnowledgeSearch: isKnowledgeSearchSelected,
             },
           }
         : {}),

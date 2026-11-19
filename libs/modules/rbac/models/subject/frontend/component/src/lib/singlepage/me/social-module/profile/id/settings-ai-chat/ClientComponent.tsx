@@ -5,7 +5,6 @@ import { useState } from "react";
 import { api as subjectApi } from "@sps/rbac/models/subject/sdk/client";
 import { queryClient } from "@sps/shared-frontend-client-api";
 import { route } from "@sps/rbac/models/subject/sdk/model";
-import { getProjectsQueryKey } from "../chat/id/thread/id/ai-chat/utils";
 import type { IClientComponentProps } from "./interface";
 
 export function Component(props: IClientComponentProps) {
@@ -58,9 +57,6 @@ export function Component(props: IClientComponentProps) {
                 query.queryKey[0].startsWith(
                   `${route}/${scope.id}/social-module/profiles`,
                 ),
-            });
-            await queryClient.invalidateQueries({
-              queryKey: getProjectsQueryKey(scope.id),
             });
             setStatus(ru ? "Название проекта сохранено" : "Project name saved");
             router.refresh();

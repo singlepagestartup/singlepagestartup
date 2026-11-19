@@ -226,7 +226,7 @@ export function Component({
   const dragDepth = useRef(0);
   const log = useRef<HTMLDivElement>(null);
   const [navigationOpen, setNavigationOpen] = useState(false);
-  const [pane, setPane] = useState<"chat" | "document">("chat");
+  const [pane, setPane] = useState<"chat" | "context">("chat");
   const [selectedDocumentKey, setSelectedDocumentKey] = useState<string>(
     initialDocuments[0].key,
   );
@@ -494,6 +494,7 @@ export function Component({
             title={heading}
             language={language}
             isDocument={!topicId && !creating}
+            isProjectThread
             pane={pane}
             onPaneChange={setPane}
             navigation={

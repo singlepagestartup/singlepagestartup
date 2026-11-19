@@ -2,6 +2,7 @@
 
 import { KnowledgeSource, KnowledgeSourceDraft } from "../types";
 import { Component as KnowledgeModuleSource } from "@sps/knowledge/models/source/frontend/component";
+import { readKnowledgeDocumentContent } from "@sps/shared-utils";
 import {
   Dialog,
   DialogContent,
@@ -24,6 +25,7 @@ interface KnowledgeSourceDialogProps {
   isReindexing: boolean;
   isSaving: boolean;
   language: string;
+  readOnly?: boolean;
   mode: "create" | "edit";
   needsReindex: boolean;
   onUnlink?: (source: KnowledgeSource) => Promise<void> | void;
@@ -35,6 +37,26 @@ interface KnowledgeSourceDialogProps {
 }
 
 export function KnowledgeSourceDialog(props: KnowledgeSourceDialogProps) {
+  if (props.readOnly) {
+    return (
+      <Dialog open={props.isOpen} onOpenChange={props.onOpenChange}>
+        <DialogContent className="max-h-[90vh] max-w-3xl overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>{props.document?.title}</DialogTitle>
+            <DialogDescription>
+              {props.language === "ru"
+                ? "Источник знаний профиля"
+                : "Profile knowledge source"}
+            </DialogDescription>
+          </DialogHeader>
+          <p className="whitespace-pre-wrap break-words text-sm">
+            {readKnowledgeDocumentContent(props.document?.content ?? "")}
+          </p>
+        </DialogContent>
+      </Dialog>
+    );
+  }
+
   return (
     <Dialog open={props.isOpen} onOpenChange={props.onOpenChange}>
       <DialogContent className="max-h-[90vh] max-w-3xl overflow-hidden p-0">

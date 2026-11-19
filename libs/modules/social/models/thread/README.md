@@ -20,8 +20,8 @@ Threads group messages within chats.
 
 ## Variants
 
-- `id-ai-chat`: Thread header and message/composer slots. An explicit `isDocument` prop enables responsive Chat/Document panes, Knowledge and download slots; ordinary conversations occupy the full width. The shared UI adapter `ChatThreadPanel` renders the same pane layout for this variant and the local landing preview; all data and rendered action slots remain owned by the caller.
-- `download-ai-chat`: document export button receiving a download action and pending state from RBAC Subject.
+- `id-ai-chat`: Thread header, message and composer slots. A supplied context slot adds a sidebar at `xl` and a Chat/Context switch on smaller screens.
+- `download-ai-chat`: presentation for a supplied document export action and pending state.
 - `list-item-sidebar-ai-chat`: memoized document or topic link with a selected state, Studio glyphs and a localized destination.
 - `default`: placeholder thread view.
 - `find`: data-fetch wrapper for querying threads.
@@ -39,11 +39,9 @@ RBAC stores the versioned `rbacAiThreadPreferences` namespace in `metadata`
 for chat-composer preferences such as the explicitly selected OpenRouter model.
 Unknown metadata keys are preserved when that namespace is updated.
 
-RBAC also stores `rbacAiDocumentProposal` in document Thread metadata. It holds
-one exact proposed Knowledge edit, the Source's original content hash, the
-message showing the proposal, and its pending, applied or rejected state.
-A later user confirmation applies the stored text. A changed Source requires
-a new proposal; repeated confirmation of an applied proposal performs no write.
+Earlier AI Chat projects may retain document and proposal metadata on existing
+threads. The Social workspace opens those threads as conversations and preserves
+their messages, attached files and historical metadata.
 
 ## Atomic metadata namespace updates
 
@@ -60,6 +58,6 @@ remain in use. Namespace names exclude prototype keys. Direct full-metadata
 replacement remains ordinary CRUD; callers that modify one owned namespace use
 the atomic operation.
 
-RBAC uses it for preferences, document proposals and `rbacAiThreadContext`.
+RBAC uses it for preferences and `rbacAiThreadContext`.
 Social stores that context as opaque JSON and does not summarize conversations
 or interpret Profile memory, draft text, hashes or Source versions.

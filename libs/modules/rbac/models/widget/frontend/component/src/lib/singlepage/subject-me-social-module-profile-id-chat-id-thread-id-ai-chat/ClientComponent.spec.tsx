@@ -2,6 +2,9 @@ import { renderToStaticMarkup } from "react-dom/server";
 jest.mock("client-only", () => ({}), { virtual: true });
 jest.mock("server-only", () => ({}), { virtual: true });
 jest.mock("next/navigation", () => ({
+  redirect: (href: string) => {
+    throw new Error("redirect " + href);
+  },
   useRouter: () => ({ push: jest.fn() }),
   usePathname: () => "/ru/ai-chat/projects",
   useSearchParams: () => new URLSearchParams(),
@@ -70,7 +73,7 @@ beforeEach(() => {
   mockAuthenticationProps.mockClear();
 });
 
-it.each(entryPoints)(
+it.each([ThreadCreate, ProjectSettings, ProjectCreate])(
   "opens an owner's workspace through the auth guard",
   (View) => {
     const html = renderToStaticMarkup(<View {...(props as any)} />);
@@ -86,16 +89,19 @@ it.each(entryPoints)(
   },
 );
 
-it.each([Thread, ThreadCreate, ProjectSettings])(
+it.each([ThreadCreate, ProjectSettings])(
   "renders the private profile supplied by the Subject project reader",
   (View) => {
     const html = renderToStaticMarkup(<View {...(props as any)} />);
     expect(html).toContain('data-profile-source="props"');
   },
 );
-it("renders the chat from the same Subject response", () => {
-  const html = renderToStaticMarkup(<Thread {...(props as any)} />);
-  expect(html).toContain('data-chat-source="props"');
+it("opens the same Social thread from an owned assistant bookmark", () => {
+  expect(() =>
+    renderToStaticMarkup(
+      <Thread {...(props as any)} socialModuleThreadId="selected-thread" />,
+    ),
+  ).toThrow("redirect /ru/social/chats/owned-chat/threads/selected-thread");
 });
 
 it.each(entryPoints)(
@@ -152,7 +158,7 @@ it("shows owned project links in the chooser without rendering a creation form",
   const html = renderToStaticMarkup(<ProjectCreate {...(props as any)} />);
   expect(html).toContain("Мои проекты");
   expect(html).toContain(
-    'href="/ru/ai-chat/social/profiles/owned-profile/chats/owned-chat/threads/owned-thread"',
+    'href="/ru/social/chats/owned-chat/threads/owned-thread"',
   );
   expect(html).not.toContain(
     'data-subject-variant="me-social-module-profile-create-ai-chat"',

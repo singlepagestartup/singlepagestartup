@@ -33,11 +33,7 @@ export {
   isBcryptHash,
   isBcryptSalt,
 } from "./bcrypt-columns";
-export {
-  getProfileDocumentSkillSlug,
-  getAIChatDocumentForSkill,
-  getPrivateAIChatSkillProfileId,
-} from "./ai-chat-document-skills";
+export { getPrivateAIChatSkillProfileId } from "./ai-chat-document-skills";
 export {
   validateWebhookIdentifiers,
   type IValidateWebhookIdentifiersProps,

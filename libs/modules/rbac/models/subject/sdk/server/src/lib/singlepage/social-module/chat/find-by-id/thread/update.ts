@@ -22,7 +22,6 @@ export interface IProps {
   data: Partial<ISocialModuleThread> & {
     title?: string;
     openRouterModelId?: string;
-    document?: import("@sps/rbac/models/subject/sdk/model").IAIChatDocument;
   };
 }
 

@@ -8,7 +8,6 @@
 
 import { Service } from "../../index";
 import { Service as StartupService } from "../../../startup";
-import { Service as SocialModuleProfileSkillsService } from "./skills";
 import type {
   IAiExecutionActionReporter,
   IProfileMcpCatalogSession,
@@ -145,7 +144,6 @@ it("routes context creation through the replaceable Subject factory with its mod
     triggerMessageId: "trigger",
     resetMessageId: null,
     history: [],
-    documentThread: false,
   };
   expect(service.socialModuleProfileAiContextCreate(props)).toEqual({
     mode: "compact",
@@ -154,32 +152,6 @@ it("routes context creation through the replaceable Subject factory with its mod
     ...props,
     modules: service.modules,
   });
-});
-
-it("resolves document skills through the Subject factory and permits a startup override", async () => {
-  const skill = {
-    id: "profession",
-    slug: "brief-profile",
-    description: "Instructions",
-  };
-  const find = jest.fn().mockResolvedValue(skill);
-  class CustomSubjectService extends StartupService {
-    protected override getSocialModuleProfileSkillsService() {
-      const service = new SocialModuleProfileSkillsService(this.modules.social);
-      jest.spyOn(service, "forDocument").mockImplementation(find);
-      return service;
-    }
-  }
-  const service = Object.create(
-    CustomSubjectService.prototype,
-  ) as CustomSubjectService;
-  await expect(
-    service.socialModuleProfileDocumentSkillFind({
-      socialModuleProfileId: "profile",
-      documentKey: "brief",
-    }),
-  ).resolves.toBe(skill);
-  expect(find).toHaveBeenCalledWith("profile", "brief");
 });
 
 it("uses the replaceable Product checkout factory without a Subject SDK request", async () => {

@@ -15,12 +15,9 @@ export function Component(props: IComponentPropsExtended) {
         threadId={props.data.id}
         title={props.data.title || ""}
         language={props.language}
-        isDocument={props.isDocument}
         navigation={props.navigation}
         messages={props.messages}
         composer={props.composer}
-        knowledge={props.knowledge}
-        documentDownload={props.documentDownload}
         context={props.context}
       />
     </div>

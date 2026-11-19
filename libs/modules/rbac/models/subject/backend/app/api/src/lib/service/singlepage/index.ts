@@ -56,8 +56,6 @@ import type {
   IAiContextService,
 } from "./social-module/profile/ai/context";
 import { Service as ProfileOwnership } from "../startup/social-module/profile/ownership";
-import { Service as ProfileSkills } from "../startup/social-module/profile/skills";
-import type { IForDocumentProps as IProfileDocumentSkillProps } from "./social-module/profile/skills";
 import { Service as AuthenticationMe } from "../startup/authentication/me";
 import { Service as InitialGrantProducts } from "./billing/initial-grant-products";
 import { Service as FreeSubscription } from "../startup/billing/free-subscription";
@@ -335,15 +333,6 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     return new SocialModuleProfileAvatarUpdate({
       file: this.modules.fileStorage.file,
     }).execute(props);
-  }
-
-  async socialModuleProfileDocumentSkillFind(
-    props: IProfileDocumentSkillProps,
-  ) {
-    return this.getSocialModuleProfileSkillsService().forDocument(
-      props.socialModuleProfileId,
-      props.documentKey,
-    );
   }
 
   async socialModuleProfileMcpCatalogOpen(
@@ -774,13 +763,6 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     return this.getChatLifecycleService().createChatWithDefaultThread(props);
   }
 
-  async socialModuleChatLifecycleValidateDocument(props: {
-    socialModuleChatId: string;
-    document: unknown;
-  }) {
-    return this.getChatLifecycleService().validateDocument(props);
-  }
-
   async socialModuleChatLifecycleAssertSubjectOwnsChat(props: {
     subjectId: string;
     socialModuleChatId: string;
@@ -894,10 +876,6 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     return new EcommerceProductCheckout(this);
   }
 
-  protected getSocialModuleProfileSkillsService() {
-    return new ProfileSkills(this.modules.social);
-  }
-
   protected getSocialModuleProfileMcpCatalogService() {
     return new ProfileMcpCatalogService();
   }
@@ -921,7 +899,6 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
 
 export type {
   ICrmModuleFormRequestCreateProps,
-  ISocialModuleProfileDocumentSkillFindProps,
   IEcommerceProductCheckoutProps,
   IAiContextService,
   IAiContextServiceProps,

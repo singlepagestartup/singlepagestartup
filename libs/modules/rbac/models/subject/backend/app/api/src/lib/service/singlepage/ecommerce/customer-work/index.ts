@@ -653,6 +653,7 @@ export class Service {
       orderId: task.orderId ?? undefined,
       offerId: task.offerId ?? undefined,
       productSlug: product?.slug,
+      productTitle: product?.title,
       consultationTaskId: channel.consultationTaskId ?? undefined,
       workflow: stage
         ? { title: publication.name, stageTitle: stage.name }

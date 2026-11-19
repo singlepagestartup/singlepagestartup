@@ -32,7 +32,7 @@ jest.mock("@sps/social/relations/chats-to-threads/sdk/server", () => ({
 
 import { Handler } from "./create";
 
-function createContext() {
+function createContext(data: Record<string, unknown> = { title: "Support" }) {
   return {
     req: {
       param: (name: string) => {
@@ -42,9 +42,7 @@ function createContext() {
         }[name];
       },
       parseBody: jest.fn().mockResolvedValue({
-        data: JSON.stringify({
-          title: "Support",
-        }),
+        data: JSON.stringify(data),
       }),
     },
     json: jest.fn((payload: unknown) => payload),
@@ -106,6 +104,26 @@ describe("Given: Telegram-backed SPS chat thread creation", () => {
     mockSocialModuleChatsToThreadsCreate.mockResolvedValue({
       id: "chat-to-thread-1",
     });
+  });
+
+  it("rejects new document metadata before creating the thread or its Telegram topic", async () => {
+    await expect(
+      new Handler(createService()).execute(
+        createContext({
+          title: "Brief.md",
+          metadata: {
+            aiChatDocument: {
+              key: "brief",
+              profileId: "profile",
+              sourceIds: [],
+            },
+          },
+        }),
+        jest.fn(),
+      ),
+    ).rejects.toThrow("Thread documents are no longer supported");
+    expect(mockSocialModuleThreadCreate).not.toHaveBeenCalled();
+    expect(global.fetch).not.toHaveBeenCalled();
   });
 
   /**

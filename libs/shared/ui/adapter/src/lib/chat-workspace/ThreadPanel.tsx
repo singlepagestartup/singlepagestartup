@@ -5,11 +5,10 @@ import type { IChatThreadPanelProps } from "./interface";
 
 /** The production Thread and the local landing preview share this pane layout. */
 export function ChatThreadPanel(props: IChatThreadPanelProps) {
-  const [localPane, setLocalPane] = useState<"chat" | "document">("chat");
+  const [localPane, setLocalPane] = useState<"chat" | "context">("chat");
   const pane = props.pane ?? localPane;
   const setPane = props.onPaneChange ?? setLocalPane;
   const ru = props.language === "ru";
-  const isProjectThread = props.isProjectThread ?? true;
   const hasSidePane = props.isDocument || Boolean(props.context);
   const sidePaneLabel = props.isDocument
     ? ru
@@ -30,7 +29,7 @@ export function ChatThreadPanel(props: IChatThreadPanelProps) {
                   ? "Обсуждение документа"
                   : "Document thread"
                 : ru
-                  ? isProjectThread
+                  ? props.isProjectThread
                     ? "Обсуждение проекта"
                     : "Обсуждение"
                   : "Thread"}
@@ -54,7 +53,7 @@ export function ChatThreadPanel(props: IChatThreadPanelProps) {
                   : "Thread pane"
             }
           >
-            {(["chat", "document"] as const).map((item) => (
+            {(["chat", "context"] as const).map((item) => (
               <button
                 key={item}
                 type="button"
@@ -90,7 +89,7 @@ export function ChatThreadPanel(props: IChatThreadPanelProps) {
           <section
             data-thread-id={props.threadId}
             aria-label={`${props.title}${ru ? " — редактор" : " editor"}`}
-            className={`${pane === "document" ? "block" : "hidden"} min-h-0 min-w-0 space-y-4 overflow-y-auto border-border bg-muted p-3 xl:block xl:border-l`}
+            className={`${pane === "context" ? "block" : "hidden"} min-h-0 min-w-0 space-y-4 overflow-y-auto border-border bg-muted p-3 xl:block xl:border-l`}
           >
             <article className="min-w-0 rounded-xl border border-border bg-card text-card-foreground">
               <header className="flex items-center justify-between gap-2 border-b border-border px-3 py-2">
@@ -109,7 +108,7 @@ export function ChatThreadPanel(props: IChatThreadPanelProps) {
           <aside
             data-thread-id={props.threadId}
             aria-label={sidePaneLabel}
-            className={`${pane === "document" ? "block" : "hidden"} min-h-0 min-w-0 overflow-y-auto overscroll-contain border-border bg-muted p-4 xl:block xl:border-l`}
+            className={`${pane === "context" ? "block" : "hidden"} min-h-0 min-w-0 overflow-y-auto overscroll-contain border-border bg-muted p-4 xl:block xl:border-l`}
           >
             <h3 className="mb-5 flex items-center gap-2 text-sm font-semibold">
               <PanelRight className="size-4 shrink-0" aria-hidden="true" />

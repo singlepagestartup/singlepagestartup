@@ -9,17 +9,16 @@ import { ProfileSidebarPanel } from "./components/ProfileSidebarPanel";
 import { ProfileSidebarSheet } from "./components/ProfileSidebarSheet";
 import { ThreadContext } from "./components/ThreadContext";
 import { useThreadHasFiles } from "./components/ThreadFiles";
-import { useKnowledgeSources } from "./hooks/use-knowledge-sources";
 import { useOpenRouterModelControls } from "./hooks/use-openrouter-model-controls";
 import { useProfileSidebar } from "./hooks/use-profile-sidebar";
 import { useProfileSkills } from "./hooks/use-profile-skills";
 import { useThreadMessagesRefetch } from "./hooks/use-thread-messages-refetch";
 import { IComponentPropsExtended } from "./interface";
 import type { KnowledgeSource, SocialSkill } from "./types";
+import { isChatAccessError } from "./utils";
 import { cn } from "@sps/shared-frontend-client-utils";
 import { ChatThreadPanel } from "@sps/ui-adapter";
-import { Component as Subject } from "@sps/rbac/models/subject/frontend/component";
-import { getAIChatDocument } from "@sps/rbac/models/subject/sdk/model";
+import { api } from "@sps/rbac/models/subject/sdk/client";
 import { Component as SocialModuleSkill } from "@sps/social/models/skill/frontend/component";
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { IModel as SocialProfile } from "@sps/social/models/profile/sdk/model";
@@ -31,19 +30,13 @@ interface SkillDialogTarget {
 
 interface IThreadPane {
   threadId: string;
-  pane: "chat" | "document";
+  pane: "chat" | "context";
 }
 
 interface IResultSelection {
   threadId: string;
   versionId: string;
   focus?: boolean;
-}
-
-interface IDocumentDiscussion {
-  threadId: string;
-  sourceId: string;
-  title: string;
 }
 
 /**
@@ -59,8 +52,6 @@ export function Component(props: IComponentPropsExtended) {
   const threadId = props.socialModuleThreadId;
   const [threadPane, setThreadPane] = useState<IThreadPane>();
   const [resultSelection, setResultSelection] = useState<IResultSelection>();
-  const [documentDiscussion, setDocumentDiscussion] =
-    useState<IDocumentDiscussion>();
   const resultSectionRef = useRef<HTMLElement>(null);
   const [isSkillDialogOpen, setIsSkillDialogOpen] = useState(false);
   const [isMcpServersDialogOpen, setIsMcpServersDialogOpen] = useState(false);
@@ -85,26 +76,6 @@ export function Component(props: IComponentPropsExtended) {
     (versionId: string) => setResultSelection({ threadId, versionId }),
     [threadId],
   );
-  const openResultReview = useCallback(
-    (versionId: string) => {
-      setPane("document");
-      setResultSelection({ threadId, versionId, focus: true });
-    },
-    [setPane, threadId],
-  );
-  const discussDocumentSource = useCallback(
-    (sourceId: string, title: string) => {
-      setDocumentDiscussion({ threadId, sourceId, title });
-      setPane("chat");
-      focusComposerTextAreaRef.current();
-    },
-    [setPane, threadId],
-  );
-  const discussWholeDocument = useCallback(() => {
-    setDocumentDiscussion(undefined);
-    focusComposerTextAreaRef.current();
-  }, []);
-
   useEffect(() => {
     if (resultSelection?.threadId !== threadId || !resultSelection.focus)
       return;
@@ -119,47 +90,57 @@ export function Component(props: IComponentPropsExtended) {
     socialModuleChatId: props.socialModuleChat.id,
     socialModuleThreadId: props.socialModuleThreadId,
   });
-  const isCustomerWork = props.socialModuleChat.variant === "customer-work";
+  const thread =
+    props.socialModuleThread.id === threadId
+      ? props.socialModuleThread
+      : undefined;
+  const isCustomerWork =
+    props.socialModuleChat.variant === "customer-work" ||
+    thread?.hasCustomerWork === true;
   const hasThreadFiles = useThreadHasFiles(
     {
       subjectId: props.data.id,
       socialModuleProfileId: props.socialModuleProfile.id,
       socialModuleChatId: props.socialModuleChat.id,
-      socialModuleThreadId: props.socialModuleThreadId,
+      socialModuleThreadId: threadId,
     },
     isCustomerWork,
   );
-  const document = getAIChatDocument(props.socialModuleThread.metadata);
-  const documentProject = props.documentProject;
-  const documentSource =
-    documentProject &&
-    documentDiscussion?.threadId === threadId &&
-    document?.sourceIds.includes(documentDiscussion.sourceId)
-      ? documentDiscussion
+  const workResult = api.customerWorkForThread({
+    id: props.data.id,
+    threadId: isCustomerWork ? threadId : "",
+  });
+  const work =
+    isCustomerWork &&
+    workResult.data?.chatId === props.socialModuleChat.id &&
+    workResult.data.threadId === threadId &&
+    !isChatAccessError(workResult.error)
+      ? workResult.data
       : undefined;
   const assistantProfile = isCustomerWork
     ? null
-    : documentProject?.profile ||
-      props.knowledgeAssistantProfile ||
+    : props.knowledgeAssistantProfile ||
       props.artificialIntelligenceOpponentProfile ||
       null;
-  // Single source of truth: OpenRouter controls, knowledge access, and the
-  // AI-opponent layout all gate on the same condition (issue #195 cleanup).
   const isArtificialIntelligenceAssistant =
     assistantProfile?.variant === "artificial-intelligence";
-  const knowledgeSources = useKnowledgeSources({
-    subjectId: props.data.id,
-    socialModuleProfileId: props.socialModuleProfile.id,
-    socialModuleChat: props.socialModuleChat,
-    assistantProfile,
-  });
   const profileSidebar = useProfileSidebar({
     subjectId: props.data.id,
     socialModuleProfileId: props.socialModuleProfile.id,
     socialModuleChatId: props.socialModuleChat.id,
   });
-  const composerSkillsProfileId =
-    knowledgeSources.knowledgeAssistantProfileId || "missing-profile";
+  const { closeProfile } = profileSidebar;
+  const canEditProfile =
+    !isCustomerWork && profileSidebar.canManageSelectedProfile;
+  const openResultReview = useCallback(
+    (versionId: string) => {
+      closeProfile();
+      setPane("context");
+      setResultSelection({ threadId, versionId, focus: true });
+    },
+    [closeProfile, setPane, threadId],
+  );
+  const composerSkillsProfileId = assistantProfile?.id || "missing-profile";
   const profileSkills = useProfileSkills({
     enabled: isArtificialIntelligenceAssistant,
     subjectId: props.data.id,
@@ -214,7 +195,7 @@ export function Component(props: IComponentPropsExtended) {
     setEditingSkill(skill);
     profileSidebar.setIsMobileSheetOpen(false);
     setSkillDialogTarget({
-      orderIndex: profileSkills.profileSkillIds.length,
+      orderIndex: profileSidebar.profileSkillIds.length,
       profileId: profileSidebar.selectedProfile?.id || composerSkillsProfileId,
     });
     setIsSkillDialogOpen(true);
@@ -227,14 +208,11 @@ export function Component(props: IComponentPropsExtended) {
   const resolvedSkillDialogTarget =
     skillDialogTarget || fallbackSkillDialogTarget;
   const showProfileContext =
-    !isCustomerWork &&
     profileSidebar.isSidebarOpen &&
     profileSidebar.selectedProfile &&
     !profileSidebar.isMobileSheetOpen;
-  const showThreadContext =
-    isCustomerWork ||
-    hasThreadFiles ||
-    (!documentProject && Boolean(document?.sourceIds.length));
+  const products = thread?.linkedProducts;
+  const showThreadContext = hasThreadFiles || work || products?.length;
   const title =
     props.socialModuleThread.title?.trim() ||
     (props.language === "ru" ? "Без названия" : "Untitled");
@@ -250,7 +228,8 @@ export function Component(props: IComponentPropsExtended) {
       )}
     >
       <ProfileSidebarSheet
-        isOpen={!isCustomerWork && profileSidebar.isMobileSheetOpen}
+        isOpen={profileSidebar.isMobileSheetOpen}
+        language={props.language}
         onOpenChange={(open) => {
           if (open) {
             profileSidebar.setIsMobileSheetOpen(true);
@@ -267,31 +246,15 @@ export function Component(props: IComponentPropsExtended) {
           knowledgeSources={profileSidebar.knowledgeSources}
           language={props.language}
           onKnowledgeSourceCreate={
-            profileSidebar.canManageSelectedProfile
-              ? openSidebarKnowledgeSourceCreateDialog
-              : undefined
+            canEditProfile ? openSidebarKnowledgeSourceCreateDialog : undefined
           }
           onKnowledgeSourceSelect={openKnowledgeSourceEditDialog}
-          onMcpServersEdit={
-            profileSidebar.canManageSelectedProfile
-              ? openMcpServersDialog
-              : undefined
-          }
-          onProfileEdit={
-            profileSidebar.canManageSelectedProfile
-              ? openProfileEditDialog
-              : undefined
-          }
+          onMcpServersEdit={canEditProfile ? openMcpServersDialog : undefined}
+          onProfileEdit={canEditProfile ? openProfileEditDialog : undefined}
           onSkillCreate={
-            profileSidebar.canManageSelectedProfile
-              ? openSidebarSkillCreateDialog
-              : undefined
+            canEditProfile ? openSidebarSkillCreateDialog : undefined
           }
-          onSkillEdit={
-            profileSidebar.canManageSelectedProfile
-              ? openSkillEditDialog
-              : undefined
-          }
+          onSkillEdit={canEditProfile ? openSkillEditDialog : undefined}
           profile={profileSidebar.selectedProfile}
           selectedKnowledgeSource={profileSidebar.selectedKnowledgeSource}
           skills={profileSidebar.skills}
@@ -302,41 +265,9 @@ export function Component(props: IComponentPropsExtended) {
         threadId={props.socialModuleThreadId}
         language={props.language}
         navigation={props.navigation}
-        isDocument={Boolean(documentProject)}
-        isProjectThread={props.socialModuleChat.variant === "ai-chat"}
         messagesOwnScroll
         pane={threadPane?.threadId === threadId ? threadPane.pane : "chat"}
         onPaneChange={setPane}
-        knowledge={
-          documentProject && (
-            <div className={showProfileContext ? "hidden" : "grid gap-4"}>
-              <Subject
-                key={threadId}
-                isServer={false}
-                dataSource="props"
-                variant="me-social-module-profile-id-chat-id-thread-id-knowledge-module-source-list-document-ai-chat"
-                data={props.data}
-                language={props.language}
-                project={documentProject}
-                thread={props.socialModuleThread}
-                onDiscuss={discussDocumentSource}
-              />
-            </div>
-          )
-        }
-        documentDownload={
-          documentProject && (
-            <Subject
-              isServer={false}
-              dataSource="props"
-              variant="me-social-module-profile-id-chat-id-thread-id-download-ai-chat"
-              data={props.data}
-              language={props.language}
-              project={documentProject}
-              thread={props.socialModuleThread}
-            />
-          )
-        }
         messages={
           <>
             <MessageTimelineSection
@@ -344,9 +275,7 @@ export function Component(props: IComponentPropsExtended) {
               participants={props.socialModuleChat.participants}
               language={props.language}
               markShouldScrollToBottomRef={markShouldScrollToBottomRef}
-              onProfileOpen={
-                isCustomerWork ? undefined : profileSidebar.openProfile
-              }
+              onProfileOpen={profileSidebar.openProfile}
               onResultReview={isCustomerWork ? openResultReview : undefined}
               socialModuleChatId={props.socialModuleChat.id}
               socialModuleProfileId={props.socialModuleProfile.id}
@@ -400,6 +329,7 @@ export function Component(props: IComponentPropsExtended) {
               }
               onFilesUpdated={profileSidebar.onKnowledgeSourceSelect}
               document={profileSidebar.selectedKnowledgeSource}
+              readOnly={isCustomerWork}
               draft={profileSidebar.knowledgeSourceDraft}
               isDeleting={profileSidebar.isDeletingKnowledgeSource}
               isDirty={profileSidebar.isKnowledgeSourceDirty}
@@ -451,9 +381,6 @@ export function Component(props: IComponentPropsExtended) {
         composer={
           <Composer
             isCustomerWork={isCustomerWork}
-            isDocument={Boolean(documentProject)}
-            documentSource={documentSource}
-            onDiscussWholeDocument={discussWholeDocument}
             canSelectOpenRouterReasoning={
               openRouterModelControls.canSelectReasoning
             }
@@ -515,31 +442,19 @@ export function Component(props: IComponentPropsExtended) {
               knowledgeSources={profileSidebar.knowledgeSources}
               language={props.language}
               onKnowledgeSourceCreate={
-                profileSidebar.canManageSelectedProfile
+                canEditProfile
                   ? openSidebarKnowledgeSourceCreateDialog
                   : undefined
               }
               onKnowledgeSourceSelect={openKnowledgeSourceEditDialog}
               onMcpServersEdit={
-                profileSidebar.canManageSelectedProfile
-                  ? openMcpServersDialog
-                  : undefined
+                canEditProfile ? openMcpServersDialog : undefined
               }
-              onProfileEdit={
-                profileSidebar.canManageSelectedProfile
-                  ? openProfileEditDialog
-                  : undefined
-              }
+              onProfileEdit={canEditProfile ? openProfileEditDialog : undefined}
               onSkillCreate={
-                profileSidebar.canManageSelectedProfile
-                  ? openSidebarSkillCreateDialog
-                  : undefined
+                canEditProfile ? openSidebarSkillCreateDialog : undefined
               }
-              onSkillEdit={
-                profileSidebar.canManageSelectedProfile
-                  ? openSkillEditDialog
-                  : undefined
-              }
+              onSkillEdit={canEditProfile ? openSkillEditDialog : undefined}
               onClose={profileSidebar.closeProfile}
               profile={profileSidebar.selectedProfile}
               selectedKnowledgeSource={profileSidebar.selectedKnowledgeSource}
@@ -549,11 +464,11 @@ export function Component(props: IComponentPropsExtended) {
             <ThreadContext
               key={props.socialModuleThreadId}
               isCustomerWork={isCustomerWork}
-              hideDocumentKnowledge={Boolean(documentProject)}
+              work={work}
+              products={products}
               language={props.language}
               socialModuleChatId={props.socialModuleChat.id}
               socialModuleProfileId={props.socialModuleProfile.id}
-              socialModuleThread={props.socialModuleThread}
               socialModuleThreadId={props.socialModuleThreadId}
               subjectId={props.data.id}
               resultSectionRef={resultSectionRef}

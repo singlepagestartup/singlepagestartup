@@ -5,15 +5,8 @@ import { usePathname, useRouter } from "next/navigation";
 import { getLocalizedHref } from "@sps/shared-frontend-client-utils";
 import Link from "next/link";
 import { Icon } from "@sps/ui-adapter";
-import {
-  api as subjectApi,
-  queryClient,
-} from "@sps/rbac/models/subject/sdk/client";
+import { api as subjectApi } from "@sps/rbac/models/subject/sdk/client";
 import type { IModel as IProfile } from "@sps/social/models/profile/sdk/model";
-import {
-  findProjects,
-  getProjectsQueryKey,
-} from "../id/chat/id/thread/id/ai-chat/utils";
 import { projectHref } from "@sps/rbac/models/subject/sdk/model";
 import type { IComponentPropsExtended } from "./interface";
 export function Component(props: IComponentPropsExtended) {
@@ -26,6 +19,10 @@ export function Component(props: IComponentPropsExtended) {
   const [createdProfile, setCreatedProfile] = useState<IProfile | null>(null);
   const [creating, setCreating] = useState(false);
   const create = subjectApi.socialModuleProfileCreate({ id: props.data.id });
+  const projects = subjectApi.socialModuleProfileProjects({
+    id: props.data.id,
+    reactQueryOptions: { enabled: false },
+  });
   if (props.pending)
     return (
       <div
@@ -66,11 +63,8 @@ export function Component(props: IComponentPropsExtended) {
               },
             }));
           setCreatedProfile(profile);
-          const projects = await findProjects({
-            subjectId: props.data.id,
-            profiles: [profile],
-          });
-          const project = projects.find(
+          const result = await projects.refetch({ throwOnError: true });
+          const project = result.data?.find(
             (project) => project.profile.id === profile.id,
           );
           if (!project)
@@ -79,9 +73,6 @@ export function Component(props: IComponentPropsExtended) {
                 ? "Профиль создан, но его чат недоступен. Повторите попытку, чтобы открыть его."
                 : "The profile was created but its conversation is unavailable. Retry to open it.",
             );
-          await queryClient.invalidateQueries({
-            queryKey: getProjectsQueryKey(props.data.id),
-          });
           router.push(getLocalizedHref(pathname, projectHref(project)));
         } catch (error) {
           setError(

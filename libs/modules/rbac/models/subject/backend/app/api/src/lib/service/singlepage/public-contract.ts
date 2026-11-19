@@ -19,6 +19,5 @@ export type {
   IOpenRouterBillingLedgerEntry,
   TOpenRouterBillingPurpose,
 } from "./billing/open-router";
-export type { IForDocumentProps as ISocialModuleProfileDocumentSkillFindProps } from "./social-module/profile/skills";
 export type { IExecuteProps as IEcommerceProductCheckoutProps } from "./ecommerce/product/checkout";
 export type { IExecuteProps as ICrmModuleFormRequestCreateProps } from "./crm/form/request";

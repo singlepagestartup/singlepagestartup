@@ -35,7 +35,7 @@ export class Handler {
         payload.slug !== currentSkill.slug
       )
         throw new Error(
-          "Validation error. A document profession's command cannot be renamed.",
+          "Validation error. A private skill's command cannot be renamed.",
         );
 
       const updatedSkill = await this.service.modules.social.skill.update({

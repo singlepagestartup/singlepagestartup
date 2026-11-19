@@ -11,7 +11,7 @@
 import { fireEvent, screen, waitFor } from "@testing-library/react";
 import {
   mockChatComponentState,
-  mockDocumentWidget,
+  mockCustomerWork,
   mockKnowledgeSourceCreateMutate,
   mockKnowledgeSourceDeleteMutateAsync,
   mockKnowledgeSourceUpdateMutate,
@@ -19,7 +19,6 @@ import {
   mockMessageCreateMutate,
   mockOpenRouterModelFavoriteUpdateMutate,
   mockProfileSkillFind,
-  mockProjectsRead,
   mockThreadUpdateMutate,
   mockSocialSkillCreateMutateAsync,
   mockSocialSkillUpdateMutateAsync,
@@ -52,144 +51,89 @@ function aiReactionRequest(
   };
 }
 
-describe("AI Chat documents in Social", () => {
-  const project = {
-    chat: { id: "chat-1" },
-    profile: aiOpponentProfile,
-    requesterProfileId: "profile-1",
-    thread: { id: "thread-1" },
-  };
-  const documentThread = {
-    id: "thread-1",
-    title: "Brief.md",
-    metadata: {
-      aiChatDocument: {
-        key: "brief",
-        profileId: aiOpponentProfile.id,
-        sourceIds: [],
-      },
-    },
-  };
+describe("Social thread context", () => {
+  beforeEach(() => resetChatComponentMocks());
 
-  beforeEach(() => {
-    resetChatComponentMocks();
-  });
-
-  it("opens the native editor and export for an owned document with no saved sections", () => {
-    mockProjectsRead.mockReturnValue({ data: [project] });
-    renderComponent("ai-chat", { socialModuleThread: documentThread });
-
-    expect(mockProjectsRead).toHaveBeenCalledWith({
-      id: "subject-1",
-      reactQueryOptions: { enabled: true },
-    });
-    expect(mockDocumentWidget).toHaveBeenCalledWith(
-      expect.objectContaining({
-        variant:
-          "me-social-module-profile-id-chat-id-thread-id-knowledge-module-source-list-document-ai-chat",
-        project,
-        thread: documentThread,
-        dataSource: "props",
-      }),
-    );
-    expect(
-      screen.getByRole("region", { name: "Brief.md editor", hidden: true }),
-    ).toBeTruthy();
-    expect(
-      screen.getByRole("button", { name: "Download Markdown", hidden: true }),
-    ).toBeTruthy();
-    expect(screen.getByRole("textbox", { name: "Message" })).toBeTruthy();
-  });
-
-  it.each([
-    { chat: { id: "other-chat" } },
-    { requesterProfileId: "other-requester" },
-    { profile: { id: "other-assistant" } },
-  ])(
-    "requires the exact chat, requester and assistant (mismatch %j)",
-    (otherProject) => {
-      mockProjectsRead.mockReturnValue({
-        data: [{ ...project, ...otherProject }],
-      });
-      renderComponent("ai-chat", { socialModuleThread: documentThread });
-
-      expect(mockDocumentWidget).not.toHaveBeenCalled();
-      expect(screen.getByRole("textbox", { name: "Message" })).toBeTruthy();
-    },
-  );
-
-  it("ignores a matching project left in cache after permission is revoked", () => {
-    mockProjectsRead.mockReturnValue({
-      data: [project],
-      error: Object.assign(new Error("Forbidden"), { status: 403 }),
-    });
-    renderComponent("ai-chat", { socialModuleThread: documentThread });
-
-    expect(mockDocumentWidget).not.toHaveBeenCalled();
-  });
-
-  it("uses the thread link and metadata for documents, and leaves an ordinary thread full width", () => {
-    mockProjectsRead.mockReturnValue({ data: [project] });
+  it("opens older document threads as conversations", () => {
     renderComponent("ai-chat", {
       socialModuleThread: {
-        ...documentThread,
+        id: "thread-1",
         title: "Brief.md",
-        metadata: {},
-      },
-    });
-
-    expect(mockProjectsRead).toHaveBeenCalledWith({
-      id: "subject-1",
-      reactQueryOptions: { enabled: false },
-    });
-    expect(mockDocumentWidget).not.toHaveBeenCalled();
-    expect(
-      screen.queryByRole("complementary", { name: "Context", hidden: true }),
-    ).toBeNull();
-    expect(
-      screen.queryByRole("button", { name: "Context", hidden: true }),
-    ).toBeNull();
-  });
-
-  it("sends the selected knowledge section with the existing Social composer", async () => {
-    mockProjectsRead.mockReturnValue({ data: [project] });
-    renderComponent("ai-chat", {
-      socialModuleThread: {
-        ...documentThread,
         metadata: {
           aiChatDocument: {
-            ...documentThread.metadata.aiChatDocument,
+            key: "brief",
+            profileId: aiOpponentProfile.id,
             sourceIds: ["section-1"],
           },
         },
       },
     });
 
-    fireEvent.click(screen.getByRole("button", { name: "Document" }));
-    fireEvent.click(screen.getByRole("button", { name: "Discuss Audience" }));
-    const textarea = screen.getByRole("textbox", { name: "Message" });
-    expect(document.activeElement).toBe(textarea);
-    expect(
-      screen.getByRole("button", { name: "Chat" }).getAttribute("aria-pressed"),
-    ).toBe("true");
-    fireEvent.change(textarea, { target: { value: "Refine this section" } });
-    fireEvent.click(screen.getByRole("button", { name: "Send message" }));
-
-    await waitFor(() => {
-      expect(mockMessageCreateMutate).toHaveBeenCalledWith(
-        expect.objectContaining({
-          data: expect.objectContaining({
-            metadata: expect.objectContaining({
-              aiChatDocumentSourceId: "section-1",
-              rbacAiReactionRequest: aiReactionRequest({
-                useKnowledgeSearch: true,
-              }),
-            }),
-          }),
-        }),
-        expect.any(Object),
-      );
+    expect(screen.getByRole("textbox", { name: "Message" })).toBeTruthy();
+    expect(screen.queryByRole("button", { name: "Document" })).toBeNull();
+    expect(screen.queryByRole("button", { name: "Context" })).toBeNull();
+    expect(mockCustomerWork).toHaveBeenCalledWith({
+      id: "subject-1",
+      threadId: "",
     });
+  });
+
+  it("shows linked products for a discussion before a CRM task exists", () => {
+    renderComponent("default", {
+      socialModuleThread: {
+        id: "thread-1",
+        linkedProducts: [
+          { id: "product-1", slug: "cover", title: { en: "Cover" } },
+        ],
+      },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Context" }));
+    expect(
+      screen.getByRole("link", { name: "Cover" }).getAttribute("href"),
+    ).toBe("/en/ecommerce/products/cover");
+    expect(screen.queryByRole("heading", { name: "Task" })).toBeNull();
+  });
+
+  it("shows the order’s published offer title and keeps the selected offer", () => {
+    mockCustomerWork.mockReturnValue({
+      data: {
+        chatId: "chat-1",
+        threadId: "thread-1",
+        storeId: "store-1",
+        taskId: "task-1",
+        orderId: "order-1",
+        offerId: "offer-1",
+        productSlug: "cover",
+        productTitle: { en: "Cover design" },
+        status: "active",
+        assignment: "manager",
+        operator: "Alex",
+      },
+    });
+    renderComponent("default", {
+      socialModuleThread: { id: "thread-1", hasCustomerWork: true },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Context" }));
+    expect(
+      screen.getByRole("link", { name: "Cover design" }).getAttribute("href"),
+    ).toBe("/en/ecommerce/products/cover?offer=offer-1");
+    expect(screen.getByRole("link", { name: "View order" })).toBeTruthy();
+    expect(screen.getByRole("heading", { name: "Manager" })).toBeTruthy();
+    expect(screen.queryByRole("heading", { name: "Private notes" })).toBeNull();
+  });
+
+  it("ignores work that does not belong to the current chat and thread", () => {
+    mockCustomerWork.mockReturnValue({
+      data: { chatId: "other-chat", threadId: "thread-1", taskId: "task-1" },
+    });
+    renderComponent("default", {
+      socialModuleThread: { id: "thread-1", hasCustomerWork: true },
+    });
+    expect(mockCustomerWork).toHaveBeenCalledWith({
+      id: "subject-1",
+      threadId: "thread-1",
+    });
+    expect(screen.queryByRole("button", { name: "Context" })).toBeNull();
   });
 });
 
@@ -575,9 +519,10 @@ describe("Given: OpenRouter chat profile sidebar", () => {
         },
       });
 
-      fireEvent.click(screen.getByLabelText("Download attached file notes.md"));
+      fireEvent.click(screen.getByRole("button", { name: "Preview notes.md" }));
+      fireEvent.click(screen.getByRole("button", { name: "Download" }));
 
-      expect(createObjectURL).toHaveBeenCalledWith(file);
+      expect(createObjectURL).toHaveBeenCalledWith(expect.any(Blob));
       expect(open).not.toHaveBeenCalled();
       expect(download.mock.instances[0]).toMatchObject({
         href: "blob:notes-preview",
@@ -587,6 +532,7 @@ describe("Given: OpenRouter chat profile sidebar", () => {
       expect(revokeObjectURL).toHaveBeenCalledWith("blob:notes-preview");
       jest.useRealTimers();
 
+      fireEvent.click(screen.getByRole("button", { name: "Close" }));
       fireEvent.click(screen.getByLabelText("Remove attached file notes.md"));
 
       expect(screen.queryByText("notes.md")).toBeNull();

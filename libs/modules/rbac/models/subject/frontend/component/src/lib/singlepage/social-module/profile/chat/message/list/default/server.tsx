@@ -5,7 +5,7 @@ import { IComponentProps } from "./interface";
 import Client from "./client";
 
 /**
- * The browser session loads the owner project, messages, and actions.
+ * The browser session loads messages and actions.
  */
 export default async function Component(props: IComponentProps) {
   return (

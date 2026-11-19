@@ -84,7 +84,6 @@ it("merges two responding profiles across real JSONB CAS conflicts and rejects e
       triggerMessageId: messages[10].id,
       resetMessageId: null,
       history,
-      documentThread: false,
       mode: "compact",
       modules: {
         social: social,

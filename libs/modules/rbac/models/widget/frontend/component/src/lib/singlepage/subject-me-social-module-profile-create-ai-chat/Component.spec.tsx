@@ -95,8 +95,7 @@ jest.mock(
   () => ({ api: {} }),
 );
 jest.mock("@sps/rbac/models/subject/frontend/component", () => ({
-  projectHref: () =>
-    "/ai-chat/social/profiles/profile/chats/chat/threads/thread",
+  projectHref: () => "/social/chats/chat/threads/thread",
   Component: (props: any) => {
     if (props.variant === "authentication-me-default")
       return props.children({ data: { id: "subject" }, authenticated: true });
@@ -154,7 +153,7 @@ it("opens the original photo card without replacing the project chooser", () => 
     screen
       .getByRole("link", { name: "Открыть Existing project" })
       .getAttribute("href"),
-  ).toBe("/ru/ai-chat/social/profiles/profile/chats/chat/threads/thread");
+  ).toBe("/ru/social/chats/chat/threads/thread");
   expect(screen.queryByRole("form")).toBeNull();
   expect(contentRead).not.toHaveBeenCalled();
   fireEvent.click(screen.getByRole("button", { name: "Создать проект" }));

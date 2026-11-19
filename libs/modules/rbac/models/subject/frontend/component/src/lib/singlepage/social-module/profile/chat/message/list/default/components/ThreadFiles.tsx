@@ -9,6 +9,8 @@ import {
   type IThreadMessagesScope,
 } from "../hooks/use-thread-messages";
 import { PrivateMessageAttachments } from "./PrivateMessageAttachments";
+import { ThreadContextCard } from "./ThreadContextCard";
+import { isChatAccessError } from "../utils";
 
 interface IProps extends IThreadMessagesScope {
   isCustomerWork?: boolean;
@@ -36,13 +38,17 @@ export function useThreadHasFiles(
     [isCustomerWork],
   );
   const messages = useThreadMessages(scope, false, { select, enabled });
-  return enabled && !messages.isError && messages.data === true;
+  return (
+    enabled && !isChatAccessError(messages.error) && messages.data === true
+  );
 }
 
 export function ThreadFiles(props: IProps) {
   const ru = props.language === "ru";
   const messages = useThreadMessages(props);
-  const scopedMessages = messages.isError ? undefined : messages.data;
+  const scopedMessages = isChatAccessError(messages.error)
+    ? undefined
+    : messages.data;
   const attachments = useMemo(() => {
     const seen = new Set<string>();
     const files = (scopedMessages ?? []).flatMap((message) =>
@@ -61,26 +67,12 @@ export function ThreadFiles(props: IProps) {
   }, [scopedMessages, props.isCustomerWork]);
 
   const hasFiles = attachments.files.length || attachments.privateFiles.length;
-  if (!hasFiles && !messages.isLoading && !messages.isError) return null;
+  if (!hasFiles) return null;
 
   return (
-    <section className="grid min-w-0 gap-3">
-      <h4 className="flex items-center gap-2 text-sm font-semibold">
-        <Files className="size-4 shrink-0" aria-hidden="true" />
-        {ru ? "Файлы" : "Files"}
-      </h4>
-      {messages.isError && (
-        <p role="alert" className="text-sm text-destructive">
-          {ru ? "Не удалось загрузить файлы." : "Could not load files."}
-        </p>
-      )}
-      {messages.isLoading && (
-        <p role="status" className="text-sm text-muted-foreground">
-          {ru ? "Загружаем файлы…" : "Loading files…"}
-        </p>
-      )}
+    <ThreadContextCard icon={Files} title={ru ? "Файлы" : "Files"}>
       {attachments.files.length > 0 && (
-        <ul className="grid min-w-0 gap-2">
+        <ul className="grid min-w-0 grid-cols-2 gap-2">
           {attachments.files.map((file) => (
             <li key={file.id} className="min-w-0">
               <FileStorageModuleFile
@@ -89,7 +81,7 @@ export function ThreadFiles(props: IProps) {
                 data={file}
                 dataSource="props"
                 language={props.language}
-                layout="row"
+                layout="card"
               />
             </li>
           ))}
@@ -106,6 +98,6 @@ export function ThreadFiles(props: IProps) {
           fullWidth
         />
       ))}
-    </section>
+    </ThreadContextCard>
   );
 }

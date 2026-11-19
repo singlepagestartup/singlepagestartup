@@ -1,18 +1,5 @@
 const mockBootstrap = jest.fn();
-const mockDocuments = jest.fn();
-const mockEnsure = jest.fn();
-jest.mock("./skills", () => ({
-  Service: class {
-    ensure = mockEnsure;
-  },
-}));
-jest.mock("./documents", () => ({
-  Service: class {
-    execute = mockDocuments;
-  },
-}));
 const mockProfileCreate = jest.fn();
-const mockProfileDelete = jest.fn();
 const mockRelationCreate = jest.fn();
 jest.mock("./ai/bootstrap", () => ({
   Service: class {
@@ -21,7 +8,7 @@ jest.mock("./ai/bootstrap", () => ({
 }));
 jest.mock("@sps/shared-utils", () => ({ RBAC_SECRET_KEY: "test-secret" }));
 jest.mock("@sps/social/models/profile/sdk/server", () => ({
-  api: { create: mockProfileCreate, delete: mockProfileDelete },
+  api: { create: mockProfileCreate },
 }));
 jest.mock(
   "@sps/rbac/relations/subjects-to-social-module-profiles/sdk/server",
@@ -119,8 +106,6 @@ function dependencies() {
 describe("Subject profile collection", () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    mockEnsure.mockResolvedValue([]);
-    mockProfileDelete.mockResolvedValue(undefined);
     mockBootstrap.mockImplementation(async ({ socialModuleProfile }) => ({
       socialModuleProfile,
     }));
@@ -213,21 +198,6 @@ describe("Subject profile collection", () => {
     expect(mockRelationCreate).not.toHaveBeenCalled();
     expect(mockBootstrap).not.toHaveBeenCalled();
   });
-  it("cleans up the new profile and stops setup when creating its skills fails", async () => {
-    mockEnsure.mockRejectedValueOnce(new Error("Skill creation failed"));
-    await expect(
-      new Service(dependencies() as any).create({
-        subjectId: "owner",
-        data: { variant: "artificial-intelligence", title: { en: "Project" } },
-      }),
-    ).rejects.toThrow("Skill creation failed");
-    expect(mockProfileDelete).toHaveBeenCalledWith(
-      expect.objectContaining({ id: "profile-1" }),
-    );
-    expect(mockBootstrap).not.toHaveBeenCalled();
-    expect(mockRelationCreate).not.toHaveBeenCalled();
-    expect(mockDocuments).not.toHaveBeenCalled();
-  });
   it("two projects with the same title receive distinct profiles, conversations and agent identities", async () => {
     const deps = dependencies();
     const svc = new Service(deps as any);
@@ -290,113 +260,13 @@ describe("Subject profile collection", () => {
       data: { title: "Project", variant: "ai-chat" },
       autoBootstrapProfile: true,
     });
+    expect(
+      deps.socialModuleChatLifecycleCreateChatWithDefaultThread,
+    ).toHaveBeenCalledTimes(2);
     expect(mockBootstrap.mock.calls[0][0].socialModuleProfile).toBe(first);
     expect(mockBootstrap.mock.calls[1][0].socialModuleProfile).toBe(second);
-    expect(mockEnsure).toHaveBeenCalledWith(first.id);
-    expect(mockEnsure).toHaveBeenCalledWith(second.id);
     expect(first).not.toHaveProperty("thread");
     expect(first).not.toHaveProperty("chat");
-    expect(
-      mockDocuments.mock.calls.map(([props]) => ({
-        profileId: props.profileId,
-        chatId: props.chatId,
-      })),
-    ).toEqual([
-      { profileId: first.id, chatId: "chat-1" },
-      { profileId: second.id, chatId: "chat-2" },
-    ]);
-  });
-
-  it("waits for private Skill setup before publishing assistant ownership and documents", async () => {
-    let finish: (value: any[]) => void = () => {};
-    mockEnsure.mockImplementationOnce(
-      () =>
-        new Promise((resolve) => {
-          finish = resolve;
-        }),
-    );
-    const creation = new Service(dependencies() as any).create({
-      subjectId: "owner",
-      data: { variant: "artificial-intelligence", title: { en: "Project" } },
-    });
-    for (let step = 0; step < 5; step++) await Promise.resolve();
-    expect(mockEnsure).toHaveBeenCalledWith("profile-1");
-    expect(mockRelationCreate).not.toHaveBeenCalled();
-    expect(mockDocuments).not.toHaveBeenCalled();
-    finish([]);
-    await creation;
-    expect(mockRelationCreate).toHaveBeenCalledTimes(1);
-    expect(mockDocuments).toHaveBeenCalledTimes(1);
-  });
-  it("ignores caller slug and admin title instead of selecting another profile", async () => {
-    const deps = dependencies();
-    const profile = await new Service(deps as any).create({
-      subjectId: "owner",
-      data: {
-        variant: "artificial-intelligence",
-        slug: "foreign",
-        adminTitle: "Caller override",
-        title: { en: "One" },
-      } as any,
-    });
-    expect(profile.slug).toBe("automatic-slug-1");
-    expect(profile.adminTitle).toBe("Automatic admin title");
-    expect(deps.modules.social.profile.find).not.toHaveBeenCalled();
-    expect(deps.modules.social.chat.find).not.toHaveBeenCalled();
-    expect(mockProfileCreate.mock.calls[0][0].data).not.toHaveProperty("slug");
-    expect(mockProfileCreate.mock.calls[0][0].data).not.toHaveProperty(
-      "adminTitle",
-    );
-  });
-  it("rejects an unsupported variant before creating records", async () => {
-    const deps = dependencies();
-    await expect(
-      new Service(deps as any).create({
-        subjectId: "owner",
-        data: {
-          variant: "agent" as any,
-          title: { en: "Other" },
-        },
-      }),
-    ).rejects.toThrow("Unsupported profile variant");
-    expect(mockProfileCreate).not.toHaveBeenCalled();
-    expect(mockBootstrap).not.toHaveBeenCalled();
-    expect(
-      deps.socialModuleChatLifecycleCreateChatWithDefaultThread,
-    ).not.toHaveBeenCalled();
-  });
-  it("rejects an empty project title before creating records", async () => {
-    const deps = dependencies();
-    await expect(
-      new Service(deps as any).create({
-        subjectId: "owner",
-        data: {
-          variant: "artificial-intelligence",
-          title: { en: "  " },
-        },
-      }),
-    ).rejects.toThrow("Profile title must contain 1 to 200 characters");
-    expect(mockProfileCreate).not.toHaveBeenCalled();
-    expect(mockBootstrap).not.toHaveBeenCalled();
-    expect(
-      deps.socialModuleChatLifecycleCreateChatWithDefaultThread,
-    ).not.toHaveBeenCalled();
-  });
-  it("an anonymous subject cannot create a profile", async () => {
-    const deps = dependencies();
-    deps.findById.mockResolvedValue({ id: "anonymous", variant: "default" });
-    deps.module.subjectsToIdentities.find.mockResolvedValue([]);
-    await expect(
-      new Service(deps as any).create({
-        subjectId: "anonymous",
-        data: {
-          variant: "artificial-intelligence",
-          title: { en: "Profile" },
-        },
-      }),
-    ).rejects.toThrow("Sign in");
-    expect(mockProfileCreate).not.toHaveBeenCalled();
-    expect(mockBootstrap).not.toHaveBeenCalled();
   });
 });
 

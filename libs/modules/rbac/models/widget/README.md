@@ -46,7 +46,7 @@ scenario registry.
 - `subject-me-social-module-profile-create-ai-chat`: authenticated project chooser and creation flow. Its own `widgets-to-website-builder-module-widgets` link selects the persisted Website Builder creation card. The chooser renders project links; Create project opens the original `content-ai-chat-profile-create` card with its photograph, copy and Subject form. Back to projects returns to the chooser.
 - `subject-me-social-module-profile-id-settings-ai-chat`: project settings for the explicitly selected Profile/Chat.
 - `subject-me-social-module-profile-id-chat-id-thread-create-ai-chat`: Thread creation within a selected, connected project.
-- `subject-me-social-module-profile-id-chat-id-thread-id-ai-chat`: connected-project guard and Social Profile → Chat → Thread composition. Subject components provide messages, composer, Knowledge editors and document export.
+- `subject-me-social-module-profile-id-chat-id-thread-id-ai-chat`: checks access to the project and opens the corresponding Social thread. New projects and existing bookmarks use the same chat navigation and thread context.
 - `subject-me-authentication-*-ai-chat`: separate authentication pages whose own Widget relation selects the Website Builder frame, containing the corresponding Subject form.
 
 AI Chat Widgets use the shared model reader. Auth, project list/create and Help

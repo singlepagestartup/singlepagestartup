@@ -2,7 +2,6 @@ import { Service as AudioTranscriptionService } from "../../../../../../../../se
 import {
   RBAC_JWT_SECRET,
   RBAC_SECRET_KEY,
-  AI_CHAT_DOCUMENTS,
   assertSupportedAiChatAttachments,
 } from "@sps/shared-utils";
 import { Context } from "hono";
@@ -24,12 +23,7 @@ import {
 import { api as fileStorageModuleFileApi } from "@sps/file-storage/models/file/sdk/server";
 import { IModel as IFileStorageModuleFile } from "@sps/file-storage/models/file/sdk/model";
 import { shouldSkipOrdinaryNotificationForAudioTranscription } from "./audio-transcription";
-import {
-  normalizeRbacAiReactionRequestMetadata,
-  parseRbacAiReactionRequestMetadata,
-  getAIChatDocument,
-  RBAC_AI_REACTION_REQUEST_METADATA_KEY,
-} from "@sps/rbac/models/subject/sdk/model";
+import { normalizeRbacAiReactionRequestMetadata } from "@sps/rbac/models/subject/sdk/model";
 import { getDrizzle } from "@sps/shared-backend-database-config";
 import { withConsistencyDatabase } from "@sps/shared-backend-api";
 import { projectCustomerWorkAttachments } from "../../../../../../../../service/singlepage/ecommerce/customer-work/media";
@@ -128,14 +122,13 @@ export class Handler {
         throw new Error("Validation error. Invalid JSON in body['data']");
       }
 
-      const aiReactionRequest = parseRbacAiReactionRequestMetadata(
-        parsedBody.data?.metadata,
-      );
-
-      if (aiReactionRequest && parsedBody.data) {
-        parsedBody.data.metadata = normalizeRbacAiReactionRequestMetadata(
+      if (parsedBody.data?.metadata !== undefined) {
+        const metadata = normalizeRbacAiReactionRequestMetadata(
           parsedBody.data.metadata,
         );
+        if (metadata) {
+          parsedBody.data.metadata = metadata;
+        }
       }
 
       const requestedThreadId =
@@ -172,57 +165,7 @@ export class Handler {
         });
       }
 
-      const thread = await this.service.modules.social.thread.findById({
-        id: socialModuleThreadId,
-      });
       operation.stage = "message.prepare";
-      const document = getAIChatDocument(thread?.metadata);
-      if (
-        document &&
-        document.profileId !== socialModuleProfileId &&
-        parsedBody.data
-      ) {
-        const selectedSourceId =
-          parsedBody.data.metadata?.aiChatDocumentSourceId;
-        if (
-          selectedSourceId !== undefined &&
-          (typeof selectedSourceId !== "string" ||
-            !document.sourceIds.includes(selectedSourceId))
-        ) {
-          throw new Error(
-            "Authorization error. Selected Knowledge Source does not belong to this document.",
-          );
-        }
-        const skill = await this.service.socialModuleProfileDocumentSkillFind({
-          socialModuleProfileId: document.profileId,
-          documentKey: document.key,
-        });
-        const description =
-          typeof parsedBody.data.description === "string"
-            ? parsedBody.data.description
-            : "";
-        const baseSlug = AI_CHAT_DOCUMENTS.find(
-          (definition) => definition.key === document.key,
-        )?.skillSlug;
-        const leadingCommand = description.match(/^\/([^\s]+)(?=\s|$)\s*/);
-        const content =
-          leadingCommand && [skill.slug, baseSlug].includes(leadingCommand[1])
-            ? description.slice(leadingCommand[0].length)
-            : description;
-        parsedBody.data.description = `/${skill.slug}\n\n${content}`;
-        parsedBody.data.metadata = {
-          ...parsedBody.data.metadata,
-          [RBAC_AI_REACTION_REQUEST_METADATA_KEY]: {
-            ...(aiReactionRequest || {
-              version: 1,
-              modelId: "auto",
-              reasoning: "auto",
-              useKnowledgeSearch: true,
-            }),
-            skillIds: [skill.id],
-          },
-        };
-      }
 
       if (parsedBody.data && "threadId" in parsedBody.data) {
         delete parsedBody.data.threadId;

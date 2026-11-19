@@ -4,6 +4,8 @@ import type { IChatWorkspaceProps } from "./interface";
 /** Presentation only: project data and navigation actions remain with their owner. */
 export function ChatWorkspace({
   navigation,
+  navigationClassName,
+  navigationId,
   children,
   className,
 }: IChatWorkspaceProps) {
@@ -14,7 +16,13 @@ export function ChatWorkspace({
         className,
       )}
     >
-      <aside className="hidden w-56 shrink-0 overflow-y-auto bg-default p-4 text-default-foreground lg:block">
+      <aside
+        id={navigationId}
+        className={cn(
+          "hidden w-56 shrink-0 overflow-y-auto bg-default p-4 text-default-foreground lg:block",
+          navigationClassName,
+        )}
+      >
         {navigation}
       </aside>
       {children}

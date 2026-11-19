@@ -1,3 +1,5 @@
+import type { IModel as IEcommerceModuleProduct } from "@sps/ecommerce/models/product/sdk/model";
+import type { IModel as ISocialModuleThread } from "@sps/social/models/thread/sdk/model";
 import { z } from "zod";
 import { ecommerceOrderCreateSchema } from "./ecommerce-product-purchase";
 import type { TStageWorkCapability } from "@sps/crm/models/funnel/sdk/model";
@@ -174,6 +176,16 @@ export interface ICustomerWorkCartProposal extends ICustomerWorkCartSelection {
   orderId?: string;
 }
 
+export interface ILinkedChatProduct extends Pick<
+  IEcommerceModuleProduct,
+  "id" | "slug" | "title"
+> {}
+
+export interface ISocialModuleChatThread extends ISocialModuleThread {
+  hasCustomerWork?: boolean;
+  linkedProducts?: ILinkedChatProduct[];
+}
+
 export interface ICustomerWorkView {
   storeId: string;
   taskId: string;
@@ -182,6 +194,7 @@ export interface ICustomerWorkView {
   orderId?: string;
   offerId?: string;
   productSlug?: string;
+  productTitle?: IEcommerceModuleProduct["title"];
   consultationTaskId?: string;
   operator?: string;
   workflow?: { title: string; stageTitle: string };

@@ -1,22 +1,14 @@
 /** @jest-environment jsdom */
 
 import { render, renderHook, screen } from "@testing-library/react";
-import type { IModel as ISocialModuleThread } from "@sps/social/models/thread/sdk/model";
+import type { ICustomerWorkView } from "@sps/rbac/models/subject/sdk/model";
 import { ThreadContext } from "./ThreadContext";
 import { useThreadHasFiles } from "./ThreadFiles";
 
 const mockThreadMessages = jest.fn();
-const mockKnowledgeSources = jest.fn();
 
 jest.mock("../hooks/use-thread-messages", () => ({
   useThreadMessages: (...args: unknown[]) => mockThreadMessages(...args),
-}));
-jest.mock("@sps/rbac/models/subject/sdk/client", () => ({
-  api: {
-    socialModuleProfileFindByIdChatFindByIdProfileFindByIdKnowledgeSourceFind: (
-      ...args: unknown[]
-    ) => mockKnowledgeSources(...args),
-  },
 }));
 jest.mock("@sps/file-storage/models/file/frontend/component", () => ({
   Component: ({ data, layout }: { data: { id: string }; layout: string }) => (
@@ -37,64 +29,25 @@ const scope = {
   onVersionSelect: jest.fn(),
 };
 
-it("shows each scoped file once and only knowledge linked to the selected document", () => {
+it("shows an attached file once using its preview card", () => {
   mockThreadMessages.mockReturnValue({
     data: [
       { id: "first-message", attachments: [{ id: "Design input" }] },
       { id: "second-message", attachments: [{ id: "Design input" }] },
     ],
   });
-  mockKnowledgeSources.mockReturnValue({
-    data: [
-      { id: "allowed", title: "Design requirements", content: "Palette" },
-      { id: "other", title: "Unrelated knowledge", content: "Other project" },
-    ],
-  });
-  const thread = {
-    id: scope.socialModuleThreadId,
-    metadata: {
-      aiChatDocument: {
-        key: "design",
-        profileId: "document-owner",
-        sourceIds: ["allowed"],
-      },
-    },
-  } as ISocialModuleThread;
 
-  render(
-    <ThreadContext
-      {...scope}
-      isCustomerWork={false}
-      socialModuleThread={thread}
-    />,
-  );
+  render(<ThreadContext {...scope} isCustomerWork={false} />);
 
   expect(screen.getAllByText("Design input")).toHaveLength(1);
   expect(screen.getByText("Design input").getAttribute("data-layout")).toBe(
-    "row",
+    "card",
   );
-  expect(screen.getByText("Design requirements")).toBeTruthy();
-  expect(screen.queryByText("Unrelated knowledge")).toBeNull();
-  expect(mockKnowledgeSources).toHaveBeenCalledWith({
-    id: "buyer",
-    socialModuleProfileId: "profile",
-    socialModuleChatId: "chat",
-    targetSocialModuleProfileId: "document-owner",
-  });
 });
 
 it("omits the Files heading when the selected discussion has no attachments", () => {
   mockThreadMessages.mockReturnValue({ data: [{ id: "message" }] });
-  const thread = { id: scope.socialModuleThreadId } as ISocialModuleThread;
-
-  render(
-    <ThreadContext
-      {...scope}
-      isCustomerWork={false}
-      socialModuleThread={thread}
-    />,
-  );
-
+  render(<ThreadContext {...scope} isCustomerWork={false} />);
   expect(screen.queryByRole("heading", { name: "Files" })).toBeNull();
 });
 
@@ -109,10 +62,10 @@ it("opens file context only for attachments visible in that discussion", () => {
     privateAttachments: [{ id: "private-file", name: "Brief.pdf" }],
   };
   let messages = [workMessage];
-  let isError = false;
+  let error: { status: number } | null = null;
   mockThreadMessages.mockImplementation((_scope, _interval, options) => ({
     data: options.select(messages),
-    isError,
+    error,
   }));
   const { result, rerender } = renderHook(
     ({ isCustomerWork }) => useThreadHasFiles(scope, isCustomerWork),
@@ -128,7 +81,7 @@ it("opens file context only for attachments visible in that discussion", () => {
   messages = [privateMessage];
   rerender({ isCustomerWork: true });
   expect(result.current).toBe(true);
-  isError = true;
+  error = { status: 403 };
   rerender({ isCustomerWork: true });
   expect(result.current).toBe(false);
 });
@@ -144,10 +97,12 @@ it("keeps work attachments on the signed-in buyer's download path", () => {
       },
     ],
   });
-  const thread = { id: scope.socialModuleThreadId } as ISocialModuleThread;
-
+  const work = {
+    chatId: scope.socialModuleChatId,
+    threadId: scope.socialModuleThreadId,
+  } as ICustomerWorkView;
   const { container } = render(
-    <ThreadContext {...scope} isCustomerWork socialModuleThread={thread} />,
+    <ThreadContext {...scope} isCustomerWork work={work} />,
   );
 
   expect(screen.getByText("Customer work controls")).toBeTruthy();

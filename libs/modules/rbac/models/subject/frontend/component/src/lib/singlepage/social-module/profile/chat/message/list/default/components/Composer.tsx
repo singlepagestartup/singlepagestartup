@@ -25,22 +25,19 @@ import {
   shouldShowKnowledgeMentionOption,
 } from "../utils";
 import { Form } from "@sps/shared-ui-shadcn";
-import { FileText, Paperclip, Send, X } from "lucide-react";
+import { Paperclip, Send } from "lucide-react";
 import { Controller, useWatch } from "react-hook-form";
 import {
   useCallback,
   useEffect,
   useMemo,
+  useRef,
   useState,
   type KeyboardEvent,
 } from "react";
-import { toast } from "sonner";
 
 interface ComposerProps {
   isCustomerWork: boolean;
-  isDocument?: boolean;
-  documentSource?: { sourceId: string; title: string };
-  onDiscussWholeDocument?: () => void;
   canSelectOpenRouterReasoning: boolean;
   canUseKnowledge: boolean;
   clearSelectedSkills: () => void;
@@ -92,8 +89,6 @@ export function Composer(props: ComposerProps) {
   const ru = props.language === "ru";
   const composer = useChatComposer({
     isCustomerWork: props.isCustomerWork,
-    isDocument: props.isDocument,
-    documentSourceId: props.documentSource?.sourceId,
     subjectId: props.subjectId,
     socialModuleProfileId: props.socialModuleProfileId,
     socialModuleChatId: props.socialModuleChatId,
@@ -138,17 +133,8 @@ export function Composer(props: ComposerProps) {
     props.syncSelectedSkillsToDescription(description);
   }, [description, props.syncSelectedSkillsToDescription]);
 
-  function getSelectedFileId(file: unknown, index: number) {
-    if (typeof file === "string") {
-      return `string:${index}:${file}`;
-    }
-
-    if (typeof File !== "undefined" && file instanceof File) {
-      return `file:${index}:${file.name}:${file.size}:${file.lastModified}`;
-    }
-
-    return `unknown:${index}`;
-  }
+  const fileSequence = useRef(0);
+  const fileIds = useRef(new WeakMap<File, string>());
 
   function isFileArray(files: unknown[]): files is File[] {
     return (
@@ -172,8 +158,12 @@ export function Composer(props: ComposerProps) {
 
     return selectedFiles.map((file, index) => {
       return {
-        id: getSelectedFileId(file, index),
+        id:
+          typeof file === "string"
+            ? `stored:${index}:${file}`
+            : (fileIds.current.get(file) ?? `local:${index}`),
         name: typeof file === "string" ? file : file.name,
+        file: typeof file === "string" ? undefined : file,
       };
     });
   }, [selectedFiles]);
@@ -317,58 +307,48 @@ export function Composer(props: ComposerProps) {
     composer.focusComposerTextArea();
   }
 
-  function openSelectedFile(fileId: string) {
-    const files = composer.form.getValues("files");
-
-    if (!Array.isArray(files)) {
-      return;
-    }
-
-    const file = files.find((item, index) => {
-      return getSelectedFileId(item, index) === fileId;
-    });
-
-    if (!(typeof File !== "undefined" && file instanceof File)) {
-      toast.error(
-        ru ? "Не удалось открыть файл" : "Could not open the selected file",
-      );
-      return;
-    }
-
-    const fileUrl = URL.createObjectURL(file);
-    const download = document.createElement("a");
-    download.href = fileUrl;
-    download.download = file.name;
-    download.click();
-    window.setTimeout(() => URL.revokeObjectURL(fileUrl), 1000);
-  }
-
-  function removeSelectedFile(fileId: string) {
-    const files = composer.form.getValues("files");
-
-    if (!Array.isArray(files)) {
-      return;
-    }
-
-    const nextFiles = files.filter((file, index) => {
-      return getSelectedFileId(file, index) !== fileId;
-    });
-    const nextValue =
-      nextFiles.length && isFileArray(nextFiles)
-        ? nextFiles
-        : nextFiles.length && isStringArray(nextFiles)
+  const removeSelectedFile = useCallback(
+    (fileId: string) => {
+      const index = selectedFileItems.findIndex((item) => item.id === fileId);
+      const files = composer.form.getValues("files");
+      if (index < 0 || !files) return;
+      const nextFiles = files.filter((_, itemIndex) => itemIndex !== index);
+      const nextValue = nextFiles.length
+        ? isFileArray(nextFiles) || isStringArray(nextFiles)
           ? nextFiles
-          : undefined;
+          : undefined
+        : undefined;
 
-    composer.form.setValue("files", nextValue, {
-      shouldDirty: true,
-      shouldValidate: true,
-    });
+      composer.form.setValue("files", nextValue, {
+        shouldDirty: true,
+        shouldValidate: true,
+      });
 
-    if (composer.fileInputRef.current) {
-      composer.fileInputRef.current.value = "";
-    }
-  }
+      if (composer.fileInputRef.current) {
+        composer.fileInputRef.current.value = "";
+      }
+    },
+    [composer.fileInputRef, composer.form, selectedFileItems],
+  );
+
+  const reorderSelectedFile = useCallback(
+    (fileId: string, targetId: string) => {
+      const from = selectedFileItems.findIndex((item) => item.id === fileId);
+      const to = selectedFileItems.findIndex((item) => item.id === targetId);
+      const files = composer.form.getValues("files");
+      if (from < 0 || to < 0 || from === to || !files) return;
+      const nextFiles = [...files];
+      const [moved] = nextFiles.splice(from, 1);
+      nextFiles.splice(to, 0, moved);
+      if (isFileArray(nextFiles) || isStringArray(nextFiles)) {
+        composer.form.setValue("files", nextFiles, {
+          shouldDirty: true,
+          shouldValidate: true,
+        });
+      }
+    },
+    [composer.form, selectedFileItems],
+  );
 
   const selectActiveSkillMentionOption = useCallback(() => {
     if (!isSkillMentionPickerOpen || skillMentionOptionCount <= 0) {
@@ -547,6 +527,12 @@ export function Composer(props: ComposerProps) {
             const newlySelectedFiles = event.target.files
               ? Array.from(event.target.files)
               : [];
+            for (const file of newlySelectedFiles) {
+              if (!fileIds.current.has(file)) {
+                fileSequence.current += 1;
+                fileIds.current.set(file, `local-file-${fileSequence.current}`);
+              }
+            }
             const currentFiles = composer.form.getValues("files");
             const files =
               Array.isArray(currentFiles) && isFileArray(currentFiles)
@@ -562,35 +548,14 @@ export function Composer(props: ComposerProps) {
           }}
         />
         <div className="min-w-0 rounded-2xl border border-border p-3">
-          {props.isDocument && (
-            <div className="mb-2 flex min-w-0 items-center gap-2 text-xs text-muted-foreground">
-              <FileText className="size-4 shrink-0" aria-hidden="true" />
-              <span className="truncate">
-                {props.documentSource?.title ||
-                  (ru ? "Весь документ" : "Whole document")}
-              </span>
-              {props.documentSource && (
-                <button
-                  type="button"
-                  className="grid size-8 shrink-0 place-items-center rounded-md hover:bg-muted focus-visible:outline-2"
-                  aria-label={
-                    ru ? "Обсудить весь документ" : "Discuss whole document"
-                  }
-                  onClick={props.onDiscussWholeDocument}
-                >
-                  <X className="size-4" aria-hidden="true" />
-                </button>
-              )}
-            </div>
-          )}
           <SelectedComposerPills
             files={selectedFileItems}
             isKnowledgeSearchSelected={isKnowledgeSearchSelected}
             skills={props.selectedSkills}
             language={props.language}
-            onOpenFile={openSelectedFile}
             onRemoveKnowledgeSearch={removeKnowledgeMention}
             onRemoveFile={removeSelectedFile}
+            onReorderFile={reorderSelectedFile}
             onRemoveSkill={removeSelectedSkill}
           />
           <Controller
@@ -604,15 +569,7 @@ export function Composer(props: ComposerProps) {
                   composer.textareaRef.current = element;
                 }}
                 aria-label={ru ? "Сообщение" : "Message"}
-                placeholder={
-                  props.isDocument
-                    ? ru
-                      ? "Обсудите знания или предложите изменение."
-                      : "Discuss this knowledge or request a change."
-                    : ru
-                      ? "Напишите сообщение…"
-                      : "Write a message..."
-                }
+                placeholder={ru ? "Напишите сообщение…" : "Write a message..."}
                 rows={4}
                 className="h-32 min-h-24 max-h-[min(50dvh,480px)] w-full resize-y rounded-lg bg-transparent text-sm leading-6 outline-none placeholder:text-muted-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
                 onChange={(event) => {

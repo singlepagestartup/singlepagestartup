@@ -16,9 +16,6 @@ jest.mock("@sps/rbac/models/subject/sdk/client", () => ({
 jest.mock("@sps/shared-frontend-client-api", () => ({
   queryClient: { invalidateQueries },
 }));
-jest.mock("../chat/id/thread/id/ai-chat/utils", () => ({
-  getProjectsQueryKey: (id: string) => ["projects", id],
-}));
 import { Component } from "./Component";
 
 it.each(["en", "ru"])(
@@ -67,7 +64,7 @@ it.each(["en", "ru"])(
       },
     });
     expect(invalidateQueries).toHaveBeenCalledWith({
-      queryKey: ["projects", "subject"],
+      predicate: expect.any(Function),
     });
     expect(screen.getByRole("status").textContent).toBe(
       language === "ru" ? "Название проекта сохранено" : "Project name saved",
