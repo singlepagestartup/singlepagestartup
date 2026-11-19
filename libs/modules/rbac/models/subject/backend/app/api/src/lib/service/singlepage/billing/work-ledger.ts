@@ -21,6 +21,8 @@ const operation = z
   .strict();
 type IOperation = z.infer<typeof operation>;
 interface IReservation extends IOperation {
+  eventId?: string;
+  runBudget?: string;
   budget: string;
 }
 interface ISettlement {
@@ -85,12 +87,18 @@ export class WorkLedger {
     return row;
   }
 
-  private async fundCheck(input: IOperation, budget?: string) {
+  private async fundCheck(
+    input: IOperation,
+    budget?: string,
+    eventId?: string,
+    runBudget?: string,
+  ) {
     const obligations = await this.records.obligations(
       input.senderId,
       input.currencyId,
       input.storeId,
       input.taskId,
+      eventId,
     );
     const total = await this.balances.total(input.senderId, input.currencyId);
     if (new Money(total).minus(obligations.held).lt(input.amount)) {
@@ -103,6 +111,12 @@ export class WorkLedger {
       new Money(obligations.committed).plus(input.amount).gt(budget)
     ) {
       throw new Error("Payment required. Task spending limit reached");
+    }
+    if (
+      runBudget &&
+      new Money(obligations.runCommitted).plus(input.amount).gt(runBudget)
+    ) {
+      throw new Error("Payment required. Run spending limit reached");
     }
   }
 
@@ -150,23 +164,50 @@ export class WorkLedger {
   }
 
   async reserve(data: IReservation) {
-    const { budget, ...input } = operation
-      .extend({ budget: amount })
+    const { budget, runBudget, eventId, ...input } = operation
+      .extend({
+        budget: amount,
+        runBudget: amount.optional(),
+        eventId: z.uuid().optional(),
+      })
       .parse(data);
+    if (Boolean(runBudget) !== Boolean(eventId))
+      throw new Error(
+        "Validation error. A run limit and event ID are required together",
+      );
     this.positive(input);
     return this.subject.repository.withWalletLocks(
-      this.keys(input),
+      [
+        ...this.keys(input),
+        `task-budget:${input.storeId}:${input.taskId}:${input.currencyId}`,
+      ],
       async () => {
         const prior = await this.records.byKey(
           input.storeId,
           input.operationKey,
         );
         if (prior) {
+          if (
+            (prior.eventId ?? undefined) !== eventId ||
+            Boolean(prior.runBudget) !== Boolean(runBudget) ||
+            (prior.runBudget &&
+              runBudget &&
+              !new Money(prior.runBudget).eq(runBudget))
+          ) {
+            throw new Error("Conflict error. Run reservation terms changed");
+          }
           return this.previous(prior, input, "reserve", budget);
         }
-        await this.fundCheck(input, budget);
+        await this.fundCheck(input, budget, eventId, runBudget);
         return this.records.create({
-          data: { ...input, budget, kind: "reserve", state: "held" },
+          data: {
+            ...input,
+            budget,
+            eventId,
+            runBudget,
+            kind: "reserve",
+            state: "held",
+          },
         });
       },
     );

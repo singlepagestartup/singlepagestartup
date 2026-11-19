@@ -20,8 +20,15 @@ export class Service extends CRUDService<IModel> {
     currencyId: string,
     storeId: string,
     taskId: string,
+    eventId?: string,
   ) {
-    return this.repository.obligations(senderId, currencyId, storeId, taskId);
+    return this.repository.obligations(
+      senderId,
+      currencyId,
+      storeId,
+      taskId,
+      eventId,
+    );
   }
 
   async byKey(storeId: string, operationKey: string) {

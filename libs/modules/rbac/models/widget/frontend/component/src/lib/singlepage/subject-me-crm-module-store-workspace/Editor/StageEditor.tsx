@@ -6,11 +6,13 @@ import type {
   TEvidenceKind,
   TFunnelKind,
   TTaskOutcome,
+  TWorkOperation,
 } from "@sps/crm/models/funnel/sdk/model";
 import type { ICrmWorkspaceOptions } from "@sps/rbac/models/subject/sdk/model";
 import { fieldClass, iconButtonClass, secondaryClass } from "../primitives";
 import { evidenceLabels } from "../view-model";
 import { Field, TextField } from "./Fields";
+import { ResultPricing } from "./ResultPricing";
 
 type TWaiting = NonNullable<IFunnelStage["waiting"]>;
 const waitEvents: TWaiting["expectedEvent"][] = [
@@ -30,6 +32,18 @@ const settlementEvents = [
   ["result-accepted", "Клиент принял результат"],
   ["payment-confirmed", "Платёж подтверждён"],
   ["delivery-confirmed", "Доставка подтверждена"],
+];
+
+const optionalWork: Array<{ operation: TWorkOperation; label: string }> = [
+  { operation: "request-routing", label: "Распознать запрос через JEV" },
+  { operation: "tool-selection", label: "Подобрать один инструмент" },
+  { operation: "compression", label: "Сжать длинный диалог" },
+  {
+    operation: "knowledge-search",
+    label: "Искать в материалах магазина по смыслу",
+  },
+  { operation: "vision", label: "Прочитать приложенное изображение" },
+  { operation: "transcription", label: "Расшифровать приложенный WAV" },
 ];
 
 function actionActor(evidence: TEvidenceKind): IFunnelAction["actors"] {
@@ -115,6 +129,29 @@ export function StageEditor({
           multiline
           onChange={(instruction) => onChange({ instruction })}
         />
+        <CartOffers key={stage.id} initialValue={stage.cartOfferIds ?? []}
+          onChange={(cartOfferIds) => onChange({ cartOfferIds })} />
+        <fieldset className="grid gap-2 text-sm">
+          <legend className="font-medium">Платные шаги исполнителя</legend>
+          {optionalWork.map(({ operation, label }) => (
+            <label key={operation} className="flex items-center gap-2">
+              <input
+                type="checkbox"
+                checked={stage.operations?.includes(operation) ?? false}
+                onChange={(event) => {
+                  const selected = new Set(stage.operations);
+                  if (event.currentTarget.checked) {
+                    selected.add(operation);
+                  } else {
+                    selected.delete(operation);
+                  }
+                  onChange({ operations: [...selected] });
+                }}
+              />
+              {label}
+            </label>
+          ))}
+        </fieldset>
         <div className="grid gap-3 sm:grid-cols-2">
           <TextField
             label="Достаточное доказательство"
@@ -218,6 +255,15 @@ export function StageEditor({
       </div>
       <div className="grid gap-3 border-t border-border pt-5">
         <h4 className="text-sm font-semibold">Назначение и расчёт</h4>
+        <TextField
+          label="Условия расчёта"
+          value={stage.settlementInstruction ?? ""}
+          multiline
+          onChange={(settlementInstruction) => onChange({ settlementInstruction })}
+        />
+        {kind === "individual-service" && (
+          <ResultPricing stage={stage} currencies={options.currencies} onChange={onChange} />
+        )}
         <div className="grid gap-3 sm:grid-cols-3">
           <Field label="Ответственный">
             <select
@@ -411,6 +457,18 @@ export function StageEditor({
       </details>
     </fieldset>
   );
+}
+
+function CartOffers({ initialValue, onChange }: { initialValue: string[]; onChange: (ids: string[]) => void }) {
+  const [value, setValue] = useState(initialValue.join(", "));
+  return <Field label="Предложения для корзины">
+    <textarea className={fieldClass} value={value} rows={2}
+      placeholder="ID предложений магазина через запятую" onChange={(event) => {
+        const text = event.currentTarget.value;
+        setValue(text);
+        onChange(text.split(",").map((id) => id.trim()).filter(Boolean));
+      }} />
+  </Field>;
 }
 
 function ReminderField({

@@ -42,13 +42,11 @@ beforeAll(async () => {
   await db
     .insert(Subject)
     .values([senderId, recipientId, providerSubjectId].map((id) => ({ id })));
-  await db
-    .insert(Balance)
-    .values({
-      subjectId: senderId,
-      billingModuleCurrencyId: currencyId,
-      amount: "50",
-    });
+  await db.insert(Balance).values({
+    subjectId: senderId,
+    billingModuleCurrencyId: currencyId,
+    amount: "50",
+  });
 });
 afterAll(async () => {
   const db = getDrizzle({});
@@ -122,13 +120,11 @@ it("credits a targeted advance once and returns its unused part on settlement", 
     task = randomUUID();
   const db = getDrizzle({});
   await db.insert(Subject).values({ id: payer });
-  await db
-    .insert(Balance)
-    .values({
-      subjectId: payer,
-      billingModuleCurrencyId: currencyId,
-      amount: "45",
-    });
+  await db.insert(Balance).values({
+    subjectId: payer,
+    billingModuleCurrencyId: currencyId,
+    amount: "45",
+  });
   try {
     const ledger = service.workLedger;
     const attempt = {
@@ -180,5 +176,72 @@ it("credits a targeted advance once and returns its unused part on settlement", 
     await db.delete(Operation).where(eq(Operation.taskId, task));
     await db.delete(Balance).where(eq(Balance.subjectId, payer));
     await db.delete(Subject).where(eq(Subject.id, payer));
+  }
+});
+
+it("shares the run and task ceilings across paid steps and funding wallets", async () => {
+  const task = randomUUID(),
+    eventId = randomUUID();
+  const payers = [randomUUID(), randomUUID()];
+  const db = getDrizzle({});
+  await db.insert(Subject).values(payers.map((id) => ({ id })));
+  await db
+    .insert(Balance)
+    .values(
+      payers.map((subjectId) => ({
+        subjectId,
+        billingModuleCurrencyId: currencyId,
+        amount: "80",
+      })),
+    );
+  try {
+    const base = {
+      ...input,
+      taskId: task,
+      amount: "20",
+      budget: "50",
+      runBudget: "25",
+      eventId,
+    };
+    const candidates = payers.map((payer, i) => ({
+      ...base,
+      senderId: payer,
+      actorId: payer,
+      operationKey: `run-step-${i}`,
+    }));
+    const claims = await Promise.allSettled(
+      candidates.map((candidate) => service.workLedger.reserve(candidate)),
+    );
+    const winner = claims.findIndex((claim) => claim.status === "fulfilled");
+    expect(claims.filter((claim) => claim.status === "fulfilled")).toHaveLength(
+      1,
+    );
+    expect(claims[1 - winner]).toMatchObject({
+      status: "rejected",
+      reason: expect.objectContaining({
+        message: expect.stringContaining("Run spending limit"),
+      }),
+    });
+    await expect(
+      service.workLedger.reserve({ ...candidates[winner], runBudget: "24" }),
+    ).rejects.toThrow("terms changed");
+    await service.workLedger.reserve({
+      ...candidates[1 - winner],
+      operationKey: "different-event",
+      amount: "25",
+      eventId: randomUUID(),
+    });
+    await expect(
+      service.workLedger.reserve({
+        ...candidates[winner],
+        operationKey: "over-task",
+        amount: "6",
+        eventId: randomUUID(),
+      }),
+    ).rejects.toThrow("Task spending limit");
+  } finally {
+    await db.delete(Operation).where(eq(Operation.taskId, task));
+    await db.delete(Balance).where(inArray(Balance.subjectId, payers));
+    await db.delete(Subject).where(inArray(Subject.id, payers));
   }
 });

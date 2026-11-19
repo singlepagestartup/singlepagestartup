@@ -28,22 +28,26 @@ export class Repository extends DatabaseRepository<typeof Table> {
     currencyId: string,
     storeId: string,
     taskId: string,
+    eventId?: string,
   ) {
+    const wallet = or(
+      eq(Table.senderId, senderId),
+      eq(Table.advanceRecipientId, senderId),
+    );
+    const task = and(
+      eq(Table.storeId, storeId),
+      eq(Table.taskId, taskId),
+      eq(Table.kind, "reserve"),
+    );
+    const used = sql`case when ${Table.state} = 'held' then ${Table.amount} when ${Table.state} = 'settled' then (${Table.settlement}->>'workAmount')::numeric else 0 end`;
     const [totals] = await this.db
       .select({
         held: sql<string>`coalesce(sum(case when ${Table.state} <> 'held' then 0 when ${Table.senderId} = ${senderId} then ${Table.amount}-${Table.advanceAmount} when ${Table.advanceRecipientId} = ${senderId} then ${Table.advanceAmount} else 0 end),0)::text`,
-        committed: sql<string>`coalesce(sum(case when ${Table.kind} = 'reserve' and ${Table.senderId} = ${senderId} and ${Table.storeId} = ${storeId} and ${Table.taskId} = ${taskId} then case when ${Table.state}='held' then ${Table.amount} when ${Table.state}='settled' then (${Table.settlement}->>'workAmount')::numeric else 0 end else 0 end),0)::text`,
+        committed: sql<string>`coalesce(sum(${used}) filter (where ${task}),0)::text`,
+        runCommitted: sql<string>`coalesce(sum(${used}) filter (where ${task} and ${Table.eventId} = ${eventId ?? null}),0)::text`,
       })
       .from(Table)
-      .where(
-        and(
-          or(
-            eq(Table.senderId, senderId),
-            eq(Table.advanceRecipientId, senderId),
-          ),
-          eq(Table.currencyId, currencyId),
-        ),
-      );
+      .where(and(eq(Table.currencyId, currencyId), or(wallet, task)));
     return totals;
   }
 }

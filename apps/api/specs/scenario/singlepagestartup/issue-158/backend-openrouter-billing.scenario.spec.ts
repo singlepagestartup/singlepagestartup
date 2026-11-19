@@ -48,9 +48,13 @@ afterAll(async () => {
   if (kv.client && "disconnect" in kv.client) kv.client.disconnect();
 });
 
-it.each(["openrouter", "openai"] as const)(
-  "settles a CRM chat reply once through the assigned %s identity",
-  async (provider) => {
+it.each([
+  { provider: "openrouter", payer: "store-owner" },
+  { provider: "openai", payer: "store-owner" },
+  { provider: "openai", payer: "customer" },
+] as const)(
+  "settles a CRM chat reply once through $provider funded by $payer",
+  async ({ provider, payer }) => {
     // Exercise the regular services and database. Only the paid HTTP boundary is replaced.
     const external = jest
       .spyOn(globalThis, "fetch")
@@ -87,6 +91,15 @@ it.each(["openrouter", "openai"] as const)(
           const customer = await rbac.subject.create({
             data: { variant: "default" },
           });
+          const identity = await rbac.identity.create({
+            data: {
+              provider: "email_and_password",
+              email: `scenario-${customer.id}@example.invalid`,
+            },
+          });
+          await rbac.subjectsToIdentities.create({
+            data: { subjectId: customer.id, identityId: identity.id },
+          });
           const store = await ecommerce.store.create({ data: {} });
           const product = await ecommerce.product.create({
             data: { adminTitle: "Scenario phone" },
@@ -100,16 +113,15 @@ it.each(["openrouter", "openai"] as const)(
           });
           const storeId = store.id;
           const currencyId = randomUUID();
+          const payerId = payer === "customer" ? customer.id : owner.id;
           await tx
             .insert(Currency)
             .values({ id: currencyId, title: "Work credits", symbol: "SPS" });
-          await tx
-            .insert(Wallet)
-            .values({
-              subjectId: owner.id,
-              billingModuleCurrencyId: currencyId,
-              amount: "20",
-            });
+          await tx.insert(Wallet).values({
+            subjectId: payerId,
+            billingModuleCurrencyId: currencyId,
+            amount: "20",
+          });
           await rbac.subjectsToEcommerceModuleStores.create({
             data: {
               subjectId: owner.id,
@@ -125,7 +137,7 @@ it.each(["openrouter", "openai"] as const)(
             definition: {
               initialStageId: "reply",
               workFunding: {
-                payer: "store-owner",
+                payer,
                 currencyId,
                 maxTaskAmount: "20",
                 maxRunAmount: "5",
@@ -189,6 +201,42 @@ it.each(["openrouter", "openai"] as const)(
           await expect(connections.list(customer.id, storeId)).rejects.toThrow(
             "Store ownership",
           );
+          if (payer === "customer") {
+            const unapproved = await rbac.subject.customerWork.execute(
+              customer.id,
+              {
+                operation: "message",
+                storeId,
+                taskId: initial.taskId,
+                operationKey: randomUUID(),
+                text: "Before agreement",
+              },
+            );
+            const request = unapproved.messages.find(
+              (row) => row.body === "Before agreement",
+            );
+            if (!request) throw new Error("Expected pre-consent message");
+            expect(
+              await rbac.subject.customerWork.pendingForMessage({
+                threadId: initial.threadId,
+                messageId: request.id,
+              }),
+            ).toBeNull();
+            const quote = await rbac.subject.customerWork.viewForThread(
+              customer.id,
+              initial.threadId,
+            );
+            if (!quote?.price)
+              throw new Error("Expected current prices before approval");
+            await rbac.subject.customerWork.execute(customer.id, {
+              operation: "approve-budget",
+              storeId,
+              taskId: task.id,
+              operationKey: randomUUID(),
+              maximum: "20",
+              priceKey: quote.price.key,
+            });
+          }
           const posted = await rbac.subject.customerWork.execute(customer.id, {
             operation: "message",
             storeId,
@@ -231,7 +279,7 @@ it.each(["openrouter", "openai"] as const)(
           expect(transfers).toHaveLength(2);
           const charge = provider === "openrouter" ? 0.1 : 0.012;
           expect(
-            Number(transfers.find((op) => op.senderId === owner.id)?.amount),
+            Number(transfers.find((op) => op.senderId === payerId)?.amount),
           ).toBeCloseTo(charge * 1.5, 10);
           expect(
             Number(
@@ -247,7 +295,7 @@ it.each(["openrouter", "openai"] as const)(
                 currencyId,
               ),
             ),
-          ).toBe(0);
+          ).toBeCloseTo(payer === "customer" ? 20 - charge * 1.5 : 0, 10);
           const ambiguous = await rbac.subject.customerWork.execute(
             customer.id,
             {

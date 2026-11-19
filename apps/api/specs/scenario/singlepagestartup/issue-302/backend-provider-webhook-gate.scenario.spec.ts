@@ -22,11 +22,12 @@ describe("Given: issue-302 provider webhook gate scenario", () => {
     };
   };
 
-  async function createPayment(amount = 0) {
+  async function createPayment(amount = 0, provider = "dummy") {
     const invoice = await invoiceApi.create({
       data: {
         amount,
         status: "open",
+        provider,
       },
       options: {
         headers: secretHeaders(),
@@ -151,7 +152,7 @@ describe("Given: issue-302 provider webhook gate scenario", () => {
   });
 
   it.each([false, true])(
-    "When: dummy receives a non-zero invoice (operator credential: %s) Then: the allow-list controls settlement",
+    "When: dummy receives a non-zero invoice (operator credential: %s) Then: provider admission and the operator credential control settlement",
     async (authenticated) => {
       const payment = await createPayment(100);
       const allowed =
@@ -162,34 +163,46 @@ describe("Given: issue-302 provider webhook gate scenario", () => {
         authenticated,
       });
 
-      expect(response.status).toBe(allowed ? 200 : 400);
+      const accepted = allowed && authenticated;
+      expect(response.status).toBe(allowed ? (authenticated ? 200 : 403) : 400);
       await expect(readStatuses(payment)).resolves.toEqual({
-        invoice: allowed ? "paid" : "open",
-        paymentIntent: allowed ? "succeeded" : "requires_payment_method",
+        invoice: accepted ? "paid" : "open",
+        paymentIntent: accepted ? "succeeded" : "requires_payment_method",
       });
     },
   );
 
-  /**
-   * BDD Scenario: webhook for a listed provider.
-   *
-   * Given: a zero-amount invoice linked to a payment intent, and the first provider of the list.
-   * When: the webhook for that provider is posted with the invoice id, as payment creation does for a free payment.
-   * Then: the API answers 200, the invoice is paid and the payment intent succeeded.
-   */
-  it("When: the webhook names a listed provider Then: it settles the zero-amount invoice and its payment intent", async () => {
-    const [provider] = ALLOWED_BILLING_SERVICE_PROVIDERS.split(",");
+  it("settles a free local invoice with a trusted callback when the dummy provider is enabled", async () => {
     const payment = await createPayment();
-
+    const allowed =
+      ALLOWED_BILLING_SERVICE_PROVIDERS.split(",").includes("dummy");
     const response = await postWebhook({
-      provider,
+      provider: "dummy",
       invoiceId: payment.invoiceId,
+      authenticated: true,
     });
-
-    expect(response.status).toBe(200);
+    expect(response.status).toBe(allowed ? 200 : 400);
     await expect(readStatuses(payment)).resolves.toEqual({
-      invoice: "paid",
-      paymentIntent: "succeeded",
+      invoice: allowed ? "paid" : "open",
+      paymentIntent: allowed ? "succeeded" : "requires_payment_method",
+    });
+  });
+
+  it("keeps an external invoice open when a dummy callback names it", async () => {
+    const payment = await createPayment(100, "stripe");
+    const response = await postWebhook({
+      provider: "dummy",
+      invoiceId: payment.invoiceId,
+      authenticated: true,
+    });
+    expect(response.status).toBe(
+      ALLOWED_BILLING_SERVICE_PROVIDERS.split(",").includes("dummy")
+        ? 403
+        : 400,
+    );
+    await expect(readStatuses(payment)).resolves.toEqual({
+      invoice: "open",
+      paymentIntent: "requires_payment_method",
     });
   });
 });

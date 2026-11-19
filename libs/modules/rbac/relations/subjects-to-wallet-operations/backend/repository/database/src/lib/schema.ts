@@ -9,6 +9,9 @@ export const table = "wallet_operation";
 
 export interface IProviderWork {
   attemptId: string;
+  stepKey?: string;
+  eventId?: string;
+  publicationId?: string;
   executorId: string;
   connectionId: string;
   provider: "openrouter" | "openai";
@@ -27,6 +30,7 @@ export interface IProviderWork {
   basis?: "provider" | "rate-card" | "owner-statement";
   inputTokens?: number;
   outputTokens?: number;
+  audioSeconds?: string;
   reconcileRequested?: boolean;
   checkedAt?: string;
   uncoveredCostSps?: string;
@@ -96,6 +100,8 @@ export const Table = pg.pgTable(
       .references(() => Subject.id),
     providerWork: pg.jsonb("provider_work").$type<IProviderWork>(),
     settlement: pg.jsonb("settlement").$type<ISettlementTerms>(),
+    eventId: pg.uuid("event_id"),
+    runBudget: pg.numeric("run_budget", { precision: 38, scale: 12 }),
     budget: pg.numeric("budget", { precision: 38, scale: 12 }),
   },
   (t) => [
