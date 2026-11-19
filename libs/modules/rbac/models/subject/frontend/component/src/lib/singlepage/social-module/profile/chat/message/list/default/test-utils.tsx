@@ -19,6 +19,7 @@ export const mockProfilesToSkillsCreateMutateAsync = jest.fn();
 export const mockToastError = jest.fn();
 export const mockToastSuccess = jest.fn();
 export const mockCustomerWork = jest.fn();
+export const mockOrderWorkRead = jest.fn();
 
 jest.mock("client-only", () => ({}), { virtual: true });
 export const mockChatComponentState = {
@@ -123,6 +124,7 @@ jest.mock("@sps/social/models/profile/frontend/component", () => {
               {props.profile?.slug ?? props.data.slug}
             </button>
             <p>{props.message.description}</p>
+            {props.messageContentSlot}
           </article>
         );
       }
@@ -369,8 +371,12 @@ jest.mock("@sps/rbac/models/subject/sdk/client", () => {
   return {
     api: {
       customerWorkForThread: (...args: unknown[]) => mockCustomerWork(...args),
-      orderWork: { read: jest.fn(() => ({})), decision: jest.fn(() => ({})) },
+      orderWork: {
+        read: (...args: unknown[]) => mockOrderWorkRead(...args),
+        decision: jest.fn(() => ({})),
+      },
       changeCustomerWork: jest.fn(() => ({})),
+      socialModuleChatFindByIdThreadMarkRead: () => ({ mutate: jest.fn() }),
       socialModuleProfileFindByIdChatFindByIdThreadFindByIdMessageFind: jest.fn(
         (request) => {
           const data = mockChatComponentState.socialModuleMessages;
@@ -720,6 +726,7 @@ export function resetChatComponentMocks() {
   // queries do not leak across cache specs (issue #195).
   mockSharedApiQueryClient.clear();
   mockCustomerWork.mockReset().mockReturnValue({});
+  mockOrderWorkRead.mockReset().mockReturnValue({});
   mockMessageCreateMutate.mockReset();
   mockMessageDeleteMutate.mockReset();
   mockMessageUpdateMutate.mockReset();

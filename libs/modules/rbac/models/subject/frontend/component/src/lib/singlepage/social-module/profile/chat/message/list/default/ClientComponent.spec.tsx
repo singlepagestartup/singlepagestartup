@@ -12,6 +12,7 @@ import { fireEvent, screen, waitFor } from "@testing-library/react";
 import {
   mockChatComponentState,
   mockCustomerWork,
+  mockOrderWorkRead,
   mockKnowledgeSourceCreateMutate,
   mockKnowledgeSourceDeleteMutateAsync,
   mockKnowledgeSourceUpdateMutate,
@@ -25,6 +26,14 @@ import {
   renderComponent,
   resetChatComponentMocks,
 } from "./test-utils";
+
+jest.mock(
+  "../../../../../../ecommerce-module/order/create-default/customer-work/ResultReview",
+  () => ({
+    ResultReview: ({ selectedVersionId }: { selectedVersionId?: string }) =>
+      selectedVersionId ? <p>{`Reviewing ${selectedVersionId}`}</p> : null,
+  }),
+);
 
 const aiOpponentProfile = {
   id: "assistant-profile-1",
@@ -71,7 +80,7 @@ describe("Social thread context", () => {
 
     expect(screen.getByRole("textbox", { name: "Message" })).toBeTruthy();
     expect(screen.queryByRole("button", { name: "Document" })).toBeNull();
-    expect(screen.queryByRole("button", { name: "Context" })).toBeNull();
+    expect(screen.queryByRole("button", { name: /right sidebar/i })).toBeNull();
     expect(mockCustomerWork).toHaveBeenCalledWith({
       id: "subject-1",
       threadId: "",
@@ -87,7 +96,7 @@ describe("Social thread context", () => {
         ],
       },
     });
-    fireEvent.click(screen.getByRole("button", { name: "Context" }));
+    fireEvent.click(screen.getByRole("button", { name: "Show right sidebar" }));
     expect(
       screen.getByRole("link", { name: "Cover" }).getAttribute("href"),
     ).toBe("/en/ecommerce/products/cover");
@@ -113,13 +122,57 @@ describe("Social thread context", () => {
     renderComponent("default", {
       socialModuleThread: { id: "thread-1", hasCustomerWork: true },
     });
-    fireEvent.click(screen.getByRole("button", { name: "Context" }));
+    fireEvent.click(screen.getByRole("button", { name: "Show right sidebar" }));
     expect(
       screen.getByRole("link", { name: "Cover design" }).getAttribute("href"),
     ).toBe("/en/ecommerce/products/cover?offer=offer-1");
     expect(screen.getByRole("link", { name: "View order" })).toBeTruthy();
     expect(screen.getByRole("heading", { name: "Manager" })).toBeTruthy();
     expect(screen.queryByRole("heading", { name: "Private notes" })).toBeNull();
+  });
+
+  it("opens the hidden right sidebar and focuses the requested result", () => {
+    mockCustomerWork.mockReturnValue({
+      data: {
+        chatId: "chat-1",
+        threadId: "thread-1",
+        storeId: "store-1",
+        taskId: "task-1",
+        orderId: "order-1",
+        status: "active",
+        assignment: "manager",
+      },
+    });
+    mockOrderWorkRead.mockReturnValue({
+      data: {
+        orderId: "order-1",
+        state: "awaiting-result",
+        versions: [{ id: "version-1", number: 1 }],
+      },
+    });
+    renderComponent("default", {
+      socialModuleThread: { id: "thread-1", hasCustomerWork: true },
+      socialModuleMessagesAndActionsQuery: [
+        {
+          type: "message",
+          data: {
+            id: "message-1",
+            variant: "customer-work",
+            description: "Order is ready",
+            metadata: { customerWorkResultVersionId: "version-1" },
+            createdAt: new Date("2026-01-01T10:00:00.000Z"),
+          },
+        },
+      ],
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Show right sidebar" }));
+    fireEvent.click(screen.getByRole("button", { name: "Hide right sidebar" }));
+    expect(screen.queryByRole("complementary", { name: "Context" })).toBeNull();
+
+    fireEvent.click(screen.getByRole("button", { name: "Open version 1" }));
+    const heading = screen.getByRole("heading", { name: "Order result" });
+    expect(document.activeElement).toBe(heading.closest("section"));
+    expect(screen.getByText("Reviewing version-1")).toBeTruthy();
   });
 
   it("ignores work that does not belong to the current chat and thread", () => {
@@ -133,7 +186,7 @@ describe("Social thread context", () => {
       id: "subject-1",
       threadId: "thread-1",
     });
-    expect(screen.queryByRole("button", { name: "Context" })).toBeNull();
+    expect(screen.queryByRole("button", { name: /right sidebar/i })).toBeNull();
   });
 });
 
@@ -1547,6 +1600,12 @@ describe("Given: OpenRouter chat profile sidebar", () => {
     ];
 
     renderComponent("knowledge", {
+      socialModuleThread: {
+        id: "thread-1",
+        linkedProducts: [
+          { id: "product-1", slug: "cover", title: { en: "Cover" } },
+        ],
+      },
       socialModuleMessagesAndActionsQuery: [
         {
           type: "message",
@@ -1559,7 +1618,17 @@ describe("Given: OpenRouter chat profile sidebar", () => {
       ],
     });
 
+    fireEvent.click(screen.getByRole("button", { name: "Show right sidebar" }));
+    fireEvent.click(screen.getByRole("button", { name: "Hide right sidebar" }));
+    expect(screen.queryByRole("complementary", { name: "Context" })).toBeNull();
+
     fireEvent.click(await screen.findByRole("button", { name: "chat-gpt-1" }));
+    expect(
+      screen.getByRole("button", {
+        name: "Hide right sidebar",
+        expanded: true,
+      }),
+    ).toBeTruthy();
 
     expect(screen.getByText("Chat GPT 1")).toBeTruthy();
     expect(screen.getByText("YouTube Description")).toBeTruthy();

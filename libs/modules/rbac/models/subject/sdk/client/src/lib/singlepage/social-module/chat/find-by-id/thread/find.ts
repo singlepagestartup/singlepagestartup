@@ -10,7 +10,11 @@ import {
   type IResult as IParentResult,
 } from "@sps/rbac/models/subject/sdk/server";
 import { saturateHeaders } from "@sps/shared-frontend-client-utils";
-import { queryClient, subscription } from "@sps/shared-frontend-client-api";
+import {
+  consistencyQueryKey,
+  queryClient,
+  subscription,
+} from "@sps/shared-frontend-client-api";
 import { STALE_TIME } from "@sps/shared-utils";
 import { useEffect } from "react";
 
@@ -27,6 +31,11 @@ export function action(props: IProps) {
   const queryKey = `${route}/${props.id}/social-module/chats/${props.socialModuleChatId}/threads`;
   const topics = [
     `social.chats.${props.socialModuleChatId}.threads`,
+    `social.chats.${props.socialModuleChatId}.messages`,
+    `rbac.subjects.${props.id}.social-read`,
+    "social.messages",
+    "social.chats-to-messages",
+    "social.threads-to-messages",
     "social.threads",
     "social.threads-to-crm-module-tasks",
     "social.threads-to-ecommerce-module-products",
@@ -44,10 +53,10 @@ export function action(props: IProps) {
   }, [queryKey]);
 
   return useQuery<IResult>({
-    queryKey: [queryKey],
+    queryKey: consistencyQueryKey(queryKey, props.params, clientHost),
     meta: {
-      topics,
       ...(userMeta ?? {}),
+      topics,
     },
     queryFn: async () => {
       const result = await api.socialModuleChatFindByIdThreadFind({

@@ -31,4 +31,6 @@ export function ChatWorkspace({
 }
 
 export { ChatThreadPanel } from "./ThreadPanel";
+export { ChatWorkspaceNavigation } from "./Navigation";
+export { ChatListActivity } from "./ListActivity";
 export type { IChatWorkspaceProps, IChatThreadPanelProps } from "./interface";

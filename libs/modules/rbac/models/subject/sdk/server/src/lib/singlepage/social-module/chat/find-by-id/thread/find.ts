@@ -22,7 +22,10 @@ export interface IProps {
   options?: Partial<NextRequestOptions>;
 }
 
-export type IResult = ISocialModuleChatThread[];
+export type IResult = (ISocialModuleChatThread & {
+  lastMessageAt?: Date | string | null;
+  unreadCount?: number;
+})[];
 
 export async function action(props: IProps): Promise<IResult> {
   const { id, socialModuleChatId, params, options, host = serverHost } = props;

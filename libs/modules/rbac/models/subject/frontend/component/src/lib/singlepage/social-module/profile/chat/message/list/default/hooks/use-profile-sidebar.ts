@@ -311,6 +311,7 @@ export function useProfileSidebar(props: UseProfileSidebarProps) {
       window.matchMedia("(width < 80rem)").matches;
 
     setIsMobileSheetOpen(shouldUseSheet);
+    return shouldUseSheet;
   }, []);
 
   const closeProfile = useCallback(() => {

@@ -526,6 +526,81 @@ export class Service {
     throw new Error("Not Found error. The message attachment is unavailable");
   }
 
+  /** Classify private conversations before returning any chat or participant data. */
+  async chatAccess(
+    subjectId: string,
+    chats: { id: string; variant: string }[],
+  ) {
+    const access = new Map<string, "customer" | "ordinary">();
+    if (!chats.length) {
+      return access;
+    }
+    const inIds = (column: string, value: string[]) => ({
+      params: {
+        filters: { and: [{ column, method: "inArray" as const, value }] },
+      },
+    });
+    const threads = await this.social.chatsToThreads.find(
+      inIds(
+        "chatId",
+        chats.map(({ id }) => id),
+      ),
+    );
+    const threadsByChat = new Map<string, string[]>();
+    for (const { chatId, threadId } of threads) {
+      const ids = threadsByChat.get(chatId) ?? [];
+      ids.push(threadId);
+      threadsByChat.set(chatId, ids);
+    }
+    const links = threads.length
+      ? await this.social.threadsToCrmModuleTasks.find(
+          inIds(
+            "threadId",
+            threads.map(({ threadId }) => threadId),
+          ),
+        )
+      : [];
+    const taskByThread = new Map(
+      links.map(({ threadId, crmModuleTaskId }) => [threadId, crmModuleTaskId]),
+    );
+    const tasks = links.length
+      ? await this.crm.task.find({
+          params: {
+            filters: {
+              and: [
+                { column: "customerId", method: "eq", value: subjectId },
+                {
+                  column: "id",
+                  method: "inArray",
+                  value: links.map(({ crmModuleTaskId }) => crmModuleTaskId),
+                },
+              ],
+            },
+          },
+        })
+      : [];
+    const owned = new Set(
+      tasks
+        .filter((task) => task.customerId === subjectId)
+        .map((task) => task.id),
+    );
+    for (const chat of chats) {
+      const ids = threadsByChat.get(chat.id) ?? [];
+      if (
+        chat.variant !== "customer-work" &&
+        ids.every((id) => !taskByThread.has(id))
+      ) {
+        access.set(chat.id, "ordinary");
+      } else if (
+        ids.length === 1 &&
+        owned.has(taskByThread.get(ids[0]) ?? "")
+      ) {
+        access.set(chat.id, "customer");
+      }
+    }
+    return access;
+  }
+
   async assertChatAccess({
     subjectId,
     chatId,
@@ -539,37 +614,13 @@ export class Service {
     if (!chat) {
       return;
     }
-    const threads = await this.social.chatsToThreads.find(criteria({ chatId }));
-    const links = threads.length
-      ? await this.social.threadsToCrmModuleTasks.find({
-          params: {
-            limit: 2,
-            filters: {
-              and: [
-                {
-                  column: "threadId",
-                  method: "inArray",
-                  value: threads.map(({ threadId }) => threadId),
-                },
-              ],
-            },
-          },
-        })
-      : [];
-    const [link] = links;
-    if (!link && chat.variant !== "customer-work") {
-      return;
-    }
-    const task =
-      link && threads.length === 1 && links.length === 1
-        ? await this.crm.task.findById({ id: link.crmModuleTaskId })
-        : null;
-    if (!task || task.customerId !== subjectId) {
+    const access = (await this.chatAccess(subjectId, [chat])).get(chatId);
+    if (!access) {
       throw new Error(
         "Not Found error. The customer conversation could not be found",
       );
     }
-    if (edit) {
+    if (access === "customer" && edit) {
       throw new Error(
         "Forbidden error. Use customer work operations to change this conversation",
       );

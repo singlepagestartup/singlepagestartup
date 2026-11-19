@@ -6,15 +6,26 @@ import { Component as ChildComponent } from "./Component";
 import type { IComponentProps, IComponentPropsExtended } from "./interface";
 
 function GuestChat(props: IComponentPropsExtended) {
+  const lookupThread = !props.socialModuleThreadId;
+  const threads = api.socialModuleChatFindByIdThreadFind({
+    id: props.data.id,
+    socialModuleChatId: props.socialModuleChatId,
+    reactQueryOptions: { enabled: lookupThread, retry: false },
+  });
+  const orderThread =
+    threads.data?.length === 1 && threads.data[0].hasCustomerWork
+      ? threads.data[0].id
+      : undefined;
+  const threadId = props.socialModuleThreadId ?? orderThread;
   const result = api.customerWorkForThread({
     id: props.data.id,
-    threadId: props.socialModuleThreadId ?? "",
+    threadId: threadId ?? "",
   });
   const ru = props.language === "ru";
   if (result.data?.chatId === props.socialModuleChatId) {
     return <ChildComponent {...props} />;
   }
-  if (props.socialModuleThreadId && result.isPending) {
+  if ((lookupThread && threads.isPending) || (threadId && result.isPending)) {
     return (
       <p role="status">
         {ru ? "Загружаем переписку…" : "Loading conversation…"}

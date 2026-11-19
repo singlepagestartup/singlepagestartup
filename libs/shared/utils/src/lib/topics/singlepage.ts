@@ -76,6 +76,12 @@ export const topicRules: ITopicRule[] = [
   },
 
   {
+    routeTemplate:
+      "/api/rbac/subjects/[rbac.subjects.id]/social-module/chats/[social.chats.id]/threads/[social.threads.id]/read",
+    topics: ["rbac.subjects.[rbac.subjects.id].social-read"],
+    stop: true,
+  },
+  {
     // Thread-scoped message mutations (the chat send path). Without this rule
     // the generic fallback broadcasts broad topics (social.chats.[id],
     // social.profiles.[id]) that invalidate the chat findById query and

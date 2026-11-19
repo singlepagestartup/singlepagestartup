@@ -10,6 +10,15 @@ function setup(admin = false) {
     .fn()
     .mockResolvedValue([{ id: "shared" }, { id: "second-only" }]);
   const service = {
+    repository: {
+      socialThreadActivity: jest.fn().mockResolvedValue([]),
+    },
+    customerWork: {
+      chatAccess: jest.fn(
+        async (_subjectId: string, chats: { id: string }[]) =>
+          new Map(chats.map(({ id }) => [id, "ordinary"])),
+      ),
+    },
     socialModuleChatLifecycleIsSubjectAdmin: jest.fn().mockResolvedValue(admin),
     modules: {
       social: {
@@ -108,4 +117,16 @@ it("expands participants in bulk after establishing administrative access", asyn
   expect(
     rows.map((row: any) => row.participants.map((profile: any) => profile.id)),
   ).toEqual([["primary"], ["peer"]]);
+});
+
+it("omits inaccessible customer orders before loading their participants, including for administrators", async () => {
+  const s = setup(true);
+  s.service.customerWork.chatAccess.mockResolvedValue(
+    new Map([["shared", "customer"]]),
+  );
+  const rows = await s.reader.find({ ...props, includeParticipants: true });
+  expect(rows.map((row) => row.id)).toEqual(["shared"]);
+  expect(s.memberships.mock.calls[0][0].params.filters.and[0].value).toBe(
+    "shared",
+  );
 });

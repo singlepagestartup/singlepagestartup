@@ -28,11 +28,6 @@ interface SkillDialogTarget {
   profileId: string;
 }
 
-interface IThreadPane {
-  threadId: string;
-  pane: "chat" | "context";
-}
-
 interface IResultSelection {
   threadId: string;
   versionId: string;
@@ -50,7 +45,7 @@ interface IResultSelection {
  */
 export function Component(props: IComponentPropsExtended) {
   const threadId = props.socialModuleThreadId;
-  const [threadPane, setThreadPane] = useState<IThreadPane>();
+  const [contextOpen, setContextOpen] = useState<boolean>();
   const [resultSelection, setResultSelection] = useState<IResultSelection>();
   const resultSectionRef = useRef<HTMLElement>(null);
   const [isSkillDialogOpen, setIsSkillDialogOpen] = useState(false);
@@ -68,10 +63,6 @@ export function Component(props: IComponentPropsExtended) {
   const markShouldScrollToBottom = useCallback(() => {
     markShouldScrollToBottomRef.current();
   }, []);
-  const setPane = useCallback(
-    (pane: IThreadPane["pane"]) => setThreadPane({ threadId, pane }),
-    [threadId],
-  );
   const selectResultVersion = useCallback(
     (versionId: string) => setResultSelection({ threadId, versionId }),
     [threadId],
@@ -129,16 +120,23 @@ export function Component(props: IComponentPropsExtended) {
     socialModuleProfileId: props.socialModuleProfile.id,
     socialModuleChatId: props.socialModuleChat.id,
   });
-  const { closeProfile } = profileSidebar;
+  const { closeProfile, openProfile } = profileSidebar;
+  const openProfileContext = useCallback(
+    (profile: SocialProfile) => {
+      const openedInSheet = openProfile(profile);
+      if (!openedInSheet) setContextOpen(true);
+    },
+    [openProfile],
+  );
   const canEditProfile =
     !isCustomerWork && profileSidebar.canManageSelectedProfile;
   const openResultReview = useCallback(
     (versionId: string) => {
       closeProfile();
-      setPane("context");
+      setContextOpen(true);
       setResultSelection({ threadId, versionId, focus: true });
     },
-    [closeProfile, setPane, threadId],
+    [closeProfile, threadId],
   );
   const composerSkillsProfileId = assistantProfile?.id || "missing-profile";
   const profileSkills = useProfileSkills({
@@ -266,8 +264,8 @@ export function Component(props: IComponentPropsExtended) {
         language={props.language}
         navigation={props.navigation}
         messagesOwnScroll
-        pane={threadPane?.threadId === threadId ? threadPane.pane : "chat"}
-        onPaneChange={setPane}
+        contextOpen={contextOpen}
+        onContextOpenChange={setContextOpen}
         messages={
           <>
             <MessageTimelineSection
@@ -275,7 +273,7 @@ export function Component(props: IComponentPropsExtended) {
               participants={props.socialModuleChat.participants}
               language={props.language}
               markShouldScrollToBottomRef={markShouldScrollToBottomRef}
-              onProfileOpen={profileSidebar.openProfile}
+              onProfileOpen={openProfileContext}
               onResultReview={isCustomerWork ? openResultReview : undefined}
               socialModuleChatId={props.socialModuleChat.id}
               socialModuleProfileId={props.socialModuleProfile.id}

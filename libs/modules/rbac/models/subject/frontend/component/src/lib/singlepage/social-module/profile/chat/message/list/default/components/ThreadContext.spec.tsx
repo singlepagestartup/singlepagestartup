@@ -1,6 +1,6 @@
 /** @jest-environment jsdom */
 
-import { render, renderHook, screen } from "@testing-library/react";
+import { fireEvent, render, renderHook, screen } from "@testing-library/react";
 import type { ICustomerWorkView } from "@sps/rbac/models/subject/sdk/model";
 import { ThreadContext } from "./ThreadContext";
 import { useThreadHasFiles } from "./ThreadFiles";
@@ -43,6 +43,45 @@ it("shows an attached file once using its preview card", () => {
   expect(screen.getByText("Design input").getAttribute("data-layout")).toBe(
     "card",
   );
+});
+
+it("shows six files initially and scrolls the expanded list", () => {
+  mockThreadMessages.mockReturnValue({
+    data: [
+      {
+        id: "public",
+        attachments: Array.from({ length: 5 }, (_, index) => ({
+          id: `File ${index + 1}`,
+        })),
+      },
+      {
+        id: "protected",
+        variant: "customer-work",
+        privateAttachments: [6, 7, 8].map((index) => ({
+          id: `private-${index}`,
+          name: `File ${index}`,
+        })),
+      },
+    ],
+  });
+  render(<ThreadContext {...scope} isCustomerWork={false} />);
+
+  expect(screen.getByText("File 1")).toBeTruthy();
+  expect(screen.getByRole("button", { name: "Download File 6" })).toBeTruthy();
+  expect(screen.queryByRole("button", { name: "Download File 7" })).toBeNull();
+  fireEvent.click(
+    screen.getByRole("button", { name: "Show all files (8)", expanded: false }),
+  );
+  expect(screen.getByRole("region", { name: "All files" }).classList).toContain(
+    "overflow-y-auto",
+  );
+  expect(screen.getByRole("button", { name: "Download File 8" })).toBeTruthy();
+
+  fireEvent.click(
+    screen.getByRole("button", { name: "Show fewer files", expanded: true }),
+  );
+  expect(screen.queryByRole("button", { name: "Download File 7" })).toBeNull();
+  expect(screen.getByRole("button", { name: "Download File 6" })).toBeTruthy();
 });
 
 it("omits the Files heading when the selected discussion has no attachments", () => {

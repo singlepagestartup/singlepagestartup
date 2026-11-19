@@ -34,9 +34,15 @@ export const Component = memo(function Component(
         name={props.topic ? "chat-circle" : "file-text"}
         className="size-4 shrink-0 text-default-foreground/50"
       />
-      <span className="min-w-0 flex-1 break-words">
+      <span
+        className="min-w-0 flex-1 truncate"
+        title={
+          props.title || props.data.title || props.data.adminTitle || undefined
+        }
+      >
         {props.title || props.data.title || props.data.adminTitle}
       </span>
+      {props.children}
     </Link>
   );
 });

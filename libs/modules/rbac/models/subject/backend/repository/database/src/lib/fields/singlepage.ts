@@ -17,4 +17,13 @@ export const fields = {
    * not. Empty until the subject logs out for the first time.
    */
   tokensValidAfter: pgCore.timestamp("tokens_valid_after", { mode: "date" }),
+  socialThreadReadsSince: pgCore
+    .timestamp("social_thread_reads_since")
+    .notNull()
+    .defaultNow(),
+  socialThreadReadCursors: pgCore
+    .jsonb("social_thread_read_cursors")
+    .$type<Record<string, { createdAt: string; messageId: string }>>()
+    .notNull()
+    .default({}),
 };

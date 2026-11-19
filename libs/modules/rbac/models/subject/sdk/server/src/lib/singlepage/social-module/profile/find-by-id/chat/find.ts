@@ -27,6 +27,8 @@ export interface IProps {
 }
 
 export type IResult = (ISocialModuleChat & {
+  lastMessageAt?: Date | string | null;
+  unreadCount?: number;
   participants?: ISocialModuleProfile[];
   participantPresentations?: IProfilePresentation[];
 })[];

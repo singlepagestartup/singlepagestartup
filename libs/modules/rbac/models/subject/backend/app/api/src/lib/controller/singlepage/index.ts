@@ -113,6 +113,7 @@ import { Handler as SocialModuleChatFindByIdThreadFind } from "./social-module/c
 import { Handler as SocialModuleChatFindByIdThreadCreate } from "./social-module/chat/find-by-id/thread/create";
 import { Handler as SocialModuleChatFindByIdThreadUpdate } from "./social-module/chat/find-by-id/thread/update";
 import { Handler as SocialModuleChatFindByIdThreadDelete } from "./social-module/chat/find-by-id/thread/delete";
+import { Handler as SocialModuleChatFindByIdThreadMarkRead } from "./social-module/chat/find-by-id/thread/mark-read";
 import { Handler as SocialModuleChatFindByIdProfileCreate } from "./social-module/chat/find-by-id/profile/create";
 import { Handler as SocialModuleChatFindByIdProfileSearch } from "./social-module/chat/find-by-id/profile/search";
 import { Handler as SocialModuleChatFindByIdProfileDelete } from "./social-module/chat/find-by-id/profile/delete";
@@ -234,6 +235,8 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
       handler: (c: Context) => new OrderWork(this.service.orderWork).execute(c),
       middlewares: [crmSignedInSubject],
     }));
+    const threadReadPath =
+      "/:id/social-module/chats/:socialModuleChatId/threads/:socialModuleThreadId/read";
     const routes: Parameters<typeof this.bindHttpRoutes>[0] = [
       ...orderWorkRoutes,
       ...(["GET", "HEAD"] as const).map((method) => ({
@@ -831,6 +834,21 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
         ],
       },
       {
+        method: "POST",
+        path: threadReadPath,
+        handler: (c: Context) =>
+          new SocialModuleChatFindByIdThreadMarkRead(this.service).execute(c),
+        middlewares: [
+          new RequestSubjectIdOwner().init({
+            requireJwt: true,
+            activeSubjectId: (token) =>
+              this.service.isAuthorizedService.getSubjectId(token),
+          }),
+          new RequestSubjectOwnsSocialModuleChat(this.service).init(),
+          new RequestSocialModuleThreadBelongsToChat(this.service).init(),
+        ],
+      },
+      {
         method: "DELETE",
         path: "/:id/social-module/chats/:socialModuleChatId/threads/:socialModuleThreadId",
         handler: this.socialModuleChatFindByIdThreadDelete,
@@ -1134,11 +1152,13 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
         const read = route.method === "GET" || route.method === "HEAD";
         const postMessage =
           route.method === "POST" && route.path.endsWith("/messages");
+        const markThreadRead =
+          route.method === "POST" && route.path === threadReadPath;
         return {
           ...route,
           middlewares: [
             ...(route.middlewares ?? []),
-            customerChat.init(!read && !postMessage),
+            customerChat.init(!read && !postMessage && !markThreadRead),
           ],
         };
       }),

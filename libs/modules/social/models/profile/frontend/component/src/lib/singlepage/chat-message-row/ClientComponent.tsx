@@ -247,6 +247,7 @@ export function Component(props: IClientComponentProps) {
       data-model="profile"
       data-id={props.data?.id || ""}
       data-variant="chat-message-row"
+      data-chat-message-id={props.message.id}
       className={cn(
         "group/message flex w-fit min-w-0 max-w-[95%] gap-3 rounded-2xl p-3 sm:p-5",
         props.isOwnMessage

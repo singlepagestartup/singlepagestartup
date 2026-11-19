@@ -891,6 +891,15 @@ Thread in relation order.
 Existing Threads retain their IDs and message history. The scoped Profile
 Knowledge routes provide access to the project’s saved Sources.
 
+Social chat and thread lists include `lastMessageAt` and `unreadCount`.
+Messages received after unread tracking begins count toward the badge. A
+chat’s badge sums its threads. The last message time includes earlier history.
+
+`POST /api/rbac/subjects/:id/social-module/chats/:socialModuleChatId/threads/:socialModuleThreadId/read`
+advances the acting Subject’s read position through the supplied `messageId`.
+The message must belong to both the chat and thread. The operation returns the
+remaining unread counts for the thread and chat.
+
 ### OpenRouter decisions and automatic replies
 
 OpenRouter admission checks the sum of all Subject balance relations in each
@@ -1108,6 +1117,7 @@ session initialization.
 `includeParticipants`. Subject expansion validates the requested owned Profile,
 collects all owned Profile memberships, deduplicates Chat IDs and reads one
 collection. Administrative scope uses the existing Chat lifecycle role check.
+Customer order conversations appear only for the customer who owns the linked task. This check also applies to administrators browsing Social. The collection and direct chat link use the same access rule.
 Participant expansion runs in bulk after access validation. Query identity
 includes these parameters, API host and current principal. A loaded list row
 uses `dataSource="props"` and retains the parent collection subscription.

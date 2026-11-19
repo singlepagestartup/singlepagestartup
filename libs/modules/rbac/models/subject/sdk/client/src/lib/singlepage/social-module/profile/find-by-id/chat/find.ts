@@ -52,7 +52,13 @@ export function action(props: IProps) {
     // (topic `social.chats`) invalidates this list.
     meta: {
       ...(userMeta ?? {}),
-      topics: deriveTopicsFromPath(queryKey),
+      topics: [
+        ...deriveTopicsFromPath(queryKey),
+        `rbac.subjects.${props.id}.social-read`,
+        "social.messages",
+        "social.chats-to-messages",
+        "social.threads-to-messages",
+      ],
     },
     queryFn: async () => {
       const result = await api.socialModuleProfileFindByIdChatFind({

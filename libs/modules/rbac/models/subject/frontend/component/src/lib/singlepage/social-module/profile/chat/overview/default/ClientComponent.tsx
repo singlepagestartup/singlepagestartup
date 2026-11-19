@@ -17,10 +17,16 @@ import {
   route,
   type IModel as IRbacSubject,
 } from "@sps/rbac/models/subject/sdk/model";
-import { ChatWorkspace, FormField, Icon } from "@sps/ui-adapter";
+import {
+  ChatListActivity,
+  ChatWorkspace,
+  ChatWorkspaceNavigation,
+  FormField,
+  Icon,
+} from "@sps/ui-adapter";
 import type { IModel as ISocialModuleProfile } from "@sps/social/models/profile/sdk/model";
 import { internationalization } from "@sps/shared-configuration";
-import { Form } from "@sps/shared-ui-shadcn";
+import { Button, Form } from "@sps/shared-ui-shadcn";
 import {
   ArrowLeft,
   Edit3,
@@ -830,91 +836,80 @@ export function Component(props: IComponentPropsExtended) {
     </button>
   );
   const navigation = showThreads ? (
-    <nav
-      aria-label={threadListLabel}
-      className="flex h-full min-h-0 min-w-0 flex-col"
+    <ChatWorkspaceNavigation
+      label={threadListLabel}
+      title={chatDisplayTitle}
+      search={{
+        label: threadSearchLabel,
+        value: threadSearch,
+        onChange: setThreadSearch,
+      }}
+      leading={
+        <button
+          type="button"
+          aria-label={backToChats}
+          title={backToChats}
+          onClick={() => {
+            setChatListChatId(props.socialModuleChat.id);
+            setThreadSearch("");
+          }}
+          className={navigationButtonClassName}
+        >
+          <ArrowLeft className="size-5" aria-hidden="true" />
+        </button>
+      }
+      actions={settingsButton}
+      footer={
+        canManageChat && (
+          <div className="shrink-0 border-t border-border p-3">
+            <button
+              type="button"
+              onClick={() => openSettings("threads")}
+              className="flex min-h-10 w-full items-center gap-2 rounded-lg border border-border px-3 py-2 text-left text-sm hover:bg-muted focus-visible:outline-2 focus-visible:outline-offset-2"
+            >
+              <Plus className="size-4 shrink-0" aria-hidden="true" />
+              {ru ? "Новое обсуждение" : "New thread"}
+            </button>
+          </div>
+        )
+      }
     >
-      <header className="shrink-0 space-y-3 border-b border-border p-3">
-        <div className="flex min-w-0 items-center gap-2">
-          <button
-            type="button"
-            aria-label={backToChats}
-            title={backToChats}
-            onClick={() => {
-              setChatListChatId(props.socialModuleChat.id);
-              setThreadSearch("");
-            }}
-            className={navigationButtonClassName}
-          >
-            <ArrowLeft className="size-5" aria-hidden="true" />
-          </button>
-          <h2
-            className="min-w-0 truncate text-base font-semibold"
-            title={chatDisplayTitle}
-          >
-            {chatDisplayTitle}
-          </h2>
-          <div className="ml-auto">{settingsButton}</div>
-        </div>
-        <label className="relative block">
-          <span className="sr-only">{threadSearchLabel}</span>
-          <Search
-            aria-hidden="true"
-            className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground"
-          />
-          <input
-            type="search"
-            value={threadSearch}
-            onChange={(event) => setThreadSearch(event.target.value)}
-            placeholder={threadSearchLabel}
-            className="h-9 w-full rounded-lg border border-border bg-muted/60 pl-9 pr-2 text-sm placeholder:text-muted-foreground focus-visible:ring-1 focus-visible:ring-ring"
-          />
-        </label>
-      </header>
-      <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain p-2">
-        {filteredThreadItems.length ? (
-          <ul className="grid gap-1">
-            {filteredThreadItems.map(({ data, title }) => (
-              <li key={data.id}>
-                <SocialModuleThread
-                  isServer={false}
-                  variant="list-item-sidebar-ai-chat"
+      {filteredThreadItems.length ? (
+        <ul className="grid min-w-0 grid-cols-[minmax(0,1fr)] gap-1">
+          {filteredThreadItems.map(({ data, title }) => (
+            <li key={data.id} className="min-w-0">
+              <SocialModuleThread
+                isServer={false}
+                variant="list-item-sidebar-ai-chat"
+                language={props.language}
+                data={data}
+                dataSource="props"
+                topic
+                href={`${chatHref}/threads/${data.id}`}
+                title={title}
+                selected={data.id === activeSocialModuleThreadId}
+                onNavigate={closeNavigation}
+                className={cn(
+                  "text-muted-foreground hover:bg-muted hover:text-foreground focus-visible:outline-foreground [&_svg]:text-muted-foreground",
+                  data.id === activeSocialModuleThreadId &&
+                    "bg-muted text-foreground",
+                )}
+              >
+                <ChatListActivity
                   language={props.language}
-                  data={data}
-                  dataSource="props"
-                  topic
-                  href={`${chatHref}/threads/${data.id}`}
-                  title={title}
-                  selected={data.id === activeSocialModuleThreadId}
-                  onNavigate={closeNavigation}
-                  className={cn(
-                    "text-muted-foreground hover:bg-muted hover:text-foreground focus-visible:outline-foreground [&_svg]:text-muted-foreground",
-                    data.id === activeSocialModuleThreadId &&
-                      "bg-muted text-foreground",
-                  )}
+                  timestamp={data.lastMessageAt ?? data.createdAt}
+                  unreadCount={data.unreadCount}
                 />
-              </li>
-            ))}
-          </ul>
-        ) : (
-          <p role="status" className="px-3 py-4 text-sm text-muted-foreground">
-            {ru ? "Обсуждения не найдены" : "No matching threads"}
-          </p>
-        )}
-      </div>
-      {canManageChat && (
-        <div className="shrink-0 border-t border-border p-3">
-          <button
-            type="button"
-            onClick={() => openSettings("threads")}
-            className="flex min-h-10 w-full items-center gap-2 rounded-lg border border-border px-3 py-2 text-left text-sm hover:bg-muted focus-visible:outline-2 focus-visible:outline-offset-2"
-          >
-            <Plus className="size-4 shrink-0" aria-hidden="true" />
-            {ru ? "Новое обсуждение" : "New thread"}
-          </button>
-        </div>
+              </SocialModuleThread>
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <p role="status" className="px-3 py-4 text-sm text-muted-foreground">
+          {ru ? "Обсуждения не найдены" : "No matching threads"}
+        </p>
       )}
-    </nav>
+    </ChatWorkspaceNavigation>
   ) : (
     <Subject
       isServer={false}
@@ -1177,6 +1172,15 @@ export function Component(props: IComponentPropsExtended) {
                   <div className="space-y-1">
                     {threadItems.length ? (
                       threadItems.map((threadItem) => {
+                        const renameLabel = ru
+                          ? `Переименовать обсуждение «${threadItem.title}»`
+                          : `Rename thread ${threadItem.title}`;
+                        const deleteLabel = ru
+                          ? `Удалить обсуждение «${threadItem.title}»`
+                          : `Delete thread ${threadItem.title}`;
+                        const isDeletingThread =
+                          threadDeletionIntent?.id === threadItem.data.id &&
+                          socialModuleChatFindByIdThreadDelete.isPending;
                         return (
                           <div
                             key={threadItem.data.id}
@@ -1190,47 +1194,43 @@ export function Component(props: IComponentPropsExtended) {
                                 {threadItem.createdAt}
                               </p>
                             </div>
-                            <button
+                            <Button
                               type="button"
+                              variant="ghost"
+                              size="icon"
                               onClick={() => {
                                 setEditThreadTitle(threadItem.title);
                                 setEditingThreadId(threadItem.data.id);
                               }}
-                              title={
-                                ru
-                                  ? "Переименовать обсуждение"
-                                  : "Rename thread"
-                              }
-                              className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md text-slate-300 transition hover:bg-slate-100 hover:text-slate-500"
+                              aria-label={renameLabel}
+                              title={renameLabel}
+                              className="size-10 shrink-0 rounded-xl text-muted-foreground active:bg-accent/80 active:text-accent-foreground"
                             >
-                              <Edit3 className="h-3 w-3" />
-                              <span className="sr-only">
-                                {ru
-                                  ? "Переименовать обсуждение"
-                                  : "Rename thread"}
-                              </span>
-                            </button>
-                            <button
+                              <Edit3 className="size-4" aria-hidden="true" />
+                            </Button>
+                            <Button
                               type="button"
+                              variant="ghost"
+                              size="icon"
                               onClick={() => {
+                                if (
+                                  socialModuleChatFindByIdThreadDelete.isPending
+                                ) {
+                                  return;
+                                }
                                 setThreadDeletionIntent({
                                   id: threadItem.data.id,
                                   title: threadItem.title,
                                 });
                               }}
-                              title={
-                                ru ? "Удалить обсуждение" : "Delete thread"
-                              }
-                              disabled={
-                                socialModuleChatFindByIdThreadDelete.isPending
-                              }
-                              className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md text-slate-300 transition hover:bg-red-50 hover:text-red-500 disabled:cursor-not-allowed disabled:opacity-40"
+                              aria-label={deleteLabel}
+                              title={deleteLabel}
+                              disabled={isDeletingThread}
+                              aria-busy={isDeletingThread}
+                              className="size-10 shrink-0 rounded-xl text-muted-foreground hover:bg-destructive/10 hover:text-destructive active:bg-destructive/20 active:text-destructive"
                             >
-                              <Trash2 className="h-3 w-3" />
-                              <span className="sr-only">
-                                {ru ? "Удалить обсуждение" : "Delete thread"}
-                              </span>
-                            </button>
+                              <Trash2 className="size-4" aria-hidden="true" />
+                            </Button>
                           </div>
                         );
                       })

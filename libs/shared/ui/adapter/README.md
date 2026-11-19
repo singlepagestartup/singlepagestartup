@@ -69,8 +69,7 @@ use shared UI components directly rather than a Website Builder Feature variant.
 production Social Profile/Thread views and the Website Builder landing demo.
 The workspace supplies the navigation and fixed-height frame. The Thread panel
 supplies the header, message scroll area and optional context sidebar. Desktop
-navigation starts at `lg`. The 360px context sidebar appears at `xl`, with a
-Chat/Context switch on smaller screens. The Website Builder landing demo uses
+navigation starts at `lg`. The header button toggles the 360px sidebar at `xl` and switches between the conversation and its details on smaller screens. The Website Builder landing demo uses
 the same layout with its own document editing and download controls.
 
 Pass navigation, messages, composer and context as rendered nodes. The panel

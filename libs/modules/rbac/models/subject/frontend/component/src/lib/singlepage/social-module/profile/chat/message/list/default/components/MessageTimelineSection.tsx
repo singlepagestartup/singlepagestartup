@@ -3,6 +3,7 @@
 import { MessageEditDialog } from "./MessageEditDialog";
 import { MessageTimeline } from "./MessageTimeline";
 import { useMessageActions } from "../hooks/use-message-actions";
+import { useMarkThreadRead } from "../hooks/use-mark-thread-read";
 import { useMessageThreadScroll } from "../hooks/use-message-thread-scroll";
 import { useThreadMessages } from "../hooks/use-thread-messages";
 import type { ThreadMessagesCache } from "../hooks/use-thread-messages-refetch";
@@ -113,6 +114,16 @@ export const MessageTimelineSection = memo(function MessageTimelineSection(
     socialModuleThreadId: props.socialModuleThreadId,
     timelineItemCount,
     timelineSignature,
+  });
+  const latestMessage = socialModuleMessagesAndActionsQuery.findLast(
+    (item) => item.type === "message",
+  );
+  useMarkThreadRead({
+    subjectId: props.subjectId,
+    socialModuleChatId: props.socialModuleChatId,
+    socialModuleThreadId: props.socialModuleThreadId,
+    messageId: latestMessage?.data.id,
+    viewportRef: messageThreadScroll.messagesViewportRef,
   });
 
   useEffect(() => {

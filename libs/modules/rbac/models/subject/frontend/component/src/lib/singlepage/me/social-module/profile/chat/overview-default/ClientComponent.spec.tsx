@@ -3,6 +3,7 @@ let mockProfiles: any[] = [];
 let mockAuthenticated = false;
 let mockWork: { chatId: string } | undefined;
 const mockPrivateThread = jest.fn();
+const mockGuestThreads = jest.fn();
 const mockRead = jest.fn();
 const mockOverview = jest.fn();
 jest.mock("@sps/rbac/models/subject/frontend/component", () => ({
@@ -22,6 +23,8 @@ jest.mock("@sps/rbac/models/subject/frontend/component", () => ({
 }));
 jest.mock("@sps/rbac/models/subject/sdk/client", () => ({
   api: {
+    socialModuleChatFindByIdThreadFind: (input: unknown) =>
+      mockGuestThreads(input),
     customerWorkForThread: (input: unknown) => {
       mockPrivateThread(input);
       return { data: mockWork, isPending: false };
@@ -48,6 +51,7 @@ import Client from "./client";
 beforeEach(() => {
   jest.clearAllMocks();
   mockWork = undefined;
+  mockGuestThreads.mockReturnValue({ data: [], isPending: false });
   mockAuthenticated = false;
   mockProfiles = [
     { id: "ai", variant: "artificial-intelligence" },
@@ -127,4 +131,24 @@ it("opens a signed-in member's Social thread without querying for a private orde
   );
   expect(html).toContain("Authorized chat");
   expect(mockPrivateThread).not.toHaveBeenCalled();
+});
+
+it("resolves a guest order from its bare chat URL before verifying the customer", () => {
+  mockGuestThreads.mockReturnValue({
+    data: [{ id: "order-thread", hasCustomerWork: true }],
+  });
+  mockWork = { chatId: "order-chat" };
+  const html = renderToStaticMarkup(
+    <Client
+      isServer={false}
+      variant="me-social-module-profile-chat-overview-default"
+      language="en"
+      socialModuleChatId="order-chat"
+    />,
+  );
+  expect(mockPrivateThread).toHaveBeenCalledWith({
+    id: "verified-guest",
+    threadId: "order-thread",
+  });
+  expect(html).toContain("Authorized chat");
 });

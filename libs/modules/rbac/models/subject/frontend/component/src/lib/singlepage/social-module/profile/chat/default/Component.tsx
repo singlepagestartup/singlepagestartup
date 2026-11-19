@@ -3,13 +3,13 @@ import { IComponentPropsExtended } from "./interface";
 import { cn } from "@sps/shared-frontend-client-utils";
 import Link from "next/link";
 import { MessageCircle } from "lucide-react";
+import { ChatListActivity } from "@sps/ui-adapter";
 import { getLocalizedText } from "../title";
 
 export const Component = memo(function Component(
   props: IComponentPropsExtended,
 ) {
   const ru = props.language === "ru";
-  const createdAt = new Date(props.socialModuleChat.createdAt);
   const isActive =
     props.currentSocialModuleChatId === props.socialModuleChat.id;
   const chatTitle = getLocalizedText(
@@ -20,7 +20,9 @@ export const Component = memo(function Component(
   const participantNames = (props.socialModuleChat.participants || [])
     .filter((profile) => profile.id !== props.socialModuleProfile.id)
     .map((profile) => getLocalizedText(profile.title, props.language, ""))
-    .filter((name) => name && !/^subject-[0-9a-f-]{36}$/i.test(name));
+    .filter((name) => name && !/^subject-[0-9a-f-]{36}$/i.test(name))
+    .slice(0, 3)
+    .join(", ");
   return (
     <Link
       href={`/${props.language}/social/chats/${props.socialModuleChat.id}`}
@@ -47,23 +49,20 @@ export const Component = memo(function Component(
         <MessageCircle className="size-4" aria-hidden="true" />
       </div>
       <div className="min-w-0 flex-1">
-        <div className="flex min-w-0 items-baseline justify-between gap-2">
-          <span className="line-clamp-2 min-w-0 break-words text-sm font-medium">
-            {chatTitle}
-          </span>
-          <time
-            className="shrink-0 text-xs tabular-nums text-muted-foreground"
-            dateTime={createdAt.toISOString()}
-          >
-            {createdAt.toLocaleDateString(props.language)}
-          </time>
-        </div>
-        {participantNames.length > 0 && (
+        <span className="block truncate text-sm font-medium" title={chatTitle}>
+          {chatTitle}
+        </span>
+        {participantNames && (
           <p className="mt-1 truncate text-xs text-muted-foreground">
-            {participantNames.slice(0, 3).join(", ")}
+            {participantNames}
           </p>
         )}
       </div>
+      <ChatListActivity
+        language={props.language}
+        timestamp={props.lastMessageAt ?? props.socialModuleChat.createdAt}
+        unreadCount={props.unreadCount}
+      />
     </Link>
   );
 });

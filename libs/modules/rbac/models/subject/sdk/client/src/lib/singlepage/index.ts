@@ -445,6 +445,11 @@ import {
   type IResult as ISocialModuleChatFindByIdThreadUpdateResult,
 } from "./social-module/chat/find-by-id/thread/update";
 import {
+  action as socialModuleChatFindByIdThreadMarkRead,
+  type IProps as ISocialModuleChatFindByIdThreadMarkReadProps,
+  type IResult as ISocialModuleChatFindByIdThreadMarkReadResult,
+} from "./social-module/chat/find-by-id/thread/mark-read";
+import {
   action as socialModuleChatFindByIdThreadDelete,
   type IProps as ISocialModuleChatFindByIdThreadDeleteProps,
   type IResult as ISocialModuleChatFindByIdThreadDeleteResult,
@@ -570,6 +575,7 @@ export type IProps = {
   ISocialModuleChatFindByIdThreadCreateProps: ISocialModuleChatFindByIdThreadCreateProps;
   ISocialModuleChatFindByIdThreadUpdateProps: ISocialModuleChatFindByIdThreadUpdateProps;
   ISocialModuleChatFindByIdThreadDeleteProps: ISocialModuleChatFindByIdThreadDeleteProps;
+  ISocialModuleChatFindByIdThreadMarkReadProps: ISocialModuleChatFindByIdThreadMarkReadProps;
   ISocialModuleChatFindByIdProfileCreateProps: ISocialModuleChatFindByIdProfileCreateProps;
   ISocialModuleChatFindByIdProfileSearchProps: ISocialModuleChatFindByIdProfileSearchProps;
   ISocialModuleChatFindByIdAgentSubjectSearchProps: ISocialModuleChatFindByIdAgentSubjectSearchProps;
@@ -663,6 +669,7 @@ export type IResult = {
   ISocialModuleChatFindByIdThreadCreateResult: ISocialModuleChatFindByIdThreadCreateResult;
   ISocialModuleChatFindByIdThreadUpdateResult: ISocialModuleChatFindByIdThreadUpdateResult;
   ISocialModuleChatFindByIdThreadDeleteResult: ISocialModuleChatFindByIdThreadDeleteResult;
+  ISocialModuleChatFindByIdThreadMarkReadResult: ISocialModuleChatFindByIdThreadMarkReadResult;
   ISocialModuleChatFindByIdProfileCreateResult: ISocialModuleChatFindByIdProfileCreateResult;
   ISocialModuleChatFindByIdProfileSearchResult: ISocialModuleChatFindByIdProfileSearchResult;
   ISocialModuleChatFindByIdAgentSubjectSearchResult: ISocialModuleChatFindByIdAgentSubjectSearchResult;
@@ -779,6 +786,7 @@ export const api = {
   socialModuleChatFindByIdThreadCreate,
   socialModuleChatFindByIdThreadUpdate,
   socialModuleChatFindByIdThreadDelete,
+  socialModuleChatFindByIdThreadMarkRead,
   socialModuleChatFindByIdProfileCreate,
   socialModuleChatFindByIdProfileSearch,
   socialModuleChatFindByIdAgentSubjectSearch,
