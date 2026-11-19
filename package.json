@@ -288,7 +288,7 @@
     "swc-loader": "^0.2.7",
     "ts-jest": "^29.4.15",
     "ts-node": "^10.9.2",
-    "typescript": "^6.0.3",
+    "typescript": "^7.0.2",
     "typescript-transform-paths": "^4.0.0",
     "url": "^0.11.4",
     "verdaccio": "^6.11.2",
