@@ -13,10 +13,22 @@ import { eq, sql } from "drizzle-orm";
 @injectFromBase()
 export class Repository extends DatabaseRepository<typeof Table> {
   withCatalogLock<T>(keys: string[], operation: () => Promise<T>): Promise<T> {
+    return this.withScopedLocks("rbac.catalog", keys, operation);
+  }
+
+  withWalletLocks<T>(keys: string[], operation: () => Promise<T>): Promise<T> {
+    return this.withScopedLocks("rbac.wallet", keys, operation);
+  }
+
+  private withScopedLocks<T>(
+    namespace: string,
+    keys: string[],
+    operation: () => Promise<T>,
+  ): Promise<T> {
     const run = async () => {
       for (const key of [...new Set(keys)].sort()) {
         await this.db.execute(
-          sql`SELECT pg_advisory_xact_lock(hashtext(${`rbac.catalog:${key}`}))`,
+          sql`SELECT pg_advisory_xact_lock(hashtext(${`${namespace}:${key}`}))`,
         );
       }
       return operation();

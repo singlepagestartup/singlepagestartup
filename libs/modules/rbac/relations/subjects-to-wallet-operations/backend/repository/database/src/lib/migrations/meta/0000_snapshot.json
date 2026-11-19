@@ -1,0 +1,296 @@
+{
+  "id": "283967e1-f17e-469b-ac58-d5a7e43ee9c2",
+  "prevId": "00000000-0000-0000-0000-000000000000",
+  "version": "7",
+  "dialect": "postgresql",
+  "tables": {
+    "public.sps_rc_wallet_operation": {
+      "name": "sps_rc_wallet_operation",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "store_id": {
+          "name": "store_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "task_id": {
+          "name": "task_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "actor_id": {
+          "name": "actor_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "sender_id": {
+          "name": "sender_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "recipient_id": {
+          "name": "recipient_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "currency_id": {
+          "name": "currency_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "operation_key": {
+          "name": "operation_key",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "reservation_id": {
+          "name": "reservation_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "purpose": {
+          "name": "purpose",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "kind": {
+          "name": "kind",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "state": {
+          "name": "state",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "amount": {
+          "name": "amount",
+          "type": "numeric(38, 12)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "budget": {
+          "name": "budget",
+          "type": "numeric(38, 12)",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {
+        "sps_rc_wallet_operation_key": {
+          "name": "sps_rc_wallet_operation_key",
+          "columns": [
+            {
+              "expression": "store_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "operation_key",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "sps_rc_wallet_active_reserves": {
+          "name": "sps_rc_wallet_active_reserves",
+          "columns": [
+            {
+              "expression": "sender_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "currency_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "where": "\"sps_rc_wallet_operation\".\"state\" = 'held'",
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "sps_rc_wallet_task": {
+          "name": "sps_rc_wallet_task",
+          "columns": [
+            {
+              "expression": "store_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "task_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "created_at",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "sps_rc_wallet_settlement": {
+          "name": "sps_rc_wallet_settlement",
+          "columns": [
+            {
+              "expression": "reservation_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "sps_rc_wallet_operation_store_id_sps_ee_store_id_fk": {
+          "name": "sps_rc_wallet_operation_store_id_sps_ee_store_id_fk",
+          "tableFrom": "sps_rc_wallet_operation",
+          "tableTo": "sps_ee_store",
+          "columnsFrom": [
+            "store_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "sps_rc_wallet_operation_actor_id_sps_rc_subject_id_fk": {
+          "name": "sps_rc_wallet_operation_actor_id_sps_rc_subject_id_fk",
+          "tableFrom": "sps_rc_wallet_operation",
+          "tableTo": "sps_rc_subject",
+          "columnsFrom": [
+            "actor_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "sps_rc_wallet_operation_sender_id_sps_rc_subject_id_fk": {
+          "name": "sps_rc_wallet_operation_sender_id_sps_rc_subject_id_fk",
+          "tableFrom": "sps_rc_wallet_operation",
+          "tableTo": "sps_rc_subject",
+          "columnsFrom": [
+            "sender_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "sps_rc_wallet_operation_recipient_id_sps_rc_subject_id_fk": {
+          "name": "sps_rc_wallet_operation_recipient_id_sps_rc_subject_id_fk",
+          "tableFrom": "sps_rc_wallet_operation",
+          "tableTo": "sps_rc_subject",
+          "columnsFrom": [
+            "recipient_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "sps_rc_wallet_operation_currency_id_sps_bg_currency_id_fk": {
+          "name": "sps_rc_wallet_operation_currency_id_sps_bg_currency_id_fk",
+          "tableFrom": "sps_rc_wallet_operation",
+          "tableTo": "sps_bg_currency",
+          "columnsFrom": [
+            "currency_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {
+        "sps_rc_wallet_amount_positive": {
+          "name": "sps_rc_wallet_amount_positive",
+          "value": "\"sps_rc_wallet_operation\".\"amount\" > 0 AND (\"sps_rc_wallet_operation\".\"budget\" IS NULL OR \"sps_rc_wallet_operation\".\"budget\" >= \"sps_rc_wallet_operation\".\"amount\")"
+        },
+        "sps_rc_wallet_distinct_parties": {
+          "name": "sps_rc_wallet_distinct_parties",
+          "value": "\"sps_rc_wallet_operation\".\"sender_id\" <> \"sps_rc_wallet_operation\".\"recipient_id\""
+        },
+        "sps_rc_wallet_valid_kind": {
+          "name": "sps_rc_wallet_valid_kind",
+          "value": "(\"sps_rc_wallet_operation\".\"kind\" = 'reserve' AND \"sps_rc_wallet_operation\".\"state\" IN ('held','released','settled') AND \"sps_rc_wallet_operation\".\"budget\" IS NOT NULL) OR (\"sps_rc_wallet_operation\".\"kind\" = 'transfer' AND \"sps_rc_wallet_operation\".\"state\" = 'posted' AND \"sps_rc_wallet_operation\".\"budget\" IS NULL)"
+        }
+      },
+      "isRLSEnabled": false
+    }
+  },
+  "enums": {},
+  "schemas": {},
+  "sequences": {},
+  "roles": {},
+  "policies": {},
+  "views": {},
+  "_meta": {
+    "columns": {},
+    "schemas": {},
+    "tables": {}
+  }
+}

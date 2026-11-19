@@ -3,7 +3,7 @@ date: 2026-11-19T11:02:00+03:00
 issue_number: 418
 repository: singlepagestartup
 topic: "CRM-воронки, персональные ассистенты, расчёты и исполнение заказов"
-status: in_review
+status: approved
 ---
 
 # План внедрения #418. От обращения клиента до исполнения заказа

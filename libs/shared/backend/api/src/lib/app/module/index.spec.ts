@@ -160,6 +160,30 @@ it("preserves dump and seed type filters and flattens child results", async () =
   expect(model.seed).not.toHaveBeenCalled();
 });
 
+it("passes remapped offer IDs to relations seeded after their owning relation", async () => {
+  const offers = child();
+  const linkedOffers = child();
+  const created: ISeedResult = {
+    module: "store",
+    type: "relation",
+    name: "offers",
+    seeds: [{ dump: { id: "old-offer" }, new: { id: "new-offer" } }],
+  };
+  jest.mocked(offers.seed).mockResolvedValue([created]);
+  jest.mocked(linkedOffers.seed).mockImplementation(async (props) => {
+    expect(props?.seeds).toEqual([created]);
+    return [];
+  });
+  const module = new App(filter, () => ({
+    apps: [
+      { type: "relation", route: "/offers", app: offers },
+      { type: "relation", route: "/linked-offers", app: linkedOffers },
+    ],
+  }));
+  await module.init();
+  expect(await module.seed({ type: "relation", seeds: [] })).toEqual([created]);
+});
+
 it("resolves a derived module through its interface without constructing the registry early", async () => {
   const create = jest.fn((): IModuleApps => ({
     apps: [{ type: "model", route: "/items", app: child() }],
