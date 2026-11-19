@@ -106,6 +106,14 @@ export class Service extends CRUDService<TTask> {
     return this.requireTask(taskScopeSchema.parse(input));
   }
 
+  async withTask<T>(input: ITaskScope, operation: (task: TTask) => Promise<T>) {
+    const scope = taskScopeSchema.parse(input);
+    return this.owner().transaction(async () => {
+      const task = await this.requireTask(scope, true);
+      return operation(task);
+    });
+  }
+
   private async publication(task: TTask) {
     const publication = await this.module.funnelPublication.findById({
       id: task.publicationId,
@@ -161,6 +169,7 @@ export class Service extends CRUDService<TTask> {
       task,
       stage: getStage(publication.definition, task.stageId),
       funding: publication.definition.workFunding,
+      maintenanceSourceId: publication.definition.maintenanceSourceId,
     };
   }
 
@@ -497,7 +506,10 @@ export class Service extends CRUDService<TTask> {
       if (
         !action ||
         !action.actors.includes(data.actorKind) ||
-        !action.evidence.includes(data.evidence.kind)
+        !action.evidence.includes(data.evidence.kind) ||
+        (action.deliveryStage &&
+          (data.evidence.kind !== "delivery" ||
+            data.evidence.stage !== action.deliveryStage))
       ) {
         throw new Error(
           "Forbidden error. This action and evidence are unavailable to the actor at this stage",
@@ -595,6 +607,7 @@ export class Service extends CRUDService<TTask> {
             customerId: current.customerId,
             budgetCurrencyId: funding.currencyId,
             budgetPriceKey: data.priceKey,
+            budgetRates: data.rates,
             approvedMaximum: data.approvedMaximum,
           },
           actorKind: "human",
@@ -631,6 +644,20 @@ export class Service extends CRUDService<TTask> {
         return {
           patch,
           detail: { previousStageId: current.stageId },
+          actorKind: "human",
+        };
+      }
+      if (data.kind === "customer-cart-approved") {
+        const published = await this.publication(current);
+        const stage = getStage(published.definition, current.stageId);
+        if (!stage.cartOfferIds?.includes(data.cartSelection.offerId)) {
+          throw new Error(
+            "Forbidden error. The offer is unavailable for this stage",
+          );
+        }
+        return {
+          patch: {},
+          detail: { orderId: data.orderId, cartSelection: data.cartSelection },
           actorKind: "human",
         };
       }

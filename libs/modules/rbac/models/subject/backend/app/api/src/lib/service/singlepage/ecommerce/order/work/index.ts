@@ -1,8 +1,11 @@
 import { jsPDF } from "jspdf";
+import { currencyPrecision } from "@sps/billing/models/currency/sdk/model";
 import type {
   IModel as IOrderWork,
   IOrderWorkArtifact,
   IOrderWorkPayment,
+  IOrderWorkPurchaseQuote,
+  TOrderWorkPriceBasis,
   IOrderWorkScope as IInternalScope,
   IOrderPhysicalEvidence,
 } from "@sps/ecommerce/models/order-work/sdk/model";
@@ -14,7 +17,12 @@ import {
   type TOrderWorkDecision,
 } from "@sps/rbac/models/subject/sdk/model/src/lib/order-work";
 import type { Service as Subject } from "../../../index";
-import { imageOrderResult, pdfOrderResult } from "./utils";
+import {
+  calculateConfirmedResultPrice,
+  imageOrderResult,
+  pdfOrderResult,
+  priceResultCharges,
+} from "./utils";
 import { LegacyReceipts } from "./receipts";
 
 interface IPurchase extends IOrderWorkScope {
@@ -109,7 +117,7 @@ export class Service {
         assigneeId,
         expectedAssignmentRevision: assignmentRevision,
       },
-      async ({ task }) => {
+      async ({ task, stage }) => {
         if (task.assigneeKind !== "ai" || !task.orderId) {
           throw new Error("Conflict error. The assigned run has no work order");
         }
@@ -121,74 +129,180 @@ export class Service {
           customerId: task.customerId,
         };
         await this.owner(scope.customerId, scope.orderId);
-        return ecommerce.order.repository.withLifecycleLock(
-          scope.orderId,
-          async () => {
-            const cart = await ecommerce.order.findByIdCartDetails({
-              id: scope.orderId,
-            });
-            const currencyId = cart.billingModuleCurrencyId;
-            if (!currencyId) {
-              throw new Error(
-                "Conflict error. Choose a currency for this work order",
-              );
-            }
-            let price: string;
-            const primary = cart.lines.filter((item) => !item.parentLineId);
-            if (primary.length !== 1 || primary[0].offerId !== task.offerId) {
-              throw new Error(
-                "Conflict error. Work order does not match the task's offer",
-              );
-            }
-            const [line] = primary;
-            if (line.offerId) {
-              const quote = await ecommerce.storesToProducts.quote({
-                offerId: line.offerId,
-                quantity: line.quantity,
-                currencyId,
-                lineId: line.id,
-                destination: line.destination,
-                services: cart.lines.flatMap((item) =>
-                  item.parentLineId === line.id && item.offerId
-                    ? [
-                        {
-                          offerId: item.offerId,
-                          quantity: item.quantity,
-                          lineId: item.id,
-                        },
-                      ]
-                    : [],
-                ),
-              });
-              if (!quote || quote.amount === null || quote.issues.length) {
-                throw new Error(
-                  "Conflict error. No current price applies to this work order",
-                );
-              }
-              price = quote.amount;
-            } else {
-              const total = cart.totals.find(
-                (value) => value.billingModuleCurrency.id === currencyId,
-              );
-              if (!total || cart.unpriced?.length) {
-                throw new Error(
-                  "Conflict error. No current price applies to this work order",
-                );
-              }
-              price = total.total.toFixed(8);
-            }
-
+        return this.work.withOrderLock(scope.orderId, async () => {
+          const operationKey = `work-result:${attemptId}`;
+          const existing = await this.work.read(scope);
+          const previous = existing.versions.find(
+            (version) => version.operationKey === operationKey,
+          );
+          const artifact = {
+            ...scope,
+            operationKey,
+            actorId: assigneeId,
+            original: input.original,
+            preview: input.preview,
+          };
+          if (previous) {
             return this.work.publishResult({
-              ...scope,
-              actorId: assigneeId,
-              operationKey: `work-result:${attemptId}`,
-              price,
-              currencyId,
-              original: input.original,
-              preview: input.preview,
+              ...artifact,
+              price: previous.price,
+              currencyId: previous.currencyId,
+              priceBasis: previous.priceBasis,
+              purchaseQuote: previous.purchaseQuote,
             });
-          },
-        );
+          }
+          const cart = await ecommerce.order.findByIdCartDetails({
+            id: scope.orderId,
+          });
+          const currencyId = cart.billingModuleCurrencyId;
+          if (!currencyId) {
+            throw new Error(
+              "Conflict error. Choose a currency for this work order",
+            );
+          }
+          const quotedAt = new Date().toISOString();
+          const stageBasis = {
+            publicationId: task.publicationId,
+            stageId: stage.id,
+            quotedAt,
+          };
+          let price: string;
+          let purchaseQuote: IOrderWorkPurchaseQuote | undefined;
+          let priceBasis: TOrderWorkPriceBasis = {
+            ...stageBasis,
+            kind: "cart-price",
+          };
+          const primary = cart.lines.filter((item) => !item.parentLineId);
+          if (primary.length !== 1 || primary[0].offerId !== task.offerId) {
+            throw new Error(
+              "Conflict error. Work order does not match the task's offer",
+            );
+          }
+          const [line] = primary;
+          if (line.offerId) {
+            const quote = await ecommerce.storesToProducts.quote({
+              offerId: line.offerId,
+              quantity: line.quantity,
+              currencyId,
+              lineId: line.id,
+              destination: line.destination,
+              services: cart.lines.flatMap((item) =>
+                item.parentLineId === line.id && item.offerId
+                  ? [
+                      {
+                        offerId: item.offerId,
+                        quantity: item.quantity,
+                        lineId: item.id,
+                      },
+                    ]
+                  : [],
+              ),
+            });
+            if (!quote || quote.amount === null || quote.issues.length) {
+              throw new Error(
+                "Conflict error. No current price applies to this work order",
+              );
+            }
+            price = quote.amount;
+            purchaseQuote = {
+              version: quote.version,
+              destination: quote.destination ?? line.destination,
+              charges: quote.charges,
+              lines: cart.lines.flatMap((item) =>
+                item.offerId
+                  ? [
+                      {
+                        id: item.id,
+                        offerId: item.offerId,
+                        quantity: item.quantity,
+                        parentLineId: item.parentLineId ?? null,
+                      },
+                    ]
+                  : [],
+              ),
+            };
+            if (purchaseQuote.lines.length !== cart.lines.length) {
+              throw new Error(
+                "Conflict error. Select all offers before publishing the result price",
+              );
+            }
+            priceBasis = {
+              ...stageBasis,
+              kind: "offer",
+              quoteVersion: quote.version,
+            };
+          } else {
+            const total = cart.totals.find(
+              (value) => value.billingModuleCurrency.id === currencyId,
+            );
+            if (!total || cart.unpriced?.length) {
+              throw new Error(
+                "Conflict error. No current price applies to this work order",
+              );
+            }
+            price = total.total.toFixed(8);
+          }
+
+          const tariff = stage.resultPricing;
+          if (tariff?.kind === "confirmed-cost") {
+            const currency =
+              await this.subject.modules.billing.currency.findById({
+                id: currencyId,
+              });
+            if (!currency) {
+              throw new Error(
+                "Not Found error. Result sale currency is unavailable",
+              );
+            }
+            const reservations =
+              await this.subject.module.subjectsToWalletOperations.find({
+                params: {
+                  filters: {
+                    and: [
+                      { column: "storeId", method: "eq", value: storeId },
+                      { column: "taskId", method: "eq", value: taskId },
+                      { column: "kind", method: "eq", value: "reserve" },
+                      { column: "state", method: "eq", value: "settled" },
+                      { column: "purpose", method: "eq", value: "agent-work" },
+                    ],
+                  },
+                  orderBy: { and: [{ column: "id", method: "asc" }] },
+                },
+              });
+            const precision = currencyPrecision(currency);
+            const result = calculateConfirmedResultPrice({
+              reservations,
+              tariff,
+              currencyId,
+              precision,
+              quotedAt,
+            });
+            price = result.price;
+            priceBasis = {
+              ...stageBasis,
+              kind: "confirmed-cost",
+              multiplier: tariff.multiplier,
+              precision,
+              rounding: "half-up",
+              costs: result.costs,
+            };
+            if (purchaseQuote) {
+              purchaseQuote = priceResultCharges(
+                purchaseQuote,
+                price,
+                task.publicationId,
+              );
+            }
+          }
+
+          return this.work.publishResult({
+            ...artifact,
+            price,
+            currencyId,
+            priceBasis,
+            purchaseQuote,
+          });
+        });
       },
     );
   }
@@ -598,60 +712,81 @@ export class Service {
     actorId: string,
     input: Omit<IOrderPhysicalEvidence, "actorId" | "customerId">,
   ) {
-    const detail = await this.subject.crmWorkspace.detail(actorId, {
-      storeId: input.storeId,
-      taskId: input.taskId,
-    });
-    const task = await this.subject.modules.crm.task.get(input);
-    if (
-      !detail ||
-      task.orderId !== input.orderId ||
-      task.assigneeId !== actorId ||
-      task.assigneeKind !== "human"
-    ) {
-      throw new Error(
-        "Permission error. Only the assigned store employee can record fulfillment",
+    const tasks = this.subject.modules.crm.task;
+    return tasks.withTask(input, async (task) => {
+      await this.subject.crmWorkspace.detail(actorId, {
+        storeId: task.storeId,
+        taskId: task.id,
+      });
+      if (
+        task.orderId !== input.orderId ||
+        task.assigneeId !== actorId ||
+        task.assigneeKind !== "human"
+      ) {
+        throw new Error(
+          "Permission error. Only the assigned store employee can record fulfillment",
+        );
+      }
+      const work = await this.work.findByOrder(input.orderId);
+      const repeated = work?.fulfillment.some(
+        (event) => event.operationKey === input.operationKey,
       );
-    }
-
-    const event = await this.work.fulfill({
-      ...input,
-      actorId,
-      customerId: task.customerId,
-    });
-    if (event.stage === "delivered" && task.status !== "closed") {
-      const tasks = this.subject.modules.crm.task;
+      if (task.status === "closed" && !repeated) {
+        throw new Error("Conflict error. The fulfillment task is closed");
+      }
       const publication = await tasks.getPublication(input);
       const stage = publication.definition.stages.find(
         (entry) => entry.id === task.stageId,
       );
-      const action = stage?.actions.find(
-        (entry) =>
-          entry.actors.includes("system") &&
-          entry.evidence.includes("delivery"),
+      const hasMilestones = publication.definition.stages.some((entry) =>
+        entry.actions.some((action) => action.deliveryStage === input.stage),
       );
-      const key = `order-delivery:${event.id}`;
-      const prior = await this.subject.modules.crm.taskEvent.byOperation(
-        task.id,
-        key,
-      );
-      if (action && !prior) {
-        await tasks.transition({
-          ...input,
-          actorId,
-          actorKind: "system",
-          expectedRevision: task.revision,
-          operationKey: key,
-          actionId: action.id,
-          causeId: event.id,
-          evidence: {
-            kind: "delivery",
-            orderId: input.orderId,
-            deliveryId: event.id,
-          },
-        });
+      const actions =
+        stage?.actions.filter(
+          (entry) =>
+            entry.actors.includes("system") &&
+            entry.evidence.includes("delivery") &&
+            (entry.deliveryStage ?? "delivered") === input.stage,
+        ) ?? [];
+      if (
+        actions.length > 1 ||
+        (hasMilestones && !actions.length && !repeated)
+      ) {
+        throw new Error(
+          "Conflict error. The current step does not allow this fulfillment milestone",
+        );
       }
-    }
-    return event;
+      const [action] = actions;
+      const event = await this.work.fulfill({
+        ...input,
+        actorId,
+        customerId: task.customerId,
+      });
+      if (action && task.status !== "closed") {
+        const key = `order-delivery:${event.id}`;
+        const prior = await this.subject.modules.crm.taskEvent.byOperation(
+          task.id,
+          key,
+        );
+        if (!prior) {
+          await tasks.transition({
+            ...input,
+            actorId,
+            actorKind: "system",
+            expectedRevision: task.revision,
+            operationKey: key,
+            actionId: action.id,
+            causeId: event.id,
+            evidence: {
+              kind: "delivery",
+              orderId: input.orderId,
+              deliveryId: event.id,
+              stage: event.stage,
+            },
+          });
+        }
+      }
+      return event;
+    });
   }
 }

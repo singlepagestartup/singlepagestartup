@@ -20,6 +20,7 @@ export const providerTerms = z
     maxCostUsd: money,
     inputUsdPerMillion: money,
     outputUsdPerMillion: money,
+    audioUsdPerMinute: money.optional(),
     usdPerSps: money,
     workMultiplier: money,
     version: text,

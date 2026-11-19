@@ -50,6 +50,7 @@ export {
   estimateNestedWork,
   sendNestedWork,
   supportsNestedWork,
+  TRANSCRIPTION_USD_PER_MINUTE,
   type TNestedWorkRequest,
   type INestedWorkResult,
 } from "./open-router/nested-work";

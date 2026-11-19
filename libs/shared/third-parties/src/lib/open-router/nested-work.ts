@@ -12,6 +12,7 @@ interface IBoundRequest {
   maxOutputTokens: number;
   inputUsdPerMillion: string;
   outputUsdPerMillion: string;
+  audioUsdPerMinute?: string;
 }
 
 export interface IEmbeddingWork extends IBoundRequest {
@@ -35,10 +36,12 @@ export interface ITranscriptionWork extends IBoundRequest {
 export type TNestedWorkRequest =
   IEmbeddingWork | IVisionWork | ITranscriptionWork;
 export interface INestedWorkResult extends ICompletedWork {
+  usage: ICompletedWork["usage"] & { audioSeconds?: string };
   embeddings?: { dimensions: number; values: number[][] };
 }
 
 const money = Decimal.clone({ precision: 56 });
+export const TRANSCRIPTION_USD_PER_MINUTE = "0.0045";
 const textModels = new Set([
   "gpt-4o",
   "gpt-4o-mini",
@@ -100,6 +103,18 @@ function price(input: number, output: number, request: IBoundRequest) {
     .div(1_000_000);
 }
 
+function transcriptionPrice(seconds: number, request: ITranscriptionWork) {
+  const rate = new money(
+    request.audioUsdPerMinute ?? TRANSCRIPTION_USD_PER_MINUTE,
+  );
+  if (rate.lt(TRANSCRIPTION_USD_PER_MINUTE)) {
+    throw new Error(
+      "Validation error. The transcription rate is below the supported model rate",
+    );
+  }
+  return rate.times(Math.ceil(seconds)).div(60);
+}
+
 export function estimateNestedWork(request: TNestedWorkRequest) {
   if (
     !supportsNestedWork(request.provider, request.model, request.capability)
@@ -133,24 +148,22 @@ export function estimateNestedWork(request: TNestedWorkRequest) {
         throw new Error("Validation error. Invalid prepared vision image");
       }
       // One normalized 512px image and low detail, with a conservative token ceiling for supported models.
-      const input = 2048 + Buffer.byteLength(request.prompt);
+      const input = 4096 + Buffer.byteLength(request.prompt);
       return { input, usd: price(input, request.maxOutputTokens, request) };
     }
     case "transcription": {
       if (
         !request.audio.length ||
         request.seconds <= 0 ||
-        request.seconds > 20 ||
-        request.maxOutputTokens < 1024
+        request.seconds > 20
       ) {
         throw new Error(
-          "Validation error. Paid transcription needs a bounded WAV clip and output allowance",
+          "Validation error. Paid transcription needs a bounded WAV clip",
         );
       }
-      // The synchronous transcription endpoint exposes no output limit. Keep
-      // clips short and reserve the full supported ceiling for that input.
+      // Billing uses audio duration. The input ceiling also limits decoder work.
       const input = 512 + Math.ceil(request.seconds * 100);
-      return { input, usd: price(input, 1024, request) };
+      return { input, usd: transcriptionPrice(request.seconds, request) };
     }
   }
 }
@@ -174,7 +187,7 @@ export async function sendNestedWork(
     },
   };
   const headers = new Headers({ Authorization: `Bearer ${secret}` });
-  let body: BodyInit;
+  let body: string | FormData;
   let route: string;
   switch (request.capability) {
     case "embedding":
@@ -317,12 +330,18 @@ export async function sendNestedWork(
         throw new ProviderOutcomeUnknown(id);
       }
       const { text, usage } = decoded.data;
-      return result(
-        usage.input_tokens,
-        usage.output_tokens,
-        undefined,
-        text.slice(0, 4000),
-      );
+      const seconds = request.seconds;
+      return {
+        providerRequestId: id,
+        text: text.slice(0, 4000),
+        usage: {
+          inputTokens: usage.input_tokens,
+          outputTokens: usage.output_tokens,
+          usd: transcriptionPrice(seconds, request).toFixed(),
+          basis: "rate-card",
+          audioSeconds: new money(seconds).toFixed(),
+        },
+      };
     }
   }
 }

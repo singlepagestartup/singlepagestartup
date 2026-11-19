@@ -34,6 +34,52 @@ const payload = {
   usage,
   choices: [{ message: { content: "Ответ" } }],
 };
+it("returns only a scoped cart proposal and waits for buyer confirmation before a transition", async () => {
+  const offerId = "7eb8b248-6354-4fb0-befe-3a4fd8904f96";
+  const currencyId = "09a5d52e-b82a-4f72-a50b-804e6217a50d";
+  const selection = { offerId, currencyId, quantity: 3 };
+  const run = async (cartSelection: unknown) => {
+    const api = network({
+      ...payload,
+      choices: [
+        {
+          message: {
+            content: JSON.stringify({
+              reply: "Подготовить корзину?",
+              actionId: "next",
+              cartSelection,
+            }),
+          },
+        },
+      ],
+    });
+    const result = await sendWork(
+      {
+        ...request,
+        actions: [{ id: "next", instruction: "Continue" }],
+        cartOffers: [{ offerId, prices: [{ currencyId }] }],
+      },
+      "runtime-sentinel",
+      api.fetch,
+    );
+    expect(
+      JSON.parse(String(api.calls[0].init?.body)).response_format.type,
+    ).toBe("json_object");
+    return result;
+  };
+  expect((await run(selection)).cartSelection).toEqual(selection);
+  for (const invalid of [
+    { ...selection, currencyId: offerId },
+    { ...selection, offerId: currencyId },
+    { ...selection, quantity: 0 },
+  ]) {
+    const result = await run(invalid);
+    expect(result.cartSelection).toBeUndefined();
+    expect(result.actionId).toBeUndefined();
+  }
+  expect((await run(selection)).actionId).toBeUndefined();
+  expect((await run(null)).actionId).toBe("next");
+});
 it("uses the selected OpenRouter key, caps generation and records billed credits", async () => {
   const api = network(payload);
   const work = await sendWork(request, "runtime-sentinel", api.fetch);

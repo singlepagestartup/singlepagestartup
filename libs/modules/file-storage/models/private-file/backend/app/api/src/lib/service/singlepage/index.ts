@@ -9,6 +9,7 @@ interface IWritePrivateFile {
   name: string;
   mimeType: string;
   bytes: Uint8Array;
+  legacyOriginId?: string;
 }
 
 @injectable()
@@ -40,6 +41,7 @@ export class Service extends CRUDService<typeof Table.$inferSelect> {
       mimeType: props.mimeType,
       size: bytes.length,
       digest,
+      legacyOriginId: props.legacyOriginId,
       bytes,
     });
     return description;

@@ -14,6 +14,34 @@ export function stageErrors(stage: WorkflowStage) {
   if (!stage.payer) errors.push("Выберите плательщика.");
   if (stage.settlementEvent === "none")
     errors.push("Выберите событие расчёта.");
+  const pricing = stage.resultPricing;
+  if (pricing?.kind === "confirmed-cost") {
+    const positiveDecimal = (value: string) =>
+      /^(?:0|[1-9]\d{0,17})(?:\.\d{1,12})?$/.test(value) && Number(value) > 0;
+    if (!positiveDecimal(pricing.multiplier)) {
+      errors.push("Введите положительный коэффициент расчёта.");
+    }
+    const pairs = pricing.conversions.map(
+      (rate) => `${rate.fromCurrencyId}:${rate.toCurrencyId}`,
+    );
+    if (
+      new Set(pairs).size !== pairs.length ||
+      pricing.conversions.some(
+        (rate) =>
+          !rate.fromCurrencyId ||
+          !rate.toCurrencyId ||
+          rate.fromCurrencyId === rate.toCurrencyId ||
+          !positiveDecimal(rate.rate) ||
+          !rate.source.trim() ||
+          !/(?:Z|[+-]\d\d:\d\d)$/.test(rate.observedAt) ||
+          !Number.isFinite(Date.parse(rate.observedAt)),
+      )
+    ) {
+      errors.push(
+        "Для каждой пары валют укажите один положительный курс, его источник и дату с часовым поясом.",
+      );
+    }
+  }
 
   if (stage.waitFor !== "none") {
     if (!Number.isSafeInteger(stage.waitHours) || stage.waitHours <= 0)

@@ -42,6 +42,7 @@ export const taskEvidenceSchema = z.discriminatedUnion("kind", [
     kind: z.literal("delivery"),
     orderId: z.uuid(),
     deliveryId: referenceSchema,
+    stage: z.enum(["preparing", "in-transit", "delivered"]).optional(),
   }),
   z.object({
     kind: z.literal("file-access"),
@@ -98,12 +99,35 @@ export const customerTaskActivitySchema = z.discriminatedUnion("kind", [
   }),
   changeSchema.extend({ kind: z.literal("customer-handoff-requested") }),
   changeSchema.extend({
+    kind: z.literal("customer-cart-approved"),
+    orderId: z.uuid(),
+    cartSelection: z
+      .object({
+        proposalId: z.uuid(),
+        offerId: z.uuid(),
+        currencyId: z.uuid(),
+        quantity: z.number().int().positive(),
+        amount: z.string().trim().min(1).max(50),
+        quoteVersion: z.string().trim().min(1).max(180),
+      })
+      .strict(),
+  }),
+  changeSchema.extend({
     kind: z.literal("customer-budget-approved"),
     approvedMaximum: z
       .string()
       .regex(/^(?:0|[1-9][0-9]{0,17})(?:\.[0-9]{1,12})?$/)
       .refine((value) => /[1-9]/.test(value)),
     priceKey: z.string().regex(/^[a-f0-9]{64}$/),
+    rates: z
+      .array(
+        z.record(
+          z.string().max(60),
+          z.union([z.string().max(150), z.number().nonnegative()]),
+        ),
+      )
+      .min(1)
+      .max(7),
   }),
 ]);
 export const transferTaskCustomerSchema = changeSchema.extend({

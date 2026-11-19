@@ -60,10 +60,9 @@ it("freezes the checkout version, confirms the order atomically, and delivers th
   const checkout = {
     orderId: entity.id,
     customerId: scope.customerId,
-    currencyId: currency.id,
-    price: 25,
+    lines: [],
   };
-  await expect(order.work.checkout(checkout)).rejects.toThrow(
+  await expect(order.work.acceptedCheckout(checkout)).rejects.toThrow(
     "Accept a result",
   );
   const createResult = async (number: number) => {
@@ -72,7 +71,7 @@ it("freezes the checkout version, confirms the order atomically, and delivers th
       actorId: scope.customerId,
       operationKey: randomUUID(),
       currencyId: currency.id,
-      price: "25.00",
+      price: number === 1 ? "25.00" : "31.27",
       original: {
         name: `cover-${number}.png`,
         mimeType: "image/png",
@@ -98,19 +97,19 @@ it("freezes the checkout version, confirms the order atomically, and delivers th
     resultVersionId: first.id,
     operationKey: randomUUID(),
   });
-  const selected = await order.work.checkout(checkout);
+  const selected = (await order.work.acceptedCheckout(checkout))?.checkout;
   expect(selected).toMatchObject({
     resultVersionId: first.id,
     price: "25.00000000",
   });
-  await expect(order.work.checkout({ ...checkout, price: 24 })).rejects.toThrow(
-    "price and currency",
+  expect((await order.work.resultPriceForOrder(entity.id))?.price).toBe(
+    "25.00000000",
   );
 
   const [intent] = await db
     .insert(PaymentIntent)
     .values({
-      amount: 25,
+      amount: 24,
       status: "succeeded",
       checkoutCurrencyId: currency.id,
       checkoutMetadata: {
@@ -123,7 +122,7 @@ it("freezes the checkout version, confirms the order atomically, and delivers th
   );
   const [invoice] = await db
     .insert(Invoice)
-    .values({ amount: 25, status: "paid", provider: "dummy" })
+    .values({ amount: 24, status: "paid", provider: "dummy" })
     .returning();
   cleanup.push(() => db.delete(Invoice).where(eq(Invoice.id, invoice.id)));
   await db
@@ -154,6 +153,17 @@ it("freezes the checkout version, confirms the order atomically, and delivers th
     expectedUpdatedAt: paying!.updatedAt,
     onPaymentSucceeded: async () => {},
   };
+  await expect(order.completePaymentStatus(finalize)).rejects.toThrow(
+    "does not match an authorized order attempt",
+  );
+  await db
+    .update(PaymentIntent)
+    .set({ amount: 25 })
+    .where(eq(PaymentIntent.id, intent.id));
+  await db
+    .update(Invoice)
+    .set({ amount: 25 })
+    .where(eq(Invoice.id, invoice.id));
   const confirmations = await Promise.all([
     order.completePaymentStatus(finalize),
     order.completePaymentStatus(finalize),
@@ -167,6 +177,9 @@ it("freezes the checkout version, confirms the order atomically, and delivers th
     customerId: scope.customerId,
   });
   expect(paid?.acceptedVersionId).toBe(second.id);
+  expect((await order.work.resultPriceForOrder(entity.id))?.price).toBe(
+    "25.00000000",
+  );
 
   const eventId = paid!.paid!.id;
   const saved = { orderId: entity.id, eventId };

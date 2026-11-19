@@ -1,0 +1,2 @@
+ALTER TABLE "sps_fs_private_file" ADD COLUMN "legacy_origin_id" uuid;--> statement-breakpoint
+ALTER TABLE "sps_fs_private_file" ADD CONSTRAINT "sps_fs_private_file_legacy_origin_id_unique" UNIQUE("legacy_origin_id");

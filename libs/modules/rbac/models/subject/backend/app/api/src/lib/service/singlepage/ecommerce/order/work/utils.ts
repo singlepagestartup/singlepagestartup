@@ -3,6 +3,139 @@ import { readFile } from "node:fs/promises";
 import path from "node:path";
 import { jsPDF } from "jspdf";
 import sharp from "sharp";
+import Decimal from "decimal.js";
+import type { IFunnelStage } from "@sps/crm/models/funnel/sdk/model";
+import type {
+  IOrderWorkPurchaseQuote,
+  TOrderWorkPriceBasis,
+} from "@sps/ecommerce/models/order-work/sdk/model";
+
+const Money = Decimal.clone({ precision: 64 });
+type TConfirmedCostPricing = Extract<
+  NonNullable<IFunnelStage["resultPricing"]>,
+  { kind: "confirmed-cost" }
+>;
+type TConfirmedCostBasis = Extract<
+  TOrderWorkPriceBasis,
+  { kind: "confirmed-cost" }
+>;
+
+interface IReadReservedCost {
+  id: string;
+  currencyId: string;
+  settlement: { workAmount: string } | null;
+}
+
+export function calculateConfirmedResultPrice(input: {
+  reservations: IReadReservedCost[];
+  currencyId: string;
+  precision: number;
+  tariff: TConfirmedCostPricing;
+  quotedAt: string;
+}): { price: string; costs: TConfirmedCostBasis["costs"] } {
+  const grouped = new Map<
+    string,
+    { amount: Decimal; reservationIds: string[] }
+  >();
+  for (const { id, currencyId, settlement } of input.reservations) {
+    if (!settlement) {
+      throw new Error(
+        "Conflict error. Confirmed work is missing settlement details",
+      );
+    }
+    const cost = grouped.get(currencyId) ?? {
+      amount: new Money(0),
+      reservationIds: [],
+    };
+    cost.amount = cost.amount.plus(settlement.workAmount);
+    cost.reservationIds.push(id);
+    grouped.set(currencyId, cost);
+  }
+  let amount = new Money(0);
+  const costs: TConfirmedCostBasis["costs"] = [];
+  for (const [currencyId, cost] of grouped) {
+    const conversion = input.tariff.conversions.find(
+      (entry) =>
+        entry.fromCurrencyId === currencyId &&
+        entry.toCurrencyId === input.currencyId,
+    );
+    if (
+      conversion &&
+      Date.parse(conversion.observedAt) > Date.parse(input.quotedAt)
+    ) {
+      throw new Error(
+        "Conflict error. The configured exchange rate is dated in the future",
+      );
+    }
+    if (!conversion && currencyId !== input.currencyId) {
+      throw new Error(
+        "Conflict error. No exchange rate is configured for the confirmed work currency",
+      );
+    }
+    amount = amount.plus(
+      conversion ? cost.amount.times(conversion.rate) : cost.amount,
+    );
+    costs.push({
+      currencyId,
+      amount: cost.amount.toFixed(),
+      reservationIds: cost.reservationIds,
+      ...(conversion
+        ? {
+            conversion: {
+              fromCurrencyId: conversion.fromCurrencyId,
+              toCurrencyId: conversion.toCurrencyId,
+              rate: conversion.rate,
+              source: conversion.source,
+              observedAt: conversion.observedAt,
+            },
+          }
+        : {}),
+    });
+  }
+  const price = amount
+    .times(input.tariff.multiplier)
+    .toDecimalPlaces(input.precision, Decimal.ROUND_HALF_UP);
+  if (!price.gt(0)) {
+    throw new Error(
+      "Conflict error. Confirmed work does not produce a positive result price",
+    );
+  }
+  return { price: price.toFixed(input.precision), costs };
+}
+
+export function priceResultCharges(
+  quote: IOrderWorkPurchaseQuote,
+  price: string,
+  publicationId: string,
+): IOrderWorkPurchaseQuote {
+  const fixedCharges = quote.charges
+    .filter((charge) => charge.role !== "product")
+    .reduce((sum, charge) => sum.plus(charge.amount), new Money(0));
+  const itemCharge = new Money(price).minus(fixedCharges);
+  if (itemCharge.isNegative()) {
+    throw new Error(
+      "Conflict error. Result price is smaller than the selected service charges",
+    );
+  }
+  return {
+    ...quote,
+    charges: quote.charges.map((charge) =>
+      charge.role === "product"
+        ? {
+            ...charge,
+            amount: itemCharge.toFixed(),
+            unitAmount: null,
+            formula: "confirmed_work_cost * multiplier",
+            formulaVersion: publicationId,
+            inputs: {
+              result_price: price,
+              fixed_service_charges: fixedCharges.toFixed(),
+            },
+          }
+        : charge,
+    ),
+  };
+}
 
 function makePdf(
   attemptId: string,

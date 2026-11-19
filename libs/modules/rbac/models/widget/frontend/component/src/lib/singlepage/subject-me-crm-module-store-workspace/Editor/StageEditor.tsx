@@ -129,8 +129,11 @@ export function StageEditor({
           multiline
           onChange={(instruction) => onChange({ instruction })}
         />
-        <CartOffers key={stage.id} initialValue={stage.cartOfferIds ?? []}
-          onChange={(cartOfferIds) => onChange({ cartOfferIds })} />
+        <CartOffers
+          key={stage.id}
+          initialValue={stage.cartOfferIds ?? []}
+          onChange={(cartOfferIds) => onChange({ cartOfferIds })}
+        />
         <fieldset className="grid gap-2 text-sm">
           <legend className="font-medium">Платные шаги исполнителя</legend>
           {optionalWork.map(({ operation, label }) => (
@@ -259,10 +262,16 @@ export function StageEditor({
           label="Условия расчёта"
           value={stage.settlementInstruction ?? ""}
           multiline
-          onChange={(settlementInstruction) => onChange({ settlementInstruction })}
+          onChange={(settlementInstruction) =>
+            onChange({ settlementInstruction })
+          }
         />
         {kind === "individual-service" && (
-          <ResultPricing stage={stage} currencies={options.currencies} onChange={onChange} />
+          <ResultPricing
+            stage={stage}
+            currencies={options.currencies}
+            onChange={onChange}
+          />
         )}
         <div className="grid gap-3 sm:grid-cols-3">
           <Field label="Ответственный">
@@ -360,6 +369,10 @@ export function StageEditor({
                     patchAction(action.id, {
                       evidence: [evidence],
                       actors: actionActor(evidence),
+                      deliveryStage:
+                        evidence === "delivery"
+                          ? action.deliveryStage
+                          : undefined,
                     });
                   }}
                 >
@@ -370,6 +383,27 @@ export function StageEditor({
                   ))}
                 </select>
               </Field>
+              {kind === "physical-order" &&
+                action.evidence.includes("delivery") && (
+                  <Field label="Этап исполнения заказа">
+                    <select
+                      className={fieldClass}
+                      value={action.deliveryStage ?? "delivered"}
+                      onChange={(event) =>
+                        patchAction(action.id, {
+                          deliveryStage: event.currentTarget
+                            .value as IFunnelAction["deliveryStage"],
+                        })
+                      }
+                    >
+                      <option value="preparing">Сборка началась</option>
+                      <option value="in-transit">
+                        Заказ передан перевозчику
+                      </option>
+                      <option value="delivered">Вручение подтверждено</option>
+                    </select>
+                  </Field>
+                )}
               <Field label="Результат операции">
                 <select
                   className={fieldClass}
@@ -459,16 +493,34 @@ export function StageEditor({
   );
 }
 
-function CartOffers({ initialValue, onChange }: { initialValue: string[]; onChange: (ids: string[]) => void }) {
+function CartOffers({
+  initialValue,
+  onChange,
+}: {
+  initialValue: string[];
+  onChange: (ids: string[]) => void;
+}) {
   const [value, setValue] = useState(initialValue.join(", "));
-  return <Field label="Предложения для корзины">
-    <textarea className={fieldClass} value={value} rows={2}
-      placeholder="ID предложений магазина через запятую" onChange={(event) => {
-        const text = event.currentTarget.value;
-        setValue(text);
-        onChange(text.split(",").map((id) => id.trim()).filter(Boolean));
-      }} />
-  </Field>;
+  return (
+    <Field label="Предложения для корзины">
+      <textarea
+        className={fieldClass}
+        value={value}
+        rows={2}
+        placeholder="ID предложений магазина через запятую"
+        onChange={(event) => {
+          const text = event.currentTarget.value;
+          setValue(text);
+          onChange(
+            text
+              .split(",")
+              .map((id) => id.trim())
+              .filter(Boolean),
+          );
+        }}
+      />
+    </Field>
+  );
 }
 
 function ReminderField({

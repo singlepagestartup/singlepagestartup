@@ -1,11 +1,16 @@
 import { createHash, randomUUID } from "node:crypto";
 import type { IModel as CrmTask } from "@sps/crm/models/task/sdk/model";
-import type { IWorkFunding } from "@sps/crm/models/funnel/sdk/model";
+import {
+  stageWorkCapabilities,
+  type IWorkFunding,
+} from "@sps/crm/models/funnel/sdk/model";
+import { supportsNestedWork } from "@sps/shared-third-parties";
 import Decimal from "decimal.js";
 import type { IModel as SocialMessage } from "@sps/social/models/message/sdk/model";
 import type { IModel as SocialProfile } from "@sps/social/models/profile/sdk/model";
 import { selectRetailOffer } from "@sps/ecommerce/relations/stores-to-products/sdk/model";
 import type {
+  ICustomerWorkCartOffer,
   ICustomerWorkMessage,
   ICustomerWorkOfferAvailability,
   ICustomerWorkOfferScope,
@@ -27,6 +32,7 @@ import {
   type TPreparedMedia,
 } from "./media";
 import { Service as CustomerDelivery } from "./delivery";
+import { Service as CustomerCart, type IStoredProposal } from "./cart";
 import { criteria } from "./utils";
 
 type TOpenCustomerWork = Extract<
@@ -39,7 +45,7 @@ type TConversationCommand = Extract<
 >;
 type TMemoryCommand = Exclude<
   TCustomerWorkCommand,
-  TOpenCustomerWork | TConversationCommand
+  TOpenCustomerWork | TConversationCommand | { operation: "confirm-cart" }
 >;
 
 interface IMessageEntry {
@@ -74,12 +80,37 @@ export class Service {
     return new CustomerKnowledge(this.subject);
   }
 
+  private get cart() {
+    return new CustomerCart(this.subject);
+  }
+
+  async expertForMaintenance(
+    task: Pick<CrmTask, "storeId" | "productId" | "offerId">,
+  ) {
+    const expert = await this.knowledge.expert(task);
+    if (expert.conflict) {
+      throw new Error(
+        "Conflict error. The store has competing expert assignments",
+      );
+    }
+    return expert.profileId;
+  }
+
   async execute(
     customerId: string,
     command: TCustomerWorkCommand,
   ): Promise<ICustomerWorkView> {
     if (command.operation === "ask" || command.operation === "add") {
       return this.open(customerId, command);
+    }
+    if (command.operation === "confirm-cart") {
+      return this.subject.repository.withSubjectLock(
+        { subjectId: customerId },
+        async () => {
+          await this.confirmCart(customerId, command, command.proposalId);
+          return this.view(customerId, command);
+        },
+      );
     }
     if (
       command.operation === "memory-project" ||
@@ -150,8 +181,22 @@ export class Service {
         if (prior) {
           return prior;
         }
+        const publication = await this.crm.funnel.current(
+          input.storeId,
+          input.funnelId,
+        );
+        if (!publication.bindings.formIds.includes(input.formId)) {
+          throw new Error(
+            "Conflict error. This form is unavailable for the published workflow",
+          );
+        }
+        const selected = await this.formSelection(
+          input.storeId,
+          publication.bindings,
+        );
         const task = await this.crm.task.open({
           ...input,
+          ...selected,
           actorId: input.customerId,
           operationKey: key,
           causeId: input.requestId,
@@ -165,6 +210,47 @@ export class Service {
         return task;
       },
     );
+  }
+
+  private async formSelection(
+    storeId: string,
+    bindings: { productIds: string[]; offerIds: string[] },
+  ) {
+    const ecommerce = this.subject.modules.ecommerce;
+    if (bindings.offerIds.length === 1) {
+      const offer = await ecommerce.storesToProducts.findById({
+        id: bindings.offerIds[0],
+      });
+      if (offer?.storeId === storeId) {
+        const selected = await this.selection({
+          storeId,
+          offerId: offer.id,
+          productId: offer.productId,
+        });
+        if (selected) {
+          return { productId: selected.product.id, offerId: selected.offer.id };
+        }
+      }
+    }
+    if (bindings.offerIds.length || bindings.productIds.length !== 1) {
+      return undefined;
+    }
+    const [productId] = bindings.productIds;
+    const offers = await ecommerce.storesToProducts.offersForProduct({
+      storeId,
+      productId,
+    });
+    if (offers.length === 1) {
+      const selected = await this.selection({
+        storeId,
+        offerId: offers[0].id,
+        productId,
+      });
+      if (selected) {
+        return { productId, offerId: selected.offer.id };
+      }
+    }
+    return { productId };
   }
 
   async viewForOrder(customerId: string, storeId: string, orderId: string) {
@@ -200,6 +286,7 @@ export class Service {
     guestId: string;
     customerId: string;
     removedOrderIds: string[];
+    transferredOrderIds: string[];
   }) {
     const buyerProfile = await this.profileForSubject(input.guestId);
     if (!buyerProfile) {
@@ -215,17 +302,7 @@ export class Service {
       if (!threadLink) {
         continue;
       }
-      if (task.orderId && !input.removedOrderIds.includes(task.orderId)) {
-        const [owner] =
-          await this.subject.module.subjectsToEcommerceModuleOrders.find(
-            criteria({
-              subjectId: input.customerId,
-              ecommerceModuleOrderId: task.orderId,
-            }),
-          );
-        if (!owner) {
-          continue;
-        }
+      if (task.orderId && input.transferredOrderIds.includes(task.orderId)) {
         await this.subject.modules.ecommerce.order.work.transferCustomer({
           customerId: input.guestId,
           nextCustomerId: input.customerId,
@@ -233,6 +310,17 @@ export class Service {
           storeId: task.storeId,
           taskId: task.id,
         });
+      } else if (
+        task.orderId &&
+        !input.removedOrderIds.includes(task.orderId)
+      ) {
+        const removal = await this.crm.taskEvent.byOperation(
+          task.id,
+          `cart-removed:${task.orderId}`,
+        );
+        if (removal?.kind !== "closed") {
+          continue;
+        }
       }
       const channel = await this.channel(task.id);
       const profileId = await this.ensureProfile(input.customerId, "customer");
@@ -392,6 +480,18 @@ export class Service {
         })
       : undefined;
     const entries = await this.messages(channel.threadId);
+    const proposal = this.cartProposal(entries);
+    const confirmed = proposal
+      ? await this.crm.taskEvent.byOperation(
+          task.id,
+          `cart-consent:${proposal.id}`,
+        )
+      : undefined;
+    const cartProposal =
+      proposal &&
+      (confirmed?.detail.orderId || this.cart.active(task, proposal))
+        ? this.cart.summary(proposal, confirmed?.detail.orderId)
+        : undefined;
     const assignee = task.assigneeId
       ? await this.profileForSubject(task.assigneeId)
       : undefined;
@@ -432,6 +532,7 @@ export class Service {
       price,
       approvedMaximum,
       memory,
+      cartProposal,
       assignment:
         task.assigneeKind === "ai"
           ? "assistant"
@@ -453,7 +554,11 @@ export class Service {
     return task;
   }
 
-  private async open(customerId: string, input: TOpenCustomerWork) {
+  private async open(
+    customerId: string,
+    input: TOpenCustomerWork,
+    proposal?: IStoredProposal,
+  ) {
     return this.subject.repository.withSubjectLock(
       { subjectId: customerId },
       async () => {
@@ -539,7 +644,8 @@ export class Service {
               taskId: consultation.id,
             });
             if (
-              consultation.offerId !== input.offerId ||
+              (consultation.offerId !== input.offerId &&
+                proposal?.offerId !== input.offerId) ||
               consultationPublication.kind !== "consultation"
             ) {
               throw new Error(
@@ -547,6 +653,15 @@ export class Service {
               );
             }
             consultationTaskId = consultation.id;
+            if (isCustomService) {
+              const existing = await this.cartTaskForConsultation(consultation);
+              if (existing) {
+                return this.view(customerId, {
+                  storeId: existing.storeId,
+                  taskId: existing.id,
+                });
+              }
+            }
           }
           orderId = await this.orderForSelection(
             customerId,
@@ -606,6 +721,31 @@ export class Service {
     );
   }
 
+  private async cartTaskForConsultation(consultation: CrmTask) {
+    const links = await this.social.threadsToCrmModuleTasks.find(
+      criteria({ consultationTaskId: consultation.id }),
+    );
+    for (const { crmModuleTaskId } of links) {
+      const task = await this.crm.task.findById({ id: crmModuleTaskId });
+      if (
+        task?.storeId !== consultation.storeId ||
+        task.customerId !== consultation.customerId ||
+        task.offerId !== consultation.offerId ||
+        !task.orderId ||
+        task.status === "closed"
+      ) {
+        continue;
+      }
+      const order = await this.subject.modules.ecommerce.order.findById({
+        id: task.orderId,
+      });
+      if (order?.type === "cart" && order.status === "new") {
+        return task;
+      }
+    }
+    return null;
+  }
+
   private async assignDefault(task: CrmTask, assistantId: string) {
     const current = await this.crm.task.getPublication({
       taskId: task.id,
@@ -634,6 +774,171 @@ export class Service {
         Date.now() + 7 * 24 * 60 * 60 * 1000,
       ).toISOString(),
     });
+  }
+
+  private cartProposal(entries: IMessageEntry[], proposalId?: string) {
+    for (const { message } of [...entries].reverse()) {
+      if (!message.workReplyKey?.startsWith("attempt:")) {
+        continue;
+      }
+      const proposal = this.cart.read(
+        message.metadata?.customerWorkCartProposal,
+      );
+      if (
+        proposal &&
+        message.workReplyKey === `attempt:${proposal.id}` &&
+        (!proposalId || proposal.id === proposalId)
+      ) {
+        return proposal;
+      }
+    }
+    return undefined;
+  }
+
+  private async confirmCart(
+    customerId: string,
+    scope: ICustomerWorkScope,
+    proposalId: string,
+  ) {
+    const task = await this.taskForCustomer(customerId, scope);
+    const operationKey = `cart-consent:${proposalId}`;
+    const previous = await this.crm.taskEvent.byOperation(
+      task.id,
+      operationKey,
+    );
+    if (
+      previous?.kind === "customer-cart-approved" &&
+      previous.detail.orderId
+    ) {
+      return previous.detail.orderId;
+    }
+    const channel = await this.channel(task.id);
+    const entries = await this.messages(channel.threadId);
+    const proposal = this.cartProposal(entries, proposalId);
+    if (!proposal) {
+      throw new Error(
+        "Not Found error. The cart suggestion could not be found",
+      );
+    }
+    return this.crm.task.withWork(
+      {
+        ...scope,
+        assigneeId: proposal.assigneeId,
+        expectedAssignmentRevision: proposal.assignmentRevision,
+      },
+      async ({ task, stage }) => {
+        if (
+          task.customerId !== customerId ||
+          !(await this.storeWorker(task, proposal.assigneeId))
+        ) {
+          throw new Error(
+            "Forbidden error. The current assignment cannot add this offer",
+          );
+        }
+        await this.requireInputEvent({
+          ...scope,
+          eventId: proposal.eventId,
+          assigneeId: proposal.assigneeId,
+          assignmentRevision: proposal.assignmentRevision,
+        });
+        const { product } = await this.cart.verify(task, stage, proposal);
+        const orderId = await this.addProposedOrder(
+          task,
+          proposal,
+          product.kind === "service",
+        );
+        await this.crm.task.activity({
+          ...scope,
+          actorId: customerId,
+          expectedRevision: task.revision,
+          operationKey,
+          kind: "customer-cart-approved",
+          causeId: proposal.eventId,
+          orderId,
+          cartSelection: {
+            proposalId,
+            offerId: proposal.offerId,
+            currencyId: proposal.currencyId,
+            quantity: proposal.quantity,
+            amount: proposal.amount,
+            quoteVersion: proposal.quoteVersion,
+          },
+        });
+        return orderId;
+      },
+    );
+  }
+
+  private async addProposedOrder(
+    task: CrmTask,
+    proposal: IStoredProposal,
+    separateService: boolean,
+  ) {
+    const { productId, offerId, storeId, quantity, currencyId, quoteVersion } =
+      proposal;
+    if (!separateService) {
+      const orderId =
+        await this.subject.ecommerceModuleFindOpenCartOrderWithProduct({
+          subjectId: task.customerId,
+          productId,
+          offerId,
+        });
+      if (orderId) {
+        const details =
+          await this.subject.modules.ecommerce.order.findByIdCartDetails({
+            id: orderId,
+          });
+        const [line] = details.lines;
+        if (
+          details.lines.length !== 1 ||
+          line.quantity !== quantity ||
+          details.billingModuleCurrencyId !== currencyId
+        ) {
+          throw new Error(
+            "Conflict error. The cart already contains a different selection for this offer",
+          );
+        }
+        return orderId;
+      }
+    }
+    const selection = {
+      quantity,
+      billingModuleCurrencyId: currencyId,
+      expectedQuoteVersion: quoteVersion,
+    };
+    const scope = { productId, offerId, storeId };
+    const intake = await this.availability(scope);
+    if (intake.order) {
+      const publication = await this.crm.task.getPublication({
+        taskId: task.id,
+        storeId,
+      });
+      const created = await this.open(
+        task.customerId,
+        {
+          ...scope,
+          operation: "add",
+          operationKey: proposal.id,
+          selection,
+          consultationTaskId:
+            publication.kind === "consultation" ? task.id : undefined,
+        },
+        proposal,
+      );
+      if (created.orderId) {
+        return created.orderId;
+      }
+      throw new Error(
+        "Internal error. The confirmed cart order is unavailable",
+      );
+    }
+    const created = await this.subject.ecommerceModuleOrderCreate({
+      ...scope,
+      ...selection,
+      subjectId: task.customerId,
+      separateService,
+    });
+    return created.orderId;
   }
 
   private async orderForSelection(
@@ -782,23 +1087,35 @@ export class Service {
     if (task.assigneeKind !== "ai" || !task.assigneeId) {
       return undefined;
     }
+    const publication = await this.crm.task.getPublication({
+      taskId: task.id,
+      storeId: task.storeId,
+    });
+    const stage = publication.definition.stages.find(
+      ({ id }) => id === task.stageId,
+    );
+    if (!stage) {
+      return undefined;
+    }
     const rates: ICustomerWorkPrice["rates"] = [];
-    for (const capability of ["text", "image"] as const) {
+    const connectionIds: string[] = [];
+    for (const capability of stageWorkCapabilities(stage)) {
       try {
-        const { model, terms } = await this.subject.providerConnections.resolve(
+        const binding = await this.subject.providerConnections.resolve(
           task.storeId,
           task.assigneeId,
           capability,
         );
-        rates.push({
-          model,
-          capability,
-          inputUsdPerMillion: terms.inputUsdPerMillion,
-          outputUsdPerMillion: terms.outputUsdPerMillion,
-          usdPerSps: terms.usdPerSps,
-          workMultiplier: terms.workMultiplier,
-          version: terms.version,
-        });
+        const { model, provider, terms } = binding;
+        if (
+          capability !== "text" &&
+          capability !== "image" &&
+          !supportsNestedWork(provider, model, capability)
+        ) {
+          return undefined;
+        }
+        rates.push({ model, provider, capability, ...terms });
+        connectionIds.push(binding.connectionId);
       } catch (error) {
         if (
           !(error instanceof Error) ||
@@ -806,10 +1123,8 @@ export class Service {
         ) {
           throw error;
         }
+        return undefined;
       }
-    }
-    if (!rates.length) {
-      return undefined;
     }
     const key = createHash("sha256")
       .update(
@@ -817,6 +1132,7 @@ export class Service {
           publicationId: task.publicationId,
           stageId: task.stageId,
           funding,
+          connectionIds,
           rates,
         }),
       )
@@ -952,6 +1268,7 @@ export class Service {
     sourceSystemId?: string;
     sourceVersions?: ICustomerWorkSourceVersion[];
     media?: TPreparedMedia;
+    cartProposal?: IStoredProposal;
   }) {
     let metadata: Record<string, unknown> | undefined;
     if (props.sourceVersions) {
@@ -959,11 +1276,15 @@ export class Service {
     }
     if (props.media) {
       metadata = {
+        ...metadata,
         customerWorkMedia: await storeCustomerWorkMedia(
           this.subject,
           props.media,
         ),
       };
+    }
+    if (props.cartProposal) {
+      metadata = { ...metadata, customerWorkCartProposal: props.cartProposal };
     }
     const message = await this.social.message.create({
       data: {
@@ -1309,6 +1630,7 @@ export class Service {
             kind: "customer-budget-approved",
             approvedMaximum: command.maximum,
             priceKey: price.key,
+            rates: price.rates.map((rate) => ({ ...rate })),
           });
           return this.view(customerId, command);
         }
@@ -1349,6 +1671,17 @@ export class Service {
           kind: "customer-message",
           messageId: message.id,
         });
+        const isConfirmation =
+          !author?.media &&
+          /^(?:add (?:this choice )?to my cart|добавить (?:предложение )?в корзину)[.!]?$/iu.test(
+            command.text,
+          );
+        const proposal = isConfirmation
+          ? this.cartProposal(await this.messages(channel.threadId))
+          : undefined;
+        if (proposal) {
+          await this.confirmCart(customerId, command, proposal.id);
+        }
         const current = await this.crm.task.getPublication(command);
         const funding = current.definition.workFunding;
         const price =
@@ -1379,6 +1712,7 @@ export class Service {
             crmModuleTaskEventId: recorded.event.id,
             pending:
               !remembered &&
+              !proposal &&
               Boolean(funding && approved) &&
               !expert.conflict &&
               recorded.task.assigneeKind === "ai" &&
@@ -1400,7 +1734,7 @@ export class Service {
         limit,
         orderBy: {
           and: [
-            { column: "createdAt", method: "asc" },
+            { column: "updatedAt", method: "asc" },
             { column: "id", method: "asc" },
           ],
         },
@@ -1418,6 +1752,7 @@ export class Service {
         !task ||
         !event?.detail.assigneeId ||
         event.kind !== "customer-message" ||
+        task.stageId !== event.detail.stageId ||
         task.assigneeId !== event.detail.assigneeId ||
         task.assignmentRevision !== event.assignmentRevision ||
         task.status === "closed" ||
@@ -1427,6 +1762,7 @@ export class Service {
         continue;
       }
       if (task.status !== "active") {
+        await this.defer({ eventId: event.id });
         continue;
       }
       work.push({
@@ -1466,6 +1802,7 @@ export class Service {
       !task ||
       task.status !== "active" ||
       event.kind !== "customer-message" ||
+      task.stageId !== event.detail.stageId ||
       !event.detail.assigneeId ||
       task.assigneeId !== event.detail.assigneeId ||
       task.assignmentRevision !== event.assignmentRevision ||
@@ -1484,15 +1821,17 @@ export class Service {
   }
 
   async ack(input: { eventId: string }) {
-    const [record] = await this.social.messagesToCrmModuleTaskEvents.find(
-      criteria({ crmModuleTaskEventId: input.eventId }),
+    await this.social.messagesToCrmModuleTaskEvents.updatePending(
+      input.eventId,
+      false,
     );
-    if (record?.pending) {
-      await this.social.messagesToCrmModuleTaskEvents.update({
-        id: record.id,
-        data: { pending: false },
-      });
-    }
+  }
+
+  async defer(input: { eventId: string }) {
+    await this.social.messagesToCrmModuleTaskEvents.updatePending(
+      input.eventId,
+      true,
+    );
   }
 
   async contextForRun(input: ICustomerWorkRun): Promise<{
@@ -1501,8 +1840,9 @@ export class Service {
     sourceVersions: ICustomerWorkSourceVersion[];
     knowledgeSourceIds?: string[];
     media?: { id: string; digest: string; mimeType: string };
+    cartOffers?: ICustomerWorkCartOffer[];
   }> {
-    const { task, funding } = await this.crm.task.getWork({
+    const { task, stage, funding } = await this.crm.task.getWork({
       ...input,
       expectedAssignmentRevision: input.assignmentRevision,
     });
@@ -1584,12 +1924,16 @@ export class Service {
           }
         | undefined
     )?.customerWorkMedia;
+    const cartOffers = stage.cartOfferIds?.length
+      ? await this.cart.offers(task, stage)
+      : undefined;
     return {
       messages,
       approvedMaximum,
       sourceVersions: references.sourceVersions,
       knowledgeSourceIds: references.knowledgeSourceIds,
       media,
+      cartOffers,
     };
   }
 
@@ -1614,7 +1958,7 @@ export class Service {
     const service = this.crm.task;
     return service.withWork(
       { ...input, expectedAssignmentRevision: input.assignmentRevision },
-      async ({ task }) => {
+      async ({ task, stage }) => {
         await this.requireInputEvent(input);
         const [previous] = await this.social.message.find(
           criteria({ workReplyKey: key }),
@@ -1634,11 +1978,29 @@ export class Service {
           );
         }
         const channel = await this.channel(task.id);
+        const cartProposal = input.cartSelection
+          ? await this.cart.propose(
+              {
+                ...input,
+                selection: input.cartSelection,
+              },
+              task,
+              stage,
+            )
+          : undefined;
+        let text = input.text;
+        if (cartProposal) {
+          const chat = await this.social.chat.findById({ id: channel.chatId });
+          if (chat?.variant === "telegram") {
+            text += `\n\n${cartProposal.title}, ${cartProposal.quantity} ×, ${cartProposal.amount} ${cartProposal.currency.toUpperCase()}. Чтобы принять, ответьте «Добавить в корзину».`;
+          }
+        }
         const message = await this.writeMessage({
           ...channel,
           profileId: profile.id,
-          text: input.text,
+          text,
           sourceVersions: input.sourceVersions,
+          cartProposal,
         });
         await this.social.message.bindWorkReply(message.id, key);
         await new CustomerDelivery(this.subject).queue({

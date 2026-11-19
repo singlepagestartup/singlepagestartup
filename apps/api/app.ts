@@ -72,8 +72,8 @@ const { app: rbac } = await rbacApp.bootstrap(defaultAppAssembly);
 const ecommerce = defaultAppAssembly.getOrCreate(createEcommerceServices);
 defaultAppAssembly
   .getOrCreate(createFileStorageServices)
-  .file.configureCommerceReceiptGuard((id) =>
-    ecommerce.order.work.isProtectedLegacyReceipt({ id }),
+  .file.configureCommerceReceiptGuard((ids) =>
+    ecommerce.order.work.protectedReceiptFileIds(ids),
   );
 
 const revalidationMiddleware = new RevalidationMiddleware();

@@ -322,7 +322,10 @@ export class Service {
           criteria({ profileId: profile.id, variant: "default" }),
         );
         for (const link of links) {
-          if (!link.storeId && !link.projectId) {
+          if (
+            (!link.storeId || link.storeId === task.storeId) &&
+            !link.projectId
+          ) {
             sourceIds.add(link.knowledgeModuleSourceId);
           }
         }
@@ -346,9 +349,18 @@ export class Service {
         }
       }
     }
-    const expertSources = (
-      await this.sources.findSourcesByIds([...sourceIds])
-    ).filter(({ variant }) => variant !== "customer-memory");
+    const expertSources = sourceIds.size
+      ? await this.sources.find({
+          params: {
+            filters: {
+              and: [
+                { column: "id", method: "inArray", value: [...sourceIds] },
+                { column: "variant", method: "ne", value: "customer-memory" },
+              ],
+            },
+          },
+        })
+      : [];
     const words = [
       ...new Set(question.toLowerCase().match(/[\p{L}\p{N}]{3,}/gu) ?? []),
     ];

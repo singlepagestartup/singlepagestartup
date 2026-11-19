@@ -18,6 +18,9 @@ import { Table as OrderWork } from "@sps/ecommerce/models/order-work/backend/rep
 import { Table as PrivateFile } from "@sps/file-storage/models/private-file/backend/repository/database";
 import { Table as PublicFile } from "@sps/file-storage/models/file/backend/repository/database";
 import { Table as PaymentIntent } from "@sps/billing/models/payment-intent/backend/repository/database";
+import { Table as WalletOperation } from "@sps/rbac/relations/subjects-to-wallet-operations/backend/repository/database";
+import { Table as WalletBalance } from "@sps/rbac/relations/subjects-to-billing-module-currencies/backend/repository/database";
+import type { IFunnelStage } from "@sps/crm/models/funnel/sdk/model";
 import { Provider as KvProvider } from "@sps/providers-kv";
 import { KV_PROVIDER } from "@sps/shared-utils";
 import { getApiUrl, getRequiredEnv } from "../issue-154/test-utils/env";
@@ -350,6 +353,237 @@ async function fixture(kind: "individual-service" | "physical-order") {
     accept,
   };
 }
+
+it("keeps a converted result price in cart totals and the invoice after an offer price change", async () => {
+  const f = await fixture("individual-service");
+  const assignee = await f.subjects.create({ data: { variant: "agent" } });
+  cleanup.push(() => f.subjects.delete({ id: assignee.id }));
+  const executor = await f.subjects.create({ data: { variant: "agent" } });
+  cleanup.push(() => f.subjects.delete({ id: executor.id }));
+  const expenses = await f.billing.currency.create({
+    data: {
+      slug: `work-cost-${randomUUID()}`,
+      title: "Work credits",
+      symbol: "SPS",
+      minorUnitDigits: 8,
+    },
+  });
+  cleanup.push(async () => {
+    await f.db
+      .delete(WalletOperation)
+      .where(eq(WalletOperation.taskId, f.task.id));
+    await f.db
+      .delete(WalletBalance)
+      .where(eq(WalletBalance.billingModuleCurrencyId, expenses.id));
+    await f.billing.currency.delete({ id: expenses.id });
+  });
+  await f.subjects.module.subjectsToBillingModuleCurrencies.create({
+    data: {
+      subjectId: f.manager.id,
+      billingModuleCurrencyId: expenses.id,
+      amount: "100",
+    },
+  });
+  const assigned = await f.crm.task.assign({
+    ...f.scope,
+    assigneeId: assignee.id,
+    assigneeKind: "ai",
+    actorId: f.manager.id,
+    expectedRevision: f.task.revision,
+    operationKey: randomUUID(),
+  });
+  const configure = async (resultPricing?: IFunnelStage["resultPricing"]) => {
+    const task = await f.crm.task.get(f.scope);
+    const current = await f.crm.funnel.get(f.scope.storeId, task.funnelId);
+    const saved = await f.crm.funnel.saveDraft({
+      storeId: f.scope.storeId,
+      funnelId: current.id,
+      expectedRevision: current.revision,
+      kind: current.kind,
+      name: current.name,
+      bindings: current.bindings,
+      definition: {
+        ...current.definition,
+        workFunding: {
+          payer: "store-owner",
+          currencyId: expenses.id,
+          maxTaskAmount: "50",
+          maxRunAmount: "10",
+        },
+        stages: current.definition.stages.map((stage) =>
+          stage.id === task.stageId
+            ? { ...stage, output: "image", resultPricing }
+            : stage,
+        ),
+      },
+    });
+    const publication = await f.crm.funnel.publish({
+      storeId: f.scope.storeId,
+      funnelId: saved.id,
+      actorId: f.manager.id,
+      expectedRevision: saved.revision,
+      operationKey: randomUUID(),
+    });
+    await f.crm.task.migrate({
+      ...f.scope,
+      actorId: f.manager.id,
+      expectedRevision: task.revision,
+      publicationId: publication.id,
+      stageId: task.stageId,
+      operationKey: randomUUID(),
+      reason: "Publish the next pricing terms",
+    });
+    return publication;
+  };
+  const artifacts = (number: number, attemptId = randomUUID()) => ({
+    ...f.scope,
+    assigneeId: assignee.id,
+    assignmentRevision: assigned.assignmentRevision,
+    attemptId,
+    original: {
+      name: `cover-${number}.png`,
+      mimeType: "image/png",
+      bytes: Buffer.from(`result ${number}`),
+    },
+    preview: {
+      name: `preview-${number}.jpg`,
+      mimeType: "image/jpeg",
+      bytes: Buffer.from(`preview ${number}`),
+    },
+  });
+
+  await configure();
+  const first = await f.subjects.orderWork.publishResultFromRun(artifacts(1));
+  expect(first).toMatchObject({
+    price: "25.00000000",
+    priceBasis: { kind: "offer" },
+  });
+
+  const work = f.subjects.workLedger;
+  const reserve = await work.reserve({
+    ...f.scope,
+    actorId: f.manager.id,
+    senderId: f.manager.id,
+    recipientId: assignee.id,
+    operationKey: randomUUID(),
+    purpose: "agent-work",
+    currencyId: expenses.id,
+    amount: "8",
+    budget: "50",
+  });
+  await work.advance(
+    {
+      ...f.scope,
+      actorId: f.manager.id,
+      senderId: f.manager.id,
+      recipientId: executor.id,
+      operationKey: randomUUID(),
+      purpose: "provider-advance",
+      currencyId: expenses.id,
+      amount: "2",
+    },
+    reserve.operationKey,
+  );
+  await work.settle({
+    storeId: f.scope.storeId,
+    reservationKey: reserve.operationKey,
+    recipientId: assignee.id,
+    providerSubjectId: executor.id,
+    workAmount: "3.24",
+    providerAmount: "2.2",
+  });
+  const conversion = {
+    fromCurrencyId: expenses.id,
+    toCurrencyId: f.currency.id,
+    source: "Fixture rate card",
+    observedAt: "2026-11-18T12:00:00.000Z",
+    rate: "2.5",
+  };
+  await configure({
+    kind: "confirmed-cost",
+    multiplier: "1.3333",
+    conversions: [],
+  });
+  const secondInput = artifacts(2);
+  await expect(
+    f.subjects.orderWork.publishResultFromRun(secondInput),
+  ).rejects.toThrow("No exchange rate is configured");
+  const publication = await configure({
+    kind: "confirmed-cost",
+    multiplier: "1.3333",
+    conversions: [conversion],
+  });
+  const second = await f.subjects.orderWork.publishResultFromRun(secondInput);
+  expect(second).toMatchObject({
+    price: "10.80000000",
+    currencyId: f.currency.id,
+    priceBasis: {
+      kind: "confirmed-cost",
+      publicationId: publication.id,
+      multiplier: "1.3333",
+      costs: [
+        {
+          currencyId: expenses.id,
+          amount: "3.24",
+          reservationIds: [reserve.id],
+          conversion,
+        },
+      ],
+    },
+  });
+  expect(second.id).not.toBe(first.id);
+  expect((await f.accept(second.id)).status).toBe(200);
+  await f.subjects.ecommerceCatalog.setAttribute({
+    subjectId: f.manager.id,
+    data: {
+      owner: { type: "offer", id: f.offer.id },
+      key: "price",
+      field: "number",
+      type: "price",
+      currencyId: f.currency.id,
+      number: "90",
+    },
+  });
+  const cart = await f.subjects.ecommerceModuleOrderCartDetails({
+    subjectId: f.buyer.id,
+    orderId: f.orderId,
+  });
+  expect(cart).toMatchObject({
+    fixedResultPrice: true,
+    billingModuleCurrencyId: f.currency.id,
+    totals: [{ total: 10.8 }],
+  });
+  const [invoice] = (await f.checkout()).billingModule.invoices;
+  expect(invoice.amount).toBe(10.8);
+  const links =
+    await f.ecommerce.order.ordersToBillingModulePaymentIntents.find(
+      by("orderId", f.orderId),
+    );
+  expect(links).toMatchObject([
+    {
+      purchaseSnapshot: {
+        amount: "10.8",
+        orderAmount: "10.80000000",
+        currencyId: f.currency.id,
+        quoteVersion: `result:${second.id}`,
+      },
+    },
+  ]);
+  expect((await f.webhook(invoice.id)).status).toBe(200);
+  expect((await f.check()).ok).toBe(true);
+  await createWorker(createAppAssembly()).consumePayments();
+  await createWorker(createAppAssembly()).consumePayments();
+  const view = await f.getWork();
+  expect(view).toMatchObject({
+    state: "delivered",
+    paidVersionId: second.id,
+    result: { id: second.originalFileId },
+  });
+  const original = await request(view.result!.path, {
+    headers: f.buyer.headers,
+  });
+  expect(await original.text()).toBe("result 2");
+});
 
 it("freezes the invoiced version, survives an interrupted worker, and protects GET and HEAD", async () => {
   const f = await fixture("individual-service");

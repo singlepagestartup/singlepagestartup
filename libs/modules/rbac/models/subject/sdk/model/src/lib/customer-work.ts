@@ -1,5 +1,20 @@
 import { z } from "zod";
 import { ecommerceOrderCreateSchema } from "./ecommerce-product-purchase";
+import type { TStageWorkCapability } from "@sps/crm/models/funnel/sdk/model";
+import type { IProviderTerms, IProviderType } from "./provider-connections";
+import { ECOMMERCE_ORDER_LINE_QUANTITY_BOUNDS } from "@sps/shared-utils";
+
+export const customerWorkCartSelectionSchema = z
+  .object({
+    offerId: z.uuid(),
+    currencyId: z.uuid(),
+    quantity: z
+      .number()
+      .int()
+      .min(ECOMMERCE_ORDER_LINE_QUANTITY_BOUNDS.min)
+      .max(ECOMMERCE_ORDER_LINE_QUANTITY_BOUNDS.max),
+  })
+  .strict();
 
 const scopeSchema = z.object({
   storeId: z.uuid(),
@@ -23,6 +38,13 @@ export const customerWorkCommandSchema = z.discriminatedUnion("operation", [
           offerId: true,
         })
         .strict(),
+    })
+    .strict(),
+  scopeSchema
+    .extend({
+      operation: z.literal("confirm-cart"),
+      taskId: z.uuid(),
+      proposalId: z.uuid(),
     })
     .strict(),
   scopeSchema
@@ -115,17 +137,35 @@ export interface ICustomerWorkMemory {
   notes: ICustomerWorkMemoryNote[];
 }
 
+export interface ICustomerWorkRate extends IProviderTerms {
+  capability: TStageWorkCapability;
+  provider: IProviderType;
+  model: string;
+}
+
 export interface ICustomerWorkPrice {
   key: string;
-  rates: {
-    capability: "text" | "image";
-    model: string;
-    inputUsdPerMillion: string;
-    outputUsdPerMillion: string;
-    usdPerSps: string;
-    workMultiplier: string;
-    version: string;
-  }[];
+  rates: ICustomerWorkRate[];
+}
+
+export interface ICustomerWorkCartSelection extends z.infer<
+  typeof customerWorkCartSelectionSchema
+> {}
+
+export interface ICustomerWorkCartOffer {
+  offerId: string;
+  productId: string;
+  title: string;
+  prices: { currencyId: string; currency: string; unitAmount: string }[];
+}
+
+export interface ICustomerWorkCartProposal extends ICustomerWorkCartSelection {
+  id: string;
+  title: string;
+  currency: string;
+  amount: string;
+  expiresAt: string;
+  orderId?: string;
 }
 
 export interface ICustomerWorkView {
@@ -146,6 +186,7 @@ export interface ICustomerWorkView {
   price?: ICustomerWorkPrice;
   approvedMaximum?: string;
   memory?: ICustomerWorkMemory;
+  cartProposal?: ICustomerWorkCartProposal;
   messages: ICustomerWorkMessage[];
 }
 
@@ -172,4 +213,5 @@ export interface ICustomerWorkReply extends ICustomerWorkRun {
   attemptId: string;
   text: string;
   sourceVersions?: ICustomerWorkSourceVersion[];
+  cartSelection?: ICustomerWorkCartSelection;
 }

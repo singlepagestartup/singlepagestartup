@@ -248,6 +248,12 @@ export class Service extends CRUDService<typeof Table.$inferSelect> {
 
       validatePublication(funnel.definition, funnel.kind);
       await this.validateBindings(funnel.storeId, funnel.bindings);
+      const cartOfferIds = new Set(
+        funnel.definition.stages.flatMap((stage) => stage.cartOfferIds ?? []),
+      );
+      for (const offerId of cartOfferIds) {
+        await this.resolveSelection({ storeId: funnel.storeId, offerId });
+      }
       const version = (funnel.publishedVersion ?? 0) + 1;
       const publication = await publications.append({
         funnelId: funnel.id,
@@ -288,6 +294,9 @@ export class Service extends CRUDService<typeof Table.$inferSelect> {
     const publications = await this.owner().published(data.storeId, data.kind);
     const bySpecificity = [[], [], [], []] as (typeof publications)[];
     for (const candidate of publications) {
+      if (candidate.publication.definition.maintenanceSourceId) {
+        continue;
+      }
       const { bindings } = candidate.publication;
       if (data.formId && bindings.formIds.includes(data.formId)) {
         bySpecificity[0].push(candidate);

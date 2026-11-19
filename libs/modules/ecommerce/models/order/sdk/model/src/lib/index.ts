@@ -13,6 +13,7 @@ import type { IModel as IBillingModuleCurrency } from "@sps/billing/models/curre
 import type { IModel as IFileStorageModuleFile } from "@sps/file-storage/models/file/sdk/model";
 
 export interface ICartDetails {
+  fixedResultPrice?: boolean;
   maxLineQuantity: number;
   /** Currencies shared by every line; the persisted selection may be stale. */
   availableCurrencyIds?: string[];

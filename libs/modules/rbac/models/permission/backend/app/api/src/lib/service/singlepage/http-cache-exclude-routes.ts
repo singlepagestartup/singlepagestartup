@@ -8,6 +8,10 @@ export const rbacHttpCacheExcludeRoutes: IRouteRule[] = [
   ...controllerGuardedRoutes,
   ...privateCommerceRoutes,
   {
+    regexPath: /^\/api\/file-storage\/files(?:\/.*)?$/i,
+    methods: ["GET", "HEAD"],
+  },
+  {
     regexPath:
       /^\/api\/rbac\/subjects\/[^/]+\/ecommerce-module\/(?:orders|orders-to-products|catalogue-context)\/?$/i,
     methods: ["GET"],

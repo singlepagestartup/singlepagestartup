@@ -11,7 +11,7 @@ import {
   workflowEventLabels,
   type WorkflowStage,
 } from "../../../shared/workflows";
-import { Field } from "./StageFields";
+import { Field } from "./Fields";
 
 interface PreviewProps {
   stage: WorkflowStage;

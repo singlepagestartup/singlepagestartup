@@ -5,6 +5,7 @@ import type { FormEvent, ReactNode } from "react";
 import { api } from "@sps/rbac/models/subject/sdk/client";
 import type {
   IConnectionCommand,
+  IProviderCapability,
   IProviderSettings,
   IProviderType,
 } from "@sps/rbac/models/subject/sdk/model/src/lib/provider-connections";
@@ -424,7 +425,7 @@ function AssignmentForm({
 }) {
   const agentOptions = data.assistants ?? [];
   const storeDefault = "store";
-  const [capability, setCapability] = useState<"text" | "image">("text");
+  const [capability, setCapability] = useState<IProviderCapability>("text");
   const [assistantId, setAssistantId] = useState(
     () =>
       data.assignments.find(
@@ -445,6 +446,36 @@ function AssignmentForm({
     connection.provider === "openai"
       ? "gpt-image-2.5-flare-2026-09-08"
       : "openai/gpt-image-2.5-flare";
+  const capabilities: { id: IProviderCapability; label: string }[] = [
+    { id: "text", label: copy("Текст и PDF", "Text and PDF") },
+    { id: "image", label: copy("Генерация изображений", "Image generation") },
+    {
+      id: "decision",
+      label: copy("Выбор маршрута и инструмента", "Routing and tool selection"),
+    },
+    { id: "embedding", label: copy("Поиск по знаниям", "Knowledge search") },
+    {
+      id: "compression",
+      label: copy("Сжатие переписки", "Conversation compression"),
+    },
+    { id: "vision", label: copy("Анализ изображений", "Image analysis") },
+  ];
+  if (connection.provider === "openai") {
+    capabilities.push({
+      id: "transcription",
+      label: copy("Расшифровка аудио", "Audio transcription"),
+    });
+  }
+  const nativePrefix = connection.provider === "openrouter" ? "openai/" : "";
+  const defaultModel = {
+    text: undefined,
+    image: imageModel,
+    decision: nativePrefix + "gpt-4o-mini",
+    embedding: nativePrefix + "text-embedding-3-small",
+    compression: nativePrefix + "gpt-4o-mini",
+    vision: nativePrefix + "gpt-4o-mini",
+    transcription: "gpt-transcribe",
+  }[capability];
 
   function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -536,17 +567,21 @@ function AssignmentForm({
         {copy("Назначение модели", "Model capability")}
         <select
           value={capability}
-          onChange={(event) =>
-            setCapability(
-              event.currentTarget.value === "image" ? "image" : "text",
-            )
-          }
+          onChange={(event) => {
+            const selected = capabilities.find(
+              ({ id }) => id === event.currentTarget.value,
+            );
+            if (selected) {
+              setCapability(selected.id);
+            }
+          }}
           className={inputClass}
         >
-          <option value="text">{copy("Текст и PDF", "Text and PDF")}</option>
-          <option value="image">
-            {copy("Генерация изображений", "Image generation")}
-          </option>
+          {capabilities.map(({ id, label }) => (
+            <option key={id} value={id}>
+              {label}
+            </option>
+          ))}
         </select>
       </label>
       <div key={`${assistantId}:${capability}`} className="grid gap-3">
@@ -554,8 +589,12 @@ function AssignmentForm({
           {copy("Модель", "Model")}
           <input
             name="model"
-            defaultValue={capability === "image" ? imageModel : assigned?.model}
-            readOnly={capability === "image"}
+            defaultValue={
+              capability === "image" || capability === "transcription"
+                ? defaultModel
+                : (assigned?.model ?? defaultModel)
+            }
+            readOnly={capability === "image" || capability === "transcription"}
             required
             maxLength={150}
             className={inputClass}

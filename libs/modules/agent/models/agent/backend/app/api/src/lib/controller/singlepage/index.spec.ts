@@ -29,6 +29,7 @@ async function createApp() {
   const service = {
     workAttempt: {
       consumePayments: jest.fn(),
+      drainKnowledgeIndex: jest.fn(),
       processTimers: jest.fn(),
       reconcile: jest.fn(),
       drain: jest.fn(),

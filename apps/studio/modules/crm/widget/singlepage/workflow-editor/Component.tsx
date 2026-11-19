@@ -21,7 +21,8 @@ import {
   type WorkflowStage,
 } from "../../../shared/workflows";
 import type { IComponentProps } from "./interface";
-import { Field, StageFields } from "./StageFields";
+import { Field } from "./Fields";
+import { StageFields } from "./StageFields";
 import { Preview } from "./Preview";
 import { draftErrors, stageErrors } from "./validation";
 

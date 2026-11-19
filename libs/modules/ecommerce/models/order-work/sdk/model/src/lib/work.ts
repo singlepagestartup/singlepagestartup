@@ -29,9 +29,54 @@ export interface IPublishOrderWorkResult extends IOrderWorkScope {
   actorId: string;
   currencyId: string;
   price: string;
+  priceBasis?: TOrderWorkPriceBasis;
+  purchaseQuote?: IOrderWorkPurchaseQuote;
   original: IOrderWorkArtifact;
   preview: IOrderWorkArtifact;
 }
+
+export interface IOrderWorkOrderLine {
+  id: string;
+  offerId: string;
+  quantity: number;
+  parentLineId: string | null;
+}
+
+export interface IOrderWorkPurchaseQuote extends Pick<
+  IOfferQuote,
+  "charges" | "destination" | "version"
+> {
+  lines: IOrderWorkOrderLine[];
+}
+
+interface IOrderWorkCostConversion {
+  fromCurrencyId: string;
+  toCurrencyId: string;
+  rate: string;
+  source: string;
+  observedAt: string;
+}
+
+export type TOrderWorkPriceBasis = {
+  publicationId: string;
+  stageId: string;
+  quotedAt: string;
+} & (
+  | { kind: "offer"; quoteVersion: string }
+  | { kind: "cart-price" }
+  | {
+      kind: "confirmed-cost";
+      multiplier: string;
+      precision: number;
+      rounding: "half-up";
+      costs: Array<{
+        currencyId: string;
+        amount: string;
+        reservationIds: string[];
+        conversion?: IOrderWorkCostConversion;
+      }>;
+    }
+);
 
 export interface IOrderWorkVersion {
   id: string;
@@ -44,6 +89,8 @@ export interface IOrderWorkVersion {
   previewFileId: string;
   currencyId: string;
   price: string;
+  priceBasis?: TOrderWorkPriceBasis;
+  purchaseQuote?: IOrderWorkPurchaseQuote;
 }
 
 export interface IDecideOrderWorkResult extends IOrderWorkScope {
@@ -73,6 +120,11 @@ export interface IOrderWorkCheckout {
   price: string;
 }
 
+export interface IAcceptedOrderWorkCheckout {
+  checkout: IOrderWorkCheckout;
+  purchaseQuote?: IOrderWorkPurchaseQuote;
+}
+
 export interface IOrderWorkPayment extends IOrderWorkCheckout {
   id: string;
   paymentIntentId: string;
@@ -97,3 +149,4 @@ export interface IOrderPhysicalEvent {
   trackingNumber?: string;
   carrierEvidenceId?: string;
 }
+import type { IOfferQuote } from "@sps/ecommerce/relations/stores-to-products/sdk/model";

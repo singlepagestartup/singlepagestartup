@@ -3,14 +3,12 @@ import sharp from "sharp";
 import { z } from "zod";
 import type { TWorkOperation } from "@sps/crm/models/funnel/sdk/model";
 import type { ICustomerWorkRun } from "@sps/rbac/models/subject/sdk/model";
-import type {
-  IProviderCapability,
-  IProviderType,
-} from "@sps/rbac/models/subject/sdk/model/src/lib/provider-connections";
+import type { IProviderType } from "@sps/rbac/models/subject/sdk/model/src/lib/provider-connections";
 import type { IModel } from "@sps/agent/models/work-attempt/sdk/model";
-import type {
-  IWorkRequest,
-  TNestedWorkRequest,
+import {
+  supportsNestedWork,
+  type IWorkRequest,
+  type TNestedWorkRequest,
 } from "@sps/shared-third-parties";
 import type { Service as WorkAttempt } from "./index";
 
@@ -21,21 +19,34 @@ type TBound = Pick<
   | "maxOutputTokens"
   | "inputUsdPerMillion"
   | "outputUsdPerMillion"
->;
+> & { audioUsdPerMinute?: string };
 type TOperationInput =
-  | Pick<IWorkRequest, "capability" | "messages">
+  | {
+      capability: "decision" | "compression";
+      messages: IWorkRequest["messages"];
+    }
   | {
       capability: "embedding";
       inputs: string[];
       dimensions: number;
       sourceIds: string[];
+      indexing?: { sourceId: string; contentHash: string; ownerId: string };
     }
   | { capability: "vision"; image: Uint8Array; prompt: string }
   | { capability: "transcription"; audio: Uint8Array; seconds: number };
 
 export interface IWorkStep {
-  operation: TWorkOperation;
+  operation: TWorkOperation | "knowledge-index";
   input: TOperationInput;
+}
+
+export interface IWorkPlan {
+  evidence?: IWorkRequest["messages"];
+  historyLimit?: number;
+  publicationId?: string;
+  sourceVersions?: { id: string; version: string }[];
+  mediaDigest?: string;
+  blocked?: IModel;
 }
 
 const toolChoice = z.enum([
@@ -60,7 +71,7 @@ export function makeNestedRequest(
 ): IWorkRequest | TNestedWorkRequest {
   const { input } = step;
   if (input.capability === "embedding") {
-    const { sourceIds, ...request } = input;
+    const { sourceIds, indexing, ...request } = input;
     return { ...binding, ...request };
   }
   return { ...binding, ...input };
@@ -144,7 +155,7 @@ export class Operations {
   async plan(
     input: ICustomerWorkRun,
     perform: (step: IWorkStep) => Promise<IModel>,
-  ) {
+  ): Promise<IWorkPlan> {
     const { crm, rbac, knowledge, fileStorage } = this.service.modules;
     const { stage, task } = await crm.task.getWork({
       ...input,
@@ -159,8 +170,10 @@ export class Operations {
     if (trigger?.role !== "user" || !trigger.content.trim()) {
       return {};
     }
-    const question = trigger.content.slice(0, 4000);
+    const question = trigger.content.slice(0, 1400);
     const evidence: IWorkRequest["messages"] = [];
+    let sourceVersions: IWorkPlan["sourceVersions"];
+    let mediaDigest: string | undefined;
     let blocked: IModel | undefined;
     const read = async (step: IWorkStep) => {
       const result = await perform(step);
@@ -179,7 +192,7 @@ export class Operations {
         : []),
       ...(candidate && enabled.has(candidate) ? [candidate] : []),
     ];
-    const capabilities: IProviderCapability[] = [
+    const capabilities: TOperationInput["capability"][] = [
       ...(enabled.has("request-routing") ||
       (enabled.has("tool-selection") && tools.length)
         ? (["decision"] as const)
@@ -192,13 +205,18 @@ export class Operations {
       ),
     ];
     await Promise.all(
-      [...new Set(capabilities)].map((capability) =>
-        rbac.subject.providerConnections.resolve(
+      [...new Set(capabilities)].map(async (capability) => {
+        const binding = await rbac.subject.providerConnections.resolve(
           task.storeId,
           input.assigneeId,
           capability,
-        ),
-      ),
+        );
+        if (!supportsNestedWork(binding.provider, binding.model, capability)) {
+          throw new Error(
+            "Validation error. The provider model does not support the paid operation",
+          );
+        }
+      }),
     );
 
     if (enabled.has("request-routing")) {
@@ -335,6 +353,10 @@ export class Operations {
             ),
           });
           if (chunks.length) {
+            const used = new Set(chunks.map((chunk) => chunk.sourceId));
+            sourceVersions = context.sourceVersions.filter(({ id }) =>
+              used.has(id),
+            );
             evidence.push({
               role: "system",
               content:
@@ -385,6 +407,7 @@ export class Operations {
         return { blocked };
       }
       if (result?.text.trim()) {
+        mediaDigest = file.digest;
         const label =
           candidate === "vision" ? "Image observations" : "Audio transcript";
         evidence.push({
@@ -401,6 +424,8 @@ export class Operations {
         ? 4
         : undefined,
       publicationId: task.publicationId,
+      sourceVersions,
+      mediaDigest,
     };
   }
 }

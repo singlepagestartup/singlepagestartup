@@ -1,9 +1,15 @@
 import { z } from "zod";
 import Decimal from "decimal.js";
+import { ECOMMERCE_ORDER_LINE_QUANTITY_BOUNDS } from "@sps/shared-utils";
 
 export interface IWorkMessage {
   role: "system" | "user" | "assistant";
   content: string;
+}
+export interface IWorkCartSelection {
+  offerId: string;
+  currencyId: string;
+  quantity: number;
 }
 export interface IWorkRequest {
   provider: "openrouter" | "openai";
@@ -11,6 +17,7 @@ export interface IWorkRequest {
   messages: IWorkMessage[];
   capability: "text" | "compression" | "decision";
   actions?: Array<{ id: string; instruction: string }>;
+  cartOffers?: Array<{ offerId: string; prices: { currencyId: string }[] }>;
   artifact?: "pdf";
   maxOutputTokens: number;
   inputUsdPerMillion: string;
@@ -26,6 +33,7 @@ export interface ICompletedWork {
   };
   text: string;
   actionId?: string;
+  cartSelection?: IWorkCartSelection;
   artifactText?: string;
 }
 const usageSchema = z.object({
@@ -93,7 +101,8 @@ export async function sendWork(
     ...control,
     ...(request.capability === "decision" ||
     request.actions?.length ||
-    request.artifact
+    request.artifact ||
+    request.cartOffers?.length
       ? { response_format: { type: "json_object" } }
       : {}),
   };
@@ -130,8 +139,13 @@ export async function sendWork(
         .div(1_000_000);
   let text = choices[0].message.content ?? "";
   let actionId: string | undefined;
+  let cartSelection: IWorkCartSelection | undefined;
   let artifactText: string | undefined;
-  if (request.actions?.length || request.artifact) {
+  if (
+    request.actions?.length ||
+    request.artifact ||
+    request.cartOffers?.length
+  ) {
     // The model may suggest only a stage action backed by model-result evidence.
     // An invalid suggestion never grants permission or changes the task.
     let candidate: unknown;
@@ -143,6 +157,7 @@ export async function sendWork(
     const replySchema = z.object({
       reply: z.string(),
       actionId: z.string().nullable().optional(),
+      cartSelection: z.unknown().optional(),
     });
     const pdfSchema = replySchema.extend({
       artifactText: z
@@ -158,9 +173,35 @@ export async function sendWork(
     );
     if (answer.success) {
       text = answer.data.reply;
-      actionId = request.actions?.find(
-        (action) => action.id === answer.data.actionId,
-      )?.id;
+      if (request.cartOffers?.length && answer.data.cartSelection != null) {
+        const selection = z
+          .object({
+            offerId: z.uuid(),
+            currencyId: z.uuid(),
+            quantity: z
+              .number()
+              .int()
+              .min(ECOMMERCE_ORDER_LINE_QUANTITY_BOUNDS.min)
+              .max(ECOMMERCE_ORDER_LINE_QUANTITY_BOUNDS.max),
+          })
+          .strict()
+          .safeParse(answer.data.cartSelection);
+        if (
+          selection.success &&
+          request.cartOffers.some(
+            (offer) =>
+              offer.offerId === selection.data.offerId &&
+              offer.prices.some(
+                (price) => price.currencyId === selection.data.currencyId,
+              ),
+          )
+        )
+          cartSelection = selection.data;
+      } else {
+        actionId = request.actions?.find(
+          (action) => action.id === answer.data.actionId,
+        )?.id;
+      }
       if (
         request.artifact &&
         "artifactText" in answer.data &&
@@ -176,6 +217,7 @@ export async function sendWork(
     providerRequestId: id,
     text,
     actionId,
+    ...(cartSelection ? { cartSelection } : {}),
     ...(artifactText ? { artifactText } : {}),
     usage: {
       inputTokens: usage.prompt_tokens,

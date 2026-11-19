@@ -9,6 +9,7 @@ export type TTaskEventKind =
   | "customer-handoff-requested"
   | "customer-transferred"
   | "customer-budget-approved"
+  | "customer-cart-approved"
   | "migrated"
   | "order-attached"
   | "closed"
@@ -31,6 +32,15 @@ export interface ITaskEventDetail {
   approvedMaximum?: string;
   budgetCurrencyId?: string;
   budgetPriceKey?: string;
+  budgetRates?: Record<string, string | number>[];
+  cartSelection?: {
+    proposalId: string;
+    offerId: string;
+    currencyId: string;
+    quantity: number;
+    amount: string;
+    quoteVersion: string;
+  };
   reason?: string;
   timerNumber?: number;
   waitingRevision?: number;

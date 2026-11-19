@@ -11,6 +11,7 @@ export class Handler {
       await Promise.all([
         this.service.cronQueue.tick(),
         this.service.workAttempt.consumePayments(),
+        this.service.workAttempt.drainKnowledgeIndex(),
         this.service.workAttempt.processTimers(),
         this.service.workAttempt.reconcile(),
         this.service.workAttempt.drain(),

@@ -1,3 +1,5 @@
+import { logger } from "@sps/backend-utils";
+import type { IModel as IWalletOperation } from "@sps/rbac/relations/subjects-to-wallet-operations/sdk/model";
 import Decimal from "decimal.js";
 import { inject, injectable } from "inversify";
 import { z } from "zod";
@@ -8,6 +10,7 @@ import {
   estimateImageWork,
   estimateWork,
   estimateNestedWork,
+  TRANSCRIPTION_USD_PER_MINUTE,
   supportsNestedWork,
   sendNestedWork,
   type TNestedWorkRequest,
@@ -21,12 +24,14 @@ import {
   type IWorkRequest,
 } from "@sps/shared-third-parties";
 import { Repository } from "../../repository";
+import { Maintenance } from "./maintenance";
 import {
   Operations,
   embeddingIndexKey,
   makeNestedRequest,
   workStepDigest,
   type IWorkStep,
+  type IWorkPlan,
 } from "./operations";
 
 const requestSchema = z
@@ -82,6 +87,9 @@ export class Service extends CRUDService<IModel> {
             ? compute.minus(attempt.maximum).toDecimalPlaces(12).toFixed()
             : undefined,
         attemptId: attempt.id,
+        stepKey: attempt.stepKey,
+        eventId: attempt.eventId,
+        publicationId: attempt.publicationId ?? undefined,
         executorId: attempt.executorId,
         connectionId: attempt.connectionId,
         provider: attempt.provider,
@@ -133,11 +141,7 @@ export class Service extends CRUDService<IModel> {
   private async prepare(
     input: IDispatch,
     step?: IWorkStep,
-    plan?: {
-      evidence?: IWorkRequest["messages"];
-      historyLimit?: number;
-      publicationId?: string;
-    },
+    plan?: IWorkPlan,
   ): Promise<{ attempt: IModel; outgoing?: IOutgoingWork }> {
     const { storeId, taskId, assigneeId, eventId, assignmentRevision } = input;
     const channel = step?.input.capability ?? "text";
@@ -169,7 +173,7 @@ export class Service extends CRUDService<IModel> {
           assigneeId,
           expectedAssignmentRevision: assignmentRevision,
         },
-        async ({ task, stage, funding }) => {
+        async ({ task, stage, funding, maintenanceSourceId }) => {
           if (task.assigneeKind !== "ai" || !funding) {
             throw new Error("Permission error. No funded AI assignment");
           }
@@ -182,7 +186,25 @@ export class Service extends CRUDService<IModel> {
               "Conflict error. The workflow changed before the reply was prepared",
             );
           }
-          if (step && !stage.operations?.includes(step.operation)) {
+          const indexing =
+            step?.input.capability === "embedding"
+              ? step.input.indexing
+              : undefined;
+          if (
+            (maintenanceSourceId || indexing) &&
+            (!indexing ||
+              indexing.sourceId !== maintenanceSourceId ||
+              funding.payer !== "store-owner")
+          ) {
+            throw new Error(
+              "Permission error. The task is reserved for maintenance of its configured source",
+            );
+          }
+          if (
+            step &&
+            step.operation !== "knowledge-index" &&
+            !stage.operations?.includes(step.operation)
+          ) {
             throw new Error(
               "Permission error. This paid operation is unavailable in the published stage",
             );
@@ -218,7 +240,24 @@ export class Service extends CRUDService<IModel> {
             assigneeId,
             capability,
           );
-          const { terms } = binding;
+          const terms =
+            capability === "transcription"
+              ? {
+                  ...binding.terms,
+                  audioUsdPerMinute:
+                    binding.terms.audioUsdPerMinute ??
+                    TRANSCRIPTION_USD_PER_MINUTE,
+                }
+              : binding.terms;
+          if (
+            indexing &&
+            (binding.ownerId !== indexing.ownerId ||
+              task.customerId !== indexing.ownerId)
+          ) {
+            throw new Error(
+              "Permission error. The maintenance account belongs to another owner",
+            );
+          }
           if (step) {
             if (
               !supportsNestedWork(
@@ -231,7 +270,7 @@ export class Service extends CRUDService<IModel> {
                 "Validation error. The provider model does not support the paid operation",
               );
             }
-            if (step.input.capability === "embedding") {
+            if (step.input.capability === "embedding" && !indexing) {
               const key = embeddingIndexKey(
                 binding.provider,
                 binding.model,
@@ -249,13 +288,44 @@ export class Service extends CRUDService<IModel> {
               }
             }
           }
-          const context = await rbac.customerWork.contextForRun({
-            storeId,
-            taskId,
-            assigneeId,
-            eventId,
-            assignmentRevision,
-          });
+          const context = indexing
+            ? {
+                sourceVersions: [
+                  { id: indexing.sourceId, version: indexing.contentHash },
+                ],
+                messages: [],
+                approvedMaximum: undefined,
+              }
+            : await rbac.customerWork.contextForRun({
+                storeId,
+                taskId,
+                assigneeId,
+                eventId,
+                assignmentRevision,
+              });
+          if (plan?.sourceVersions?.length) {
+            const liveVersions = new Map(
+              context.sourceVersions.map(({ id, version }) => [id, version]),
+            );
+            if (
+              plan.sourceVersions.some(
+                ({ id, version }) => liveVersions.get(id) !== version,
+              )
+            ) {
+              throw new Error(
+                "Conflict error. A source used by this run is no longer available",
+              );
+            }
+          }
+          if (
+            plan?.mediaDigest &&
+            (!("media" in context) ||
+              context.media?.digest !== plan.mediaDigest)
+          ) {
+            throw new Error(
+              "Conflict error. The attachment used by this run changed",
+            );
+          }
           const payerId =
             funding.payer === "customer" ? task.customerId : binding.ownerId;
           const budget = new Money(funding.maxTaskAmount);
@@ -283,6 +353,16 @@ export class Service extends CRUDService<IModel> {
             stage.evidenceInstruction,
             stage.missingDataInstruction,
           ];
+          const cartOffers =
+            !step && output === "chat" && "cartOffers" in context
+              ? context.cartOffers
+              : undefined;
+          if (cartOffers?.length) {
+            instructions.push(
+              "Return JSON with reply, actionId and optional cartSelection. To offer to prepare the customer's cart, choose offerId, currencyId and integer quantity from the catalog below. Ask for clarification if the request is ambiguous. The customer must confirm the quote before the cart changes. When proposing a selection set actionId to null.",
+              JSON.stringify(cartOffers),
+            );
+          }
           if (output === "pdf") {
             instructions.push(
               "Return a JSON object with reply (a question if details are missing), artifactText (the finished PDF content as plain text, or null if the brief is incomplete), and actionId (null or an allowed action).",
@@ -304,6 +384,7 @@ export class Service extends CRUDService<IModel> {
             maxOutputTokens: terms.maxOutputTokens,
             inputUsdPerMillion: terms.inputUsdPerMillion,
             outputUsdPerMillion: terms.outputUsdPerMillion,
+            audioUsdPerMinute: terms.audioUsdPerMinute,
             messages: [
               {
                 role: "system" as const,
@@ -332,6 +413,7 @@ export class Service extends CRUDService<IModel> {
               ...requestProps,
               capability: "text",
               actions,
+              cartOffers,
               artifact: output === "pdf" ? "pdf" : undefined,
             };
           }
@@ -351,32 +433,10 @@ export class Service extends CRUDService<IModel> {
             .div(terms.usdPerSps)
             .times(terms.workMultiplier)
             .toDecimalPlaces(12, Decimal.ROUND_UP);
-          const runAttempts = await this.find({
-            params: {
-              filters: {
-                and: [
-                  { column: "storeId", method: "eq", value: storeId },
-                  { column: "taskId", method: "eq", value: taskId },
-                  { column: "eventId", method: "eq", value: eventId },
-                ],
-              },
-            },
-          });
-          const obligated = runAttempts.reduce((total, row) => {
-            if (row.state === "failed" && !row.result) {
-              return total;
-            }
-            const spend = row.result
-              ? new Money(row.result.usage.usd)
-                  .div(row.terms.usdPerSps)
-                  .times(row.terms.workMultiplier)
-              : row.maximum;
-            return total.plus(Money.min(row.maximum, spend));
-          }, new Money(0));
           if (
             estimate.input > terms.maxInputTokens ||
             estimate.usd.gt(terms.maxCostUsd) ||
-            maximum.plus(obligated).gt(funding.maxRunAmount) ||
+            maximum.gt(funding.maxRunAmount) ||
             maximum.lte(0)
           ) {
             throw new Error(
@@ -425,6 +485,8 @@ export class Service extends CRUDService<IModel> {
             currencyId: funding.currencyId,
             amount: maximum.toFixed(),
             budget: budget.toFixed(),
+            eventId,
+            runBudget: funding.maxRunAmount,
           });
           await this.projectExpense(attempt);
           const imageActionId =
@@ -520,13 +582,28 @@ export class Service extends CRUDService<IModel> {
         if (!latest || latest.state !== "settled") {
           return latest ?? current;
         }
-        const hasResult = Boolean(
-          latest.result?.text.trim() ||
-          latest.result?.embeddings?.values.length,
-        );
+        let state: IModel["state"] =
+          latest.result?.text.trim() || latest.result?.embeddings?.values.length
+            ? "delivered"
+            : "failed";
+        if (latest.result?.indexing && state === "delivered") {
+          try {
+            state = (await new Maintenance(this).publish(latest))
+              ? "delivered"
+              : "stale";
+          } catch (error) {
+            if (
+              !(error instanceof Error) ||
+              !/^(Permission|Not Found|Conflict) error\./.test(error.message)
+            ) {
+              throw error;
+            }
+            state = "stale";
+          }
+        }
         return this.change({
           id: current.id,
-          data: { state: hasResult ? "delivered" : "failed", updatedAt: now() },
+          data: { state, updatedAt: now() },
         });
       });
       return { id: current.id, state: current.state };
@@ -603,6 +680,7 @@ export class Service extends CRUDService<IModel> {
                 attemptId: id,
                 sourceVersions: current.sourceVersions,
                 text: result.text,
+                cartSelection: result.cartSelection,
               });
             }
             const action = stage.actions.find(
@@ -737,8 +815,23 @@ export class Service extends CRUDService<IModel> {
     }
     const { artifactText, embeddings, ...reply } = response.result;
     if (step) {
+      const index =
+        step.input.capability === "embedding" ? step.input.indexing : undefined;
+      const indexing =
+        index && embeddings
+          ? {
+              sourceId: index.sourceId,
+              contentHash: index.contentHash,
+              indexKey: embeddingIndexKey(
+                attempt.provider,
+                attempt.model,
+                embeddings.dimensions,
+              ),
+            }
+          : undefined;
       const result = {
         ...reply,
+        indexing,
         embeddings: embeddings
           ? { ...embeddings, model: attempt.model }
           : undefined,
@@ -789,100 +882,145 @@ export class Service extends CRUDService<IModel> {
     const ledger = this.modules.rbac.subject.workLedger;
     const pending = await ledger.pendingReconciliations(limit, storeId);
     for (const record of pending) {
-      const info = record.providerWork;
-      if (!info) continue;
-      const attempt = await this.findById({ id: info.attemptId });
-      if (
-        !attempt ||
-        attempt.storeId !== record.storeId ||
-        attempt.connectionId !== info.connectionId
-      )
-        continue;
-      if (attempt.state === "received" || attempt.state === "settled") {
-        await this.finish(attempt);
-        continue;
+      try {
+        await this.reconcileOne(record);
+      } catch {
+        logger.warn("Provider reconciliation deferred", {
+          storeId: record.storeId,
+          operationId: record.id,
+        });
+        await ledger.changeProviderWork(
+          record.storeId,
+          record.operationKey,
+          (previous) => {
+            if (!previous) throw new Error("Not found. Provider work receipt");
+            return { ...previous, checkedAt: now().toISOString() };
+          },
+        );
       }
-      if (
-        attempt.state === "dispatching" &&
-        Date.now() - attempt.updatedAt.getTime() > 180_000
-      ) {
+    }
+  }
+
+  private async reconcileOne(record: IWalletOperation) {
+    const ledger = this.modules.rbac.subject.workLedger;
+    const info = record.providerWork;
+    if (!info) return;
+    const attempt = await this.findById({ id: info.attemptId });
+    if (
+      !attempt ||
+      attempt.storeId !== record.storeId ||
+      attempt.connectionId !== info.connectionId
+    )
+      return;
+    if (attempt.state === "received" || attempt.state === "settled") {
+      await this.finish(attempt);
+      return;
+    }
+    if (
+      attempt.state === "dispatching" &&
+      Date.now() - attempt.updatedAt.getTime() > 180_000
+    ) {
+      await this.repository.atomic(attempt.id, async () => {
+        const latest = await this.findById({ id: attempt.id });
+        if (latest?.state === "dispatching")
+          await this.change({
+            id: latest.id,
+            data: { state: "unknown", updatedAt: now() },
+          });
+      });
+    }
+    const proof = info.resolution;
+    if (proof && attempt.state === "unknown") {
+      if (proof.kind === "charged") {
+        const saved = await this.recordReply(attempt, {
+          providerRequestId: attempt.providerRequestId ?? proof.reference,
+          text: "",
+          usage: {
+            usd: proof.usd,
+            inputTokens: proof.inputTokens,
+            outputTokens: proof.outputTokens,
+            basis: "owner-statement",
+          },
+        });
+        await this.finish(saved);
+      } else {
         await this.repository.atomic(attempt.id, async () => {
           const latest = await this.findById({ id: attempt.id });
-          if (latest?.state === "dispatching")
-            await this.change({
-              id: latest.id,
-              data: { state: "unknown", updatedAt: now() },
-            });
+          if (latest?.state !== "unknown") return;
+          await ledger.release(record.storeId, record.operationKey);
+          await this.change({
+            id: latest.id,
+            data: { state: "failed", updatedAt: now() },
+          });
         });
       }
-      const proof = info.resolution;
-      if (proof && attempt.state === "unknown") {
-        if (proof.kind === "charged") {
-          const saved = await this.recordReply(attempt, {
-            providerRequestId: attempt.providerRequestId ?? proof.reference,
-            text: "",
-            usage: {
-              usd: proof.usd,
-              inputTokens: proof.inputTokens,
-              outputTokens: proof.outputTokens,
-              basis: "owner-statement",
-            },
-          });
-          await this.finish(saved);
-        } else {
-          await this.repository.atomic(attempt.id, async () => {
-            const latest = await this.findById({ id: attempt.id });
-            if (latest?.state !== "unknown") return;
-            await ledger.release(record.storeId, record.operationKey);
-            await this.change({
-              id: latest.id,
-              data: { state: "failed", updatedAt: now() },
-            });
-          });
-        }
-        continue;
-      }
-      if (
-        attempt.provider === "openrouter" &&
-        attempt.providerRequestId &&
-        ["unknown", "dispatching"].includes(attempt.state)
-      ) {
-        // A revoked or rotated credential requires an owner statement. Never send a second generation.
-        const secret = await this.modules.rbac.subject.providerConnections
-          .credential(attempt.storeId, attempt.assigneeId, attempt.capability, {
-            identityId: attempt.identityId,
-            version: attempt.credentialVersion,
-          })
-          .catch(() => undefined);
-        const usage =
-          secret &&
-          (await readWorkUsage(attempt.providerRequestId, secret).catch(
-            () => undefined,
-          ));
-        if (usage) {
-          await this.finish(
-            await this.recordReply(attempt, {
-              providerRequestId: attempt.providerRequestId,
-              usage,
-              text: "",
-            }),
-          );
-          continue;
-        }
-      }
-      await ledger.changeProviderWork(
-        record.storeId,
-        record.operationKey,
-        (previous) => {
-          if (!previous) throw new Error("Not found. Provider operation");
-          return {
-            ...previous,
-            reconcileRequested: false,
-            checkedAt: new Date().toISOString(),
-          };
-        },
-      );
+      return;
     }
+    if (
+      attempt.provider === "openrouter" &&
+      attempt.providerRequestId &&
+      ["unknown", "dispatching"].includes(attempt.state)
+    ) {
+      // A revoked or rotated credential requires an owner statement. Never send a second generation.
+      const secret = await this.modules.rbac.subject.providerConnections
+        .credential(attempt.storeId, attempt.assigneeId, attempt.capability, {
+          identityId: attempt.identityId,
+          version: attempt.credentialVersion,
+        })
+        .catch(() => undefined);
+      const usage =
+        secret &&
+        (await readWorkUsage(attempt.providerRequestId, secret).catch(
+          () => undefined,
+        ));
+      if (usage) {
+        await this.finish(
+          await this.recordReply(attempt, {
+            providerRequestId: attempt.providerRequestId,
+            usage,
+            text: "",
+          }),
+        );
+        return;
+      }
+    }
+    await ledger.changeProviderWork(
+      record.storeId,
+      record.operationKey,
+      (previous) => {
+        if (!previous) throw new Error("Not found. Provider operation");
+        return {
+          ...previous,
+          reconcileRequested: false,
+          checkedAt: new Date().toISOString(),
+        };
+      },
+    );
+  }
+
+  queueKnowledgeIndex(
+    actorId: string,
+    scope: { storeId: string; taskId: string },
+  ) {
+    return new Maintenance(this).queue(actorId, scope);
+  }
+
+  drainKnowledgeIndex(limit = 10) {
+    return new Maintenance(this).drain(
+      (delivery, step) =>
+        this.executeStep(
+          {
+            storeId: delivery.storeId,
+            taskId: delivery.taskId,
+            eventId: delivery.eventId,
+            assigneeId: delivery.assigneeId,
+            assignmentRevision: delivery.assignmentRevision,
+            capability: "text",
+          },
+          step,
+        ),
+      limit,
+    );
   }
 
   async consumePayments(limit = 30) {
@@ -927,6 +1065,10 @@ export class Service extends CRUDService<IModel> {
         });
         await channel.queue.acknowledge(delivery);
       } catch {
+        logger.warn("Order work payment deferred", {
+          channelId: events.id,
+          deliveryKey: delivery.key,
+        });
         // Keep the failed item recoverable and allow other orders in this batch to finish.
         await channel.queue.release(delivery);
       }
@@ -957,19 +1099,31 @@ export class Service extends CRUDService<IModel> {
     for (const item of messages) {
       try {
         const result = await this.dispatch(item);
-        if (["delivered", "stale", "failed"].includes(result.state))
+        if (["delivered", "stale", "failed"].includes(result.state)) {
           await intake.ack({ eventId: item.eventId });
+        } else {
+          await intake.defer({ eventId: item.eventId });
+        }
       } catch (error) {
         if (
           error instanceof Error &&
           error.message.startsWith("Conflict error.")
-        )
+        ) {
           await intake.ack({ eventId: item.eventId });
-        else if (
-          !(error instanceof Error) ||
-          !/^(Payment required|Permission error)\./.test(error.message)
-        )
-          throw error;
+        } else {
+          await intake.defer({ eventId: item.eventId });
+          if (
+            !(error instanceof Error) ||
+            !/^(Payment required|Permission error|Forbidden error)\./.test(
+              error.message,
+            )
+          ) {
+            logger.warn("Customer work deferred", {
+              storeId: item.storeId,
+              eventId: item.eventId,
+            });
+          }
+        }
       }
     }
   }

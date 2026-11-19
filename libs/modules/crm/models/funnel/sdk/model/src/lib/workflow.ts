@@ -26,6 +26,7 @@ const actionSchema = z.object({
   instruction: z.string().trim().max(4000).optional(),
   actors: z.array(actorKindSchema).min(1),
   evidence: z.array(evidenceKindSchema).min(1),
+  deliveryStage: z.enum(["preparing", "in-transit", "delivered"]).optional(),
   nextStageId: stageIdSchema.optional(),
   outcome: outcomeSchema.optional(),
 });
@@ -49,6 +50,42 @@ export const workOperationSchema = z.enum([
 
 export type TWorkOperation = z.infer<typeof workOperationSchema>;
 
+const positiveAmount = z
+  .string()
+  .regex(/^(?:0|[1-9][0-9]{0,17})(?:\.[0-9]{1,12})?$/)
+  .refine((amount) => /[1-9]/.test(amount));
+
+const resultConversionSchema = z
+  .object({
+    id: z.uuid().optional(),
+    fromCurrencyId: z.uuid(),
+    toCurrencyId: z.uuid(),
+    rate: positiveAmount,
+    source: z.string().trim().min(1).max(300),
+    observedAt: z.iso.datetime({ offset: true }),
+  })
+  .refine((value) => value.fromCurrencyId !== value.toCurrencyId);
+
+const resultPricingSchema = z.discriminatedUnion("kind", [
+  z.object({ kind: z.literal("offer") }),
+  z.object({
+    kind: z.literal("confirmed-cost"),
+    multiplier: positiveAmount,
+    conversions: z
+      .array(resultConversionSchema)
+      .max(20)
+      .refine(
+        (rates) =>
+          new Set(
+            rates.map(
+              ({ fromCurrencyId, toCurrencyId }) =>
+                `${fromCurrencyId}:${toCurrencyId}`,
+            ),
+          ).size === rates.length,
+      ),
+  }),
+]);
+
 const stageSchema = z.object({
   id: stageIdSchema,
   name: z.string().trim().min(1).max(150),
@@ -59,20 +96,22 @@ const stageSchema = z.object({
     .max(6)
     .refine((values) => new Set(values).size === values.length)
     .optional(),
+  cartOfferIds: z
+    .array(z.uuid())
+    .max(12)
+    .refine((ids) => new Set(ids).size === ids.length)
+    .optional(),
   archived: z.boolean().optional(),
   evidenceInstruction: z.string().trim().max(4000).optional(),
   missingDataInstruction: z.string().trim().max(4000).optional(),
   payerSubjectId: z.uuid().optional(),
   defaultAssigneeSubjectId: z.uuid().optional(),
   settlementEvent: z.string().trim().max(150).optional(),
+  settlementInstruction: z.string().trim().max(4000).optional(),
+  resultPricing: resultPricingSchema.optional(),
   actions: z.array(actionSchema).max(100),
   waiting: waitingSchema.optional(),
 });
-
-const positiveAmount = z
-  .string()
-  .regex(/^(?:0|[1-9][0-9]{0,17})(?:\.[0-9]{1,12})?$/)
-  .refine((amount) => /[1-9]/.test(amount));
 
 const workFundingSchema = z.object({
   payer: z.enum(["store-owner", "customer"]),
@@ -86,6 +125,7 @@ export const funnelDefinitionSchema = z.object({
   applicability: z.string().trim().max(4000).optional(),
   goal: z.string().trim().max(4000).optional(),
   workFunding: workFundingSchema.optional(),
+  maintenanceSourceId: z.uuid().optional(),
   stages: z.array(stageSchema).min(1).max(100),
 });
 
@@ -97,6 +137,36 @@ export const funnelBindingsSchema = z.object({
 
 export interface IFunnelAction extends z.infer<typeof actionSchema> {}
 export interface IFunnelStage extends z.infer<typeof stageSchema> {}
+
+const paidOperationCapabilities = {
+  "request-routing": "decision",
+  "tool-selection": "decision",
+  "knowledge-search": "embedding",
+  compression: "compression",
+  vision: "vision",
+  transcription: "transcription",
+} as const satisfies Record<TWorkOperation, string>;
+
+export type TStageWorkCapability =
+  "text" | "image" | (typeof paidOperationCapabilities)[TWorkOperation];
+
+export function stageWorkCapabilities(
+  stage: Pick<IFunnelStage, "output" | "operations">,
+): TStageWorkCapability[] {
+  const main = stage.output === "image" ? "image" : "text";
+  return [
+    ...new Set<TStageWorkCapability>([
+      main,
+      ...(stage.operations ?? []).map(
+        (operation) => paidOperationCapabilities[operation],
+      ),
+    ]),
+  ];
+}
+
+export interface IResultConversion extends z.infer<
+  typeof resultConversionSchema
+> {}
 export interface IFunnelDefinition extends z.infer<
   typeof funnelDefinitionSchema
 > {}

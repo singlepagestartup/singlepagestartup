@@ -121,7 +121,11 @@ export function changeCustomerWork() {
         result,
       );
       queryClient.setQueryData(threadKey(props.id, result.threadId), result);
-      if (props.data.operation === "add") {
+      if (
+        props.data.operation === "add" ||
+        props.data.operation === "confirm-cart" ||
+        result.cartProposal?.orderId
+      ) {
         await invalidateRouteQueries(
           queryClient,
           `${route}/${props.id}/ecommerce-module/orders`,

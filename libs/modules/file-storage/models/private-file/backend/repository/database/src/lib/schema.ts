@@ -15,5 +15,6 @@ export const Table = pgTable(table, {
   mimeType: pgCore.text("mime_type").notNull(),
   size: pgCore.integer("size").notNull(),
   digest: pgCore.text("digest").notNull(),
+  legacyOriginId: pgCore.uuid("legacy_origin_id").unique(),
   bytes: binary("bytes").notNull(),
 });

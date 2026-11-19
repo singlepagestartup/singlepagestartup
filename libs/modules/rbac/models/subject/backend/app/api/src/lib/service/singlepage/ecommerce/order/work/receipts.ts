@@ -110,7 +110,18 @@ export class LegacyReceipts {
     const [privateFileId] = privateIds;
     const copy = privateFileId
       ? await this.files.privateFile.findById({ id: privateFileId })
-      : null;
+      : (
+          await this.files.privateFile.find({
+            params: {
+              filters: {
+                and: [
+                  { column: "legacyOriginId", method: "eq", value: fileId },
+                ],
+              },
+              limit: 1,
+            },
+          })
+        )[0];
     const bytes =
       copy?.bytes ??
       (await this.files.file.readBytes(
@@ -141,20 +152,29 @@ export class LegacyReceipts {
   async migrate(fileId: string, apply: boolean) {
     const state = await this.files.file.withFileLock(fileId, async () => {
       const state = await this.inspect(fileId);
-      if (!apply || state.copy) {
+      if (!apply) {
         return state;
       }
-      const copy = await this.files.privateFile.write({
-        name: `receipt-${state.purchase?.orderId ?? fileId}.${state.file.extension ?? "png"}`,
-        mimeType: state.mimeType,
-        bytes: state.bytes,
-      });
+      const copy =
+        state.copy ??
+        (await this.files.privateFile.write({
+          name: `receipt-${state.purchase?.orderId ?? fileId}.${state.file.extension ?? "png"}`,
+          mimeType: state.mimeType,
+          bytes: state.bytes,
+          legacyOriginId: fileId,
+        }));
       if (copy.digest !== state.digest || copy.size !== state.bytes.length) {
         throw new Error(
           "Conflict error. The protected receipt copy failed verification",
         );
       }
       for (const receipt of state.receipts) {
+        if (
+          receipt.privateReceiptFileId === copy.id &&
+          receipt.legacyReceiptLocation === state.location
+        ) {
+          continue;
+        }
         await this.links.update({
           id: receipt.id,
           data: {

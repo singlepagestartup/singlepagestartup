@@ -9,6 +9,23 @@ export type WorkflowEvent =
   | "delivery-confirmed"
   | "run-completed";
 
+export interface WorkflowExchangeRate {
+  id: string;
+  fromCurrencyId: string;
+  toCurrencyId: string;
+  rate: string;
+  source: string;
+  observedAt: string;
+}
+
+export type WorkflowResultPricing =
+  | { kind: "offer" }
+  | {
+      kind: "confirmed-cost";
+      multiplier: string;
+      conversions: WorkflowExchangeRate[];
+    };
+
 export interface WorkflowStage {
   id: string;
   title: string;
@@ -24,6 +41,8 @@ export interface WorkflowStage {
   assignee: string;
   payer: string;
   settlementEvent: WorkflowEvent;
+  settlementInstruction?: string;
+  resultPricing?: WorkflowResultPricing;
   archived?: boolean;
 }
 

@@ -103,27 +103,40 @@ export function Component(props: IComponentPropsExtended) {
       },
     },
   });
-  const offers = getEligibleRetailOffers({
+  const retailOffers = getEligibleRetailOffers({
     offers: offersQuery.data ?? [],
     product: props.ecommerceModuleProduct,
     storeId: props.ecommerceModuleStore?.id,
-  }).filter((offer) => !props.excludedOfferIds?.includes(offer.id));
+  });
+  const returnOffer = retailOffers.find(({ id }) => id === requestedOfferId);
+  const consultationQuery = api.customerWork({
+    id: props.data.id,
+    storeId: returnOffer?.storeId ?? "",
+    taskId: consultationTaskId,
+    enabled: Boolean(consultationTaskId && returnOffer),
+  });
+  const consultation = consultationQuery.data;
+  const newServiceOrder =
+    props.ecommerceModuleProduct.kind === "service" &&
+    returnOffer?.settings.requiresResultAcceptance &&
+    consultation?.offerId === returnOffer.id &&
+    !consultation.orderId;
+  const offers = retailOffers.filter(
+    (offer) =>
+      (newServiceOrder && offer.id === returnOffer?.id) ||
+      !props.excludedOfferIds?.includes(offer.id),
+  );
   function offerForDraft(value: IDraft) {
     return value.offerId
       ? offers.find((offer) => offer.id === value.offerId)
       : offers[0];
   }
   const selected = offerForDraft(draft);
-  const consultation = api.customerWork({
-    id: props.data.id,
-    storeId: selected?.storeId ?? "",
-    taskId: consultationTaskId,
-    enabled: Boolean(consultationTaskId && selected?.id === requestedOfferId),
-  }).data;
+  const consultationOffer = selected ?? returnOffer ?? retailOffers[0];
   const workQuery = api.customerWorkAvailability({
     id: props.data.id,
-    storeId: selected?.storeId ?? "",
-    offerId: selected?.id ?? "",
+    storeId: consultationOffer?.storeId ?? "",
+    offerId: consultationOffer?.id ?? "",
     productId: props.ecommerceModuleProduct.id,
   });
   const workMutation = api.changeCustomerWork();
@@ -138,12 +151,17 @@ export function Component(props: IComponentPropsExtended) {
       ? selectionWork.view
       : undefined;
   const work = activeWork;
+  const [openedQuestion, setOpenedQuestion] = useState<{
+    identity: string;
+    href: string;
+  }>();
   const [discussionOpen, setDiscussionOpen] = useState(false);
   const workRequest = useRef<{ signature: string; key: string } | undefined>(
     undefined,
   );
   const workPending =
-    workMutation.isPending || (Boolean(selected) && workQuery.isPending);
+    workMutation.isPending ||
+    (Boolean(consultationOffer) && workQuery.isPending);
   const pending = workPending || createOrder.isPending;
   const discussionButton = useRef<HTMLButtonElement>(null);
 
@@ -155,24 +173,24 @@ export function Component(props: IComponentPropsExtended) {
   }
 
   async function ask() {
-    if (!selected || workPending) return;
+    if (!consultationOffer || workPending) return;
     setError("");
     try {
       const result = await workMutation.mutateAsync({
         id: props.data.id,
         data: {
           operation: "ask",
-          operationKey: workKey(`ask:${identity}:${selected.id}`),
-          storeId: selected.storeId,
-          offerId: selected.id,
+          operationKey: workKey(`ask:${identity}:${consultationOffer.id}`),
+          storeId: consultationOffer.storeId,
+          offerId: consultationOffer.id,
           productId: props.ecommerceModuleProduct.id,
         },
       });
       workRequest.current = undefined;
       if (currentIdentity.current === identity) {
-        router.push(
-          `/${props.language}/social/chats/${result.chatId}/threads/${result.threadId}`,
-        );
+        const href = `/${props.language}/social/chats/${result.chatId}/threads/${result.threadId}`;
+        setOpenedQuestion({ identity, href });
+        router.push(href);
       }
     } catch (cause) {
       setError(
@@ -366,11 +384,21 @@ export function Component(props: IComponentPropsExtended) {
     if (
       draft.offerId &&
       !offers.some((offer) => offer.id === draft.offerId) &&
+      !(
+        draft.offerId === requestedOfferId &&
+        consultationTaskId &&
+        consultationQuery.isPending
+      ) &&
       !offersQuery.isPending
     ) {
       edit(() => ({ ...initialDraft(), offerId: "" }));
     }
-  }, [props.excludedOfferIds, offersQuery.data]);
+  }, [
+    props.excludedOfferIds,
+    offersQuery.data,
+    consultationQuery.isPending,
+    newServiceOrder,
+  ]);
   useEffect(() => {
     if (metadata && !draft.currencyId && currencyIds.length) {
       const preferred = props.billingModule?.currency?.id;
@@ -596,7 +624,8 @@ export function Component(props: IComponentPropsExtended) {
   const allOffersExcluded = Boolean(
     props.excludedOfferIds?.length && !offersQuery.isPending && !offers.length,
   );
-  const hideWhenIdle = Boolean(props.hideConfiguration || allOffersExcluded);
+  const hideWhenIdle =
+    !newServiceOrder && Boolean(props.hideConfiguration || allOffersExcluded);
   useOfferPriceSelection(
     draft.manualPriceSelection && !hideWhenIdle && selected && draft.currencyId
       ? {
@@ -1025,11 +1054,6 @@ export function Component(props: IComponentPropsExtended) {
                 </div>
               </dl>
             </section>
-            {error ? (
-              <p role="alert" className="text-sm text-destructive">
-                {error}
-              </p>
-            ) : null}
             {ready &&
             currentQuote?.issues.some((issue) =>
               incompleteCodes.has(issue.code),
@@ -1054,17 +1078,6 @@ export function Component(props: IComponentPropsExtended) {
                   ? "Добавить в корзину"
                   : "Add to cart"}
             </Button>
-            {workQuery.data?.consultation && (
-              <Button
-                type="button"
-                variant="outline"
-                className="min-h-11 w-full rounded-xl"
-                disabled={pending}
-                onClick={() => void ask()}
-              >
-                {ru ? "Задать вопрос" : "Ask a question"}
-              </Button>
-            )}
             {workQuery.data?.payAfterAcceptance && (
               <p className="text-xs text-muted-foreground">
                 {ru
@@ -1080,6 +1093,30 @@ export function Component(props: IComponentPropsExtended) {
           </form>
         </div>
       ) : null}
+      {workQuery.data?.consultation && (
+        <Button
+          type="button"
+          variant="outline"
+          className="min-h-11 w-full rounded-xl"
+          disabled={pending}
+          onClick={() => void ask()}
+        >
+          {ru ? "Задать вопрос" : "Ask a question"}
+        </Button>
+      )}
+      {openedQuestion?.identity === identity && (
+        <a
+          href={openedQuestion.href}
+          className="inline-flex min-h-11 items-center text-sm underline underline-offset-4"
+        >
+          {ru ? "Открыть консультацию" : "Open the question"}
+        </a>
+      )}
+      {error && (
+        <p role="alert" className="text-sm text-destructive">
+          {error}
+        </p>
+      )}
       {work && !discussionOpen && (
         <Button
           ref={discussionButton}

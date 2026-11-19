@@ -166,16 +166,29 @@ export function ResultReview({ subjectId, work, language }: IProps) {
           >
             {ru ? "Скачать превью" : "Download preview"}
           </Button>
-          <p className="text-sm">
-            {ru ? "Цена этой версии" : "Price for this version"} ·{" "}
-            {formatCurrencyAmount(version.price, language)} {currency?.symbol}
-          </p>
+          {currency ? (
+            <p className="text-sm">
+              {ru ? "Цена этой версии" : "Price for this version"} ·{" "}
+              {formatCurrencyAmount(version.price, language)}{" "}
+              {currency.symbol || currency.title}
+            </p>
+          ) : (
+            <p role="status" className="text-sm text-muted-foreground">
+              {currencies.isPending
+                ? ru
+                  ? "Загружаем цену версии…"
+                  : "Loading the version price…"
+                : ru
+                  ? "Не удалось загрузить валюту цены."
+                  : "The price currency could not be loaded."}
+            </p>
+          )}
           <div className="flex flex-wrap gap-2">
             <Button
               type="button"
               variant="primary"
               className="min-h-11"
-              disabled={decision.isPending}
+              disabled={decision.isPending || !currency}
               onClick={() => void choose("accept")}
             >
               {ru
@@ -218,8 +231,8 @@ export function ResultReview({ subjectId, work, language }: IProps) {
       {work.state === "awaiting-result" && !version && (
         <p role="status" className="text-sm text-muted-foreground">
           {ru
-            ? "Оплата откроется после принятия результата."
-            : "Payment opens after you accept the result."}
+            ? "Цена появится вместе с превью. Оплата откроется после принятия версии."
+            : "The preview includes its price. You can pay after accepting a version."}
         </p>
       )}
       {work.acceptedVersionId && version && (
@@ -227,6 +240,8 @@ export function ResultReview({ subjectId, work, language }: IProps) {
           {ru
             ? `Принята версия ${version.number}`
             : `Version ${version.number} accepted`}
+          {" · "}
+          {formatCurrencyAmount(version.price, language)} {currency?.symbol}
         </p>
       )}
       {shippingStatus && (

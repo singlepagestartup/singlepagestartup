@@ -32,6 +32,7 @@ import { Service as BillingPaymentIntentService } from "@sps/billing/models/paym
 import { Service as SubscriptionPeriodService } from "../startup/subscription-period";
 import { Service as LifecycleService } from "../startup/lifecycle";
 import { Service as OrderWork } from "./work";
+import { parseExactMonetaryAmount } from "@sps/backend-utils";
 import type {
   IExecuteProps as ISubscriptionPeriodProps,
   IFreezeProps as ISubscriptionPeriodFreezeProps,
@@ -434,6 +435,26 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
   }
 
   async findByIdTotal(props: IFindByIdTotalExecuteProps) {
+    const resultPrice = await this.work.resultPriceForOrder(props.id);
+    if (resultPrice) {
+      const currency = await this.modules.billing.currency.findById({
+        id: resultPrice.currencyId,
+      });
+      if (!currency) {
+        throw new Error("Not Found error. Result currency is unavailable");
+      }
+      return {
+        totals: [
+          {
+            total: parseExactMonetaryAmount(resultPrice.price),
+            billingModuleCurrency: currency,
+          },
+        ],
+        availableCurrencyIds: [currency.id],
+        unpriced: [],
+        fixedCurrencyId: currency.id,
+      };
+    }
     const saved = await this.savedCheckoutContext(props.id);
     if (saved) {
       const currency =

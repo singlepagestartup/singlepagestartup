@@ -47,16 +47,21 @@ export function Discussion({
     title.current?.focus();
   }, []);
 
-  async function change(operation: "message" | "handoff" | "approve-budget") {
+  async function change(
+    operation: "message" | "handoff" | "approve-budget" | "confirm-cart",
+  ) {
     const value = text.trim();
     const maximum = current.requiredMaximum ?? "";
     const priceKey = current.price?.key ?? "";
+    const proposalId = current.cartProposal?.id ?? "";
     const payload =
       operation === "message"
         ? `message:${value}`
         : operation === "approve-budget"
           ? `budget:${maximum}:${priceKey}`
-          : "handoff";
+          : operation === "confirm-cart"
+            ? `cart:${proposalId}`
+            : "handoff";
     if (retry.current?.payload !== payload) {
       retry.current = { payload, key: crypto.randomUUID() };
     }
@@ -70,7 +75,9 @@ export function Discussion({
         ? { ...command, operation, text: value }
         : operation === "approve-budget"
           ? { ...command, operation, maximum, priceKey }
-          : { ...command, operation };
+          : operation === "confirm-cart"
+            ? { ...command, operation, proposalId }
+            : { ...command, operation };
     setError("");
     try {
       await mutation.mutateAsync({ id: subjectId, data });
@@ -172,6 +179,32 @@ export function Discussion({
           </article>
         ))}
       </div>
+      {current.cartProposal && (
+        <aside className="border-t border-border p-4 sm:p-5">
+          <p className="font-medium">{current.cartProposal.title}</p>
+          <p className="mt-1 text-sm text-muted-foreground">
+            {ru ? "Количество" : "Quantity"} {current.cartProposal.quantity}
+            {" · "}
+            {current.cartProposal.amount}{" "}
+            {current.cartProposal.currency.toUpperCase()}
+          </p>
+          {current.cartProposal.orderId ? (
+            <p role="status" className="mt-2 text-sm">
+              {ru ? "Предложение в корзине." : "Added to your cart."}
+            </p>
+          ) : (
+            <Button
+              className="mt-2 min-h-11"
+              type="button"
+              variant="primary"
+              disabled={mutation.isPending}
+              onClick={() => void change("confirm-cart")}
+            >
+              {ru ? "Добавить в корзину" : "Add this choice to my cart"}
+            </Button>
+          )}
+        </aside>
+      )}
       {current.status !== "closed" && current.customerPays && (
         <form
           className="border-t border-border p-4 sm:p-5"

@@ -15,6 +15,11 @@ interface ICart {
   lines: ILine[];
 }
 
+interface ICartMerge {
+  removedOrderIds: string[];
+  transferredOrderIds: string[];
+}
+
 export class Service {
   constructor(
     private readonly service: SubjectServiceDependencies<"repository">,
@@ -27,6 +32,7 @@ export class Service {
         guestId: string;
         customerId: string;
         removedOrderIds: string[];
+        transferredOrderIds: string[];
       }): Promise<void>;
     },
   ) {}
@@ -81,11 +87,11 @@ export class Service {
           return;
         }
         const carts = await this.readCarts(guestId, subjectId);
-        const removedOrderIds = await this.merge(carts, subjectId);
+        const result = await this.merge(carts, subjectId);
         await this.customerWork?.transferGuest({
           guestId,
           customerId: subjectId,
-          removedOrderIds,
+          ...result,
         });
       }),
     );
@@ -189,9 +195,10 @@ export class Service {
     });
   }
 
-  private async merge(carts: ICart[], subjectId: string) {
+  private async merge(carts: ICart[], subjectId: string): Promise<ICartMerge> {
     const { ecommerce } = this.service.modules;
     const { subjectsToEcommerceModuleOrders } = this.service.module;
+    const result: ICartMerge = { removedOrderIds: [], transferredOrderIds: [] };
     // Leave a guest order intact if an overlapping account order is already in
     // payment or shared. Its lines, store and currency must stay together.
     const protectedProducts = new Set(
@@ -222,7 +229,7 @@ export class Service {
         ),
     );
     if (!incoming.size) {
-      return [];
+      return result;
     }
     const winners = new Map<string, { guest: boolean; timestamp: number }>();
     // A Product selection includes every split order and its child services.
@@ -243,7 +250,6 @@ export class Service {
         }
       }
     }
-    const removedOrderIds: string[] = [];
     for (const cart of editableCarts) {
       if (!cart.lines.length) {
         continue;
@@ -285,7 +291,7 @@ export class Service {
           orderId: cart.id,
         });
         await ecommerce.order.delete({ id: cart.id });
-        removedOrderIds.push(cart.id);
+        result.removedOrderIds.push(cart.id);
       } else if (cart.guest) {
         const owner = await subjectsToEcommerceModuleOrders.update({
           id: cart.owner.id,
@@ -296,8 +302,9 @@ export class Service {
             "Conflict error. Guest cart owner changed during sign-in",
           );
         }
+        result.transferredOrderIds.push(cart.id);
       }
     }
-    return removedOrderIds;
+    return result;
   }
 }

@@ -8,7 +8,7 @@ import {
   secondaryClass,
 } from "../../../shared/workflow-ui";
 import type { WorkflowRelease, WorkflowTask } from "../../../shared/workflows";
-import { Field } from "../workflow-editor/StageFields";
+import { Field } from "../workflow-editor/Fields";
 
 export interface MoveInput {
   taskId: string;

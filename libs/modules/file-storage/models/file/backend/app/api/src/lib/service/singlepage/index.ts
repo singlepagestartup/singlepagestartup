@@ -1,7 +1,7 @@
 import { createModules } from "@sps/file-storage/backend/app/api/src/lib/modules";
 import "reflect-metadata";
 import { injectFromBase, injectable } from "inversify";
-import { CRUDService } from "@sps/shared-backend-api";
+import { CRUDService, type FindServiceProps } from "@sps/shared-backend-api";
 import { fetchOutboundUrl } from "@sps/backend-utils";
 import { createHash } from "node:crypto";
 import { deflate } from "pako";
@@ -23,9 +23,11 @@ import { isLegacyOrderReceipt } from "@sps/file-storage/models/file/sdk/model";
 @injectable()
 @injectFromBase()
 export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
-  private commerceReceiptGuard?: (id: string) => Promise<boolean>;
+  private commerceReceiptGuard?: (ids: string[]) => Promise<Set<string>>;
 
-  configureCommerceReceiptGuard(guard: (id: string) => Promise<boolean>) {
+  configureCommerceReceiptGuard(
+    guard: (ids: string[]) => Promise<Set<string>>,
+  ) {
     this.commerceReceiptGuard = guard;
   }
 
@@ -34,8 +36,18 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
   ) {
     return (
       isLegacyOrderReceipt(file) ||
-      (await this.commerceReceiptGuard?.(file.id)) === true
+      (await this.commerceReceiptGuard?.([file.id]))?.has(file.id) === true
     );
+  }
+
+  async publicMetadata(props: FindServiceProps) {
+    const files = (await this.find(props)).filter(
+      (file) => !isLegacyOrderReceipt(file),
+    );
+    const protectedIds = await this.commerceReceiptGuard?.(
+      files.map(({ id }) => id),
+    );
+    return files.filter(({ id }) => !protectedIds?.has(id));
   }
 
   imageGeneratorUrl(data: {

@@ -139,13 +139,15 @@ export class Service extends CRUDService<Source> {
   listSourcesForIndex(props?: { sourceId?: string; limit?: number }) {
     return this.find({
       params: {
-        ...(props?.sourceId
-          ? {
-              filters: {
-                and: [{ column: "id", method: "eq", value: props.sourceId }],
-              },
-            }
-          : { limit: props?.limit }),
+        filters: {
+          and: [
+            { column: "variant", method: "ne", value: "customer-memory" },
+            ...(props?.sourceId
+              ? [{ column: "id", method: "eq" as const, value: props.sourceId }]
+              : []),
+          ],
+        },
+        limit: props?.limit,
       },
     });
   }

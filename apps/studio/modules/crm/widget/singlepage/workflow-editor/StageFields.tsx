@@ -1,4 +1,3 @@
-import { cloneElement, useId, type ReactElement } from "react";
 import { fieldClass } from "../../../shared/workflow-ui";
 import {
   workflowEventLabels,
@@ -8,33 +7,8 @@ import {
   type WorkflowStage,
 } from "../../../shared/workflows";
 import type { IComponentProps } from "./interface";
-
-export function Field({
-  label,
-  children,
-  hint,
-}: {
-  label: string;
-  children: ReactElement<{ id?: string; "aria-describedby"?: string }>;
-  hint?: string;
-}) {
-  const fieldId = useId();
-  const hintId = hint ? `${fieldId}-hint` : undefined;
-  return (
-    <div className="grid content-start gap-1.5 text-sm font-medium">
-      <label htmlFor={fieldId}>{label}</label>
-      {cloneElement(children, { id: fieldId, "aria-describedby": hintId })}
-      {hint && (
-        <span
-          id={hintId}
-          className="text-xs leading-5 font-normal text-muted-foreground"
-        >
-          {hint}
-        </span>
-      )}
-    </div>
-  );
-}
+import { Field } from "./Fields";
+import { ResultPricing } from "./ResultPricing";
 
 export function EventOptions({
   emptyLabel,
@@ -191,6 +165,16 @@ export function StageFields({
       </section>
       <section className="grid gap-3.5 border-t border-border pt-5">
         <h4 className="text-sm font-semibold">Назначение и расчёт</h4>
+        <Field label="Условия расчёта">
+          <textarea
+            className={`${fieldClass} min-h-20 leading-6`}
+            value={stage.settlementInstruction ?? ""}
+            onChange={(event) =>
+              onChange({ settlementInstruction: event.currentTarget.value })
+            }
+          />
+        </Field>
+        <ResultPricing stage={stage} onChange={onChange} />
         <fieldset className="grid gap-1.5 text-sm">
           <legend className="mb-1 font-medium">Разрешённые операции</legend>
           <div className="flex flex-wrap gap-2">

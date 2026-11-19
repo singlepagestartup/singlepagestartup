@@ -255,6 +255,18 @@ export function Editor({
             multiline
             onChange={(goal) => setDefinition({ ...definition, goal })}
           />
+          {kind === "consultation" && funding?.payer === "store-owner" && (
+            <TextField
+              label="ID источника для фоновой индексации"
+              value={definition.maintenanceSourceId ?? ""}
+              onChange={(value) =>
+                setDefinition({
+                  ...definition,
+                  maintenanceSourceId: value.trim() || undefined,
+                })
+              }
+            />
+          )}
         </div>
         <fieldset className="grid gap-3 border-t border-border pt-4">
           <label className="flex min-h-10 items-center gap-2 text-sm font-medium">

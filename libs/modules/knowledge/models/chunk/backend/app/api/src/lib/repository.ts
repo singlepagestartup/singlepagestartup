@@ -50,7 +50,7 @@ export class Repository extends DatabaseRepository<typeof Table> {
       : sql`TRUE`;
     const scope = props.embeddingIndex
       ? sql`${byId} AND ${Table.metadata}->>'embeddingIndex' = ${props.embeddingIndex}`
-      : byId;
+      : sql`${byId} AND ${Table.metadata}->>'embeddingIndex' IS NULL`;
     if (props.materialized) {
       const rows = await this.db.execute(sql`WITH candidates AS MATERIALIZED (
         SELECT id, text, chunk_index AS "chunkIndex", metadata, embedding FROM ${Table}

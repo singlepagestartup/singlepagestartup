@@ -5,7 +5,10 @@ import type {
   IProviderType,
 } from "@sps/rbac/models/subject/sdk/model/src/lib/provider-connections";
 
-import type { ICustomerWorkSourceVersion } from "@sps/rbac/models/subject/sdk/model";
+import type {
+  ICustomerWorkCartSelection,
+  ICustomerWorkSourceVersion,
+} from "@sps/rbac/models/subject/sdk/model";
 
 export type TAttemptState =
   | "reserved"
@@ -21,12 +24,15 @@ export interface IWorkResult {
   usage: {
     inputTokens: number;
     outputTokens: number;
+    audioSeconds?: string;
     usd: string;
     basis: "provider" | "rate-card" | "owner-statement";
   };
   text: string;
   actionId?: string;
+  cartSelection?: ICustomerWorkCartSelection;
   embeddings?: { model: string; dimensions: number; values: number[][] };
+  indexing?: { sourceId: string; contentHash: string; indexKey: string };
   artifact?: {
     originalFileId: string;
     previewFileId: string;

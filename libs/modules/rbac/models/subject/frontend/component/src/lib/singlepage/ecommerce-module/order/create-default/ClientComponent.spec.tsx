@@ -9,8 +9,11 @@ import {
   within,
 } from "@testing-library/react";
 const mockCreate = jest.fn();
+const mockChangeWork = jest.fn();
+const mockNavigate = jest.fn();
+let mockConsultationAvailable = false;
 jest.mock("next/navigation", () => ({
-  useRouter: () => ({ push: jest.fn() }),
+  useRouter: () => ({ push: mockNavigate }),
   useSearchParams: () => new URLSearchParams(),
 }));
 const mockRefetch = jest.fn();
@@ -33,10 +36,17 @@ jest.mock("@sps/rbac/models/subject/sdk/client", () => ({
   api: {
     customerWork: () => ({ data: undefined }),
     customerWorkAvailability: () => ({
-      data: { consultation: false, order: false, payAfterAcceptance: false },
+      data: {
+        consultation: mockConsultationAvailable,
+        order: false,
+        payAfterAcceptance: false,
+      },
       isPending: false,
     }),
-    changeCustomerWork: () => ({ isPending: false }),
+    changeCustomerWork: () => ({
+      isPending: false,
+      mutateAsync: mockChangeWork,
+    }),
     ecommerceModuleOrderCreate: () => ({
       mutateAsync: mockCreate,
       isPending: false,
@@ -208,6 +218,38 @@ jest.mock("../list/checkout-default/DeliveryAddress", () => ({
 }));
 import { Component } from "./ClientComponent";
 import { OfferPrice, OfferPriceProvider } from "./OfferPrice";
+
+it("opens a new thread for the exact offer while the saved cart hides configuration", async () => {
+  mockConsultationAvailable = true;
+  mockChangeWork.mockResolvedValue({
+    chatId: "private-chat",
+    threadId: "private-thread",
+  });
+  render(
+    <Component {...props} hideConfiguration excludedOfferIds={["offer-a"]} />,
+  );
+
+  expect(
+    screen.queryByRole("button", { name: "Добавить в корзину" }),
+  ).toBeNull();
+  fireEvent.click(screen.getByRole("button", { name: "Задать вопрос" }));
+  await waitFor(() =>
+    expect(mockNavigate).toHaveBeenCalledWith(
+      "/ru/social/chats/private-chat/threads/private-thread",
+    ),
+  );
+  expect(mockChangeWork).toHaveBeenCalledWith({
+    id: "subject",
+    data: {
+      operation: "ask",
+      operationKey: expect.any(String),
+      storeId: "store-a",
+      productId: "product",
+      offerId: "offer-a",
+    },
+  });
+});
+
 const props: any = {
   data: { id: "subject" },
   language: "ru",
@@ -222,6 +264,9 @@ beforeAll(() => {
   } as unknown as typeof ResizeObserver;
 });
 beforeEach(() => {
+  mockConsultationAvailable = false;
+  mockChangeWork.mockReset();
+  mockNavigate.mockReset();
   mockCreate.mockReset().mockResolvedValue({});
   mockRefetch.mockReset().mockResolvedValue({});
   mockQuoteRead.mockClear();

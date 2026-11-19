@@ -1,4 +1,5 @@
 import { createHash, randomUUID } from "node:crypto";
+import { isDeepStrictEqual } from "node:util";
 import {
   logger,
   moneyFromMinorUnits,
@@ -10,7 +11,9 @@ import type {
   IDeclineOrderWorkResult,
   IModel as IWork,
   IOrderPhysicalEvidence,
+  IAcceptedOrderWorkCheckout,
   IOrderWorkCheckout,
+  IOrderWorkOrderLine,
   IOrderWorkPayment,
   IOrderWorkScope,
   IOrderWorkVersion,
@@ -32,6 +35,10 @@ export class Service {
 
   private get records() {
     return this.order.module.orderWork;
+  }
+
+  withOrderLock<T>(orderId: string, operation: () => Promise<T>) {
+    return this.order.repository.withLifecycleLock(orderId, operation);
   }
 
   private verifyScope(record: IWork, input: IOrderWorkScope) {
@@ -138,19 +145,34 @@ export class Service {
     if (!file || isLegacyOrderReceipt(file)) {
       return Boolean(file);
     }
+    const protectedIds = await this.protectedReceiptFileIds([file.id]);
+    return protectedIds.has(file.id);
+  }
+
+  async protectedReceiptFileIds(ids: string[]) {
+    if (!ids.length) {
+      return new Set<string>();
+    }
     const links = await this.order.module.ordersToFileStorageModuleFiles.find({
       params: {
         filters: {
           and: [
-            { column: "fileStorageModuleFileId", method: "eq", value: file.id },
+            {
+              column: "fileStorageModuleFileId",
+              method: "inArray",
+              value: ids,
+            },
             { column: "variant", method: "eq", value: "receipt-default" },
           ],
         },
       },
     });
-    return links.some(
-      (link) =>
-        !link.privateReceiptFileId || Boolean(link.legacyReceiptLocation),
+    return new Set(
+      links.flatMap((link) =>
+        !link.privateReceiptFileId || link.legacyReceiptLocation
+          ? [link.fileStorageModuleFileId]
+          : [],
+      ),
     );
   }
 
@@ -180,6 +202,17 @@ export class Service {
 
   read(input: IOrderWorkScope) {
     return this.require(input);
+  }
+
+  async resultPriceForOrder(orderId: string) {
+    const record = await this.records.byOrder(orderId);
+    const versionId =
+      record?.paid?.resultVersionId ?? record?.acceptedVersionId;
+    if (record?.kind !== "individual-service" || !versionId) {
+      return null;
+    }
+    const { currencyId, price } = this.version(record, versionId);
+    return { currencyId, price };
   }
 
   async transferCustomer(input: IOrderWorkScope & { nextCustomerId: string }) {
@@ -231,7 +264,17 @@ export class Service {
         (version) => version.operationKey === input.operationKey,
       );
       if (previous) {
-        if (previous.operationDigest !== digest) {
+        const priced = JSON.parse(
+          JSON.stringify({
+            priceBasis: input.priceBasis,
+            purchaseQuote: input.purchaseQuote,
+          }),
+        );
+        if (
+          previous.operationDigest !== digest ||
+          !isDeepStrictEqual(previous.priceBasis, priced.priceBasis) ||
+          !isDeepStrictEqual(previous.purchaseQuote, priced.purchaseQuote)
+        ) {
           throw new Error(
             "Conflict error. Result operation already belongs to different content",
           );
@@ -242,6 +285,17 @@ export class Service {
         throw new Error(
           "Conflict error. This work cannot accept another result version",
         );
+      }
+      if (input.purchaseQuote) {
+        const total = input.purchaseQuote.charges.reduce(
+          (sum, charge) => sum + moneyMinorUnits(charge.amount),
+          0n,
+        );
+        if (total !== moneyMinorUnits(price)) {
+          throw new Error(
+            "Validation error. Quoted charges must match the result price",
+          );
+        }
       }
 
       const currency = await this.order.modules.billing.currency.findById({
@@ -269,6 +323,8 @@ export class Service {
         previewFileId: preview.id,
         currencyId: input.currencyId,
         price,
+        priceBasis: input.priceBasis,
+        purchaseQuote: input.purchaseQuote,
       };
       await this.records.revise(record.id, {
         versions: [...record.versions, version],
@@ -345,6 +401,64 @@ export class Service {
     return this.decide(input, "declined", reason);
   }
 
+  async acceptedCheckout(input: {
+    orderId: string;
+    customerId: string;
+    lines: Array<{
+      id: string;
+      offerId: string | null;
+      quantity: number;
+      parentLineId?: string | null;
+    }>;
+  }): Promise<IAcceptedOrderWorkCheckout | null> {
+    const record = await this.records.byOrder(input.orderId);
+    if (record?.kind !== "individual-service") {
+      return null;
+    }
+    if (record.customerId !== input.customerId || record.paid) {
+      throw new Error(
+        "Conflict error. This work order cannot be checked out by the current customer",
+      );
+    }
+    if (!record.acceptedVersionId) {
+      throw new Error(
+        "Conflict error. Accept a result version before checkout",
+      );
+    }
+
+    const version = this.version(record, record.acceptedVersionId);
+    const savedLines = version.purchaseQuote?.lines;
+    if (
+      savedLines &&
+      (savedLines.length !== input.lines.length ||
+        !savedLines.every((line: IOrderWorkOrderLine) =>
+          input.lines.some(
+            (current) =>
+              current.id === line.id &&
+              current.offerId === line.offerId &&
+              current.quantity === line.quantity &&
+              (current.parentLineId ?? null) === line.parentLineId,
+          ),
+        ))
+    ) {
+      throw new Error(
+        "Conflict error. Order lines differ from the accepted result",
+      );
+    }
+    return {
+      checkout: {
+        orderId: record.orderId,
+        customerId: record.customerId,
+        taskId: record.taskId,
+        storeId: record.storeId,
+        resultVersionId: version.id,
+        price: version.price,
+        currencyId: version.currencyId,
+      },
+      purchaseQuote: version.purchaseQuote,
+    };
+  }
+
   async checkout(input: {
     orderId: string;
     customerId: string;
@@ -366,29 +480,19 @@ export class Service {
       );
     }
 
-    let resultVersionId: string | null = null;
-    const price = moneyFromMinorUnits(moneyMinorUnits(input.price)).toFixed(8);
     if (record.kind === "individual-service") {
-      if (!record.acceptedVersionId) {
-        throw new Error(
-          "Conflict error. Accept a result version before checkout",
-        );
-      }
-      const version = this.version(record, record.acceptedVersionId);
-      if (version.price !== price || version.currencyId !== input.currencyId) {
-        throw new Error(
-          "Conflict error. Checkout price and currency differ from the accepted result",
-        );
-      }
-      resultVersionId = version.id;
+      throw new Error(
+        "Conflict error. Checkout requires an accepted result snapshot",
+      );
     }
 
+    const price = moneyFromMinorUnits(moneyMinorUnits(input.price)).toFixed(8);
     return {
       orderId: input.orderId,
       customerId: record.customerId,
       taskId: record.taskId,
       storeId: record.storeId,
-      resultVersionId,
+      resultVersionId: null,
       price,
       currencyId: input.currencyId,
     } satisfies IOrderWorkCheckout;

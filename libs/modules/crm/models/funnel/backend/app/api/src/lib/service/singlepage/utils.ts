@@ -7,6 +7,14 @@ export function validatePublication(
   definition: IFunnelDefinition,
   kind: TFunnelKind,
 ) {
+  if (
+    definition.maintenanceSourceId &&
+    (kind !== "consultation" || definition.workFunding?.payer !== "store-owner")
+  ) {
+    throw new Error(
+      "Validation error. An index maintenance funnel requires store-owner funding",
+    );
+  }
   const stageIds = new Set(definition.stages.map((stage) => stage.id));
   if (stageIds.size !== definition.stages.length) {
     throw new Error("Validation error. Funnel stage IDs must be unique");
@@ -26,6 +34,14 @@ export function validatePublication(
     if (stage.archived) {
       continue;
     }
+    if (
+      stage.operations?.length &&
+      (!definition.workFunding || definition.maintenanceSourceId)
+    ) {
+      throw new Error(
+        "Validation error. Paid reply operations require a funded customer workflow",
+      );
+    }
     if (stage.output && stage.output !== "chat") {
       if (kind !== "individual-service" || !definition.workFunding) {
         throw new Error(
@@ -33,8 +49,24 @@ export function validatePublication(
         );
       }
     }
+    if (
+      stage.resultPricing?.kind === "confirmed-cost" &&
+      (kind !== "individual-service" || !definition.workFunding)
+    ) {
+      throw new Error(
+        "Validation error. Confirmed-cost pricing requires funded individual work",
+      );
+    }
     const actionIds = new Set<string>();
     for (const action of stage.actions) {
+      if (
+        action.deliveryStage &&
+        (kind !== "physical-order" || !action.evidence.includes("delivery"))
+      ) {
+        throw new Error(
+          "Validation error. A fulfillment milestone requires physical delivery evidence",
+        );
+      }
       if (actionIds.has(action.id)) {
         throw new Error(
           "Validation error. Action IDs must be unique within a stage",

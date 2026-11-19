@@ -11,6 +11,7 @@ import { Handler as CreateFromUrl } from "./create-from-url";
 import { Handler as Delete } from "./delete";
 import { Handler as Update } from "./update";
 import { Handler as Generate } from "./generate";
+import { Handler as Metadata } from "./metadata";
 
 @injectable()
 export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
@@ -33,7 +34,7 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
       {
         method: "GET",
         path: "/",
-        handler: this.find,
+        handler: (c) => new Metadata(this.service).execute(c),
       },
       {
         method: "GET",
@@ -43,7 +44,7 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
       {
         method: "GET",
         path: "/:uuid",
-        handler: this.findById,
+        handler: (c) => new Metadata(this.service).execute(c),
       },
       {
         method: "POST",
