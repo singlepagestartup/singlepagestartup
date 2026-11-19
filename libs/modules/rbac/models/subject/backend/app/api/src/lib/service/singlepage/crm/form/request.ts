@@ -1,3 +1,4 @@
+import type { FindServiceProps } from "@sps/shared-backend-api";
 import { createHash } from "node:crypto";
 import { RBAC_SECRET_KEY } from "@sps/shared-utils";
 import { api as subjectApi } from "@sps/rbac/models/subject/sdk/server";
@@ -33,18 +34,18 @@ export class Service {
     const digest = createHash("sha256")
       .update(JSON.stringify(submission))
       .digest("hex");
-    const previous = await this.service.crmModule.request.findSubmission({
+    const previous = await this.service.modules.crm.request.findSubmission({
       key,
       digest,
     });
     if (previous) return this.result(entity, previous, true);
-    const form = await this.service.crmModule.form.findById({
+    const form = await this.service.modules.crm.form.findById({
       id: props.crmModuleFormId,
     });
     if (!form) throw new Error("Not Found error. CRM Form not found");
     const normalized = await this.normalize(form, submission);
     const recipients = await this.notificationRecipients();
-    const saved = await this.service.crmModule.form.submit({
+    const saved = await this.service.modules.crm.form.submit({
       key,
       digest,
       formId: form.id,
@@ -94,7 +95,7 @@ export class Service {
     }
     try {
       const request =
-        await this.service.crmModule.request.setSubmissionNotificationStatus({
+        await this.service.modules.crm.request.setSubmissionNotificationStatus({
           id: saved.request.id,
           key,
           status,
@@ -120,7 +121,7 @@ export class Service {
     };
   }
   private async notificationRecipients() {
-    const topics = await this.service.notificationModule.topic.find({
+    const topics = await this.service.modules.notification.topic.find({
       params: {
         filters: {
           and: [{ column: "slug", method: "eq", value: "information" }],
@@ -129,7 +130,7 @@ export class Service {
     });
     if (!topics?.length)
       throw new Error("Configuration error. CRM notification topic not found");
-    const templates = await this.service.notificationModule.template.find({
+    const templates = await this.service.modules.notification.template.find({
       params: {
         filters: {
           and: [
@@ -146,14 +147,14 @@ export class Service {
       throw new Error(
         "Configuration error. CRM notification templates not found",
       );
-    const roles = await this.service.role.find({
+    const roles = await this.service.module.role.find({
       params: {
         filters: { and: [{ column: "slug", method: "eq", value: "admin" }] },
       },
     });
     let links;
     if (roles.length) {
-      links = await this.service.subjectsToRoles.find({
+      links = await this.service.module.subjectsToRoles.find({
         params: {
           filters: {
             and: [
@@ -169,7 +170,7 @@ export class Service {
     } else {
       links = [];
     }
-    const subjects = [...new Set(links.map((link) => link.subjectId))];
+    const subjects = [...new Set<string>(links.map((link) => link.subjectId))];
     if (!subjects.length)
       throw new Error(
         "Configuration error. CRM notification recipients not found",
@@ -179,12 +180,14 @@ export class Service {
     );
   }
   private async normalize(form: any, submission: ICrmRequestSubmission) {
-    const crm = this.service.crmModule;
+    const crm = this.service.modules.crm;
     const filter = (
       column: string,
       value: string | string[],
-      method = "eq",
-    ) => ({ params: { filters: { and: [{ column, method, value }] } } });
+      method: "eq" | "inArray" = "eq",
+    ): FindServiceProps => ({
+      params: { filters: { and: [{ column, method, value }] } },
+    });
     const stepLinks = await crm.formsToSteps.find(filter("formId", form.id));
     if (!stepLinks.length)
       throw new Error("Configuration error. CRM Form has no Steps");

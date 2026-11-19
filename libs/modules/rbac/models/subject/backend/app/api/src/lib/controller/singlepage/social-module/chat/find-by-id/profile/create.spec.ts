@@ -1,11 +1,3 @@
-/**
- * BDD Suite: Chat-local agent profile creation.
- *
- * Given: a user adds an rbac.subject with variant="agent" to a chat.
- * When: the RBAC chat profile create handler receives agentSubjectId.
- * Then: it creates an empty artificial-intelligence social.profile linked only to that chat.
- */
-
 const mockSocialModuleProfileCreate = jest.fn();
 const mockSocialModuleProfilesToChatsCreate = jest.fn();
 const mockSubjectsToSocialModuleProfilesCreate = jest.fn();
@@ -88,15 +80,19 @@ function createService(props: { agentVariant?: string } = {}) {
       slug: "maxim-ivanov",
       variant: props.agentVariant || "agent",
     }),
-    subjectsToSocialModuleProfiles: {
-      find: jest.fn().mockResolvedValue([]),
-    },
-    socialModule: {
-      profile: {
-        findById: jest.fn(),
-        find: jest.fn().mockResolvedValue([]),
+    modules: {
+      social: {
+        profile: {
+          findById: jest.fn(),
+          find: jest.fn().mockResolvedValue([]),
+        },
+        profilesToChats: {
+          find: jest.fn().mockResolvedValue([]),
+        },
       },
-      profilesToChats: {
+    },
+    module: {
+      subjectsToSocialModuleProfiles: {
         find: jest.fn().mockResolvedValue([]),
       },
     },

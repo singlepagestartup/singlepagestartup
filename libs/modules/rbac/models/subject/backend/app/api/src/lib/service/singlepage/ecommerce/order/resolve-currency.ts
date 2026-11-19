@@ -1,4 +1,4 @@
-import { type IBillingModule, type IEcommerceModule } from "../../../../di";
+import type { SubjectServiceDependencies } from "../../index";
 import type { IEcommerceCartSelection } from "@sps/rbac/models/subject/sdk/model";
 
 export interface IExecuteProps {
@@ -10,8 +10,30 @@ export interface IExecuteProps {
 }
 
 interface IConstructorProps {
-  ecommerceModule: IEcommerceModule;
-  billingModule: IBillingModule;
+  storesToProducts: Pick<
+    SubjectServiceDependencies["modules"]["ecommerce"]["storesToProducts"],
+    "quote"
+  >;
+  attributeKey: Pick<
+    SubjectServiceDependencies["modules"]["ecommerce"]["attributeKey"],
+    "find"
+  >;
+  productsToAttributes: Pick<
+    SubjectServiceDependencies["modules"]["ecommerce"]["productsToAttributes"],
+    "find"
+  >;
+  attributeKeysToAttributes: Pick<
+    SubjectServiceDependencies["modules"]["ecommerce"]["attributeKeysToAttributes"],
+    "find"
+  >;
+  attributesToBillingModuleCurrencies: Pick<
+    SubjectServiceDependencies["modules"]["ecommerce"]["attributesToBillingModuleCurrencies"],
+    "find"
+  >;
+  currency: Pick<
+    SubjectServiceDependencies["modules"]["billing"]["currency"],
+    "find"
+  >;
 }
 
 /**
@@ -23,18 +45,12 @@ interface IConstructorProps {
  * currency attached to them.
  */
 export class Service {
-  ecommerceModule: IEcommerceModule;
-  billingModule: IBillingModule;
-
-  constructor(props: IConstructorProps) {
-    this.ecommerceModule = props.ecommerceModule;
-    this.billingModule = props.billingModule;
-  }
+  constructor(private readonly dependencies: IConstructorProps) {}
 
   async execute(props: IExecuteProps): Promise<string> {
     let priceCurrencyIds: string[];
     if (props.offerId) {
-      const quote = await this.ecommerceModule.storesToProducts.quote({
+      const quote = await this.dependencies.storesToProducts.quote({
         offerId: props.offerId,
         quantity: 1,
         currencyId: props.billingModuleCurrencyId ?? "",
@@ -65,7 +81,7 @@ export class Service {
     }
 
     const defaultBillingModuleCurrencies =
-      await this.billingModule.currency.find({
+      await this.dependencies.currency.find({
         params: {
           filters: {
             and: [
@@ -90,7 +106,7 @@ export class Service {
   private async findPriceCurrencyIds(props: {
     productId: string;
   }): Promise<string[]> {
-    const priceAttributeKeys = await this.ecommerceModule.attributeKey.find({
+    const priceAttributeKeys = await this.dependencies.attributeKey.find({
       params: {
         filters: {
           and: [
@@ -109,7 +125,7 @@ export class Service {
     }
 
     const productsToAttributes =
-      await this.ecommerceModule.productsToAttributes.find({
+      await this.dependencies.productsToAttributes.find({
         params: {
           filters: {
             and: [
@@ -128,7 +144,7 @@ export class Service {
     }
 
     const priceAttributeKeysToAttributes =
-      await this.ecommerceModule.attributeKeysToAttributes.find({
+      await this.dependencies.attributeKeysToAttributes.find({
         params: {
           filters: {
             and: [
@@ -157,7 +173,7 @@ export class Service {
     }
 
     const attributesToBillingModuleCurrencies =
-      await this.ecommerceModule.attributesToBillingModuleCurrencies.find({
+      await this.dependencies.attributesToBillingModuleCurrencies.find({
         params: {
           filters: {
             and: [

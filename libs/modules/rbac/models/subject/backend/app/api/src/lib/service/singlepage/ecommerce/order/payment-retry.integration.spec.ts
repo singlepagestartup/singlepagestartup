@@ -10,15 +10,31 @@ import { Hono } from "hono";
 import { Handler as ProviderHandler } from "@sps/rbac/models/subject/backend/app/api/src/lib/controller/singlepage/ecommerce-module/order/payment-intent/provider";
 import { Service as Checkout } from "./checkout";
 import { Service as RetryableIds } from "./retryable-ids";
-import type { IModel as IOrderOwner } from "@sps/rbac/relations/subjects-to-ecommerce-module-orders/sdk/model";
-import { CRUDService, consistencyContext } from "@sps/shared-backend-api";
+import {
+  CRUDService,
+  consistencyContext,
+  createAppAssembly,
+} from "@sps/shared-backend-api";
+import { createModules } from "@sps/rbac/backend/app/api/src/lib/modules";
+import { createModule } from "../../../module";
+import { serviceBootstrap as ownersBootstrap } from "@sps/rbac/relations/subjects-to-ecommerce-module-orders/backend/app/api/src/lib/bootstrap";
+import { serviceBootstrap as productRolesBootstrap } from "@sps/rbac/relations/roles-to-ecommerce-module-products/backend/app/api/src/lib/bootstrap";
+import { serviceBootstrap as grantsBootstrap } from "@sps/rbac/relations/subjects-to-roles/backend/app/api/src/lib/bootstrap";
+import { serviceBootstrap as balancesBootstrap } from "@sps/rbac/relations/subjects-to-billing-module-currencies/backend/app/api/src/lib/bootstrap";
+import { serviceBootstrap as profilesBootstrap } from "@sps/rbac/relations/subjects-to-social-module-profiles/backend/app/api/src/lib/bootstrap";
+import { serviceBootstrap as identitiesBootstrap } from "@sps/rbac/relations/subjects-to-identities/backend/app/api/src/lib/bootstrap";
+import { serviceBootstrap as storeBootstrap } from "@sps/ecommerce/models/store/backend/app/api/src/lib/bootstrap";
+import { serviceBootstrap as storeOrdersBootstrap } from "@sps/ecommerce/relations/stores-to-orders/backend/app/api/src/lib/bootstrap";
 import { getPostgresClient } from "@sps/shared-backend-database-config";
 import { logger, signJwt } from "@sps/backend-utils";
 import { RBAC_JWT_SECRET } from "@sps/shared-utils";
 import { Service as PasswordAuthentication } from "../../../startup/authentication/email-and-password";
 import { Handler as PasswordLogin } from "../../../../controller/singlepage/authentication/email-and-password/authentication";
 import { Service as MergeGuestCart } from "./merge-guest-cart";
-import { createOrderBootstrap } from "@sps/ecommerce/models/order/backend/app/api/src/lib/bootstrap";
+import {
+  createOrderBootstrap,
+  serviceBootstrap as orderBootstrap,
+} from "@sps/ecommerce/models/order/backend/app/api/src/lib/bootstrap";
 import { createService as createReservationService } from "@sps/ecommerce/relations/orders-to-billing-module-payment-intents/backend/app/api/src/lib/bootstrap";
 import { Service as SubjectService } from "../../index";
 import { Repository as SubjectRepository } from "../../../../repository";
@@ -47,7 +63,6 @@ jest.mock("stripe", () => ({
 
 const paths = {
   store: "@sps/ecommerce/models/store",
-  role: "@sps/rbac/models/role",
   owners: "@sps/rbac/relations/subjects-to-ecommerce-module-orders",
   stores: "@sps/ecommerce/relations/stores-to-orders",
   productRoles: "@sps/rbac/relations/roles-to-ecommerce-module-products",
@@ -70,7 +85,9 @@ afterAll(async () => {
 });
 
 function where(column: string, value: string) {
-  return { params: { filters: { and: [{ column, method: "eq", value }] } } };
+  return {
+    params: { filters: { and: [{ column, method: "eq" as const, value }] } },
+  };
 }
 
 function track(service: any) {
@@ -89,11 +106,6 @@ function track(service: any) {
   return service;
 }
 
-async function bootstrapOrderFixture() {
-  const reservations = createReservationService();
-  return createOrderBootstrap(reservations).bootstrap();
-}
-
 async function fixture(type = "one_off") {
   const suffix = randomUUID();
   const subjectRepository = new SubjectRepository(new SubjectConfiguration());
@@ -103,25 +115,6 @@ async function fixture(type = "one_off") {
   });
   const stranger = await subjects.create({
     data: { slug: `retry-stranger-${suffix}` },
-  });
-  const { app: orderApp } = await bootstrapOrderFixture();
-  const order = track(orderApp.controller.service) as any;
-  const createNextPeriodCart = order.createNextPeriodCart.bind(order);
-  jest
-    .spyOn(order, "createNextPeriodCart")
-    .mockImplementation(async (props: any) => {
-      const next = await createNextPeriodCart(props);
-      cleanup.push(async () => {
-        if (await order.repository.findFirstByField("id", next.id)) {
-          await order.repository.deleteFirstByField("id", next.id);
-        }
-      });
-      return next;
-    });
-  // Receipt rendering and notifications are external to payment/Role delivery.
-  jest.spyOn(order.fileStorageModule.file, "find").mockResolvedValue([]);
-  jest.spyOn(logger, "error").mockImplementation((message, context: any) => {
-    throw context?.error ?? new Error(String(message));
   });
   const services: Record<string, any> = {};
   for (const [key, path] of Object.entries(paths)) {
@@ -140,25 +133,64 @@ async function fixture(type = "one_off") {
     }
     services[key] = track(service);
   }
-  const product = track(order.product);
-  const attribute = track(product.attribute);
-  const attributeKey = track(product.attributeKey);
-  const productAttributes = track(product.productsToAttributes);
-  const attributeKeys = track(product.attributeKeysToAttributes);
+  let orderAppBootstrap: ReturnType<typeof createOrderBootstrap>;
+  const assembly = createAppAssembly(
+    ({ overrideService, overrideServiceWith }) => {
+      overrideServiceWith(orderBootstrap, (scope) =>
+        orderAppBootstrap.createService(scope),
+      );
+      overrideService(ownersBootstrap, services.owners);
+      overrideService(productRolesBootstrap, services.productRoles);
+      overrideService(grantsBootstrap, services.grants);
+      overrideService(balancesBootstrap, services.balances);
+      overrideService(profilesBootstrap, services.profiles);
+      overrideService(identitiesBootstrap, services.identities);
+      overrideService(storeBootstrap, services.store);
+      overrideService(storeOrdersBootstrap, services.stores);
+    },
+  );
+  services.role = track(assembly.getOrCreate(createModule).role);
+  orderAppBootstrap = createOrderBootstrap(createReservationService(assembly));
+  const { app: orderApp } = await orderAppBootstrap.bootstrap(assembly);
+  const order = track(orderApp.controller.service) as any;
+  const createNextPeriodCart = order.createNextPeriodCart.bind(order);
+  jest
+    .spyOn(order, "createNextPeriodCart")
+    .mockImplementation(async (props: any) => {
+      const next = await createNextPeriodCart(props);
+      cleanup.push(async () => {
+        if (await order.repository.findFirstByField("id", next.id)) {
+          await order.repository.deleteFirstByField("id", next.id);
+        }
+      });
+      return next;
+    });
+  // Receipt rendering and notifications are external to payment/Role delivery.
+  jest.spyOn(order.modules.fileStorage.file, "find").mockResolvedValue([]);
+  jest.spyOn(logger, "error").mockImplementation((message, context: any) => {
+    throw context?.error ?? new Error(String(message));
+  });
+  const product = track(order.module.product);
+  const attribute = track(product.module.attribute);
+  const attributeKey = track(
+    assembly.getOrCreate(createModules).ecommerce.attributeKey,
+  );
+  const productAttributes = track(product.module.productsToAttributes);
+  const attributeKeys = track(attributeKey.module.attributeKeysToAttributes);
   const attributeCurrencies = track(
-    product.attributesToBillingModuleCurrencies,
+    attribute.module.attributesToBillingModuleCurrencies,
   );
-  const currency = track(order.billingModule.currency);
-  const intents = track(order.billingModule.paymentIntent);
-  const invoices = track(order.billingModule.invoice);
-  const intentInvoices = track(order.billingModule.paymentIntentsToInvoices);
+  const currency = track(order.modules.billing.currency);
+  const intents = track(order.paymentIntent);
+  const invoices = track(order.modules.billing.invoice);
+  const intentInvoices = track(order.modules.billing.paymentIntentsToInvoices);
   const intentCurrencies = track(
-    order.billingModule.paymentIntentsToCurrencies,
+    order.modules.billing.paymentIntentsToCurrencies,
   );
-  const lines = track(order.ordersToProducts);
-  const orderCurrencies = track(order.ordersToBillingModuleCurrencies);
+  const lines = track(order.module.ordersToProducts);
+  const orderCurrencies = track(order.module.ordersToBillingModuleCurrencies);
   const orderIntents = track(order.ordersToBillingModulePaymentIntents);
-  const offers = track(createOfferService());
+  const offers = track(createOfferService(assembly));
   const offerAttributes = track(
     new CRUDService(
       new OfferAttributeRepository(new OfferAttributeConfiguration()),
@@ -247,75 +279,26 @@ async function fixture(type = "one_off") {
       data: { attributeKeyId: intervalKey.id, attributeId: interval.id },
     });
   }
-  const ecommerceModule: any = {
-    order,
-    product,
-    attribute,
-    attributeKey,
-    productsToAttributes: productAttributes,
-    attributeKeysToAttributes: attributeKeys,
-    attributesToBillingModuleCurrencies: attributeCurrencies,
-    ordersToProducts: lines,
-    ordersToBillingModuleCurrencies: orderCurrencies,
-    ordersToBillingModulePaymentIntents: orderIntents,
-    ordersToFileStorageModuleFiles: order.ordersToFileStorageModuleFiles,
-    store: services.store,
-    storesToOrders: services.stores,
-    storesToProducts: offers,
-  };
-  const billingModule: any = {
-    currency,
-    paymentIntent: intents,
-    invoice: invoices,
-    paymentIntentsToInvoices: intentInvoices,
-    paymentIntentsToCurrencies: intentCurrencies,
-  };
-  const proceed = new Proceed(
-    subjectRepository,
-    {} as any,
-    ecommerceModule,
-    {} as any,
-    {} as any,
-    services.role,
-    services.productRoles,
-    services.owners,
-    services.grants,
-    services.profiles,
-    services.balances,
-    services.identities,
-    async () => {
+  const module = assembly.getOrCreate(createModule);
+  const modules = assembly.getOrCreate(createModules);
+  const proceed = new Proceed({
+    repository: subjectRepository,
+    module,
+    modules,
+    ecommerceProductCheckout: async () => {
       throw new Error("Unexpected automatic checkout");
     },
-  );
+  });
   jest.spyOn(proceed, "notifyAdmin").mockResolvedValue(undefined);
   jest.spyOn(proceed, "notifyOrderOwner").mockResolvedValue(undefined);
   const subject = new SubjectService(
-    {} as any,
     subjectRepository,
     {} as any,
-    ecommerceModule,
-    billingModule,
-    {} as any,
-    {} as any,
-    {} as any,
-    {} as any,
-    {} as any,
-    services.role,
-    {} as any,
-    {} as any,
-    services.productRoles,
     {} as any,
     {} as any,
     proceed,
-    services.identities,
-    services.profiles,
-    services.grants,
-    services.owners,
-    services.balances,
     {} as any,
-    {} as any,
-    {} as any,
-  );
+  ).withAppAssembly(assembly);
   subject.configureRoleRevocation();
 
   // SDK self-HTTP uses the actual Order routes, without a listening server.
@@ -390,7 +373,7 @@ async function fixture(type = "one_off") {
   ) => {
     const currentLines = await lines.find(where("orderId", orderId));
     const prepared = await offers.quote(
-      order.ordersToProducts.offerSelection(currentLines, money.id),
+      order.module.ordersToProducts.offerSelection(currentLines, money.id),
     );
     if (prepared.amount === null || prepared.issues.length) {
       throw new Error("Fixture payment has no accepted offer quote");
@@ -493,6 +476,8 @@ async function fixture(type = "one_off") {
     order,
     lines,
     role,
+    attributeKey,
+    attribute,
     intents,
     invoices,
     createCart,
@@ -511,43 +496,28 @@ async function fixture(type = "one_off") {
 }
 
 async function freshCheckout() {
-  const { app } = await bootstrapOrderFixture();
-  const freshOrder = app.controller.service as any;
   const subjectRepository = new SubjectRepository(new SubjectConfiguration());
   const subjects = new CRUDService(subjectRepository);
-  const ownerPath = paths.owners;
-  const { Repository } = await import(
-    `${ownerPath}/backend/app/api/src/lib/repository`
-  );
-  const { Configuration } = await import(
-    `${ownerPath}/backend/app/api/src/lib/configuration`
-  );
-  const owners = new CRUDService<IOrderOwner>(
-    new Repository(new Configuration()),
-  );
-  const ecommerceModule = {
-    order: freshOrder,
-    ordersToProducts: freshOrder.ordersToProducts,
-    ordersToBillingModuleCurrencies: freshOrder.ordersToBillingModuleCurrencies,
-    ordersToBillingModulePaymentIntents:
-      freshOrder.ordersToBillingModulePaymentIntents,
-    storesToProducts: createOfferService(),
-  };
-  jest
-    .spyOn(ecommerceModule.storesToProducts, "quoteMany")
-    .mockRejectedValue(new Error("Recovery must not re-quote"));
-  const paymentRecords = new RetryableIds({
-    subjectsToEcommerceModuleOrders: owners,
-    ecommerceModule,
-    billingModule: freshOrder.billingModule,
+  let orderAppBootstrap: ReturnType<typeof createOrderBootstrap>;
+  const assembly = createAppAssembly(({ overrideServiceWith }) => {
+    overrideServiceWith(orderBootstrap, (scope) =>
+      orderAppBootstrap.createService(scope),
+    );
   });
+  orderAppBootstrap = createOrderBootstrap(createReservationService(assembly));
+  await orderAppBootstrap.bootstrap(assembly);
+  const module = assembly.getOrCreate(createModule);
+  const modules = assembly.getOrCreate(createModules);
+  jest
+    .spyOn(modules.ecommerce.storesToProducts, "quoteMany")
+    .mockRejectedValue(new Error("Recovery must not re-quote"));
+  const paymentRecords = new RetryableIds({ module, modules });
   return new Checkout({
     repository: subjectRepository,
     findById: ({ id }) => subjects.findById({ id }),
     settledOrderIds: (input) => paymentRecords.settledIds(input),
-    ecommerceModule: ecommerceModule as any,
-    billingModule: freshOrder.billingModule,
-    subjectsToEcommerceModuleOrders: owners as any,
+    module,
+    modules,
   });
 }
 
@@ -609,7 +579,7 @@ async function committedPreparedCheckout(
     purchaseSnapshot: { amount: "100.00", currencyId: f.money.id },
   });
   expect(
-    await f.order.billingModule.paymentIntentsToInvoices.find(
+    await f.order.modules.billing.paymentIntentsToInvoices.find(
       where("paymentIntentId", intent.id),
     ),
   ).toEqual([]);
@@ -619,7 +589,7 @@ async function committedPreparedCheckout(
 it("recovers a committed unsent reservation through fresh services and sends concurrent retries only once", async () => {
   const f = await fixture();
   const saved = await committedPreparedCheckout(f);
-  await f.order.product.attribute.update({
+  await f.order.module.product.module.attribute.update({
     id: f.price.id,
     data: { number: "999" },
   });
@@ -638,7 +608,7 @@ it("recovers a committed unsent reservation through fresh services and sends con
           paymentUrl: "https://fixture.test/original-allocation",
         },
       });
-      await f.order.billingModule.paymentIntentsToInvoices.create({
+      await f.order.modules.billing.paymentIntentsToInvoices.create({
         data: { paymentIntentId: props.entity.id, invoiceId: invoice.id },
       });
       return invoice;
@@ -654,7 +624,7 @@ it("recovers a committed unsent reservation through fresh services and sends con
   f.http.post("/api/billing/payment-intents-to-currencies", async (c) => {
     const body = await c.req.parseBody();
     const result =
-      await f.order.billingModule.paymentIntentsToCurrencies.create({
+      await f.order.modules.billing.paymentIntentsToCurrencies.create({
         data: JSON.parse(String(body.data)),
       });
     return c.json({ data: result }, 201);
@@ -829,10 +799,10 @@ it("requires the buyer to select the store in an older cart before checkout can 
           paymentUrl: "https://fixture.test/pay",
         },
       });
-      await f.order.billingModule.paymentIntentsToInvoices.create({
+      await f.order.modules.billing.paymentIntentsToInvoices.create({
         data: { paymentIntentId: id, invoiceId: invoice.id },
       });
-      await f.order.billingModule.paymentIntentsToCurrencies.create({
+      await f.order.modules.billing.paymentIntentsToCurrencies.create({
         data: { paymentIntentId: id, currencyId: data.currencyId },
       });
       return invoice;
@@ -882,10 +852,10 @@ it.each(["ambiguous", "multiple-products", "sold-out", "delivery-required"])(
         .select()
         .from(AttributeKeyTable)
         .where(eq(AttributeKeyTable.slug, "stock_quantity"));
-      const stock = await f.order.product.attribute.create({
+      const stock = await f.order.module.product.module.attribute.create({
         data: { number: "0" },
       });
-      await f.order.product.attributeKeysToAttributes.create({
+      await f.attributeKey.module.attributeKeysToAttributes.create({
         data: { attributeKeyId: key.id, attributeId: stock.id },
       });
       await f.offerAttributes.create({
@@ -995,7 +965,7 @@ it("resumes a shared legacy invoice only when checkout includes every billed ord
       paymentUrl: "https://pay.test/grouped",
     },
   });
-  await f.order.billingModule.paymentIntentsToInvoices.create({
+  await f.order.modules.billing.paymentIntentsToInvoices.create({
     data: { paymentIntentId: intent.id, invoiceId: invoice.id },
   });
   for (const order of [first, second]) {
@@ -1176,7 +1146,7 @@ it("rolls back local payment preparation and leaves the original cart editable",
   const cart = await f.createCart();
   const original = await f.graph(cart.id);
   const relations =
-    f.subject.ecommerceModule.ordersToBillingModulePaymentIntents;
+    f.subject.modules.ecommerce.order.ordersToBillingModulePaymentIntents;
   const create = relations.create.bind(relations);
   let intentId: string | undefined;
   jest.spyOn(relations, "create").mockImplementationOnce(async (props) => {
@@ -1217,7 +1187,7 @@ it.each(["repeat", "add"])(
       releasePreparation = resolve;
     });
     const relations =
-      f.subject.ecommerceModule.ordersToBillingModulePaymentIntents;
+      f.subject.modules.ecommerce.order.ordersToBillingModulePaymentIntents;
     const create = relations.create.bind(relations);
     jest.spyOn(relations, "create").mockImplementationOnce(async (props) => {
       await create(props);
@@ -1648,7 +1618,7 @@ it("restores the replaced cart and its lines when the last currency relation fai
   const sourceGraph = await f.graph(source.id);
   const foreignGraph = await f.graph(foreignCart.id);
   const failure = jest
-    .spyOn(f.order.ordersToBillingModuleCurrencies, "create")
+    .spyOn(f.order.module.ordersToBillingModuleCurrencies, "create")
     .mockRejectedValueOnce(
       new Error("Injected final currency relation failure"),
     );
@@ -1672,27 +1642,27 @@ it.each(["source-first", "retry-first"])(
   async (sequence) => {
     const f = await fixture("subscription");
     const source = await f.createCart();
-    const token = await f.order.billingModule.currency.create({
+    const token = await f.order.modules.billing.currency.create({
       data: {
         slug: `retry-token-${randomUUID()}`,
         title: "Token",
         symbol: "T",
       },
     });
-    const topupKey = await f.order.product.attributeKey.create({
+    const topupKey = await f.attributeKey.create({
       data: { slug: `retry-topup-${randomUUID()}`, type: "topup" },
     });
-    const topup = await f.order.product.attribute.create({
+    const topup = await f.order.module.product.module.attribute.create({
       data: { number: "5000" },
     });
     const [line] = await f.lines.find(where("orderId", source.id));
-    await f.order.product.productsToAttributes.create({
+    await f.order.module.product.module.productsToAttributes.create({
       data: { productId: line.productId, attributeId: topup.id },
     });
-    await f.order.product.attributeKeysToAttributes.create({
+    await f.attributeKey.module.attributeKeysToAttributes.create({
       data: { attributeKeyId: topupKey.id, attributeId: topup.id },
     });
-    await f.order.product.attributesToBillingModuleCurrencies.create({
+    await f.attribute.module.attributesToBillingModuleCurrencies.create({
       data: { attributeId: topup.id, billingModuleCurrencyId: token.id },
     });
     const originalPayment = await f.attachPayment(
@@ -1876,7 +1846,7 @@ it("preserves a cart with a payment attempt and ignores sessions that do not pro
   });
   await merge.execute({ ...props, guestToken: "invalid" });
   const identities = jest
-    .spyOn(f.subject.subjectsToIdentities, "find")
+    .spyOn(f.subject.module.subjectsToIdentities, "find")
     .mockResolvedValueOnce([{ subjectId: f.stranger.id }] as any);
   await merge.execute(props);
   identities.mockRestore();
@@ -1901,7 +1871,7 @@ it("rolls back a duplicate removal when changing the owner fails and allows retr
     guestToken: await accessToken(f.stranger.id),
   };
   const update = jest
-    .spyOn(f.subject.subjectsToEcommerceModuleOrders, "update")
+    .spyOn(f.subject.module.subjectsToEcommerceModuleOrders, "update")
     .mockRejectedValueOnce(new Error("fixture write failed"));
   await expect(merge.execute(props)).rejects.toThrow("fixture write failed");
   update.mockRestore();
@@ -1952,10 +1922,10 @@ it("keeps the saved amount in total, extended and Subject history readers after 
   const prices = await f.offerAttributes.find(
     where("storesToProductsId", line.offerId),
   );
-  const price = await f.order.product.attribute.findById({
+  const price = await f.order.module.product.module.attribute.findById({
     id: prices[0].attributeId,
   });
-  await f.order.product.attribute.update({
+  await f.order.module.product.module.attribute.update({
     id: price.id,
     data: { ...price, number: "200" },
   });
@@ -1972,7 +1942,10 @@ it("keeps the saved amount in total, extended and Subject history readers after 
       .checkoutAttributesByCurrency.amount,
   ).toBe(100);
   const currentSlug = `renamed-${f.item.id}`;
-  await f.order.product.update({ id: f.item.id, data: { slug: currentSlug } });
+  await f.order.module.product.update({
+    id: f.item.id,
+    data: { slug: currentSlug },
+  });
   const history = await f.subject.ecommerceModuleOrderPurchaseDetails({
     subjectId: f.buyer.id,
     orders: [await f.order.findById({ id: cart.id })],
@@ -1989,22 +1962,26 @@ it.each(["first", "each"] as const)(
   "keeps %s contractor fulfillment on its saved schedule through renewal reads, edits and payment",
   async (recurrence) => {
     const f = await fixture("subscription");
-    await f.order.product.update({ id: f.item.id, data: { kind: "physical" } });
+    await f.order.module.product.update({
+      id: f.item.id,
+      data: { kind: "physical" },
+    });
     const contractor = await f.services.store.create({
       data: { slug: `renewal-contractor-${randomUUID()}` },
     });
-    const delivery = await f.order.product.create({
+    const delivery = await f.order.module.product.create({
       data: {
         slug: `renewal-receipt-${randomUUID()}`,
         type: "one_off",
         kind: "service",
       },
     });
-    const attributes = await f.order.product.productsToAttributes.find(
-      where("productId", f.item.id),
-    );
+    const attributes =
+      await f.order.module.product.module.productsToAttributes.find(
+        where("productId", f.item.id),
+      );
     for (const link of attributes) {
-      await f.order.product.productsToAttributes.create({
+      await f.order.module.product.module.productsToAttributes.create({
         data: { productId: delivery.id, attributeId: link.attributeId },
       });
     }
@@ -2095,10 +2072,10 @@ it.each(["first", "each"] as const)(
             paymentUrl: "https://fixture.test/pay",
           },
         });
-        await f.order.billingModule.paymentIntentsToInvoices.create({
+        await f.order.modules.billing.paymentIntentsToInvoices.create({
           data: { paymentIntentId: id, invoiceId: invoice.id },
         });
-        await f.order.billingModule.paymentIntentsToCurrencies.create({
+        await f.order.modules.billing.paymentIntentsToCurrencies.create({
           data: { paymentIntentId: id, currencyId: data.currencyId },
         });
         return invoice;
@@ -2138,22 +2115,23 @@ it.each(["digital", "legacy-digital", "physical", "physical-cancel"])(
     const f = await fixture("subscription");
     let stockAttributeId: string | undefined;
     if (kind.startsWith("physical")) {
-      await f.order.product.update({
+      await f.order.module.product.update({
         id: f.item.id,
         data: { kind: "physical" },
       });
-      const delivery = await f.order.product.create({
+      const delivery = await f.order.module.product.create({
         data: {
           slug: `stripe-delivery-${randomUUID()}`,
           type: "one_off",
           kind: "service",
         },
       });
-      const attributes = await f.order.product.productsToAttributes.find(
-        where("productId", f.item.id),
-      );
+      const attributes =
+        await f.order.module.product.module.productsToAttributes.find(
+          where("productId", f.item.id),
+        );
       for (const link of attributes) {
-        await f.order.product.productsToAttributes.create({
+        await f.order.module.product.module.productsToAttributes.create({
           data: { productId: delivery.id, attributeId: link.attributeId },
         });
       }
@@ -2185,11 +2163,11 @@ it.each(["digital", "legacy-digital", "physical", "physical-cancel"])(
         .select()
         .from(AttributeKeyTable)
         .where(eq(AttributeKeyTable.slug, "stock_quantity"));
-      const stock = await f.order.product.attribute.create({
+      const stock = await f.order.module.product.module.attribute.create({
         data: { number: "3" },
       });
       stockAttributeId = stock.id;
-      await f.order.product.attributeKeysToAttributes.create({
+      await f.attributeKey.module.attributeKeysToAttributes.create({
         data: { attributeKeyId: stockKey.id, attributeId: stock.id },
       });
       await f.offerAttributes.create({
@@ -2365,7 +2343,7 @@ it.each(["digital", "legacy-digital", "physical", "physical-cancel"])(
     ];
     expect(intentIds).toHaveLength(1);
     const invoiceLinks =
-      await f.order.billingModule.paymentIntentsToInvoices.find(
+      await f.order.modules.billing.paymentIntentsToInvoices.find(
         where("paymentIntentId", intentIds[0]),
       );
     expect(invoiceLinks).toHaveLength(1);
@@ -2378,8 +2356,11 @@ it.each(["digital", "legacy-digital", "physical", "physical-cancel"])(
     });
     if (stockAttributeId) {
       expect(
-        (await f.order.product.attribute.findById({ id: stockAttributeId }))
-          .number,
+        (
+          await f.order.module.product.module.attribute.findById({
+            id: stockAttributeId,
+          })
+        ).number,
       ).toBe("2");
       expect(
         links.find(
@@ -2431,7 +2412,7 @@ it.each(["digital", "legacy-digital", "physical", "physical-cancel"])(
       providerId: cycle.id,
     });
     expect(
-      await f.order.billingModule.paymentIntentsToInvoices.find(
+      await f.order.modules.billing.paymentIntentsToInvoices.find(
         where("paymentIntentId", intentIds[0]),
       ),
     ).toHaveLength(1);
@@ -2453,8 +2434,11 @@ it.each(["digital", "legacy-digital", "physical", "physical-cancel"])(
     expect(await f.grantRows()).toHaveLength(1);
     if (stockAttributeId) {
       expect(
-        (await f.order.product.attribute.findById({ id: stockAttributeId }))
-          .number,
+        (
+          await f.order.module.product.module.attribute.findById({
+            id: stockAttributeId,
+          })
+        ).number,
       ).toBe("1");
     }
     expect(createRemote).not.toHaveBeenCalled();

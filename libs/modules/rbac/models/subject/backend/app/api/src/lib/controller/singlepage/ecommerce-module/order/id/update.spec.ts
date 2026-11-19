@@ -59,22 +59,24 @@ function createService() {
     ecommerceModuleOrderSetCurrency: jest.fn().mockResolvedValue(undefined),
     ecommerceModuleOrderAssertAccess: jest.fn().mockResolvedValue(undefined),
     findById: jest.fn().mockResolvedValue({ id: "subject-1" }),
-    ecommerceModule: {
-      ordersToProducts: {
-        find: jest
-          .fn()
-          .mockResolvedValue([{ id: "otp-1", productId: "product-1" }]),
-      },
-      product: {
-        findById: jest
-          .fn()
-          .mockResolvedValue({ id: "product-1", slug: "paid-course" }),
-      },
-      order: {
-        findById: jest.fn().mockResolvedValue({
-          id: "order-1",
-          status: "new",
-        }),
+    modules: {
+      ecommerce: {
+        ordersToProducts: {
+          find: jest
+            .fn()
+            .mockResolvedValue([{ id: "otp-1", productId: "product-1" }]),
+        },
+        product: {
+          findById: jest
+            .fn()
+            .mockResolvedValue({ id: "product-1", slug: "paid-course" }),
+        },
+        order: {
+          findById: jest.fn().mockResolvedValue({
+            id: "order-1",
+            status: "new",
+          }),
+        },
       },
     },
   } as any;

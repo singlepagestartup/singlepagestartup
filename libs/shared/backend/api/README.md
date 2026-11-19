@@ -99,17 +99,60 @@ describes private query refs, replay and browser recovery.
 
 Each module, model and relation declares its Inversify bindings in
 `backend/app/api/src/lib/bootstrap.ts`. The shared `createAppBootstrap`
-factory owns one container per factory instance. Its `bootstrap()` initializes
-the HTTP app and returns `{ app, service }`. For a module that only mounts
-child apps, `service` is `undefined`. Concurrent and subsequent calls share
-the same successful startup.
+factory creates one container per owner per assembly. Calls to `createService()`
+and `bootstrap()` use the default assembly. Both also accept an explicit
+`IAppAssembly` from `createAppAssembly()`.
 
-Models and relations bind `DI.IService` in singleton scope. Import
-`createService` from the entity's `src/lib/bootstrap` to get the service
-before HTTP starts. The controller and the result of `await bootstrap()` use
-this same instance. To test an Order with different payment
-dependencies, call `createOrderBootstrap(reservations, paymentIntent)`
-to create a separate owner.
+Import `createService` from the entity's bootstrap file to resolve the service
+before HTTP starts. Bind `DI.IService` and `DI.IController` in singleton scope
+so the controller shares the resolved service and survives an HTTP startup
+retry. A failed initialization can rebuild the app using the same container.
+Concurrent calls to `bootstrap(assembly)` share startup. The result is
+`{ app, service }`, with `service: undefined` for an app-only module.
+
+Give each test its own assembly. Register a freshly constructed replacement
+with `overrideService(owner, replacement)`. Use `overrideServiceWith` when
+the replacement itself needs to be built in that assembly.
+
+```ts
+const specialized = createOrderBootstrap(reservations, paymentIntent);
+const assembly = createAppAssembly(({ overrideServiceWith }) => {
+  overrideServiceWith(orderBootstrap, (scope) => specialized.createService(scope));
+});
+
+const order = orderBootstrap.createService(assembly);
+const { app } = await orderBootstrap.bootstrap(assembly);
+```
+
+In an owner binding, resolve the assembly from `DI.IAppAssembly`. A service
+that extends `CRUDService` can use its protected `appAssembly` in methods
+and getters after construction. Direct construction uses the default
+assembly.
+
+Use `this.module` for an entity's outgoing relations and child services in
+its own module. For example, Order can call
+`this.module.product.findById({ id })`. Product has no path back to Order.
+An entity with no local children has no `module` getter. Use `this.modules`
+for other modules below the consumer in the module order. Subject can call
+`this.modules.billing.currency.findById({ id })`. A controller starts from
+its service, for example `this.service.modules.crm.form`. Each path resolves
+the owning bootstrap in the caller's assembly.
+
+When upgrading a child project, migrate uses of constructor groups such as
+`billingModule` and `ecommerceModule`, including test doubles and startup
+subclasses with explicit `super(...)` calls. Use the new constructor signature
+of the owning service. A public method on the owner's `service/startup` class
+appears on each permitted path with its inferred signature. Add the method
+once on that class. Use an assembly override when a caller needs a replacement
+instance. For order checkout, resolve the Order and use its `paymentIntent` and
+`ordersToBillingModulePaymentIntents`. These collaborators handle the reservations
+for that order. The Billing module's payment intent handles ordinary billing.
+
+`withRepository(repository, assembly)` copies a service into a transaction
+assembly. Register each participating copy as an override so local and foreign
+lookups use the repositories from that transaction. Use
+`createChildAppAssembly(parent, configure)` to keep all other owner lookups
+in the parent assembly.
 
 ## Resource descriptions
 
@@ -121,19 +164,16 @@ HTTP and data-tooling contract. `DefaultApp` implements it for a resource;
 with the same paths used to mount their Hono routes.
 
 `IModuleApp<Apps>` extends the common contract with the typed child registry.
-Module bootstraps bind and resolve this interface. Host extends it with its
-routing-configuration capability; RBAC uses the standard interface and its
-module-local initialization hook. A concrete App
-class is only the DI implementation; it is not the bootstrap's public type.
+`createModuleBootstrap` attaches route descriptions to the module owner.
+`ModuleApp` starts each child in the module's assembly, runs the protected
+`configureApps` hook, mounts routes, and installs the exception filter. It
+also delegates dump and seed to children that match the requested type.
 
-ModuleApp creates the registry during init, runs the protected configureApps
-hook, mounts child routes and installs the exception filter. It also owns the
-existing type-filtered dump/seed delegation. A module declares its registry
-factory and overrides only its own behavior: RBAC configures Subject services
-before mounting, Knowledge adds its API routes through useRoutes, and Host
-configures Page routing. The module generator uses this same base and registers
-new modules in the API composition's shared `apiModules` registry, used for
-both HTTP mounting and resource discovery.
+The module generator adds new modules to the API's `apiModules` registry.
+The API uses the same module and child registrations to mount HTTP and
+describe resources for Page URL and metadata masks. Page loads those
+descriptions on its first routing operation. The module app and model
+controller use the same Page instance within that assembly.
 
 Host consumes resource descriptions for URL and metadata masks. API composition
 never inspects a controller's service repository or passes Drizzle Table objects

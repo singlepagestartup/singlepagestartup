@@ -1,4 +1,14 @@
-export { createAppBootstrap, type IAppBootstrap } from "./bootstrap";
+export {
+  bindServiceAppAssembly,
+  createAppAssembly,
+  createAppBootstrap,
+  createChildAppAssembly,
+  defaultAppAssembly,
+  type IAppAssembly,
+  type IAppAssemblyOverrides,
+  type IAppBootstrap,
+  type IServiceBootstrap,
+} from "./bootstrap";
 export {
   type IApp as IDefaultApp,
   type IAppRouteDescription,
@@ -6,6 +16,8 @@ export {
 } from "./default";
 export {
   App as ModuleApp,
+  createModuleBootstrap,
+  createModuleChildApp,
   type IApp as IModuleApp,
   type IModuleApps,
   type IModuleAppEntry,

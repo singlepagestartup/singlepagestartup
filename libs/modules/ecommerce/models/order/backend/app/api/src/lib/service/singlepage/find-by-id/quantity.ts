@@ -1,20 +1,14 @@
-import { inject, injectable } from "inversify";
 import { RBAC_SECRET_KEY } from "@sps/shared-utils";
 import { Service as OrdersToProductsService } from "@sps/ecommerce/relations/orders-to-products/backend/app/api/src/lib/service";
-import { OrderDI } from "../../../di";
 
 export interface IExecuteProps {
   id: string;
 }
 
-@injectable()
 export class Service {
   ordersToProducts: OrdersToProductsService;
 
-  constructor(
-    @inject(OrderDI.IOrdersToProductsService)
-    ordersToProducts: OrdersToProductsService,
-  ) {
+  constructor(ordersToProducts: OrdersToProductsService) {
     this.ordersToProducts = ordersToProducts;
   }
 

@@ -28,7 +28,7 @@ export class Handler {
         return c.json({ data: [] });
       }
 
-      const skills = await this.service.socialModule.skill.find({
+      const skills = await this.service.modules.social.skill.find({
         params: {
           filters: {
             and: [

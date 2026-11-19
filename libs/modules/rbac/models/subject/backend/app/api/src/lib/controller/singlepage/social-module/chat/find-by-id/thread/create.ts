@@ -42,7 +42,7 @@ export class Handler {
         socialModuleChatId,
       });
 
-      const socialModuleChat = await this.service.socialModule.chat.findById({
+      const socialModuleChat = await this.service.modules.social.chat.findById({
         id: socialModuleChatId,
       });
 
@@ -184,7 +184,7 @@ export class Handler {
     sourceSystemId: string;
   }) {
     const socialModuleChatsToThreads =
-      await this.service.socialModule.chatsToThreads.find({
+      await this.service.modules.social.chatsToThreads.find({
         params: {
           filters: {
             and: [
@@ -208,7 +208,7 @@ export class Handler {
       return null;
     }
 
-    const socialModuleThreads = await this.service.socialModule.thread.find({
+    const socialModuleThreads = await this.service.modules.social.thread.find({
       params: {
         filters: {
           and: [

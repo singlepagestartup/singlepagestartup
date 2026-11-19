@@ -34,18 +34,22 @@ function example() {
     Object.assign(identity, data),
   );
   const deps = {
-    subjectsToIdentities: {
-      find: jest.fn(async ({ params }: any) =>
-        params.filters.and[0].value === "owner"
-          ? [{ identityId: "identity" }]
-          : [],
-      ),
+    modules: {
+      notification: { notification: { sendVerificationCode: mockSend } },
     },
-    identity: {
-      findById: jest.fn(async () => identity),
-      find: jest.fn(async () => []),
+    module: {
+      subjectsToIdentities: {
+        find: jest.fn(async ({ params }: any) =>
+          params.filters.and[0].value === "owner"
+            ? [{ identityId: "identity" }]
+            : [],
+        ),
+      },
+      identity: {
+        findById: jest.fn(async () => identity),
+        find: jest.fn(async () => []),
+      },
     },
-    notificationModule: { notification: { sendVerificationCode: mockSend } },
   };
   return { service: new Service(deps as any), identity };
 }

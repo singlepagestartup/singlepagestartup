@@ -1,4 +1,4 @@
 export const OfferLinksDI = {
-  IOffersService: Symbol.for("ecommerce.offers-to-offers.offers.service"),
+  IOfferReader: Symbol.for("ecommerce.offers-to-offers.offer.reader"),
   IProductsService: Symbol.for("ecommerce.offers-to-offers.products.service"),
 };

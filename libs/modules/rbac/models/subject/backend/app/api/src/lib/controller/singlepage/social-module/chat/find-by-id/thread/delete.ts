@@ -42,7 +42,7 @@ export class Handler {
     headers: Record<string, string>;
   }) {
     const socialModuleThreadsToMessages =
-      await this.service.socialModule.threadsToMessages.find({
+      await this.service.modules.social.threadsToMessages.find({
         params: {
           filters: {
             and: [
@@ -63,7 +63,7 @@ export class Handler {
 
     for (const socialModuleMessageId of socialModuleMessageIds) {
       const messageChatLinks =
-        await this.service.socialModule.chatsToMessages.find({
+        await this.service.modules.social.chatsToMessages.find({
           params: {
             filters: {
               and: [
@@ -77,7 +77,7 @@ export class Handler {
           },
         });
       const messageThreadLinks =
-        await this.service.socialModule.threadsToMessages.find({
+        await this.service.modules.social.threadsToMessages.find({
           params: {
             filters: {
               and: [
@@ -151,7 +151,7 @@ export class Handler {
         socialModuleThreadId,
       });
 
-      const socialModuleChat = await this.service.socialModule.chat.findById({
+      const socialModuleChat = await this.service.modules.social.chat.findById({
         id: socialModuleChatId,
       });
 
@@ -160,7 +160,7 @@ export class Handler {
       }
 
       const socialModuleThread =
-        await this.service.socialModule.thread.findById({
+        await this.service.modules.social.thread.findById({
           id: socialModuleThreadId,
         });
 
@@ -179,7 +179,7 @@ export class Handler {
       }
 
       const socialModuleThreadChatLinks =
-        await this.service.socialModule.chatsToThreads.find({
+        await this.service.modules.social.chatsToThreads.find({
           params: {
             filters: {
               and: [

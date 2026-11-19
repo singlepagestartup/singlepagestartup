@@ -1,14 +1,14 @@
-import { REGISTRATION_GRANT_VARIANT } from "@sps/shared-utils";
-import { RBAC_SECRET_KEY } from "@sps/shared-utils";
+import type { SubjectServiceDependencies } from "../index";
+import { REGISTRATION_GRANT_VARIANT, RBAC_SECRET_KEY } from "@sps/shared-utils";
 import { Service as InitialGrantProducts } from "./initial-grant-products";
-import { consistencyContext } from "@sps/shared-backend-api";
+import {
+  consistencyContext,
+  type FindServiceProps,
+} from "@sps/shared-backend-api";
 import { isSupportedOrderInterval } from "@sps/ecommerce/models/order/backend/app/api/src/lib/service/singlepage/find-by-id/checkout-attributes";
 import type { IResult as IProduct } from "@sps/ecommerce/models/product/backend/app/api/src/lib/service/singlepage/get-extended";
 import type { IModel as IInvoice } from "@sps/billing/models/invoice/sdk/model";
-import type { IBillingModule, IEcommerceModule } from "../../../di";
 import type { Repository } from "../../../repository";
-import type { Service as SubjectsToOrders } from "@sps/rbac/relations/subjects-to-ecommerce-module-orders/backend/app/api/src/lib/service";
-import type { Service as SubjectsToIdentities } from "@sps/rbac/relations/subjects-to-identities/backend/app/api/src/lib/service";
 import type {
   IPaidFulfillmentEffect,
   Service as PaidFulfillment,
@@ -20,11 +20,12 @@ export interface IExecuteProps {
   email?: string;
 }
 export interface IConstructorProps {
+  module: Pick<
+    SubjectServiceDependencies["module"],
+    "subjectsToEcommerceModuleOrders" | "subjectsToIdentities"
+  >;
+  modules: Pick<SubjectServiceDependencies["modules"], "billing" | "ecommerce">;
   repository: Pick<Repository, "withSubjectLock" | "lockOrderDelivery">;
-  ecommerceModule: IEcommerceModule;
-  billingModule: IBillingModule;
-  subjectsToEcommerceModuleOrders: Pick<SubjectsToOrders, "find" | "create">;
-  subjectsToIdentities: Pick<SubjectsToIdentities, "find">;
   fulfillPaidOrderInTransaction: PaidFulfillment["fulfillPaidOrderInTransaction"];
   dispatchPaidEffects: PaidFulfillment["dispatchPaidEffects"];
 }
@@ -54,13 +55,14 @@ export class Service {
     const result = await this.dependencies.repository.withSubjectLock(
       { subjectId: props.id },
       async () => {
-        const identities = await this.dependencies.subjectsToIdentities.find({
-          params: {
-            filters: {
-              and: [{ column: "subjectId", method: "eq", value: props.id }],
+        const identities =
+          await this.dependencies.module.subjectsToIdentities.find({
+            params: {
+              filters: {
+                and: [{ column: "subjectId", method: "eq", value: props.id }],
+              },
             },
-          },
-        });
+          });
         if (!identities.some((link) => link.subjectId === props.id)) {
           throw new Error(
             "Permission error. Initial Free requires a registered Subject",
@@ -70,7 +72,7 @@ export class Service {
         const results: { invoice: IInvoice; effect: IPaidFulfillmentEffect }[] =
           [];
         const owned =
-          await this.dependencies.subjectsToEcommerceModuleOrders.find({
+          await this.dependencies.module.subjectsToEcommerceModuleOrders.find({
             params: {
               filters: {
                 and: [{ column: "subjectId", method: "eq", value: props.id }],
@@ -84,7 +86,7 @@ export class Service {
           let lines;
           if (orderIds.length) {
             lines =
-              await this.dependencies.ecommerceModule.ordersToProducts.find({
+              await this.dependencies.modules.ecommerce.ordersToProducts.find({
                 params: {
                   filters: {
                     and: [
@@ -105,7 +107,7 @@ export class Service {
             ...new Set<string>(lines.map((line) => line.orderId)),
           ];
           const storeLinks = previousIds.length
-            ? await this.dependencies.ecommerceModule.storesToOrders.find({
+            ? await this.dependencies.modules.ecommerce.storesToOrders.find({
                 params: {
                   filters: {
                     and: [
@@ -129,7 +131,7 @@ export class Service {
             previousIds
               .filter((id) => issuingOrderIds.has(id) || !storeOrderIds.has(id))
               .map((id) =>
-                this.dependencies.ecommerceModule.order.findById({ id }),
+                this.dependencies.modules.ecommerce.order.findById({ id }),
               ),
           );
           if (matchingOrders.some((order) => !order)) {
@@ -137,7 +139,7 @@ export class Service {
               "Conflict error. Initial Free history is incomplete",
             );
           }
-          const previous: typeof matchingOrders = [];
+          const previous: NonNullable<(typeof matchingOrders)[number]>[] = [];
           for (const order of matchingOrders) {
             if (
               order &&
@@ -167,12 +169,14 @@ export class Service {
           ) {
             for (const order of previous) {
               if (!storeOrderIds.has(order.id)) {
-                await this.dependencies.ecommerceModule.storesToOrders.create({
-                  data: { orderId: order.id, storeId: config.storeId },
-                });
+                await this.dependencies.modules.ecommerce.storesToOrders.create(
+                  {
+                    data: { orderId: order.id, storeId: config.storeId },
+                  },
+                );
               }
               if (order.variant !== REGISTRATION_GRANT_VARIANT) {
-                await this.dependencies.ecommerceModule.order.update({
+                await this.dependencies.modules.ecommerce.order.update({
                   id: order.id,
                   data: { ...order, variant: REGISTRATION_GRANT_VARIANT },
                 });
@@ -194,7 +198,7 @@ export class Service {
           }
           const order =
             previous[0] ??
-            (await this.dependencies.ecommerceModule.order.create({
+            (await this.dependencies.modules.ecommerce.order.create({
               data: {
                 type: "history",
                 status: "paid",
@@ -205,7 +209,7 @@ export class Service {
             subjectId: props.id,
             orderId: order.id,
           });
-          await this.dependencies.ecommerceModule.order.lockForLifecycle({
+          await this.dependencies.modules.ecommerce.order.lockForLifecycle({
             id: order.id,
           });
           await this.ensureOrderGraph(props.id, order.id, config);
@@ -213,7 +217,7 @@ export class Service {
             order.id,
             config.currencyId,
           );
-          await this.dependencies.ecommerceModule.order.update({
+          await this.dependencies.modules.ecommerce.order.update({
             id: order.id,
             data: {
               ...order,
@@ -252,9 +256,9 @@ export class Service {
   }
 
   private async configuration(): Promise<IConfiguration[]> {
-    const { ecommerceModule } = this.dependencies;
+    const { ecommerce } = this.dependencies.modules;
     const offers = await new InitialGrantProducts(
-      ecommerceModule.storesToProducts,
+      ecommerce.storesToProducts,
     ).find();
     const configurations = new Map<string, IConfiguration>();
     for (const offer of offers) {
@@ -266,8 +270,8 @@ export class Service {
         continue;
       }
       const [product, store]: [IProduct, unknown] = await Promise.all([
-        ecommerceModule.product.findByIdExtended({ id: offer.productId }),
-        ecommerceModule.store.findById({ id: offer.storeId }),
+        ecommerce.product.findByIdExtended({ id: offer.productId }),
+        ecommerce.store.findById({ id: offer.storeId }),
       ]);
       if (
         !product ||
@@ -366,9 +370,9 @@ export class Service {
     orderId: string,
     config: IConfiguration,
   ) {
-    const { ecommerceModule, subjectsToEcommerceModuleOrders } =
-      this.dependencies;
-    const filters = {
+    const { ecommerce } = this.dependencies.modules;
+    const { subjectsToEcommerceModuleOrders } = this.dependencies.module;
+    const filters: FindServiceProps = {
       params: {
         filters: { and: [{ column: "orderId", method: "eq", value: orderId }] },
       },
@@ -393,7 +397,7 @@ export class Service {
         data: { subjectId, ecommerceModuleOrderId: orderId },
       });
     }
-    const lines = await ecommerceModule.ordersToProducts.find(filters);
+    const lines = await ecommerce.ordersToProducts.find(filters);
     if (
       lines.length > 1 ||
       lines.some(
@@ -407,7 +411,7 @@ export class Service {
       );
     }
     if (!lines.length) {
-      await ecommerceModule.ordersToProducts.create({
+      await ecommerce.ordersToProducts.create({
         data: {
           orderId,
           productId: config.productId,
@@ -416,7 +420,7 @@ export class Service {
         },
       });
     }
-    const stores = await ecommerceModule.storesToOrders.find(filters);
+    const stores = await ecommerce.storesToOrders.find(filters);
     if (
       stores.length > 1 ||
       stores.some((link) => link.storeId !== config.storeId)
@@ -424,12 +428,12 @@ export class Service {
       throw new Error("Conflict error. Initial Free Store is ambiguous");
     }
     if (!stores.length) {
-      await ecommerceModule.storesToOrders.create({
+      await ecommerce.storesToOrders.create({
         data: { orderId, storeId: config.storeId },
       });
     }
     const currencies =
-      await ecommerceModule.ordersToBillingModuleCurrencies.find(filters);
+      await ecommerce.ordersToBillingModuleCurrencies.find(filters);
     if (
       currencies.length > 1 ||
       currencies.some(
@@ -439,7 +443,7 @@ export class Service {
       throw new Error("Conflict error. Initial Free Currency is ambiguous");
     }
     if (!currencies.length) {
-      await ecommerceModule.ordersToBillingModuleCurrencies.create({
+      await ecommerce.ordersToBillingModuleCurrencies.create({
         data: { orderId, billingModuleCurrencyId: config.currencyId },
       });
     }
@@ -457,8 +461,8 @@ export class Service {
     if (!config.legacyHistory || order.type !== "history") {
       return false;
     }
-    const { ecommerceModule, billingModule } = this.dependencies;
-    const filters = {
+    const { ecommerce, billing } = this.dependencies.modules;
+    const filters: FindServiceProps = {
       params: {
         filters: {
           and: [{ column: "orderId", method: "eq", value: order.id }],
@@ -466,10 +470,10 @@ export class Service {
       },
     };
     const [lines, stores, currencies, links] = await Promise.all([
-      ecommerceModule.ordersToProducts.find(filters),
-      ecommerceModule.storesToOrders.find(filters),
-      ecommerceModule.ordersToBillingModuleCurrencies.find(filters),
-      ecommerceModule.ordersToBillingModulePaymentIntents.find(filters),
+      ecommerce.ordersToProducts.find(filters),
+      ecommerce.storesToOrders.find(filters),
+      ecommerce.ordersToBillingModuleCurrencies.find(filters),
+      ecommerce.order.ordersToBillingModulePaymentIntents.find(filters),
     ]);
     if (
       lines.length !== 1 ||
@@ -498,7 +502,7 @@ export class Service {
     if (links.length !== 1) {
       return false;
     }
-    const intent = await billingModule.paymentIntent.findById({
+    const intent = await ecommerce.order.paymentIntent.findById({
       id: links[0].billingModulePaymentIntentId,
     });
     if (
@@ -508,7 +512,7 @@ export class Service {
     ) {
       return false;
     }
-    const invoiceLinks = await billingModule.paymentIntentsToInvoices.find({
+    const invoiceLinks = await billing.paymentIntentsToInvoices.find({
       params: {
         filters: {
           and: [{ column: "paymentIntentId", method: "eq", value: intent.id }],
@@ -521,7 +525,7 @@ export class Service {
     if (invoiceLinks.length !== 1) {
       return false;
     }
-    const invoice = await billingModule.invoice.findById({
+    const invoice = await billing.invoice.findById({
       id: invoiceLinks[0].invoiceId,
     });
     return Boolean(
@@ -535,9 +539,9 @@ export class Service {
     orderId: string,
     currencyId: string,
   ): Promise<IInvoice> {
-    const { ecommerceModule, billingModule } = this.dependencies;
+    const { ecommerce, billing } = this.dependencies.modules;
     const orderLinks =
-      await ecommerceModule.ordersToBillingModulePaymentIntents.find({
+      await ecommerce.order.ordersToBillingModulePaymentIntents.find({
         params: {
           filters: {
             and: [{ column: "orderId", method: "eq", value: orderId }],
@@ -551,7 +555,7 @@ export class Service {
     }
     let intent;
     if (orderLinks.length) {
-      intent = await billingModule.paymentIntent.findById({
+      intent = await ecommerce.order.paymentIntent.findById({
         id: orderLinks[0].billingModulePaymentIntentId,
       });
     } else {
@@ -576,15 +580,15 @@ export class Service {
       );
     }
     if (!intent) {
-      intent = await billingModule.paymentIntent.create({
+      intent = await ecommerce.order.paymentIntent.create({
         data: { amount: 0, status: "succeeded", type: "one_off" },
       });
-      await ecommerceModule.ordersToBillingModulePaymentIntents.create({
+      await ecommerce.order.ordersToBillingModulePaymentIntents.create({
         data: { orderId, billingModulePaymentIntentId: intent.id },
       });
     }
     const relatedOrders =
-      await ecommerceModule.ordersToBillingModulePaymentIntents.find({
+      await ecommerce.order.ordersToBillingModulePaymentIntents.find({
         params: {
           filters: {
             and: [
@@ -600,7 +604,7 @@ export class Service {
     if (relatedOrders.length !== 1 || relatedOrders[0].orderId !== orderId) {
       throw new Error("Conflict error. Initial Free PaymentIntent is shared");
     }
-    const intentFilter = {
+    const intentFilter: FindServiceProps = {
       params: {
         filters: {
           and: [{ column: "paymentIntentId", method: "eq", value: intent.id }],
@@ -608,7 +612,7 @@ export class Service {
       },
     };
     const currencies =
-      await billingModule.paymentIntentsToCurrencies.find(intentFilter);
+      await billing.paymentIntentsToCurrencies.find(intentFilter);
     if (
       currencies.length > 1 ||
       currencies.some((link) => link.currencyId !== currencyId)
@@ -618,18 +622,18 @@ export class Service {
       );
     }
     if (!currencies.length) {
-      await billingModule.paymentIntentsToCurrencies.create({
+      await billing.paymentIntentsToCurrencies.create({
         data: { paymentIntentId: intent.id, currencyId },
       });
     }
     const invoiceLinks =
-      await billingModule.paymentIntentsToInvoices.find(intentFilter);
+      await billing.paymentIntentsToInvoices.find(intentFilter);
     if (invoiceLinks.length > 1) {
       throw new Error("Conflict error. Initial Free Invoice is ambiguous");
     }
     let invoice;
     if (invoiceLinks.length) {
-      invoice = await billingModule.invoice.findById({
+      invoice = await billing.invoice.findById({
         id: invoiceLinks[0].invoiceId,
       });
     } else {
@@ -647,14 +651,14 @@ export class Service {
       throw new Error("Conflict error. Initial Free Invoice cannot be settled");
     }
     if (!invoice) {
-      invoice = await billingModule.invoice.create({
+      invoice = await billing.invoice.create({
         data: { amount: 0, status: "paid", provider: "dummy" },
       });
-      await billingModule.paymentIntentsToInvoices.create({
+      await billing.paymentIntentsToInvoices.create({
         data: { paymentIntentId: intent.id, invoiceId: invoice.id },
       });
     }
-    const relatedIntents = await billingModule.paymentIntentsToInvoices.find({
+    const relatedIntents = await billing.paymentIntentsToInvoices.find({
       params: {
         filters: {
           and: [{ column: "invoiceId", method: "eq", value: invoice.id }],
@@ -668,13 +672,13 @@ export class Service {
       throw new Error("Conflict error. Initial Free Invoice is shared");
     }
     if (invoice.status !== "paid") {
-      invoice = await billingModule.invoice.update({
+      invoice = await billing.invoice.update({
         id: invoice.id,
         data: { ...invoice, status: "paid" },
       });
     }
     if (intent.status !== "succeeded" || intent.type !== "one_off") {
-      await billingModule.paymentIntent.update({
+      await ecommerce.order.paymentIntent.update({
         id: intent.id,
         data: { ...intent, status: "succeeded", type: "one_off" },
       });

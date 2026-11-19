@@ -1,13 +1,3 @@
-/**
- * BDD Suite: forgot-password answer for known and unknown addresses.
- *
- * Given: password identities, some linked to a subject, and addresses no
- *        identity holds.
- * When: a forgot-password request arrives for each kind of address.
- * Then: every request is answered 201 with the same body, and a reset code is
- *       stored only for an address held by exactly one linked identity.
- */
-
 const mockIssueCode = jest.fn();
 const mockSendPasswordReset = jest.fn();
 
@@ -20,29 +10,35 @@ function createService(props: {
   linkedIdentityIds: string[];
 }) {
   return {
-    notificationModule: {
-      notification: { sendPasswordReset: mockSendPasswordReset },
+    modules: {
+      notification: {
+        notification: { sendPasswordReset: mockSendPasswordReset },
+      },
     },
-    identity: {
-      issuePasswordResetCode: mockIssueCode,
-      find: jest.fn(async (query: any) => {
-        const email = query.params.filters.and.find(
-          (filter: any) => filter.column === "email",
-        )?.value;
+    module: {
+      identity: {
+        issuePasswordResetCode: mockIssueCode,
+        find: jest.fn(async (query: any) => {
+          const email = query.params.filters.and.find(
+            (filter: any) => filter.column === "email",
+          )?.value;
 
-        return props.identities.filter((identity) => identity.email === email);
-      }),
-    },
-    subjectsToIdentities: {
-      find: jest.fn(async (query: any) => {
-        const identityId = query.params.filters.and.find(
-          (filter: any) => filter.column === "identityId",
-        )?.value;
+          return props.identities.filter(
+            (identity) => identity.email === email,
+          );
+        }),
+      },
+      subjectsToIdentities: {
+        find: jest.fn(async (query: any) => {
+          const identityId = query.params.filters.and.find(
+            (filter: any) => filter.column === "identityId",
+          )?.value;
 
-        return props.linkedIdentityIds.includes(identityId)
-          ? [{ id: "link-1", identityId, subjectId: "subject-1" }]
-          : [];
-      }),
+          return props.linkedIdentityIds.includes(identityId)
+            ? [{ id: "link-1", identityId, subjectId: "subject-1" }]
+            : [];
+        }),
+      },
     },
   };
 }

@@ -8,14 +8,16 @@ it("projects a departed actor only through the selected authorized Action link",
     avatar: null,
   }));
   const service = new Service({
-    socialModule: {
-      profilesToActions: {
-        find: jest.fn(async () => [
-          { actionId: "visible", profileId: "departed" },
-          { actionId: "outside", profileId: "private-outside" },
-        ]),
+    modules: {
+      social: {
+        profilesToActions: {
+          find: jest.fn(async () => [
+            { actionId: "visible", profileId: "departed" },
+            { actionId: "outside", profileId: "private-outside" },
+          ]),
+        },
+        profile: { profilePresentation },
       },
-      profile: { profilePresentation },
     },
   } as any);
   const result = await service.enrich([{ id: "visible" }] as any);

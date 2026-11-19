@@ -4,23 +4,17 @@ import { verify } from "hono/jwt";
 import { authorization, getHttpErrorType } from "@sps/backend-utils";
 import { RBAC_JWT_SECRET } from "@sps/shared-utils";
 import type { MiddlewareHandler } from "hono";
+import type { Service as SubjectsToIdentitiesService } from "@sps/rbac/relations/subjects-to-identities/backend/app/api/src/lib/service";
 
 export interface IMiddlewareGeneric {}
 
-interface IService {
-  subjectsToIdentities: {
-    find(props: {
-      params: {
-        filters: {
-          and: { column: string; method: "eq"; value: string }[];
-        };
-      };
-    }): Promise<{ subjectId: string; identityId: string }[]>;
-  };
-}
-
 export class Middleware {
-  constructor(readonly service: IService) {}
+  constructor(
+    private readonly getSubjectsToIdentities: () => Pick<
+      SubjectsToIdentitiesService,
+      "find"
+    >,
+  ) {}
 
   init(): MiddlewareHandler<any, any, {}> {
     return createMiddleware(async (c, next) => {
@@ -40,7 +34,7 @@ export class Middleware {
           throw new Error(
             "Authorization error. Only identity owner can update identity.",
           );
-        const links = await this.service.subjectsToIdentities.find({
+        const links = await this.getSubjectsToIdentities().find({
           params: {
             filters: {
               and: [

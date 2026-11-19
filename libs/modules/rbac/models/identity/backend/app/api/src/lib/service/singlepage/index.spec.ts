@@ -64,17 +64,6 @@ jest.mock("@sps/shared-utils", () => {
   };
 });
 
-jest.mock("@sps/shared-backend-api", () => {
-  return {
-    CRUDService: class {
-      constructor(public repository: unknown = undefined) {}
-      async update(props: { data: unknown }) {
-        return props.data;
-      }
-    },
-  };
-});
-
 import { Service } from ".";
 
 describe("one-time password reset codes", () => {
@@ -149,11 +138,27 @@ describe("one-time password reset codes", () => {
   });
 
   it("clears an outstanding link when updating the recovery address", async () => {
-    const service = new Service({} as any);
+    const id = "identity-owner";
     const data = { email: "new@example.com" };
+    const updateFirstByField = jest.fn().mockResolvedValue({
+      id,
+      ...data,
+      code: null,
+    });
+    const repository = { updateFirstByField } as ConstructorParameters<
+      typeof Service
+    >[0];
+    const service = new Service(repository);
     await expect(
-      service.update({ id: "identity-owner", data: data as any }),
-    ).resolves.toEqual({ ...data, code: null });
+      service.update({
+        id,
+        data: data as Parameters<Service["update"]>[0]["data"],
+      }),
+    ).resolves.toEqual({ id, ...data, code: null });
+    expect(updateFirstByField).toHaveBeenCalledWith("id", id, {
+      ...data,
+      code: null,
+    });
   });
 
   it("rejects an expired link before reading or changing the identity", async () => {

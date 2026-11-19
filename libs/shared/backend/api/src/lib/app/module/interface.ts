@@ -4,7 +4,14 @@ import type { IApp as IDefaultApp } from "../default/interface";
 export interface IModuleAppEntry {
   type: "model" | "relation";
   route: string;
-  app: Pick<IDefaultApp, "hono" | "describeRoutes" | "dump" | "seed">;
+  app: IModuleChildApp;
+}
+
+export interface IModuleChildApp extends Pick<
+  IDefaultApp,
+  "hono" | "describeRoutes" | "dump" | "seed"
+> {
+  prepare?(): Promise<IModuleChildApp>;
 }
 
 export interface IModuleApps {

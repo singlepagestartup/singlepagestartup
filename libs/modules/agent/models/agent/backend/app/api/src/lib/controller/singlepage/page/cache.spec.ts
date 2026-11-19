@@ -72,16 +72,18 @@ function createHandler(props?: { isRunSuperseded?: jest.Mock }) {
     agentRun: {
       isRunSuperseded: props?.isRunSuperseded || jest.fn(),
     },
-    hostModule: {
-      page: {
-        urls: jest.fn().mockResolvedValue([
-          {
-            url: "/",
-          },
-          {
-            url: "/gallery/item",
-          },
-        ]),
+    modules: {
+      host: {
+        page: {
+          urls: jest.fn().mockResolvedValue([
+            {
+              url: "/",
+            },
+            {
+              url: "/gallery/item",
+            },
+          ]),
+        },
       },
     },
   } as any);

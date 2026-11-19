@@ -16,64 +16,68 @@ function reader(rows: any[]) {
 
 function dependencies() {
   return {
-    subjectsToSocialModuleProfiles: reader([
-      {
-        subjectId: "owner",
-        socialModuleProfileId: "personal",
-        variant: "default",
-      },
-      {
-        subjectId: "owner",
-        socialModuleProfileId: "assistant",
-        variant: "assistant",
-      },
-      {
-        subjectId: "other",
-        socialModuleProfileId: "foreign",
-        variant: "assistant",
-      },
-    ]),
-    socialModule: {
-      profile: reader([
-        { id: "assistant", variant: "artificial-intelligence" },
-        { id: "foreign", variant: "artificial-intelligence" },
-      ]),
-      profilesToChats: reader([
-        { profileId: "personal", chatId: "chat" },
-        { profileId: "assistant", chatId: "chat" },
-        { profileId: "foreign", chatId: "chat" },
-      ]),
-      chat: reader([{ id: "chat" }]),
-      chatsToThreads: reader([
-        { chatId: "chat", threadId: "default" },
-        { chatId: "chat", threadId: "products" },
-        { chatId: "chat", threadId: "brief" },
-        { chatId: "another-chat", threadId: "foreign-thread" },
-      ]),
-      thread: reader([
-        { id: "default", variant: "default", metadata: {} },
+    module: {
+      subjectsToSocialModuleProfiles: reader([
         {
-          id: "products",
-          metadata: {
-            aiChatDocument: {
-              key: "products",
-              profileId: "assistant",
-              sourceIds: [],
-            },
-          },
+          subjectId: "owner",
+          socialModuleProfileId: "personal",
+          variant: "default",
         },
         {
-          id: "brief",
-          metadata: {
-            aiChatDocument: {
-              key: "brief",
-              profileId: "assistant",
-              sourceIds: [],
+          subjectId: "owner",
+          socialModuleProfileId: "assistant",
+          variant: "assistant",
+        },
+        {
+          subjectId: "other",
+          socialModuleProfileId: "foreign",
+          variant: "assistant",
+        },
+      ]),
+    },
+    modules: {
+      social: {
+        profile: reader([
+          { id: "assistant", variant: "artificial-intelligence" },
+          { id: "foreign", variant: "artificial-intelligence" },
+        ]),
+        profilesToChats: reader([
+          { profileId: "personal", chatId: "chat" },
+          { profileId: "assistant", chatId: "chat" },
+          { profileId: "foreign", chatId: "chat" },
+        ]),
+        chat: reader([{ id: "chat" }]),
+        chatsToThreads: reader([
+          { chatId: "chat", threadId: "default" },
+          { chatId: "chat", threadId: "products" },
+          { chatId: "chat", threadId: "brief" },
+          { chatId: "another-chat", threadId: "foreign-thread" },
+        ]),
+        thread: reader([
+          { id: "default", variant: "default", metadata: {} },
+          {
+            id: "products",
+            metadata: {
+              aiChatDocument: {
+                key: "products",
+                profileId: "assistant",
+                sourceIds: [],
+              },
             },
           },
-        },
-        { id: "foreign-thread", metadata: {} },
-      ]),
+          {
+            id: "brief",
+            metadata: {
+              aiChatDocument: {
+                key: "brief",
+                profileId: "assistant",
+                sourceIds: [],
+              },
+            },
+          },
+          { id: "foreign-thread", metadata: {} },
+        ]),
+      },
     },
   };
 }
@@ -94,16 +98,16 @@ it("lists only assistant profiles owned by the Subject even when another assista
 it("returns an empty list for a new Subject without reading unrelated projects", async () => {
   const deps = dependencies();
   expect(await new Service(deps as any).find({ subjectId: "new" })).toEqual([]);
-  expect(deps.socialModule.profile.find).not.toHaveBeenCalled();
+  expect(deps.modules.social.profile.find).not.toHaveBeenCalled();
 });
 
 it("does not expose an owned assistant's Chat without the caller's personal membership", async () => {
   const deps = dependencies();
-  deps.socialModule.profilesToChats = reader([
+  deps.modules.social.profilesToChats = reader([
     { profileId: "assistant", chatId: "chat" },
   ]);
   expect(await new Service(deps as any).find({ subjectId: "owner" })).toEqual(
     [],
   );
-  expect(deps.socialModule.chat.find).not.toHaveBeenCalled();
+  expect(deps.modules.social.chat.find).not.toHaveBeenCalled();
 });

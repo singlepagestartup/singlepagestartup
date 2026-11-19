@@ -36,8 +36,11 @@ const modules={
 const services={};
 for(const [module,owner] of Object.entries(modules))for(const entry of owner.apps.apps)services[module+entry.route]=entry.app.controller.service;
 const service=resource=>{assert(services[resource],"Missing effective owner: "+resource);return services[resource];};
-const paymentIntents = service("rbac/subjects").billingModule.paymentIntent;
-assert.equal(service("ecommerce/orders").billingModule.paymentIntent, paymentIntents);
+const subjectService = service("rbac/subjects");
+const paymentIntents = subjectService.modules.ecommerce.order.paymentIntent;
+assert.equal(service("ecommerce/orders").paymentIntent, paymentIntents);
+assert.equal(subjectService.modules.billing.paymentIntent, service("billing/payment-intents"));
+assert.notEqual(subjectService.modules.billing.paymentIntent, paymentIntents);
 const create=async(resource,data)=>{const row=await service(resource).create({data});assert(row?.id,resource+" did not persist an ID");return row;};
 const find=(resource,and)=>service(resource).find({params:{filters:{and}}});
 const eq=(column,value)=>({column,method:"eq",value});
@@ -141,8 +144,9 @@ try{
   const foreignToken=await sign({subject:{id:foreign.id},exp:Math.floor(Date.now()/1000)+3600},RBAC_JWT_SECRET);
   const options={headers:{Authorization:"Bearer "+token,"Cache-Control":"no-store"}};
   const ownerProps={id:subject.id,options};
-  const carts=()=>subjectApi.ecommerceModuleOrderList({...ownerProps,params:{includeCartDetails:true}});
-  const createCart=()=>subjectApi.ecommerceModuleOrderCreate({...ownerProps,data:{productId:product.id,offerId:offer.id,storeId:store.id,quantity:2,billingModule:{currency:{id:currencies[0].id}}}});
+  const foreignProps={id:foreign.id,options:{headers:{Authorization:"Bearer "+foreignToken,"Cache-Control":"no-store"}}};
+  const carts=(props=ownerProps)=>subjectApi.ecommerceModuleOrderList({...props,params:{includeCartDetails:true}});
+  const createCart=(props=ownerProps)=>subjectApi.ecommerceModuleOrderCreate({...props,data:{productId:product.id,offerId:offer.id,storeId:store.id,quantity:2,billingModule:{currency:{id:currencies[0].id}}}});
   await createCart();
   const subjectLock=sql.join([
    sql.raw("SELECT 1 FROM pg_locks WHERE locktype = 'advisory' AND granted AND pid = pg_backend_pid() AND objsubid = 1 AND objid::bigint = (hashtext("),
@@ -157,7 +161,7 @@ try{
     const quantityResponse = await app.request("/api/ecommerce/orders/" + removedCart.id + "/quantity");
     assert.equal(quantityResponse.status, 200);
     assert.equal((await quantityResponse.json()).data, 37);
-    const subjectOrder = service("rbac/subjects").ecommerceModule.order;
+    const subjectOrder = service("rbac/subjects").modules.ecommerce.order;
     assert.equal(await subjectOrder.findByIdQuantity({ id: removedCart.id }), 37);
   } finally {
     projectQuantity.mockRestore();
@@ -181,13 +185,21 @@ try{
   cartList=await carts();assert.equal(cartList[0].id,removedCart.id);assert.equal(cartList[0].cartDetails.lines[0].id,removedLine.id);assert.equal(cartList[0].cartDetails.lines[0].quantity,4);
   assert.equal((await byId("ecommerce/orders-to-products",removedLine.id)).productId,product.id);
   assert.equal((await byId("ecommerce/orders-to-billing-module-currencies",cartCurrencyLink.id)).billingModuleCurrencyId,currencies[0].id);
-  const foreignRequest=async(method,data)=>{
+  const mutateOrder=async(props,method,data)=>{
    const form=new FormData();if(data)form.set("data",JSON.stringify(data));
-   return app.request(API_SERVICE_URL+"/api/rbac/subjects/"+foreign.id+"/ecommerce-module/orders/"+removedCart.id,{method,headers:{Authorization:"Bearer "+foreignToken},...(data?{body:form}:{})});
+   return app.request(API_SERVICE_URL+"/api/rbac/subjects/"+props.id+"/ecommerce-module/orders/"+removedCart.id,{method,headers:props.options.headers,...(data?{body:form}:{})});
   };
-  assert.equal((await foreignRequest("PATCH",{ordersToProducts:[{id:removedLine.id,quantity:99}]})).status,403);
-  assert.equal((await foreignRequest("DELETE")).status,403);
+  assert.equal((await mutateOrder(foreignProps,"PATCH",{ordersToProducts:[{id:removedLine.id,quantity:99}]})).status,403);
+  assert.equal((await mutateOrder(foreignProps,"DELETE")).status,403);
+  await createCart(foreignProps);
+  const foreignCarts=await carts(foreignProps);
+  assert.equal(foreignCarts.length,1);
+  const foreignCart=foreignCarts[0];
+  const foreignLine=foreignCart.cartDetails.lines[0];
+  assert.equal((await mutateOrder(ownerProps,"PATCH",{ordersToProducts:[{id:foreignLine.id,quantity:99}]})).status,403);
   assert.equal((await byId("ecommerce/orders-to-products",removedLine.id)).quantity,4);
+  assert.equal((await byId("ecommerce/orders-to-products",foreignLine.id)).quantity,2);
+  await subjectApi.ecommerceModuleOrderDelete({...foreignProps,orderId:foreignCart.id});
   await subjectApi.ecommerceModuleOrderDelete({...ownerProps,orderId:removedCart.id});
   assert.equal((await carts()).length,0);
   for(const [resource,id] of [["ecommerce/orders",removedCart.id],["ecommerce/orders-to-products",removedLine.id],["rbac/subjects-to-ecommerce-module-orders",cartOwnerLink.id],["ecommerce/orders-to-billing-module-currencies",cartCurrencyLink.id]])assert(!(await byId(resource,id)),"Delete must remove saved cart graph: "+resource);

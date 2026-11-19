@@ -1,6 +1,12 @@
 import { Service } from "@sps/billing/models/payment-intent/backend/app/api/src/lib/service/singlepage";
 import { Service as OrderStripePayment } from "./stripe-payment";
-import { withConsistencyDatabase } from "@sps/shared-backend-api";
+import {
+  createAppAssembly,
+  withConsistencyDatabase,
+} from "@sps/shared-backend-api";
+import { createModules } from "@sps/rbac/backend/app/api/src/lib/modules";
+import { createModule } from "../../../module";
+import { createOrderBootstrap } from "@sps/ecommerce/models/order/backend/app/api/src/lib/bootstrap";
 
 const mockRetrieveInvoice = jest.fn();
 const mockRetrieveSubscription = jest.fn();
@@ -115,13 +121,18 @@ function fixture(throughOrder = true) {
       operation(),
     ),
   };
-  const service = new Service(
-    repository as any,
-    {
-      invoice: invoiceService,
-      paymentIntentsToInvoices: relationService,
-    } as any,
-  );
+  const assembly = createAppAssembly();
+  const service = new Service(repository as any).withAppAssembly(assembly);
+  const invoice = service.module.invoice;
+  jest.spyOn(invoice, "find").mockImplementation(invoiceService.find);
+  jest.spyOn(invoice, "findById").mockImplementation(invoiceService.findById);
+  jest.spyOn(invoice, "create").mockImplementation(invoiceService.create);
+  jest.spyOn(invoice, "update").mockImplementation(invoiceService.update);
+  const relation = service.module.paymentIntentsToInvoices;
+  jest
+    .spyOn(relation, "find")
+    .mockImplementation(jest.fn().mockImplementation(relationService.find));
+  jest.spyOn(relation, "create").mockImplementation(relationService.create);
   jest
     .spyOn(service, "findById")
     .mockImplementation(async ({ id }: any) => intents.get(id));
@@ -134,8 +145,13 @@ function fixture(throughOrder = true) {
       return invoice;
     });
   const resolve = jest.fn(async () => ({ paymentIntentId: "next" }));
+  const modules = assembly.getOrCreate(createModules);
+  const order = createOrderBootstrap(undefined, service).createService(
+    assembly,
+  );
   const orderPayments = new OrderStripePayment({
-    billingModule: { paymentIntent: service } as any,
+    module: assembly.getOrCreate(createModule),
+    modules: { ...modules, ecommerce: { ...modules.ecommerce, order } },
     ecommerceModuleOrderResolveProviderPeriod: resolve,
   });
   const subscription = {
@@ -407,10 +423,9 @@ it.each(["void", "canceled"])(
 it("refuses a provider currency that differs from the saved checkout currency", async () => {
   const f = fixture();
   f.intents.get("next").checkoutCurrencyId = "saved-currency";
-  f.service.billingModule.currency = {
-    find: jest.fn(),
-    findById: jest.fn().mockResolvedValue({ slug: "eur" }),
-  };
+  jest
+    .spyOn(f.service.module.currency, "findById")
+    .mockImplementation(jest.fn().mockResolvedValue({ slug: "eur" }));
   await expect(
     f.stripe({
       action: "webhook",

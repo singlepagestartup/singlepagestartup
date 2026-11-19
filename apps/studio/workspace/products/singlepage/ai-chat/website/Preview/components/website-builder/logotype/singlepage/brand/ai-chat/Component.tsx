@@ -1,4 +1,4 @@
-import IconGlyphs from "../../../../feature/singlepage/icon/icons.json";
+import IconGlyphs from "../../../../../../../../../../../design/singlepage/interface-kit/ai-chat/icons.json";
 function Icon({
   name,
   size = 20,

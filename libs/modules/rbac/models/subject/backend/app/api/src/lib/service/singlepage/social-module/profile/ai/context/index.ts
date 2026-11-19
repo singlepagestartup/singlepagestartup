@@ -100,7 +100,7 @@ export class Service implements IAiContextService {
   }
 
   private async loadState() {
-    const thread = await this.props.socialModule.thread.findById({
+    const thread = await this.props.modules.social.thread.findById({
       id: this.props.threadId,
     });
     this.persistedNamespace =
@@ -298,7 +298,7 @@ export class Service implements IAiContextService {
 
   private async matchesCurrentHistory(history: IAiContextHistoryMessage[]) {
     if (!history.length) return true;
-    const messages = await this.props.socialModule.message.find({
+    const messages = await this.props.modules.social.message.find({
       params: {
         filters: {
           and: [
@@ -312,7 +312,7 @@ export class Service implements IAiContextService {
       },
     });
     const byId = new Map(messages.map((message: any) => [message.id, message]));
-    const authors = await this.props.socialModule.profilesToMessages.find({
+    const authors = await this.props.modules.social.profilesToMessages.find({
       params: {
         filters: {
           and: [
@@ -326,7 +326,7 @@ export class Service implements IAiContextService {
       },
     });
     const relations =
-      await this.props.socialModule.messagesToFileStorageModuleFiles.find({
+      await this.props.modules.social.messagesToFileStorageModuleFiles.find({
         params: {
           filters: {
             and: [
@@ -348,7 +348,7 @@ export class Service implements IAiContextService {
     ];
     let files;
     if (fileIds.length) {
-      files = await this.props.fileStorageModule.file.find({
+      files = await this.props.modules.fileStorage.file.find({
         params: {
           filters: {
             and: [{ column: "id", method: "inArray", value: fileIds }],

@@ -5,7 +5,11 @@
       "executor": "nx:run-commands",
       "cache": true,
       "inputs": [
-        "{projectRoot}/**/*"
+        "{projectRoot}/**/*",
+        "{workspaceRoot}/eslint.config.mjs",
+        "{workspaceRoot}/package.json",
+        "{workspaceRoot}/package-lock.json",
+        "{workspaceRoot}/tsconfig.base.json"
       ],
       "options": {
         "command": "eslint {projectRoot}"

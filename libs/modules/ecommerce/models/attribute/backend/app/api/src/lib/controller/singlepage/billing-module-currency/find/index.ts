@@ -30,7 +30,7 @@ export class Handler {
       }
 
       const attributesToBillingModuleCurrencies =
-        await this.service.attributesToBillingModuleCurrencies.find({
+        await this.service.module.attributesToBillingModuleCurrencies.find({
           params: {
             filters: {
               and: [
@@ -79,7 +79,7 @@ export class Handler {
       };
 
       const billingModuleCurrencies =
-        await this.service.billingModuleCurrencies.find({
+        await this.service.modules.billing.currency.find({
           params: mergedParams,
         });
 

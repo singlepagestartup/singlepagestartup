@@ -1,4 +1,4 @@
-import { type IEcommerceModule } from "../../../../di";
+import type { SubjectServiceDependencies } from "../../index";
 import type { Service as SubjectsToEcommerceModuleOrdersService } from "@sps/rbac/relations/subjects-to-ecommerce-module-orders/backend/app/api/src/lib/service";
 
 export interface IExecuteProps {
@@ -8,8 +8,18 @@ export interface IExecuteProps {
 }
 
 interface IConstructorProps {
-  ecommerceModule: IEcommerceModule;
-  subjectsToEcommerceModuleOrders: SubjectsToEcommerceModuleOrdersService;
+  order: Pick<
+    SubjectServiceDependencies["modules"]["ecommerce"]["order"],
+    "find"
+  >;
+  ordersToProducts: Pick<
+    SubjectServiceDependencies["modules"]["ecommerce"]["ordersToProducts"],
+    "find"
+  >;
+  subjectsToEcommerceModuleOrders: Pick<
+    SubjectsToEcommerceModuleOrdersService,
+    "find"
+  >;
 }
 
 /**
@@ -25,14 +35,7 @@ interface IConstructorProps {
  * holds it.
  */
 export class Service {
-  ecommerceModule: IEcommerceModule;
-  subjectsToEcommerceModuleOrders: SubjectsToEcommerceModuleOrdersService;
-
-  constructor(props: IConstructorProps) {
-    this.ecommerceModule = props.ecommerceModule;
-    this.subjectsToEcommerceModuleOrders =
-      props.subjectsToEcommerceModuleOrders;
-  }
+  constructor(private readonly dependencies: IConstructorProps) {}
 
   async execute(props: IExecuteProps): Promise<string | null> {
     const openCartOrderIds = await this.findOpenCartOrderIds({
@@ -43,7 +46,7 @@ export class Service {
       return null;
     }
 
-    const ordersToProducts = await this.ecommerceModule.ordersToProducts.find({
+    const ordersToProducts = await this.dependencies.ordersToProducts.find({
       params: {
         filters: {
           and: [
@@ -58,7 +61,13 @@ export class Service {
               value: props.productId,
             },
             ...(props.offerId
-              ? [{ column: "offerId", method: "eq", value: props.offerId }]
+              ? [
+                  {
+                    column: "offerId",
+                    method: "eq" as const,
+                    value: props.offerId,
+                  },
+                ]
               : []),
           ],
         },
@@ -72,7 +81,7 @@ export class Service {
     subjectId: string;
   }): Promise<string[]> {
     const subjectsToEcommerceModuleOrders =
-      await this.subjectsToEcommerceModuleOrders.find({
+      await this.dependencies.subjectsToEcommerceModuleOrders.find({
         params: {
           filters: {
             and: [
@@ -90,7 +99,7 @@ export class Service {
       return [];
     }
 
-    const orders = await this.ecommerceModule.order.find({
+    const orders = await this.dependencies.order.find({
       params: {
         filters: {
           and: [

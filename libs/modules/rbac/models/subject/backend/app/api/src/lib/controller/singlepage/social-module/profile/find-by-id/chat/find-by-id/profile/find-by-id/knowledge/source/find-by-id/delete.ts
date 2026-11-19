@@ -27,13 +27,18 @@ export class Handler {
 
       if (c.req.query("unlink") === "true") {
         const profileId = c.req.param("targetSocialModuleProfileId");
+        if (!profileId) {
+          throw new Error(
+            "Validation error. No targetSocialModuleProfileId provided",
+          );
+        }
         const source = (
           await this.knowledgeService.listSources({
             sourceIds: [knowledgeModuleSourceId],
           })
         )[0];
         const relations =
-          await this.service.socialModule.profilesToKnowledgeModuleSources.find(
+          await this.service.modules.social.profilesToKnowledgeModuleSources.find(
             {
               params: {
                 filters: {

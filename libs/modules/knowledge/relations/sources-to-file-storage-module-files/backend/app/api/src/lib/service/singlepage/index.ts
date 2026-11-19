@@ -1,9 +1,9 @@
+import { createModules } from "@sps/knowledge/backend/app/api/src/lib/modules";
 import "reflect-metadata";
 import { injectFromBase, injectable } from "inversify";
 import { CRUDService } from "@sps/shared-backend-api";
 import { Table } from "@sps/knowledge/relations/sources-to-file-storage-module-files/backend/repository/database";
 import type { Repository } from "../../repository";
-import type { Service as FileStorageFileService } from "@sps/file-storage/models/file/backend/app/api/src/lib/service";
 import { assertKnowledgeAttachmentBytes } from "@sps/backend-utils";
 type Relation = typeof Table.$inferSelect;
 export interface IFileRelationMutation {
@@ -13,12 +13,15 @@ export interface IFileRelationMutation {
 }
 export interface IFileRelationServices {
   inTransaction: boolean;
-  fileStorageFile: FileStorageFileService;
   mutate: (props: IFileRelationMutation) => Promise<Relation | null>;
 }
 @injectable()
 @injectFromBase()
 export class Service extends CRUDService<Relation> {
+  get modules() {
+    return this.appAssembly.getOrCreate(createModules);
+  }
+
   private services?: IFileRelationServices;
   configure(services: IFileRelationServices) {
     this.services = services;
@@ -109,7 +112,7 @@ export class Service extends CRUDService<Relation> {
       throw new Error(
         "Configuration error. Knowledge file relation services are not configured.",
       );
-    const files = await this.services.fileStorageFile.find({
+    const files = await this.modules.fileStorage.file.find({
       params: {
         filters: {
           and: [
@@ -131,7 +134,7 @@ export class Service extends CRUDService<Relation> {
           mimeType: file.mimeType || undefined,
         });
         assertKnowledgeAttachmentBytes({
-          bytes: await this.services!.fileStorageFile.readBytes(file),
+          bytes: await this.modules.fileStorage.file.readBytes(file),
           name: file.file,
           mimeType: file.mimeType || undefined,
         });

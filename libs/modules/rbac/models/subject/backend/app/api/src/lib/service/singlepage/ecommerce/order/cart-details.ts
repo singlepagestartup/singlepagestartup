@@ -3,18 +3,15 @@ import type {
   IModel as IOffer,
   IOfferQuoteInput,
 } from "@sps/ecommerce/relations/stores-to-products/sdk/model";
-import type { Service as SubjectService } from "../../index";
+import type { SubjectServiceDependencies } from "../../index";
 
 export interface IExecuteProps {
   subjectId: string;
   orderId: string;
 }
 export interface IConstructorProps {
-  service: Pick<
-    SubjectService,
-    | "ecommerceModule"
-    | "ecommerceModuleOrderAssertAccess"
-    | "ecommerceModuleCartQuote"
+  service: SubjectServiceDependencies<
+    "ecommerceModuleOrderAssertAccess" | "ecommerceModuleCartQuote"
   >;
 }
 
@@ -26,14 +23,14 @@ export class Service {
   ): Promise<ICartDetails & { storeIds: string[] }> {
     const { service } = this.dependencies;
     await service.ecommerceModuleOrderAssertAccess(props);
-    const details = await service.ecommerceModule.order.findByIdCartDetails({
+    const details = await service.modules.ecommerce.order.findByIdCartDetails({
       id: props.orderId,
     });
     const fulfillment =
-      await service.ecommerceModule.order.fulfillmentQuoteOptions({
+      await service.modules.ecommerce.order.fulfillmentQuoteOptions({
         id: props.orderId,
       });
-    const storeLinks = await service.ecommerceModule.storesToOrders.find({
+    const storeLinks = await service.modules.ecommerce.storesToOrders.find({
       params: {
         filters: {
           and: [{ column: "orderId", method: "eq", value: props.orderId }],
@@ -47,12 +44,12 @@ export class Service {
     const quotedLines: ICartDetails["lines"] = [];
     for (const line of primaries) {
       const current = line.offerId
-        ? await service.ecommerceModule.storesToProducts.findById({
+        ? await service.modules.ecommerce.storesToProducts.findById({
             id: line.offerId,
           })
         : null;
       const alternatives =
-        await service.ecommerceModule.storesToProducts.offersForProduct({
+        await service.modules.ecommerce.storesToProducts.offersForProduct({
           productId: line.productId,
           ...(current ? { configurationKey: current.configurationKey } : {}),
         });
@@ -129,7 +126,7 @@ export class Service {
       ...new Set([...offers.values()].map((offer) => offer.storeId)),
     ];
     const stores = storeIds.length
-      ? await service.ecommerceModule.store.find({
+      ? await service.modules.ecommerce.store.find({
           params: {
             filters: {
               and: [{ column: "id", method: "inArray", value: storeIds }],

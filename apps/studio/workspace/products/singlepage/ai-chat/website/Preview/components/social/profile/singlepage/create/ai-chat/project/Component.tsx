@@ -1,15 +1,16 @@
 "use client";
-import { type ImgHTMLAttributes as ImgHTMLAttributes } from "react";
 import { twMerge as twMerge } from "tailwind-merge";
-import { type InputHTMLAttributes as InputHTMLAttributes } from "react";
-import { useId as useId } from "react";
-import { Component as WebsiteBuilderModuleButton } from "../../../../../../website-builder/button/index";
 import {
+  useId,
   forwardRef as forwardRefControl,
+  useState,
+  type ImgHTMLAttributes,
+  type InputHTMLAttributes,
   type ButtonHTMLAttributes as ButtonControlProps,
+  type FormEvent,
 } from "react";
-import IconGlyphs from "../../../../../../website-builder/feature/singlepage/icon/icons.json";
-import { useState, type FormEvent } from "react";
+import { Component as WebsiteBuilderModuleButton } from "../../../../../../website-builder/button/index";
+import IconGlyphs from "../../../../../../../../../../../../design/singlepage/interface-kit/ai-chat/icons.json";
 interface ITextFieldProps extends InputHTMLAttributes<HTMLInputElement> {
   label: string;
   hint?: string;

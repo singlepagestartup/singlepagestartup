@@ -30,7 +30,7 @@ export class Service {
     const owner = await this.service.findById({ id: props.subjectId });
     if (!owner || owner.variant === "anonymous")
       throw new Error("Authorization error. Sign in to create a profile");
-    const identities = await this.service.subjectsToIdentities.find({
+    const identities = await this.service.module.subjectsToIdentities.find({
       params: {
         filters: {
           and: [{ column: "subjectId", method: "eq", value: props.subjectId }],
@@ -61,7 +61,7 @@ export class Service {
       throw new Error(
         "Validation error. Profile title must contain 1 to 200 characters",
       );
-    const skills = new Skills(this.service.socialModule);
+    const skills = new Skills(this.service.modules.social);
     const options = {
       headers: {
         "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
@@ -92,9 +92,9 @@ export class Service {
       });
     const agent = await new Bootstrap({
       findSubjects: (findProps) => this.service.find(findProps),
-      socialModule: this.service.socialModule,
+      social: this.service.modules.social,
       subjectsToSocialModuleProfiles:
-        this.service.subjectsToSocialModuleProfiles,
+        this.service.module.subjectsToSocialModuleProfiles,
       ensureKnowledgeAccess: (accessProps) =>
         this.service.socialModuleProfileKnowledgeAccessEnsure(accessProps),
     }).execute({
@@ -113,7 +113,7 @@ export class Service {
       },
       options,
     });
-    await new Documents(this.service.socialModule).execute({
+    await new Documents(this.service.modules.social).execute({
       profileId: agent.socialModuleProfile.id,
       chatId: context.socialModuleChat.id,
       initialThread: context.socialModuleDefaultThread,
@@ -122,33 +122,37 @@ export class Service {
   }
 
   async find(props: IFindProps): Promise<IProfile[]> {
-    const relations = await this.service.subjectsToSocialModuleProfiles.find({
-      params: {
-        filters: {
-          and: [{ column: "subjectId", method: "eq", value: props.subjectId }],
+    const relations =
+      await this.service.module.subjectsToSocialModuleProfiles.find({
+        params: {
+          filters: {
+            and: [
+              { column: "subjectId", method: "eq", value: props.subjectId },
+            ],
+          },
         },
-      },
-    });
+      });
     const ownIds = [
       ...new Set<string>((relations || []).map((r) => r.socialModuleProfileId)),
     ];
     if (!ownIds.length) return [];
     let profileIds = ownIds;
     if (props.socialModuleChatId) {
-      const memberships = await this.service.socialModule.profilesToChats.find({
-        params: {
-          filters: {
-            and: [
-              {
-                column: "chatId",
-                method: "eq",
-                value: props.socialModuleChatId,
-              },
-              { column: "profileId", method: "inArray", value: ownIds },
-            ],
+      const memberships =
+        await this.service.modules.social.profilesToChats.find({
+          params: {
+            filters: {
+              and: [
+                {
+                  column: "chatId",
+                  method: "eq",
+                  value: props.socialModuleChatId,
+                },
+                { column: "profileId", method: "inArray", value: ownIds },
+              ],
+            },
           },
-        },
-      });
+        });
       const joined = new Set(
         (memberships || [])
           .filter((link) => link.chatId === props.socialModuleChatId)
@@ -164,7 +168,7 @@ export class Service {
         profileIds = ownIds;
       if (!profileIds.length) return [];
     }
-    const profiles = await this.service.socialModule.profile.find({
+    const profiles = await this.service.modules.social.profile.find({
       params: {
         ...props.params,
         filters: {

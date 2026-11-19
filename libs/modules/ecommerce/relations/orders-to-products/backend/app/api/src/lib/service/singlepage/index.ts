@@ -1,3 +1,5 @@
+import { createModule } from "../module";
+import { createModules } from "@sps/ecommerce/backend/app/api/src/lib/modules";
 import type { IOrderLineTotals } from "@sps/ecommerce/relations/orders-to-products/sdk/model";
 import type { Service as OfferService } from "@sps/ecommerce/relations/stores-to-products/backend/app/api/src/lib/service";
 import type { IQuoteOptions } from "@sps/ecommerce/relations/stores-to-products/backend/app/api/src/lib/service/singlepage";
@@ -7,47 +9,28 @@ import { inject, injectable } from "inversify";
 import { CRUDService, DI } from "@sps/shared-backend-api";
 import { Table } from "@sps/ecommerce/relations/orders-to-products/backend/repository/database";
 import { Repository } from "../../repository";
-import { Service as ProductService } from "@sps/ecommerce/models/product/backend/app/api/src/lib/service";
-import { Service as AttributeService } from "@sps/ecommerce/models/attribute/backend/app/api/src/lib/service";
 import { Service as AttributeKeyService } from "@sps/ecommerce/models/attribute-key/backend/app/api/src/lib/service";
-import { Service as ProductsToAttributesService } from "@sps/ecommerce/relations/products-to-attributes/backend/app/api/src/lib/service";
-import { Service as AttributeKeysToAttributesService } from "@sps/ecommerce/relations/attribute-keys-to-attributes/backend/app/api/src/lib/service";
-import { Service as AttributesToBillingModuleCurrenciesService } from "@sps/ecommerce/relations/attributes-to-billing-module-currencies/backend/app/api/src/lib/service";
 import { Service as GetTotalService } from "../startup/get-total";
 import type { IExecuteProps as IGetTotalExecuteProps } from "./get-total";
 import { OrdersToProductsDI } from "../../di";
 
 @injectable()
 export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
-  product: ProductService;
-  attribute: AttributeService;
-  attributeKey: AttributeKeyService;
-  productsToAttributes: ProductsToAttributesService;
-  attributeKeysToAttributes: AttributeKeysToAttributesService;
-  attributesToBillingModuleCurrencies: AttributesToBillingModuleCurrenciesService;
+  get modules() {
+    return this.appAssembly.getOrCreate(createModules);
+  }
+
+  get module() {
+    return this.appAssembly.getOrCreate(createModule);
+  }
 
   constructor(
     @inject(DI.IRepository) repository: Repository,
-    @inject(OrdersToProductsDI.IProductsService) product: ProductService,
-    @inject(OrdersToProductsDI.IAttributesService) attribute: AttributeService,
     @inject(OrdersToProductsDI.IAttributeKeysService)
-    attributeKey: AttributeKeyService,
-    @inject(OrdersToProductsDI.IProductsToAttributesService)
-    productsToAttributes: ProductsToAttributesService,
-    @inject(OrdersToProductsDI.IAttributeKeysToAttributesService)
-    attributeKeysToAttributes: AttributeKeysToAttributesService,
-    @inject(OrdersToProductsDI.IAttributesToBillingModuleCurrenciesService)
-    attributesToBillingModuleCurrencies: AttributesToBillingModuleCurrenciesService,
+    private readonly attributeKey: AttributeKeyService,
     @inject(OrdersToProductsDI.IOffersService) readonly offers: OfferService,
   ) {
     super(repository);
-    this.product = product;
-    this.attribute = attribute;
-    this.attributeKey = attributeKey;
-    this.productsToAttributes = productsToAttributes;
-    this.attributeKeysToAttributes = attributeKeysToAttributes;
-    this.attributesToBillingModuleCurrencies =
-      attributesToBillingModuleCurrencies;
   }
 
   offerSelection(
@@ -137,16 +120,19 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
       });
       return this.offerTotals(lines, entity.id);
     }
+    const { product } = this.module;
+    const { attribute, productsToAttributes } = product.module;
     return new GetTotalService({
       findById: async () => entity,
-      product: this.product,
-      billingModule: this.product.billingModule,
-      attribute: this.attribute,
+      product,
+      currency: this.modules.billing.currency,
+      attribute,
       attributeKey: this.attributeKey,
-      productsToAttributes: this.productsToAttributes,
-      attributeKeysToAttributes: this.attributeKeysToAttributes,
+      productsToAttributes,
+      attributeKeysToAttributes:
+        this.attributeKey.module.attributeKeysToAttributes,
       attributesToBillingModuleCurrencies:
-        this.attributesToBillingModuleCurrencies,
+        attribute.module.attributesToBillingModuleCurrencies,
     }).execute(props);
   }
 }

@@ -43,21 +43,22 @@ function createTestContext(props?: {
         ecommerceModuleOrderId,
       })),
     ),
-  } as any;
+  };
 
-  const ecommerceModule = {
+  const dependencies = {
     order: {
       find: jest.fn().mockResolvedValue(openCartOrders),
     },
     ordersToProducts: {
       find: jest.fn().mockResolvedValue(ordersToProducts),
     },
-  } as any;
+    subjectsToEcommerceModuleOrders,
+  };
 
   return {
-    ecommerceModule,
+    dependencies,
     subjectsToEcommerceModuleOrders,
-    service: new Service({ ecommerceModule, subjectsToEcommerceModuleOrders }),
+    service: new Service(dependencies),
   };
 }
 
@@ -85,7 +86,7 @@ describe("Given: a subject and a product the add-to-cart flow is about to write"
    * Then: it answers null without reading orders or order lines.
    */
   it("When: the subject has no orders Then: null is returned and no order lookup follows", async () => {
-    const { service, ecommerceModule } = createTestContext({
+    const { service, dependencies } = createTestContext({
       subjectOrderIds: [],
     });
 
@@ -93,8 +94,8 @@ describe("Given: a subject and a product the add-to-cart flow is about to write"
       service.execute({ subjectId: SUBJECT_ID, productId: PRODUCT_ID }),
     ).resolves.toBeNull();
 
-    expect(ecommerceModule.order.find).not.toHaveBeenCalled();
-    expect(ecommerceModule.ordersToProducts.find).not.toHaveBeenCalled();
+    expect(dependencies.order.find).not.toHaveBeenCalled();
+    expect(dependencies.ordersToProducts.find).not.toHaveBeenCalled();
   });
 
   /**
@@ -105,7 +106,7 @@ describe("Given: a subject and a product the add-to-cart flow is about to write"
    * Then: it answers null without asking which products those orders hold.
    */
   it("When: no order is an open cart Then: null is returned and no order line lookup follows", async () => {
-    const { service, ecommerceModule } = createTestContext({
+    const { service, dependencies } = createTestContext({
       subjectOrderIds: ["order-paid", "order-canceled"],
       openCartOrders: [],
     });
@@ -114,7 +115,7 @@ describe("Given: a subject and a product the add-to-cart flow is about to write"
       service.execute({ subjectId: SUBJECT_ID, productId: PRODUCT_ID }),
     ).resolves.toBeNull();
 
-    expect(ecommerceModule.ordersToProducts.find).not.toHaveBeenCalled();
+    expect(dependencies.ordersToProducts.find).not.toHaveBeenCalled();
   });
 
   /**
@@ -140,7 +141,7 @@ describe("Given: a subject and a product the add-to-cart flow is about to write"
    * Then: orders are read by the subject's own order ids, type cart and status new.
    */
   it("When: the service runs Then: orders are filtered by the subject's ids, cart type and new status", async () => {
-    const { service, ecommerceModule, subjectsToEcommerceModuleOrders } =
+    const { service, dependencies, subjectsToEcommerceModuleOrders } =
       createTestContext();
 
     await service.execute({ subjectId: SUBJECT_ID, productId: PRODUCT_ID });
@@ -152,7 +153,7 @@ describe("Given: a subject and a product the add-to-cart flow is about to write"
         },
       },
     });
-    expect(ecommerceModule.order.find).toHaveBeenCalledWith({
+    expect(dependencies.order.find).toHaveBeenCalledWith({
       params: {
         filters: {
           and: [
@@ -177,7 +178,7 @@ describe("Given: a subject and a product the add-to-cart flow is about to write"
    * Then: order lines are read by those order ids and the product, never by the product alone.
    */
   it("When: the service runs Then: order lines are narrowed to the open cart orders and the product", async () => {
-    const { service, ecommerceModule } = createTestContext({
+    const { service, dependencies } = createTestContext({
       subjectOrderIds: [OPEN_CART_ORDER_ID, "order-second"],
       openCartOrders: [
         { id: OPEN_CART_ORDER_ID, type: "cart", status: "new" },
@@ -187,7 +188,7 @@ describe("Given: a subject and a product the add-to-cart flow is about to write"
 
     await service.execute({ subjectId: SUBJECT_ID, productId: PRODUCT_ID });
 
-    expect(ecommerceModule.ordersToProducts.find).toHaveBeenCalledWith({
+    expect(dependencies.ordersToProducts.find).toHaveBeenCalledWith({
       params: {
         filters: {
           and: [

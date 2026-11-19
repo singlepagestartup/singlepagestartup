@@ -11,6 +11,10 @@ import { RegexCreator } from "../../../../../../../../../../utils/regex-utils/Re
 import { Coder as BackendCoder } from "../Coder";
 import { Migrator } from "./migrator/Migrator";
 import { util as getNameStyles } from "../../../../../../../../../utils/get-name-styles";
+import {
+  assertServiceModule,
+  synchronizeServiceRegistries,
+} from "../../../../../../../../../../utils/service-registries";
 
 export type IGeneratorProps = unknown;
 
@@ -66,11 +70,12 @@ export class Coder {
   }
 
   async create() {
+    const moduleName = this.parent.parent.parent.parent.parent.name;
+    assertServiceModule(this.tree, moduleName);
     if (this.project) {
+      synchronizeServiceRegistries(this.tree);
       return;
     }
-
-    const moduleName = this.parent.parent.parent.parent.parent.name;
 
     const modelRepositoryDatabaseImportPath =
       this.parent.parent.project.repository.project.database.importPath;
@@ -129,6 +134,7 @@ export class Coder {
     this.project = getProjects(this.tree).get(this.baseName);
 
     await this.attach();
+    synchronizeServiceRegistries(this.tree);
   }
 
   async remove() {
@@ -137,6 +143,7 @@ export class Coder {
     if (this.tree.exists(this.baseDirectory)) {
       this.tree.delete(this.baseDirectory);
     }
+    synchronizeServiceRegistries(this.tree);
   }
 
   async attach() {
@@ -203,10 +210,10 @@ export class ImportApp extends RegexCreator {
     const place = "";
     const placeRegex = new RegExp("");
 
-    const content = `import { app as ${asPropertyModelName} } from "${importPath}";`;
+    const content = `import { serviceBootstrap as ${asPropertyModelName} } from "${importPath}/src/lib/bootstrap";`;
 
     const contentRegex = new RegExp(
-      `import { app as ${asPropertyModelName} } from "${importPath}";`,
+      `import { serviceBootstrap as ${asPropertyModelName} } from "${importPath}/src/lib/bootstrap";`,
     );
 
     super({
@@ -233,11 +240,11 @@ export class BindApp extends RegexCreator {
     this.apps.push({
       type: "relation",
       route: "${route}",
-      app: ${asPropertyModelName},
+      app: createModuleChildApp(${asPropertyModelName}, this.assembly),
     });`;
 
     const contentRegex = new RegExp(
-      `[\\s\\n]*this\\.apps\\.push\\([\\s\\n]*{[\\s\\n]*type:[\\s]*"relation",[\\s\\n]*route:[\\s]*"${route}",[\\s\\n]*app:[\\s]*${asPropertyModelName},[\\s\\n]*}\\);[\\s\\n]*`,
+      `[\\s\\n]*this\\.apps\\.push\\([\\s\\n]*{[\\s\\n]*type:[\\s]*"relation",[\\s\\n]*route:[\\s]*"${route}",[\\s\\n]*app:[\\s]*createModuleChildApp\\(\\s*${asPropertyModelName},\\s*this\\.assembly,?\\s*\\),[\\s\\n]*}\\);[\\s\\n]*`,
       "gm",
     );
 

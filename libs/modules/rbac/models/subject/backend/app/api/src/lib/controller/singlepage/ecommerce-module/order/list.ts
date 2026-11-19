@@ -48,7 +48,7 @@ export class Handler {
 
       return await withConsistencySnapshot(async () => {
         const subjectsToEcommerceModuleOrders =
-          await this.service.subjectsToEcommerceModuleOrders.find({
+          await this.service.module.subjectsToEcommerceModuleOrders.find({
             params: {
               filters: {
                 and: [
@@ -79,7 +79,7 @@ export class Handler {
           { column: "type", method: "eq", value: "cart" },
           { column: "status", method: "eq", value: "new" },
         ];
-        const orders = await this.service.ecommerceModule.order.find({
+        const orders = await this.service.modules.ecommerce.order.find({
           params: {
             ...params,
             filters: {

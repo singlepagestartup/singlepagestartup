@@ -9,6 +9,8 @@ import {
   NEXT_PUBLIC_API_SERVICE_URL,
   saveLanguageContext,
 } from "@sps/shared-utils";
+import { cn } from "@sps/shared-frontend-client-utils";
+import type { IPurchaseCharge } from "@sps/ecommerce/models/order/sdk/model";
 import type { IComponentPropsExtended, IReceiptProps } from "./interface";
 
 const statuses: Record<string, { ru: string; en: string; color: string }> = {
@@ -112,15 +114,49 @@ function Receipt({ file, language }: IReceiptProps) {
   );
 }
 
+function orderPurchaseCharges(charges: IPurchaseCharge[]) {
+  const products = charges
+    .filter(({ charge }) => charge.role === "product")
+    .map((snapshot) => ({ snapshot, services: [] as IPurchaseCharge[] }));
+  const servicesByProductLineId = new Map(
+    products.map(({ snapshot, services }) => [snapshot.orderLineId, services]),
+  );
+  const onlyProduct = products.length === 1 ? products[0] : undefined;
+  const unlinkedServices: IPurchaseCharge[] = [];
+  for (const snapshot of charges) {
+    if (snapshot.charge.role === "product") {
+      continue;
+    }
+    const linkedServices = snapshot.parentLineId
+      ? servicesByProductLineId.get(snapshot.parentLineId)
+      : undefined;
+    const legacyServices =
+      onlyProduct &&
+      (!snapshot.parentLineId || !onlyProduct.snapshot.orderLineId)
+        ? onlyProduct.services
+        : undefined;
+    (linkedServices ?? legacyServices ?? unlinkedServices).push(snapshot);
+  }
+  return [
+    ...products.flatMap(({ snapshot, services }) => [
+      { snapshot, indented: false },
+      ...services.map((service) => ({ snapshot: service, indented: true })),
+    ]),
+    ...unlinkedServices.map((snapshot) => ({ snapshot, indented: false })),
+  ];
+}
+
 export const Component = memo(function Component(
   props: IComponentPropsExtended,
 ) {
   const language = props.language || internationalization.defaultLanguage.code;
   const ru = language === "ru";
-  const savedCharges = props.purchaseDetails?.charges ?? [];
-  const primaryCharge = savedCharges.find(
-    (snapshot) => snapshot.charge.role === "product",
+  const savedCharges = orderPurchaseCharges(
+    props.purchaseDetails?.charges ?? [],
   );
+  const primaryCharge = savedCharges.find(
+    ({ snapshot }) => snapshot.charge.role === "product",
+  )?.snapshot;
   const title =
     primaryCharge?.charge.title ?? (ru ? "Покупка услуги" : "Service purchase");
   const productSlug = props.purchaseDetails?.primaryProductSlug;
@@ -368,10 +404,17 @@ export const Component = memo(function Component(
             </p>
           ) : null}
           <ul className="mt-4 space-y-3">
-            {savedCharges.map((snapshot) => (
+            {savedCharges.map(({ snapshot, indented }) => (
               <li
-                key={`${snapshot.charge.offerId}:${snapshot.parentLineId ?? "primary"}`}
-                className={`flex justify-between gap-4 text-sm ${snapshot.charge.role === "product" ? "font-medium" : "ml-4 border-l border-border pl-4"}`}
+                key={
+                  snapshot.orderLineId ??
+                  `${snapshot.charge.offerId}:${snapshot.parentLineId ?? "primary"}`
+                }
+                className={cn(
+                  "flex justify-between gap-4 text-sm",
+                  snapshot.charge.role === "product" && "font-medium",
+                  indented && "ml-4 border-l border-border pl-4",
+                )}
               >
                 <div>
                   <p>

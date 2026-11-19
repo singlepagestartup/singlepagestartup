@@ -6,6 +6,10 @@ import path from "path";
 import { Migrator } from "./migrator/Migrator";
 import { RegexCreator } from "../../../../../../../../utils/regex-utils/RegexCreator";
 import { replaceInFile } from "../../../../../../../../utils/file-utils";
+import {
+  assertServiceModule,
+  synchronizeServiceRegistries,
+} from "../../../../../../../../utils/service-registries";
 
 export class Coder {
   name: string;
@@ -60,7 +64,9 @@ export class Coder {
   }
 
   async create() {
+    assertServiceModule(this.tree, this.moduleNameStyles.kebabCased.base);
     if (this.project) {
+      synchronizeServiceRegistries(this.tree);
       return;
     }
 
@@ -78,6 +84,7 @@ export class Coder {
     this.project = getProjects(this.tree).get(this.baseName);
 
     await this.attach();
+    synchronizeServiceRegistries(this.tree);
   }
 
   async attach() {
@@ -118,6 +125,7 @@ export class Coder {
     if (this.tree.exists(this.baseDirectory)) {
       this.tree.delete(this.baseDirectory);
     }
+    synchronizeServiceRegistries(this.tree);
   }
 }
 
@@ -126,10 +134,10 @@ export class ImportBackendAppApiAsPropertyCasedAppName extends RegexCreator {
     const place = "export const app";
     const placeRegex = /export const app\b/;
 
-    const content = `import { app as ${props.asPropertyCasedAppName}App } from "${props.importPath}";\n\n`;
+    const content = `import { moduleBootstrap as ${props.asPropertyCasedAppName}App } from "${props.importPath}/src/lib/bootstrap";\n\n`;
 
     const contentRegex = new RegExp(
-      `import { app as ${props.asPropertyCasedAppName}App } from "${props.importPath}";`,
+      `import { moduleBootstrap as ${props.asPropertyCasedAppName}App } from "${props.importPath}/src/lib/bootstrap";`,
     );
 
     super({

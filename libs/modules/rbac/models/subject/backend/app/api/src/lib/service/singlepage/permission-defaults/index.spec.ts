@@ -38,8 +38,10 @@ describe("public permission defaults", () => {
   function createService() {
     const permission = {
       repository: repository("permissions"),
-      permissionsToBillingModuleCurrenciesService: {
-        repository: repository("billing"),
+      module: {
+        permissionsToBillingModuleCurrencies: {
+          repository: repository("billing"),
+        },
       },
       find: async () => [{ method: "GET", path: "/api/demo/installed" }],
       isSensitiveRoute: async (route: string) =>

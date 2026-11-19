@@ -106,44 +106,6 @@ function fixture() {
       }),
       lockOrderDelivery: jest.fn(async () => undefined),
     },
-    subjectsToIdentities: {
-      find: jest.fn(async () => [
-        { subjectId: "owner", identityId: "identity" },
-      ]),
-    },
-    subjectsToEcommerceModuleOrders: crud("owners"),
-    ecommerceModule: {
-      order,
-      product: {
-        find: jest.fn(async () => products),
-        findByIdExtended: jest.fn(async ({ id }) =>
-          products.find((row) => row.id === id),
-        ),
-      },
-      storesToProducts: { find: jest.fn(async () => offers) },
-      store: {
-        findById: jest.fn(async ({ id }) =>
-          catalogStores.find((row) => row.id === id),
-        ),
-        find: jest.fn(async (props: any) => {
-          const filter = props.params.filters?.and[0];
-          if (filter) {
-            return catalogStores.filter((store) => store.id === filter.value);
-          }
-          return catalogStores.slice(0, props.params.limit);
-        }),
-      },
-      ordersToProducts: crud("lines"),
-      storesToOrders: crud("stores"),
-      ordersToBillingModuleCurrencies: crud("currencies"),
-      ordersToBillingModulePaymentIntents: crud("orderIntents"),
-    },
-    billingModule: {
-      paymentIntent: crud("intents"),
-      invoice: crud("invoices"),
-      paymentIntentsToCurrencies: crud("intentCurrencies"),
-      paymentIntentsToInvoices: crud("intentInvoices"),
-    },
     fulfillPaidOrderInTransaction: jest.fn(async ({ orderId }) => {
       expect(inTransaction).toBe(true);
       expect(tables.invoices[0].status).toBe("paid");
@@ -162,6 +124,50 @@ function fixture() {
     dispatchPaidEffects: jest.fn(async () => {
       expect(inTransaction).toBe(false);
     }),
+    module: {
+      subjectsToIdentities: {
+        find: jest.fn(async () => [
+          { subjectId: "owner", identityId: "identity" },
+        ]),
+      },
+      subjectsToEcommerceModuleOrders: crud("owners"),
+    },
+    modules: {
+      ecommerce: {
+        product: {
+          find: jest.fn(async () => products),
+          findByIdExtended: jest.fn(async ({ id }) =>
+            products.find((row) => row.id === id),
+          ),
+        },
+        storesToProducts: { find: jest.fn(async () => offers) },
+        store: {
+          findById: jest.fn(async ({ id }) =>
+            catalogStores.find((row) => row.id === id),
+          ),
+          find: jest.fn(async (props: any) => {
+            const filter = props.params.filters?.and[0];
+            if (filter) {
+              return catalogStores.filter((store) => store.id === filter.value);
+            }
+            return catalogStores.slice(0, props.params.limit);
+          }),
+        },
+        ordersToProducts: crud("lines"),
+        storesToOrders: crud("stores"),
+        ordersToBillingModuleCurrencies: crud("currencies"),
+        order: {
+          ...order,
+          ordersToBillingModulePaymentIntents: crud("orderIntents"),
+          paymentIntent: crud("intents"),
+        },
+      },
+      billing: {
+        invoice: crud("invoices"),
+        paymentIntentsToCurrencies: crud("intentCurrencies"),
+        paymentIntentsToInvoices: crud("intentInvoices"),
+      },
+    },
   };
   return {
     tables,
@@ -431,7 +437,7 @@ it.each(["settlement", "balance"] as const)(
 
 it("rolls back when a graph link fails", async () => {
   const { service, tables, dependencies } = fixture();
-  dependencies.ecommerceModule.ordersToProducts.create.mockRejectedValueOnce(
+  dependencies.modules.ecommerce.ordersToProducts.create.mockRejectedValueOnce(
     new Error("link failure"),
   );
   await expect(service.execute({ id: "owner" })).rejects.toThrow(
@@ -472,7 +478,7 @@ it("rejects multiple unaccepted pending Free histories, a nonzero price and gues
     "only zero prices",
   );
   const third = fixture();
-  third.dependencies.subjectsToIdentities.find.mockResolvedValue([]);
+  third.dependencies.module.subjectsToIdentities.find.mockResolvedValue([]);
   await expect(third.service.execute({ id: "owner" })).rejects.toThrow(
     "registered Subject",
   );

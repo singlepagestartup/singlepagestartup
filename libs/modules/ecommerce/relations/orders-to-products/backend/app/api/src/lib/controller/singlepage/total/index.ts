@@ -23,7 +23,7 @@ export class Handler {
         throw new Error("Validation error. Invalid id. Got: " + id);
       }
 
-      let entity = await this.service.findById({ id });
+      const entity = await this.service.findById({ id });
 
       if (!entity) {
         throw new Error("Not Found error. Order not found");

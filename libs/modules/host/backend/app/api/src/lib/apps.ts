@@ -1,79 +1,80 @@
-import { app as metadataToFileStorageModuleFiles } from "@sps/host/relations/metadata-to-file-storage-module-files/backend/app/api";
-import { app as layout } from "@sps/host/models/layout/backend/app/api";
-import { app as metadata } from "@sps/host/models/metadata/backend/app/api";
-import { app as page } from "@sps/host/models/page/backend/app/api";
-import { app as widget } from "@sps/host/models/widget/backend/app/api";
-import { app as layoutsToWidgets } from "@sps/host/relations/layouts-to-widgets/backend/app/api";
-import { app as pagesToLayouts } from "@sps/host/relations/pages-to-layouts/backend/app/api";
-import { app as pagesToMetadata } from "@sps/host/relations/pages-to-metadata/backend/app/api";
-import { app as pagesToWidgets } from "@sps/host/relations/pages-to-widgets/backend/app/api";
-import { app as widgetsToExternalModules } from "@sps/host/relations/widgets-to-external-widgets/backend/app/api";
-import { DefaultApp } from "@sps/shared-backend-api";
-import type { Controller as PageController } from "@sps/host/models/page/backend/app/api/src/lib/controller/singlepage";
-import type { IRouteSource } from "@sps/host/models/page/backend/app/api/src/lib/service/singlepage/routing";
+import { serviceBootstrap as metadataToFileStorageModuleFiles } from "@sps/host/relations/metadata-to-file-storage-module-files/backend/app/api/src/lib/bootstrap";
+import { serviceBootstrap as layout } from "@sps/host/models/layout/backend/app/api/src/lib/bootstrap";
+import { serviceBootstrap as metadata } from "@sps/host/models/metadata/backend/app/api/src/lib/bootstrap";
+import { serviceBootstrap as page } from "@sps/host/models/page/backend/app/api/src/lib/bootstrap";
+import { serviceBootstrap as widget } from "@sps/host/models/widget/backend/app/api/src/lib/bootstrap";
+import { serviceBootstrap as layoutsToWidgets } from "@sps/host/relations/layouts-to-widgets/backend/app/api/src/lib/bootstrap";
+import { serviceBootstrap as pagesToLayouts } from "@sps/host/relations/pages-to-layouts/backend/app/api/src/lib/bootstrap";
+import { serviceBootstrap as pagesToMetadata } from "@sps/host/relations/pages-to-metadata/backend/app/api/src/lib/bootstrap";
+import { serviceBootstrap as pagesToWidgets } from "@sps/host/relations/pages-to-widgets/backend/app/api/src/lib/bootstrap";
+import { serviceBootstrap as widgetsToExternalModules } from "@sps/host/relations/widgets-to-external-widgets/backend/app/api/src/lib/bootstrap";
+import {
+  createModuleChildApp,
+  defaultAppAssembly,
+  type IAppAssembly,
+  type IModuleAppEntry,
+} from "@sps/shared-backend-api";
 
 export class Apps {
-  apps: { type: "model" | "relation"; route: string; app: DefaultApp<any> }[] =
-    [];
+  apps: IModuleAppEntry[] = [];
 
-  constructor() {
+  constructor(private readonly assembly: IAppAssembly = defaultAppAssembly) {
     this.bindApps();
-  }
-
-  configureRouting(sources: IRouteSource[]) {
-    (page.controller as PageController).configureRouting(sources);
   }
 
   bindApps() {
     this.apps.push({
       type: "relation",
       route: "/metadata-to-file-storage-module-files",
-      app: metadataToFileStorageModuleFiles,
+      app: createModuleChildApp(
+        metadataToFileStorageModuleFiles,
+        this.assembly,
+      ),
     });
     this.apps.push({
       type: "model",
       route: "/layouts",
-      app: layout,
+      app: createModuleChildApp(layout, this.assembly),
     });
     this.apps.push({
       type: "model",
       route: "/metadata",
-      app: metadata,
+      app: createModuleChildApp(metadata, this.assembly),
     });
     this.apps.push({
       type: "model",
       route: "/pages",
-      app: page,
+      app: createModuleChildApp(page, this.assembly),
     });
     this.apps.push({
       type: "model",
       route: "/widgets",
-      app: widget,
+      app: createModuleChildApp(widget, this.assembly),
     });
     this.apps.push({
       type: "relation",
       route: "/layouts-to-widgets",
-      app: layoutsToWidgets,
+      app: createModuleChildApp(layoutsToWidgets, this.assembly),
     });
     this.apps.push({
       type: "relation",
       route: "/pages-to-layouts",
-      app: pagesToLayouts,
+      app: createModuleChildApp(pagesToLayouts, this.assembly),
     });
     this.apps.push({
       type: "relation",
       route: "/pages-to-metadata",
-      app: pagesToMetadata,
+      app: createModuleChildApp(pagesToMetadata, this.assembly),
     });
     this.apps.push({
       type: "relation",
       route: "/pages-to-widgets",
-      app: pagesToWidgets,
+      app: createModuleChildApp(pagesToWidgets, this.assembly),
     });
     this.apps.push({
       type: "relation",
       route: "/widgets-to-external-widgets",
-      app: widgetsToExternalModules,
+      app: createModuleChildApp(widgetsToExternalModules, this.assembly),
     });
   }
 }

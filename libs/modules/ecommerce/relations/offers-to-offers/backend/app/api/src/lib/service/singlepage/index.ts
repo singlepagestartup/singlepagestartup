@@ -1,18 +1,23 @@
+import { createModules } from "@sps/ecommerce/backend/app/api/src/lib/modules";
 import "reflect-metadata";
 import { inject, injectable } from "inversify";
 import { CRUDService, DI, type ISeedResult } from "@sps/shared-backend-api";
 import { Table } from "@sps/ecommerce/relations/offers-to-offers/backend/repository/database";
-import type { Table as Offer } from "@sps/ecommerce/relations/stores-to-products/backend/repository/database";
+import type { Repository as OfferRepository } from "@sps/ecommerce/relations/stores-to-products/backend/app/api/src/lib/repository";
 import type { Table as Product } from "@sps/ecommerce/models/product/backend/repository/database";
 import { Repository } from "../../repository";
 import { OfferLinksDI } from "../../di";
 
 @injectable()
 export class Service extends CRUDService<typeof Table.$inferSelect> {
+  get modules() {
+    return this.appAssembly.getOrCreate(createModules);
+  }
+
   constructor(
     @inject(DI.IRepository) readonly repository: Repository,
-    @inject(OfferLinksDI.IOffersService)
-    readonly offers: Pick<CRUDService<typeof Offer.$inferSelect>, "find">,
+    @inject(OfferLinksDI.IOfferReader)
+    readonly offers: Pick<OfferRepository, "find">,
     @inject(OfferLinksDI.IProductsService)
     readonly products: Pick<CRUDService<typeof Product.$inferSelect>, "find">,
   ) {

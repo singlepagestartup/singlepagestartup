@@ -57,7 +57,10 @@ describe("Widget relation seed replay", () => {
         ]
       : [];
     const repository = new DatabaseRepository(new Constructor());
-    jest.spyOn(fs, "readdir").mockResolvedValue(["relation.json"] as any);
+    const directoryReader: {
+      readdir: (path: Parameters<typeof fs.readdir>[0]) => Promise<string[]>;
+    } = fs;
+    jest.spyOn(directoryReader, "readdir").mockResolvedValue(["relation.json"]);
     jest.spyOn(fs, "readFile").mockResolvedValue(JSON.stringify(dump));
     const find = jest
       .spyOn(repository, "find")

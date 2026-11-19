@@ -55,18 +55,20 @@ function createService() {
       orderDeleteMock(...args),
     ecommerceModuleOrderAssertAccess: jest.fn().mockResolvedValue(undefined),
     findById: jest.fn().mockResolvedValue({ id: "subject-1" }),
-    ecommerceModule: {
-      order: {
-        findById: jest.fn().mockResolvedValue({
-          id: "order-1",
-          status: "new",
-        }),
-      },
-      ordersToProducts: {
-        find: jest.fn().mockResolvedValue([
-          { id: "otp-1", orderId: "order-1" },
-          { id: "otp-2", orderId: "order-1" },
-        ]),
+    modules: {
+      ecommerce: {
+        order: {
+          findById: jest.fn().mockResolvedValue({
+            id: "order-1",
+            status: "new",
+          }),
+        },
+        ordersToProducts: {
+          find: jest.fn().mockResolvedValue([
+            { id: "otp-1", orderId: "order-1" },
+            { id: "otp-2", orderId: "order-1" },
+          ]),
+        },
       },
     },
   } as any;

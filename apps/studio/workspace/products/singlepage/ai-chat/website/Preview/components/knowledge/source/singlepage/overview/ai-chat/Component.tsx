@@ -1,7 +1,7 @@
 "use client";
 import { twMerge as twMerge } from "tailwind-merge";
 import Markdown from "markdown-to-jsx";
-import IconGlyphs from "../../../../../website-builder/feature/singlepage/icon/icons.json";
+import IconGlyphs from "../../../../../../../../../../../design/singlepage/interface-kit/ai-chat/icons.json";
 import { Component as FileStorageModuleFile } from "../../../../../file-storage/file/index";
 import { memo, useCallback, useId } from "react";
 import { MarkdownField } from "../document/ai-chat/MarkdownField";

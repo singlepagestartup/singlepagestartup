@@ -53,6 +53,8 @@ jest.mock("@sps/billing/models/payment-intent/sdk/server", () => ({
 import { Service } from "@sps/billing/models/payment-intent/backend/app/api/src/lib/service";
 import { Service as InvoiceService } from "@sps/billing/models/invoice/backend/app/api/src/lib/service";
 import { Handler } from "./index";
+import { createAppAssembly } from "@sps/shared-backend-api";
+import { serviceBootstrap as invoiceBootstrap } from "@sps/billing/models/invoice/backend/app/api/src/lib/bootstrap";
 const PAYMENT_INTENT_INITIALIZATION_GRACE_PERIOD_MS = 5 * 60 * 1000;
 
 describe("Given: a payment intent has no invoice relation yet", () => {
@@ -78,7 +80,7 @@ describe("Given: a payment intent has no invoice relation yet", () => {
     const service = {
       findById: jest.fn().mockResolvedValue(paymentIntent),
       failUninitializedPaymentIntent: mockPaymentIntentUpdate,
-      billingModule: {
+      module: {
         paymentIntentsToInvoices: {
           find: jest.fn().mockResolvedValue([]),
         },
@@ -221,19 +223,22 @@ describe("CloudPayments invoice reconciliation", () => {
         return Object.assign(intent, data);
       }),
     };
-    const service = new Service(repository as any, {
-      currency: {} as any,
-      invoice: new InvoiceService(invoiceRepository as any),
-      paymentIntentsToInvoices: {
-        create: jest.fn(),
-        find: jest
+    const assembly = createAppAssembly(({ overrideServiceWith }) => {
+      overrideServiceWith(
+        invoiceBootstrap,
+        () => new InvoiceService(invoiceRepository as any),
+      );
+    });
+    const service = new Service(repository as any).withAppAssembly(assembly);
+    jest
+      .spyOn(service.module.paymentIntentsToInvoices, "find")
+      .mockImplementation(
+        jest
           .fn()
           .mockResolvedValue([
             { invoiceId: invoice.id, paymentIntentId: intent.id },
           ]),
-        findById: jest.fn(),
-      },
-    });
+      );
     const settle = jest.spyOn(service, "settlePayment");
     const ctx = {
       req: { param: () => intent.id, parseBody: async () => ({ data: "{}" }) },

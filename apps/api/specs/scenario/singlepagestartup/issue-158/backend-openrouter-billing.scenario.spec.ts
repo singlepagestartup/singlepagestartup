@@ -13,6 +13,8 @@ import { api as subjectsToSocialModuleProfilesApi } from "@sps/rbac/relations/su
 import { api as socialModuleMessageApi } from "@sps/social/models/message/sdk/server";
 import { api as socialModuleProfileApi } from "@sps/social/models/profile/sdk/server";
 import { api as socialModuleProfilesToChatsApi } from "@sps/social/relations/profiles-to-chats/sdk/server";
+import type { IModel as ISocialModuleMessage } from "@sps/social/models/message/sdk/model";
+import type { IModel as ISocialModuleChat } from "@sps/social/models/chat/sdk/model";
 import { IModel as ISocialModuleThread } from "@sps/social/models/thread/sdk/model";
 import { authenticateScenarioSubject } from "../issue-152/test-utils/auth";
 import {
@@ -50,7 +52,13 @@ describe("Given: issue-158 OpenRouter billing metadata scenario", () => {
     return defaultThreads[0];
   };
 
-  const getChatId = (chatPayload: any) => {
+  const getChatId = (
+    chatPayload:
+      | (Partial<Pick<ISocialModuleChat, "id">> & {
+          socialModuleChat?: Pick<ISocialModuleChat, "id">;
+        })
+      | undefined,
+  ) => {
     const chatId = chatPayload?.id || chatPayload?.socialModuleChat?.id;
 
     if (!chatId) {
@@ -62,7 +70,13 @@ describe("Given: issue-158 OpenRouter billing metadata scenario", () => {
     return chatId;
   };
 
-  const getMessageId = (messagePayload: any) => {
+  const getMessageId = (
+    messagePayload:
+      | (Partial<Pick<ISocialModuleMessage, "id">> & {
+          socialModule?: { message?: Pick<ISocialModuleMessage, "id"> };
+        })
+      | undefined,
+  ) => {
     const messageId =
       messagePayload?.id || messagePayload?.socialModule?.message?.id;
 

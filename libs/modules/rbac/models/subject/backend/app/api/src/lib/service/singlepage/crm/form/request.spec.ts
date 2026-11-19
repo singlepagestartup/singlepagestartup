@@ -78,47 +78,54 @@ function fixture() {
   const find = (rows: any[]) => jest.fn(async () => rows);
   const deps = {
     findById: jest.fn(async () => ({ id: subjectId })),
-    crmModule: {
-      form: { findById: jest.fn(async () => form), submit: repository.submit },
-      formsToSteps: { find: find([{ stepId: stepA }, { stepId: stepB }]) },
-      step: {
-        find: find([
-          { id: stepA, title: { en: "First step" } },
-          { id: stepB, title: { en: "Second step" } },
-        ]),
+    modules: {
+      crm: {
+        form: {
+          findById: jest.fn(async () => form),
+          submit: repository.submit,
+        },
+        formsToSteps: { find: find([{ stepId: stepA }, { stepId: stepB }]) },
+        step: {
+          find: find([
+            { id: stepA, title: { en: "First step" } },
+            { id: stepB, title: { en: "Second step" } },
+          ]),
+        },
+        stepsToInputs: {
+          find: find([
+            { stepId: stepA, inputId: textId },
+            { stepId: stepA, inputId: selectId },
+            { stepId: stepB, inputId: noteId },
+            { stepId: stepB, inputId: numberId },
+          ]),
+        },
+        input: { find: find(input) },
+        inputsToOptions: { find: find([{ inputId: selectId, optionId }]) },
+        option: {
+          findById: jest.fn(async () => ({
+            id: optionId,
+            title: { en: "Live chosen option" },
+          })),
+        },
+        request: repository,
       },
-      stepsToInputs: {
-        find: find([
-          { stepId: stepA, inputId: textId },
-          { stepId: stepA, inputId: selectId },
-          { stepId: stepB, inputId: noteId },
-          { stepId: stepB, inputId: numberId },
-        ]),
+      notification: {
+        topic: { find: find([{ id: "information" }]) },
+        template: {
+          find: find([
+            {
+              id: "template",
+              title: "Request",
+              variant: "generate-telegram-crm-form-request-created-admin",
+            },
+          ]),
+        },
       },
-      input: { find: find(input) },
-      inputsToOptions: { find: find([{ inputId: selectId, optionId }]) },
-      option: {
-        findById: jest.fn(async () => ({
-          id: optionId,
-          title: { en: "Live chosen option" },
-        })),
-      },
-      request: repository,
     },
-    notificationModule: {
-      topic: { find: find([{ id: "information" }]) },
-      template: {
-        find: find([
-          {
-            id: "template",
-            title: "Request",
-            variant: "generate-telegram-crm-form-request-created-admin",
-          },
-        ]),
-      },
+    module: {
+      role: { find: find([{ id: "admin" }]) },
+      subjectsToRoles: { find: find([{ subjectId: "admin-subject" }]) },
     },
-    role: { find: find([{ id: "admin" }]) },
-    subjectsToRoles: { find: find([{ subjectId: "admin-subject" }]) },
   };
   const data = {
     submissionId,
@@ -223,7 +230,7 @@ it("ignores client labels and uses only the linked Option's stored metadata", as
 
 it("preflights notification configuration before writing anything", async () => {
   const { service, props, deps, repository } = fixture();
-  deps.notificationModule.template.find.mockResolvedValue([]);
+  deps.modules.notification.template.find.mockResolvedValue([]);
   await expect(service.execute(props)).rejects.toThrow("templates not found");
   expect(repository.submit).not.toHaveBeenCalled();
 });
@@ -365,7 +372,7 @@ it.each([
   "preserves mixed delivery priority across recipient calls %j",
   async (statuses, expected) => {
     const { service, props, deps } = fixture();
-    deps.subjectsToRoles.find.mockResolvedValue([
+    deps.module.subjectsToRoles.find.mockResolvedValue([
       { subjectId: "admin-first" },
       { subjectId: "admin-second" },
     ]);

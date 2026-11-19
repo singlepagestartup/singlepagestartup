@@ -1,5 +1,5 @@
 import { Service as InitialGrantProducts } from "../../billing/initial-grant-products";
-import type { Service as SubjectService } from "../../index";
+import type { SubjectServiceDependencies } from "../../index";
 import type { IEcommerceProductCheckoutInput } from "@sps/rbac/models/subject/sdk/model";
 import { ECOMMERCE_ORDER_LINE_QUANTITY_BOUNDS as quantityBounds } from "@sps/shared-utils";
 import { z } from "zod";
@@ -13,14 +13,8 @@ export interface IExecuteProps {
 }
 export type ICheckout = (props: IExecuteProps) => Promise<unknown>;
 export interface IConstructorProps {
-  service: Pick<
-    SubjectService,
-    | "findById"
-    | "subjectsToIdentities"
-    | "ecommerceModule"
-    | "billingModule"
-    | "ecommerceModuleOrderCreate"
-    | "ecommerceOrderCheckout"
+  service: SubjectServiceDependencies<
+    "findById" | "ecommerceModuleOrderCreate" | "ecommerceOrderCheckout"
   >;
 }
 
@@ -43,7 +37,7 @@ export class Service {
       );
     }
     if (
-      !this.service.billingModule.paymentIntent.isProviderAllowed({
+      !this.service.modules.ecommerce.order.paymentIntent.isProviderAllowed({
         provider: data.provider,
       })
     ) {
@@ -51,7 +45,7 @@ export class Service {
         "Validation error. Selected payment provider is unavailable",
       );
     }
-    const product = await this.service.ecommerceModule.product.findById({
+    const product = await this.service.modules.ecommerce.product.findById({
       id: productId,
     });
     if (!product) {
@@ -59,7 +53,7 @@ export class Service {
     }
     if (
       await new InitialGrantProducts(
-        this.service.ecommerceModule.storesToProducts,
+        this.service.modules.ecommerce.storesToProducts,
       ).includes(product.id)
     ) {
       throw new Error(
@@ -67,7 +61,7 @@ export class Service {
       );
     }
     const offers =
-      await this.service.ecommerceModule.storesToProducts.offersForProduct({
+      await this.service.modules.ecommerce.storesToProducts.offersForProduct({
         productId,
         ...(data.storeId ? { storeId: data.storeId } : {}),
       });
@@ -84,7 +78,7 @@ export class Service {
     }
     let currencyId =
       data.billingModule?.currency?.id ?? data.billingModuleCurrencyId ?? "";
-    let quote = await this.service.ecommerceModule.storesToProducts.quote({
+    let quote = await this.service.modules.ecommerce.storesToProducts.quote({
       offerId: offer.id,
       quantity,
       currencyId,
@@ -92,7 +86,7 @@ export class Service {
       services: data.services,
     });
     if (!currencyId) {
-      const defaults = await this.service.billingModule.currency.find({
+      const defaults = await this.service.modules.billing.currency.find({
         params: {
           filters: {
             and: [{ column: "isDefault", method: "eq", value: true }],
@@ -106,7 +100,7 @@ export class Service {
         quote.currencyIds[0] ??
         "";
       if (currencyId) {
-        quote = await this.service.ecommerceModule.storesToProducts.quote({
+        quote = await this.service.modules.ecommerce.storesToProducts.quote({
           offerId: offer.id,
           quantity,
           currencyId,
@@ -133,7 +127,7 @@ export class Service {
         `Validation error. Complete the offer selection before checkout. ${quote.issues.map((issue) => issue.message).join("; ")}`,
       );
     }
-    const currency = await this.service.billingModule.currency.findById({
+    const currency = await this.service.modules.billing.currency.findById({
       id: currencyId,
     });
     if (!currency) {
@@ -155,7 +149,7 @@ export class Service {
         throw new Error("Validation error. Receipt email must be valid");
       }
       if (!data.email) {
-        const identities = await this.service.subjectsToIdentities.find({
+        const identities = await this.service.module.subjectsToIdentities.find({
           params: {
             filters: {
               and: [{ column: "subjectId", method: "eq", value: id }],

@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import QueryString from "qs";
 import { createElement } from "react";
 import { Component as ChildComponent } from "./component";
+import type { IComponentProps } from "./component/interface";
 import { inflate } from "pako";
 import fs from "fs/promises";
 import path from "path";
@@ -310,7 +311,7 @@ const fontsURLs: {
   ],
 };
 
-function Component(props: any) {
+function Component(props: IComponentProps) {
   return (
     <div
       style={{
@@ -338,7 +339,7 @@ export const GET = async (request: NextRequest) => {
       ? Number(parsedParams["height"])
       : 512;
 
-    let data: Record<string, any> = {};
+    let data: unknown = {};
 
     if (typeof parsedParams.data === "string") {
       const decodedBuffer = Buffer.from(parsedParams.data, "base64");
@@ -358,7 +359,8 @@ export const GET = async (request: NextRequest) => {
       parsedParams.variant ===
         "generate-template-ecommerce-product-attachment-default"
     ) {
-      const templateId = data.fileStorage?.file?.id;
+      const templateId = (data as { fileStorage?: { file?: { id?: unknown } } })
+        .fileStorage?.file?.id;
 
       if (
         typeof templateId !== "string" ||
@@ -482,7 +484,7 @@ export const GET = async (request: NextRequest) => {
         },
       },
     );
-  } catch (error: any) {
+  } catch (error) {
     // The route is unauthenticated, so decode and render internals stay in the
     // host log instead of travelling back to the caller.
     console.error("Image generator render failed:", error);

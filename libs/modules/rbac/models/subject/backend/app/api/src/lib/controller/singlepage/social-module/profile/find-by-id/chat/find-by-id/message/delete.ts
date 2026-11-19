@@ -54,7 +54,7 @@ export class Handler {
       }
 
       const chatToMessages =
-        await this.service.socialModule.chatsToMessages.find({
+        await this.service.modules.social.chatsToMessages.find({
           params: {
             filters: {
               and: [
@@ -78,7 +78,7 @@ export class Handler {
       }
 
       const socialModuleMessage =
-        await this.service.socialModule.message.findById({
+        await this.service.modules.social.message.findById({
           id: socialModuleMessageId,
         });
 

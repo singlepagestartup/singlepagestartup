@@ -1,8 +1,11 @@
-import { REGISTRATION_GRANT_VARIANT } from "@sps/shared-utils";
+import {
+  createMemoryCache,
+  RBAC_SECRET_KEY,
+  REGISTRATION_GRANT_VARIANT,
+} from "@sps/shared-utils";
 import { Service as InitialGrantProducts } from "../../billing/initial-grant-products";
 import { isConfirmedInvoice } from "@sps/billing/models/payment-intent/sdk/model";
-import { DI, type FindServiceProps } from "@sps/shared-backend-api";
-import { createMemoryCache, RBAC_SECRET_KEY } from "@sps/shared-utils";
+import type { FindServiceProps } from "@sps/shared-backend-api";
 import { IModel as IEcommerceModuleOrder } from "@sps/ecommerce/models/order/sdk/model";
 import { api } from "@sps/rbac/models/subject/sdk/server";
 import { IModel as IEcommerceModuleAttributesToBillingModuleCurrencies } from "@sps/ecommerce/relations/attributes-to-billing-module-currencies/sdk/model";
@@ -10,21 +13,8 @@ import { IModel as ISubjectsToRoles } from "@sps/rbac/relations/subjects-to-role
 import { type IResult as IEcommerceOrderResult } from "@sps/ecommerce/models/order/sdk/server";
 import { IModel as IBillingModuleCurrency } from "@sps/billing/models/currency/sdk/model";
 import { IModel as IFileStorageModuleFile } from "@sps/file-storage/models/file/sdk/model";
-import { inject, injectable } from "inversify";
-import {
-  SubjectDI,
-  type IEcommerceModule,
-  type INotificationModule,
-  type ISocialModule,
-} from "../../../../di";
-import { Service as SubjectsToSocialModuleProfilesService } from "@sps/rbac/relations/subjects-to-social-module-profiles/backend/app/api/src/lib/service";
+import type { SubjectServiceDependencies } from "../../index";
 import { Service as SubjectsToEcommerceModuleOrdersService } from "@sps/rbac/relations/subjects-to-ecommerce-module-orders/backend/app/api/src/lib/service";
-import { Service as SubjectsToRolesService } from "@sps/rbac/relations/subjects-to-roles/backend/app/api/src/lib/service";
-import { Service as SubjectsToBillingModuleCurrenciesService } from "@sps/rbac/relations/subjects-to-billing-module-currencies/backend/app/api/src/lib/service";
-import { Service as SubjectsToIdentitiesService } from "@sps/rbac/relations/subjects-to-identities/backend/app/api/src/lib/service";
-import { Service as IdentityService } from "@sps/rbac/models/identity/backend/app/api/src/lib/service";
-import { Service as RoleService } from "@sps/rbac/models/role/backend/app/api/src/lib/service";
-import { Service as RolesToEcommerceModuleProductsService } from "@sps/rbac/relations/roles-to-ecommerce-module-products/backend/app/api/src/lib/service";
 import { logger } from "@sps/backend-utils";
 import type { ICheckout as IEcommerceProductCheckout } from "../product/checkout";
 import { Repository } from "../../../../repository";
@@ -118,20 +108,35 @@ function groupSubjectOrderRelationsByOrderId(
   return result;
 }
 
-@injectable()
-export class Service {
+export interface IConstructorProps {
+  module: Pick<
+    SubjectServiceDependencies["module"],
+    | "identity"
+    | "role"
+    | "subjectsToEcommerceModuleOrders"
+    | "subjectsToRoles"
+    | "subjectsToSocialModuleProfiles"
+    | "subjectsToBillingModuleCurrencies"
+    | "subjectsToIdentities"
+  >;
+  modules: Pick<
+    SubjectServiceDependencies["modules"],
+    "ecommerce" | "notification" | "social"
+  >;
   repository: Repository;
-  socialModule: ISocialModule;
-  ecommerceModule: IEcommerceModule;
-  notificationModule: INotificationModule;
-  identity: IdentityService;
-  role: RoleService;
-  rolesToEcommerceModuleProducts: RolesToEcommerceModuleProductsService;
-  subjectsToEcommerceModuleOrders: SubjectsToEcommerceModuleOrdersService;
-  subjectsToRoles: SubjectsToRolesService;
-  subjectsToSocialModuleProfiles: SubjectsToSocialModuleProfilesService;
-  subjectsToBillingModuleCurrencies: SubjectsToBillingModuleCurrenciesService;
-  subjectsToIdentities: SubjectsToIdentitiesService;
+  ecommerceProductCheckout: IEcommerceProductCheckout;
+  ecommerceOrderRenewal?: IRenewal;
+}
+
+export class Service {
+  get module() {
+    return this.dependencies.module;
+  }
+
+  get modules() {
+    return this.dependencies.modules;
+  }
+
   protected processingOrderIds = new Set<string>();
   private readonly reportedUnconfirmedPaymentOrders = createMemoryCache({
     ttlMs: 24 * 60 * 60 * 1000,
@@ -139,43 +144,11 @@ export class Service {
   });
   private scanCursors = new Map<string, string>();
 
-  constructor(
-    @inject(DI.IRepository) repository: Repository,
-    @inject(SubjectDI.ISocialModule) socialModule: ISocialModule,
-    @inject(SubjectDI.IEcommerceModule) ecommerceModule: IEcommerceModule,
-    @inject(SubjectDI.INotificationModule)
-    notificationModule: INotificationModule,
-    @inject(SubjectDI.IIdentityService) identity: IdentityService,
-    @inject(SubjectDI.IRoleService) role: RoleService,
-    @inject(SubjectDI.IRolesToEcommerceModuleProductsService)
-    rolesToEcommerceModuleProducts: RolesToEcommerceModuleProductsService,
-    @inject(SubjectDI.ISubjectsToEcommerceModuleOrdersService)
-    subjectsToEcommerceModuleOrders: SubjectsToEcommerceModuleOrdersService,
-    @inject(SubjectDI.ISubjectsToRolesService)
-    subjectsToRoles: SubjectsToRolesService,
-    @inject(SubjectDI.ISubjectsToSocialModuleProfilesService)
-    subjectsToSocialModuleProfiles: SubjectsToSocialModuleProfilesService,
-    @inject(SubjectDI.ISubjectsToBillingModuleCurrenciesService)
-    subjectsToBillingModuleCurrencies: SubjectsToBillingModuleCurrenciesService,
-    @inject(SubjectDI.ISubjectsToIdentitiesService)
-    subjectsToIdentities: SubjectsToIdentitiesService,
-    @inject(SubjectDI.IEcommerceProductCheckout)
-    readonly ecommerceProductCheckout: IEcommerceProductCheckout,
-    @inject(SubjectDI.IEcommerceOrderRenewal)
-    readonly ecommerceOrderRenewal: IRenewal = async () => ({}),
-  ) {
-    this.repository = repository;
-    this.socialModule = socialModule;
-    this.ecommerceModule = ecommerceModule;
-    this.notificationModule = notificationModule;
-    this.identity = identity;
-    this.role = role;
-    this.rolesToEcommerceModuleProducts = rolesToEcommerceModuleProducts;
-    this.subjectsToEcommerceModuleOrders = subjectsToEcommerceModuleOrders;
-    this.subjectsToRoles = subjectsToRoles;
-    this.subjectsToSocialModuleProfiles = subjectsToSocialModuleProfiles;
-    this.subjectsToBillingModuleCurrencies = subjectsToBillingModuleCurrencies;
-    this.subjectsToIdentities = subjectsToIdentities;
+  private readonly ecommerceOrderRenewal: IRenewal;
+
+  constructor(private readonly dependencies: IConstructorProps) {
+    this.ecommerceOrderRenewal =
+      dependencies.ecommerceOrderRenewal ?? (async () => ({}));
   }
 
   async execute(props: IExecuteProps) {
@@ -221,7 +194,7 @@ export class Service {
     }
 
     const subjectsToEcommerceModuleOrders =
-      await this.subjectsToEcommerceModuleOrders.find({
+      await this.module.subjectsToEcommerceModuleOrders.find({
         params: {
           filters: {
             and: relationFilters,
@@ -252,7 +225,7 @@ export class Service {
           subjectsToEcommerceModuleOrdersByOrderId.get(order.id) ?? [];
 
         for (const subjectToEcommerceModuleOrder of matchingSubjectsToEcommerceModuleOrders) {
-          const rbacSubjectsToRoles = await this.subjectsToRoles.find({
+          const rbacSubjectsToRoles = await this.module.subjectsToRoles.find({
             params: {
               filters: {
                 and: [
@@ -341,7 +314,7 @@ export class Service {
                 orderId: order.id,
                 cancel: true,
               });
-              await this.ecommerceModule.order.stopSubscriptionRenewal({
+              await this.modules.ecommerce.order.stopSubscriptionRenewal({
                 id: order.id,
               });
             }
@@ -352,17 +325,17 @@ export class Service {
               cancel: true,
             });
             if (extendedOrder.subscriptionPeriodInvoiceId) {
-              await this.ecommerceModule.order.stopSubscriptionRenewal({
+              await this.modules.ecommerce.order.stopSubscriptionRenewal({
                 id: order.id,
               });
             }
-            await this.repository.withOrderDelivery(
+            await this.dependencies.repository.withOrderDelivery(
               {
                 subjectId: subjectToEcommerceModuleOrder.subjectId,
                 orderId: order.id,
               },
               async () => {
-                await this.ecommerceModule.order.lockForLifecycle({
+                await this.modules.ecommerce.order.lockForLifecycle({
                   id: order.id,
                 });
                 const current = await this.freshLifecycleProps({
@@ -398,7 +371,7 @@ export class Service {
                   if (confirmed) {
                     return;
                   }
-                  await this.ecommerceModule.order.transitionPaymentStatus({
+                  await this.modules.ecommerce.order.transitionPaymentStatus({
                     id: order.id,
                     expectedStatus: current.order.status,
                     expectedUpdatedAt: current.order.updatedAt,
@@ -419,7 +392,7 @@ export class Service {
                 let revokedOrder: IEcommerceModuleOrder | undefined;
                 if (activated) {
                   revokedOrder =
-                    await this.ecommerceModule.order.revokeSubscription({
+                    await this.modules.ecommerce.order.revokeSubscription({
                       id: order.id,
                     });
                 }
@@ -451,15 +424,17 @@ export class Service {
                       continue;
                     }
 
-                    await this.subjectsToRoles.deleteForOrderFulfillment({
-                      id: toRemoveSubjectToRole.id,
-                      subjectId: subjectToEcommerceModuleOrder.subjectId,
-                      orderId: order.id,
-                    });
+                    await this.module.subjectsToRoles.deleteForOrderFulfillment(
+                      {
+                        id: toRemoveSubjectToRole.id,
+                        subjectId: subjectToEcommerceModuleOrder.subjectId,
+                        orderId: order.id,
+                      },
+                    );
                   }
                 }
 
-                await this.ecommerceModule.order.update({
+                await this.modules.ecommerce.order.update({
                   id: order.id,
                   data: {
                     ...extendedOrder,
@@ -489,7 +464,7 @@ export class Service {
     let offset = 0;
     let hasMore = true;
     while (hasMore) {
-      const page = await this.subjectsToEcommerceModuleOrders.find({
+      const page = await this.module.subjectsToEcommerceModuleOrders.find({
         params: {
           filters: {
             and: [{ column: "subjectId", method: "eq", value: subjectId }],
@@ -557,7 +532,7 @@ export class Service {
       if (cursor) {
         filters.push({ column: "id", method: "gt", value: cursor });
       }
-      return this.ecommerceModule.order.find({
+      return this.modules.ecommerce.order.find({
         params: {
           filters: { and: filters },
           limit,
@@ -733,7 +708,7 @@ export class Service {
       return false;
     }
     return new InitialGrantProducts(
-      this.ecommerceModule.storesToProducts,
+      this.modules.ecommerce.storesToProducts,
     ).includesAny(
       order.ordersToProducts.map((line) => line.productId),
       { legacyHistoryOnly: true },
@@ -751,7 +726,7 @@ export class Service {
       throw new Error(
         "Validation error. Initial Free must contain exactly one unit of its internal Product",
       );
-    const identities = await this.subjectsToIdentities.find({
+    const identities = await this.module.subjectsToIdentities.find({
       params: {
         filters: {
           and: [
@@ -768,7 +743,7 @@ export class Service {
       throw new Error(
         "Permission error. Initial Free requires a registered Subject",
       );
-    const owned = await this.subjectsToEcommerceModuleOrders.find({
+    const owned = await this.module.subjectsToEcommerceModuleOrders.find({
       params: {
         filters: {
           and: [
@@ -787,7 +762,7 @@ export class Service {
           link.subjectId === props.subjectToEcommerceModuleOrder.subjectId,
       )
       .map((link) => link.ecommerceModuleOrderId);
-    const lines = await this.ecommerceModule.ordersToProducts.find({
+    const lines = await this.modules.ecommerce.ordersToProducts.find({
       params: {
         filters: {
           and: [
@@ -803,7 +778,7 @@ export class Service {
     });
     let freeIds = [...new Set(lines.map((line) => line.orderId))];
     if (freeIds.length > 1) {
-      const storeLinks = await this.ecommerceModule.storesToOrders.find({
+      const storeLinks = await this.modules.ecommerce.storesToOrders.find({
         params: {
           filters: {
             and: [{ column: "orderId", method: "inArray", value: freeIds }],
@@ -823,7 +798,7 @@ export class Service {
         );
       }
     }
-    const orders = await this.ecommerceModule.order.find({
+    const orders = await this.modules.ecommerce.order.find({
       params: {
         filters: { and: [{ column: "id", method: "inArray", value: freeIds }] },
       },
@@ -859,8 +834,8 @@ export class Service {
     subjectId: string;
     orderId: string;
   }): Promise<IPaidFulfillmentEffect | undefined> {
-    await this.repository.lockOrderDelivery(scope);
-    await this.ecommerceModule.order.lockForLifecycle({ id: scope.orderId });
+    await this.dependencies.repository.lockOrderDelivery(scope);
+    await this.modules.ecommerce.order.lockForLifecycle({ id: scope.orderId });
     const extendedOrder = await this.getExtendedEcommerceModuleOrderById({
       id: scope.orderId,
     });
@@ -879,7 +854,7 @@ export class Service {
   async dispatchPaidEffects(result: IPaidFulfillmentEffect) {
     for (const id of result.subscriptionCancellationOrderIds ?? []) {
       try {
-        await this.ecommerceModule.order.stopSubscriptionRenewal({ id });
+        await this.modules.ecommerce.order.stopSubscriptionRenewal({ id });
       } catch (error) {
         logger.error("RBAC subscription provider cancellation is pending", {
           orderId: id,
@@ -902,8 +877,9 @@ export class Service {
       subjectId: props.subjectToEcommerceModuleOrder.subjectId,
       orderId: props.order.id,
     };
-    const result = await this.repository.withOrderDelivery(scope, () =>
-      this.fulfillPaidOrderInTransaction(scope),
+    const result = await this.dependencies.repository.withOrderDelivery(
+      scope,
+      () => this.fulfillPaidOrderInTransaction(scope),
     );
     if (result) await this.dispatchPaidEffects(result);
   }
@@ -962,7 +938,7 @@ export class Service {
 
     if (
       subscription &&
-      !(await this.ecommerceModule.order.assertSubscriptionPayment({
+      !(await this.modules.ecommerce.order.assertSubscriptionPayment({
         id: props.order.id,
       }))
     )
@@ -975,7 +951,7 @@ export class Service {
 
     if (newRolesIds?.length && (!subscription || !activated || resumeExpired)) {
       for (const newRoleId of newRolesIds) {
-        await this.subjectsToRoles.create({
+        await this.module.subjectsToRoles.create({
           data: {
             subjectId: props.subjectToEcommerceModuleOrder.subjectId,
             roleId: newRoleId,
@@ -990,7 +966,7 @@ export class Service {
     });
 
     if (subscription) {
-      const freshGrants = await this.subjectsToRoles.find({
+      const freshGrants = await this.module.subjectsToRoles.find({
         params: {
           filters: {
             and: [
@@ -1009,16 +985,17 @@ export class Service {
         )
       )
         return;
-      const period = await this.ecommerceModule.order.acceptSubscriptionPeriod({
-        id: props.order.id,
-        expectedInvoiceId: props.order.subscriptionPeriodInvoiceId ?? null,
-      });
+      const period =
+        await this.modules.ecommerce.order.acceptSubscriptionPeriod({
+          id: props.order.id,
+          expectedInvoiceId: props.order.subscriptionPeriodInvoiceId ?? null,
+        });
       if (!period.accepted) return;
       props = { ...props, order: period.order };
     }
 
     const rbacSubjectsToSocialModuleProfiles =
-      await this.subjectsToSocialModuleProfiles.find({
+      await this.module.subjectsToSocialModuleProfiles.find({
         params: {
           filters: {
             and: [
@@ -1036,19 +1013,21 @@ export class Service {
 
     if (!free && rbacSubjectsToSocialModuleProfiles?.length) {
       for (const rbacSubjectsToSocialModuleProfile of rbacSubjectsToSocialModuleProfiles) {
-        const socialModuleAttributes = await this.socialModule.attribute.find({
-          params: {
-            filters: {
-              and: [
-                {
-                  column: "slug",
-                  method: "ilike",
-                  value: `-invitedby-${rbacSubjectsToSocialModuleProfile.socialModuleProfileId}`,
-                },
-              ],
+        const socialModuleAttributes = await this.modules.social.attribute.find(
+          {
+            params: {
+              filters: {
+                and: [
+                  {
+                    column: "slug",
+                    method: "ilike",
+                    value: `-invitedby-${rbacSubjectsToSocialModuleProfile.socialModuleProfileId}`,
+                  },
+                ],
+              },
             },
           },
-        });
+        );
 
         if (socialModuleAttributes?.length) {
           socialModuleAttributes.forEach((socialModuleAttribute) => {
@@ -1066,7 +1045,7 @@ export class Service {
 
     if (topupCurrencies.length) {
       const subjectsToBillingModuleCurrencies =
-        await this.subjectsToBillingModuleCurrencies.find({
+        await this.module.subjectsToBillingModuleCurrencies.find({
           params: {
             filters: {
               and: [
@@ -1097,7 +1076,7 @@ export class Service {
 
         if (existingSubjectToBillingModuleCurrency) {
           const credited =
-            await this.subjectsToBillingModuleCurrencies.updateAmountIfUnchanged(
+            await this.module.subjectsToBillingModuleCurrencies.updateAmountIfUnchanged(
               {
                 id: existingSubjectToBillingModuleCurrency.id,
                 expectedAmount: existingSubjectToBillingModuleCurrency.amount,
@@ -1112,7 +1091,7 @@ export class Service {
               "Conflict error. Subject balance changed during order delivery",
             );
         } else {
-          await this.subjectsToBillingModuleCurrencies.create({
+          await this.module.subjectsToBillingModuleCurrencies.create({
             data: {
               subjectId: props.subjectToEcommerceModuleOrder.subjectId,
               billingModuleCurrencyId: topupCurrency.billingModuleCurrency.id,
@@ -1132,7 +1111,7 @@ export class Service {
     }
 
     if (!subscription) {
-      await this.ecommerceModule.order.update({
+      await this.modules.ecommerce.order.update({
         id: props.order.id,
         data: updateEcommerceOrderData,
       });
@@ -1176,7 +1155,7 @@ export class Service {
       "requested_cancelation",
     ];
     const renewableStatuses = [...cancellableStatuses, "expired"];
-    const candidates = await this.ecommerceModule.order.find({
+    const candidates = await this.modules.ecommerce.order.find({
       params: {
         filters: {
           and: [
@@ -1201,7 +1180,7 @@ export class Service {
     );
     const cancellations = new Set<string>();
     const currentShared =
-      await this.ecommerceModule.order.hasSharedSubscriptionRenewal({
+      await this.modules.ecommerce.order.hasSharedSubscriptionRenewal({
         id: props.order.id,
       });
     let currentSuperseded = false;
@@ -1211,8 +1190,8 @@ export class Service {
       if (!otherIds.includes(id)) {
         continue;
       }
-      await this.ecommerceModule.order.lockForLifecycle({ id });
-      const other = await this.ecommerceModule.order.findById({ id });
+      await this.modules.ecommerce.order.lockForLifecycle({ id });
+      const other = await this.modules.ecommerce.order.findById({ id });
       if (
         !other ||
         other.type !== "history" ||
@@ -1226,7 +1205,7 @@ export class Service {
       if ((await this.subscriptionRootId(other)) === subscriptionRootId) {
         continue;
       }
-      const owners = await this.subjectsToEcommerceModuleOrders.find({
+      const owners = await this.module.subjectsToEcommerceModuleOrders.find({
         params: {
           filters: {
             and: [
@@ -1256,7 +1235,9 @@ export class Service {
         );
       if (sameProducts) {
         const otherShared =
-          await this.ecommerceModule.order.hasSharedSubscriptionRenewal({ id });
+          await this.modules.ecommerce.order.hasSharedSubscriptionRenewal({
+            id,
+          });
         const otherIsNewer =
           new Date(other.createdAt).getTime() >
             new Date(props.order.createdAt).getTime() ||
@@ -1286,7 +1267,7 @@ export class Service {
         continue;
       }
       // A locally expired subscription may still have a live provider contract.
-      await this.ecommerceModule.order.update({
+      await this.modules.ecommerce.order.update({
         id,
         data: {
           ...other,
@@ -1296,7 +1277,7 @@ export class Service {
       cancellations.add(id);
     }
     if (currentSuperseded && !currentShared) {
-      await this.ecommerceModule.order.update({
+      await this.modules.ecommerce.order.update({
         id: props.order.id,
         data: { ...props.order, status: "requested_cancelation" },
       });
@@ -1315,7 +1296,7 @@ export class Service {
         throw new Error("Conflict error. Subscription period chain is cyclic");
       }
       seen.add(current.id);
-      const parent = await this.ecommerceModule.order.findById({
+      const parent = await this.modules.ecommerce.order.findById({
         id: current.subscriptionSourceOrderId,
       });
       if (!parent) {
@@ -1329,13 +1310,13 @@ export class Service {
   }
 
   async delivered(props: ILifecycleProps) {
-    await this.repository.withOrderDelivery(
+    await this.dependencies.repository.withOrderDelivery(
       {
         subjectId: props.subjectToEcommerceModuleOrder.subjectId,
         orderId: props.order.id,
       },
       async () => {
-        await this.ecommerceModule.order.lockForLifecycle({
+        await this.modules.ecommerce.order.lockForLifecycle({
           id: props.order.id,
         });
         const current = await this.freshLifecycleProps(props);
@@ -1373,7 +1354,7 @@ export class Service {
           continue;
         }
 
-        await this.subjectsToRoles.deleteForOrderFulfillment({
+        await this.module.subjectsToRoles.deleteForOrderFulfillment({
           id: rbacSubjectToRole.id,
           subjectId: props.subjectToEcommerceModuleOrder.subjectId,
           orderId: props.order.id,
@@ -1384,7 +1365,7 @@ export class Service {
     const recurring =
       !(await this.isInitialFree(props.extendedOrder)) &&
       props.extendedOrder.checkoutAttributesByCurrency.type === "subscription";
-    await this.ecommerceModule.order.update({
+    await this.modules.ecommerce.order.update({
       id: props.extendedOrder.id,
       data: {
         ...props.extendedOrder,
@@ -1407,7 +1388,7 @@ export class Service {
     }
 
     const notificationModuleEcommerceNotificationTemplates =
-      await this.notificationModule.template.find({
+      await this.modules.notification.template.find({
         params: {
           filters: {
             and: [
@@ -1427,7 +1408,7 @@ export class Service {
       });
 
     const subjectsToEcommerceModuleOrders =
-      await this.subjectsToEcommerceModuleOrders.find({
+      await this.module.subjectsToEcommerceModuleOrders.find({
         params: {
           filters: {
             and: [
@@ -1445,7 +1426,7 @@ export class Service {
       return;
     }
 
-    const subjectsToIdentities = await this.subjectsToIdentities.find({
+    const subjectsToIdentities = await this.module.subjectsToIdentities.find({
       params: {
         filters: {
           and: [
@@ -1465,7 +1446,7 @@ export class Service {
       return;
     }
 
-    const identities = await this.identity.find({
+    const identities = await this.module.identity.find({
       params: {
         filters: {
           and: [
@@ -1555,7 +1536,7 @@ export class Service {
   }
 
   protected async getAdminNotificationSubjectIds(): Promise<string[]> {
-    const adminRoles = await this.role.find({
+    const adminRoles = await this.module.role.find({
       params: {
         filters: {
           and: [
@@ -1573,7 +1554,7 @@ export class Service {
       return [];
     }
 
-    const subjectsToRoles = await this.subjectsToRoles.find({
+    const subjectsToRoles = await this.module.subjectsToRoles.find({
       params: {
         filters: {
           and: [
@@ -1603,7 +1584,7 @@ export class Service {
     }
 
     const notificationModuleEcommerceNotificationTemplates =
-      await this.notificationModule.template.find({
+      await this.modules.notification.template.find({
         params: {
           filters: {
             and: [
@@ -1628,7 +1609,7 @@ export class Service {
       return;
     }
 
-    const subjectsToIdentities = await this.subjectsToIdentities.find({
+    const subjectsToIdentities = await this.module.subjectsToIdentities.find({
       params: {
         filters: {
           and: [
@@ -1646,7 +1627,7 @@ export class Service {
       return;
     }
 
-    const identities = await this.identity.find({
+    const identities = await this.module.identity.find({
       params: {
         filters: {
           and: [
@@ -1738,7 +1719,7 @@ export class Service {
   private async freshLifecycleProps(
     props: ILifecycleProps,
   ): Promise<ILifecycleProps | undefined> {
-    const ownership = await this.subjectsToEcommerceModuleOrders.find({
+    const ownership = await this.module.subjectsToEcommerceModuleOrders.find({
       params: {
         filters: {
           and: [
@@ -1767,7 +1748,7 @@ export class Service {
     const extendedOrder = await this.getExtendedEcommerceModuleOrderById({
       id: props.order.id,
     });
-    const subjectsToRoles = await this.subjectsToRoles.find({
+    const subjectsToRoles = await this.module.subjectsToRoles.find({
       params: {
         filters: {
           and: [
@@ -1802,19 +1783,20 @@ export class Service {
       return [];
     }
 
-    const rolesToProducts = await this.rolesToEcommerceModuleProducts.find({
-      params: {
-        filters: {
-          and: [
-            {
-              column: "ecommerceModuleProductId",
-              method: "inArray",
-              value: props.productIds,
-            },
-          ],
+    const rolesToProducts =
+      await this.module.role.module.rolesToEcommerceModuleProducts.find({
+        params: {
+          filters: {
+            and: [
+              {
+                column: "ecommerceModuleProductId",
+                method: "inArray",
+                value: props.productIds,
+              },
+            ],
+          },
         },
-      },
-    });
+      });
 
     return Array.from(
       new Set(
@@ -1831,7 +1813,7 @@ export class Service {
     existingRolesIds: string[];
   }): Promise<Set<string>> {
     if (!props.existingRolesIds.length) return new Set();
-    const owned = await this.subjectsToEcommerceModuleOrders.find({
+    const owned = await this.module.subjectsToEcommerceModuleOrders.find({
       params: {
         filters: {
           and: [{ column: "subjectId", method: "eq", value: props.subjectId }],
@@ -1851,7 +1833,7 @@ export class Service {
     );
     if (!ids.length) return new Set();
     const now = Date.now();
-    const otherOrders = await this.ecommerceModule.order.find({
+    const otherOrders = await this.modules.ecommerce.order.find({
       params: {
         filters: {
           and: [
@@ -1885,7 +1867,7 @@ export class Service {
       )
       .map((order) => order.id);
     if (!activeIds.length) return new Set();
-    const lines = await this.ecommerceModule.ordersToProducts.find({
+    const lines = await this.modules.ecommerce.ordersToProducts.find({
       params: {
         filters: {
           and: [{ column: "orderId", method: "inArray", value: activeIds }],
@@ -1910,7 +1892,7 @@ export class Service {
   async getExtendedEcommerceModuleOrderById(props: {
     id: IEcommerceModuleOrder["id"];
   }): Promise<IExtendedEcommerceModuleOrder> {
-    const extended = await this.ecommerceModule.order.findByIdExtended({
+    const extended = await this.modules.ecommerce.order.findByIdExtended({
       id: props.id,
     });
 

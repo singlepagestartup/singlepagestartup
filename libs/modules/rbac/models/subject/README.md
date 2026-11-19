@@ -10,6 +10,16 @@ Subjects represent visitors, registered accounts and actors, and connect identit
 - Frontend variants such as `me-ecommerce-module-product-cart-default`, `me-ecommerce-module-product-checkout-default`, and `me-ecommerce-module-cart-default` are the supported entry points for host/cart behavior.
 - Dependency direction is one-way: `rbac > ecommerce`. RBAC may compose ecommerce SDK/components; ecommerce must not import RBAC subject implementation.
 
+When a backend operation narrows the Subject service to selected members,
+`SubjectServiceDependencies<Keys>` from `backend/app/api/src/lib/service/singlepage`
+includes the two registries from the Subject's API assembly. Use
+`service.module.identity` or `service.module.subjectsToEcommerceModuleOrders`
+for local dependencies. Use `service.modules.crm.form` or
+`service.modules.ecommerce.order` for a lower module. A controller uses the
+same paths from `this.service`. For checkout, use the resolved Order's
+`paymentIntent` and `ordersToBillingModulePaymentIntents` so both payment and
+reservation handling respect its overrides.
+
 ### Current-Subject cart components
 
 The cart sheet, Product cart actions and Product checkout use the public variants

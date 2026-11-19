@@ -22,14 +22,14 @@ function fixture() {
     paykeeper: jest
       .fn()
       .mockResolvedValue({ ok: true, acknowledgment: "OK fixed-digest" }),
-    billingModule: {
+    updatePaymentIntentStatus: jest.fn(),
+    module: {
       invoice: {
         findById: jest
           .fn()
           .mockResolvedValue({ id: "zero-invoice", amount: 0 }),
       },
     },
-    updatePaymentIntentStatus: jest.fn(),
   };
   const app = new Hono();
   app.post("/:provider/webhook", (c) =>
@@ -65,7 +65,7 @@ it("does not let a zero-amount envelope bypass PayKeeper authentication", async 
     body: JSON.stringify({ data: { id: "zero-invoice" } }),
   });
   expect(response.status).toBe(403);
-  expect(f.service.billingModule.invoice.findById).not.toHaveBeenCalled();
+  expect(f.service.module.invoice.findById).not.toHaveBeenCalled();
   expect(f.service.updatePaymentIntentStatus).not.toHaveBeenCalled();
 });
 

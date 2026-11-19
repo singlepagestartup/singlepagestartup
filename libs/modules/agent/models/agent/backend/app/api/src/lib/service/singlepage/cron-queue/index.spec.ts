@@ -62,7 +62,7 @@ function fixture(agentIds = ["second", "first"]) {
       return { id: key, payload: "{}" };
     },
   } as any);
-  const runs = new AgentRun({ broadcastModule: { channel: { queue } } as any });
+  const runs = new AgentRun({ channel: { queue } as any });
   jest.spyOn(runs, "findChannel").mockResolvedValue({ id: "channel" });
   const markers = jest.spyOn(runs, "findMarkers").mockResolvedValue([]);
   const dispatch = jest

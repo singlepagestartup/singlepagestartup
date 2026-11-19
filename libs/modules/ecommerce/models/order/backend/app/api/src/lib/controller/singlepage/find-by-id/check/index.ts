@@ -33,7 +33,7 @@ export class Handler {
 
     const paymentIntents = await Promise.all(
       uniqueIds.map((id) => {
-        return this.service.billingModule.paymentIntent.findById({
+        return this.service.paymentIntent.findById({
           id,
         });
       }),
@@ -121,24 +121,26 @@ export class Handler {
             await this.transitionPaymentStatus(entity, "canceling");
           } else if (paymentInitializationExpired) {
             const invoiceLinks = paymentIntents.length
-              ? await this.service.billingModule.paymentIntentsToInvoices.find({
-                  params: {
-                    filters: {
-                      and: [
-                        {
-                          column: "paymentIntentId",
-                          method: "inArray",
-                          value: paymentIntents.map((intent) => intent.id),
-                        },
-                      ],
+              ? await this.service.modules.billing.paymentIntentsToInvoices.find(
+                  {
+                    params: {
+                      filters: {
+                        and: [
+                          {
+                            column: "paymentIntentId",
+                            method: "inArray",
+                            value: paymentIntents.map((intent) => intent.id),
+                          },
+                        ],
+                      },
                     },
                   },
-                })
+                )
               : [];
             if (!invoiceLinks?.length) {
               await Promise.all(
                 paymentIntents.map((intent) =>
-                  this.service.billingModule.paymentIntent.failUninitializedPaymentIntent(
+                  this.service.paymentIntent.failUninitializedPaymentIntent(
                     intent.id,
                     new Date(
                       Date.now() - PAYMENT_INITIALIZATION_GRACE_PERIOD_MS,

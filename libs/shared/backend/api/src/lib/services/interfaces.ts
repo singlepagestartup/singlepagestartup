@@ -8,14 +8,22 @@ export type QueryBuilderFilterValue =
   | [number, number]
   | Array<string | Date | number | boolean>;
 
+interface IQueryBuilderFilter {
+  column: string;
+  method: keyof QueryBuilderFilterMethods;
+  value: QueryBuilderFilterValue;
+}
+
+interface IQueryBuilderNullFilter {
+  column: string;
+  method: "isNull" | "isNotNull";
+  value: null;
+}
+
 export interface FindServiceProps {
   params?: {
     filters?: {
-      and: {
-        column: string;
-        method: keyof QueryBuilderFilterMethods;
-        value: QueryBuilderFilterValue;
-      }[];
+      and: (IQueryBuilderFilter | IQueryBuilderNullFilter)[];
     };
     orderBy?: {
       and: {

@@ -77,14 +77,12 @@ function fixture() {
     findById: async ({ id }) => orders.get(id) ?? null,
     ordersToProducts: { find: lines },
     payments: { find: payment },
-    billingModule: {
-      invoice: { findById: invoice },
-      paymentIntent: { findById: intent },
-      paymentIntentsToInvoices: {
-        find: async (props) => [
-          { paymentIntentId: "intent-" + props.params.filters.and[0].value },
-        ],
-      },
+    invoice: { findById: invoice },
+    paymentIntent: { findById: intent },
+    paymentIntentsToInvoices: {
+      find: async (props) => [
+        { paymentIntentId: "intent-" + props.params.filters.and[0].value },
+      ],
     },
   } as any);
   return { service, orders, snapshots, invoice, intent, payment, lines };

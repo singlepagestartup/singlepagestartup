@@ -15,11 +15,7 @@
         "{workspaceRoot}/tsconfig.base.json"
       ]
     },
-    "eslint:lint": {
-      "options": {
-        "command": "eslint --config libs/shared/frontend/client/pdf/eslint.config.mjs libs/shared/frontend/client/pdf"
-      }
-    },
+    "eslint:lint": {},
     "jest:test": {
       "options": {
         "passWithNoTests": false

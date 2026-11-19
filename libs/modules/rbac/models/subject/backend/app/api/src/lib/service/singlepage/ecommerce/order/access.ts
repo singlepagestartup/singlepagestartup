@@ -1,5 +1,5 @@
 import type { Service as SubjectsToOrdersService } from "@sps/rbac/relations/subjects-to-ecommerce-module-orders/backend/app/api/src/lib/service";
-import type { IEcommerceModule } from "../../../../di";
+import type { Service as OrdersToProducts } from "@sps/ecommerce/relations/orders-to-products/backend/app/api/src/lib/service";
 export interface IExecuteProps {
   subjectId: string;
   orderId: string;
@@ -7,7 +7,7 @@ export interface IExecuteProps {
 }
 export interface IConstructorProps {
   subjectsToOrders: Pick<SubjectsToOrdersService, "find">;
-  ordersToProducts: Pick<IEcommerceModule["ordersToProducts"], "find">;
+  ordersToProducts: Pick<OrdersToProducts, "find">;
 }
 export class Service {
   constructor(private readonly dependencies: IConstructorProps) {}

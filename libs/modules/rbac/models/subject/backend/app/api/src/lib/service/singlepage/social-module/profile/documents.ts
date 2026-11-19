@@ -3,7 +3,7 @@ import { api as linksApi } from "@sps/social/relations/chats-to-threads/sdk/serv
 import type { IModel as IThread } from "@sps/social/models/thread/sdk/model";
 import { getAIChatDocument } from "@sps/rbac/models/subject/sdk/model";
 import { AI_CHAT_DOCUMENTS, RBAC_SECRET_KEY } from "@sps/shared-utils";
-import type { ISocialModule } from "../../../../di";
+import type { SubjectServiceDependencies } from "../../index";
 
 export interface IExecuteProps {
   profileId: string;
@@ -14,7 +14,10 @@ export interface IExecuteProps {
 
 export class Service {
   constructor(
-    readonly socialModule: Pick<ISocialModule, "thread" | "chatsToThreads">,
+    readonly social: Pick<
+      SubjectServiceDependencies["modules"]["social"],
+      "chatsToThreads" | "thread"
+    >,
   ) {}
 
   async execute(props: IExecuteProps): Promise<IThread[]> {
@@ -26,7 +29,7 @@ export class Service {
         "Cache-Control": "no-store",
       },
     };
-    const links = await this.socialModule.chatsToThreads.find({
+    const links = await this.social.chatsToThreads.find({
       params: {
         filters: {
           and: [{ column: "chatId", method: "eq", value: props.chatId }],
@@ -36,7 +39,7 @@ export class Service {
     const ids = (links || []).map((link) => link.threadId);
     let threads;
     if (ids.length) {
-      threads = await this.socialModule.thread.find({
+      threads = await this.social.thread.find({
         params: {
           filters: { and: [{ column: "id", method: "inArray", value: ids }] },
         },
@@ -48,8 +51,7 @@ export class Service {
       (thread) => thread.id === props.initialThread?.id,
     );
     const legacy = initial?.metadata?.["aiChatDocument"] as
-      | { profileId?: string; sourceIds?: string[] }
-      | undefined;
+      { profileId?: string; sourceIds?: string[] } | undefined;
     const reusableKey =
       legacy?.profileId === props.profileId ? "products" : "brief";
     const result: IThread[] = [];
@@ -66,7 +68,7 @@ export class Service {
         continue;
       }
       const slug = `ai-chat-${props.chatId}-${props.profileId}-${definition.key}`;
-      const candidates = await this.socialModule.thread.find({
+      const candidates = await this.social.thread.find({
         params: {
           filters: { and: [{ column: "slug", method: "eq", value: slug }] },
         },

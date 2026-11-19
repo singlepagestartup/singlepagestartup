@@ -34,7 +34,7 @@ export class Handler {
       "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
     };
     const socialModuleChatsToThreads =
-      await this.service.socialModule.chatsToThreads.find({
+      await this.service.modules.social.chatsToThreads.find({
         params: {
           filters: {
             and: [
@@ -48,7 +48,7 @@ export class Handler {
         },
       });
     const socialModuleChatsToMessages =
-      await this.service.socialModule.chatsToMessages.find({
+      await this.service.modules.social.chatsToMessages.find({
         params: {
           filters: {
             and: [
@@ -62,7 +62,7 @@ export class Handler {
         },
       });
     const socialModuleChatsToActions =
-      await this.service.socialModule.chatsToActions.find({
+      await this.service.modules.social.chatsToActions.find({
         params: {
           filters: {
             and: [
@@ -93,7 +93,7 @@ export class Handler {
 
     for (const socialModuleMessageId of socialModuleMessageIds) {
       const messageChatLinks =
-        await this.service.socialModule.chatsToMessages.find({
+        await this.service.modules.social.chatsToMessages.find({
           params: {
             filters: {
               and: [
@@ -124,7 +124,7 @@ export class Handler {
 
     for (const socialModuleActionId of socialModuleActionIds) {
       const actionChatLinks =
-        await this.service.socialModule.chatsToActions.find({
+        await this.service.modules.social.chatsToActions.find({
           params: {
             filters: {
               and: [
@@ -155,7 +155,7 @@ export class Handler {
 
     for (const socialModuleThreadId of socialModuleThreadIds) {
       const threadChatLinks =
-        await this.service.socialModule.chatsToThreads.find({
+        await this.service.modules.social.chatsToThreads.find({
           params: {
             filters: {
               and: [
@@ -220,7 +220,7 @@ export class Handler {
 
       if (!(await this.isSubjectAdmin(id))) {
         const socialModuleProfilesToChats =
-          await this.service.socialModule.profilesToChats.find({
+          await this.service.modules.social.profilesToChats.find({
             params: {
               filters: {
                 and: [
@@ -246,7 +246,7 @@ export class Handler {
         }
       }
 
-      const socialModuleChat = await this.service.socialModule.chat.findById({
+      const socialModuleChat = await this.service.modules.social.chat.findById({
         id: socialModuleChatId,
       });
 
@@ -279,7 +279,7 @@ export class Handler {
   }
 
   protected async isSubjectAdmin(subjectId: string): Promise<boolean> {
-    const subjectsToRoles = await this.service.subjectsToRoles.find({
+    const subjectsToRoles = await this.service.module.subjectsToRoles.find({
       params: {
         filters: {
           and: [
@@ -304,7 +304,7 @@ export class Handler {
       return false;
     }
 
-    const roles = await this.service.role.find({
+    const roles = await this.service.module.role.find({
       params: {
         filters: {
           and: [

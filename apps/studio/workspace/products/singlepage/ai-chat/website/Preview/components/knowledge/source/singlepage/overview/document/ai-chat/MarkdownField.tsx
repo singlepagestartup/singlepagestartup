@@ -2,7 +2,7 @@ import { localizedHeading } from "../../../../../../../../../../../../../../../t
 ("use client");
 import { twMerge as twMerge } from "tailwind-merge";
 import Markdown from "markdown-to-jsx";
-import IconGlyphs from "../../../../../../website-builder/feature/singlepage/icon/icons.json";
+import IconGlyphs from "../../../../../../../../../../../../design/singlepage/interface-kit/ai-chat/icons.json";
 import { memo, useLayoutEffect, useRef, useState } from "react";
 function MarkdownDocument({
   children,

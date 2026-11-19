@@ -1,5 +1,5 @@
 "use client";
-import IconGlyphs from "../../../../../../website-builder/feature/singlepage/icon/icons.json";
+import IconGlyphs from "../../../../../../../../../../../../design/singlepage/interface-kit/ai-chat/icons.json";
 import type { IProjectAgent } from "../../overview/ai-chat/resolver";
 function Icon({
   name,

@@ -89,7 +89,7 @@ export class Handler {
           throw new Error("Validation error. Invalid signature");
         }
 
-        const identities = await this.service.identity.find({
+        const identities = await this.service.module.identity.find({
           params: {
             filters: {
               and: [

@@ -5,7 +5,7 @@
  * Then SDK options use the same headers accepted by the SinglePageStartup frontend/API path
  */
 
-import { getMcpAuthHeaders } from "../auth";
+import { getMcpAuthHeaders, type IMcpRequestExtra } from "../auth";
 import { getMcpSdkOptions } from "./auth";
 
 function createExtra(props: {
@@ -16,9 +16,11 @@ function createExtra(props: {
     scopes?: string[];
     extra?: Record<string, unknown>;
   };
-  meta?: Record<string, unknown>;
-}) {
+  meta?: IMcpRequestExtra["_meta"];
+}): IMcpRequestExtra {
   return {
+    signal: new AbortController().signal,
+    requestId: "test-request",
     requestInfo: props.headers ? { headers: props.headers } : undefined,
     authInfo: props.authInfo
       ? {
@@ -29,7 +31,11 @@ function createExtra(props: {
         }
       : undefined,
     _meta: props.meta,
-  } as any;
+    sendNotification: async () => {},
+    sendRequest: async () => {
+      throw new Error("Unexpected request from the auth helper");
+    },
+  };
 }
 
 describe("MCP forwarded authentication helper", () => {

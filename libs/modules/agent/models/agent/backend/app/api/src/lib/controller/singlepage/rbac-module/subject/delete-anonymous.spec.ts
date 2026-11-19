@@ -41,10 +41,12 @@ function createContext() {
 
 function createService() {
   return {
-    rbacModule: {
-      subject: { find: jest.fn(), delete: jest.fn() },
-      subjectsToIdentities: { find: jest.fn() },
-      subjectsToSocialModuleProfiles: { find: jest.fn() },
+    modules: {
+      rbac: {
+        subject: { find: jest.fn(), delete: jest.fn() },
+        subjectsToIdentities: { find: jest.fn() },
+        subjectsToSocialModuleProfiles: { find: jest.fn() },
+      },
     },
   } as any;
 }
@@ -85,11 +87,13 @@ describe("Given: the anonymous cleanup agent route", () => {
         },
       },
     });
-    expect(service.rbacModule.subject.find).not.toHaveBeenCalled();
-    expect(service.rbacModule.subject.delete).not.toHaveBeenCalled();
-    expect(service.rbacModule.subjectsToIdentities.find).not.toHaveBeenCalled();
+    expect(service.modules.rbac.subject.find).not.toHaveBeenCalled();
+    expect(service.modules.rbac.subject.delete).not.toHaveBeenCalled();
     expect(
-      service.rbacModule.subjectsToSocialModuleProfiles.find,
+      service.modules.rbac.subjectsToIdentities.find,
+    ).not.toHaveBeenCalled();
+    expect(
+      service.modules.rbac.subjectsToSocialModuleProfiles.find,
     ).not.toHaveBeenCalled();
     expect(response.data.ok).toBe(true);
     expect(response.data.result.deleted).toBe(1);

@@ -14,12 +14,12 @@ import {
 } from "./handler";
 import { type IService } from "../../service";
 import { DI } from "../../di/constants";
-import { IController } from "../interface";
+import type { IController } from "../interface";
 
 @injectable()
-export class Controller<DTO extends Record<string, unknown>>
-  implements IController<DTO>
-{
+export class Controller<
+  DTO extends Record<string, unknown>,
+> implements IController<DTO> {
   service: IService<DTO>;
   httpRoutes: IController<DTO>["httpRoutes"] = [];
   telegramRoutes: IController<DTO>["telegramRoutes"];
@@ -140,10 +140,12 @@ export class Controller<DTO extends Record<string, unknown>>
     this.telegramRoutes = [];
 
     for (const route of routes) {
-      const handler = (route.handler as unknown as Function).bind(this);
+      const { handler } = route;
+      const boundHandler =
+        typeof handler === "function" ? handler.bind(this) : handler;
       this.telegramRoutes.push({
         ...route,
-        handler: handler as IController<DTO>["telegramRoutes"][0]["handler"],
+        handler: boundHandler,
       });
     }
   }
@@ -154,11 +156,10 @@ export class Controller<DTO extends Record<string, unknown>>
     this.telegramConversations = [];
 
     for (const route of routes) {
-      const handler = (route.handler as unknown as Function).bind(this);
+      const handler = route.handler.bind(this);
       this.telegramConversations.push({
         ...route,
-        handler:
-          handler as IController<DTO>["telegramConversations"][0]["handler"],
+        handler,
       });
     }
   }

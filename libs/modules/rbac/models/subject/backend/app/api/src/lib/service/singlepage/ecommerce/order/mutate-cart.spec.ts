@@ -5,25 +5,29 @@ function fixture() {
   const owners = [{ subjectId: "subject", ecommerceModuleOrderId: "order" }];
   const service = {
     ecommerceModuleOrderAssertAccess: jest.fn(),
-    subjectsToEcommerceModuleOrders: {
-      find: jest.fn().mockResolvedValue(owners),
+    module: {
+      subjectsToEcommerceModuleOrders: {
+        find: jest.fn().mockResolvedValue(owners),
+      },
     },
-    ecommerceModule: {
-      storesToProducts: { find: jest.fn().mockResolvedValue([]) },
-      order: {
-        lockForLifecycle: jest.fn(),
-        findById: jest.fn().mockResolvedValue(order),
-        delete: jest.fn(),
-      },
-      ordersToProducts: {
-        find: jest
-          .fn()
-          .mockResolvedValue([{ id: "line", productId: "product" }]),
-        update: jest.fn(),
-      },
-      product: { findById: jest.fn().mockResolvedValue({ slug: "product" }) },
-      ordersToBillingModulePaymentIntents: {
-        find: jest.fn().mockResolvedValue([]),
+    modules: {
+      ecommerce: {
+        storesToProducts: { find: jest.fn().mockResolvedValue([]) },
+        ordersToProducts: {
+          find: jest
+            .fn()
+            .mockResolvedValue([{ id: "line", productId: "product" }]),
+          update: jest.fn(),
+        },
+        product: { findById: jest.fn().mockResolvedValue({ slug: "product" }) },
+        order: {
+          lockForLifecycle: jest.fn(),
+          findById: jest.fn().mockResolvedValue(order),
+          delete: jest.fn(),
+          ordersToBillingModulePaymentIntents: {
+            find: jest.fn().mockResolvedValue([]),
+          },
+        },
       },
     },
   };
@@ -50,7 +54,7 @@ it("updates only validated owned lines while holding the cart lock", async () =>
     lineIds: ["line"],
   });
   expect(
-    f.service.ecommerceModule.ordersToProducts.update,
+    f.service.modules.ecommerce.ordersToProducts.update,
   ).toHaveBeenCalledWith({
     id: "line",
     data: { quantity: 4, selectionUpdatedAt: expect.any(Date) },
@@ -60,7 +64,7 @@ it("updates only validated owned lines while holding the cart lock", async () =>
 it("deletes an empty-attempt cart through its owning service", async () => {
   const f = fixture();
   await f.operation.execute(props);
-  expect(f.service.ecommerceModule.order.delete).toHaveBeenCalledWith({
+  expect(f.service.modules.ecommerce.order.delete).toHaveBeenCalledWith({
     id: "order",
   });
 });
@@ -79,14 +83,14 @@ it.each(["history", "paying", "shared", "payment"])(
       f.owners.push({ subjectId: "other", ecommerceModuleOrderId: "order" });
     }
     if (change === "payment") {
-      f.service.ecommerceModule.ordersToBillingModulePaymentIntents.find.mockResolvedValue(
+      f.service.modules.ecommerce.order.ordersToBillingModulePaymentIntents.find.mockResolvedValue(
         [{ billingModulePaymentIntentId: "intent" }],
       );
     }
     await expect(f.operation.execute(props)).rejects.toThrow();
-    expect(f.service.ecommerceModule.order.delete).not.toHaveBeenCalled();
+    expect(f.service.modules.ecommerce.order.delete).not.toHaveBeenCalled();
     expect(
-      f.service.ecommerceModule.ordersToProducts.update,
+      f.service.modules.ecommerce.ordersToProducts.update,
     ).not.toHaveBeenCalled();
   },
 );
@@ -103,6 +107,6 @@ it("rejects an invalid later quantity before the first line write", async () => 
     }),
   ).rejects.toThrow("Quantity must be an integer");
   expect(
-    f.service.ecommerceModule.ordersToProducts.update,
+    f.service.modules.ecommerce.ordersToProducts.update,
   ).not.toHaveBeenCalled();
 });

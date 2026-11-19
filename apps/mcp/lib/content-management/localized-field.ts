@@ -2,13 +2,15 @@ import { IContentEntityDescriptor } from "./types";
 
 export interface IMergeLocalizedFieldProps {
   descriptor: IContentEntityDescriptor;
-  current: Record<string, any>;
+  current: Record<string, unknown>;
   field: string;
   locale: string;
   value: string;
 }
 
-export function mergeLocalizedField(props: IMergeLocalizedFieldProps) {
+export function mergeLocalizedField(
+  props: IMergeLocalizedFieldProps,
+): Record<string, unknown> {
   if (!props.descriptor.localizedFields.includes(props.field)) {
     throw new Error(
       `Validation error. ${props.descriptor.key}.${props.field} is not a localized field`,
@@ -29,7 +31,7 @@ export function mergeLocalizedField(props: IMergeLocalizedFieldProps) {
   }
 
   return {
-    ...(currentLocalizedValue as Record<string, string | undefined>),
+    ...currentLocalizedValue,
     [props.locale]: props.value,
   };
 }

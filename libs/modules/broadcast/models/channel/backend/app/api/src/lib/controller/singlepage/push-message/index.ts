@@ -55,11 +55,11 @@ export class Handler {
         throw new Error("Not Found error. Channel not found");
       }
 
-      const createdMessage = await this.service.messages.create({
+      const createdMessage = await this.service.module.message.create({
         data,
       });
 
-      await this.service.channelsToMessages.create({
+      await this.service.module.channelsToMessages.create({
         data: {
           channelId: channel.id,
           messageId: createdMessage.id,

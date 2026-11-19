@@ -1,5 +1,5 @@
 "use client";
-import IconGlyphs from "../../../../../../../website-builder/feature/singlepage/icon/icons.json";
+import IconGlyphs from "../../../../../../../../../../../../../design/singlepage/interface-kit/ai-chat/icons.json";
 import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
 import { memo } from "react";
 import type { IProjectIdentity } from "../../../../scope/ai-chat/project/Profiles";

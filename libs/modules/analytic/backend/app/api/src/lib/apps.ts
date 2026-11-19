@@ -1,12 +1,16 @@
-import { DefaultApp } from "@sps/shared-backend-api";
-import { app as widgetApp } from "@sps/analytic/models/widget/backend/app/api";
-import { app as metricApp } from "@sps/analytic/models/metric/backend/app/api";
+import {
+  createModuleChildApp,
+  defaultAppAssembly,
+  type IAppAssembly,
+  type IModuleAppEntry,
+} from "@sps/shared-backend-api";
+import { serviceBootstrap as widgetApp } from "@sps/analytic/models/widget/backend/app/api/src/lib/bootstrap";
+import { serviceBootstrap as metricApp } from "@sps/analytic/models/metric/backend/app/api/src/lib/bootstrap";
 
 export class Apps {
-  apps: { type: "model" | "relation"; route: string; app: DefaultApp<any> }[] =
-    [];
+  apps: IModuleAppEntry[] = [];
 
-  constructor() {
+  constructor(private readonly assembly: IAppAssembly = defaultAppAssembly) {
     this.bindApps();
   }
 
@@ -14,12 +18,12 @@ export class Apps {
     this.apps.push({
       type: "model",
       route: "/widgets",
-      app: widgetApp,
+      app: createModuleChildApp(widgetApp, this.assembly),
     });
     this.apps.push({
       type: "model",
       route: "/metrics",
-      app: metricApp,
+      app: createModuleChildApp(metricApp, this.assembly),
     });
   }
 }

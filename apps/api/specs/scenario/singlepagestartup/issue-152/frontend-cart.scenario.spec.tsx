@@ -48,7 +48,7 @@ jest.mock("@sps/rbac/models/subject/frontend/component", () => {
   );
 
   return {
-    Component: (props: any) => {
+    Component: (props: Parameters<typeof Subject>[0]) => {
       if (props.variant === "authentication-me-default") {
         return <AuthenticationMeDefault {...props} />;
       }
@@ -66,6 +66,7 @@ jest.mock("@sps/rbac/models/subject/frontend/component", () => {
   };
 });
 
+import type { Component as Subject } from "@sps/rbac/models/subject/frontend/component";
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import {
   Provider as ClientApiProvider,
@@ -73,7 +74,10 @@ import {
 } from "@sps/shared-frontend-client-api";
 import { Component as OrderCreate } from "@sps/rbac/models/subject/frontend/component/src/lib/singlepage/ecommerce-module/order/create-default/ClientComponent";
 import { Component as CartWidget } from "@sps/rbac/models/subject/frontend/component/src/lib/singlepage/me/ecommerce-module/cart-default/ClientComponent";
-import { authenticateScenarioSubject } from "./test-utils/auth";
+import {
+  authenticateScenarioSubject,
+  type TScenarioSubject,
+} from "./test-utils/auth";
 import {
   clearSubjectCartOrders,
   createCartScenarioFixtures,
@@ -84,12 +88,14 @@ import {
 describe("Given: issue-152 frontend cart scenario", () => {
   let subjectId = "";
   let jwt = "";
+  let subject: TScenarioSubject["subject"] | undefined;
   let fixtures: TCartScenarioFixtures | null = null;
 
   beforeAll(async () => {
     const auth = await authenticateScenarioSubject();
     subjectId = auth.id;
     jwt = auth.jwt;
+    subject = auth.subject;
     fixtures = await createCartScenarioFixtures();
   });
 
@@ -106,10 +112,11 @@ describe("Given: issue-152 frontend cart scenario", () => {
   });
 
   it("When: user clicks Add to cart Then: cart badge reflects quantity after reload without cache-bust params", async () => {
-    if (!fixtures) {
+    if (!fixtures || !subject) {
       throw new Error("Fixtures were not initialized");
     }
     const scenarioFixtures = fixtures;
+    const scenarioSubject = subject;
 
     const renderScenario = () =>
       render(
@@ -118,12 +125,10 @@ describe("Given: issue-152 frontend cart scenario", () => {
             <OrderCreate
               isServer={false}
               variant="ecommerce-module-order-create-default"
-              data={{ id: subjectId } as any}
-              ecommerceModuleProduct={{ id: scenarioFixtures.productId } as any}
-              ecommerceModuleStore={{ id: scenarioFixtures.storeId } as any}
-              billingModule={
-                { currency: { id: scenarioFixtures.currencyId } } as any
-              }
+              data={scenarioSubject}
+              ecommerceModuleProduct={scenarioFixtures.product}
+              ecommerceModuleStore={scenarioFixtures.store}
+              billingModule={{ currency: scenarioFixtures.currency }}
               language="en"
             />
 
@@ -131,7 +136,7 @@ describe("Given: issue-152 frontend cart scenario", () => {
               <CartWidget
                 isServer={false}
                 variant="me-ecommerce-module-cart-default"
-                data={{ id: subjectId } as any}
+                data={scenarioSubject}
                 language="en"
               />
             </div>

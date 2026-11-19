@@ -24,23 +24,27 @@ function fixture() {
   const service = {
     ecommerceModuleOrderAssertAccess: jest.fn().mockResolvedValue(undefined),
     ecommerceModuleResolveOrderCurrency: jest.fn().mockResolvedValue("usd"),
-    ecommerceModule: {
-      storesToProducts: { find: jest.fn().mockResolvedValue([]) },
-      ordersToBillingModulePaymentIntents: {
-        find: jest.fn().mockResolvedValue([]),
+    modules: {
+      ecommerce: {
+        storesToProducts: { find: jest.fn().mockResolvedValue([]) },
+        ordersToProducts: {
+          find: jest
+            .fn()
+            .mockResolvedValue([{ id: "line", productId: "product" }]),
+          update: jest.fn(),
+        },
+        product: { findById: jest.fn().mockResolvedValue({ slug: "pro" }) },
+        ordersToBillingModuleCurrencies: currencies,
+        order: {
+          lockForLifecycle: jest.fn(),
+          findById: jest
+            .fn()
+            .mockResolvedValue({ type: "cart", status: "new" }),
+          ordersToBillingModulePaymentIntents: {
+            find: jest.fn().mockResolvedValue([]),
+          },
+        },
       },
-      order: {
-        lockForLifecycle: jest.fn(),
-        findById: jest.fn().mockResolvedValue({ type: "cart", status: "new" }),
-      },
-      ordersToProducts: {
-        find: jest
-          .fn()
-          .mockResolvedValue([{ id: "line", productId: "product" }]),
-        update: jest.fn(),
-      },
-      product: { findById: jest.fn().mockResolvedValue({ slug: "pro" }) },
-      ordersToBillingModuleCurrencies: currencies,
     },
   };
   return { service, currencies, operation: new Service({ service } as any) };
@@ -55,9 +59,11 @@ it("replaces the legacy currency only after validating the active owned cart", a
     subjectId: "owner",
     orderId: "order",
   });
-  expect(service.ecommerceModule.order.lockForLifecycle).toHaveBeenCalledWith({
-    id: "order",
-  });
+  expect(service.modules.ecommerce.order.lockForLifecycle).toHaveBeenCalledWith(
+    {
+      id: "order",
+    },
+  );
   expect(service.ecommerceModuleResolveOrderCurrency).toHaveBeenCalledWith({
     productId: "product",
     billingModuleCurrencyId: "usd",
@@ -76,14 +82,14 @@ it("does not read or change a foreign order", async () => {
     new Error("Permission error"),
   );
   await expect(operation.execute(props)).rejects.toThrow("Permission error");
-  expect(service.ecommerceModule.order.findById).not.toHaveBeenCalled();
+  expect(service.modules.ecommerce.order.findById).not.toHaveBeenCalled();
   expect(currencies.update).not.toHaveBeenCalled();
 });
 it.each(["paying", "paid", "completed"])(
   "refuses an order in %s state",
   async (status) => {
     const { service, currencies, operation } = fixture();
-    service.ecommerceModule.order.findById.mockResolvedValue({
+    service.modules.ecommerce.order.findById.mockResolvedValue({
       type: "cart",
       status,
     });
@@ -95,7 +101,7 @@ it.each(["paying", "paid", "completed"])(
 );
 it("validates every product before any currency write", async () => {
   const { service, currencies, operation } = fixture();
-  service.ecommerceModule.ordersToProducts.find.mockResolvedValue([
+  service.modules.ecommerce.ordersToProducts.find.mockResolvedValue([
     { productId: "first" },
     { productId: "second" },
   ]);
@@ -127,10 +133,10 @@ it("normalizes duplicate legacy associations in the same transaction", async () 
 });
 it("retains the Initial Free restriction", async () => {
   const { service, currencies, operation } = fixture();
-  service.ecommerceModule.storesToProducts.find.mockResolvedValue([
+  service.modules.ecommerce.storesToProducts.find.mockResolvedValue([
     { productId: "product", settings: { initialGrant: true } },
   ]);
-  service.ecommerceModule.product.findById.mockResolvedValue({
+  service.modules.ecommerce.product.findById.mockResolvedValue({
     id: "product",
     slug: "welcome",
   });
@@ -142,7 +148,7 @@ it("retains the Initial Free restriction", async () => {
 
 it("preserves the currency of a cart with a recorded payment attempt", async () => {
   const { service, currencies, operation } = fixture();
-  service.ecommerceModule.ordersToBillingModulePaymentIntents.find.mockResolvedValue(
+  service.modules.ecommerce.order.ordersToBillingModulePaymentIntents.find.mockResolvedValue(
     [{ billingModulePaymentIntentId: "intent" }],
   );
   await expect(operation.execute(props)).rejects.toThrow("payment attempt");

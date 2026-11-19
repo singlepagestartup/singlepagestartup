@@ -39,8 +39,8 @@ export class Handler {
 
       const data = JSON.parse(body["data"]);
 
-      const subjectsToIdentities = await this.service.subjectsToIdentities.find(
-        {
+      const subjectsToIdentities =
+        await this.service.module.subjectsToIdentities.find({
           params: {
             filters: {
               and: [
@@ -52,14 +52,13 @@ export class Handler {
               ],
             },
           },
-        },
-      );
+        });
 
       if (!subjectsToIdentities?.length) {
         return c.json({ data: null });
       }
 
-      const identities = await this.service.identity.find({
+      const identities = await this.service.module.identity.find({
         params: {
           filters: {
             and: [
@@ -83,7 +82,7 @@ export class Handler {
         );
       }
 
-      const topics = await this.service.notificationModule.topic.find({
+      const topics = await this.service.modules.notification.topic.find({
         params: {
           filters: {
             and: [
@@ -123,7 +122,7 @@ export class Handler {
 
       let socialModuleChat;
       if (data.social?.chat?.id) {
-        socialModuleChat = await this.service.socialModule.chat.findById({
+        socialModuleChat = await this.service.modules.social.chat.findById({
           id: data.social.chat.id,
         });
       } else {

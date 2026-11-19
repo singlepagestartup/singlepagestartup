@@ -34,28 +34,25 @@ interface IStoredMarker {
   result?: Record<string, unknown>;
 }
 
-function createBroadcastModule(markers: IStoredMarker[]) {
+function createChannel(markers: IStoredMarker[]) {
   return {
-    channel: {
-      find: jest.fn().mockResolvedValue([{ id: "cron-channel-id" }]),
-      transientChannelMessages: jest.fn().mockResolvedValue(
-        markers.map((marker) => ({
-          id: marker.id,
-          payload: JSON.stringify(marker),
-        })),
-      ),
-      findById: jest.fn(),
-    },
+    find: jest.fn().mockResolvedValue([{ id: "cron-channel-id" }]),
+    transientChannelMessages: jest.fn().mockResolvedValue(
+      markers.map((marker) => ({
+        id: marker.id,
+        payload: JSON.stringify(marker),
+      })),
+    ),
+    queue: { acknowledge: mockAcknowledge },
   } as any;
 }
 
 function createAgentRun(markers: IStoredMarker[] = []) {
-  const broadcastModule = createBroadcastModule(markers);
+  const channel = createChannel(markers);
   mockAcknowledge.mockImplementation(async (owner: { receipt: string }) =>
     markers.some((marker) => marker.runId === owner.receipt && !marker.result),
   );
-  broadcastModule.channel.queue = { acknowledge: mockAcknowledge };
-  return new AgentRun({ broadcastModule });
+  return new AgentRun({ channel });
 }
 
 describe("Given: an agent whose executions are tracked on the cron channel", () => {

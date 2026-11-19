@@ -55,6 +55,11 @@ const props: IComponentProps = {
 };
 const request = { id: reference.id, ...props.apiProps };
 
+function renderComponent<Props = unknown>(element: ReactElement) {
+  const Component = element.type as (props: unknown) => ReactElement<Props>;
+  return Component(element.props);
+}
+
 beforeEach(() => {
   clientRead.mockReset();
   serverRead.mockReset();
@@ -114,12 +119,11 @@ it("props mode renders the refreshed record and strips SDK bindings from the int
     ...props,
     data: refreshed,
     dataSource: "props",
-  }) as ReactElement<any>;
-  const parent = (variant.type as Function)(variant.props) as ReactElement<any>;
-  const loaded = (parent.type as Function)(parent.props) as ReactElement<any>;
-  const clientView = (loaded.type as Function)(
-    loaded.props,
-  ) as ReactElement<any>;
+  });
+  const parent = renderComponent(variant);
+  const loaded = renderComponent(parent);
+  const clientView =
+    renderComponent<Pick<IComponentProps, "form" | "isServer">>(loaded);
   for (const key of [
     "api",
     "Provider",

@@ -9,6 +9,7 @@
 import { createTreeWithEmptyWorkspace } from "@nx/devkit/testing";
 import { Tree } from "@nx/devkit";
 import { modelGenerator } from "./generator";
+import { moduleDependencyContract } from "../../utils/service-registries";
 
 describe("GIVEN: an SPS module tree exists", () => {
   const previousNxDryRun = process.env.NX_DRY_RUN;
@@ -47,6 +48,7 @@ describe("GIVEN: an SPS module tree exists", () => {
       "libs/modules/ecommerce/models/codex-probe/backend/app/api/src/lib/bootstrap.ts",
     );
     expect(bootstrap).toContain("export const { bootstrap, createService }");
+    expect(bootstrap).toContain("export const serviceBootstrap");
     expect(bootstrap).toContain("createAppBootstrap<App, Service>");
     expect(bootstrap).toContain(
       "bind<Service>(DI.IService).to(Service).inSingletonScope()",
@@ -111,6 +113,8 @@ describe("GIVEN: an SPS module tree exists", () => {
 
 function createSpsModuleTree() {
   const tree = createTreeWithEmptyWorkspace();
+  tree.write(moduleDependencyContract, "1. `ecommerce`\n");
+  tree.write("libs/modules/ecommerce/backend/app/api/src/lib/bootstrap.ts", "");
 
   tree.write(
     "libs/modules/ecommerce/project.json",

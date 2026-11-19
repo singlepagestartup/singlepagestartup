@@ -1,7 +1,6 @@
-import { forwardRef as forwardRef } from "react";
-import { type SVGProps as SVGProps } from "react";
+import { forwardRef, type SVGProps } from "react";
 import { twMerge as twMerge } from "tailwind-merge";
-import IconGlyphs from "../website-builder/feature/singlepage/icon/icons.json";
+import IconGlyphs from "../../../../../../../design/singlepage/interface-kit/ai-chat/icons.json";
 import { aiChatAccount } from "./subject/singlepage/account/fixture";
 type ModuleIcon = ReturnType<typeof createIcon>;
 interface IModuleIconProps extends SVGProps<SVGSVGElement> {

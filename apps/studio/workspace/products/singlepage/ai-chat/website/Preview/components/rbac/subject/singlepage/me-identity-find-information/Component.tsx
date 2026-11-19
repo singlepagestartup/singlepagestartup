@@ -1,18 +1,20 @@
 "use client";
-import { forwardRef as forwardRef } from "react";
-import { type SVGProps as SVGProps } from "react";
-import { twMerge as twMerge } from "tailwind-merge";
-import { Component as WebsiteBuilderModuleButton } from "../../../../website-builder/button/index";
 import {
+  forwardRef,
   forwardRef as forwardRefControl,
+  useCallback,
+  useEffect,
+  useState,
+  type SVGProps,
   type ButtonHTMLAttributes as ButtonControlProps,
 } from "react";
-import IconGlyphs from "../../../../website-builder/feature/singlepage/icon/icons.json";
+import { twMerge as twMerge } from "tailwind-merge";
+import { Component as WebsiteBuilderModuleButton } from "../../../../website-builder/button/index";
+import IconGlyphs from "../../../../../../../../../../design/singlepage/interface-kit/ai-chat/icons.json";
 import type { IIdentityFlowProps } from "../../../identity/singlepage/card-default/Component";
 import { Component as AuthenticationProviderConnect } from "../authentication/provider-connect/default/index";
 import { Component as AuthenticationAccountChange } from "../authentication/email-and-password/account-change/default/index";
 import { Component as RbacModuleIdentity } from "../../../identity/index";
-import { useCallback, useEffect, useState } from "react";
 import { useStudioAccount } from "../account/Account";
 import { aiChatAccount } from "../account/fixture";
 import {

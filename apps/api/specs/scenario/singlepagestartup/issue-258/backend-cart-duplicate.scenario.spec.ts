@@ -6,6 +6,8 @@
  * Then: exactly one open cart is created, rejected requests write nothing, and a repeat purchase succeeds.
  */
 import qs from "qs";
+import type { IModel as IOrderLine } from "@sps/ecommerce/relations/orders-to-products/sdk/model";
+import type { IResult as ISubjectResult } from "@sps/rbac/models/subject/sdk/server";
 import { getPostgresClient } from "@sps/shared-backend-database-config";
 import { getCartStateFromDb } from "../issue-152/test-utils/db";
 import {
@@ -21,7 +23,7 @@ let token: string | undefined;
 afterAll(async () => {
   try {
     if (fixtures) {
-      const lines = await expectOk({
+      const lines = await expectOk<{ data: IOrderLine[] }>({
         method: "GET",
         path:
           "/api/ecommerce/orders-to-products?" +
@@ -39,7 +41,7 @@ afterAll(async () => {
         includeSecret: true,
       });
       const ids = new Set<string>(
-        lines.payload.data.map((line: { orderId: string }) => line.orderId),
+        lines.payload.data.map((line) => line.orderId),
       );
       for (const id of ids)
         await expectOk({
@@ -62,7 +64,9 @@ afterAll(async () => {
 
 it("rejects competing adds with 409, keeps warmed cart reads fresh, and allows a history repeat", async () => {
   fixtures = await createCartScenarioFixtures();
-  const auth = await expectOk({
+  const auth = await expectOk<{
+    data: ISubjectResult["IAuthenticationInitResult"];
+  }>({
     method: "GET",
     path: "/api/rbac/subjects/authentication/init",
   });
@@ -74,10 +78,14 @@ it("rejects competing adds with 409, keeps warmed cart reads fresh, and allows a
   if (!subjectId) throw new Error("Anonymous JWT has no Subject");
   const path = `/api/rbac/subjects/${subjectId}/ecommerce-module/orders`;
   const list = () =>
-    expectOk({ method: "GET", path: path + "?includeCartDetails=true", token });
+    expectOk<{ data: ISubjectResult["IEcommerceModuleOrderListResult"] }>({
+      method: "GET",
+      path: path + "?includeCartDetails=true",
+      token,
+    });
   expect((await list()).payload.data).toHaveLength(0);
   const add = () =>
-    requestApi({
+    requestApi<{ error?: string }>({
       method: "POST",
       path,
       token,
@@ -104,8 +112,8 @@ it("rejects competing adds with 409, keeps warmed cart reads fresh, and allows a
   expect(state.ordersToProducts).toHaveLength(1);
   expect(state.ordersToProducts[0].quantity).toBe(3);
   const [order] = (await list()).payload.data;
-  expect(order.cartDetails.lines).toHaveLength(1);
-  expect(order.cartDetails.lines[0].quantity).toBe(3);
+  expect(order.cartDetails?.lines).toHaveLength(1);
+  expect(order.cartDetails?.lines[0].quantity).toBe(3);
   await expectOk({
     method: "PATCH",
     path: `/api/ecommerce/orders/${order.id}`,

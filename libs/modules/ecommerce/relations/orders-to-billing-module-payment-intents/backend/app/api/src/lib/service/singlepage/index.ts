@@ -1,3 +1,4 @@
+import { createModules } from "@sps/ecommerce/backend/app/api/src/lib/modules";
 import "reflect-metadata";
 import { inject, injectable } from "inversify";
 import { CRUDService, DI } from "@sps/shared-backend-api";
@@ -10,6 +11,10 @@ import type { IReservationLine } from "./reservation";
 
 @injectable()
 export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
+  get modules() {
+    return this.appAssembly.getOrCreate(createModules);
+  }
+
   constructor(
     @inject(DI.IRepository) readonly repository: Repository,
     @inject(OrdersToBillingModulePaymentIntentsDI.IAttributeService)

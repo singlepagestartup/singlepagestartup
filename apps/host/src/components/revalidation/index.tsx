@@ -6,7 +6,7 @@ import { Suspense } from "react";
 import { Component as Skeleton } from "./Skeleton";
 
 export function Component(props: IComponentPropsExtended) {
-  const Comp: any = props.isServer ? Server : Client;
+  const Comp = props.isServer ? Server : Client;
 
   return (
     <ErrorBoundary>

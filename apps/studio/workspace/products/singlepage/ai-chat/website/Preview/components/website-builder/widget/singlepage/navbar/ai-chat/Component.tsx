@@ -1,5 +1,5 @@
 "use client";
-import IconGlyphs from "../../../../feature/singlepage/icon/icons.json";
+import IconGlyphs from "../../../../../../../../../../../design/singlepage/interface-kit/ai-chat/icons.json";
 import { Component as WebsiteBuilderModuleLogotype } from "../../../../logotype/index";
 import { Component as WebsiteBuilderModuleButtonsArray } from "../../../../buttons-array/index";
 import { useCallback, useId, useRef, useState, type ReactNode } from "react";

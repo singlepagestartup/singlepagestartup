@@ -1,5 +1,7 @@
 "use client";
-import Glyphs from "../../../../../website-builder/feature/singlepage/icon/icons.json";
+import Glyphs, {
+  type default as IconGlyphs,
+} from "../../../../../../../../../../../design/singlepage/interface-kit/ai-chat/icons.json";
 function WebsiteBuilderModuleFeature({
   name,
   size = 20,
@@ -30,7 +32,6 @@ function WebsiteBuilderModuleFeature({
   );
 }
 
-import type IconGlyphs from "../../../../../website-builder/feature/singlepage/icon/icons.json";
 import { memo } from "react";
 import {
   type IProjectMessage,

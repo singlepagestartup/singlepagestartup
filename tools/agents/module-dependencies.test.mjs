@@ -111,3 +111,124 @@ test("rejects incoming relation imports in a lower model, including through a ne
     rmSync(root, { recursive: true, force: true });
   }
 });
+
+test("resolves type-only aliases through the owning module's re-exports", () => {
+  const root = fixture({
+    "libs/modules/knowledge/index.ts":
+      "export * from './relations'; export const safe = true;",
+    "libs/modules/knowledge/relations.ts":
+      "import type { Link } from './relations/topics-to-sources'; export type { Link as TopicLink };",
+    "libs/modules/knowledge/relations/topics-to-sources/index.ts":
+      "export interface Link { source: string }",
+    "libs/modules/knowledge/models/source/backend/app/invalid.ts":
+      "type Forbidden = import('@sps/knowledge').TopicLink;",
+    "libs/modules/knowledge/models/source/backend/app/valid.ts":
+      "import type { safe } from '@sps/knowledge';",
+    "libs/modules/knowledge/models/topic/backend/app/valid.ts":
+      "import type { TopicLink } from '@sps/knowledge';",
+  });
+  try {
+    const result = checkModuleDependencies(root);
+    assert.equal(result.violations.length, 1);
+    assert.match(
+      result.violations[0].file,
+      /source\/backend\/app\/invalid\.ts$/,
+    );
+    assert.equal(result.violations[0].target, "knowledge.topics-to-sources");
+    assert.deepEqual(
+      result.violations[0].trace.map((step) => step.specifier),
+      ["@sps/knowledge", "./relations", "./relations/topics-to-sources"],
+    );
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test("rejects a lower model reaching an incoming relation through a shared wrapper", () => {
+  const root = fixture({
+    "libs/modules/knowledge/models/source/backend/app/index.ts":
+      "import { wrap } from '@shared/link'; export const source = () => wrap();",
+    "libs/shared/link/index.ts":
+      "import { link } from '@sps/knowledge/relations/topics-to-sources'; export const wrap = () => link();",
+    "libs/modules/knowledge/relations/topics-to-sources/index.ts":
+      "export const link = () => true;",
+  });
+  try {
+    const result = checkModuleDependencies(root);
+    assert.equal(result.violations.length, 1);
+    assert.equal(result.violations[0].source, "knowledge.source");
+    assert.equal(result.violations[0].target, "knowledge.topics-to-sources");
+    assert.equal(result.violations[0].trace.length, 2);
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test("reports a cycle through service factories and ignores schema or type-only references", () => {
+  const topic = "libs/modules/knowledge/models/topic/backend/app/api/src/lib";
+  const source = "libs/modules/knowledge/models/source/backend/app/api/src/lib";
+  const relation =
+    "libs/modules/knowledge/relations/topics-to-sources/backend/app/api/src/lib";
+  const root = fixture({
+    [`${topic}/bootstrap.ts`]: `
+      import { createService as createRelation } from '../../../../../../../relations/topics-to-sources/backend/app/api/src/lib/bootstrap';
+      export const createService = () => createRelation();
+    `,
+    [`${relation}/bootstrap.ts`]: `
+      export const createService = () => {
+        const owner: typeof import('../../../../../../../models/source/backend/app/api/src/lib/bootstrap') =
+          require('../../../../../../../models/source/backend/app/api/src/lib/bootstrap');
+        return owner.createService();
+      };
+    `,
+    [`${source}/bootstrap.ts`]: `
+      import { createTopic } from '@sps/knowledge';
+      export type Lookup = typeof createTopic;
+      export const createService = () => {
+        const owner: typeof import('@sps/knowledge') = require('@sps/knowledge');
+        type Factory = typeof owner.createService;
+        return owner.readPolicy();
+      };
+      export const receipt = () => {
+        const owner: typeof import('@shared/receipt') = require('@shared/receipt');
+        return owner.createService();
+      };
+      export const apply = async () => {
+        const { createService: createParent } = await import('@sps/knowledge');
+        return createParent();
+      };
+    `,
+    [`${source}/service/module.ts`]:
+      "import * as services from '@sps/knowledge'; export const createModule = () => services.createTopic();",
+    "libs/modules/knowledge/index.ts": `
+      export { createService, createService as createTopic } from './models/topic/backend/app/api/src/lib/bootstrap';
+      export const readPolicy = () => ({});
+    `,
+    "libs/shared/receipt/index.ts": "export const createService = () => ({});",
+    "libs/modules/knowledge/models/topic/backend/repository/database/schema.ts":
+      "export const topic = { id: 'topic' };",
+    "libs/modules/knowledge/models/source/backend/repository/database/schema.ts":
+      "export const source = { id: 'source' };",
+    "libs/modules/knowledge/relations/topics-to-sources/backend/repository/database/schema.ts": `
+      import { topic } from '../../../../../models/topic/backend/repository/database/schema';
+      import { source } from '../../../../../models/source/backend/repository/database/schema';
+      export const foreignKeys = [topic.id, source.id];
+    `,
+  });
+  try {
+    const result = checkModuleDependencies(root);
+    assert.equal(result.violations.length, 1);
+    assert.equal(result.violations[0].reason, "Circular service composition");
+    assert.equal(new Set(result.violations[0].cycle).size, 3);
+    assert.equal(result.violations[0].trace.length, 4);
+    assert.equal(
+      result.violations[0].cycle[0],
+      result.violations[0].cycle.at(-1),
+    );
+
+    rmSync(join(root, source, "service", "module.ts"));
+    assert.deepEqual(checkModuleDependencies(root).violations, []);
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});

@@ -36,7 +36,7 @@ export class Handler {
           "Validation error. Only email or password may be updated",
         );
 
-      const identity = await this.service.identity.findById({
+      const identity = await this.service.module.identity.findById({
         id: identityUuid,
       });
 
@@ -58,7 +58,7 @@ export class Handler {
           throw new Error(
             "Validation error. Current and new passwords are required",
           );
-        await this.service.identity.changePassword({
+        await this.service.module.identity.changePassword({
           id: identity.id,
           data: {
             password: data.password,
@@ -70,7 +70,7 @@ export class Handler {
           "Validation error. Verify your current and new email before changing it.",
         );
       }
-      const updated = await this.service.identity.findById({
+      const updated = await this.service.module.identity.findById({
         id: identityUuid,
       });
 
@@ -78,7 +78,7 @@ export class Handler {
         {
           data: applyOutputSchema({
             c,
-            service: this.service.identity,
+            service: this.service.module.identity,
             data: updated,
           }),
         },

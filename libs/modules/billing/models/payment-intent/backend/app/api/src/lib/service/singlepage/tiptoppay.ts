@@ -206,7 +206,7 @@ export class Service {
         throw new Error("Validation error. Multiple invoices found");
       }
 
-      let invoice = invoices[0];
+      const invoice = invoices[0];
 
       const signature = crypto
         .createHmac("sha256", TIPTOPPAY_API_SECRET)

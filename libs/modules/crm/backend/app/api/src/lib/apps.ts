@@ -1,23 +1,27 @@
-import { app as formsToSteps } from "@sps/crm/relations/forms-to-steps/backend/app/api";
-import { app as stepsToInputs } from "@sps/crm/relations/steps-to-inputs/backend/app/api";
-import { app as step } from "@sps/crm/models/step/backend/app/api";
-import { app as optionsToFileStorageModuleFiles } from "@sps/crm/relations/options-to-file-storage-module-files/backend/app/api";
-import { app as inputsToOptions } from "@sps/crm/relations/inputs-to-options/backend/app/api";
-import { app as option } from "@sps/crm/models/option/backend/app/api";
-import { DefaultApp } from "@sps/shared-backend-api";
-import { app as widgetApp } from "@sps/crm/models/widget/backend/app/api";
-import { app as formApp } from "@sps/crm/models/form/backend/app/api";
-import { app as inputApp } from "@sps/crm/models/input/backend/app/api";
-import { app as requestApp } from "@sps/crm/models/request/backend/app/api";
-import { app as widgetsToFormsApp } from "@sps/crm/relations/widgets-to-forms/backend/app/api";
-import { app as formsToRequestsApp } from "@sps/crm/relations/forms-to-requests/backend/app/api";
-import { app as widgetsToWebsiteBuilderModuleWidgets } from "@sps/crm/relations/widgets-to-website-builder-module-widgets/backend/app/api";
+import { serviceBootstrap as formsToSteps } from "@sps/crm/relations/forms-to-steps/backend/app/api/src/lib/bootstrap";
+import { serviceBootstrap as stepsToInputs } from "@sps/crm/relations/steps-to-inputs/backend/app/api/src/lib/bootstrap";
+import { serviceBootstrap as step } from "@sps/crm/models/step/backend/app/api/src/lib/bootstrap";
+import { serviceBootstrap as optionsToFileStorageModuleFiles } from "@sps/crm/relations/options-to-file-storage-module-files/backend/app/api/src/lib/bootstrap";
+import { serviceBootstrap as inputsToOptions } from "@sps/crm/relations/inputs-to-options/backend/app/api/src/lib/bootstrap";
+import { serviceBootstrap as option } from "@sps/crm/models/option/backend/app/api/src/lib/bootstrap";
+import {
+  createModuleChildApp,
+  defaultAppAssembly,
+  type IAppAssembly,
+  type IModuleAppEntry,
+} from "@sps/shared-backend-api";
+import { serviceBootstrap as widgetApp } from "@sps/crm/models/widget/backend/app/api/src/lib/bootstrap";
+import { serviceBootstrap as formApp } from "@sps/crm/models/form/backend/app/api/src/lib/bootstrap";
+import { serviceBootstrap as inputApp } from "@sps/crm/models/input/backend/app/api/src/lib/bootstrap";
+import { serviceBootstrap as requestApp } from "@sps/crm/models/request/backend/app/api/src/lib/bootstrap";
+import { serviceBootstrap as widgetsToFormsApp } from "@sps/crm/relations/widgets-to-forms/backend/app/api/src/lib/bootstrap";
+import { serviceBootstrap as formsToRequestsApp } from "@sps/crm/relations/forms-to-requests/backend/app/api/src/lib/bootstrap";
+import { serviceBootstrap as widgetsToWebsiteBuilderModuleWidgets } from "@sps/crm/relations/widgets-to-website-builder-module-widgets/backend/app/api/src/lib/bootstrap";
 
 export class Apps {
-  apps: { type: "model" | "relation"; route: string; app: DefaultApp<any> }[] =
-    [];
+  apps: IModuleAppEntry[] = [];
 
-  constructor() {
+  constructor(private readonly assembly: IAppAssembly = defaultAppAssembly) {
     this.bindApps();
   }
 
@@ -25,67 +29,70 @@ export class Apps {
     this.apps.push({
       type: "relation",
       route: "/forms-to-steps",
-      app: formsToSteps,
+      app: createModuleChildApp(formsToSteps, this.assembly),
     });
     this.apps.push({
       type: "relation",
       route: "/steps-to-inputs",
-      app: stepsToInputs,
+      app: createModuleChildApp(stepsToInputs, this.assembly),
     });
     this.apps.push({
       type: "model",
       route: "/steps",
-      app: step,
+      app: createModuleChildApp(step, this.assembly),
     });
     this.apps.push({
       type: "relation",
       route: "/options-to-file-storage-module-files",
-      app: optionsToFileStorageModuleFiles,
+      app: createModuleChildApp(optionsToFileStorageModuleFiles, this.assembly),
     });
     this.apps.push({
       type: "relation",
       route: "/inputs-to-options",
-      app: inputsToOptions,
+      app: createModuleChildApp(inputsToOptions, this.assembly),
     });
     this.apps.push({
       type: "model",
       route: "/options",
-      app: option,
+      app: createModuleChildApp(option, this.assembly),
     });
     this.apps.push({
       type: "model",
       route: "/widgets",
-      app: widgetApp,
+      app: createModuleChildApp(widgetApp, this.assembly),
     });
     this.apps.push({
       type: "model",
       route: "/forms",
-      app: formApp,
+      app: createModuleChildApp(formApp, this.assembly),
     });
     this.apps.push({
       type: "model",
       route: "/inputs",
-      app: inputApp,
+      app: createModuleChildApp(inputApp, this.assembly),
     });
     this.apps.push({
       type: "model",
       route: "/requests",
-      app: requestApp,
+      app: createModuleChildApp(requestApp, this.assembly),
     });
     this.apps.push({
       type: "relation",
       route: "/widgets-to-forms",
-      app: widgetsToFormsApp,
+      app: createModuleChildApp(widgetsToFormsApp, this.assembly),
     });
     this.apps.push({
       type: "relation",
       route: "/forms-to-requests",
-      app: formsToRequestsApp,
+      app: createModuleChildApp(formsToRequestsApp, this.assembly),
     });
     this.apps.push({
       type: "relation",
       route: "/widgets-to-website-builder-module-widgets",
-      app: widgetsToWebsiteBuilderModuleWidgets,
+      app: createModuleChildApp(
+        widgetsToWebsiteBuilderModuleWidgets,
+        this.assembly,
+      ),
     });
   }
 }

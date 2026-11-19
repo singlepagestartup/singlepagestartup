@@ -1,4 +1,3 @@
-import { z } from "zod";
 import {
   unwrapContentField,
   ContentCreateInputSchema,
@@ -46,6 +45,7 @@ import {
 } from "./file-storage";
 import {
   IContentEntityDescriptor,
+  IContentOperation,
   IContentQueryParams,
   IDeletePreview,
 } from "./types";
@@ -107,9 +107,9 @@ function buildCountParams(input: { filters?: IContentFindInput["filters"] }) {
 
 function requireOperation(
   descriptor: IContentEntityDescriptor,
-  operation: string,
+  operation: IContentOperation,
 ) {
-  if (!descriptor.operations.includes(operation as any)) {
+  if (!descriptor.operations.includes(operation)) {
     throw new Error(
       `Validation error. ${descriptor.key} does not support ${operation}`,
     );
@@ -630,7 +630,7 @@ async function findContextRecords(
   try {
     const records = await findContentRecords(input, options);
 
-    return (records ?? []) as Record<string, any>[];
+    return records ?? [];
   } catch {
     return [];
   }
@@ -641,9 +641,7 @@ async function getContextRecord(
   options?: IContentOperationOptions,
 ) {
   try {
-    const result = await getContentRecordById(input, options);
-
-    return result as Record<string, any>;
+    return await getContentRecordById(input, options);
   } catch {
     return;
   }
@@ -651,7 +649,7 @@ async function getContextRecord(
 
 async function buildDeleteRelationContext(
   input: IContentGetByIdInput,
-  record: Record<string, any>,
+  record: IDeletePreview["record"],
   options?: IContentOperationOptions,
 ) {
   if (input.entity === "host.page") {
@@ -793,9 +791,7 @@ async function buildDeleteRelationContext(
           getContextRecord({ entity: "host.widget", id: widgetId }, options),
         ),
       )
-    ).filter((hostWidget): hostWidget is Record<string, any> =>
-      Boolean(hostWidget),
-    );
+    ).filter((hostWidget) => hostWidget !== undefined);
     const pageWidgets = (
       await Promise.all(
         widgetIds.map((widgetId) =>

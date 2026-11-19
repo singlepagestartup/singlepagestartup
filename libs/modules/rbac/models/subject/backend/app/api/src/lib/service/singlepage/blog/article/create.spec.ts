@@ -64,24 +64,28 @@ function fixture() {
       }),
     },
     findById: jest.fn(async ({ id }) => ({ id, variant: "default" })),
-    subjectsToIdentities: {
-      find: jest.fn(async (props) => [
-        { subjectId: props.params.filters.and[0].value },
-      ]),
-    },
     socialModuleProfileOwnershipEnsure: jest.fn(async ({ subjectId }) => ({
       profile: { id: `profile-${subjectId}` },
     })),
-    subjectsToBlogModuleArticles: repository("owners"),
-    blogModule: {
-      article: repository("articles"),
-      category: { findById: jest.fn(async ({ id }) => ({ id })) },
-      categoriesToArticles: repository("categories"),
+    modules: {
+      blog: {
+        article: repository("articles"),
+        category: { findById: jest.fn(async ({ id }) => ({ id })) },
+        categoriesToArticles: repository("categories"),
+      },
+      social: {
+        profilesToBlogModuleArticles: repository("authors"),
+        profile: {
+          authorFind: jest.fn(async ({ profileId }) => [{ id: profileId }]),
+        },
+      },
     },
-    socialModule: {
-      profilesToBlogModuleArticles: repository("authors"),
-      profile: {
-        authorFind: jest.fn(async ({ profileId }) => [{ id: profileId }]),
+    module: {
+      subjectsToBlogModuleArticles: repository("owners"),
+      subjectsToIdentities: {
+        find: jest.fn(async (props) => [
+          { subjectId: props.params.filters.and[0].value },
+        ]),
       },
     },
   };
@@ -151,10 +155,10 @@ it.each(["owner", "author", "category"])(
     const { service, dependencies, tables } = fixture();
     const writer =
       kind === "owner"
-        ? dependencies.subjectsToBlogModuleArticles
+        ? dependencies.module.subjectsToBlogModuleArticles
         : kind === "author"
-          ? dependencies.socialModule.profilesToBlogModuleArticles
-          : dependencies.blogModule.categoriesToArticles;
+          ? dependencies.modules.social.profilesToBlogModuleArticles
+          : dependencies.modules.blog.categoriesToArticles;
     writer.create.mockRejectedValueOnce(new Error("Link insert failed"));
     await expect(
       service.execute({ subjectId: "owner", data: input() }),
@@ -165,7 +169,7 @@ it.each(["owner", "author", "category"])(
 
 it("rejects an anonymous or agent Subject before provisioning an author", async () => {
   const { service, dependencies } = fixture();
-  dependencies.subjectsToIdentities.find.mockResolvedValueOnce([]);
+  dependencies.module.subjectsToIdentities.find.mockResolvedValueOnce([]);
   await expect(
     service.execute({ subjectId: "guest", data: input() }),
   ).rejects.toThrow("signed-in human");

@@ -1,11 +1,3 @@
-/**
- * BDD Suite: OpenRouter thread context and reply validation.
- *
- * Given: a chat has a thread with more messages than one context page.
- * When: OpenRouter context is collected and generated replies are validated.
- * Then: every eligible context message is considered and invalid empty text replies are rejected.
- */
-
 jest.mock("@sps/backend-utils", () => {
   return {
     ...jest.requireActual("@sps/backend-utils"),
@@ -632,16 +624,20 @@ describe("Given: OpenRouter thread context and reply validation", () => {
    */
   it("When: requester resources are foreign Then: route ownership validation rejects them", async () => {
     const handler = new Handler({
-      socialModule: {
-        profilesToChats: {
-          find: jest.fn(async () => []),
-        },
-        profilesToMessages: {
-          find: jest.fn(async () => []),
+      modules: {
+        social: {
+          profilesToChats: {
+            find: jest.fn(async () => []),
+          },
+          profilesToMessages: {
+            find: jest.fn(async () => []),
+          },
         },
       },
-      subjectsToRoles: {
-        find: jest.fn(async () => []),
+      module: {
+        subjectsToRoles: {
+          find: jest.fn(async () => []),
+        },
       },
     } as any) as unknown as IOpenRouterIdentityGuardHandler;
 
@@ -668,12 +664,14 @@ describe("Given: OpenRouter thread context and reply validation", () => {
    */
   it("When: chat relationships are foreign Then: chat integrity validation rejects them", async () => {
     const handler = new Handler({
-      socialModule: {
-        chatsToMessages: {
-          find: jest.fn(async () => []),
-        },
-        profilesToChats: {
-          find: jest.fn(async () => []),
+      modules: {
+        social: {
+          chatsToMessages: {
+            find: jest.fn(async () => []),
+          },
+          profilesToChats: {
+            find: jest.fn(async () => []),
+          },
         },
       },
     } as any) as unknown as IOpenRouterIdentityGuardHandler;
@@ -707,10 +705,12 @@ describe("Given: OpenRouter thread context and reply validation", () => {
         { subjectId: "social.profile-b" },
       ]);
     const handler = new Handler({
-      subjectsToSocialModuleProfiles: {
-        find: relationsFind,
-      },
       findById: jest.fn(),
+      module: {
+        subjectsToSocialModuleProfiles: {
+          find: relationsFind,
+        },
+      },
     } as any) as unknown as IOpenRouterIdentityGuardHandler;
 
     await expect(
@@ -730,10 +730,12 @@ describe("Given: OpenRouter thread context and reply validation", () => {
   it("When: one rbac.subject is linked Then: principal resolution uses that relation", async () => {
     const findById = jest.fn(async () => ({ id: "rbac-subject" }));
     const handler = new Handler({
-      subjectsToSocialModuleProfiles: {
-        find: jest.fn(async () => [{ subjectId: "rbac-subject" }]),
-      },
       findById,
+      module: {
+        subjectsToSocialModuleProfiles: {
+          find: jest.fn(async () => [{ subjectId: "rbac-subject" }]),
+        },
+      },
     } as any) as unknown as IOpenRouterIdentityGuardHandler;
 
     await expect(
@@ -773,12 +775,14 @@ describe("Given: OpenRouter thread context and reply validation", () => {
     });
 
     const handler = new Handler({
-      socialModule: {
-        threadsToMessages: {
-          find: threadsToMessagesFind,
-        },
-        chatsToMessages: {
-          find: chatsToMessagesFind,
+      modules: {
+        social: {
+          threadsToMessages: {
+            find: threadsToMessagesFind,
+          },
+          chatsToMessages: {
+            find: chatsToMessagesFind,
+          },
         },
       },
     } as any) as unknown as IFindThreadMessageIdsInChatHandler;
@@ -1176,7 +1180,7 @@ describe("Given: OpenRouter thread context and reply validation", () => {
       )
       .mockResolvedValueOnce(Buffer.from([0xff, 0xd8, 0xff]));
     const handler = new Handler({
-      fileStorageModule: { file: { readBytes } },
+      modules: { fileStorage: { file: { readBytes } } },
     } as any) as unknown as IOpenRouterAttachmentContextHandler;
 
     const resolved = await handler.resolveOpenRouterMessageContext({
@@ -1263,7 +1267,7 @@ describe("Given: OpenRouter thread context and reply validation", () => {
       Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]),
     );
     const handler = new Handler({
-      fileStorageModule: { file: { readBytes } },
+      modules: { fileStorage: { file: { readBytes } } },
     } as any) as any;
     const props = {
       messageDescription: "Proposed notes",
@@ -1296,7 +1300,7 @@ describe("Given: OpenRouter thread context and reply validation", () => {
         Buffer.from('<svg xmlns="http://www.w3.org/2000/svg"/>'),
       );
       const handler = new Handler({
-        fileStorageModule: { file: { readBytes } },
+        modules: { fileStorage: { file: { readBytes } } },
       } as any) as any;
       const result = await handler.resolveOpenRouterMessageContext({
         messageDescription: "Keep notes",
@@ -1413,28 +1417,30 @@ describe("Given: OpenRouter thread context and reply validation", () => {
    */
   it("When: prompt skills are resolved Then: only linked skills are used", async () => {
     const handler = new Handler({
-      socialModule: {
-        profilesToSkills: {
-          find: jest.fn(async () => [
-            {
-              skillId: "skill-1",
-            },
-            {
-              skillId: "skill-2",
-            },
-          ]),
-        },
-        skill: {
-          find: jest.fn(async () => [
-            {
-              id: "skill-1",
-              slug: "brief-writer",
-            },
-            {
-              id: "skill-2",
-              slug: "fact-checker",
-            },
-          ]),
+      modules: {
+        social: {
+          profilesToSkills: {
+            find: jest.fn(async () => [
+              {
+                skillId: "skill-1",
+              },
+              {
+                skillId: "skill-2",
+              },
+            ]),
+          },
+          skill: {
+            find: jest.fn(async () => [
+              {
+                id: "skill-1",
+                slug: "brief-writer",
+              },
+              {
+                id: "skill-2",
+                slug: "fact-checker",
+              },
+            ]),
+          },
         },
       },
     } as any) as unknown as IOpenRouterKnowledgeControlsHandler;
@@ -1529,26 +1535,28 @@ describe("Given: OpenRouter thread context and reply validation", () => {
    */
   it("When: slash skills are resolved Then: they become a message prefix", async () => {
     const handler = new Handler({
-      socialModule: {
-        profilesToSkills: {
-          find: jest.fn(async () => [
-            {
-              skillId: "skill-1",
-            },
-          ]),
-        },
-        profilesToKnowledgeModuleSources: {
-          find: jest.fn(async () => []),
-        },
-        skill: {
-          find: jest.fn(async () => [
-            {
-              id: "skill-1",
-              title: "Brief Writer",
-              slug: "brief-writer",
-              description: "Write a concise brief.",
-            },
-          ]),
+      modules: {
+        social: {
+          profilesToSkills: {
+            find: jest.fn(async () => [
+              {
+                skillId: "skill-1",
+              },
+            ]),
+          },
+          profilesToKnowledgeModuleSources: {
+            find: jest.fn(async () => []),
+          },
+          skill: {
+            find: jest.fn(async () => [
+              {
+                id: "skill-1",
+                title: "Brief Writer",
+                slug: "brief-writer",
+                description: "Write a concise brief.",
+              },
+            ]),
+          },
         },
       },
     } as any) as unknown as IOpenRouterKnowledgeControlsHandler;
@@ -1790,16 +1798,18 @@ describe("Given: OpenRouter thread context and reply validation", () => {
       })),
     };
     const handler = new Handler({
-      socialModule: {
-        profilesToSkills: {
-          find: jest.fn(async () => []),
-        },
-        profilesToKnowledgeModuleSources: {
-          find: jest.fn(async () => [
-            {
-              knowledgeModuleSourceId: "document-1",
-            },
-          ]),
+      modules: {
+        social: {
+          profilesToSkills: {
+            find: jest.fn(async () => []),
+          },
+          profilesToKnowledgeModuleSources: {
+            find: jest.fn(async () => [
+              {
+                knowledgeModuleSourceId: "document-1",
+              },
+            ]),
+          },
         },
       },
     } as any) as unknown as IOpenRouterKnowledgeControlsHandler;
@@ -1926,16 +1936,18 @@ describe("Given: OpenRouter thread context and reply validation", () => {
       })),
     };
     const handler = new Handler({
-      socialModule: {
-        profilesToSkills: {
-          find: jest.fn(async () => []),
-        },
-        profilesToKnowledgeModuleSources: {
-          find: jest.fn(async () => [
-            {
-              knowledgeModuleSourceId: "document-1",
-            },
-          ]),
+      modules: {
+        social: {
+          profilesToSkills: {
+            find: jest.fn(async () => []),
+          },
+          profilesToKnowledgeModuleSources: {
+            find: jest.fn(async () => [
+              {
+                knowledgeModuleSourceId: "document-1",
+              },
+            ]),
+          },
         },
       },
     } as any) as unknown as IOpenRouterKnowledgeControlsHandler;
@@ -2318,16 +2330,18 @@ describe("Given: OpenRouter thread context and reply validation", () => {
       })),
     };
     const handler = new Handler({
-      socialModule: {
-        profilesToSkills: {
-          find: jest.fn(async () => []),
-        },
-        profilesToKnowledgeModuleSources: {
-          find: jest.fn(async () => [
-            {
-              knowledgeModuleSourceId: "document-1",
-            },
-          ]),
+      modules: {
+        social: {
+          profilesToSkills: {
+            find: jest.fn(async () => []),
+          },
+          profilesToKnowledgeModuleSources: {
+            find: jest.fn(async () => [
+              {
+                knowledgeModuleSourceId: "document-1",
+              },
+            ]),
+          },
         },
       },
     } as any) as unknown as IOpenRouterKnowledgeControlsHandler;
@@ -2375,13 +2389,15 @@ describe("Given: OpenRouter thread context and reply validation", () => {
       { fileStorageModuleFileId: "file-1" },
     ]);
     const handler = new Handler({
-      socialModule: {
-        profilesToKnowledgeModuleSources: {
-          find: jest.fn(async () => []),
-          create: relationCreate,
+      modules: {
+        social: {
+          profilesToKnowledgeModuleSources: {
+            find: jest.fn(async () => []),
+            create: relationCreate,
+          },
+          messagesToKnowledgeModuleSources: { findOrCreate: originCreate },
+          messagesToFileStorageModuleFiles: { find: messageFiles },
         },
-        messagesToKnowledgeModuleSources: { findOrCreate: originCreate },
-        messagesToFileStorageModuleFiles: { find: messageFiles },
       },
     } as any) as any;
     const learnContent = jest.fn(async (props) => {
@@ -2523,19 +2539,23 @@ it.each(["shared", "private"])(
       description: "Current manually edited role instructions",
     }));
     const handler = new Handler({
-      socialModule: {
-        profilesToSkills: {
-          find: jest.fn(async () =>
-            skills.map((skill) => ({ skillId: skill.id })),
-          ),
-        },
-        skill: { find: jest.fn(async () => skills) },
-        profilesToKnowledgeModuleSources: {
-          find: jest.fn(async () =>
-            ["brief", "strategy", "brand", "design", "products"].map((id) => ({
-              knowledgeModuleSourceId: id,
-            })),
-          ),
+      modules: {
+        social: {
+          profilesToSkills: {
+            find: jest.fn(async () =>
+              skills.map((skill) => ({ skillId: skill.id })),
+            ),
+          },
+          skill: { find: jest.fn(async () => skills) },
+          profilesToKnowledgeModuleSources: {
+            find: jest.fn(async () =>
+              ["brief", "strategy", "brand", "design", "products"].map(
+                (id) => ({
+                  knowledgeModuleSourceId: id,
+                }),
+              ),
+            ),
+          },
         },
       },
     } as any) as any;
@@ -2602,7 +2622,7 @@ it.each(["shared", "private"])(
 );
 
 it("document tools offer proposals and reads while direct Knowledge writers are absent", () => {
-  const handler = new Handler({ socialModule: {} } as any) as any;
+  const handler = new Handler({ modules: { social: {} } } as any) as any;
   const tools = handler.buildProfileCapabilityTools({
     availableSkills: [],
     knowledgeSourceIds: ["own-source", "other-document-source"],
@@ -2631,13 +2651,15 @@ it("document tools offer proposals and reads while direct Knowledge writers are 
 it("resolves the agent subject separately from the assistant ownership relation", async () => {
   const findById = jest.fn(async ({ id }) => ({ id, variant: "agent" }));
   const handler = new Handler({
-    subjectsToSocialModuleProfiles: {
-      find: jest.fn(async () => [
-        { subjectId: "owner", variant: "assistant" },
-        { subjectId: "agent", variant: "default" },
-      ]),
-    },
     findById,
+    module: {
+      subjectsToSocialModuleProfiles: {
+        find: jest.fn(async () => [
+          { subjectId: "owner", variant: "assistant" },
+          { subjectId: "agent", variant: "default" },
+        ]),
+      },
+    },
   } as any) as any;
   expect(await handler.resolveRbacSubjectForSocialProfile("assistant")).toEqual(
     { id: "agent", variant: "agent" },
@@ -2654,7 +2676,7 @@ describe("Scoped Knowledge attachment tools", () => {
     targetSocialModuleProfileId: "assistant",
   };
   function capabilities(action?: "detach", documentSourceIds = ["brief"]) {
-    const handler = new Handler({ socialModule: {} } as any) as any;
+    const handler = new Handler({ modules: { social: {} } } as any) as any;
     handler.knowledgeService = {
       listSources: jest.fn(async ({ sourceIds }: any) => [
         { id: sourceIds[0], title: "Brief", contentHash: "hash" },

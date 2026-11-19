@@ -8,9 +8,7 @@
 import { describe, expect, test } from "bun:test";
 import { renderToStaticMarkup } from "react-dom/server";
 
-import ProjectDesign from "./ProjectDesign";
-
-import type { IProjectDesignData } from "./ProjectDesign";
+import ProjectDesign, { type IProjectDesignData } from "./ProjectDesign";
 
 const data: IProjectDesignData = {
   assets: [

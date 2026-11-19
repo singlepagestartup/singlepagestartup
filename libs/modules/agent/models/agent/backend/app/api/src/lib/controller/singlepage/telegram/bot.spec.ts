@@ -50,85 +50,87 @@ function createService() {
     agentSocialModuleProfileHandler,
     notificationMessageDelete: jest.fn().mockResolvedValue(undefined),
     notificationMessageUpdate,
-    socialModule: {
-      action: {
-        findById: jest.fn().mockResolvedValue({
-          id: "action-1",
-          payload: {},
-        }),
-      },
-      message: {
-        findById: jest.fn().mockResolvedValue({
-          id: "message-1",
-          description: "Hello",
-        }),
-      },
-      chatsToMessages: {
-        find: jest.fn().mockResolvedValue([
-          {
-            chatId: "chat-1",
-            messageId: "message-1",
-          },
-        ]),
-      },
-      chat: {
-        findById: jest.fn().mockResolvedValue({
-          id: "chat-1",
-          sourceSystemId: "telegram-chat-1",
-          variant: "telegram",
-        }),
-      },
-      profilesToChats: {
-        find: jest.fn().mockResolvedValue([
-          {
-            chatId: "chat-1",
-            profileId: "sender-profile",
-          },
-          {
-            chatId: "chat-1",
-            profileId: "open-router-profile",
-          },
-        ]),
-      },
-      profile: {
-        find: jest.fn().mockResolvedValue([
-          {
-            id: "sender-profile",
-            variant: "default",
-          },
-          {
-            id: "open-router-profile",
-            slug: "open-router",
-            variant: "artificial-intelligence",
-          },
-        ]),
-      },
-      profilesToMessages: {
-        find: jest.fn().mockResolvedValue([
-          {
-            messageId: "message-1",
-            profileId: "sender-profile",
-          },
-        ]),
-      },
-      messagesToFileStorageModuleFiles: {
-        find: jest.fn().mockResolvedValue([]),
-      },
-      chatsToActions: {
-        find: jest.fn().mockResolvedValue([
-          {
-            actionId: "action-1",
-            chatId: "chat-1",
-          },
-        ]),
-      },
-      profilesToActions: {
-        find: jest.fn().mockResolvedValue([
-          {
-            actionId: "action-1",
-            profileId: "sender-profile",
-          },
-        ]),
+    modules: {
+      social: {
+        action: {
+          findById: jest.fn().mockResolvedValue({
+            id: "action-1",
+            payload: {},
+          }),
+        },
+        message: {
+          findById: jest.fn().mockResolvedValue({
+            id: "message-1",
+            description: "Hello",
+          }),
+        },
+        chatsToMessages: {
+          find: jest.fn().mockResolvedValue([
+            {
+              chatId: "chat-1",
+              messageId: "message-1",
+            },
+          ]),
+        },
+        chat: {
+          findById: jest.fn().mockResolvedValue({
+            id: "chat-1",
+            sourceSystemId: "telegram-chat-1",
+            variant: "telegram",
+          }),
+        },
+        profilesToChats: {
+          find: jest.fn().mockResolvedValue([
+            {
+              chatId: "chat-1",
+              profileId: "sender-profile",
+            },
+            {
+              chatId: "chat-1",
+              profileId: "open-router-profile",
+            },
+          ]),
+        },
+        profile: {
+          find: jest.fn().mockResolvedValue([
+            {
+              id: "sender-profile",
+              variant: "default",
+            },
+            {
+              id: "open-router-profile",
+              slug: "open-router",
+              variant: "artificial-intelligence",
+            },
+          ]),
+        },
+        profilesToMessages: {
+          find: jest.fn().mockResolvedValue([
+            {
+              messageId: "message-1",
+              profileId: "sender-profile",
+            },
+          ]),
+        },
+        messagesToFileStorageModuleFiles: {
+          find: jest.fn().mockResolvedValue([]),
+        },
+        chatsToActions: {
+          find: jest.fn().mockResolvedValue([
+            {
+              actionId: "action-1",
+              chatId: "chat-1",
+            },
+          ]),
+        },
+        profilesToActions: {
+          find: jest.fn().mockResolvedValue([
+            {
+              actionId: "action-1",
+              profileId: "sender-profile",
+            },
+          ]),
+        },
       },
     },
   } as any;
@@ -287,7 +289,7 @@ describe("Given: agent social message action routing", () => {
    */
   it("When: multiple AI profiles participate Then: every AI profile handles the message", async () => {
     const service = createService();
-    service.socialModule.message.findById.mockResolvedValue({
+    service.modules.social.message.findById.mockResolvedValue({
       id: "message-1",
       description: "Use MCP",
       metadata: {
@@ -300,12 +302,12 @@ describe("Given: agent social message action routing", () => {
         },
       },
     });
-    service.socialModule.profilesToChats.find.mockResolvedValue([
+    service.modules.social.profilesToChats.find.mockResolvedValue([
       { chatId: "chat-1", profileId: "sender-profile" },
       { chatId: "chat-1", profileId: "open-router-profile" },
       { chatId: "chat-1", profileId: "open-router-profile-2" },
     ]);
-    service.socialModule.profile.find.mockResolvedValue([
+    service.modules.social.profile.find.mockResolvedValue([
       { id: "sender-profile", variant: "default" },
       {
         id: "open-router-profile",
@@ -341,7 +343,7 @@ describe("Given: agent social message action routing", () => {
    */
   it("When: Telegram has multiple automatic participants Then: all are dispatched", async () => {
     const service = createService();
-    service.socialModule.message.findById.mockResolvedValue({
+    service.modules.social.message.findById.mockResolvedValue({
       id: "message-1",
       description: "/start",
       metadata: {
@@ -354,13 +356,13 @@ describe("Given: agent social message action routing", () => {
         },
       },
     });
-    service.socialModule.profilesToChats.find.mockResolvedValue([
+    service.modules.social.profilesToChats.find.mockResolvedValue([
       { chatId: "chat-1", profileId: "sender-profile" },
       { chatId: "chat-1", profileId: "legacy-ai-profile" },
       { chatId: "chat-1", profileId: "personal-ai-profile" },
       { chatId: "chat-1", profileId: "telegram-bot-profile" },
     ]);
-    service.socialModule.profile.find.mockResolvedValue([
+    service.modules.social.profile.find.mockResolvedValue([
       { id: "sender-profile", variant: "default" },
       {
         id: "legacy-ai-profile",
@@ -404,11 +406,11 @@ describe("Given: agent social message action routing", () => {
    */
   it("When: an attachment-only Telegram message is logged Then: automatic participants receive it", async () => {
     const service = createService();
-    service.socialModule.message.findById.mockResolvedValue({
+    service.modules.social.message.findById.mockResolvedValue({
       id: "message-1",
       description: "",
     });
-    service.socialModule.messagesToFileStorageModuleFiles.find.mockResolvedValue(
+    service.modules.social.messagesToFileStorageModuleFiles.find.mockResolvedValue(
       [
         {
           messageId: "message-1",
@@ -425,7 +427,7 @@ describe("Given: agent social message action routing", () => {
     });
 
     expect(
-      service.socialModule.messagesToFileStorageModuleFiles.find,
+      service.modules.social.messagesToFileStorageModuleFiles.find,
     ).toHaveBeenCalledWith({
       params: {
         filters: {
@@ -471,7 +473,7 @@ describe("Given: agent social message action routing", () => {
         },
       },
     });
-    service.socialModule.action.findById.mockResolvedValue({
+    service.modules.social.action.findById.mockResolvedValue({
       id: "action-1",
       payload: forwardedAction.socialModuleActionPayload,
     });
@@ -517,7 +519,7 @@ describe("Given: agent social message action routing", () => {
         description: "edited text",
       },
     });
-    service.socialModule.action.findById.mockResolvedValue({
+    service.modules.social.action.findById.mockResolvedValue({
       id: "action-1",
       payload: forwardedAction.socialModuleActionPayload,
     });
@@ -563,7 +565,7 @@ describe("Given: agent social message action routing", () => {
         },
       },
     });
-    service.socialModule.action.findById.mockResolvedValue({
+    service.modules.social.action.findById.mockResolvedValue({
       id: "action-1",
       payload: forwardedAction.socialModuleActionPayload,
     });

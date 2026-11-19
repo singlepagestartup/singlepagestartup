@@ -40,7 +40,7 @@ describe("Given: the payment-intent provider webhook handler", () => {
       dummy: jest.fn(),
       telegramStar: jest.fn(),
       updatePaymentIntentStatus: jest.fn().mockResolvedValue({ ok: true }),
-      billingModule: {
+      module: {
         invoice: {
           findById: jest.fn(),
         },
@@ -100,7 +100,7 @@ describe("Given: the payment-intent provider webhook handler", () => {
     expect(service.isProviderAllowed).toHaveBeenCalledWith({
       provider: "dummy",
     });
-    expect(service.billingModule.invoice.findById).not.toHaveBeenCalled();
+    expect(service.module.invoice.findById).not.toHaveBeenCalled();
     expect(service.dummy).not.toHaveBeenCalled();
     expect(mockInvoiceUpdate).not.toHaveBeenCalled();
   });
@@ -131,7 +131,7 @@ describe("Given: the payment-intent provider webhook handler", () => {
     await expect(response.text()).resolves.toContain(
       `Provider ${provider} is not allowed`,
     );
-    expect(service.billingModule.invoice.findById).not.toHaveBeenCalled();
+    expect(service.module.invoice.findById).not.toHaveBeenCalled();
     expect(service.updatePaymentIntentStatus).not.toHaveBeenCalled();
     expect(mockInvoiceUpdate).not.toHaveBeenCalled();
   });
@@ -146,7 +146,7 @@ describe("Given: the payment-intent provider webhook handler", () => {
   it("Then: settles the invoice through the dummy branch when the list names dummy", async () => {
     const service = createService({ allowedProviders: ["dummy"] });
     const paidInvoice = { id: "invoice-1", amount: 100, status: "paid" };
-    service.billingModule.invoice.findById.mockResolvedValue({
+    service.module.invoice.findById.mockResolvedValue({
       id: "invoice-1",
       amount: 100,
       status: "open",
@@ -176,7 +176,7 @@ describe("Given: the payment-intent provider webhook handler", () => {
       body: { data: { id: "invoice-1" } },
     });
     expect(response.status).toBe(403);
-    expect(service.billingModule.invoice.findById).not.toHaveBeenCalled();
+    expect(service.module.invoice.findById).not.toHaveBeenCalled();
     expect(service.dummy).not.toHaveBeenCalled();
   });
 

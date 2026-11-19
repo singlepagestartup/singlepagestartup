@@ -23,7 +23,7 @@ export class Handler {
       }
 
       const socialModuleProfile =
-        await this.service.socialModule.profile.findById({
+        await this.service.modules.social.profile.findById({
           id: socialModuleProfileId,
         });
 
@@ -38,7 +38,7 @@ export class Handler {
       }
 
       const rbacSubjectRelations =
-        await this.service.subjectsToSocialModuleProfiles.find({
+        await this.service.module.subjectsToSocialModuleProfiles.find({
           params: {
             filters: {
               and: [
@@ -83,8 +83,7 @@ export class Handler {
             socialModuleProfile.allowedMcpServerIds,
           )
             ? socialModuleProfile.allowedMcpServerIds.filter(
-                (identifier): identifier is string =>
-                  typeof identifier === "string",
+                (identifier) => typeof identifier === "string",
               )
             : [],
           rbacSubjectAuthenticationJwt,

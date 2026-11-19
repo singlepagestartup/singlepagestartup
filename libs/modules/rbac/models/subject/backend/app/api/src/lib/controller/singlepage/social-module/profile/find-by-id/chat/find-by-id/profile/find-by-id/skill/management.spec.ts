@@ -1,9 +1,3 @@
-/**
- * BDD Suite: subject-scoped profile skill management
- * Given: linked and global skills behind a manageable AI profile.
- * When: pages are read, existing skills are linked, or relations are unlinked.
- * Then: pagination is stable, linking is idempotent, and global skills survive.
- */
 import { Handler as Find } from "./find";
 import { Handler as Available } from "./available";
 import { Handler as Link } from "./link";
@@ -32,21 +26,25 @@ function context(
 
 function service() {
   return {
-    socialModule: {
-      profilesToSkills: {
-        find: jest
-          .fn()
-          .mockResolvedValue([{ id: "relation-1", skillId: "skill-1" }]),
-        create: jest.fn().mockResolvedValue({ id: "relation-2" }),
-        delete: jest.fn().mockResolvedValue(true),
-      },
-      skill: {
-        find: jest.fn().mockResolvedValue([
-          { id: "skill-1", title: "Alpha" },
-          { id: "skill-2", title: "Beta" },
-          { id: "skill-3", title: "Gamma" },
-        ]),
-        findById: jest.fn().mockResolvedValue({ id: "skill-2", title: "Beta" }),
+    modules: {
+      social: {
+        profilesToSkills: {
+          find: jest
+            .fn()
+            .mockResolvedValue([{ id: "relation-1", skillId: "skill-1" }]),
+          create: jest.fn().mockResolvedValue({ id: "relation-2" }),
+          delete: jest.fn().mockResolvedValue(true),
+        },
+        skill: {
+          find: jest.fn().mockResolvedValue([
+            { id: "skill-1", title: "Alpha" },
+            { id: "skill-2", title: "Beta" },
+            { id: "skill-3", title: "Gamma" },
+          ]),
+          findById: jest
+            .fn()
+            .mockResolvedValue({ id: "skill-2", title: "Beta" }),
+        },
       },
     },
   } as any;
@@ -65,7 +63,7 @@ describe("Profile skill management", () => {
 
     await new Find(api).execute(c, undefined);
 
-    expect(api.socialModule.profilesToSkills.find).toHaveBeenCalledWith(
+    expect(api.modules.social.profilesToSkills.find).toHaveBeenCalledWith(
       expect.objectContaining({
         params: expect.objectContaining({ limit: 2, offset: 1 }),
       }),
@@ -96,15 +94,15 @@ describe("Profile skill management", () => {
       title: "Private brief",
       slug: "ai-chat-account-manager-ce2b37c1-3494-4f18-8de6-f51fbf7de384",
     };
-    api.socialModule.skill.find.mockResolvedValue([skill]);
+    api.modules.social.skill.find.mockResolvedValue([skill]);
     const available = context();
     await new Available(api).execute(available);
     expect(available.json).toHaveBeenCalledWith({ data: [] });
-    api.socialModule.skill.findById.mockResolvedValue(skill);
+    api.modules.social.skill.findById.mockResolvedValue(skill);
     await expect(new Link(api).execute(context())).rejects.toThrow(
       "belongs to another profile",
     );
-    expect(api.socialModule.profilesToSkills.create).not.toHaveBeenCalled();
+    expect(api.modules.social.profilesToSkills.create).not.toHaveBeenCalled();
   });
 
   it("allows editing private instructions without renaming the profession command", async () => {
@@ -115,8 +113,8 @@ describe("Profile skill management", () => {
       title: "Brief",
       description: "Initial instructions",
     };
-    api.socialModule.skill.findById.mockResolvedValue(skill);
-    api.socialModule.skill.update = jest.fn(async ({ data }) => ({
+    api.modules.social.skill.findById.mockResolvedValue(skill);
+    api.modules.social.skill.update = jest.fn(async ({ data }) => ({
       ...skill,
       ...data,
     }));
@@ -136,7 +134,7 @@ describe("Profile skill management", () => {
     await expect(new Update(api).execute(c, undefined)).rejects.toThrow(
       "cannot be renamed",
     );
-    expect(api.socialModule.skill.update).toHaveBeenCalledTimes(1);
+    expect(api.modules.social.skill.update).toHaveBeenCalledTimes(1);
   });
 
   /**
@@ -147,13 +145,13 @@ describe("Profile skill management", () => {
    */
   it("When: an existing skill is linked again Then: no duplicate relation is created", async () => {
     const api = service();
-    api.socialModule.profilesToSkills.find.mockResolvedValue([
+    api.modules.social.profilesToSkills.find.mockResolvedValue([
       { id: "relation-2", skillId: "skill-2" },
     ]);
 
     await new Link(api).execute(context());
 
-    expect(api.socialModule.profilesToSkills.create).not.toHaveBeenCalled();
+    expect(api.modules.social.profilesToSkills.create).not.toHaveBeenCalled();
   });
 
   /**
@@ -167,9 +165,9 @@ describe("Profile skill management", () => {
 
     await new Unlink(api).execute(context());
 
-    expect(api.socialModule.profilesToSkills.delete).toHaveBeenCalledWith({
+    expect(api.modules.social.profilesToSkills.delete).toHaveBeenCalledWith({
       id: "relation-1",
     });
-    expect((api.socialModule.skill as any).delete).toBeUndefined();
+    expect((api.modules.social.skill as any).delete).toBeUndefined();
   });
 });

@@ -40,7 +40,8 @@ function createTestContext(props?: {
   ];
   const defaultCurrencyIds = props?.defaultCurrencyIds ?? [DEFAULT_CURRENCY_ID];
 
-  const ecommerceModule = {
+  const dependencies = {
+    storesToProducts: { quote: jest.fn() },
     attributeKey: {
       find: jest.fn().mockResolvedValue(priceAttributeKeys),
     },
@@ -63,21 +64,14 @@ function createTestContext(props?: {
     attributesToBillingModuleCurrencies: {
       find: jest.fn().mockResolvedValue(currencyLinks),
     },
-  } as any;
-
-  const billingModule = {
     currency: {
       find: jest
         .fn()
         .mockResolvedValue(defaultCurrencyIds.map((id) => ({ id }))),
     },
-  } as any;
-
-  return {
-    ecommerceModule,
-    billingModule,
-    service: new Service({ ecommerceModule, billingModule }),
   };
+
+  return { dependencies, service: new Service(dependencies) };
 }
 
 describe("Given: a product whose price attributes carry no billing currency", () => {
@@ -157,7 +151,7 @@ describe("Given: a product priced in one or more billing currencies", () => {
    * Then: that currency is returned without consulting the default currency.
    */
   it("When: the requested currency is one the product is priced in Then: it is returned unchanged", async () => {
-    const { service, billingModule } = createTestContext({
+    const { service, dependencies } = createTestContext({
       currencyLinks: [
         {
           attributeId: "attribute-price",
@@ -176,7 +170,7 @@ describe("Given: a product priced in one or more billing currencies", () => {
         billingModuleCurrencyId: OTHER_CURRENCY_ID,
       }),
     ).resolves.toBe(OTHER_CURRENCY_ID);
-    expect(billingModule.currency.find).not.toHaveBeenCalled();
+    expect(dependencies.currency.find).not.toHaveBeenCalled();
   });
 
   /**
@@ -235,7 +229,7 @@ describe("Given: a product priced in one or more billing currencies", () => {
    * Then: that currency is not considered and resolution is rejected.
    */
   it("When: the only currency sits on a non-price attribute Then: it is not treated as a price currency", async () => {
-    const { ecommerceModule, service } = createTestContext({
+    const { dependencies, service } = createTestContext({
       productAttributeIds: ["attribute-topup"],
       priceAttributeIds: [],
     });
@@ -244,7 +238,7 @@ describe("Given: a product priced in one or more billing currencies", () => {
       NO_PRICE_IN_AVAILABLE_CURRENCY_ERROR,
     );
     expect(
-      ecommerceModule.attributesToBillingModuleCurrencies.find,
+      dependencies.attributesToBillingModuleCurrencies.find,
     ).not.toHaveBeenCalled();
   });
 });

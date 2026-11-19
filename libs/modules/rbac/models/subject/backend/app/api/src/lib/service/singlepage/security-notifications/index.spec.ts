@@ -13,6 +13,29 @@ describe("security summary configuration", () => {
   beforeEach(() => jest.spyOn(logger, "warn").mockImplementation(() => {}));
   afterEach(() => jest.restoreAllMocks());
 
+  function createWorker(options: {
+    findTopics: jest.Mock;
+    findTemplates: jest.Mock;
+    sendBounded?: jest.Mock;
+    resolveChannel?: jest.Mock;
+  }) {
+    return new Service({
+      role: { find: jest.fn() },
+      subjectsToRoles: { find: jest.fn() },
+      subjectsToIdentities: { find: jest.fn() },
+      identity: { find: jest.fn() },
+      topic: {
+        find: options.findTopics,
+        sendBounded: options.sendBounded ?? jest.fn(),
+      },
+      template: { find: options.findTemplates },
+      get channel(): never {
+        options.resolveChannel?.();
+        throw new Error("Unexpected delivery channel access");
+      },
+    });
+  }
+
   it.each([
     { templates: [] },
     {
@@ -43,23 +66,18 @@ describe("security summary configuration", () => {
         counts: { "password-limited": 1 },
       });
       const sendBounded = jest.fn();
-      const findChannel = jest.fn();
-      const worker = new Service(
-        {} as any,
-        {} as any,
-        {} as any,
-        {} as any,
-        {
-          topic: { find: async () => [{ id: "topic" }], sendBounded },
-          template: { find: async () => templates },
-        } as any,
-        { channel: { find: findChannel } } as any,
-      );
+      const resolveChannel = jest.fn();
+      const worker = createWorker({
+        findTopics: jest.fn().mockResolvedValue([{ id: "topic" }]),
+        findTemplates: jest.fn().mockResolvedValue(templates),
+        sendBounded,
+        resolveChannel,
+      });
       await worker.execute();
       expect(logger.warn).toHaveBeenCalledWith({
         event: "security.summary.configuration-missing",
       });
-      expect(findChannel).not.toHaveBeenCalled();
+      expect(resolveChannel).not.toHaveBeenCalled();
       expect(sendBounded).not.toHaveBeenCalled();
     },
   );
@@ -71,17 +89,10 @@ describe("security summary configuration", () => {
       counts: { "password-limited": 1 },
     });
     const findTemplates = jest.fn();
-    const worker = new Service(
-      {} as any,
-      {} as any,
-      {} as any,
-      {} as any,
-      {
-        topic: { find: async () => [] },
-        template: { find: findTemplates },
-      } as any,
-      {} as any,
-    );
+    const worker = createWorker({
+      findTopics: jest.fn().mockResolvedValue([]),
+      findTemplates,
+    });
     await worker.execute();
     expect(findTemplates).not.toHaveBeenCalled();
   });
@@ -100,17 +111,10 @@ describe("security summary configuration", () => {
         content: null,
       },
     ];
-    const worker = new Service(
-      {} as any,
-      {} as any,
-      {} as any,
-      {} as any,
-      {
-        topic: { find: async () => [{ id: "topic" }] },
-        template: { find: async () => templates },
-      } as any,
-      {} as any,
-    );
+    const worker = createWorker({
+      findTopics: jest.fn().mockResolvedValue([{ id: "topic" }]),
+      findTemplates: jest.fn().mockResolvedValue(templates),
+    });
     const configuration = await (worker as any).configuration();
     expect(configuration.templates.email).toBe(templates[0]);
     expect(configuration.templates.telegram).toBe(templates[1]);

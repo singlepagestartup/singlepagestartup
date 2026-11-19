@@ -1,5 +1,17 @@
 import { Hono } from "hono";
-import { ParseQueryMiddleware } from "@sps/shared-backend-api";
+import {
+  ParseQueryMiddleware,
+  createAppAssembly,
+  type IAppAssembly,
+  type IRepository,
+  type IServiceBootstrap,
+} from "@sps/shared-backend-api";
+import { serviceBootstrap as articleOwner } from "@sps/blog/models/article/backend/app/api/src/lib/bootstrap";
+import { serviceBootstrap as productOwner } from "@sps/ecommerce/models/product/backend/app/api/src/lib/bootstrap";
+import { serviceBootstrap as fileOwner } from "@sps/file-storage/models/file/backend/app/api/src/lib/bootstrap";
+import { serviceBootstrap as articleLinkOwner } from "@sps/social/relations/profiles-to-blog-module-articles/backend/app/api/src/lib/bootstrap";
+import { serviceBootstrap as productLinkOwner } from "@sps/social/relations/profiles-to-ecommerce-module-products/backend/app/api/src/lib/bootstrap";
+import { serviceBootstrap as fileLinkOwner } from "@sps/social/relations/profiles-to-file-storage-module-files/backend/app/api/src/lib/bootstrap";
 import { Controller } from "..";
 import { Service } from "../../../service/singlepage";
 
@@ -20,6 +32,21 @@ jest.mock(
 const profileId = "61ed455d-8cce-458f-9992-a12e1fcb449a";
 const articleId = "a1ed455d-8cce-458f-9992-a12e1fcb449a";
 const productId = "b1ed455d-8cce-458f-9992-a12e1fcb449a";
+
+function withMethods<
+  T extends {
+    repository: IRepository;
+    withRepository(repository: IRepository, assembly: IAppAssembly): T;
+  },
+>(owner: IServiceBootstrap<T>, methods: Partial<T>) {
+  return (assembly: IAppAssembly): T => {
+    const service = owner.createService(createAppAssembly());
+    return Object.assign(
+      service.withRepository(service.repository, assembly),
+      methods,
+    );
+  };
+}
 
 function fixture() {
   const profile = {
@@ -59,12 +86,30 @@ function fixture() {
     },
     profilesToFiles: { find: jest.fn().mockResolvedValue([]) },
   };
-  const service = new Service(
-    repository as any,
-    {} as any,
-    {} as any,
-    dependencies as any,
-  );
+  const assembly = createAppAssembly(({ overrideServiceWith }) => {
+    overrideServiceWith(
+      articleOwner,
+      withMethods(articleOwner, dependencies.article),
+    );
+    overrideServiceWith(
+      productOwner,
+      withMethods(productOwner, dependencies.product),
+    );
+    overrideServiceWith(fileOwner, withMethods(fileOwner, dependencies.file));
+    overrideServiceWith(
+      articleLinkOwner,
+      withMethods(articleLinkOwner, dependencies.profilesToArticles),
+    );
+    overrideServiceWith(
+      productLinkOwner,
+      withMethods(productLinkOwner, dependencies.profilesToProducts),
+    );
+    overrideServiceWith(
+      fileLinkOwner,
+      withMethods(fileLinkOwner, dependencies.profilesToFiles),
+    );
+  });
+  const service = new Service(repository as any).withAppAssembly(assembly);
   const controller = new Controller(service);
   const app = new Hono();
   app.use("*", new ParseQueryMiddleware().init());

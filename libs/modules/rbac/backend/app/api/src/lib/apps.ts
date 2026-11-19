@@ -1,167 +1,182 @@
-import { app as subjectsToEcommerceModuleStores } from "@sps/rbac/relations/subjects-to-ecommerce-module-stores/backend/app/api";
-import { app as widgetsToEcommerceModuleWidgets } from "@sps/rbac/relations/widgets-to-ecommerce-module-widgets/backend/app/api";
-import { app as widgetsToCrmModuleWidgets } from "@sps/rbac/relations/widgets-to-crm-module-widgets/backend/app/api";
-import { app as widgetsToWebsiteBuilderModuleWidgets } from "@sps/rbac/relations/widgets-to-website-builder-module-widgets/backend/app/api";
-import { app as subjectsToEcommerceModuleProducts } from "@sps/rbac/relations/subjects-to-ecommerce-module-products/backend/app/api";
-import { app as subjectsToSocialModuleProfiles } from "@sps/rbac/relations/subjects-to-social-module-profiles/backend/app/api";
-import { app as widget } from "@sps/rbac/models/widget/backend/app/api";
-import { app as role } from "@sps/rbac/models/role/backend/app/api";
-import { app as subject } from "@sps/rbac/models/subject/backend/app/api";
-import { app as action } from "@sps/rbac/models/action/backend/app/api";
-import { app as permission } from "@sps/rbac/models/permission/backend/app/api";
-import { app as identity } from "@sps/rbac/models/identity/backend/app/api";
-import { app as rolesToPermissions } from "@sps/rbac/relations/roles-to-permissions/backend/app/api";
-import { app as subjectsToIdentities } from "@sps/rbac/relations/subjects-to-identities/backend/app/api";
-import { app as subjectsToRoles } from "@sps/rbac/relations/subjects-to-roles/backend/app/api";
-import { app as subjectsToActions } from "@sps/rbac/relations/subjects-to-actions/backend/app/api";
-import { app as subjectsToEcommerceModuleOrders } from "@sps/rbac/relations/subjects-to-ecommerce-module-orders/backend/app/api";
-import { app as subjectsToNotificationModuleTopics } from "@sps/rbac/relations/subjects-to-notification-module-topics/backend/app/api";
-import { app as subjectsToBillingModulePaymentIntentsApp } from "@sps/rbac/relations/subjects-to-billing-module-payment-intents/backend/app/api";
-import { app as subjectsToBlogModuleArticlesApp } from "@sps/rbac/relations/subjects-to-blog-module-articles/backend/app/api";
-import { app as rolesToEcommerceModuleProductsApp } from "@sps/rbac/relations/roles-to-ecommerce-module-products/backend/app/api";
-import { app as subjectsToBillingModuleCurrenciesApp } from "@sps/rbac/relations/subjects-to-billing-module-currencies/backend/app/api";
-import { app as permissionsToBillingModuleCurrenciesApp } from "@sps/rbac/relations/permissions-to-billing-module-currencies/backend/app/api";
-import { DefaultApp } from "@sps/shared-backend-api";
-import type { Controller as SubjectController } from "@sps/rbac/models/subject/backend/app/api/src/lib/controller/singlepage";
-import type { Controller as SubjectRoleController } from "@sps/rbac/relations/subjects-to-roles/backend/app/api/src/lib/controller/singlepage";
+import { serviceBootstrap as subjectsToEcommerceModuleStores } from "@sps/rbac/relations/subjects-to-ecommerce-module-stores/backend/app/api/src/lib/bootstrap";
+import { serviceBootstrap as widgetsToEcommerceModuleWidgets } from "@sps/rbac/relations/widgets-to-ecommerce-module-widgets/backend/app/api/src/lib/bootstrap";
+import { serviceBootstrap as widgetsToCrmModuleWidgets } from "@sps/rbac/relations/widgets-to-crm-module-widgets/backend/app/api/src/lib/bootstrap";
+import { serviceBootstrap as widgetsToWebsiteBuilderModuleWidgets } from "@sps/rbac/relations/widgets-to-website-builder-module-widgets/backend/app/api/src/lib/bootstrap";
+import { serviceBootstrap as subjectsToEcommerceModuleProducts } from "@sps/rbac/relations/subjects-to-ecommerce-module-products/backend/app/api/src/lib/bootstrap";
+import { serviceBootstrap as subjectsToSocialModuleProfiles } from "@sps/rbac/relations/subjects-to-social-module-profiles/backend/app/api/src/lib/bootstrap";
+import { serviceBootstrap as widget } from "@sps/rbac/models/widget/backend/app/api/src/lib/bootstrap";
+import { serviceBootstrap as role } from "@sps/rbac/models/role/backend/app/api/src/lib/bootstrap";
+import { serviceBootstrap as subject } from "@sps/rbac/models/subject/backend/app/api/src/lib/bootstrap";
+import { serviceBootstrap as action } from "@sps/rbac/models/action/backend/app/api/src/lib/bootstrap";
+import { serviceBootstrap as permission } from "@sps/rbac/models/permission/backend/app/api/src/lib/bootstrap";
+import { serviceBootstrap as identity } from "@sps/rbac/models/identity/backend/app/api/src/lib/bootstrap";
+import { serviceBootstrap as rolesToPermissions } from "@sps/rbac/relations/roles-to-permissions/backend/app/api/src/lib/bootstrap";
+import { serviceBootstrap as subjectsToIdentities } from "@sps/rbac/relations/subjects-to-identities/backend/app/api/src/lib/bootstrap";
+import { serviceBootstrap as subjectsToRoles } from "@sps/rbac/relations/subjects-to-roles/backend/app/api/src/lib/bootstrap";
+import { serviceBootstrap as subjectsToActions } from "@sps/rbac/relations/subjects-to-actions/backend/app/api/src/lib/bootstrap";
+import { serviceBootstrap as subjectsToEcommerceModuleOrders } from "@sps/rbac/relations/subjects-to-ecommerce-module-orders/backend/app/api/src/lib/bootstrap";
+import { serviceBootstrap as subjectsToNotificationModuleTopics } from "@sps/rbac/relations/subjects-to-notification-module-topics/backend/app/api/src/lib/bootstrap";
+import { serviceBootstrap as subjectsToBillingModulePaymentIntentsApp } from "@sps/rbac/relations/subjects-to-billing-module-payment-intents/backend/app/api/src/lib/bootstrap";
+import { serviceBootstrap as subjectsToBlogModuleArticlesApp } from "@sps/rbac/relations/subjects-to-blog-module-articles/backend/app/api/src/lib/bootstrap";
+import { serviceBootstrap as rolesToEcommerceModuleProductsApp } from "@sps/rbac/relations/roles-to-ecommerce-module-products/backend/app/api/src/lib/bootstrap";
+import { serviceBootstrap as subjectsToBillingModuleCurrenciesApp } from "@sps/rbac/relations/subjects-to-billing-module-currencies/backend/app/api/src/lib/bootstrap";
+import { serviceBootstrap as permissionsToBillingModuleCurrenciesApp } from "@sps/rbac/relations/permissions-to-billing-module-currencies/backend/app/api/src/lib/bootstrap";
+import {
+  createModuleChildApp,
+  defaultAppAssembly,
+  type IAppAssembly,
+  type IModuleAppEntry,
+} from "@sps/shared-backend-api";
 
 export class Apps {
-  apps: { type: "model" | "relation"; route: string; app: DefaultApp<any> }[] =
-    [];
+  apps: IModuleAppEntry[] = [];
 
-  constructor() {
+  constructor(private readonly assembly: IAppAssembly = defaultAppAssembly) {
     this.bindApps();
   }
 
-  configure() {
-    const revocation = (
-      subject.controller as SubjectController
-    ).configureRoleRevocation();
-    (subjectsToRoles.controller as SubjectRoleController).configureRevocation(
-      revocation,
-    );
-  }
-
   async resolveSubjectId(token: string): Promise<string> {
-    const controller = subject.controller as SubjectController;
-    return controller.service.isAuthorizedService.getSubjectId(token);
+    return subject
+      .createService(this.assembly)
+      .isAuthorizedService.getSubjectId(token);
   }
 
   bindApps() {
     this.apps.push({
       type: "relation",
       route: "/subjects-to-ecommerce-module-stores",
-      app: subjectsToEcommerceModuleStores,
+      app: createModuleChildApp(subjectsToEcommerceModuleStores, this.assembly),
     });
     this.apps.push({
       type: "relation",
       route: "/widgets-to-ecommerce-module-widgets",
-      app: widgetsToEcommerceModuleWidgets,
+      app: createModuleChildApp(widgetsToEcommerceModuleWidgets, this.assembly),
     });
     this.apps.push({
       type: "relation",
       route: "/widgets-to-crm-module-widgets",
-      app: widgetsToCrmModuleWidgets,
+      app: createModuleChildApp(widgetsToCrmModuleWidgets, this.assembly),
     });
     this.apps.push({
       type: "relation",
       route: "/widgets-to-website-builder-module-widgets",
-      app: widgetsToWebsiteBuilderModuleWidgets,
+      app: createModuleChildApp(
+        widgetsToWebsiteBuilderModuleWidgets,
+        this.assembly,
+      ),
     });
     this.apps.push({
       type: "relation",
       route: "/subjects-to-ecommerce-module-products",
-      app: subjectsToEcommerceModuleProducts,
+      app: createModuleChildApp(
+        subjectsToEcommerceModuleProducts,
+        this.assembly,
+      ),
     });
     this.apps.push({
       type: "relation",
       route: "/subjects-to-social-module-profiles",
-      app: subjectsToSocialModuleProfiles,
+      app: createModuleChildApp(subjectsToSocialModuleProfiles, this.assembly),
     });
     this.apps.push({
       type: "model",
       route: "/widgets",
-      app: widget,
+      app: createModuleChildApp(widget, this.assembly),
     });
     this.apps.push({
       type: "model",
       route: "/roles",
-      app: role,
+      app: createModuleChildApp(role, this.assembly),
     });
     this.apps.push({
       type: "model",
       route: "/subjects",
-      app: subject,
+      app: createModuleChildApp(subject, this.assembly),
     });
     this.apps.push({
       type: "model",
       route: "/actions",
-      app: action,
+      app: createModuleChildApp(action, this.assembly),
     });
     this.apps.push({
       type: "model",
       route: "/permissions",
-      app: permission,
+      app: createModuleChildApp(permission, this.assembly),
     });
     this.apps.push({
       type: "model",
       route: "/identities",
-      app: identity,
+      app: createModuleChildApp(identity, this.assembly),
     });
     this.apps.push({
       type: "relation",
       route: "/roles-to-permissions",
-      app: rolesToPermissions,
+      app: createModuleChildApp(rolesToPermissions, this.assembly),
     });
     this.apps.push({
       type: "relation",
       route: "/subjects-to-identities",
-      app: subjectsToIdentities,
+      app: createModuleChildApp(subjectsToIdentities, this.assembly),
     });
     this.apps.push({
       type: "relation",
       route: "/subjects-to-roles",
-      app: subjectsToRoles,
+      app: createModuleChildApp(subjectsToRoles, this.assembly),
     });
     this.apps.push({
       type: "relation",
       route: "/subjects-to-actions",
-      app: subjectsToActions,
+      app: createModuleChildApp(subjectsToActions, this.assembly),
     });
     this.apps.push({
       type: "relation",
       route: "/subjects-to-ecommerce-module-orders",
-      app: subjectsToEcommerceModuleOrders,
+      app: createModuleChildApp(subjectsToEcommerceModuleOrders, this.assembly),
     });
     this.apps.push({
       type: "relation",
       route: "/subjects-to-notification-module-topics",
-      app: subjectsToNotificationModuleTopics,
+      app: createModuleChildApp(
+        subjectsToNotificationModuleTopics,
+        this.assembly,
+      ),
     });
     this.apps.push({
       type: "relation",
       route: "/subjects-to-billing-module-payment-intents",
-      app: subjectsToBillingModulePaymentIntentsApp,
+      app: createModuleChildApp(
+        subjectsToBillingModulePaymentIntentsApp,
+        this.assembly,
+      ),
     });
     this.apps.push({
       type: "relation",
       route: "/roles-to-ecommerce-module-products",
-      app: rolesToEcommerceModuleProductsApp,
+      app: createModuleChildApp(
+        rolesToEcommerceModuleProductsApp,
+        this.assembly,
+      ),
     });
     this.apps.push({
       type: "relation",
       route: "/subjects-to-blog-module-articles",
-      app: subjectsToBlogModuleArticlesApp,
+      app: createModuleChildApp(subjectsToBlogModuleArticlesApp, this.assembly),
     });
     this.apps.push({
       type: "relation",
       route: "/subjects-to-billing-module-currencies",
-      app: subjectsToBillingModuleCurrenciesApp,
+      app: createModuleChildApp(
+        subjectsToBillingModuleCurrenciesApp,
+        this.assembly,
+      ),
     });
     this.apps.push({
       type: "relation",
       route: "/permissions-to-billing-module-currencies",
-      app: permissionsToBillingModuleCurrenciesApp,
+      app: createModuleChildApp(
+        permissionsToBillingModuleCurrenciesApp,
+        this.assembly,
+      ),
     });
   }
 }

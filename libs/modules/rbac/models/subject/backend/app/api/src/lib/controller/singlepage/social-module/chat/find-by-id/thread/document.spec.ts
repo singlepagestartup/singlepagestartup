@@ -1,4 +1,3 @@
-/** BDD: Thread documents persist only Source IDs owned by the AI Profile in this Chat. */
 jest.mock("@sps/shared-utils", () => ({
   ...jest.requireActual("@sps/shared-utils"),
   RBAC_SECRET_KEY: "test-secret",
@@ -29,37 +28,39 @@ function service({ foreignProfile = false, allowed = ["source"] } = {}) {
   const svc: any = {
     socialModuleChatLifecycleAssertSubjectOwnsChat: jest.fn(),
     socialModuleChatLifecycleAssertThreadBelongsToChat: jest.fn(),
-    socialModule: {
-      chat: {
-        findById: jest
-          .fn()
-          .mockResolvedValue({ id: "chat", variant: "ai-chat" }),
-      },
-      thread: {
-        findById: jest.fn().mockResolvedValue({
-          id: "thread",
-          metadata: { openRouterModelId: "chosen", unrelated: true },
-        }),
-      },
-      profile: {
-        findById: jest.fn().mockResolvedValue({
-          id: "profile",
-          variant: "artificial-intelligence",
-        }),
-      },
-      profilesToChats: {
-        find: jest
-          .fn()
-          .mockResolvedValue(
-            foreignProfile ? [] : [{ profileId: "profile", chatId: "chat" }],
-          ),
-      },
-      profilesToKnowledgeModuleSources: {
-        find: jest
-          .fn()
-          .mockResolvedValue(
-            allowed.map((id) => ({ knowledgeModuleSourceId: id })),
-          ),
+    modules: {
+      social: {
+        chat: {
+          findById: jest
+            .fn()
+            .mockResolvedValue({ id: "chat", variant: "ai-chat" }),
+        },
+        thread: {
+          findById: jest.fn().mockResolvedValue({
+            id: "thread",
+            metadata: { openRouterModelId: "chosen", unrelated: true },
+          }),
+        },
+        profile: {
+          findById: jest.fn().mockResolvedValue({
+            id: "profile",
+            variant: "artificial-intelligence",
+          }),
+        },
+        profilesToChats: {
+          find: jest
+            .fn()
+            .mockResolvedValue(
+              foreignProfile ? [] : [{ profileId: "profile", chatId: "chat" }],
+            ),
+        },
+        profilesToKnowledgeModuleSources: {
+          find: jest
+            .fn()
+            .mockResolvedValue(
+              allowed.map((id) => ({ knowledgeModuleSourceId: id })),
+            ),
+        },
       },
     },
   };

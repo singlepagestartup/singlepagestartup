@@ -13,13 +13,15 @@ export class Service {
   constructor(readonly service: SubjectService) {}
 
   async find({ subjectId }: IFindProps): Promise<IAIChatProject[]> {
-    const links = await this.service.subjectsToSocialModuleProfiles.find({
-      params: {
-        filters: {
-          and: [{ column: "subjectId", method: "eq", value: subjectId }],
+    const links = await this.service.module.subjectsToSocialModuleProfiles.find(
+      {
+        params: {
+          filters: {
+            and: [{ column: "subjectId", method: "eq", value: subjectId }],
+          },
         },
       },
-    });
+    );
     const personalIds = links
       .filter((link) => link.variant === "default")
       .map((link) => link.socialModuleProfileId);
@@ -27,7 +29,7 @@ export class Service {
       .filter((link) => link.variant === "assistant")
       .map((link) => link.socialModuleProfileId);
     if (!personalIds.length || !assistantIds.length) return [];
-    const profiles = await this.service.socialModule.profile.find({
+    const profiles = await this.service.modules.social.profile.find({
       params: {
         filters: {
           and: [
@@ -42,7 +44,7 @@ export class Service {
       },
     });
     if (!profiles.length) return [];
-    const memberships = await this.service.socialModule.profilesToChats.find({
+    const memberships = await this.service.modules.social.profilesToChats.find({
       params: {
         filters: {
           and: [
@@ -62,14 +64,14 @@ export class Service {
       ...new Set(ownMemberships.map((link) => link.chatId)),
     ];
     if (!ownedChatIds.length) return [];
-    const chats = await this.service.socialModule.chat.find({
+    const chats = await this.service.modules.social.chat.find({
       params: {
         filters: {
           and: [{ column: "id", method: "inArray", value: ownedChatIds }],
         },
       },
     });
-    const threadLinks = await this.service.socialModule.chatsToThreads.find({
+    const threadLinks = await this.service.modules.social.chatsToThreads.find({
       params: {
         filters: {
           and: [{ column: "chatId", method: "inArray", value: ownedChatIds }],
@@ -79,7 +81,7 @@ export class Service {
     const threadIds = [...new Set(threadLinks.map((link) => link.threadId))];
     let threads;
     if (threadIds.length) {
-      threads = await this.service.socialModule.thread.find({
+      threads = await this.service.modules.social.thread.find({
         params: {
           filters: {
             and: [{ column: "id", method: "inArray", value: threadIds }],

@@ -39,7 +39,7 @@ export class Handler {
         });
 
         const ecommerceModuleOrder =
-          await this.service.ecommerceModule.order.findById({
+          await this.service.modules.ecommerce.order.findById({
             id: orderId,
           });
 
@@ -48,7 +48,7 @@ export class Handler {
         }
 
         const ecommerceModuleOrderTotals =
-          await this.service.ecommerceModule.order.findByIdTotal({
+          await this.service.modules.ecommerce.order.findByIdTotal({
             id: orderId,
           });
 

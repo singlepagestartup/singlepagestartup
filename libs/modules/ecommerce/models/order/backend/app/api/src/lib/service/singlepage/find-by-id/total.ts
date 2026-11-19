@@ -1,10 +1,8 @@
-import { inject, injectable } from "inversify";
 import { RBAC_SECRET_KEY } from "@sps/shared-utils";
 import { IModel as IBillingModuleCurrency } from "@sps/billing/models/currency/sdk/model";
 import { Service as AttributeKeyService } from "@sps/ecommerce/models/attribute-key/backend/app/api/src/lib/service";
 import { Service as OrdersToProductsService } from "@sps/ecommerce/relations/orders-to-products/backend/app/api/src/lib/service";
 import { type IUnpricedOrderToProduct } from "@sps/ecommerce/relations/orders-to-products/sdk/model";
-import { OrderDI } from "../../../di";
 import type { IQuoteOptions } from "@sps/ecommerce/relations/stores-to-products/backend/app/api/src/lib/service/singlepage";
 
 export type IExecuteProps = {
@@ -20,14 +18,12 @@ export type IExecuteResult = {
   unpriced: IUnpricedOrderToProduct[];
 };
 
-@injectable()
 export class Service {
   attributeKey: AttributeKeyService;
   ordersToProducts: OrdersToProductsService;
 
   constructor(
-    @inject(OrderDI.IAttributeKeysService) attributeKey: AttributeKeyService,
-    @inject(OrderDI.IOrdersToProductsService)
+    attributeKey: AttributeKeyService,
     ordersToProducts: OrdersToProductsService,
   ) {
     this.attributeKey = attributeKey;

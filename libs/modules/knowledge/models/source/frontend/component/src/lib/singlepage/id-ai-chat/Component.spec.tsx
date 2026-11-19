@@ -44,15 +44,29 @@ const props: any = {
   className: "caller-class",
   apiProps: { options: { headers: { "X-Test": "record" } } },
 };
-async function resolveServer(element: ReactElement<any>) {
-  while (typeof element.type === "function" && !element.props.clientApi)
-    element = (element.type as Function)(element.props) as ReactElement<any>;
-  const boundary = (element.type as Function)(
-    element.props,
-  ) as ReactElement<any>;
-  const reader = boundary.props.children.props.children.props
-    .children as ReactElement<any>;
-  return await (reader.type as Function)(reader.props);
+
+type VariantElement = ReactElement<{ clientApi?: unknown }>;
+type ElementWithChildren<Child extends ReactElement> = ReactElement<{
+  children: Child;
+}>;
+type BoundaryElement = ElementWithChildren<
+  ElementWithChildren<ElementWithChildren<ReactElement>>
+>;
+
+async function resolveServer(element: VariantElement) {
+  while (typeof element.type === "function" && !element.props.clientApi) {
+    const renderVariant = element.type as (
+      props: VariantElement["props"],
+    ) => VariantElement;
+    element = renderVariant(element.props);
+  }
+  const renderBoundary = element.type as (
+    props: VariantElement["props"],
+  ) => BoundaryElement;
+  const boundary = renderBoundary(element.props);
+  const reader = boundary.props.children.props.children.props.children;
+  const renderReader = reader.type as (props: unknown) => Promise<ReactElement>;
+  return renderReader(reader.props);
 }
 beforeEach(() => {
   clientRead.mockReset();
@@ -164,11 +178,7 @@ it("does not render a stale Source while the SDK is loading", () => {
 });
 it("loads the Source on the server without calling the client reader", async () => {
   serverRead.mockResolvedValue(stored);
-  render(
-    await resolveServer(
-      Source({ ...props, isServer: true }) as ReactElement<any>,
-    ),
-  );
+  render(await resolveServer(Source({ ...props, isServer: true })));
   expect(serverRead).toHaveBeenCalledWith({ id: "source", ...props.apiProps });
   expect(clientRead).not.toHaveBeenCalled();
   expect(
@@ -191,11 +201,7 @@ it.each([false])(
       onSave: save,
     };
     render(
-      isServer ? (
-        await resolveServer(Form(creation) as ReactElement<any>)
-      ) : (
-        <Form {...creation} />
-      ),
+      isServer ? await resolveServer(Form(creation)) : <Form {...creation} />,
     );
     expect(clientRead).not.toHaveBeenCalled();
     expect(serverRead).not.toHaveBeenCalled();

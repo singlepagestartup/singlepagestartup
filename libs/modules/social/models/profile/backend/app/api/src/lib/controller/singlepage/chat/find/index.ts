@@ -26,7 +26,7 @@ export class Handler {
         throw new Error("Validation error. Invalid id, id is required.");
       }
 
-      const profilesToChats = await this.service.profilesToChats.find({
+      const profilesToChats = await this.service.module.profilesToChats.find({
         params: {
           filters: {
             and: [
@@ -69,7 +69,7 @@ export class Handler {
         },
       };
 
-      const chats = await this.service.chat.find({
+      const chats = await this.service.module.chat.find({
         params: mergedParams,
       });
 

@@ -70,10 +70,12 @@ function createService(props?: {
           throw new Error(NOT_OWNED_ERROR);
         }
       }),
-      ecommerceModule: {
-        order: {
-          findById: jest.fn().mockResolvedValue(order),
-          findByIdQuantity,
+      modules: {
+        ecommerce: {
+          order: {
+            findById: jest.fn().mockResolvedValue(order),
+            findByIdQuantity,
+          },
         },
       },
     } as any,
@@ -120,7 +122,7 @@ describe("Given: a subject reads the quantity of a single order", () => {
       new Handler(service).execute(createContext(), jest.fn()),
     ).rejects.toThrow(NOT_OWNED_ERROR);
 
-    expect(service.ecommerceModule.order.findById).not.toHaveBeenCalled();
+    expect(service.modules.ecommerce.order.findById).not.toHaveBeenCalled();
     expect(findByIdQuantity).not.toHaveBeenCalled();
   });
 
@@ -142,7 +144,7 @@ describe("Given: a subject reads the quantity of a single order", () => {
       new Handler(service).execute(createContext(), jest.fn()),
     ).rejects.toThrow(NOT_OWNED_ERROR);
 
-    expect(service.ecommerceModule.order.findById).not.toHaveBeenCalled();
+    expect(service.modules.ecommerce.order.findById).not.toHaveBeenCalled();
     expect(findByIdQuantity).not.toHaveBeenCalled();
   });
 

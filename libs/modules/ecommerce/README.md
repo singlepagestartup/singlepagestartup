@@ -16,6 +16,13 @@ Orders-to-Billing-Module-Payment-Intents. RBAC Subject uses that service for
 checkout, provider callbacks and payment checks. The saved allocation links
 the verified payment to the order lines and offers whose stock it settles.
 
+The offer catalog reads links through the scoped Offers-to-Offers service.
+Link writes validate persisted Offers through the Offer repository under the
+existing transaction and locks. A project with a custom Offer visibility
+rule can supply a reader to `createOfferLinksBootstrap` and override the
+Offers-to-Offers owner in its API assembly. The reader can defer to the
+effective Offer service when `find` is called.
+
 ### It solves the following tasks:
 
 - Stores product, category, and store metadata.

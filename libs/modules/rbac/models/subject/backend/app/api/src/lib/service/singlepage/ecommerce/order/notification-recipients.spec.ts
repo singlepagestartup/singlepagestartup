@@ -4,9 +4,11 @@
  * When: the real order notification service prepares delivery.
  * Then: default recipients remain compatible and project channels need no admin access.
  */
-import { Container } from "inversify";
-import { DI } from "@sps/shared-backend-api";
-import { SubjectDI } from "../../../../di";
+import { createAppAssembly } from "@sps/shared-backend-api";
+import { createModule } from "../../../module";
+import { createModules } from "@sps/rbac/backend/app/api/src/lib/modules";
+import { Configuration } from "../../../../configuration";
+import { Repository } from "../../../../repository";
 import { Service as StartupService } from "../../../startup/ecommerce/order/proceed";
 const mockNotify = jest.fn();
 jest.mock("@sps/shared-utils", () => ({
@@ -34,37 +36,49 @@ class ChannelService extends Service {
   }
 }
 function fixture(Ctor: typeof Service) {
-  const service: Service = Object.create(Ctor.prototype);
-  service.notificationModule = {
-    template: {
-      find: jest.fn().mockResolvedValue([
-        {
-          id: "template",
-          variant: "generate-telegram-ecommerce-order-status-changed-admin",
-        },
-      ]),
-    },
-  } as any;
-  service.role = {
-    find: jest.fn().mockResolvedValue([{ id: "admin-role" }]),
-  } as any;
-  service.subjectsToRoles = {
-    find: jest
-      .fn()
-      .mockResolvedValue([
-        { subjectId: "admin-subject", roleId: "admin-role" },
-      ]),
-  } as any;
-  service.subjectsToIdentities = {
-    find: jest.fn().mockResolvedValue([{ identityId: "identity" }]),
-  } as any;
-  service.identity = {
-    find: jest
-      .fn()
-      .mockResolvedValue([
-        { id: "identity", provider: "telegram", account: "-1001" },
-      ]),
-  } as any;
+  const assembly = createAppAssembly();
+  const module = assembly.getOrCreate(createModule);
+  const modules = assembly.getOrCreate(createModules);
+  jest.spyOn(modules.notification.template, "find").mockImplementation(
+    jest.fn().mockResolvedValue([
+      {
+        id: "template",
+        variant: "generate-telegram-ecommerce-order-status-changed-admin",
+      },
+    ]),
+  );
+  jest
+    .spyOn(module.role, "find")
+    .mockImplementation(jest.fn().mockResolvedValue([{ id: "admin-role" }]));
+  jest
+    .spyOn(module.subjectsToRoles, "find")
+    .mockImplementation(
+      jest
+        .fn()
+        .mockResolvedValue([
+          { subjectId: "admin-subject", roleId: "admin-role" },
+        ]),
+    );
+  jest
+    .spyOn(module.subjectsToIdentities, "find")
+    .mockImplementation(
+      jest.fn().mockResolvedValue([{ identityId: "identity" }]),
+    );
+  jest
+    .spyOn(module.identity, "find")
+    .mockImplementation(
+      jest
+        .fn()
+        .mockResolvedValue([
+          { id: "identity", provider: "telegram", account: "-1001" },
+        ]),
+    );
+  const service = new Ctor({
+    repository: new Repository(new Configuration()),
+    module,
+    modules,
+    ecommerceProductCheckout: jest.fn(),
+  });
   const order = {
     id: "order",
     comment: "",
@@ -73,24 +87,13 @@ function fixture(Ctor: typeof Service) {
       { fileStorageModuleFile: { id: "receipt", file: "/receipt.png" } },
     ],
   };
-  return { service, order };
+  return { service, order, modules };
 }
 beforeEach(() => jest.clearAllMocks());
 
-it("injects the inherited dependencies into the Startup order processor", () => {
-  const container = new Container();
-  const repository = {};
-  container.bind(DI.IRepository).toConstantValue(repository);
-  for (const token of Object.values(SubjectDI)) {
-    container.bind(token).toConstantValue({});
-  }
-  container.bind(StartupService).toSelf();
-
-  const service = container.get(StartupService);
-  expect(service.repository).toBe(repository);
-  expect(service.notificationModule).toBe(
-    container.get(SubjectDI.INotificationModule),
-  );
+it("uses the assembled dependencies in the Startup order processor", () => {
+  const { service, modules } = fixture(StartupService);
+  expect(service.modules).toBe(modules);
 });
 
 /**
@@ -117,7 +120,7 @@ it("preserves framework admin selection", async () => {
  */
 it("deduplicates repeated administrator relations", async () => {
   const { service, order } = fixture(Service);
-  (service.subjectsToRoles.find as jest.Mock).mockResolvedValue([
+  (service.module.subjectsToRoles.find as jest.Mock).mockResolvedValue([
     { subjectId: "admin-subject" },
     { subjectId: "admin-subject" },
   ]);
@@ -139,7 +142,7 @@ it("allows channel selection without promoting that subject to admin", async () 
     extendedEcommerceModuleOrder: order as any,
     status: "approving",
   });
-  expect(service.role.find).not.toHaveBeenCalled();
+  expect(service.module.role.find).not.toHaveBeenCalled();
   expect(mockNotify).toHaveBeenCalledWith(
     expect.objectContaining({
       id: "channel-subject",

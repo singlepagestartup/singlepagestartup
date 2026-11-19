@@ -70,7 +70,7 @@ export class Handler {
       }
 
       const socialModuleProfilesToChats =
-        await this.service.socialModule.profilesToChats.find({
+        await this.service.modules.social.profilesToChats.find({
           params: {
             filters: {
               and: [
@@ -96,7 +96,7 @@ export class Handler {
 
       for (const column of this.profileSearchColumns()) {
         const socialModuleProfiles =
-          await this.service.socialModule.profile.find({
+          await this.service.modules.social.profile.find({
             params: {
               limit,
               orderBy: {

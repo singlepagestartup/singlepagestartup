@@ -156,19 +156,21 @@ describe("durable subscription grant revocation", () => {
       ],
     };
     const { service } = createService();
-    service.subjectsToEcommerceModuleOrders.find = jest
+    service.module.subjectsToEcommerceModuleOrders.find = jest
       .fn()
       .mockResolvedValue([
         { subjectId: "subject", ecommerceModuleOrderId: "subscription" },
       ]);
-    service.subjectsToRoles.find = jest.fn(async () => grants);
-    service.rolesToEcommerceModuleProducts.find = jest
+    service.module.subjectsToRoles.find = jest.fn(async () => grants);
+    service.module.role.module.rolesToEcommerceModuleProducts.find = jest
       .fn()
       .mockResolvedValue([
         { roleId: "subscriber", ecommerceModuleProductId: "product" },
       ]);
-    service.ecommerceModule.order.find = jest.fn(async () => [order]);
-    service.ecommerceModule.order.findByIdExtended = jest.fn(async () => order);
+    service.modules.ecommerce.order.find = jest.fn(async () => [order]);
+    service.modules.ecommerce.order.findByIdExtended = jest.fn(
+      async () => order,
+    );
     const period = new PeriodService({
       findByIdExtended: async () => order,
       findById: async () => order,
@@ -195,8 +197,8 @@ describe("durable subscription grant revocation", () => {
       },
     });
     const accept = jest.fn((props) => period.execute(props));
-    service.ecommerceModule.order.acceptSubscriptionPeriod = accept;
-    service.ecommerceModule.order.assertSubscriptionPayment = (props) =>
+    service.modules.ecommerce.order.acceptSubscriptionPeriod = accept;
+    service.modules.ecommerce.order.assertSubscriptionPayment = (props) =>
       period.assertPayment(props);
     mockSubjectsToRolesCreate.mockImplementation(async ({ data }) => {
       grants = [...grants, { id: "new-grant", ...data }];
@@ -301,7 +303,7 @@ describe("durable subscription grant revocation", () => {
         },
       },
     ];
-    service.ecommerceModule.order.find = jest.fn(async (props: any) => {
+    service.modules.ecommerce.order.find = jest.fn(async (props: any) => {
       const filters = props.params.filters.and;
       return filters.every(
         (filter: any) =>
@@ -339,7 +341,7 @@ describe("durable subscription grant revocation", () => {
 
   it("uses the fresh Order instead of stale paid candidate data when a grant has been revoked", async () => {
     const { service, order } = lifecycle("delivering", false);
-    (service.ecommerceModule.order.find as jest.Mock).mockResolvedValue([
+    (service.modules.ecommerce.order.find as jest.Mock).mockResolvedValue([
       { ...order(), status: "paid", subscriptionPeriodInvoiceId: null },
     ]);
     await service.execute({ subjectId: "subject" });
@@ -410,7 +412,7 @@ describe("durable subscription grant revocation", () => {
         subjectId: "subject",
         ecommerceModuleOrderId: "subscription",
       };
-      service.subjectsToEcommerceModuleOrders.find = jest
+      service.module.subjectsToEcommerceModuleOrders.find = jest
         .fn()
         .mockResolvedValue([
           currentLink,
@@ -430,7 +432,7 @@ describe("durable subscription grant revocation", () => {
         subscriptionRevokedAt:
           kind === "revoked" ? new Date("2026-10-23T09:00:00Z") : null,
       };
-      service.ecommerceModule.order.find = jest.fn(async (props: any) =>
+      service.modules.ecommerce.order.find = jest.fn(async (props: any) =>
         props.params.filters.and.some(
           (filter: any) =>
             filter.column === "status" && filter.value.length === 2,
@@ -438,14 +440,12 @@ describe("durable subscription grant revocation", () => {
           ? [other]
           : [order()],
       );
-      service.ecommerceModule.ordersToProducts = {
-        find: jest
-          .fn()
-          .mockResolvedValue([
-            { orderId: "other-order", productId: "other-product" },
-          ]),
-      } as any;
-      service.rolesToEcommerceModuleProducts.find = jest.fn(
+      service.modules.ecommerce.ordersToProducts.find = jest
+        .fn()
+        .mockResolvedValue([
+          { orderId: "other-order", productId: "other-product" },
+        ]);
+      service.module.role.module.rolesToEcommerceModuleProducts.find = jest.fn(
         async (props: any) =>
           props.params.filters.and[0].value.includes("other-product")
             ? [
@@ -481,8 +481,11 @@ describe("durable subscription grant revocation", () => {
       cancel.order().subscriptionRevokedAt = new Date();
       return cancel.order();
     });
-    cancel.service.ecommerceModule.order.revokeSubscription = revoke;
-    const genericDelete = jest.spyOn(cancel.service.subjectsToRoles, "delete");
+    cancel.service.modules.ecommerce.order.revokeSubscription = revoke;
+    const genericDelete = jest.spyOn(
+      cancel.service.module.subjectsToRoles,
+      "delete",
+    );
     await cancel.service.execute({ subjectId: "subject" });
     expect(revoke).toHaveBeenCalledWith({ id: "subscription" });
     expect(genericDelete).not.toHaveBeenCalled();
@@ -507,7 +510,7 @@ describe("durable subscription grant revocation", () => {
       const { service, order, grants } = lifecycle("canceling", true, false);
       order().checkoutAttributesByCurrency.type = type;
       const revoke = jest.fn();
-      service.ecommerceModule.order.revokeSubscription = revoke;
+      service.modules.ecommerce.order.revokeSubscription = revoke;
       await service.execute({ subjectId: "subject" });
       expect(order().status).toBe("canceled");
       expect(grants()).toEqual([
@@ -538,15 +541,16 @@ describe("durable subscription grant revocation", () => {
       className: null,
       orderIndex: 0,
     };
-    service.subjectsToBillingModuleCurrencies.find = jest.fn(async () => [
-      { ...wallet, amount },
-    ]);
+    service.module.subjectsToBillingModuleCurrencies.find = jest.fn(
+      async () => [{ ...wallet, amount }],
+    );
     const credit = jest.fn(async (props) => {
       expect(props.expectedAmount).toBe(amount);
       amount = props.amount;
       return { ...wallet, amount };
     });
-    service.subjectsToBillingModuleCurrencies.updateAmountIfUnchanged = credit;
+    service.module.subjectsToBillingModuleCurrencies.updateAmountIfUnchanged =
+      credit;
     await service.execute({ subjectId: "subject" });
     expect(order().subscriptionPeriodInvoiceId).toBe("invoice-b");
     expect(amount).toBe("6200");
@@ -558,14 +562,12 @@ describe("durable subscription grant revocation", () => {
   it("does not apply referral bonuses to the exact initial 3000 Free grant", async () => {
     const { service, order } = lifecycle("paid", false, false);
     order().variant = "registration-grant";
-    service.subjectsToIdentities.find = jest.fn(
+    service.module.subjectsToIdentities.find = jest.fn(
       async () => [{ subjectId: "subject" }] as any,
     );
-    service.ecommerceModule.ordersToProducts = {
-      find: jest.fn(async () => [
-        { orderId: "subscription", productId: "product" },
-      ]),
-    } as any;
+    service.modules.ecommerce.ordersToProducts.find = jest
+      .fn()
+      .mockResolvedValue([{ orderId: "subscription", productId: "product" }]);
     (service.collectTopupCurrencies as jest.Mock).mockResolvedValue([
       {
         billingModuleCurrencyId: "tokens",
@@ -573,11 +575,11 @@ describe("durable subscription grant revocation", () => {
         amount: "3000",
       },
     ]);
-    service.subjectsToSocialModuleProfiles.find = jest.fn(
+    service.module.subjectsToSocialModuleProfiles.find = jest.fn(
       async () => [{ socialModuleProfileId: "invited" }] as any,
     );
     await service.execute({ subjectId: "subject" });
-    expect(service.socialModule.attribute.find).not.toHaveBeenCalled();
+    expect(service.modules.social.attribute.find).not.toHaveBeenCalled();
     expect(mockSubjectsToBillingModuleCurrenciesCreate).toHaveBeenCalledWith({
       data: {
         subjectId: "subject",
@@ -589,11 +591,11 @@ describe("durable subscription grant revocation", () => {
 
   it("does not clear any Currency balance while canceling a Pro Order", async () => {
     const { service, order } = lifecycle("canceling", true);
-    service.ecommerceModule.order.revokeSubscription = jest.fn(async () => {
+    service.modules.ecommerce.order.revokeSubscription = jest.fn(async () => {
       order().subscriptionRevokedAt = new Date();
       return order();
     });
-    service.subjectsToBillingModuleCurrencies.find = jest.fn(
+    service.module.subjectsToBillingModuleCurrencies.find = jest.fn(
       async () =>
         [
           { id: "tokens", amount: "9000" },
@@ -603,7 +605,7 @@ describe("durable subscription grant revocation", () => {
     await service.execute({ subjectId: "subject" });
     expect(order().status).toBe("canceled");
     expect(
-      service.subjectsToBillingModuleCurrencies.find,
+      service.module.subjectsToBillingModuleCurrencies.find,
     ).not.toHaveBeenCalled();
     expect(mockSubjectsToBillingModuleCurrenciesUpdate).not.toHaveBeenCalled();
   });
@@ -613,7 +615,7 @@ it("never renews internal Free and preserves all wallet balances on completion",
   jest.clearAllMocks();
   const { service } = createService();
   (
-    service.subjectsToBillingModuleCurrencies.find as jest.Mock
+    service.module.subjectsToBillingModuleCurrencies.find as jest.Mock
   ).mockResolvedValue([
     { id: "token-balance", variant: "default", amount: "11" },
   ]);
@@ -656,7 +658,9 @@ it("never renews internal Free and preserves all wallet balances on completion",
   });
   expect(mockSubjectProductCheckout).not.toHaveBeenCalled();
   expect(mockSubjectsToBillingModuleCurrenciesUpdate).not.toHaveBeenCalled();
-  expect(service.subjectsToBillingModuleCurrencies.find).not.toHaveBeenCalled();
+  expect(
+    service.module.subjectsToBillingModuleCurrencies.find,
+  ).not.toHaveBeenCalled();
 });
 
 function createService(props?: {
@@ -680,65 +684,81 @@ function createService(props?: {
 
   subjectsToEcommerceModuleOrdersFind.mockResolvedValue([]);
 
-  const service = new Service(
-    {
+  const service = new Service({
+    repository: {
       lockOrderDelivery: async () => undefined,
       withOrderDelivery: async (
         _scope: unknown,
         operation: () => Promise<unknown>,
       ) => operation(),
     } as any,
-    {
-      attribute: { find: jest.fn().mockResolvedValue([]) },
-      chat: {
-        find: jest.fn().mockResolvedValue(props?.socialModuleChats ?? []),
-      },
-      profilesToChats: {
-        find: jest
-          .fn()
-          .mockResolvedValue(props?.socialModuleProfilesToChats ?? []),
-      },
-    } as any,
-    {
-      storesToProducts: { find: jest.fn().mockResolvedValue([]) },
-      order: {
-        find: ecommerceModuleOrderFind,
-        findByIdExtended: jest.fn(),
-        lockForLifecycle: async () => undefined,
-        hasSharedSubscriptionRenewal: jest.fn().mockResolvedValue(false),
-        stopSubscriptionRenewal: jest.fn().mockResolvedValue(undefined),
-        update: (...args: unknown[]) => mockEcommerceOrderUpdate(...args),
-      },
-    } as any,
-    {
-      template: { find: jest.fn().mockResolvedValue([]) },
-    } as any,
-    { find: jest.fn().mockResolvedValue([]) } as any,
-    { find: jest.fn().mockResolvedValue([]) } as any,
-    { find: jest.fn().mockResolvedValue([]) } as any,
-    { find: subjectsToEcommerceModuleOrdersFind } as any,
-    {
-      find: jest.fn().mockResolvedValue([]),
-      create: (...args: unknown[]) => mockSubjectsToRolesCreate(...args),
-      delete: (...args: unknown[]) => mockSubjectsToRolesDelete(...args),
-      deleteForOrderFulfillment: (...args: unknown[]) =>
-        mockSubjectsToRolesDelete(...args),
-    } as any,
-    { find: subjectsToSocialModuleProfilesFind } as any,
-    {
-      find: jest.fn().mockResolvedValue([]),
-      updateAmountIfUnchanged: jest.fn(async (props) => ({
-        id: props.id,
-        amount: props.amount,
-      })),
-      create: (...args: unknown[]) =>
-        mockSubjectsToBillingModuleCurrenciesCreate(...args),
-      update: (...args: unknown[]) =>
-        mockSubjectsToBillingModuleCurrenciesUpdate(...args),
-    } as any,
-    { find: jest.fn().mockResolvedValue([]) } as any,
-    mockSubjectProductCheckout,
-  );
+    module: {
+      identity: { find: jest.fn().mockResolvedValue([]) } as any,
+      role: Object.create({ find: jest.fn().mockResolvedValue([]) } as any, {
+        module: {
+          value: {
+            rolesToEcommerceModuleProducts: {
+              find: jest.fn().mockResolvedValue([]),
+            } as any,
+          },
+        },
+      }),
+      subjectsToEcommerceModuleOrders: {
+        find: subjectsToEcommerceModuleOrdersFind,
+      } as any,
+      subjectsToRoles: {
+        find: jest.fn().mockResolvedValue([]),
+        create: (...args: unknown[]) => mockSubjectsToRolesCreate(...args),
+        delete: (...args: unknown[]) => mockSubjectsToRolesDelete(...args),
+        deleteForOrderFulfillment: (...args: unknown[]) =>
+          mockSubjectsToRolesDelete(...args),
+      } as any,
+      subjectsToSocialModuleProfiles: {
+        find: subjectsToSocialModuleProfilesFind,
+      } as any,
+      subjectsToBillingModuleCurrencies: {
+        find: jest.fn().mockResolvedValue([]),
+        updateAmountIfUnchanged: jest.fn(async (props) => ({
+          id: props.id,
+          amount: props.amount,
+        })),
+        create: (...args: unknown[]) =>
+          mockSubjectsToBillingModuleCurrenciesCreate(...args),
+        update: (...args: unknown[]) =>
+          mockSubjectsToBillingModuleCurrenciesUpdate(...args),
+      } as any,
+      subjectsToIdentities: { find: jest.fn().mockResolvedValue([]) } as any,
+    },
+    modules: {
+      social: {
+        attribute: { find: jest.fn().mockResolvedValue([]) },
+        chat: {
+          find: jest.fn().mockResolvedValue(props?.socialModuleChats ?? []),
+        },
+        profilesToChats: {
+          find: jest
+            .fn()
+            .mockResolvedValue(props?.socialModuleProfilesToChats ?? []),
+        },
+      } as any,
+      ecommerce: {
+        storesToProducts: { find: jest.fn().mockResolvedValue([]) },
+        ordersToProducts: { find: jest.fn().mockResolvedValue([]) },
+        order: {
+          find: ecommerceModuleOrderFind,
+          findByIdExtended: jest.fn(),
+          lockForLifecycle: async () => undefined,
+          hasSharedSubscriptionRenewal: jest.fn().mockResolvedValue(false),
+          stopSubscriptionRenewal: jest.fn().mockResolvedValue(undefined),
+          update: (...args: unknown[]) => mockEcommerceOrderUpdate(...args),
+        },
+      } as any,
+      notification: {
+        template: { find: jest.fn().mockResolvedValue([]) },
+      } as any,
+    },
+    ecommerceProductCheckout: mockSubjectProductCheckout,
+  });
 
   return {
     ecommerceModuleOrderFind,
@@ -832,24 +852,24 @@ describe("settled subscription retry cycles", () => {
       subjectId: "subject",
       ecommerceModuleOrderId: id,
     }));
-    service.subjectsToEcommerceModuleOrders.find = jest.fn(
+    service.module.subjectsToEcommerceModuleOrders.find = jest.fn(
       async (props) => owners.filter((row) => matches(row, props)) as any,
     );
-    service.ecommerceModule.order.find = jest.fn(async (props) =>
+    service.modules.ecommerce.order.find = jest.fn(async (props) =>
       Array.from(orders.values()).filter((row) => matches(row, props)),
     );
-    service.ecommerceModule.order.findById = jest.fn(async ({ id }) =>
+    service.modules.ecommerce.order.findById = jest.fn(async ({ id }) =>
       orders.get(id),
     );
-    service.ecommerceModule.order.findByIdExtended = jest.fn(async ({ id }) =>
+    service.modules.ecommerce.order.findByIdExtended = jest.fn(async ({ id }) =>
       orders.get(id),
     );
-    service.ecommerceModule.order.update = jest.fn(async ({ id, data }) => {
+    service.modules.ecommerce.order.update = jest.fn(async ({ id, data }) => {
       const next = { ...orders.get(id), ...data };
       orders.set(id, next);
       return next;
     });
-    service.ecommerceModule.order.hasSharedSubscriptionRenewal = jest.fn(
+    service.modules.ecommerce.order.hasSharedSubscriptionRenewal = jest.fn(
       async ({ id }) => id === sharedOrderId,
     );
     const period = new PeriodService({
@@ -880,38 +900,37 @@ describe("settled subscription retry cycles", () => {
         return next;
       },
     });
-    service.ecommerceModule.order.assertSubscriptionPayment = (props) =>
+    service.modules.ecommerce.order.assertSubscriptionPayment = (props) =>
       period.assertPayment(props);
-    service.ecommerceModule.order.acceptSubscriptionPeriod = (props) =>
+    service.modules.ecommerce.order.acceptSubscriptionPeriod = (props) =>
       period.execute(props);
-    let grants: any[] = [];
-    service.subjectsToRoles.find = jest.fn(async () => grants);
-    service.subjectsToRoles.create = jest.fn(async ({ data }) => {
+    const grants: any[] = [];
+    service.module.subjectsToRoles.find = jest.fn(async () => grants);
+    service.module.subjectsToRoles.create = jest.fn(async ({ data }) => {
       const grant = { id: "grant", ...data };
       grants.push(grant);
       return grant as any;
     });
-    service.rolesToEcommerceModuleProducts.find = jest
+    service.module.role.module.rolesToEcommerceModuleProducts.find = jest
       .fn()
       .mockResolvedValue([
         { ecommerceModuleProductId: "pro", roleId: "subscriber" },
       ]);
     let balance: any;
-    service.subjectsToBillingModuleCurrencies.find = jest.fn(async () =>
+    service.module.subjectsToBillingModuleCurrencies.find = jest.fn(async () =>
       balance ? [balance] : [],
     );
-    service.subjectsToBillingModuleCurrencies.create = jest.fn(
+    service.module.subjectsToBillingModuleCurrencies.create = jest.fn(
       async ({ data }) => {
         balance = { id: "balance", ...data };
         return balance;
       },
     );
-    service.subjectsToBillingModuleCurrencies.updateAmountIfUnchanged = jest.fn(
-      async ({ amount }) => {
+    service.module.subjectsToBillingModuleCurrencies.updateAmountIfUnchanged =
+      jest.fn(async ({ amount }) => {
         balance = { ...balance, amount };
         return balance;
-      },
-    );
+      });
     jest.spyOn(service, "collectTopupCurrencies").mockResolvedValue([
       {
         billingModuleCurrencyId: "token",
@@ -968,7 +987,7 @@ describe("settled subscription retry cycles", () => {
     expect(f.orders.get("retry").status).toBe("delivering");
     expect(f.orders.get("third").status).toBe("delivering");
     expect(
-      f.service.ecommerceModule.order.stopSubscriptionRenewal,
+      f.service.modules.ecommerce.order.stopSubscriptionRenewal,
     ).not.toHaveBeenCalled();
     expect(f.balance().amount).toBe("15000");
   });
@@ -998,7 +1017,7 @@ describe("settled subscription retry cycles", () => {
         subscriptionPeriodEndsAt: new Date("2026-10-24T10:00:00Z"),
       });
       expect(
-        f.service.ecommerceModule.order.stopSubscriptionRenewal,
+        f.service.modules.ecommerce.order.stopSubscriptionRenewal,
       ).toHaveBeenCalledWith({ id: "original" });
       expect(mockSubjectProductCheckout).not.toHaveBeenCalled();
     },
@@ -1020,7 +1039,7 @@ describe("settled subscription retry cycles", () => {
       expect(f.orders.get("original").status).toBe("canceling");
       expect(f.orders.get("retry").status).toBe("delivering");
       expect(
-        f.service.ecommerceModule.order.stopSubscriptionRenewal,
+        f.service.modules.ecommerce.order.stopSubscriptionRenewal,
       ).toHaveBeenCalledWith({ id: "original" });
       expect(f.grants()).toHaveLength(1);
       expect(f.balance().amount).toBe("10000");
@@ -1034,10 +1053,10 @@ describe("settled subscription retry cycles", () => {
     expect(f.orders.get("original").status).toBe("delivering");
     expect(f.orders.get("retry").status).toBe("requested_cancelation");
     expect(
-      f.service.ecommerceModule.order.stopSubscriptionRenewal,
+      f.service.modules.ecommerce.order.stopSubscriptionRenewal,
     ).toHaveBeenCalledWith({ id: "retry" });
     expect(
-      f.service.ecommerceModule.order.stopSubscriptionRenewal,
+      f.service.modules.ecommerce.order.stopSubscriptionRenewal,
     ).not.toHaveBeenCalledWith({ id: "original" });
     expect(f.balance().amount).toBe("10000");
   });
@@ -1046,14 +1065,14 @@ describe("settled subscription retry cycles", () => {
     const f = cycles();
     await f.fulfill("original");
     (
-      f.service.ecommerceModule.order.stopSubscriptionRenewal as jest.Mock
+      f.service.modules.ecommerce.order.stopSubscriptionRenewal as jest.Mock
     ).mockRejectedValueOnce(new Error("Provider unavailable"));
     await f.fulfill("retry");
     expect(f.orders.get("original").status).toBe("requested_cancelation");
     expect(f.balance().amount).toBe("10000");
     await f.service.execute({ subjectId: "subject" });
     expect(
-      f.service.ecommerceModule.order.stopSubscriptionRenewal,
+      f.service.modules.ecommerce.order.stopSubscriptionRenewal,
     ).toHaveBeenCalledTimes(2);
     expect(f.balance().amount).toBe("10000");
     expect(f.grants()).toHaveLength(1);
@@ -1351,11 +1370,11 @@ describe("bounded fair order scheduling", () => {
           .sort((a, b) => a.id.localeCompare(b.id))
           .slice(0, props.params.limit);
       });
-      service.ecommerceModule.order.find = find;
-      service.ecommerceModule.order.findByIdExtended = jest.fn(async ({ id }) =>
-        dataset.find((order) => order.id === id),
+      service.modules.ecommerce.order.find = find;
+      service.modules.ecommerce.order.findByIdExtended = jest.fn(
+        async ({ id }) => dataset.find((order) => order.id === id),
       );
-      service.subjectsToEcommerceModuleOrders.find = jest.fn(
+      service.module.subjectsToEcommerceModuleOrders.find = jest.fn(
         async (props: any) => {
           const selected = props.params.filters.and.find(
             (filter: any) => filter.column === "ecommerceModuleOrderId",

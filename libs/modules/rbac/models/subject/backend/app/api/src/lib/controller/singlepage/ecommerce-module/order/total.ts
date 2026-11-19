@@ -48,7 +48,7 @@ export class Handler {
 
       return await withConsistencySnapshot(async () => {
         const subjectsToEcommerceModuleOrders =
-          await this.service.subjectsToEcommerceModuleOrders.find({
+          await this.service.module.subjectsToEcommerceModuleOrders.find({
             params: {
               filters: {
                 and: [
@@ -70,7 +70,7 @@ export class Handler {
         }
 
         const ecommerceModuleOrdersWithCartType =
-          await this.service.ecommerceModule.order.find({
+          await this.service.modules.ecommerce.order.find({
             params: {
               filters: {
                 and: [
@@ -119,7 +119,7 @@ export class Handler {
           [];
         for (const ecommerceModuleOrder of ecommerceModuleOrdersWithCartType) {
           const ecommerceModuleOrderTotals =
-            await this.service.ecommerceModule.order.findByIdTotal({
+            await this.service.modules.ecommerce.order.findByIdTotal({
               id: ecommerceModuleOrder.id,
             });
 

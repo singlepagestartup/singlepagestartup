@@ -2,6 +2,7 @@ import { Hono, type Env } from "hono";
 import { cors } from "hono/cors";
 import { join, normalize } from "node:path";
 import {
+  defaultAppAssembly,
   ExceptionFilter,
   ParseQueryMiddleware,
   RequestBodyFitsLimitMiddleware,
@@ -21,24 +22,25 @@ import {
 } from "@sps/middlewares";
 import { MIDDLEWARE_HTTP_CACHE } from "@sps/shared-utils";
 import { getFileContentHeaders, resolveCorsOrigin } from "@sps/backend-utils";
-import { app as agentApp } from "@sps/agent/backend/app/api";
-import { app as analyticApp } from "@sps/analytic/backend/app/api";
-import { app as hostApp } from "@sps/host/backend/app/api";
+import { moduleBootstrap as agentApp } from "@sps/agent/backend/app/api/src/lib/bootstrap";
+import { moduleBootstrap as analyticApp } from "@sps/analytic/backend/app/api/src/lib/bootstrap";
 import {
-  app as rbacApp,
-  rbacHttpCacheExcludeRoutes,
-} from "@sps/rbac/backend/app/api";
-import { app as startupApp } from "@sps/startup/backend/app/api";
-import { app as crmApp } from "@sps/crm/backend/app/api";
-import { app as ecommerceApp } from "@sps/ecommerce/backend/app/api";
-import { app as billingApp } from "@sps/billing/backend/app/api";
-import { app as notificationApp } from "@sps/notification/backend/app/api";
-import { app as blogApp } from "@sps/blog/backend/app/api";
-import { app as websiteBuilderApp } from "@sps/website-builder/backend/app/api";
-import { app as broadcastApp } from "@sps/broadcast/backend/app/api";
-import { app as fileStorageApp } from "@sps/file-storage/backend/app/api";
-import { app as socialApp } from "@sps/social/backend/app/api";
-import { app as knowledgeApp } from "@sps/knowledge/backend/app/api";
+  configureHostRouting,
+  moduleBootstrap as hostApp,
+} from "@sps/host/backend/app/api/src/lib/bootstrap";
+import { moduleBootstrap as rbacApp } from "@sps/rbac/backend/app/api/src/lib/bootstrap";
+import { rbacHttpCacheExcludeRoutes } from "@sps/rbac/models/permission/backend/app/api/src/lib/service/singlepage/http-cache-exclude-routes";
+import { moduleBootstrap as startupApp } from "@sps/startup/backend/app/api/src/lib/bootstrap";
+import { moduleBootstrap as crmApp } from "@sps/crm/backend/app/api/src/lib/bootstrap";
+import { moduleBootstrap as ecommerceApp } from "@sps/ecommerce/backend/app/api/src/lib/bootstrap";
+import { moduleBootstrap as billingApp } from "@sps/billing/backend/app/api/src/lib/bootstrap";
+import { moduleBootstrap as notificationApp } from "@sps/notification/backend/app/api/src/lib/bootstrap";
+import { moduleBootstrap as blogApp } from "@sps/blog/backend/app/api/src/lib/bootstrap";
+import { moduleBootstrap as websiteBuilderApp } from "@sps/website-builder/backend/app/api/src/lib/bootstrap";
+import { moduleBootstrap as broadcastApp } from "@sps/broadcast/backend/app/api/src/lib/bootstrap";
+import { moduleBootstrap as fileStorageApp } from "@sps/file-storage/backend/app/api/src/lib/bootstrap";
+import { moduleBootstrap as socialApp } from "@sps/social/backend/app/api/src/lib/bootstrap";
+import { moduleBootstrap as knowledgeApp } from "@sps/knowledge/backend/app/api/src/lib/bootstrap";
 
 export const app = new Hono<Env>().basePath("/");
 const apiModules = {
@@ -58,7 +60,14 @@ const apiModules = {
   agent: agentApp,
   broadcast: broadcastApp,
 };
-hostApp.configureRouting(apiModules);
+configureHostRouting(defaultAppAssembly, apiModules);
+const mountedModules = await Promise.all(
+  Object.entries(apiModules).map(async ([name, owner]) => {
+    const { app } = await owner.bootstrap(defaultAppAssembly);
+    return { name, app };
+  }),
+);
+const { app: rbac } = await rbacApp.bootstrap(defaultAppAssembly);
 
 const revalidationMiddleware = new RevalidationMiddleware();
 const consistencyMiddleware = new ConsistencyMiddleware({
@@ -94,7 +103,7 @@ app.use(
 app.use(new RequestIdMiddleware().init());
 app.use(
   new ApiRateLimitMiddleware({
-    resolveSubjectId: (token) => rbacApp.resolveSubjectId(token),
+    resolveSubjectId: (token) => rbac.resolveSubjectId(token),
   }).init(),
 );
 
@@ -177,8 +186,9 @@ if (MIDDLEWARE_HTTP_CACHE === "true") {
   app.use(httpCacheMiddleware.init());
 }
 
-for (const [name, module] of Object.entries(apiModules))
+for (const { name, app: module } of mountedModules) {
   app.route("/api/" + name, module.hono);
+}
 
 export function startConsistency() {
   return consistencyMiddleware.start();

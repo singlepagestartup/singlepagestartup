@@ -1,31 +1,39 @@
-import { Service } from "./index";
+import { createOrderBootstrap } from "../../bootstrap";
+import { createAppAssembly } from "@sps/shared-backend-api";
+import { createService as createReservations } from "@sps/ecommerce/relations/orders-to-billing-module-payment-intents/backend/app/api/src/lib/bootstrap";
+import { createService as createPaymentIntent } from "@sps/billing/models/payment-intent/backend/app/api/src/lib/bootstrap";
 
 it("refuses to cancel a recurring intent shared with another Product order", async () => {
-  const service = Object.create(Service.prototype) as Service;
-  service.findByIdExtended = jest.fn().mockResolvedValue({
-    ordersToBillingModulePaymentIntents: [
-      {
-        billingModulePaymentIntent: {
-          id: "shared",
-          type: "subscription",
-          amount: 100,
-        },
-      },
-    ],
-  });
-  service.ordersToBillingModulePaymentIntents = {
-    find: jest.fn().mockResolvedValue([
+  const assembly = createAppAssembly();
+  const reservations = createReservations(assembly);
+  jest.spyOn(reservations, "find").mockImplementation(
+    jest.fn().mockResolvedValue([
       { orderId: "order", billingModulePaymentIntentId: "shared" },
       { orderId: "other-product", billingModulePaymentIntentId: "shared" },
     ]),
-  } as any;
-  const stop = jest.fn();
-  service.billingModule = {
-    paymentIntent: {
-      stopSubscriptionRenewal: stop,
-      hasProviderManagedSubscriptionRenewal: jest.fn().mockResolvedValue(true),
-    },
-  } as any;
+  );
+  const paymentIntent = createPaymentIntent(assembly);
+  const stop = jest.spyOn(paymentIntent, "stopSubscriptionRenewal");
+  jest
+    .spyOn(paymentIntent, "hasProviderManagedSubscriptionRenewal")
+    .mockResolvedValue(true);
+  const service = createOrderBootstrap(
+    reservations,
+    paymentIntent,
+  ).createService(assembly);
+  jest.spyOn(service, "findByIdExtended").mockImplementation(
+    jest.fn().mockResolvedValue({
+      ordersToBillingModulePaymentIntents: [
+        {
+          billingModulePaymentIntent: {
+            id: "shared",
+            type: "subscription",
+            amount: 100,
+          },
+        },
+      ],
+    }),
+  );
   expect(await service.hasSharedSubscriptionRenewal({ id: "order" })).toBe(
     true,
   );

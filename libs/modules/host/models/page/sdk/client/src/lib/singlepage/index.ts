@@ -1,16 +1,14 @@
 "use client";
-import type {
-  IPageSeoResult,
-  ISeoPreviewProps,
-} from "@sps/host/models/page/sdk/model";
 
 import {
-  type IResolvedPage,
-  IModel,
   route,
   clientHost,
   query,
   options,
+  type IPageSeoResult,
+  type ISeoPreviewProps,
+  type IResolvedPage,
+  type IModel,
 } from "@sps/host/models/page/sdk/model";
 import {
   factory,

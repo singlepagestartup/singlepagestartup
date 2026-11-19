@@ -52,7 +52,7 @@ export class Handler {
 
       if (socialModuleThreadId) {
         const socialModuleChatsToThreads =
-          await this.service.socialModule.chatsToThreads.find({
+          await this.service.modules.social.chatsToThreads.find({
             params: {
               filters: {
                 and: [
@@ -78,7 +78,7 @@ export class Handler {
         }
 
         const socialModuleThreadsToActions =
-          await this.service.socialModule.threadsToActions.find({
+          await this.service.modules.social.threadsToActions.find({
             params: {
               filters: {
                 and: [
@@ -101,8 +101,8 @@ export class Handler {
           });
         }
 
-        const socialModuleActions = await this.service.socialModule.action.find(
-          {
+        const socialModuleActions =
+          await this.service.modules.social.action.find({
             params: {
               filters: {
                 and: [
@@ -119,8 +119,7 @@ export class Handler {
               },
               orderBy,
             },
-          },
-        );
+          });
 
         const actions = await new ActionPresentations(this.service).enrich(
           socialModuleActions,
@@ -132,7 +131,7 @@ export class Handler {
       }
 
       const socialModuleChatsToActions =
-        await this.service.socialModule.chatsToActions.find({
+        await this.service.modules.social.chatsToActions.find({
           params: {
             filters: {
               and: [
@@ -155,24 +154,26 @@ export class Handler {
         });
       }
 
-      const socialModuleActions = await this.service.socialModule.action.find({
-        params: {
-          filters: {
-            and: [
-              {
-                column: "id",
-                method: "inArray",
-                value: socialModuleChatsToActions?.map(
-                  (socialModuleChatsToAction) => {
-                    return socialModuleChatsToAction.actionId;
-                  },
-                ),
-              },
-            ],
+      const socialModuleActions = await this.service.modules.social.action.find(
+        {
+          params: {
+            filters: {
+              and: [
+                {
+                  column: "id",
+                  method: "inArray",
+                  value: socialModuleChatsToActions?.map(
+                    (socialModuleChatsToAction) => {
+                      return socialModuleChatsToAction.actionId;
+                    },
+                  ),
+                },
+              ],
+            },
+            orderBy,
           },
-          orderBy,
         },
-      });
+      );
 
       const actions = await new ActionPresentations(this.service).enrich(
         socialModuleActions,

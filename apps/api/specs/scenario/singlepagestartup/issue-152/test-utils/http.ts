@@ -13,7 +13,7 @@ export type ApiResponse<T> = {
   payload: T;
 };
 
-export async function requestApi<T = any>({
+export async function requestApi<T = unknown>({
   method,
   path,
   token,
@@ -46,7 +46,7 @@ export async function requestApi<T = any>({
   });
 
   const text = await response.text();
-  let payload: T | any = {};
+  let payload: unknown = {};
 
   if (text) {
     try {
@@ -58,11 +58,11 @@ export async function requestApi<T = any>({
 
   return {
     status: response.status,
-    payload,
+    payload: payload as T,
   };
 }
 
-export async function expectOk<T = any>(
+export async function expectOk<T = unknown>(
   request: ApiRequestOptions,
 ): Promise<ApiResponse<T>> {
   const result = await requestApi<T>(request);

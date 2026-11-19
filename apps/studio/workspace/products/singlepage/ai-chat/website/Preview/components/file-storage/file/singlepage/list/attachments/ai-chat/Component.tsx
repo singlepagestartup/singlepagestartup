@@ -1,5 +1,7 @@
 "use client";
-import Glyphs from "../../../../../../website-builder/feature/singlepage/icon/icons.json";
+import Glyphs, {
+  type default as IconGlyphs,
+} from "../../../../../../../../../../../../design/singlepage/interface-kit/ai-chat/icons.json";
 function WebsiteBuilderModuleFeature({
   name,
   size = 20,
@@ -45,7 +47,6 @@ import {
 import * as SelectPrimitive from "@radix-ui/react-select";
 import { twMerge as twMerge } from "tailwind-merge";
 import { Component as WebsiteBuilderModuleButton } from "../../../../../../website-builder/button/index";
-import type IconGlyphs from "../../../../../../website-builder/feature/singlepage/icon/icons.json";
 import { Component as AttachmentFile } from "../../../attachment/ai-chat";
 import { useFiles } from "./Files";
 import { readProjectFiles, AI_CHAT_ATTACHMENT_ACCEPT } from "./utils";

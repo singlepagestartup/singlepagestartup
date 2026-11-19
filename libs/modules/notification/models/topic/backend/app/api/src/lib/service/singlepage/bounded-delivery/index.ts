@@ -1,5 +1,5 @@
 import { createHash } from "node:crypto";
-import type { INotificationModule } from "../../../di";
+import type { Service as NotificationService } from "@sps/notification/models/notification/backend/app/api/src/lib/service";
 import type { IModel as ITemplate } from "@sps/notification/models/template/sdk/model";
 import { api as topicsToNotificationsApi } from "@sps/notification/relations/topics-to-notifications/sdk/server";
 import { api as notificationsToTemplatesApi } from "@sps/notification/relations/notifications-to-templates/sdk/server";
@@ -21,7 +21,10 @@ export interface ISendBoundedNotification {
 // recipient share a notification ID and a persisted three-attempt budget.
 export class Service {
   constructor(
-    private readonly notification: INotificationModule["notification"],
+    private readonly notification: Pick<
+      NotificationService,
+      "findById" | "createDelivery" | "updateDelivery" | "provider"
+    >,
   ) {}
 
   async execute(props: ISendBoundedNotification) {

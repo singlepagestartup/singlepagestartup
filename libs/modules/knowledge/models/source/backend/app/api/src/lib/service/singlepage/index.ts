@@ -1,3 +1,5 @@
+import { createModule } from "../module";
+import { createModules } from "@sps/knowledge/backend/app/api/src/lib/modules";
 import "reflect-metadata";
 import { injectFromBase, injectable } from "inversify";
 import { CRUDService } from "@sps/shared-backend-api";
@@ -5,12 +7,7 @@ import { assertKnowledgeAttachmentBytes } from "@sps/backend-utils";
 import { Table } from "@sps/knowledge/models/source/backend/repository/database";
 import type { Repository } from "../../repository";
 import type { Service as ChunkService } from "@sps/knowledge/models/chunk/backend/app/api/src/lib/service";
-import type { Service as SourcesToChunksService } from "@sps/knowledge/relations/sources-to-chunks/backend/app/api/src/lib/service";
-import type {
-  Service as SourcesToFilesService,
-  IFileRelationMutation,
-} from "@sps/knowledge/relations/sources-to-file-storage-module-files/backend/app/api/src/lib/service";
-import type { Service as FileStorageFileService } from "@sps/file-storage/models/file/backend/app/api/src/lib/service";
+import type { IFileRelationMutation } from "@sps/knowledge/relations/sources-to-file-storage-module-files/backend/app/api/src/lib/service";
 import {
   hashContent,
   readUserContext,
@@ -32,10 +29,6 @@ export interface IUpdateSourceProps {
   fileIds?: string[];
 }
 export interface ISourceServices {
-  chunk: ChunkService;
-  sourcesToChunks: SourcesToChunksService;
-  sourcesToFileStorageModuleFiles: SourcesToFilesService;
-  fileStorageFile: FileStorageFileService;
   inTransaction: boolean;
   transaction: <T>(operation: (source: Service) => Promise<T>) => Promise<T>;
   readSnapshot: <T>(operation: (source: Service) => Promise<T>) => Promise<T>;
@@ -46,6 +39,14 @@ export interface ISourceServices {
 @injectable()
 @injectFromBase()
 export class Service extends CRUDService<Source> {
+  get modules() {
+    return this.appAssembly.getOrCreate(createModules);
+  }
+
+  get module() {
+    return this.appAssembly.getOrCreate(createModule);
+  }
+
   private services?: ISourceServices;
   configure(services: ISourceServices) {
     this.services = services;
@@ -150,7 +151,7 @@ export class Service extends CRUDService<Source> {
   }
   async getStatus() {
     const sourceCount = await this.count();
-    const chunkCount = await this.dependencies().chunk.count();
+    const chunkCount = await this.module.chunk.count();
 
     return {
       sources: sourceCount,
@@ -192,7 +193,7 @@ export class Service extends CRUDService<Source> {
     validate = true,
   ) {
     const ids = [...new Set(fileIds)];
-    const files = await this.dependencies().fileStorageFile.lock(ids, mode);
+    const files = await this.modules.fileStorage.file.lock(ids, mode);
     if (files.length !== ids.length) {
       const found = new Set(files.map((file) => file.id));
       throw Object.assign(new Error("Stored file was not found."), {
@@ -208,7 +209,7 @@ export class Service extends CRUDService<Source> {
           mimeType: file.mimeType || undefined,
         });
         assertKnowledgeAttachmentBytes({
-          bytes: await this.dependencies().fileStorageFile.readBytes(file),
+          bytes: await this.modules.fileStorage.file.readBytes(file),
           name: file.file || file.adminTitle,
           mimeType: file.mimeType || undefined,
         });
@@ -218,7 +219,7 @@ export class Service extends CRUDService<Source> {
   async validateAttachments(fileIds: string[]) {
     const ids = [...new Set(fileIds)];
     if (!ids.length) return;
-    const files = await this.dependencies().fileStorageFile.find({
+    const files = await this.modules.fileStorage.file.find({
       params: {
         filters: { and: [{ column: "id", method: "inArray", value: ids }] },
       },
@@ -237,7 +238,7 @@ export class Service extends CRUDService<Source> {
         mimeType: file.mimeType || undefined,
       });
       assertKnowledgeAttachmentBytes({
-        bytes: await this.dependencies().fileStorageFile.readBytes(file),
+        bytes: await this.modules.fileStorage.file.readBytes(file),
         name: file.file,
         mimeType: file.mimeType || undefined,
       });
@@ -280,9 +281,11 @@ export class Service extends CRUDService<Source> {
             : {}),
         },
       }))!;
-      const attachmentsChanged = await scope
-        .dependencies()
-        .sourcesToFileStorageModuleFiles.append(source.id, props.fileIds || []);
+      const attachmentsChanged =
+        await scope.module.sourcesToFileStorageModuleFiles.append(
+          source.id,
+          props.fileIds || [],
+        );
       if (attachmentsChanged) await scope.invalidateSources([updated]);
       const loadedSource = await scope.findById({ id: source.id });
 
@@ -297,12 +300,12 @@ export class Service extends CRUDService<Source> {
       const [source] = await scope.owner().lock([sourceId]);
       if (!source) return null;
       await scope.clearSourceChunks([sourceId]);
-      for (const link of await scope
-        .dependencies()
-        .sourcesToFileStorageModuleFiles.forSource(sourceId))
-        await scope
-          .dependencies()
-          .sourcesToFileStorageModuleFiles.delete({ id: link.id });
+      for (const link of await scope.module.sourcesToFileStorageModuleFiles.forSource(
+        sourceId,
+      ))
+        await scope.module.sourcesToFileStorageModuleFiles.delete({
+          id: link.id,
+        });
       const deleted = await scope.deleteRecord(sourceId);
       return deleted;
     });
@@ -312,9 +315,8 @@ export class Service extends CRUDService<Source> {
     return source;
   }
   private async clearSourceChunks(sourceIds: string[]) {
-    const services = this.dependencies();
-    const ids = await services.sourcesToChunks.unlinkSources(sourceIds);
-    await services.chunk.removeIds(ids);
+    const ids = await this.module.sourcesToChunks.unlinkSources(sourceIds);
+    await this.module.chunk.removeIds(ids);
   }
   async clearDerivedData() {
     return this.run(async (scope) => {
@@ -324,8 +326,8 @@ export class Service extends CRUDService<Source> {
         .lock(candidates.map((source) => source.id));
       await scope.clearSourceChunks(sources.map((source) => source.id));
       // Explicit clear also removes orphan chunks left by historical imports.
-      for (const chunk of await scope.dependencies().chunk.find())
-        await scope.dependencies().chunk.delete({ id: chunk.id });
+      for (const chunk of await scope.module.chunk.find())
+        await scope.module.chunk.delete({ id: chunk.id });
       for (const source of sources)
         await scope.saveRecord({
           id: source.id,
@@ -366,8 +368,10 @@ export class Service extends CRUDService<Source> {
       if (!source || source.contentHash !== contentHash) return false;
       await scope.clearSourceChunks([sourceId]);
       for (const input of chunks) {
-        const chunk = await scope.dependencies().chunk.create({ data: input });
-        await scope.dependencies().sourcesToChunks.create({
+        const chunk = await scope.module.chunk.create({
+          data: input,
+        });
+        await scope.module.sourcesToChunks.create({
           data: { sourceId, chunkId: chunk.id, orderIndex: chunk.chunkIndex },
         });
       }
@@ -409,12 +413,10 @@ export class Service extends CRUDService<Source> {
     });
   }
   readFileBytes(file: { file: string | null }) {
-    return this.dependencies().fileStorageFile.readBytes(file);
+    return this.modules.fileStorage.file.readBytes(file);
   }
   sourceFiles(sourceId: string) {
-    return this.dependencies().sourcesToFileStorageModuleFiles.sourceFiles(
-      sourceId,
-    );
+    return this.module.sourcesToFileStorageModuleFiles.sourceFiles(sourceId);
   }
   private fileSnapshot(files: Awaited<ReturnType<Service["sourceFiles"]>>) {
     return JSON.stringify(
@@ -445,8 +447,7 @@ export class Service extends CRUDService<Source> {
   }
   async mutateFileRelation(props: IFileRelationMutation) {
     return this.run(async (scope) => {
-      const relationService =
-        scope.dependencies().sourcesToFileStorageModuleFiles;
+      const relationService = scope.module.sourcesToFileStorageModuleFiles;
       let previous;
       if (props.id) {
         previous = await relationService.findById({ id: props.id });
@@ -503,9 +504,8 @@ export class Service extends CRUDService<Source> {
   }) {
     return this.run(async (scope) => {
       await scope.lockFiles([props.id], "update", false);
-      const fileLinks = await scope
-        .dependencies()
-        .sourcesToFileStorageModuleFiles.find({
+      const fileLinks = await scope.module.sourcesToFileStorageModuleFiles.find(
+        {
           params: {
             filters: {
               and: [
@@ -517,10 +517,11 @@ export class Service extends CRUDService<Source> {
               ],
             },
           },
-        });
+        },
+      );
       const sourceIds = [...new Set(fileLinks.map((link) => link.sourceId))];
       const sources = await scope.owner().lock(sourceIds);
-      const fileService = scope.dependencies().fileStorageFile;
+      const fileService = scope.modules.fileStorage.file;
       const previous = await fileService.findById({ id: props.id });
       if (!previous)
         throw new Error("Not Found error. Stored file was not found.");
@@ -558,18 +559,17 @@ export class Service extends CRUDService<Source> {
       if (!sources.length)
         throw new Error("Not Found error. Knowledge Source was not found.");
       if (
-        await scope
-          .dependencies()
-          .sourcesToFileStorageModuleFiles.append(sourceId, fileIds)
+        await scope.module.sourcesToFileStorageModuleFiles.append(
+          sourceId,
+          fileIds,
+        )
       ) {
         await scope.invalidateSources(sources);
       }
     });
   }
   fileSourceIds(fileId: string) {
-    return this.dependencies().sourcesToFileStorageModuleFiles.fileSourceIds(
-      fileId,
-    );
+    return this.module.sourcesToFileStorageModuleFiles.fileSourceIds(fileId);
   }
   async setFiles(
     sourceId: string,
@@ -593,13 +593,11 @@ export class Service extends CRUDService<Source> {
         throw new Error(
           "Conflict error. Knowledge Source changed. Refresh and retry the operation.",
         );
-      await scope
-        .dependencies()
-        .sourcesToFileStorageModuleFiles.replace(
-          sourceId,
-          fileIds,
-          expectedFileIds,
-        );
+      await scope.module.sourcesToFileStorageModuleFiles.replace(
+        sourceId,
+        fileIds,
+        expectedFileIds,
+      );
       await scope.invalidateSources(sources);
     });
   }
@@ -613,7 +611,7 @@ export class Service extends CRUDService<Source> {
       ({ file }) => file.slug === slug,
     );
     if (existing) return existing.file;
-    const file = await this.dependencies().fileStorageFile.importPath({
+    const file = await this.modules.fileStorage.file.importPath({
       filePath: props.filePath,
       slug,
       validate: (bytes) =>
@@ -639,7 +637,6 @@ export class Service extends CRUDService<Source> {
         source.searchChunks(props),
       );
     }
-    const services = this.dependencies();
     const collect = (
       chunks: Awaited<ReturnType<ChunkService["search"]>>,
       links: { sourceId: string; chunkId: string }[],
@@ -665,17 +662,17 @@ export class Service extends CRUDService<Source> {
     };
     if (props.sourceIds) {
       const sources = await this.freshHeaders(props.sourceIds);
-      const links = await services.sourcesToChunks.forSources(
+      const links = await this.module.sourcesToChunks.forSources(
         sources.map((source) => source.id),
       );
-      const chunks = await services.chunk.search({
+      const chunks = await this.module.chunk.search({
         ...props,
         materialized: true,
         ids: links.map((link) => link.chunkId),
       });
       return collect(chunks, links, sources);
     }
-    const total = await services.chunk.count();
+    const total = await this.module.chunk.count();
     if (!total) {
       return [];
     }
@@ -685,12 +682,12 @@ export class Service extends CRUDService<Source> {
     do {
       // Keep the unfiltered global vector scan eligible for HNSW. Only ranked
       // candidates cross service boundaries; Source content is never loaded.
-      const chunks = await services.chunk.search({
+      const chunks = await this.module.chunk.search({
         embedding: props.embedding,
         minSimilarity: props.minSimilarity,
         topK: limit,
       });
-      const links = await services.sourcesToChunks.forChunkIds(
+      const links = await this.module.sourcesToChunks.forChunkIds(
         chunks.map((chunk) => chunk.id),
       );
       const sources = await this.freshHeaders([
@@ -723,11 +720,9 @@ export class Service extends CRUDService<Source> {
     for (const seed of props.seeds) {
       const [source] = await this.freshHeaders([seed.sourceId]);
       if (!source) continue;
-      const links = await this.dependencies().sourcesToChunks.forSources([
-        source.id,
-      ]);
+      const links = await this.module.sourcesToChunks.forSources([source.id]);
       if (!links.length) continue;
-      const chunks = await this.dependencies().chunk.find({
+      const chunks = await this.module.chunk.find({
         params: {
           filters: {
             and: [

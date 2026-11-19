@@ -343,9 +343,8 @@ function validate(input: IBlogExampleInput) {
 
 /** Registry metadata supplies all incoming Article/WB/File relation kinds. */
 export async function blogExampleReferences(): Promise<IBlogReference[]> {
-  const { listContentEntityDescriptors } = await import(
-    "../../apps/mcp/lib/content-management/registry"
-  );
+  const { listContentEntityDescriptors } =
+    await import("../../apps/mcp/lib/content-management/registry");
   const result: IBlogReference[] = await frameworkGraphReferences();
   for (const descriptor of await listContentEntityDescriptors()) {
     if (descriptor.kind !== "relation") continue;
@@ -964,7 +963,7 @@ export async function applyBlogExamples(
       await assertRetirements(manifest, adapter);
     }
     for (let index = 0; index < manifest.operations.length; index++) {
-      let op = manifest.operations[index];
+      const op = manifest.operations[index];
       if (op.phase !== phase) continue;
       const sdk = await adapter(op.entity);
       const rows = await find(
@@ -1116,9 +1115,8 @@ export async function blogExampleCli(argv = process.argv.slice(2)) {
     throw Error(
       "This command requires an explicit credential-free localhost:4000 API_SERVICE_URL",
     );
-  const { getContentEntityDescriptor } = await import(
-    "../../apps/mcp/lib/content-management/registry"
-  );
+  const { getContentEntityDescriptor } =
+    await import("../../apps/mcp/lib/content-management/registry");
   const options = {
     cache: "no-store" as const,
     headers: {

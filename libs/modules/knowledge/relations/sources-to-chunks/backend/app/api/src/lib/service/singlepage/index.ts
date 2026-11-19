@@ -1,3 +1,5 @@
+import { createModule } from "../module";
+import { createModules } from "@sps/knowledge/backend/app/api/src/lib/modules";
 import "reflect-metadata";
 import { injectFromBase, injectable } from "inversify";
 import { CRUDService } from "@sps/shared-backend-api";
@@ -7,6 +9,14 @@ import type { Repository } from "../../repository";
 @injectable()
 @injectFromBase()
 export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
+  get modules() {
+    return this.appAssembly.getOrCreate(createModules);
+  }
+
+  get module() {
+    return this.appAssembly.getOrCreate(createModule);
+  }
+
   forChunkIds(ids: string[]) {
     return (this.repository as Repository).forChunkIds(ids);
   }

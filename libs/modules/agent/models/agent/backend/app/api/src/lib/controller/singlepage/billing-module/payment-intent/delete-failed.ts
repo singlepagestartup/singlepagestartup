@@ -21,7 +21,7 @@ export class Handler {
       logger.info("Billing module payment intent delete failed started");
 
       const notSucceededPaymentIntents =
-        await this.service.billingModule.paymentIntent.find({
+        await this.service.modules.billing.paymentIntent.find({
           params: {
             filters: {
               and: [

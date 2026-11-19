@@ -27,7 +27,7 @@ it.each(["Hono", "Hono<Env>"])(
       imports.onCreate.content,
     );
     expect(attached).toContain(
-      'import { app as websiteBuilderApp } from "@sps/website-builder/backend/app/api";',
+      'import { moduleBootstrap as websiteBuilderApp } from "@sps/website-builder/backend/app/api/src/lib/bootstrap";',
     );
     expect(attached).toContain(declaration);
     expect(

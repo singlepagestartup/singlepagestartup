@@ -8,14 +8,17 @@ import { createTreeWithEmptyWorkspace } from "@nx/devkit/testing";
 import { readFileSync } from "node:fs";
 import path from "node:path";
 import { relationGenerator } from "./generator";
+import { moduleDependencyContract } from "../../utils/service-registries";
 
 it("generates distinct cross-module Widget fields without changing the lower owner's admin", async () => {
   const tree = createTreeWithEmptyWorkspace();
+  tree.write(moduleDependencyContract, "1. `rbac`\n2. `website-builder`\n");
   const root = path.resolve(__dirname, "../../../../../..");
   for (const module of ["rbac", "website-builder"]) {
     for (const relative of [
       "project.json",
       "backend/app/api/src/lib/apps.ts",
+      "backend/app/api/src/lib/bootstrap.ts",
       "frontend/component/src/lib/admin/widget/Component.tsx",
       "models/widget/frontend/component/src/lib/singlepage/admin/form/interface.ts",
       "models/widget/frontend/component/src/lib/singlepage/admin/form/ClientComponent.tsx",

@@ -64,9 +64,7 @@ function createService(props?: {
       productId: PRODUCT_ID,
       quantity,
     }) as any,
-    billingModule: {
-      currency: { findById: billingModuleCurrencyFindByIdMock },
-    } as any,
+    currency: { findById: billingModuleCurrencyFindByIdMock },
     product: {
       findById: jest
         .fn()

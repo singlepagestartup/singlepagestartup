@@ -1,11 +1,3 @@
-/**
- * BDD Suite: thread-scoped social action create.
- *
- * Given: a chat action is created from a thread-aware UI request.
- * When: the RBAC action create endpoint receives socialModuleThreadId in the raw query.
- * Then: it links the action to exactly that thread through threads-to-actions.
- */
-
 const mockSocialModuleActionCreate = jest.fn();
 const mockSocialModuleChatsToActionsCreate = jest.fn();
 const mockSocialModuleThreadsToActionsCreate = jest.fn();
@@ -80,12 +72,14 @@ describe("Given: thread-scoped social action create", () => {
       socialModuleChatLifecycleAssertThreadBelongsToChat: jest
         .fn()
         .mockResolvedValue(undefined),
-      socialModule: {
-        threadsToMessages: {
-          find: jest.fn(),
-        },
-        chatsToThreads: {
-          find: jest.fn(),
+      modules: {
+        social: {
+          threadsToMessages: {
+            find: jest.fn(),
+          },
+          chatsToThreads: {
+            find: jest.fn(),
+          },
         },
       },
     };
@@ -128,7 +122,9 @@ describe("Given: thread-scoped social action create", () => {
       socialModuleChatId: "chat-1",
       socialModuleThreadId: "thread-1",
     });
-    expect(service.socialModule.threadsToMessages.find).not.toHaveBeenCalled();
+    expect(
+      service.modules.social.threadsToMessages.find,
+    ).not.toHaveBeenCalled();
     expect(mockSocialModuleActionCreate).toHaveBeenCalledWith({
       data: {
         payload: {
@@ -195,12 +191,14 @@ describe("Given: thread-scoped social action create", () => {
       socialModuleChatLifecycleAssertThreadBelongsToChat: jest
         .fn()
         .mockResolvedValue(undefined),
-      socialModule: {
-        threadsToMessages: {
-          find: jest.fn(),
-        },
-        chatsToThreads: {
-          find: jest.fn(),
+      modules: {
+        social: {
+          threadsToMessages: {
+            find: jest.fn(),
+          },
+          chatsToThreads: {
+            find: jest.fn(),
+          },
         },
       },
     };
@@ -233,7 +231,9 @@ describe("Given: thread-scoped social action create", () => {
       socialModuleChatId: "chat-1",
       socialModuleThreadId: "thread-body",
     });
-    expect(service.socialModule.threadsToMessages.find).not.toHaveBeenCalled();
+    expect(
+      service.modules.social.threadsToMessages.find,
+    ).not.toHaveBeenCalled();
     expect(mockSocialModuleActionCreate).toHaveBeenCalledWith({
       data: {
         payload: callbackPayload,
@@ -269,25 +269,27 @@ describe("Given: thread-scoped social action create", () => {
       socialModuleChatLifecycleAssertThreadBelongsToChat: jest
         .fn()
         .mockResolvedValue(undefined),
-      socialModule: {
-        threadsToMessages: {
-          find: jest.fn().mockResolvedValue([
-            {
-              id: "thread-message-1",
-              threadId: "thread-1",
-              messageId: "message-1",
-              createdAt: "2026-01-01T00:00:00.000Z",
-            },
-          ]),
-        },
-        chatsToThreads: {
-          find: jest.fn().mockResolvedValue([
-            {
-              id: "chat-thread-1",
-              chatId: "chat-1",
-              threadId: "thread-1",
-            },
-          ]),
+      modules: {
+        social: {
+          threadsToMessages: {
+            find: jest.fn().mockResolvedValue([
+              {
+                id: "thread-message-1",
+                threadId: "thread-1",
+                messageId: "message-1",
+                createdAt: "2026-01-01T00:00:00.000Z",
+              },
+            ]),
+          },
+          chatsToThreads: {
+            find: jest.fn().mockResolvedValue([
+              {
+                id: "chat-thread-1",
+                chatId: "chat-1",
+                threadId: "thread-1",
+              },
+            ]),
+          },
         },
       },
     };
@@ -321,7 +323,7 @@ describe("Given: thread-scoped social action create", () => {
     expect(
       service.socialModuleChatLifecycleAssertThreadBelongsToChat,
     ).not.toHaveBeenCalled();
-    expect(service.socialModule.threadsToMessages.find).toHaveBeenCalledWith({
+    expect(service.modules.social.threadsToMessages.find).toHaveBeenCalledWith({
       params: {
         filters: {
           and: [
@@ -334,7 +336,7 @@ describe("Given: thread-scoped social action create", () => {
         },
       },
     });
-    expect(service.socialModule.chatsToThreads.find).toHaveBeenCalledWith({
+    expect(service.modules.social.chatsToThreads.find).toHaveBeenCalledWith({
       params: {
         filters: {
           and: [

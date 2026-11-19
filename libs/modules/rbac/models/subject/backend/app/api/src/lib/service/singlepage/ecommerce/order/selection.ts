@@ -11,7 +11,7 @@ import type {
   IEcommerceCartSelectionResult,
 } from "@sps/rbac/models/subject/sdk/model";
 import type { Repository } from "../../../../repository";
-import type { Service as SubjectService } from "../../index";
+import type { SubjectServiceDependencies } from "../../index";
 
 export interface IExecuteProps {
   subjectId: string;
@@ -27,12 +27,7 @@ export interface IQuoteProps {
 }
 export interface IConstructorProps {
   repository: Pick<Repository, "withSubjectLock">;
-  service: Pick<
-    SubjectService,
-    | "ecommerceModule"
-    | "subjectsToEcommerceModuleOrders"
-    | "ecommerceModuleOrderAssertAccess"
-  >;
+  service: SubjectServiceDependencies<"ecommerceModuleOrderAssertAccess">;
 }
 
 export class Service {
@@ -74,13 +69,13 @@ export class Service {
     if (!quotes) {
       if (props.fulfilledLineIds?.length) {
         quotes =
-          await this.dependencies.service.ecommerceModule.storesToProducts.quoteMany(
+          await this.dependencies.service.modules.ecommerce.storesToProducts.quoteMany(
             props.selections,
             { fulfilledLineIds: props.fulfilledLineIds },
           );
       } else {
         quotes =
-          await this.dependencies.service.ecommerceModule.storesToProducts.quoteMany(
+          await this.dependencies.service.modules.ecommerce.storesToProducts.quoteMany(
             props.selections,
           );
       }
@@ -187,13 +182,13 @@ export class Service {
         "Conflict error. Choose a store for each product in this older cart before editing its selection",
       );
     }
-    const product = await service.ecommerceModule.product.findById({
+    const product = await service.modules.ecommerce.product.findById({
       id: primary.productId,
     });
     if (
       !product ||
       (await new InitialGrantProducts(
-        service.ecommerceModule.storesToProducts,
+        service.modules.ecommerce.storesToProducts,
       ).includes(product.id))
     ) {
       throw new Error(
@@ -201,11 +196,11 @@ export class Service {
       );
     }
     const sourceOffer = primary.offerId
-      ? await service.ecommerceModule.storesToProducts.findById({
+      ? await service.modules.ecommerce.storesToProducts.findById({
           id: primary.offerId,
         })
       : null;
-    const targets = await service.ecommerceModule.storesToProducts.find({
+    const targets = await service.modules.ecommerce.storesToProducts.find({
       params: {
         filters: {
           and: [
@@ -260,7 +255,7 @@ export class Service {
             comparisonQuotes.push(targetQuote);
             continue;
           }
-          const source = await service.ecommerceModule.storesToProducts.quote(
+          const source = await service.modules.ecommerce.storesToProducts.quote(
             { ...selection, offerId: sourceOffer.id, services: [] },
             quoteOptions,
           );
@@ -278,10 +273,11 @@ export class Service {
               });
             }
           }
-          const previous = await service.ecommerceModule.storesToProducts.quote(
-            { ...selection, offerId: sourceOffer.id, services },
-            quoteOptions,
-          );
+          const previous =
+            await service.modules.ecommerce.storesToProducts.quote(
+              { ...selection, offerId: sourceOffer.id, services },
+              quoteOptions,
+            );
           comparisonQuotes.push(previous);
         }
       }
@@ -324,7 +320,7 @@ export class Service {
     return repository.withSubjectLock(
       { subjectId: props.subjectId },
       async () => {
-        await service.ecommerceModule.order.lockForLifecycle({
+        await service.modules.ecommerce.order.lockForLifecycle({
           id: props.orderId,
         });
         const currentEditable = await this.readEditable(props);
@@ -351,7 +347,7 @@ export class Service {
             "Conflict error. Quote expired. Preview and confirm the current price",
           );
         }
-        await service.ecommerceModule.ordersToBillingModulePaymentIntents.lockOffers(
+        await service.modules.ecommerce.order.ordersToBillingModulePaymentIntents.lockOffers(
           {
             offerIds: [
               ...new Set(
@@ -368,7 +364,7 @@ export class Service {
         let currentQuotes: IOfferQuote[];
         try {
           currentQuotes =
-            await service.ecommerceModule.storesToProducts.quotesUnderLock(
+            await service.modules.ecommerce.storesToProducts.quotesUnderLock(
               selections,
               this.preparedQuotes,
               currentQuoteOptions,
@@ -455,7 +451,7 @@ export class Service {
   }): Promise<{ lines: ILine[]; fulfilledLineIds: string[] }> {
     const { service } = this.dependencies;
     await service.ecommerceModuleOrderAssertAccess(props);
-    const owners = await service.subjectsToEcommerceModuleOrders.find({
+    const owners = await service.module.subjectsToEcommerceModuleOrders.find({
       params: {
         filters: {
           and: [
@@ -476,17 +472,19 @@ export class Service {
         "Permission error. Order must belong only to the current subject",
       );
     }
-    const order = await service.ecommerceModule.order.findById({
+    const order = await service.modules.ecommerce.order.findById({
       id: props.orderId,
     });
     const payments =
-      await service.ecommerceModule.ordersToBillingModulePaymentIntents.find({
-        params: {
-          filters: {
-            and: [{ column: "orderId", method: "eq", value: props.orderId }],
+      await service.modules.ecommerce.order.ordersToBillingModulePaymentIntents.find(
+        {
+          params: {
+            filters: {
+              and: [{ column: "orderId", method: "eq", value: props.orderId }],
+            },
           },
         },
-      });
+      );
     if (
       !order ||
       order.type !== "cart" ||
@@ -497,7 +495,7 @@ export class Service {
         "Conflict error. Only an editable cart order can change selection",
       );
     }
-    const lines = await service.ecommerceModule.ordersToProducts.find({
+    const lines = await service.modules.ecommerce.ordersToProducts.find({
       params: {
         filters: {
           and: [{ column: "orderId", method: "eq", value: props.orderId }],
@@ -507,7 +505,7 @@ export class Service {
     let fulfilledLineIds: string[] = [];
     if (order.subscriptionSourceOrderId) {
       const fulfillment =
-        await service.ecommerceModule.order.fulfillmentQuoteOptions({
+        await service.modules.ecommerce.order.fulfillmentQuoteOptions({
           id: order.id,
         });
       fulfilledLineIds = fulfillment.fulfilledLineIds;
@@ -519,7 +517,7 @@ export class Service {
     props: IQuoteProps,
   ): Promise<Map<string, number>> {
     const { service } = this.dependencies;
-    const links = await service.subjectsToEcommerceModuleOrders.find({
+    const links = await service.module.subjectsToEcommerceModuleOrders.find({
       params: {
         filters: {
           and: [{ column: "subjectId", method: "eq", value: props.subjectId }],
@@ -533,7 +531,7 @@ export class Service {
     if (!orderIds.length) {
       return quantities;
     }
-    const orders = await service.ecommerceModule.order.find({
+    const orders = await service.modules.ecommerce.order.find({
       params: {
         filters: {
           and: [
@@ -548,19 +546,21 @@ export class Service {
       return quantities;
     }
     const paymentLinks =
-      await service.ecommerceModule.ordersToBillingModulePaymentIntents.find({
-        params: {
-          filters: {
-            and: [
-              {
-                column: "orderId",
-                method: "inArray",
-                value: orders.map((order) => order.id),
-              },
-            ],
+      await service.modules.ecommerce.order.ordersToBillingModulePaymentIntents.find(
+        {
+          params: {
+            filters: {
+              and: [
+                {
+                  column: "orderId",
+                  method: "inArray",
+                  value: orders.map((order) => order.id),
+                },
+              ],
+            },
           },
         },
-      });
+      );
     const editableIds = orders
       .filter(
         (order) =>
@@ -570,7 +570,7 @@ export class Service {
     if (!editableIds.length) {
       return quantities;
     }
-    const lines = await service.ecommerceModule.ordersToProducts.find({
+    const lines = await service.modules.ecommerce.ordersToProducts.find({
       params: {
         filters: {
           and: [{ column: "orderId", method: "inArray", value: editableIds }],
@@ -608,7 +608,7 @@ export class Service {
       quoteVersion: props.quote.version,
       quoteExpiresAt: new Date(props.quote.expiresAt),
     };
-    const primary = await service.ecommerceModule.ordersToProducts.update({
+    const primary = await service.modules.ecommerce.ordersToProducts.update({
       id: props.primary.id,
       data,
     });
@@ -619,7 +619,7 @@ export class Service {
     for (const child of props.previousLines.filter(
       (line) => line.parentLineId === primaryId,
     )) {
-      await service.ecommerceModule.ordersToProducts.delete({ id: child.id });
+      await service.modules.ecommerce.ordersToProducts.delete({ id: child.id });
     }
     for (const selected of props.selection.services ?? []) {
       const charge = props.quote.charges.find(
@@ -631,7 +631,7 @@ export class Service {
           "Validation error. Selected service has no quoted charge",
         );
       }
-      await service.ecommerceModule.ordersToProducts.create({
+      await service.modules.ecommerce.ordersToProducts.create({
         data: {
           orderId: props.orderId,
           productId: charge.productId,
@@ -643,7 +643,7 @@ export class Service {
         },
       });
     }
-    const stores = await service.ecommerceModule.storesToOrders.find({
+    const stores = await service.modules.ecommerce.storesToOrders.find({
       params: {
         filters: {
           and: [{ column: "orderId", method: "eq", value: props.orderId }],
@@ -656,23 +656,25 @@ export class Service {
       ) ?? stores[0];
     if (selectedStore) {
       if (selectedStore.storeId !== props.quote.storeId) {
-        await service.ecommerceModule.storesToOrders.update({
+        await service.modules.ecommerce.storesToOrders.update({
           id: selectedStore.id,
           data: { storeId: props.quote.storeId },
         });
       }
       for (const store of stores) {
         if (store.id !== selectedStore.id) {
-          await service.ecommerceModule.storesToOrders.delete({ id: store.id });
+          await service.modules.ecommerce.storesToOrders.delete({
+            id: store.id,
+          });
         }
       }
     } else {
-      await service.ecommerceModule.storesToOrders.create({
+      await service.modules.ecommerce.storesToOrders.create({
         data: { orderId: props.orderId, storeId: props.quote.storeId },
       });
     }
     const currencies =
-      await service.ecommerceModule.ordersToBillingModuleCurrencies.find({
+      await service.modules.ecommerce.ordersToBillingModuleCurrencies.find({
         params: {
           filters: {
             and: [{ column: "orderId", method: "eq", value: props.orderId }],
@@ -688,20 +690,22 @@ export class Service {
       if (
         selectedCurrency.billingModuleCurrencyId !== props.selection.currencyId
       ) {
-        await service.ecommerceModule.ordersToBillingModuleCurrencies.update({
+        await service.modules.ecommerce.ordersToBillingModuleCurrencies.update({
           id: selectedCurrency.id,
           data: { billingModuleCurrencyId: props.selection.currencyId },
         });
       }
       for (const currency of currencies) {
         if (currency.id !== selectedCurrency.id) {
-          await service.ecommerceModule.ordersToBillingModuleCurrencies.delete({
-            id: currency.id,
-          });
+          await service.modules.ecommerce.ordersToBillingModuleCurrencies.delete(
+            {
+              id: currency.id,
+            },
+          );
         }
       }
     } else {
-      await service.ecommerceModule.ordersToBillingModuleCurrencies.create({
+      await service.modules.ecommerce.ordersToBillingModuleCurrencies.create({
         data: {
           orderId: props.orderId,
           billingModuleCurrencyId: props.selection.currencyId,

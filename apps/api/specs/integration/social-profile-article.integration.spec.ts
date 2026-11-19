@@ -23,12 +23,18 @@ import {
 } from "@sps/social/relations/profiles-to-blog-module-articles/backend/repository/database";
 import { Middleware as IsAuthorizedMiddleware } from "../../../../libs/middlewares/src/lib/is-authorized";
 import { ExceptionFilter } from "@sps/shared-backend-api";
+import type { api as subjectApi } from "@sps/rbac/models/subject/sdk/server";
+import type { IModel as IProfileToArticle } from "@sps/social/relations/profiles-to-blog-module-articles/sdk/model";
 import { Repository } from "@sps/social/relations/profiles-to-blog-module-articles/backend/app/api/src/lib/repository";
 import { bootstrap } from "@sps/social/relations/profiles-to-blog-module-articles/backend/app/api/src/lib/bootstrap";
 
 const authorize = jest.fn();
 jest.mock("@sps/rbac/models/subject/sdk/server", () => ({
-  api: { authenticationIsAuthorized: (props: any) => authorize(props) },
+  api: {
+    authenticationIsAuthorized: (
+      props: Parameters<typeof subjectApi.authenticationIsAuthorized>[0],
+    ) => authorize(props),
+  },
 }));
 
 // The integration suite only uses an explicitly supplied disposable database.
@@ -167,9 +173,8 @@ suite("profile article relation API with PostgreSQL", () => {
     });
     const response = await app.request(`${route}?${query}`, { headers });
     expect(response.status).toBe(200);
-    expect((await response.json()).data.map((item: any) => item.id)).toEqual([
-      link.id,
-    ]);
+    const { data }: { data: IProfileToArticle[] } = await response.json();
+    expect(data.map((item) => item.id)).toEqual([link.id]);
     const byArticle = QueryString.stringify({
       filters: {
         and: [

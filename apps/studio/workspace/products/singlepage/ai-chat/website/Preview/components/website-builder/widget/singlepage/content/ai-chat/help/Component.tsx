@@ -1,23 +1,27 @@
 "use client";
-import { forwardRef as forwardRef } from "react";
+import {
+  forwardRef,
+  useContext,
+  createContext,
+  forwardRef as forwardRefControl,
+  useId,
+  useRef,
+  useState,
+  type ReactNode,
+  type ButtonHTMLAttributes as ButtonControlProps,
+  type FormEvent,
+} from "react";
 import * as SelectPrimitive from "@radix-ui/react-select";
-import { twMerge as twMerge } from "tailwind-merge";
-import { type ReactNode as ReactNode } from "react";
-import { useContext as useContext } from "react";
-import { createContext as createContext } from "react";
-import { twMerge as twMergePresentation } from "tailwind-merge";
+import { twMerge, twMerge as twMergePresentation } from "tailwind-merge";
 import Markdown from "markdown-to-jsx";
 import { Component as ButtonModel } from "../../../../../button/index";
-import {
-  forwardRef as forwardRefControl,
-  type ButtonHTMLAttributes as ButtonControlProps,
-} from "react";
-import IconGlyphs from "../../../../../feature/singlepage/icon/icons.json";
-import { IWebsiteSection as IWebsiteSection } from "../content";
-import { IAIChatServicePageContent as IAIChatServicePageContentPresentation } from "../content";
-import { useId, useRef, useState, type FormEvent } from "react";
+import IconGlyphs from "../../../../../../../../../../../../design/singlepage/interface-kit/ai-chat/icons.json";
+import type {
+  IWebsiteSection,
+  IAIChatServicePageContent as IAIChatServicePageContentPresentation,
+  IAIChatServicePageContent,
+} from "../content";
 import defaultCopy from "./content.json";
-import type { IAIChatServicePageContent } from "../content";
 function PageIntro({ section }: { section: IWebsiteSection }) {
   return (
     <div className="mb-8 max-w-2xl">

@@ -46,8 +46,8 @@ export class Handler {
         throw new Error("Not Found error. No entity found");
       }
 
-      const subjectsToIdentities = await this.service.subjectsToIdentities.find(
-        {
+      const subjectsToIdentities =
+        await this.service.module.subjectsToIdentities.find({
           params: {
             filters: {
               and: [
@@ -59,14 +59,13 @@ export class Handler {
               ],
             },
           },
-        },
-      );
+        });
 
       if (!subjectsToIdentities?.length) {
         throw new Error("Not Found error. No subjects to identities found");
       }
 
-      const identities = await this.service.identity.find({
+      const identities = await this.service.module.identity.find({
         params: {
           filters: {
             and: [
@@ -93,7 +92,7 @@ export class Handler {
       let interval: IEcommerceAttribute | undefined;
 
       const productsToAttributes =
-        await this.service.ecommerceModule.productsToAttributes.find({
+        await this.service.modules.ecommerce.productsToAttributes.find({
           params: {
             filters: {
               and: [
@@ -111,7 +110,7 @@ export class Handler {
         throw new Error("Not Found error. No products to attributes found");
       }
 
-      const attributes = await this.service.ecommerceModule.attribute.find({
+      const attributes = await this.service.modules.ecommerce.attribute.find({
         params: {
           filters: {
             and: [
@@ -131,7 +130,7 @@ export class Handler {
 
       for (const attribute of attributes) {
         const attributeKeysToAttributes =
-          await this.service.ecommerceModule.attributeKeysToAttributes.find({
+          await this.service.modules.ecommerce.attributeKeysToAttributes.find({
             params: {
               filters: {
                 and: [
@@ -152,7 +151,7 @@ export class Handler {
         }
 
         const attributeKey =
-          await this.service.ecommerceModule.attributeKey.find({
+          await this.service.modules.ecommerce.attributeKey.find({
             params: {
               filters: {
                 and: [
@@ -183,7 +182,7 @@ export class Handler {
       logger.debug("🚀 ~ prolongate ~ interval:", interval);
 
       const ordersToProducts =
-        await this.service.ecommerceModule.ordersToProducts.find({
+        await this.service.modules.ecommerce.ordersToProducts.find({
           params: {
             filters: {
               and: [
@@ -201,7 +200,7 @@ export class Handler {
         throw new Error("Not Found error. No orders to products found");
       }
 
-      const orders = await this.service.ecommerceModule.order.find({
+      const orders = await this.service.modules.ecommerce.order.find({
         params: {
           filters: {
             and: [
@@ -226,7 +225,7 @@ export class Handler {
 
       for (const order of orders) {
         const ordersToBillingModulePaymentIntents =
-          await this.service.ecommerceModule.ordersToBillingModulePaymentIntents.find(
+          await this.service.modules.ecommerce.order.ordersToBillingModulePaymentIntents.find(
             {
               params: {
                 filters: {
@@ -256,7 +255,7 @@ export class Handler {
           ordersToBillingModulePaymentIntents[0].billingModulePaymentIntentId;
 
         const paymentIntent =
-          await this.service.billingModule.paymentIntent.findById({
+          await this.service.modules.ecommerce.order.paymentIntent.findById({
             id: paymentIntentId,
           });
 
@@ -265,7 +264,7 @@ export class Handler {
         }
 
         const paymentIntentsToInvoices =
-          await this.service.billingModule.paymentIntentsToInvoices.find({
+          await this.service.modules.billing.paymentIntentsToInvoices.find({
             params: {
               filters: {
                 and: [
@@ -283,7 +282,7 @@ export class Handler {
           continue;
         }
 
-        const invoices = await this.service.billingModule.invoice.find({
+        const invoices = await this.service.modules.billing.invoice.find({
           params: {
             filters: {
               and: [
@@ -391,7 +390,7 @@ export class Handler {
           // });
 
           const ecommerceOrdersToBillingModuleCurrencies =
-            await this.service.ecommerceModule.ordersToBillingModuleCurrencies.find(
+            await this.service.modules.ecommerce.ordersToBillingModuleCurrencies.find(
               {
                 params: {
                   filters: {

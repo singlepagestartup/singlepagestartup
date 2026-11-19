@@ -1,14 +1,42 @@
 /** @jest-environment jsdom */
 import { render, screen } from "@testing-library/react";
+import type { ReactNode } from "react";
+import type { IProps as ISubjectClientProps } from "@sps/rbac/models/subject/sdk/client";
+import type { IModel as ISubject } from "@sps/rbac/models/subject/sdk/model";
+import type { IModel as IRole } from "@sps/rbac/models/role/sdk/model";
+import type { IModel as ISubjectRole } from "@sps/rbac/relations/subjects-to-roles/sdk/model";
+import type { Component as Subject } from "@sps/rbac/models/subject/frontend/component";
+import type { IFindProps } from "@sps/shared-frontend-api";
+
+type ISubjectFixture = Pick<ISubject, "id">;
+type IRoleFixture = Pick<IRole, "id" | "slug">;
+type ISubjectRoleFixture = Pick<ISubjectRole, "subjectId" | "roleId">;
+type IAuthorizationProps = Extract<
+  Parameters<typeof Subject>[0],
+  { variant: "authentication-is-authorized-wrapper-default" }
+>;
+
+interface ISubjectReaderProps {
+  variant: "authentication-me-default";
+  children: (result: {
+    data: ISubjectFixture | undefined;
+    authenticated: boolean;
+  }) => ReactNode;
+}
+
+interface IFixtureReaderProps<T> {
+  apiProps?: { params?: IFindProps["params"] };
+  children: (result: { data: T[] }) => ReactNode;
+}
 
 jest.mock("client-only", () => ({}), { virtual: true });
 const mockSubjectReader = jest.fn();
 const mockRoleReader = jest.fn();
 const mockSubjectRoleReader = jest.fn();
-let mockSubject: { id: string } | undefined;
+let mockSubject: ISubjectFixture | undefined;
 let mockAuthenticated = true;
-let mockSubjectRoles: { subjectId: string; roleId: string }[];
-let mockRoles: { id: string; slug: string }[];
+let mockSubjectRoles: ISubjectRoleFixture[];
+let mockRoles: IRoleFixture[];
 let mockAuthorizedSubjects: Set<string>;
 const mockAuthorization = jest.fn();
 const mockAdminContent = jest.fn();
@@ -18,10 +46,13 @@ jest.mock("@sps/rbac/models/subject/sdk/model", () => ({
 }));
 jest.mock("@sps/rbac/models/subject/sdk/client", () => ({
   api: {
-    authenticationIsAuthorized: (props: any) => {
+    authenticationIsAuthorized: (
+      props: ISubjectClientProps["IAuthenticationIsAuthorizedProps"],
+    ) => {
       mockAuthorization(props);
-      const subjectId = props.reactQueryOptions.queryKey[1];
-      const authorized = mockAuthorizedSubjects.has(subjectId);
+      const subjectId = props.reactQueryOptions?.queryKey?.[1];
+      const authorized =
+        typeof subjectId === "string" && mockAuthorizedSubjects.has(subjectId);
       return {
         data: authorized ? { ok: true } : undefined,
         isError: !authorized,
@@ -31,7 +62,7 @@ jest.mock("@sps/rbac/models/subject/sdk/client", () => ({
 }));
 
 jest.mock("@sps/rbac/models/subject/frontend/component", () => ({
-  Component: (props: any) => {
+  Component: (props: ISubjectReaderProps | IAuthorizationProps) => {
     if (props.variant === "authentication-is-authorized-wrapper-default") {
       const Authorized = jest.requireActual(
         "../../../../../libs/modules/rbac/models/subject/frontend/component/src/lib/singlepage/authentication/is-authorized-wrapper-default/client",
@@ -46,11 +77,11 @@ jest.mock("@sps/rbac/models/subject/frontend/component", () => ({
   },
 }));
 jest.mock("@sps/rbac/relations/subjects-to-roles/frontend/component", () => ({
-  Component: (props: any) => {
+  Component: (props: IFixtureReaderProps<ISubjectRoleFixture>) => {
     mockSubjectRoleReader(props);
-    const subjectId = props.apiProps.params.filters.and.find(
-      (filter: any) => filter.column === "subjectId",
-    ).value;
+    const subjectId = props.apiProps?.params?.filters?.and?.find(
+      (filter) => filter.column === "subjectId",
+    )?.value;
     return props.children({
       data: mockSubjectRoles.filter(
         (relation) => relation.subjectId === subjectId,
@@ -59,11 +90,12 @@ jest.mock("@sps/rbac/relations/subjects-to-roles/frontend/component", () => ({
   },
 }));
 jest.mock("@sps/rbac/models/role/frontend/component", () => ({
-  Component: (props: any) => {
+  Component: (props: IFixtureReaderProps<IRoleFixture>) => {
     mockRoleReader(props);
-    const filters = props.apiProps?.params.filters.and ?? [];
-    const ids = filters.find((filter: any) => filter.column === "id")?.value;
-    const slug = filters.find((filter: any) => filter.column === "slug")?.value;
+    const filters = props.apiProps?.params?.filters?.and ?? [];
+    const idFilter = filters.find((filter) => filter.column === "id")?.value;
+    const ids = Array.isArray(idFilter) ? idFilter : undefined;
+    const slug = filters.find((filter) => filter.column === "slug")?.value;
     return props.children({
       data: mockRoles.filter(
         (role) =>

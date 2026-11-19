@@ -34,7 +34,7 @@ function getStringValue(value: unknown) {
   return typeof value === "string" ? value : undefined;
 }
 
-function getId(record: Record<string, any> | undefined) {
+function getId(record: Record<string, unknown> | undefined) {
   return getStringValue(record?.id);
 }
 
@@ -118,7 +118,9 @@ async function findById(props: {
 }
 
 async function resolveExternalWidget(props: {
-  externalWidgetRelation: Record<string, any>;
+  externalWidgetRelation: NonNullable<
+    IHostGraphCandidate["externalWidgetRelation"]
+  >;
   registry?: IContentEntityDescriptor[];
   authHeaders: Record<string, string>;
 }) {
@@ -203,15 +205,11 @@ async function findNestedWebsiteWidgets(props: {
   );
 }
 
-function summarizeCandidate(props: {
-  page: Record<string, any>;
-  pageWidget: Record<string, any>;
-  hostWidget?: Record<string, any>;
-  externalWidgetRelation?: Record<string, any>;
-  externalSelector?: IHostGraphCandidate["externalSelector"];
-  externalWidget?: Record<string, any>;
-  language: string;
-}): IHostGraphCandidate {
+function summarizeCandidate(
+  props: Omit<IHostGraphCandidate, "id" | "summary" | "composition"> & {
+    language: string;
+  },
+): IHostGraphCandidate {
   const externalWidgetId =
     getId(props.externalWidget) ??
     getStringValue(props.externalWidgetRelation?.externalWidgetId);
@@ -483,13 +481,15 @@ export async function resolveHostGraph(
           language: parsed.data.language,
         }),
       );
+      const externalWidgetId = getId(externalWidget?.widget);
       if (
-        externalWidget?.widget?.id &&
+        externalWidget?.widget &&
+        externalWidgetId &&
         externalWidget.selector.module !== "website-builder"
       ) {
         const nested = await findNestedWebsiteWidgets({
           module: externalWidget.selector.module,
-          widgetId: externalWidget.widget.id,
+          widgetId: externalWidgetId,
           registry,
           authHeaders,
         });

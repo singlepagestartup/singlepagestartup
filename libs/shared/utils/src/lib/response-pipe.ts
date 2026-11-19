@@ -116,7 +116,7 @@ async function util<T>(props: {
 }): Promise<T | undefined> {
   if (!props.res.ok) {
     let errorJson;
-    let errorMessages: string[] = [];
+    const errorMessages: string[] = [];
     let causes: { message: string; stack?: string }[] = [];
 
     try {

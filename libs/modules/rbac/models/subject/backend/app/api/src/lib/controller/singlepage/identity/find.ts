@@ -28,8 +28,8 @@ export class Handler {
       const params = c.req.query();
       const parsedQuery = QueryString.parse(params);
 
-      const subjectsToIdentities = await this.service.subjectsToIdentities.find(
-        {
+      const subjectsToIdentities =
+        await this.service.module.subjectsToIdentities.find({
           params: {
             filters: {
               and: [
@@ -41,8 +41,7 @@ export class Handler {
               ],
             },
           },
-        },
-      );
+        });
 
       if (!subjectsToIdentities) {
         throw new Error("Not Found error. No subjects to identities found");
@@ -50,7 +49,7 @@ export class Handler {
 
       const queryFilters = parsedQuery.filters?.["and"] || [];
 
-      const identities = await this.service.identity.find({
+      const identities = await this.service.module.identity.find({
         params: {
           filters: {
             and: [
@@ -74,7 +73,7 @@ export class Handler {
       return c.json({
         data: applyOutputSchema({
           c,
-          service: this.service.identity,
+          service: this.service.module.identity,
           data: identities,
         }),
       });

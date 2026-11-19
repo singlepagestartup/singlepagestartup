@@ -1,11 +1,3 @@
-/**
- * BDD Suite: owner-scoped profile MCP catalog endpoint.
- *
- * Given: route middleware has established that the subject owns the profile.
- * When: the profile MCP descriptor endpoint is requested.
- * Then: configured identifiers and the owner bearer are resolved through RBAC service.
- */
-
 const sign = jest
   .fn()
   .mockResolvedValue("server-signed-rbac-subject-authentication-jwt");
@@ -40,22 +32,6 @@ describe("owner-scoped profile MCP catalog endpoint", () => {
       stale: ["retired-server"],
     };
     const service = {
-      socialModule: {
-        profile: {
-          findById: jest.fn().mockResolvedValue({
-            id: "profile-1",
-            allowedMcpServerIds: ["singlepagestartup", "retired-server"],
-          }),
-        },
-      },
-      subjectsToSocialModuleProfiles: {
-        find: jest.fn().mockResolvedValue([
-          {
-            subjectId: "rbac-subject-1",
-            socialModuleProfileId: "profile-1",
-          },
-        ]),
-      },
       findById: jest.fn().mockResolvedValue({
         id: "rbac-subject-1",
         slug: "rbac.subject",
@@ -63,6 +39,26 @@ describe("owner-scoped profile MCP catalog endpoint", () => {
       socialModuleProfileMcpCatalogOpen: jest
         .fn()
         .mockResolvedValue({ catalog, close }),
+      modules: {
+        social: {
+          profile: {
+            findById: jest.fn().mockResolvedValue({
+              id: "profile-1",
+              allowedMcpServerIds: ["singlepagestartup", "retired-server"],
+            }),
+          },
+        },
+      },
+      module: {
+        subjectsToSocialModuleProfiles: {
+          find: jest.fn().mockResolvedValue([
+            {
+              subjectId: "rbac-subject-1",
+              socialModuleProfileId: "profile-1",
+            },
+          ]),
+        },
+      },
     } as any;
     const context = {
       req: {
@@ -99,24 +95,28 @@ describe("owner-scoped profile MCP catalog endpoint", () => {
    */
   it("fails closed unless the profile has exactly one rbac.subject", async () => {
     const service = {
-      socialModule: {
-        profile: {
-          findById: jest.fn().mockResolvedValue({
-            id: "profile-1",
-            allowedMcpServerIds: ["singlepagestartup"],
-          }),
-        },
-      },
-      subjectsToSocialModuleProfiles: {
-        find: jest
-          .fn()
-          .mockResolvedValue([
-            { subjectId: "rbac.subject-1" },
-            { subjectId: "rbac.subject-2" },
-          ]),
-      },
       findById: jest.fn(),
       socialModuleProfileMcpCatalogOpen: jest.fn(),
+      modules: {
+        social: {
+          profile: {
+            findById: jest.fn().mockResolvedValue({
+              id: "profile-1",
+              allowedMcpServerIds: ["singlepagestartup"],
+            }),
+          },
+        },
+      },
+      module: {
+        subjectsToSocialModuleProfiles: {
+          find: jest
+            .fn()
+            .mockResolvedValue([
+              { subjectId: "rbac.subject-1" },
+              { subjectId: "rbac.subject-2" },
+            ]),
+        },
+      },
     } as any;
     const context = {
       req: {

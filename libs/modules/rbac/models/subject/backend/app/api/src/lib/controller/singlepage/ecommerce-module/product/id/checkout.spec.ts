@@ -17,42 +17,48 @@ function fixture() {
   const offer = { id: "offer-a", productId: "product", storeId: "store-a" };
   const service: any = {
     findById: jest.fn().mockResolvedValue({ id: "subject" }),
-    subjectsToIdentities: {
-      find: jest.fn().mockResolvedValue([{ identityId: "identity" }]),
-    },
-    billingModule: {
-      paymentIntent: { isProviderAllowed: jest.fn().mockReturnValue(true) },
-      currency: {
-        find: jest.fn().mockResolvedValue([{ id: "rub" }]),
-        findById: jest
-          .fn()
-          .mockResolvedValue({ id: "rub", slug: "rub", minorUnitDigits: 2 }),
-      },
-    },
-    ecommerceModule: {
-      product: {
-        findById: jest
-          .fn()
-          .mockResolvedValue({ id: "product", slug: "course" }),
-      },
-      storesToProducts: {
-        find: jest.fn().mockResolvedValue([]),
-        offersForProduct: jest.fn().mockResolvedValue([offer]),
-        quote: jest.fn(async (input: any) => ({
-          ...input,
-          amount: "5000",
-          currencyIds: ["rub"],
-          issues: [],
-          version: "terms-1",
-        })),
-      },
-    },
     ecommerceModuleOrderCreate: jest
       .fn()
       .mockResolvedValue({ orderId: "created-order", lineId: "created-line" }),
     ecommerceOrderCheckout: jest
       .fn()
       .mockResolvedValue({ billingModule: { invoices: [] } }),
+    module: {
+      subjectsToIdentities: {
+        find: jest.fn().mockResolvedValue([{ identityId: "identity" }]),
+      },
+    },
+    modules: {
+      ecommerce: {
+        product: {
+          findById: jest
+            .fn()
+            .mockResolvedValue({ id: "product", slug: "course" }),
+        },
+        storesToProducts: {
+          find: jest.fn().mockResolvedValue([]),
+          offersForProduct: jest.fn().mockResolvedValue([offer]),
+          quote: jest.fn(async (input: any) => ({
+            ...input,
+            amount: "5000",
+            currencyIds: ["rub"],
+            issues: [],
+            version: "terms-1",
+          })),
+        },
+        order: {
+          paymentIntent: { isProviderAllowed: jest.fn().mockReturnValue(true) },
+        },
+      },
+      billing: {
+        currency: {
+          find: jest.fn().mockResolvedValue([{ id: "rub" }]),
+          findById: jest
+            .fn()
+            .mockResolvedValue({ id: "rub", slug: "rub", minorUnitDigits: 2 }),
+        },
+      },
+    },
   };
   service.ecommerceProductCheckout = (props: any) =>
     new ProductCheckout(service).execute(props);
@@ -89,7 +95,7 @@ it("resolves one eligible Product-only offer and delegates an atomic graph with 
 });
 it("rejects a configured registration grant before one-step checkout creates an order", async () => {
   const f = fixture();
-  f.service.ecommerceModule.storesToProducts.find.mockResolvedValue([
+  f.service.modules.ecommerce.storesToProducts.find.mockResolvedValue([
     { ...f.offer, settings: { initialGrant: true } },
   ]);
   await expect(
@@ -100,7 +106,7 @@ it("rejects a configured registration grant before one-step checkout creates an 
 });
 it("rejects ambiguous Product-only checkout before creating an Order", async () => {
   const f = fixture();
-  f.service.ecommerceModule.storesToProducts.offersForProduct.mockResolvedValue(
+  f.service.modules.ecommerce.storesToProducts.offersForProduct.mockResolvedValue(
     [f.offer, { ...f.offer, id: "offer-b" }],
   );
   await expect(
@@ -110,7 +116,7 @@ it("rejects ambiguous Product-only checkout before creating an Order", async () 
 });
 it("honors an explicitly selected offer when several stores sell one Product", async () => {
   const f = fixture();
-  f.service.ecommerceModule.storesToProducts.offersForProduct.mockResolvedValue(
+  f.service.modules.ecommerce.storesToProducts.offersForProduct.mockResolvedValue(
     [f.offer, { ...f.offer, id: "offer-b", storeId: "store-b" }],
   );
   await new Handler(f.service).execute(
@@ -127,7 +133,7 @@ it("honors an explicitly selected offer when several stores sell one Product", a
 });
 it("sends incomplete delivery selection to the cart without creating an unusable checkout Order", async () => {
   const f = fixture();
-  f.service.ecommerceModule.storesToProducts.quote.mockResolvedValue({
+  f.service.modules.ecommerce.storesToProducts.quote.mockResolvedValue({
     amount: null,
     currencyIds: ["rub"],
     issues: [{ code: "delivery_required", message: "Choose delivery" }],
@@ -139,7 +145,7 @@ it("sends incomplete delivery selection to the cart without creating an unusable
 });
 it("requires an anonymous receipt email before creating the Order", async () => {
   const f = fixture();
-  f.service.subjectsToIdentities.find.mockResolvedValue([]);
+  f.service.module.subjectsToIdentities.find.mockResolvedValue([]);
   await expect(
     new Handler(f.service).execute(f.context(), undefined),
   ).rejects.toThrow("Email is required");
@@ -160,7 +166,7 @@ it("passes receipt email and provider to the owning checkout after offer creatio
 });
 it("permits Telegram Star checkout without a receipt Identity", async () => {
   const f = fixture();
-  f.service.subjectsToIdentities.find.mockResolvedValue([]);
+  f.service.module.subjectsToIdentities.find.mockResolvedValue([]);
   await new Handler(f.service).execute(
     f.context({ provider: "telegram-star" }),
     undefined,
@@ -188,15 +194,15 @@ it("re-quotes and creates exactly the configured item and services, then checks 
     email: "buyer@example.test",
   };
   await new Handler(f.service).execute(f.context(configured), undefined);
-  expect(f.service.ecommerceModule.storesToProducts.quote).toHaveBeenCalledWith(
-    {
-      offerId: configured.offerId,
-      quantity: configured.quantity,
-      currencyId: "rub",
-      destination: configured.destination,
-      services: configured.services,
-    },
-  );
+  expect(
+    f.service.modules.ecommerce.storesToProducts.quote,
+  ).toHaveBeenCalledWith({
+    offerId: configured.offerId,
+    quantity: configured.quantity,
+    currencyId: "rub",
+    destination: configured.destination,
+    services: configured.services,
+  });
   expect(f.service.ecommerceModuleOrderCreate).toHaveBeenCalledTimes(1);
   expect(f.service.ecommerceModuleOrderCreate).toHaveBeenCalledWith({
     subjectId: "subject",
@@ -252,7 +258,7 @@ it.each([
       new Handler(f.service).execute(f.context(data), undefined),
     ).rejects.toThrow("Invalid product purchase selection");
     expect(
-      f.service.ecommerceModule.storesToProducts.quote,
+      f.service.modules.ecommerce.storesToProducts.quote,
     ).not.toHaveBeenCalled();
     expect(f.service.ecommerceModuleOrderCreate).not.toHaveBeenCalled();
   },
@@ -275,7 +281,7 @@ it("preserves the same-offer cart duplicate guard and never checks out the exist
 
 it("rejects a disabled provider before creating any cart graph and allows a corrected retry", async () => {
   const f = fixture();
-  f.service.billingModule.paymentIntent.isProviderAllowed.mockReturnValueOnce(
+  f.service.modules.ecommerce.order.paymentIntent.isProviderAllowed.mockReturnValueOnce(
     false,
   );
   await expect(
@@ -294,7 +300,7 @@ it("rejects a disabled provider before creating any cart graph and allows a corr
 
 it("rejects incompatible provider/currency precision before creating any order", async () => {
   const f = fixture();
-  f.service.billingModule.currency.findById.mockResolvedValue({
+  f.service.modules.billing.currency.findById.mockResolvedValue({
     id: "rub",
     slug: "custom",
     minorUnitDigits: 8,

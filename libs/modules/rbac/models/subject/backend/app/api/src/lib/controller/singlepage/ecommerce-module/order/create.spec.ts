@@ -56,33 +56,41 @@ function fixture() {
       .fn()
       .mockResolvedValue(false),
     findById: jest.fn().mockResolvedValue({ id: "subject" }),
-    billingModule: {
-      currency: { find: jest.fn().mockResolvedValue([{ id: "currency-rub" }]) },
-    },
     ecommerceModuleFindOpenCartOrderWithProduct: jest
       .fn()
       .mockResolvedValue(null),
     ecommerceModuleCartQuote: jest.fn(
       async ({ preparedQuotes }) => preparedQuotes,
     ),
-    subjectsToEcommerceModuleOrders: { create: writes.owner },
-    ecommerceModule: {
-      ordersToBillingModulePaymentIntents: { lockOffers: jest.fn() },
-      product: {
-        findById: jest
-          .fn()
-          .mockResolvedValue({ id: "product", slug: "wardrobe" }),
+    module: {
+      subjectsToEcommerceModuleOrders: { create: writes.owner },
+    },
+    modules: {
+      ecommerce: {
+        product: {
+          findById: jest
+            .fn()
+            .mockResolvedValue({ id: "product", slug: "wardrobe" }),
+        },
+        storesToProducts: {
+          offersForProduct: jest.fn().mockResolvedValue([offer]),
+          quote,
+          findById: jest.fn(),
+          quotesUnderLock: async (_inputs: any[], previews: any[]) => previews,
+        },
+        ordersToProducts: { create: writes.line },
+        storesToOrders: { create: writes.store },
+        ordersToBillingModuleCurrencies: { create: writes.currency },
+        order: {
+          create: writes.order,
+          ordersToBillingModulePaymentIntents: { lockOffers: jest.fn() },
+        },
       },
-      storesToProducts: {
-        offersForProduct: jest.fn().mockResolvedValue([offer]),
-        quote,
-        findById: jest.fn(),
-        quotesUnderLock: async (_inputs: any[], previews: any[]) => previews,
+      billing: {
+        currency: {
+          find: jest.fn().mockResolvedValue([{ id: "currency-rub" }]),
+        },
       },
-      order: { create: writes.order },
-      ordersToProducts: { create: writes.line },
-      storesToOrders: { create: writes.store },
-      ordersToBillingModuleCurrencies: { create: writes.currency },
     },
   };
   service.ecommerceModuleOrderCreate = (props: any) =>
@@ -134,7 +142,7 @@ it("stores the exact offer and its owning store instead of an unrelated default 
 });
 it("rejects an ambiguous legacy add until the buyer chooses an offer", async () => {
   const f = fixture();
-  f.service.ecommerceModule.storesToProducts.offersForProduct.mockResolvedValue(
+  f.service.modules.ecommerce.storesToProducts.offersForProduct.mockResolvedValue(
     [f.offer, { ...f.offer, id: "offer-b" }],
   );
   await expect(
@@ -245,7 +253,7 @@ it.each([
       value: async (inputs: any[]) =>
         Promise.all(inputs.map((input) => calculate.execute(input))),
     });
-    f.service.ecommerceModule.storesToProducts.quotesUnderLock =
+    f.service.modules.ecommerce.storesToProducts.quotesUnderLock =
       quotes.quotesUnderLock.bind(quotes);
     f.quote.mockImplementation((input) => quotes.quote(input));
     await new Handler(f.service).execute(f.context({ destination }), undefined);
@@ -470,7 +478,7 @@ it("stores exactly the quoted destination, quantity, currency and selected servi
         ],
       }) as any,
   );
-  f.service.ecommerceModule.storesToProducts.findById.mockResolvedValue({
+  f.service.modules.ecommerce.storesToProducts.findById.mockResolvedValue({
     id: serviceId,
     productId: "delivery-product",
   });
@@ -552,7 +560,7 @@ it("rejects a malformed quote version instead of silently discarding it", async 
 
 it("leaves the graph untouched when locked quote validation detects changed terms", async () => {
   const f = fixture();
-  f.service.ecommerceModule.storesToProducts.quotesUnderLock = jest
+  f.service.modules.ecommerce.storesToProducts.quotesUnderLock = jest
     .fn()
     .mockRejectedValue(new Error("Conflict error. Offer conditions changed"));
   await expect(
@@ -574,10 +582,11 @@ it("checks page-accepted terms again through the real locked-quote comparison be
   const quotes: OfferQuotes = Object.create(OfferQuotes.prototype);
   const calculate = jest.fn(async () => [current]);
   Object.defineProperty(quotes, "calculateMany", { value: calculate });
-  f.service.ecommerceModule.storesToProducts.quote = quotes.quote.bind(quotes);
-  f.service.ecommerceModule.storesToProducts.quotesUnderLock =
+  f.service.modules.ecommerce.storesToProducts.quote =
+    quotes.quote.bind(quotes);
+  f.service.modules.ecommerce.storesToProducts.quotesUnderLock =
     quotes.quotesUnderLock.bind(quotes);
-  f.service.ecommerceModule.ordersToBillingModulePaymentIntents.lockOffers.mockImplementation(
+  f.service.modules.ecommerce.order.ordersToBillingModulePaymentIntents.lockOffers.mockImplementation(
     async () => {
       current = { ...current, version: "terms-2" };
     },

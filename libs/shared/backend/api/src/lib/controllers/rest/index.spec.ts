@@ -7,6 +7,7 @@
  *       numeric data, and no dump route is exposed over HTTP at all.
  */
 
+import { Composer, type Context, type NextFunction } from "grammy";
 import { Controller } from ".";
 import { Handler as CountHandler } from "./handler/count";
 import { type IController } from "../interface";
@@ -150,5 +151,37 @@ describe("REST Controller", () => {
     ]);
 
     expect(findRoute(controller, "/")?.middlewares).toEqual([own]);
+  });
+
+  it("binds Telegram functions to the controller and preserves middleware objects", async () => {
+    class TelegramController extends Controller<Record<string, unknown>> {
+      constructor(
+        routes: IController<Record<string, unknown>>["telegramRoutes"],
+      ) {
+        super(createService());
+        this.bindTelegramRoutes(routes);
+      }
+    }
+
+    const functionHandler = jest.fn((_context: Context, next: NextFunction) =>
+      next(),
+    );
+    const nestedHandler = jest.fn();
+    const middlewareObject = { middleware: jest.fn(() => nestedHandler) };
+    const controller = new TelegramController([
+      { path: "/command", handler: functionHandler },
+      { path: "/reply", handler: middlewareObject },
+    ]);
+    const composer = new Composer(
+      ...controller.telegramRoutes.map(({ handler }) => handler),
+    );
+    const context = {} as Context;
+
+    await composer.middleware()(context, jest.fn());
+
+    expect(functionHandler.mock.contexts[0]).toBe(controller);
+    expect(controller.telegramRoutes[1].handler).toBe(middlewareObject);
+    expect(middlewareObject.middleware.mock.contexts[0]).toBe(middlewareObject);
+    expect(nestedHandler).toHaveBeenCalledWith(context, expect.anything());
   });
 });

@@ -6,7 +6,7 @@ import { api as socialModuleProfileApi } from "@sps/social/models/profile/sdk/se
 import { IModel as ISocialModuleProfile } from "@sps/social/models/profile/sdk/model";
 import { api as socialModuleProfilesToChatsApi } from "@sps/social/relations/profiles-to-chats/sdk/server";
 import { RBAC_SECRET_KEY } from "@sps/shared-utils";
-import type { ISocialModule } from "../../../../../di";
+import type { SubjectServiceDependencies } from "../../../index";
 
 export interface IExecuteProps {
   ownerRbacSubject: IRbacSubject;
@@ -28,7 +28,10 @@ type IFindSubjects = (props?: any) => Promise<IRbacSubject[] | null>;
 
 export interface IConstructorProps {
   findSubjects: IFindSubjects;
-  socialModule: ISocialModule;
+  social: Pick<
+    SubjectServiceDependencies["modules"]["social"],
+    "profile" | "profilesToChats"
+  >;
   subjectsToSocialModuleProfiles: SubjectsToSocialModuleProfilesService;
   ensureKnowledgeAccess: (props: {
     ownerRbacSubjectId: string;
@@ -38,13 +41,16 @@ export interface IConstructorProps {
 
 export class Service {
   protected findSubjects: IFindSubjects;
-  protected socialModule: ISocialModule;
+  protected social: Pick<
+    SubjectServiceDependencies["modules"]["social"],
+    "profile" | "profilesToChats"
+  >;
   protected subjectsToSocialModuleProfiles: SubjectsToSocialModuleProfilesService;
   protected ensureKnowledgeAccess: IConstructorProps["ensureKnowledgeAccess"];
 
   constructor(props: IConstructorProps) {
     this.findSubjects = props.findSubjects;
-    this.socialModule = props.socialModule;
+    this.social = props.social;
     this.subjectsToSocialModuleProfiles = props.subjectsToSocialModuleProfiles;
     this.ensureKnowledgeAccess = props.ensureKnowledgeAccess;
   }
@@ -136,7 +142,7 @@ export class Service {
   }
 
   protected async findAgentProfile(slug: string) {
-    const profiles = await this.socialModule.profile.find({
+    const profiles = await this.social.profile.find({
       params: {
         filters: {
           and: [
@@ -268,7 +274,7 @@ export class Service {
     relationVariant: string;
   }) {
     const relations = this.sortByCreatedAt(
-      (await this.socialModule.profilesToChats.find({
+      (await this.social.profilesToChats.find({
         params: {
           filters: {
             and: [

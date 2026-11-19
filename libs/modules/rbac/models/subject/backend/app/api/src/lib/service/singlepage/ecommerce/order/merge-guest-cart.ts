@@ -5,7 +5,7 @@ import type { IModel as IOwner } from "@sps/rbac/relations/subjects-to-ecommerce
 import type { IModel as IOrder } from "@sps/ecommerce/models/order/sdk/model";
 import type { IModel as IOrderIntent } from "@sps/ecommerce/relations/orders-to-billing-module-payment-intents/sdk/model";
 import type { IModel as ILine } from "@sps/ecommerce/relations/orders-to-products/sdk/model";
-import type { Service as SubjectService } from "../../index";
+import type { SubjectServiceDependencies } from "../../index";
 
 interface ICart {
   id: string;
@@ -17,13 +17,7 @@ interface ICart {
 
 export class Service {
   constructor(
-    private readonly service: Pick<
-      SubjectService,
-      | "repository"
-      | "subjectsToIdentities"
-      | "subjectsToEcommerceModuleOrders"
-      | "ecommerceModule"
-    >,
+    private readonly service: SubjectServiceDependencies<"repository">,
   ) {}
 
   async execute({
@@ -64,7 +58,7 @@ export class Service {
         ) {
           return;
         }
-        const identities = await this.service.subjectsToIdentities.find({
+        const identities = await this.service.module.subjectsToIdentities.find({
           params: {
             filters: {
               and: [{ column: "subjectId", method: "eq", value: guestId }],
@@ -85,7 +79,8 @@ export class Service {
     guestId: string,
     subjectId: string,
   ): Promise<ICart[]> {
-    const { ecommerceModule, subjectsToEcommerceModuleOrders } = this.service;
+    const { ecommerce } = this.service.modules;
+    const { subjectsToEcommerceModuleOrders } = this.service.module;
     const links = await subjectsToEcommerceModuleOrders.find({
       params: {
         filters: {
@@ -110,12 +105,12 @@ export class Service {
       return [];
     }
     for (const id of ids) {
-      await ecommerceModule.order.lockForLifecycle({ id });
+      await ecommerce.order.lockForLifecycle({ id });
     }
     const byOrder = {
       params: {
         filters: {
-          and: [{ column: "orderId", method: "inArray", value: ids }],
+          and: [{ column: "orderId", method: "inArray" as const, value: ids }],
         },
       },
     };
@@ -124,14 +119,18 @@ export class Service {
       params: {
         filters: {
           and: [
-            { column: "ecommerceModuleOrderId", method: "inArray", value: ids },
+            {
+              column: "ecommerceModuleOrderId",
+              method: "inArray" as const,
+              value: ids,
+            },
           ],
         },
       },
     });
     const payments: IOrderIntent[] =
-      await ecommerceModule.ordersToBillingModulePaymentIntents.find(byOrder);
-    const lines: ILine[] = await ecommerceModule.ordersToProducts.find(byOrder);
+      await ecommerce.order.ordersToBillingModulePaymentIntents.find(byOrder);
+    const lines: ILine[] = await ecommerce.ordersToProducts.find(byOrder);
     const carts: ICart[] = [];
     for (const order of orders) {
       const orderOwners = owners.filter(
@@ -161,11 +160,11 @@ export class Service {
   }
 
   private findOpenOrders(ids: string[]): Promise<IOrder[]> {
-    return this.service.ecommerceModule.order.find({
+    return this.service.modules.ecommerce.order.find({
       params: {
         filters: {
           and: [
-            { column: "id", method: "inArray", value: ids },
+            { column: "id", method: "inArray" as const, value: ids },
             { column: "type", method: "eq", value: "cart" },
             { column: "status", method: "eq", value: "new" },
           ],
@@ -175,7 +174,8 @@ export class Service {
   }
 
   private async merge(carts: ICart[], subjectId: string) {
-    const { ecommerceModule, subjectsToEcommerceModuleOrders } = this.service;
+    const { ecommerce } = this.service.modules;
+    const { subjectsToEcommerceModuleOrders } = this.service.module;
     // Leave a guest order intact if an overlapping account order is already in
     // payment or shared. Its lines, store and currency must stay together.
     const protectedProducts = new Set(
@@ -260,10 +260,10 @@ export class Service {
           Number(Boolean(left.parentLineId)),
       );
       for (const line of removed) {
-        await ecommerceModule.ordersToProducts.delete({ id: line.id });
+        await ecommerce.ordersToProducts.delete({ id: line.id });
       }
       if (!retained) {
-        await ecommerceModule.order.delete({ id: cart.id });
+        await ecommerce.order.delete({ id: cart.id });
       } else if (cart.guest) {
         const owner = await subjectsToEcommerceModuleOrders.update({
           id: cart.owner.id,

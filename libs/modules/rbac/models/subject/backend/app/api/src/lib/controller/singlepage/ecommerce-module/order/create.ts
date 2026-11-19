@@ -74,7 +74,7 @@ export class Handler {
       }
 
       const productId = data["productId"];
-      const product = await this.service.ecommerceModule.product.findById({
+      const product = await this.service.modules.ecommerce.product.findById({
         id: productId,
       });
       if (!product) {

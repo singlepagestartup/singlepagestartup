@@ -12,9 +12,11 @@ function setup(links: any[]) {
     relationFind,
     profileFind,
     service: new Service({
-      socialModule: {
-        profilesToChats: { find: relationFind },
-        profile: { find: profileFind },
+      modules: {
+        social: {
+          profilesToChats: { find: relationFind },
+          profile: { find: profileFind },
+        },
       },
     } as any),
   };

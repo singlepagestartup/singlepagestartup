@@ -43,19 +43,20 @@ export class Handler {
       const entity = await this.service.update({ id: uuid, data });
 
       if (data.ordersToProducts) {
-        const ordersToProducts = await this.service.ordersToProducts.find({
-          params: {
-            filters: {
-              and: [
-                {
-                  column: "orderId",
-                  method: "eq",
-                  value: uuid,
-                },
-              ],
+        const ordersToProducts =
+          await this.service.module.ordersToProducts.find({
+            params: {
+              filters: {
+                and: [
+                  {
+                    column: "orderId",
+                    method: "eq",
+                    value: uuid,
+                  },
+                ],
+              },
             },
-          },
-        });
+          });
 
         if (!ordersToProducts?.length) {
           throw new Error("Not Found error. No orders to products found");
@@ -119,7 +120,7 @@ export class Handler {
       ["paying", "canceling", "canceled"].includes(previousEntity.status)
     ) {
       const ordersToBillingModuleCurrencies =
-        await this.service.ordersToBillingModuleCurrencies.find({
+        await this.service.module.ordersToBillingModuleCurrencies.find({
           params: {
             filters: {
               and: [
@@ -139,21 +140,22 @@ export class Handler {
         );
       }
 
-      const billingCurrencies = await this.service.billingModule.currency.find({
-        params: {
-          filters: {
-            and: [
-              {
-                column: "id",
-                method: "inArray",
-                value: ordersToBillingModuleCurrencies.map(
-                  (order) => order.billingModuleCurrencyId,
-                ),
-              },
-            ],
+      const billingCurrencies =
+        await this.service.modules.billing.currency.find({
+          params: {
+            filters: {
+              and: [
+                {
+                  column: "id",
+                  method: "inArray",
+                  value: ordersToBillingModuleCurrencies.map(
+                    (order) => order.billingModuleCurrencyId,
+                  ),
+                },
+              ],
+            },
           },
-        },
-      });
+        });
 
       if (!billingCurrencies?.length) {
         throw new Error("Not Found error. Billing currencies not found");
@@ -166,7 +168,7 @@ export class Handler {
             ordersToBillingModuleCurrencies[0].billingModuleCurrencyId,
         });
 
-      const ordersToProducts = await this.service.ordersToProducts.find({
+      const ordersToProducts = await this.service.module.ordersToProducts.find({
         params: {
           filters: {
             and: [
@@ -184,7 +186,7 @@ export class Handler {
         throw new Error("Not Found error. Orders to products not found");
       }
 
-      const products = await this.service.product.find({
+      const products = await this.service.module.product.find({
         params: {
           filters: {
             and: [
@@ -205,7 +207,7 @@ export class Handler {
       }
 
       const fileStorageReceiptTemplateFiles =
-        await this.service.fileStorageModule.file.find({
+        await this.service.modules.fileStorage.file.find({
           params: {
             filters: {
               and: [
@@ -283,28 +285,30 @@ export class Handler {
       }
 
       const productsToFileStorageModuleFiles =
-        await this.service.productsToFileStorageModuleFiles.find({
-          params: {
-            filters: {
-              and: [
-                {
-                  column: "productId",
-                  method: "inArray",
-                  value: products.map((products) => products.id),
-                },
-                {
-                  column: "variant",
-                  method: "eq",
-                  value: "attachment-default",
-                },
-              ],
+        await this.service.module.product.module.productsToFileStorageModuleFiles.find(
+          {
+            params: {
+              filters: {
+                and: [
+                  {
+                    column: "productId",
+                    method: "inArray",
+                    value: products.map((products) => products.id),
+                  },
+                  {
+                    column: "variant",
+                    method: "eq",
+                    value: "attachment-default",
+                  },
+                ],
+              },
             },
           },
-        });
+        );
 
       if (productsToFileStorageModuleFiles?.length) {
         const fileStorageModuleFiles =
-          await this.service.fileStorageModule.file.find({
+          await this.service.modules.fileStorage.file.find({
             params: {
               filters: {
                 and: [

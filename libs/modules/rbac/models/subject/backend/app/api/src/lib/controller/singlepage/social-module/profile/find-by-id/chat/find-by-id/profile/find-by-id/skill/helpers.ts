@@ -53,7 +53,7 @@ export async function findProfileSkillIds(props: {
   limit?: number;
   offset?: number;
 }) {
-  const relations = await props.service.socialModule.profilesToSkills.find({
+  const relations = await props.service.modules.social.profilesToSkills.find({
     params: {
       filters: {
         and: [

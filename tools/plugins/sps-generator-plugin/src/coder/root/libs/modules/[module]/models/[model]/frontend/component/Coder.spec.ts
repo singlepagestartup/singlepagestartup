@@ -6,6 +6,9 @@
  * Then: assertions verify expected observable behavior and contracts.
  */
 
+import { readFileSync } from "node:fs";
+import * as path from "node:path";
+import * as ts from "typescript";
 import {
   ImportVariant,
   ExportVariant,
@@ -208,9 +211,6 @@ describe("Component RegexCreator", () => {
 });
 
 it("exports variant-specific public props and replaces the base contract with a startup override", () => {
-  const ts = require("typescript") as typeof import("typescript");
-  const { readFileSync } = require("node:fs") as typeof import("node:fs");
-  const path = require("node:path") as typeof import("node:path");
   const root = path.resolve("/sps-frontend-contract");
   const files = new Map<string, string>([
     [

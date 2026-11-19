@@ -63,9 +63,11 @@ describe("Given: agent ecommerce order check execution", () => {
       },
     ]);
     const handler = new Handler({
-      ecommerceModule: {
-        order: {
-          find: ecommerceModuleOrderFind,
+      modules: {
+        ecommerce: {
+          order: {
+            find: ecommerceModuleOrderFind,
+          },
         },
       },
     } as any);
@@ -132,7 +134,7 @@ describe("Given: agent ecommerce order check execution", () => {
         .filter((order) => !after || order.id > after)
         .slice(0, params.limit);
     });
-    const service = { ecommerceModule: { order: { find } } } as any;
+    const service = { modules: { ecommerce: { order: { find } } } } as any;
     await new Handler(service).execute(createContext(), undefined);
     expect(mockEcommerceOrderCheck).not.toHaveBeenCalledWith(
       expect.objectContaining({ id: failed.at(-1)!.id }),

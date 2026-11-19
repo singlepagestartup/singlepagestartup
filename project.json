@@ -2,6 +2,13 @@
   "name": "@sps/source",
   "$schema": "node_modules/nx/schemas/project-schema.json",
   "targets": {
+    "eslint:workspace": {
+      "executor": "nx:run-commands",
+      "cache": false,
+      "options": {
+        "command": "eslint ."
+      }
+    },
     "studio:list": {
       "executor": "nx:run-commands",
       "options": {

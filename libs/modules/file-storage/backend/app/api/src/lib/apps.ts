@@ -1,13 +1,17 @@
-import { app as file } from "@sps/file-storage/models/file/backend/app/api";
-import { app as widget } from "@sps/file-storage/models/widget/backend/app/api";
-import { app as widgetsToFiles } from "@sps/file-storage/relations/widgets-to-files/backend/app/api";
-import { DefaultApp } from "@sps/shared-backend-api";
+import { serviceBootstrap as file } from "@sps/file-storage/models/file/backend/app/api/src/lib/bootstrap";
+import { serviceBootstrap as widget } from "@sps/file-storage/models/widget/backend/app/api/src/lib/bootstrap";
+import { serviceBootstrap as widgetsToFiles } from "@sps/file-storage/relations/widgets-to-files/backend/app/api/src/lib/bootstrap";
+import {
+  createModuleChildApp,
+  defaultAppAssembly,
+  type IAppAssembly,
+  type IModuleAppEntry,
+} from "@sps/shared-backend-api";
 
 export class Apps {
-  apps: { type: "model" | "relation"; route: string; app: DefaultApp<any> }[] =
-    [];
+  apps: IModuleAppEntry[] = [];
 
-  constructor() {
+  constructor(private readonly assembly: IAppAssembly = defaultAppAssembly) {
     this.bindApps();
   }
 
@@ -15,17 +19,17 @@ export class Apps {
     this.apps.push({
       type: "model",
       route: "/files",
-      app: file,
+      app: createModuleChildApp(file, this.assembly),
     });
     this.apps.push({
       type: "model",
       route: "/widgets",
-      app: widget,
+      app: createModuleChildApp(widget, this.assembly),
     });
     this.apps.push({
       type: "relation",
       route: "/widgets-to-files",
-      app: widgetsToFiles,
+      app: createModuleChildApp(widgetsToFiles, this.assembly),
     });
   }
 }

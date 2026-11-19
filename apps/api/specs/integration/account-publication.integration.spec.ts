@@ -88,7 +88,7 @@ try{
  await create("rbac/subjects-to-social-module-profiles",{subjectId:b.id,socialModuleProfileId:telegram.id});
  assert.equal((await subjectService.socialModuleProfileOwnershipEnsure({subjectId:b.id})).profile.id,telegram.id);
  assert.equal((await profileService.findById({id:telegram.id})).slug,telegram.slug);
- const c=await registered("profile-rollback"),ownProfile=subjectService.socialModule.profile,originalProfileCreate=ownProfile.create;
+ const c=await registered("profile-rollback"),ownProfile=subjectService.modules.social.profile,originalProfileCreate=ownProfile.create;
  ownProfile.create=async function(props){await originalProfileCreate.call(this,props);await this.repository.db.execute(sql.raw("SELECT 1 / 0"));throw Error("SQL failure must abort this real Profile transaction");};
  try{await assert.rejects(()=>subjectService.socialModuleProfileOwnershipEnsure({subjectId:c.id}));}finally{ownProfile.create=originalProfileCreate;}
  assert.equal((await find("social/profiles","slug","subject-"+c.id)).length,0);
@@ -176,7 +176,7 @@ try{
  assert((await publish({...input(randomUUID()),categoryId:randomUUID()})).status>=400);
  // Fail each real insert only after it succeeds; the owning ambient transaction
  // must roll back Article, author, owner and category rows together.
- for(const target of [subjectService.blogModule.article,subjectService.subjectsToBlogModuleArticles,subjectService.socialModule.profilesToBlogModuleArticles,subjectService.blogModule.categoriesToArticles]){
+ for(const target of [subjectService.modules.blog.article,subjectService.module.subjectsToBlogModuleArticles,subjectService.modules.social.profilesToBlogModuleArticles,subjectService.modules.blog.categoriesToArticles]){
   const original=target.create,attempt=input(randomUUID());
   target.create=async function(props){const row=await original.call(this,props);throw Error("Injected failure after actual SQL insert "+row.id);};
   try{assert((await publish(attempt)).status>=400);}finally{target.create=original;}

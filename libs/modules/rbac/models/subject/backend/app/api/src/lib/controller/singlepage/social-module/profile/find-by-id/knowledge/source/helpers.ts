@@ -15,7 +15,7 @@ export async function findProfileKnowledgeSourceRelations(props: {
   service: Service;
   socialModuleProfileId: string;
 }) {
-  return props.service.socialModule.profilesToKnowledgeModuleSources.find({
+  return props.service.modules.social.profilesToKnowledgeModuleSources.find({
     params: {
       filters: {
         and: [
@@ -63,7 +63,7 @@ export async function resolveKnowledgeSourceProfileId(props: {
   }
 
   const [requestingProfileToChat, targetProfileToChat] = await Promise.all([
-    props.service.socialModule.profilesToChats.find({
+    props.service.modules.social.profilesToChats.find({
       params: {
         filters: {
           and: [
@@ -82,7 +82,7 @@ export async function resolveKnowledgeSourceProfileId(props: {
         limit: 1,
       },
     }),
-    props.service.socialModule.profilesToChats.find({
+    props.service.modules.social.profilesToChats.find({
       params: {
         filters: {
           and: [
@@ -150,7 +150,7 @@ export async function assertProfileKnowledgeSourceAccess(props: {
     socialModuleChatId: props.socialModuleChatId,
   });
   const relations =
-    await props.service.socialModule.profilesToKnowledgeModuleSources.find({
+    await props.service.modules.social.profilesToKnowledgeModuleSources.find({
       params: {
         filters: {
           and: [

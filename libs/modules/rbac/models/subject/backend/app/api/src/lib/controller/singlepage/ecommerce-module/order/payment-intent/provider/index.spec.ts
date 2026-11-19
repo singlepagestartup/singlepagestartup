@@ -66,7 +66,7 @@ describe("Given: the payment-intent provider handler", () => {
       claimCheckoutDispatch: jest.fn().mockResolvedValue(true),
       markCheckoutExposed: jest.fn(),
       settleFreePayment: jest.fn(),
-      billingModule: {
+      module: {
         currency: {
           findById: jest.fn().mockResolvedValue({
             id: "currency-1",
@@ -141,7 +141,7 @@ describe("Given: the payment-intent provider handler", () => {
     service.stripe.mockResolvedValue(durable);
     const response = await createPayment({ service, provider: "stripe" });
     expect(response.status).toBe(201);
-    expect(service.billingModule.currency.findById).toHaveBeenCalledWith({
+    expect(service.module.currency.findById).toHaveBeenCalledWith({
       id: "original-currency",
     });
     expect(service.stripe).toHaveBeenCalledWith(

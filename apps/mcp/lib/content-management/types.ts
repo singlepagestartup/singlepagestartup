@@ -34,7 +34,7 @@ export interface IContentSdkOptions {
 }
 
 export interface IContentSdkAdapter<
-  TEntity extends Record<string, any> = Record<string, any>,
+  TEntity extends Record<string, unknown> = Record<string, unknown>,
 > {
   find: (props?: {
     params?: IContentQueryParams;
@@ -89,7 +89,7 @@ export interface IContentFieldDescriptor {
 }
 
 export interface IContentEntityDescriptor<
-  TEntity extends Record<string, any> = Record<string, any>,
+  TEntity extends Record<string, unknown> = Record<string, unknown>,
 > {
   key: IContentEntityKey;
   kind: IContentEntityKind;
@@ -173,28 +173,28 @@ export interface IDeletePreview {
   model?: string;
   relation?: string;
   id: string;
-  record: Record<string, any>;
+  record: Record<string, unknown>;
   confirmationToken: string;
-  relationContext?: Record<string, any>;
+  relationContext?: Record<string, unknown>;
 }
 
 export interface IHostGraphCandidate {
   composition?: {
     ownerSelector: { module: string; model: string };
-    ownerWidget: Record<string, any>;
+    ownerWidget: Record<string, unknown>;
     relationSelector: { module: string; relation: string };
-    relation: Record<string, any>;
+    relation: Record<string, unknown>;
   }[];
   id: string;
-  page: Record<string, any>;
-  pageWidget: Record<string, any>;
-  hostWidget?: Record<string, any>;
-  externalWidgetRelation?: Record<string, any>;
+  page: Record<string, unknown>;
+  pageWidget: Record<string, unknown>;
+  hostWidget?: Record<string, unknown>;
+  externalWidgetRelation?: Record<string, unknown>;
   externalSelector?: {
     module: string;
     model: string;
   };
-  externalWidget?: Record<string, any>;
+  externalWidget?: Record<string, unknown>;
   summary: {
     pageUrl?: string;
     pageId?: string;
@@ -213,7 +213,7 @@ export interface IHostGraphCandidate {
 export interface IHostGraphResult {
   url: string;
   language: string;
-  page?: Record<string, any>;
+  page?: Record<string, unknown>;
   candidates: IHostGraphCandidate[];
   matchStatus: "none" | "single" | "multiple";
 }

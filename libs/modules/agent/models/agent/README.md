@@ -1,5 +1,14 @@
 # Agent Model
 
+## Backend service
+
+Agent startup subclasses that declare a constructor call
+`super(repository, telegramConversationRuntime)`. Agent obtains domain
+services from its API assembly. For example, startup methods can call
+`this.modules.ecommerce.order.findById({ id })` and access the current
+project's Order methods through the same path. Migrate calls to the former
+`ecommerceModule` accessor to `this.modules.ecommerce`.
+
 ## Purpose
 
 Agents define automated jobs (cron-like tasks) with a title, interval, and

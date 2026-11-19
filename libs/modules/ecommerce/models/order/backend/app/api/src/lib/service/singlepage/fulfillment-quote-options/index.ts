@@ -3,11 +3,13 @@ import type { Service as OrderService } from "../index";
 
 export interface IConstructorProps {
   findById: (props: { id: string }) => Promise<IOrder | null>;
-  ordersToProducts: Pick<OrderService["ordersToProducts"], "find">;
+  ordersToProducts: Pick<OrderService["module"]["ordersToProducts"], "find">;
   payments: Pick<OrderService["ordersToBillingModulePaymentIntents"], "find">;
-  billingModule: Pick<
-    OrderService["billingModule"],
-    "paymentIntent" | "invoice" | "paymentIntentsToInvoices"
+  paymentIntent: Pick<OrderService["paymentIntent"], "findById">;
+  invoice: Pick<OrderService["modules"]["billing"]["invoice"], "findById">;
+  paymentIntentsToInvoices: Pick<
+    OrderService["modules"]["billing"]["paymentIntentsToInvoices"],
+    "find"
   >;
 }
 
@@ -19,8 +21,14 @@ export class Service {
   constructor(private readonly dependencies: IConstructorProps) {}
 
   async execute(props: { id: string }): Promise<IResult> {
-    const { findById, ordersToProducts, payments, billingModule } =
-      this.dependencies;
+    const {
+      findById,
+      ordersToProducts,
+      payments,
+      paymentIntent,
+      invoice: invoices,
+      paymentIntentsToInvoices,
+    } = this.dependencies;
     const order = await findById(props);
     if (!order) {
       return { fulfilledLineIds: [] };
@@ -65,14 +73,14 @@ export class Service {
             },
           },
         }),
-        billingModule.paymentIntentsToInvoices.find({
+        paymentIntentsToInvoices.find({
           params: {
             filters: {
               and: [{ column: "invoiceId", method: "eq", value: invoiceId }],
             },
           },
         }),
-        billingModule.invoice.findById({ id: invoiceId }),
+        invoices.findById({ id: invoiceId }),
       ]);
       const intentIds = [
         ...new Set(
@@ -88,7 +96,7 @@ export class Service {
       if (intentIds.length !== 1 || invoice?.status !== "paid") {
         break;
       }
-      const intent = await billingModule.paymentIntent.findById({
+      const intent = await paymentIntent.findById({
         id: intentIds[0],
       });
       if (intent?.type !== "one_off" || intent.status !== "succeeded") {

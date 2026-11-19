@@ -1,11 +1,3 @@
-/**
- * BDD Suite: chat lifecycle primary thread fallback.
- *
- * Given: existing web chats can contain multiple threads using the default component variant.
- * When: a legacy route requests the chat's primary thread.
- * Then: lifecycle resolution reuses the deterministic first relation without creating or rejecting threads.
- */
-
 const mockSocialModuleThreadCreate = jest.fn();
 const mockSocialModuleChatsToThreadsCreate = jest.fn();
 
@@ -60,37 +52,39 @@ describe("Given: a web chat has several default-variant threads", () => {
    */
   test("When: primary thread is requested Then: the earliest relation is reused", async () => {
     const service = {
-      socialModule: {
-        chat: {
-          findById: jest.fn().mockResolvedValue({ id: "chat-1" }),
-        },
-        chatsToThreads: {
-          find: jest.fn().mockResolvedValue([
-            {
-              threadId: "thread-newer",
-              orderIndex: 0,
-              createdAt: new Date("2026-06-17T07:24:42.000Z"),
-            },
-            {
-              threadId: "thread-primary",
-              orderIndex: 0,
-              createdAt: new Date("2026-06-16T22:02:05.000Z"),
-            },
-          ]),
-        },
-        thread: {
-          find: jest.fn().mockResolvedValue([
-            {
-              id: "thread-newer",
-              variant: "default",
-              createdAt: new Date("2026-06-17T07:24:42.000Z"),
-            },
-            {
-              id: "thread-primary",
-              variant: "default",
-              createdAt: new Date("2026-06-16T22:02:05.000Z"),
-            },
-          ]),
+      modules: {
+        social: {
+          chat: {
+            findById: jest.fn().mockResolvedValue({ id: "chat-1" }),
+          },
+          chatsToThreads: {
+            find: jest.fn().mockResolvedValue([
+              {
+                threadId: "thread-newer",
+                orderIndex: 0,
+                createdAt: new Date("2026-06-17T07:24:42.000Z"),
+              },
+              {
+                threadId: "thread-primary",
+                orderIndex: 0,
+                createdAt: new Date("2026-06-16T22:02:05.000Z"),
+              },
+            ]),
+          },
+          thread: {
+            find: jest.fn().mockResolvedValue([
+              {
+                id: "thread-newer",
+                variant: "default",
+                createdAt: new Date("2026-06-17T07:24:42.000Z"),
+              },
+              {
+                id: "thread-primary",
+                variant: "default",
+                createdAt: new Date("2026-06-16T22:02:05.000Z"),
+              },
+            ]),
+          },
         },
       },
     } as any;

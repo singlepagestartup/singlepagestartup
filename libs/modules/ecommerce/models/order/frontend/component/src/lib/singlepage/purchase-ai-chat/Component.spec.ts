@@ -1,5 +1,6 @@
 import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
+import type { IPurchaseCharge } from "@sps/ecommerce/models/order/sdk/model";
 
 const mockTotal = jest.fn();
 const mockReceiptLinks = jest.fn();
@@ -52,8 +53,9 @@ jest.mock("@sps/shared-utils", () => ({
 }));
 import { Component } from "../../index";
 import { Component as Server } from "./server";
+import type { IComponentProps } from "./interface";
 
-function renderPurchase() {
+function renderPurchase(props: Partial<IComponentProps> = {}) {
   return renderToStaticMarkup(
     createElement(Component, {
       isServer: false,
@@ -65,9 +67,57 @@ function renderPurchase() {
         type: "history",
         status: "paid",
       } as any,
+      ...props,
     }),
   );
 }
+
+function purchaseCharge(
+  title: string,
+  role: IPurchaseCharge["charge"]["role"],
+  orderLineId?: string,
+  parentLineId: string | null = null,
+): IPurchaseCharge {
+  return {
+    version: 1,
+    orderLineId,
+    parentLineId,
+    currencyId: "rub",
+    amount: "100",
+    orderAmount: "100",
+    purchaseType: "one_off",
+    quoteVersion: "quote",
+    quoteExpiresAt: "2026-10-08T12:00:00.000Z",
+    charge: {
+      title,
+      offerId: `offer-${title}`,
+      productId: `product-${title}`,
+      storeId: "store",
+      providerStoreId: "store",
+      role,
+      recurrence: "first",
+      quantity: 1,
+      stockQuantity: null,
+      amount: "100",
+      formula: "",
+      formulaVersion: "",
+      inputs: {},
+    },
+    destination: {},
+  };
+}
+
+function renderedChargeRows(html: string) {
+  const details = html.match(/<details[\s\S]*?<\/details>/)?.[0] ?? "";
+  return Array.from(
+    details.matchAll(/<li class="([^"]*)"[^>]*><div><p>(.*?) × 1<\/p>/g),
+    ([, className, title]) => ({
+      title,
+      indented: className.split(" ").includes("ml-4"),
+    }),
+  );
+}
+
 describe("Paid purchase details", () => {
   beforeEach(() => {
     jest.clearAllMocks();
@@ -146,6 +196,75 @@ describe("Paid purchase details", () => {
       );
     },
   );
+  it("lists each product before its own services even when two lines share an offer", () => {
+    const html = renderPurchase({
+      dataSource: "props",
+      language: "ru",
+      purchaseDetails: {
+        primaryProductSlug: "birch-chair",
+        totals: [],
+        receipts: [],
+        charges: [
+          purchaseCharge("Сборка стула", "add-on", "assembly", "chair"),
+          purchaseCharge(
+            "Доставка второго стула",
+            "delivery",
+            "second-delivery",
+            "second-chair",
+          ),
+          purchaseCharge("Стул Берёза", "product", "chair"),
+          purchaseCharge("Стул Берёза", "product", "second-chair"),
+          purchaseCharge(
+            "Доставка мастерской",
+            "delivery",
+            "chair-delivery",
+            "chair",
+          ),
+          purchaseCharge("Отдельная услуга", "add-on", "standalone"),
+          purchaseCharge(
+            "Услуга из старого заказа",
+            "add-on",
+            "orphan",
+            "missing",
+          ),
+        ],
+      },
+    });
+
+    expect(html).toMatch(
+      /<a [^>]*href="\/ru\/ecommerce\/products\/birch-chair"[^>]*>Стул Берёза<\/a>/,
+    );
+    expect(renderedChargeRows(html)).toEqual([
+      { title: "Стул Берёза", indented: false },
+      { title: "Сборка стула", indented: true },
+      { title: "Доставка мастерской", indented: true },
+      { title: "Стул Берёза", indented: false },
+      { title: "Доставка второго стула", indented: true },
+      { title: "Отдельная услуга", indented: false },
+      { title: "Услуга из старого заказа", indented: false },
+    ]);
+  });
+  it("puts the product first when legacy charges have no line IDs", () => {
+    const html = renderPurchase({
+      dataSource: "props",
+      language: "ru",
+      purchaseDetails: {
+        totals: [],
+        receipts: [],
+        charges: [
+          purchaseCharge("Сборка стула", "add-on"),
+          purchaseCharge("Стул Берёза", "product"),
+          purchaseCharge("Доставка мастерской", "delivery"),
+        ],
+      },
+    });
+
+    expect(renderedChargeRows(html)).toEqual([
+      { title: "Стул Берёза", indented: false },
+      { title: "Сборка стула", indented: true },
+      { title: "Доставка мастерской", indented: true },
+    ]);
+  });
   it("renders the period and the next payment supplied by the buyer's Subject", () => {
     const html = renderToStaticMarkup(
       createElement(Component, {

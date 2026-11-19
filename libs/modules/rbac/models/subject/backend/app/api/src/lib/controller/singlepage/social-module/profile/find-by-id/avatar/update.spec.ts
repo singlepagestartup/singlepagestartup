@@ -23,11 +23,15 @@ import { Service as AvatarService } from "../../../../../../service/singlepage/s
 
 function createService() {
   const service = {
-    fileStorageModule: {
-      file: { find: jest.fn(), findById: jest.fn(), readBytes: jest.fn() },
-    },
     socialModuleProfileAvatarUpdate: (props: any) =>
-      new AvatarService(service).execute(props),
+      new AvatarService({ file: service.modules.fileStorage.file }).execute(
+        props,
+      ),
+    modules: {
+      fileStorage: {
+        file: { find: jest.fn(), findById: jest.fn(), readBytes: jest.fn() },
+      },
+    },
   };
   return service;
 }
@@ -121,7 +125,7 @@ describe("Own profile avatar update", () => {
       "first-link",
       "second-link",
     ]);
-    expect(service.fileStorageModule.file.find).not.toHaveBeenCalled();
+    expect(service.modules.fileStorage.file.find).not.toHaveBeenCalled();
     expect(mockFileCreate).not.toHaveBeenCalled();
     expect(mockRelationCreate).not.toHaveBeenCalled();
     expect(result).toEqual({ data: { file: null, relation: null } });

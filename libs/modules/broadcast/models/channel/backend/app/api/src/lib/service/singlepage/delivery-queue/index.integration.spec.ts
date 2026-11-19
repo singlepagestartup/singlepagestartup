@@ -1,8 +1,10 @@
 import {
   DatabaseRepository,
+  createAppAssembly,
   consistencyContext,
 } from "@sps/shared-backend-api";
 import { Service as LinksService } from "@sps/broadcast/relations/channels-to-messages/backend/app/api/src/lib/service";
+import { serviceBootstrap as messageOwner } from "@sps/broadcast/models/message/backend/app/api/src/lib/bootstrap";
 import { randomUUID } from "node:crypto";
 import { getPostgresClient } from "@sps/shared-backend-database-config";
 import { Repository as Links } from "@sps/broadcast/relations/channels-to-messages/backend/app/api/src/lib/repository";
@@ -21,10 +23,12 @@ describe("Broadcast competing consumers", () => {
     new Repository(new Configuration()),
     new DatabaseRepository(new Configuration()),
   );
+  const assembly = createAppAssembly(({ overrideService }) => {
+    overrideService(messageOwner, service);
+  });
   const linksService = new LinksService(
     new Links(new LinksConfiguration()),
-    service,
-  );
+  ).withAppAssembly(assembly);
   const deliveryRepository = new DeliveryRepository(new Configuration());
   const queue = new DeliveryQueue(deliveryRepository);
   const channelId = randomUUID();

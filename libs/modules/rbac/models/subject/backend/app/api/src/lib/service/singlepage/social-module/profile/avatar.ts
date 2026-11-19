@@ -2,10 +2,10 @@ import { api as fileStorageModuleFileApi } from "@sps/file-storage/models/file/s
 import type { IModel as IFileStorageModuleFile } from "@sps/file-storage/models/file/sdk/model";
 import { api as socialModuleProfilesToFileStorageModuleFilesApi } from "@sps/social/relations/profiles-to-file-storage-module-files/sdk/server";
 import { RBAC_SECRET_KEY } from "@sps/shared-utils";
-import type { IFileStorageModule } from "../../../../di";
+import type { Service as FileService } from "@sps/file-storage/models/file/backend/app/api/src/lib/service";
 
 export interface IConstructorProps {
-  fileStorageModule: IFileStorageModule;
+  file: Pick<FileService, "find" | "findById">;
 }
 
 export interface IExecuteProps {
@@ -25,7 +25,7 @@ export class Service {
     const relation = relations[0] ?? null;
     let file;
     if (relation) {
-      file = await this.props.fileStorageModule.file.findById({
+      file = await this.props.file.findById({
         id: relation.fileStorageModuleFileId,
       });
     } else {
@@ -53,7 +53,7 @@ export class Service {
         return { file: null, relation: null };
       }
 
-      const defaultFiles = await this.props.fileStorageModule.file.find({
+      const defaultFiles = await this.props.file.find({
         params: {
           filters: {
             and: [
@@ -74,8 +74,7 @@ export class Service {
         },
       });
       const defaultFile = defaultFiles?.[0] as
-        | IFileStorageModuleFile
-        | undefined;
+        IFileStorageModuleFile | undefined;
       if (!defaultFile || !this.isAvatarImage(defaultFile)) {
         throw new Error(
           "Not Found error. Default personal assistant avatar not found",

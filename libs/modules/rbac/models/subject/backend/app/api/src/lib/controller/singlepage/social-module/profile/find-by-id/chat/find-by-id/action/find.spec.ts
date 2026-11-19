@@ -1,11 +1,3 @@
-/**
- * BDD Suite: thread-scoped social action find.
- *
- * Given: a chat has actions linked to specific threads.
- * When: the RBAC action find endpoint receives socialModuleThreadId in the raw query.
- * Then: it returns only actions linked through threads-to-actions for that chat thread.
- */
-
 jest.mock("@sps/shared-utils", () => ({
   RBAC_JWT_SECRET: "test-rbac-jwt-secret",
   RBAC_SECRET_KEY: "test-rbac-secret-key",
@@ -26,36 +18,38 @@ describe("Given: thread-scoped social actions", () => {
       socialModuleChatLifecycleAssertSubjectOwnsChat: jest
         .fn()
         .mockResolvedValue(undefined),
-      socialModule: {
-        profilesToActions: { find: jest.fn().mockResolvedValue([]) },
-        chatsToThreads: {
-          find: jest.fn().mockResolvedValue([
-            {
-              id: "chat-thread-1",
-              chatId: "chat-1",
-              threadId: "thread-1",
-            },
-          ]),
-        },
-        threadsToActions: {
-          find: jest.fn().mockResolvedValue([
-            {
-              id: "thread-action-1",
-              threadId: "thread-1",
-              actionId: "action-1",
-            },
-          ]),
-        },
-        chatsToActions: {
-          find: jest.fn(),
-        },
-        action: {
-          find: jest.fn().mockResolvedValue([
-            {
-              id: "action-1",
-              description: "thread action",
-            },
-          ]),
+      modules: {
+        social: {
+          profilesToActions: { find: jest.fn().mockResolvedValue([]) },
+          chatsToThreads: {
+            find: jest.fn().mockResolvedValue([
+              {
+                id: "chat-thread-1",
+                chatId: "chat-1",
+                threadId: "thread-1",
+              },
+            ]),
+          },
+          threadsToActions: {
+            find: jest.fn().mockResolvedValue([
+              {
+                id: "thread-action-1",
+                threadId: "thread-1",
+                actionId: "action-1",
+              },
+            ]),
+          },
+          chatsToActions: {
+            find: jest.fn(),
+          },
+          action: {
+            find: jest.fn().mockResolvedValue([
+              {
+                id: "action-1",
+                description: "thread action",
+              },
+            ]),
+          },
         },
       },
     };
@@ -94,7 +88,7 @@ describe("Given: thread-scoped social actions", () => {
 
     const result = await handler.execute(context as any, jest.fn());
 
-    expect(service.socialModule.chatsToThreads.find).toHaveBeenCalledWith({
+    expect(service.modules.social.chatsToThreads.find).toHaveBeenCalledWith({
       params: {
         filters: {
           and: [
@@ -112,7 +106,7 @@ describe("Given: thread-scoped social actions", () => {
         },
       },
     });
-    expect(service.socialModule.threadsToActions.find).toHaveBeenCalledWith({
+    expect(service.modules.social.threadsToActions.find).toHaveBeenCalledWith({
       params: {
         filters: {
           and: [
@@ -135,7 +129,7 @@ describe("Given: thread-scoped social actions", () => {
         },
       },
     });
-    expect(service.socialModule.chatsToActions.find).not.toHaveBeenCalled();
+    expect(service.modules.social.chatsToActions.find).not.toHaveBeenCalled();
     expect(result).toEqual({
       data: [
         {
@@ -160,18 +154,20 @@ describe("Given: thread-scoped social actions", () => {
       socialModuleChatLifecycleAssertSubjectOwnsChat: jest
         .fn()
         .mockResolvedValue(undefined),
-      socialModule: {
-        chatsToThreads: {
-          find: jest.fn().mockResolvedValue([]),
-        },
-        threadsToActions: {
-          find: jest.fn(),
-        },
-        chatsToActions: {
-          find: jest.fn(),
-        },
-        action: {
-          find: jest.fn(),
+      modules: {
+        social: {
+          chatsToThreads: {
+            find: jest.fn().mockResolvedValue([]),
+          },
+          threadsToActions: {
+            find: jest.fn(),
+          },
+          chatsToActions: {
+            find: jest.fn(),
+          },
+          action: {
+            find: jest.fn(),
+          },
         },
       },
     };
@@ -202,7 +198,7 @@ describe("Given: thread-scoped social actions", () => {
 
     const result = await handler.execute(context as any, jest.fn());
 
-    expect(service.socialModule.chatsToThreads.find).toHaveBeenCalledWith({
+    expect(service.modules.social.chatsToThreads.find).toHaveBeenCalledWith({
       params: {
         filters: {
           and: [
@@ -220,9 +216,9 @@ describe("Given: thread-scoped social actions", () => {
         },
       },
     });
-    expect(service.socialModule.threadsToActions.find).not.toHaveBeenCalled();
-    expect(service.socialModule.chatsToActions.find).not.toHaveBeenCalled();
-    expect(service.socialModule.action.find).not.toHaveBeenCalled();
+    expect(service.modules.social.threadsToActions.find).not.toHaveBeenCalled();
+    expect(service.modules.social.chatsToActions.find).not.toHaveBeenCalled();
+    expect(service.modules.social.action.find).not.toHaveBeenCalled();
     expect(result).toEqual({
       data: [],
     });

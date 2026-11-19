@@ -1,3 +1,5 @@
+import { createModule } from "../module";
+import { createModules } from "@sps/billing/backend/app/api/src/lib/modules";
 import { z } from "zod";
 import { Service as Settlement } from "../startup/settlement";
 import { Service as PaykeeperSettlement } from "../startup/paykeeper-settlement";
@@ -56,7 +58,6 @@ import {
   providerMinorUnits,
 } from "@sps/backend-utils";
 import { currencyPrecision } from "@sps/billing/models/currency/sdk/model";
-import { PaymentIntentDI, type IBillingModule } from "../../di";
 
 interface IStripeInvoiceProps {
   paymentIntentId: string;
@@ -72,17 +73,20 @@ interface IStripeInvoiceProps {
 
 @injectable()
 export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
+  get modules() {
+    return this.appAssembly.getOrCreate(createModules);
+  }
+
+  get module() {
+    return this.appAssembly.getOrCreate(createModule);
+  }
+
   declare repository: Repository;
-  billingModule: IBillingModule;
   protected readonly usesPreparedCheckoutInvoice: boolean = false;
   private readonly checkoutDispatch: CheckoutDispatch;
 
-  constructor(
-    @inject(DI.IRepository) repository: Repository,
-    @inject(PaymentIntentDI.IBillingModule) billingModule: IBillingModule,
-  ) {
+  constructor(@inject(DI.IRepository) repository: Repository) {
     super(repository);
-    this.billingModule = billingModule;
     this.checkoutDispatch = new CheckoutDispatch(repository);
   }
 
@@ -159,14 +163,14 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     if (intent.type !== "subscription" || intent.amount === 0) {
       return;
     }
-    const links = await this.billingModule.paymentIntentsToInvoices.find({
+    const links = await this.module.paymentIntentsToInvoices.find({
       params: {
         filters: {
           and: [{ column: "paymentIntentId", method: "eq", value: intent.id }],
         },
       },
     });
-    const invoices = await this.billingModule.invoice.find({
+    const invoices = await this.module.invoice.find({
       params: {
         filters: {
           and: [
@@ -287,7 +291,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
       if (intent.type === "subscription") {
         await this.update({ id, data: { ...intent, type: "one_off" } });
       }
-      const { invoice, paymentIntentsToInvoices } = this.billingModule;
+      const { invoice, paymentIntentsToInvoices } = this.module;
       const links = await paymentIntentsToInvoices.find({
         params: {
           filters: {
@@ -346,7 +350,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
         new Date(intent.updatedAt ?? intent.createdAt) >= expiresBefore
       )
         return intent;
-      const links = await this.billingModule.paymentIntentsToInvoices.find({
+      const links = await this.module.paymentIntentsToInvoices.find({
         params: {
           filters: {
             and: [{ column: "paymentIntentId", method: "eq", value: id }],
@@ -360,7 +364,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
 
   // Compatibility entrypoint for project callers; always rereads the committed invoice.
   async updatePaymentIntentStatus(props: { invoice: IInvoice }) {
-    const invoice = await this.billingModule.invoice.findById({
+    const invoice = await this.module.invoice.findById({
       id: props.invoice.id,
     });
     if (!invoice || invoice.status !== "paid" || !invoice.provider)
@@ -397,7 +401,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
           );
         }
         if (props.currency && intent.checkoutCurrencyId) {
-          const currency = await this.billingModule.currency.findById({
+          const currency = await this.module.currency.findById({
             id: intent.checkoutCurrencyId,
           });
           if (!currency || currency.slug !== props.currency) {
@@ -406,7 +410,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
             );
           }
         }
-        const invoices = await this.billingModule.invoice.find({
+        const invoices = await this.module.invoice.find({
           params: {
             filters: {
               and: [
@@ -438,22 +442,21 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
               "Conflict error. Canceled subscription period requires payment reconciliation",
             );
           }
-          const intentLinks =
-            await this.billingModule.paymentIntentsToInvoices.find({
-              params: {
-                filters: {
-                  and: [
-                    {
-                      column: "paymentIntentId",
-                      method: "eq",
-                      value: intent.id,
-                    },
-                  ],
-                },
+          const intentLinks = await this.module.paymentIntentsToInvoices.find({
+            params: {
+              filters: {
+                and: [
+                  {
+                    column: "paymentIntentId",
+                    method: "eq",
+                    value: intent.id,
+                  },
+                ],
               },
-            });
+            },
+          });
           if (intentLinks?.length) {
-            const pending = await this.billingModule.invoice.find({
+            const pending = await this.module.invoice.find({
               params: {
                 filters: {
                   and: [
@@ -501,7 +504,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
                   "Conflict error. Stripe invoice amount differs from its prepared period invoice",
                 );
               }
-              const updated = await this.billingModule.invoice.update({
+              const updated = await this.module.invoice.update({
                 id: draft.id,
                 data: {
                   ...draft,
@@ -518,7 +521,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
           }
         }
         if (!invoice) {
-          invoice = await this.billingModule.invoice.create({
+          invoice = await this.module.invoice.create({
             data: {
               provider: "stripe",
               providerId: props.providerId,
@@ -536,7 +539,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
         ) {
           throw new Error("Conflict error. Stripe invoice amount changed");
         }
-        const links = await this.billingModule.paymentIntentsToInvoices.find({
+        const links = await this.module.paymentIntentsToInvoices.find({
           params: {
             filters: {
               and: [{ column: "invoiceId", method: "eq", value: invoice.id }],
@@ -550,14 +553,12 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
             );
           }
         } else {
-          const link = await this.billingModule.paymentIntentsToInvoices.create(
-            {
-              data: {
-                invoiceId: invoice.id,
-                paymentIntentId: intent.id,
-              },
+          const link = await this.module.paymentIntentsToInvoices.create({
+            data: {
+              invoiceId: invoice.id,
+              paymentIntentId: intent.id,
             },
-          );
+          });
           if (!link) {
             throw new Error("Internal error. Failed to link Stripe invoice");
           }
@@ -605,7 +606,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
       (!session && remote.status === "void")
     ) {
       await this.expireInvoice(reference);
-      const current = await this.billingModule.invoice.findById({
+      const current = await this.module.invoice.findById({
         id: invoice.id,
       });
       if (!current) {
@@ -736,7 +737,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     }
     // Historic subscribers can retain earlier paid invoices on their original
     // intent. A replay preserves that history without allocating a new period.
-    const recorded = await this.billingModule.invoice.find({
+    const recorded = await this.module.invoice.find({
       params: {
         filters: {
           and: [
@@ -751,7 +752,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     }
     const paid = recorded[0];
     if (paid?.status === "paid") {
-      const links = await this.billingModule.paymentIntentsToInvoices.find({
+      const links = await this.module.paymentIntentsToInvoices.find({
         params: {
           filters: {
             and: [{ column: "invoiceId", method: "eq", value: paid.id }],
@@ -1186,7 +1187,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
       const data = props.data.data.object;
 
       if (data.object === "checkout.session") {
-        const invoices = await this.billingModule.invoice.find({
+        const invoices = await this.module.invoice.find({
           params: {
             filters: {
               and: [
@@ -1933,7 +1934,8 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
 
   async paykeeper(props: IPaykeeperProceedProps) {
     const paykeeper = new Paykeeper({
-      billingModule: this.billingModule,
+      invoice: this.module.invoice,
+      paymentIntentsToInvoices: this.module.paymentIntentsToInvoices,
       settle: (input) => new PaykeeperSettlement(this).execute(input),
     });
     return paykeeper.proceed(props);

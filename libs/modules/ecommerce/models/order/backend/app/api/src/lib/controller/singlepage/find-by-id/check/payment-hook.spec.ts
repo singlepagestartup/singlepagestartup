@@ -50,11 +50,13 @@ function fixture(status = "succeeded") {
         .fn()
         .mockResolvedValue([{ billingModulePaymentIntentId: "payment" }]),
     },
-    billingModule: {
-      paymentIntent: {
-        findById: jest.fn().mockResolvedValue({ id: "payment", status }),
+    paymentIntent: {
+      findById: jest.fn().mockResolvedValue({ id: "payment", status }),
+    },
+    modules: {
+      billing: {
+        paymentIntentsToInvoices: { find: jest.fn().mockResolvedValue([]) },
       },
-      paymentIntentsToInvoices: { find: jest.fn().mockResolvedValue([]) },
     },
   };
   const context = {

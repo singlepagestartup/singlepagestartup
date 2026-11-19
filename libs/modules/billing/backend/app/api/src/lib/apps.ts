@@ -1,16 +1,20 @@
-import { DefaultApp } from "@sps/shared-backend-api";
-import { app as widgetApp } from "@sps/billing/models/widget/backend/app/api";
-import { app as paymentIntentApp } from "@sps/billing/models/payment-intent/backend/app/api";
-import { app as invoiceApp } from "@sps/billing/models/invoice/backend/app/api";
-import { app as currencyApp } from "@sps/billing/models/currency/backend/app/api";
-import { app as paymentIntentsToCurrenciesApp } from "@sps/billing/relations/payment-intents-to-currencies/backend/app/api";
-import { app as paymentIntentsToInvoicesApp } from "@sps/billing/relations/payment-intents-to-invoices/backend/app/api";
+import {
+  createModuleChildApp,
+  defaultAppAssembly,
+  type IAppAssembly,
+  type IModuleAppEntry,
+} from "@sps/shared-backend-api";
+import { serviceBootstrap as widgetApp } from "@sps/billing/models/widget/backend/app/api/src/lib/bootstrap";
+import { serviceBootstrap as paymentIntentApp } from "@sps/billing/models/payment-intent/backend/app/api/src/lib/bootstrap";
+import { serviceBootstrap as invoiceApp } from "@sps/billing/models/invoice/backend/app/api/src/lib/bootstrap";
+import { serviceBootstrap as currencyApp } from "@sps/billing/models/currency/backend/app/api/src/lib/bootstrap";
+import { serviceBootstrap as paymentIntentsToCurrenciesApp } from "@sps/billing/relations/payment-intents-to-currencies/backend/app/api/src/lib/bootstrap";
+import { serviceBootstrap as paymentIntentsToInvoicesApp } from "@sps/billing/relations/payment-intents-to-invoices/backend/app/api/src/lib/bootstrap";
 
 export class Apps {
-  apps: { type: "model" | "relation"; route: string; app: DefaultApp<any> }[] =
-    [];
+  apps: IModuleAppEntry[] = [];
 
-  constructor() {
+  constructor(private readonly assembly: IAppAssembly = defaultAppAssembly) {
     this.bindApps();
   }
 
@@ -18,32 +22,32 @@ export class Apps {
     this.apps.push({
       type: "model",
       route: "/widgets",
-      app: widgetApp,
+      app: createModuleChildApp(widgetApp, this.assembly),
     });
     this.apps.push({
       type: "model",
       route: "/payment-intents",
-      app: paymentIntentApp,
+      app: createModuleChildApp(paymentIntentApp, this.assembly),
     });
     this.apps.push({
       type: "model",
       route: "/invoices",
-      app: invoiceApp,
+      app: createModuleChildApp(invoiceApp, this.assembly),
     });
     this.apps.push({
       type: "model",
       route: "/currencies",
-      app: currencyApp,
+      app: createModuleChildApp(currencyApp, this.assembly),
     });
     this.apps.push({
       type: "relation",
       route: "/payment-intents-to-currencies",
-      app: paymentIntentsToCurrenciesApp,
+      app: createModuleChildApp(paymentIntentsToCurrenciesApp, this.assembly),
     });
     this.apps.push({
       type: "relation",
       route: "/payment-intents-to-invoices",
-      app: paymentIntentsToInvoicesApp,
+      app: createModuleChildApp(paymentIntentsToInvoicesApp, this.assembly),
     });
   }
 }

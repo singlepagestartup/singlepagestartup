@@ -211,13 +211,15 @@ async function fixture() {
         props,
       ),
   });
-  const ecommerceModule: any = {
+  const ecommerce: any = {
     order: Object.assign(services.order, {
       findByIdExtended: readExtended,
       lockForLifecycle: (props: any) =>
         repositories.order.lockForLifecycle(props),
       assertSubscriptionPayment: (props: any) => period.assertPayment(props),
       acceptSubscriptionPeriod: (props: any) => period.execute(props),
+      ordersToBillingModulePaymentIntents: services.orderIntents,
+      paymentIntent: services.intent,
     }),
     product: {
       find: async () => [freeProjection],
@@ -244,40 +246,45 @@ async function fixture() {
     ordersToProducts: services.lines,
     storesToOrders: services.stores,
     ordersToBillingModuleCurrencies: services.currencies,
-    ordersToBillingModulePaymentIntents: services.orderIntents,
   };
-  const proceed = new Proceed(
-    subjectRepository,
-    { attribute: { find: async () => [] } } as any,
-    ecommerceModule,
-    { template: { find: async () => [] } } as any,
-    services.identity,
-    services.role,
-    services.productRoles,
-    services.owners,
-    services.grants,
-    { find: async () => [] } as any,
-    services.balances,
-    services.identities,
-    async () => {
+  const modules = {
+    ecommerce,
+    billing: {
+      currency: services.currency,
+      invoice: services.invoice,
+      paymentIntentsToCurrencies: services.intentCurrencies,
+      paymentIntentsToInvoices: services.intentInvoices,
+    },
+    social: { attribute: { find: async () => [] } } as any,
+    notification: { template: { find: async () => [] } } as any,
+  };
+  const proceed = new Proceed({
+    repository: subjectRepository,
+    module: {
+      identity: services.identity,
+      role: Object.create(services.role, {
+        module: {
+          value: { rolesToEcommerceModuleProducts: services.productRoles },
+        },
+      }),
+      subjectsToEcommerceModuleOrders: services.owners,
+      subjectsToRoles: services.grants,
+      subjectsToSocialModuleProfiles: { find: async () => [] } as any,
+      subjectsToBillingModuleCurrencies: services.balances,
+      subjectsToIdentities: services.identities,
+    },
+    modules,
+    ecommerceProductCheckout: async () => {
       throw new Error("Unexpected checkout transport");
     },
-  );
+  });
   jest.spyOn(proceed, "notifyAdmin").mockResolvedValue(undefined);
   jest.spyOn(proceed, "notifyOrderOwner").mockResolvedValue(undefined);
   const dispatch = jest.fn((effect) => proceed.dispatchPaidEffects(effect));
   const free = new Free({
     repository: subjectRepository,
-    ecommerceModule,
-    subjectsToIdentities: services.identities,
-    subjectsToEcommerceModuleOrders: services.owners,
-    billingModule: {
-      currency: services.currency,
-      paymentIntent: services.intent,
-      invoice: services.invoice,
-      paymentIntentsToCurrencies: services.intentCurrencies,
-      paymentIntentsToInvoices: services.intentInvoices,
-    },
+    module: proceed.module,
+    modules,
     fulfillPaidOrderInTransaction: (scope) =>
       proceed.fulfillPaidOrderInTransaction(scope),
     dispatchPaidEffects: dispatch,

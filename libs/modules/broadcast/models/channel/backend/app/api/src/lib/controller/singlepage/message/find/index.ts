@@ -26,19 +26,20 @@ export class Handler {
         throw new Error("Validation error. Invalid id, id is required.");
       }
 
-      const channelsToMessages = await this.service.channelsToMessages.find({
-        params: {
-          filters: {
-            and: [
-              {
-                column: "channelId",
-                method: "eq",
-                value: id,
-              },
-            ],
+      const channelsToMessages =
+        await this.service.module.channelsToMessages.find({
+          params: {
+            filters: {
+              and: [
+                {
+                  column: "channelId",
+                  method: "eq",
+                  value: id,
+                },
+              ],
+            },
           },
-        },
-      });
+        });
 
       if (channelsToMessages?.length) {
         const messageIds = Array.from(

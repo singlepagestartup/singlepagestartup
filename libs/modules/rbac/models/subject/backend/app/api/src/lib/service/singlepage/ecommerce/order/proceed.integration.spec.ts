@@ -132,44 +132,62 @@ describe("paid order atomic fulfillment", () => {
       writeSubscriptionPeriod: (props) =>
         new OrderLifecycleService(orders).writeSubscriptionPeriod(props),
     });
-    const service = new Service(
-      subjects,
-      { attribute: { find: async () => [] } } as any,
-      {
-        order: {
-          lockForLifecycle: (props) => orders.lockForLifecycle(props),
-          findByIdExtended: readExtended,
-          assertSubscriptionPayment: (props) => period.assertPayment(props),
-          acceptSubscriptionPeriod: (props) => period.execute(props),
-          find: async (props) => {
-            const current = await orders.findFirstByField("id", activeOrderId);
-            const status = props.params.filters.and.find(
-              (filter) => filter.column === "status",
-            );
-            return !status || current.status === status.value ? [current] : [];
+    const service = new Service({
+      repository: subjects,
+      module: {
+        identity: {} as any,
+        role: Object.create({} as any, {
+          module: {
+            value: {
+              rolesToEcommerceModuleProducts: {
+                find: async () => [
+                  {
+                    ecommerceModuleProductId: "synthetic-product",
+                    roleId: role.id,
+                  },
+                ],
+              } as any,
+            },
           },
-          update: ({ id, data }) => orders.updateFirstByField("id", id, data),
-        },
-      } as any,
-      { template: { find: async () => [] } } as any,
-      {} as any,
-      {} as any,
-      {
-        find: async () => [
-          { ecommerceModuleProductId: "synthetic-product", roleId: role.id },
-        ],
-      } as any,
-      {
-        find: async () => [
-          { subjectId: subject.id, ecommerceModuleOrderId: activeOrderId },
-        ],
-      } as any,
-      grants,
-      { find: async () => [] } as any,
-      balances,
-      {} as any,
-      async () => undefined,
-    );
+        }),
+        subjectsToEcommerceModuleOrders: {
+          find: async () => [
+            { subjectId: subject.id, ecommerceModuleOrderId: activeOrderId },
+          ],
+        } as any,
+        subjectsToRoles: grants,
+        subjectsToSocialModuleProfiles: { find: async () => [] } as any,
+        subjectsToBillingModuleCurrencies: balances,
+        subjectsToIdentities: {} as any,
+      },
+      modules: {
+        social: { attribute: { find: async () => [] } } as any,
+        ecommerce: {
+          order: {
+            lockForLifecycle: (props) => orders.lockForLifecycle(props),
+            findByIdExtended: readExtended,
+            assertSubscriptionPayment: (props) => period.assertPayment(props),
+            acceptSubscriptionPeriod: (props) => period.execute(props),
+            find: async (props) => {
+              const current = await orders.findFirstByField(
+                "id",
+                activeOrderId,
+              );
+              const status = props.params.filters.and.find(
+                (filter) => filter.column === "status",
+              );
+              return !status || current.status === status.value
+                ? [current]
+                : [];
+            },
+            update: ({ id, data }) => orders.updateFirstByField("id", id, data),
+          },
+          storesToProducts: { find: async () => [] },
+        } as any,
+        notification: { template: { find: async () => [] } } as any,
+      },
+      ecommerceProductCheckout: async () => undefined,
+    });
     const admin = jest
       .spyOn(service, "notifyAdmin")
       .mockResolvedValue(undefined);

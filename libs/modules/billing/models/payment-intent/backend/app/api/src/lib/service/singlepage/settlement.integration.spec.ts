@@ -9,12 +9,9 @@ import { getPostgresClient } from "@sps/shared-backend-database-config";
 import { Repository as IntentRepository } from "../../repository";
 import { Configuration as IntentConfiguration } from "../../configuration";
 import { Service as IntentService } from "./index";
-import { Repository as InvoiceRepository } from "@sps/billing/models/invoice/backend/app/api/src/lib/repository";
-import { Configuration as InvoiceConfiguration } from "@sps/billing/models/invoice/backend/app/api/src/lib/configuration";
-import { Service as InvoiceService } from "@sps/billing/models/invoice/backend/app/api/src/lib/service";
-import { Repository as RelationRepository } from "@sps/billing/relations/payment-intents-to-invoices/backend/app/api/src/lib/repository";
-import { Configuration as RelationConfiguration } from "@sps/billing/relations/payment-intents-to-invoices/backend/app/api/src/lib/configuration";
-import { Service as RelationService } from "@sps/billing/relations/payment-intents-to-invoices/backend/app/api/src/lib/service";
+import { createService as createInvoiceLinks } from "@sps/billing/relations/payment-intents-to-invoices/backend/app/api/src/lib/bootstrap";
+import { createService } from "../../bootstrap";
+import { createAppAssembly } from "@sps/shared-backend-api";
 import {
   Service as Settlement,
   type IExecuteProps,
@@ -49,18 +46,10 @@ afterAll(async () => {
 });
 
 async function fixture(provider = "paykeeper", amount = 100) {
-  const repository = new IntentRepository(new IntentConfiguration());
-  const invoices = new InvoiceService(
-    new InvoiceRepository(new InvoiceConfiguration()),
-  );
-  const relations = new RelationService(
-    new RelationRepository(new RelationConfiguration()),
-  );
-  const service = new IntentService(repository, {
-    invoice: invoices,
-    paymentIntentsToInvoices: relations,
-    currency: {},
-  } as any);
+  const assembly = createAppAssembly();
+  const service = createService(assembly);
+  const { invoice: invoices, paymentIntentsToInvoices: relations } =
+    service.module;
   const intent = await service.create({ data: { amount } as any });
   removals.push(() => service.delete({ id: intent.id }));
   const invoice = await invoices.create({
@@ -98,8 +87,7 @@ async function fixture(provider = "paykeeper", amount = 100) {
   const settlement = new Settlement(service);
   const otherIntent = new IntentService(
     new IntentRepository(new IntentConfiguration()),
-    service.billingModule,
-  );
+  ).withAppAssembly(assembly);
   const second = new Settlement(otherIntent);
   return {
     service,
@@ -237,20 +225,9 @@ const providers = [
 describe.each(providers)("Atomic settlement for %s", (provider) => {
   it("commits once across independent concurrent consumers and repeated delivery", async () => {
     const f = await fixture(provider);
-    const other = new IntentService(
-      new IntentRepository(new IntentConfiguration()),
-      {
-        invoice: new InvoiceService(
-          new InvoiceRepository(new InvoiceConfiguration()),
-        ),
-        paymentIntentsToInvoices: new RelationService(
-          new RelationRepository(new RelationConfiguration()),
-        ),
-        currency: {},
-      } as any,
-    );
+    const other = createService(createAppAssembly());
     const invoiceWrite = jest.spyOn(f.invoices, "update");
-    const otherInvoiceWrite = jest.spyOn(other.billingModule.invoice, "update");
+    const otherInvoiceWrite = jest.spyOn(other.module.invoice, "update");
     const intentWrite = jest.spyOn(f.service, "update");
     const otherIntentWrite = jest.spyOn(other, "update");
     const input = {
@@ -366,13 +343,11 @@ it("keeps the intent payable until its last open invoice expires", async () => {
     data: { provider: "dummy", amount: 100, status: "open" },
   });
   removals.push(() => f.invoices.delete({ id: second.id }));
-  const relations = f.service.billingModule.paymentIntentsToInvoices;
+  const relations = f.service.module.paymentIntentsToInvoices;
   const link = await relations.create({
     data: { paymentIntentId: f.intent.id, invoiceId: second.id },
   });
-  const relationStore = new RelationService(
-    new RelationRepository(new RelationConfiguration()),
-  );
+  const relationStore = createInvoiceLinks(createAppAssembly());
   removals.push(() => relationStore.delete({ id: link.id }));
 
   const expiresBefore = new Date(Date.now() + 1000);
@@ -419,9 +394,7 @@ it("keeps zero-amount dummy settlement atomic and idempotent", async () => {
 
 it("creates one paid invoice when a free checkout is submitted twice", async () => {
   const f = await fixture("paykeeper", 0);
-  const links = new RelationService(
-    new RelationRepository(new RelationConfiguration()),
-  );
+  const links = createInvoiceLinks(createAppAssembly());
   try {
     const results = await Promise.all([
       f.service.settleFreePayment(f.intent.id, "stripe"),
@@ -474,9 +447,7 @@ it("handles overlapping invoices without deadlocks and updates a shared intent o
     data: { amount: 100, provider: "dummy", status: "open" } as any,
   });
   removals.push(() => f.invoices.delete({ id: secondInvoice.id }));
-  const relation = new RelationService(
-    new RelationRepository(new RelationConfiguration()),
-  );
+  const relation = createInvoiceLinks(createAppAssembly());
   const link = await relation.create({
     data: { paymentIntentId: f.intent.id, invoiceId: secondInvoice.id } as any,
   });
@@ -499,9 +470,7 @@ it("does not reuse an already allocated invoice amount on a retry", async () => 
     provider: "dummy",
     amount: 100,
   });
-  const relations = new RelationService(
-    new RelationRepository(new RelationConfiguration()),
-  );
+  const relations = createInvoiceLinks(createAppAssembly());
   const link = await relations.create({
     data: { paymentIntentId: secondIntent.id, invoiceId: f.invoice.id } as any,
   });
@@ -546,9 +515,7 @@ it("settles one invoice covering multiple intents in a stable lock order", async
   });
   const other = await f.service.create({ data: { amount: 60 } as any });
   removals.push(() => f.service.delete({ id: other.id }));
-  const relations = new RelationService(
-    new RelationRepository(new RelationConfiguration()),
-  );
+  const relations = createInvoiceLinks(createAppAssembly());
   const link = await relations.create({
     data: { paymentIntentId: other.id, invoiceId: f.invoice.id } as any,
   });
@@ -614,9 +581,7 @@ it("creates and settles the initial Stripe subscription invoice once across conc
   const f = await fixture("stripe");
   mockSubscriptionIntentId = f.intent.id;
   const providerId = "in_fixture_" + randomUUID();
-  const relation = new RelationService(
-    new RelationRepository(new RelationConfiguration()),
-  );
+  const relation = createInvoiceLinks(createAppAssembly());
   const event = {
     data: {
       object: {
@@ -697,9 +662,7 @@ it("adopts a prepared renewal invoice atomically and serializes duplicate provid
     data: { amount: 100, status: "draft", provider: "stripe" } as any,
   });
   removals.push(() => f.invoices.delete({ id: draft.id }));
-  const relation = new RelationService(
-    new RelationRepository(new RelationConfiguration()),
-  );
+  const relation = createInvoiceLinks(createAppAssembly());
   const link = await relation.create({
     data: { paymentIntentId: next.id, invoiceId: draft.id } as any,
   });

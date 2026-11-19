@@ -110,7 +110,7 @@ describe("Given: Telegram personal AI agent provisioning", () => {
     const service = new Service({
       findSubjects,
       subjectsToSocialModuleProfiles: subjectsToSocialModuleProfiles as any,
-      socialModule,
+      social: socialModule,
       ensureKnowledgeAccess: mockEnsureKnowledgeAccess,
     });
 
@@ -225,7 +225,7 @@ describe("Given: Telegram personal AI agent provisioning", () => {
           },
         ]),
       } as any,
-      socialModule: {
+      social: {
         profile: {
           find: jest.fn().mockResolvedValue([existingProfile]),
         },

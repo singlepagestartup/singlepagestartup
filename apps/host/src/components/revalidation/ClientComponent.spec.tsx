@@ -1,6 +1,7 @@
 /** @jest-environment jsdom */
 import { act, render } from "@testing-library/react";
 import { Component } from "./ClientComponent";
+import type { Options } from "react-use-websocket";
 
 let mockOnMessage: (event: MessageEvent) => void;
 const mockReceive = jest.fn();
@@ -23,7 +24,7 @@ jest.mock("@sps/shared-frontend-client-store", () => ({
 jest.mock("react-use-websocket", () => ({
   __esModule: true,
   ReadyState: { OPEN: 1 },
-  default: (_url: string, options: any) => {
+  default: (_url: string, options: Required<Pick<Options, "onMessage">>) => {
     mockOnMessage = options.onMessage;
     return {
       readyState: 1,

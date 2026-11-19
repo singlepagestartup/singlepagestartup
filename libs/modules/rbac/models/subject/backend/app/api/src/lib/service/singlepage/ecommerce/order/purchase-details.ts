@@ -2,12 +2,9 @@ import type {
   IModel as IEcommerceModuleOrder,
   IPurchaseDetails,
 } from "@sps/ecommerce/models/order/sdk/model";
-import type { Service as SubjectService } from "../../index";
+import type { SubjectServiceDependencies } from "../../index";
 import type { IModel as IEcommerceModuleProduct } from "@sps/ecommerce/models/product/sdk/model";
-import type {
-  IModel as IPaymentLink,
-  IPurchaseSnapshot,
-} from "@sps/ecommerce/relations/orders-to-billing-module-payment-intents/sdk/model";
+import type { IModel as IPaymentLink } from "@sps/ecommerce/relations/orders-to-billing-module-payment-intents/sdk/model";
 import { moneyFromMinorUnits, moneyMinorUnits } from "@sps/backend-utils";
 
 export interface IExecuteProps {
@@ -16,14 +13,7 @@ export interface IExecuteProps {
 }
 
 interface IConstructorProps {
-  service: Pick<
-    SubjectService,
-    | "ecommerceModuleOrderPurchasePayments"
-    | "ecommerceModule"
-    | "billingModule"
-    | "fileStorageModule"
-    | "subjectsToEcommerceModuleOrders"
-  >;
+  service: SubjectServiceDependencies<"ecommerceModuleOrderPurchasePayments">;
 }
 
 export class Service {
@@ -51,7 +41,7 @@ export class Service {
     }
     const products: Pick<IEcommerceModuleProduct, "id" | "slug">[] =
       productIdByOrder.size
-        ? await service.ecommerceModule.product.find({
+        ? await service.modules.ecommerce.product.find({
             params: {
               filters: {
                 and: [
@@ -71,7 +61,7 @@ export class Service {
       .filter((order) => order.subscriptionPeriodInvoiceId)
       .map((order) => order.id);
     if (periodOrderIds.length) {
-      const nextOrders = (await service.ecommerceModule.order.find({
+      const nextOrders = (await service.modules.ecommerce.order.find({
         params: {
           filters: {
             and: [
@@ -85,20 +75,22 @@ export class Service {
         },
       })) as IEcommerceModuleOrder[];
       if (nextOrders.length) {
-        const owned = await service.subjectsToEcommerceModuleOrders.find({
-          params: {
-            filters: {
-              and: [
-                { column: "subjectId", method: "eq", value: subjectId },
-                {
-                  column: "ecommerceModuleOrderId",
-                  method: "inArray",
-                  value: nextOrders.map((order) => order.id),
-                },
-              ],
+        const owned = await service.module.subjectsToEcommerceModuleOrders.find(
+          {
+            params: {
+              filters: {
+                and: [
+                  { column: "subjectId", method: "eq", value: subjectId },
+                  {
+                    column: "ecommerceModuleOrderId",
+                    method: "inArray",
+                    value: nextOrders.map((order) => order.id),
+                  },
+                ],
+              },
             },
           },
-        });
+        );
         const allowed = nextOrders.filter((order) =>
           owned.some(
             (owner) =>
@@ -120,8 +112,11 @@ export class Service {
           const payment = nextSaved.get(next.id);
           const totals =
             payment?.totals ??
-            (await service.ecommerceModule.order.findByIdTotal({ id: next.id }))
-              .totals;
+            (
+              await service.modules.ecommerce.order.findByIdTotal({
+                id: next.id,
+              })
+            ).totals;
           nextBySource.set(next.subscriptionSourceOrderId, {
             orderId: next.id,
             status: next.status,
@@ -159,7 +154,7 @@ export class Service {
     }[] = [];
     if (receiptOrderIds.length) {
       receiptLinks =
-        await service.ecommerceModule.ordersToFileStorageModuleFiles.find({
+        await service.modules.ecommerce.ordersToFileStorageModuleFiles.find({
           params: {
             filters: {
               and: [
@@ -190,7 +185,7 @@ export class Service {
     const filesById = new Map<string, IPurchaseDetails["receipts"][number]>();
     if (receiptIds.length) {
       const files: IPurchaseDetails["receipts"] =
-        await service.fileStorageModule.file.find({
+        await service.modules.fileStorage.file.find({
           params: {
             filters: {
               and: [{ column: "id", method: "inArray", value: receiptIds }],
@@ -211,7 +206,7 @@ export class Service {
       const productId = productIdByOrder.get(order.id);
       const totals = payment
         ? { totals: payment.totals, unpriced: [] }
-        : await service.ecommerceModule.order.findByIdTotal({ id: order.id });
+        : await service.modules.ecommerce.order.findByIdTotal({ id: order.id });
       const receipts = (linksByOrder.get(order.id) ?? []).flatMap(
         (link) => filesById.get(link.fileStorageModuleFileId) ?? [],
       );
@@ -267,13 +262,15 @@ export class Service {
       return result;
     }
     const links: IPaymentLink[] =
-      await service.ecommerceModule.ordersToBillingModulePaymentIntents.find({
-        params: {
-          filters: {
-            and: [{ column: "orderId", method: "inArray", value: orderIds }],
+      await service.modules.ecommerce.order.ordersToBillingModulePaymentIntents.find(
+        {
+          params: {
+            filters: {
+              and: [{ column: "orderId", method: "inArray", value: orderIds }],
+            },
           },
         },
-      });
+      );
     const intentIds = [
       ...new Set(links.map((link) => link.billingModulePaymentIntentId)),
     ];
@@ -282,14 +279,14 @@ export class Service {
     }
     const [intents, invoiceLinks, currencyLinks, allOrderLinks] =
       await Promise.all([
-        service.billingModule.paymentIntent.find({
+        service.modules.ecommerce.order.paymentIntent.find({
           params: {
             filters: {
               and: [{ column: "id", method: "inArray", value: intentIds }],
             },
           },
         }),
-        service.billingModule.paymentIntentsToInvoices.find({
+        service.modules.billing.paymentIntentsToInvoices.find({
           params: {
             filters: {
               and: [
@@ -302,7 +299,7 @@ export class Service {
             },
           },
         }),
-        service.billingModule.paymentIntentsToCurrencies.find({
+        service.modules.billing.paymentIntentsToCurrencies.find({
           params: {
             filters: {
               and: [
@@ -315,25 +312,27 @@ export class Service {
             },
           },
         }),
-        service.ecommerceModule.ordersToBillingModulePaymentIntents.find({
-          params: {
-            filters: {
-              and: [
-                {
-                  column: "billingModulePaymentIntentId",
-                  method: "inArray",
-                  value: intentIds,
-                },
-              ],
+        service.modules.ecommerce.order.ordersToBillingModulePaymentIntents.find(
+          {
+            params: {
+              filters: {
+                and: [
+                  {
+                    column: "billingModulePaymentIntentId",
+                    method: "inArray",
+                    value: intentIds,
+                  },
+                ],
+              },
             },
           },
-        }),
+        ),
       ]);
     if (!invoiceLinks.length) {
       return result;
     }
     const [invoices, currencies] = await Promise.all([
-      service.billingModule.invoice.find({
+      service.modules.billing.invoice.find({
         params: {
           filters: {
             and: [
@@ -346,7 +345,7 @@ export class Service {
           },
         },
       }),
-      service.billingModule.currency.find({
+      service.modules.billing.currency.find({
         params: {
           filters: {
             and: [
@@ -363,7 +362,7 @@ export class Service {
       }),
     ]);
     const fullInvoiceLinks =
-      await service.billingModule.paymentIntentsToInvoices.find({
+      await service.modules.billing.paymentIntentsToInvoices.find({
         params: {
           filters: {
             and: [
@@ -380,25 +379,27 @@ export class Service {
       ...new Set(fullInvoiceLinks.map((link) => link.paymentIntentId)),
     ];
     const fullOrderLinks: IPaymentLink[] = fullIntentIds.length
-      ? await service.ecommerceModule.ordersToBillingModulePaymentIntents.find({
-          params: {
-            filters: {
-              and: [
-                {
-                  column: "billingModulePaymentIntentId",
-                  method: "inArray",
-                  value: fullIntentIds,
-                },
-              ],
+      ? await service.modules.ecommerce.order.ordersToBillingModulePaymentIntents.find(
+          {
+            params: {
+              filters: {
+                and: [
+                  {
+                    column: "billingModulePaymentIntentId",
+                    method: "inArray",
+                    value: fullIntentIds,
+                  },
+                ],
+              },
             },
           },
-        })
+        )
       : allOrderLinks;
     const linkedOrderIds = [
       ...new Set(fullOrderLinks.map((link) => link.orderId)),
     ];
     const ownership = linkedOrderIds.length
-      ? await service.subjectsToEcommerceModuleOrders.find({
+      ? await service.module.subjectsToEcommerceModuleOrders.find({
           params: {
             filters: {
               and: [
@@ -447,13 +448,20 @@ export class Service {
       if (!intent) {
         continue;
       }
-      const charges = orderLinks
-        .filter(
-          (link) =>
-            link.billingModulePaymentIntentId === intent.id &&
-            link.purchaseSnapshot,
-        )
-        .map((link) => link.purchaseSnapshot!) as IPurchaseSnapshot[];
+      const charges = orderLinks.flatMap((link) => {
+        if (
+          link.billingModulePaymentIntentId !== intent.id ||
+          !link.purchaseSnapshot
+        ) {
+          return [];
+        }
+        return [
+          {
+            ...link.purchaseSnapshot,
+            orderLineId: link.orderLineId ?? undefined,
+          },
+        ];
+      });
       const currencyId =
         charges[0]?.currencyId ??
         currencyLinks.find((link) => link.paymentIntentId === intent.id)

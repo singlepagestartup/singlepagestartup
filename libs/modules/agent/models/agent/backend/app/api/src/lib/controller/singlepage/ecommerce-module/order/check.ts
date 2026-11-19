@@ -1,9 +1,10 @@
 import { RBAC_SECRET_KEY } from "@sps/shared-utils";
 import { Context } from "hono";
 import { HTTPException } from "hono/http-exception";
-import { Service } from "../../../../service";
+import type { Service } from "../../../../service";
 import { getHttpErrorType, logger } from "@sps/backend-utils";
 import { api as ecommerceModuleOrderApi } from "@sps/ecommerce/models/order/sdk/server";
+import type { FindServiceProps } from "@sps/shared-backend-api";
 
 export const ECOMMERCE_ORDER_CHECK_BATCH_LIMIT = 100;
 
@@ -29,7 +30,8 @@ export class Handler {
 
       logger.info("Ecommerce module order check started");
 
-      const currentOrders = await this.service.ecommerceModule.order.find({
+      const orderService = this.service.modules.ecommerce.order;
+      const currentOrders = await orderService.find({
         params: {
           filters: {
             and: [
@@ -55,25 +57,29 @@ export class Handler {
       // A separate rotating queue keeps terminal payment failures discoverable
       // without delaying the current paying/subscription batch.
       const recoveryRead = (after?: string) => {
-        const and: any[] = [
-          { column: "type", method: "eq", value: "history" },
-          {
-            column: "status",
-            method: "inArray",
-            value: ["canceling", "canceled"],
-          },
-          {
-            column: "paymentFailureCanceledAt",
-            method: "isNotNull",
-            value: null,
-          },
-        ];
+        const filters: NonNullable<
+          NonNullable<FindServiceProps["params"]>["filters"]
+        > = {
+          and: [
+            { column: "type", method: "eq", value: "history" },
+            {
+              column: "status",
+              method: "inArray",
+              value: ["canceling", "canceled"],
+            },
+            {
+              column: "paymentFailureCanceledAt",
+              method: "isNotNull",
+              value: null,
+            },
+          ],
+        };
         if (after) {
-          and.push({ column: "id", method: "gt", value: after });
+          filters.and.push({ column: "id", method: "gt", value: after });
         }
-        return this.service.ecommerceModule.order.find({
+        return orderService.find({
           params: {
-            filters: { and },
+            filters,
             limit: ECOMMERCE_ORDER_CHECK_BATCH_LIMIT,
             orderBy: { and: [{ column: "id", method: "asc" }] },
           },
@@ -84,8 +90,9 @@ export class Handler {
       if (!recoveryOrders?.length && cursor) {
         recoveryOrders = await recoveryRead();
       }
-      if (recoveryOrders?.length) {
-        Handler.recoveryCursors.set(this.service, recoveryOrders.at(-1)!.id);
+      const lastRecoveryOrder = recoveryOrders?.at(-1);
+      if (lastRecoveryOrder) {
+        Handler.recoveryCursors.set(this.service, lastRecoveryOrder.id);
       }
       const orders = [
         ...new Map(

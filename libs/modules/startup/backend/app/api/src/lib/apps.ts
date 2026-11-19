@@ -1,11 +1,15 @@
-import { app as widget } from "@sps/startup/models/widget/backend/app/api";
-import { DefaultApp } from "@sps/shared-backend-api";
+import { serviceBootstrap as widget } from "@sps/startup/models/widget/backend/app/api/src/lib/bootstrap";
+import {
+  createModuleChildApp,
+  defaultAppAssembly,
+  type IAppAssembly,
+  type IModuleAppEntry,
+} from "@sps/shared-backend-api";
 
 export class Apps {
-  apps: { type: "model" | "relation"; route: string; app: DefaultApp<any> }[] =
-    [];
+  apps: IModuleAppEntry[] = [];
 
-  constructor() {
+  constructor(private readonly assembly: IAppAssembly = defaultAppAssembly) {
     this.bindApps();
   }
 
@@ -13,7 +17,7 @@ export class Apps {
     this.apps.push({
       type: "model",
       route: "/widgets",
-      app: widget,
+      app: createModuleChildApp(widget, this.assembly),
     });
   }
 }

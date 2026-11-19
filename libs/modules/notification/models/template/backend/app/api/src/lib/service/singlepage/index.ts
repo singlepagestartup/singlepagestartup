@@ -1,3 +1,4 @@
+import { createModules } from "@sps/notification/backend/app/api/src/lib/modules";
 import "reflect-metadata";
 import { injectFromBase, injectable } from "inversify";
 import { CRUDService } from "@sps/shared-backend-api";
@@ -18,6 +19,10 @@ import {
 @injectable()
 @injectFromBase()
 export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
+  get modules() {
+    return this.appAssembly.getOrCreate(createModules);
+  }
+
   protected hasRenderErrorPayload(data: string): boolean {
     try {
       const parsedData = JSON.parse(data);

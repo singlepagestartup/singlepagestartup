@@ -1,4 +1,4 @@
-import type { Service as SubjectService } from "../index";
+import type { SubjectServiceDependencies } from "../index";
 
 export interface IBalance {
   amount: string;
@@ -6,35 +6,31 @@ export interface IBalance {
 }
 
 export class Service {
-  constructor(
-    readonly service: Pick<
-      SubjectService,
-      "billingModule" | "subjectsToBillingModuleCurrencies"
-    >,
-  ) {}
+  constructor(readonly service: SubjectServiceDependencies) {}
 
   async execute(subjectId: string): Promise<IBalance> {
-    const currencies = await this.service.billingModule.currency.find({
+    const currencies = await this.service.modules.billing.currency.find({
       params: {
         filters: { and: [{ column: "slug", method: "eq", value: "token" }] },
       },
     });
     const currency = currencies[0];
     if (!currency) return { amount: "0", currencyId: null };
-    const balances = await this.service.subjectsToBillingModuleCurrencies.find({
-      params: {
-        filters: {
-          and: [
-            { column: "subjectId", method: "eq", value: subjectId },
-            {
-              column: "billingModuleCurrencyId",
-              method: "eq",
-              value: currency.id,
-            },
-          ],
+    const balances =
+      await this.service.module.subjectsToBillingModuleCurrencies.find({
+        params: {
+          filters: {
+            and: [
+              { column: "subjectId", method: "eq", value: subjectId },
+              {
+                column: "billingModuleCurrencyId",
+                method: "eq",
+                value: currency.id,
+              },
+            ],
+          },
         },
-      },
-    });
+      });
     const amount = balances.reduce(
       (sum, balance) => sum + Number(balance.amount),
       0,

@@ -1,3 +1,5 @@
+import { createModule } from "../module";
+import { createModules } from "@sps/rbac/backend/app/api/src/lib/modules";
 import "reflect-metadata";
 import { injectFromBase, injectable } from "inversify";
 import { CRUDService } from "@sps/shared-backend-api";
@@ -5,4 +7,12 @@ import { Table } from "@sps/rbac/relations/subjects-to-actions/backend/repositor
 
 @injectable()
 @injectFromBase()
-export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {}
+export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
+  get modules() {
+    return this.appAssembly.getOrCreate(createModules);
+  }
+
+  get module() {
+    return this.appAssembly.getOrCreate(createModule);
+  }
+}

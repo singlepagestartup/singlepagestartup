@@ -7,9 +7,9 @@ export interface IFindProps {
   socialModuleProfileId: string;
   includeSubjectProfiles?: boolean;
   includeParticipants?: boolean;
-  params?: Parameters<
-    SubjectService["socialModule"]["chat"]["find"]
-  >[0]["params"];
+  params?: NonNullable<
+    Parameters<SubjectService["modules"]["social"]["chat"]["find"]>[0]
+  >["params"];
 }
 
 /** A single scoped collection, including all of the acting Subject's profiles. */
@@ -19,13 +19,17 @@ export class Service {
   async find(props: IFindProps) {
     if (!props.subjectId || !props.socialModuleProfileId)
       throw new Error("Validation error. Subject and Profile IDs are required");
-    const owned = await this.service.subjectsToSocialModuleProfiles.find({
-      params: {
-        filters: {
-          and: [{ column: "subjectId", method: "eq", value: props.subjectId }],
+    const owned = await this.service.module.subjectsToSocialModuleProfiles.find(
+      {
+        params: {
+          filters: {
+            and: [
+              { column: "subjectId", method: "eq", value: props.subjectId },
+            ],
+          },
         },
       },
-    });
+    );
     const profileIds = [
       ...new Set<string>(
         (owned || []).map((link) => link.socialModuleProfileId),
@@ -40,7 +44,7 @@ export class Service {
     });
     let chatIds: string[] | undefined;
     if (!admin) {
-      const links = await this.service.socialModule.profilesToChats.find({
+      const links = await this.service.modules.social.profilesToChats.find({
         params: {
           filters: {
             and: [
@@ -58,7 +62,7 @@ export class Service {
       chatIds = [...new Set<string>((links || []).map((link) => link.chatId))];
       if (!chatIds.length) return [];
     }
-    const chats = await this.service.socialModule.chat.find({
+    const chats = await this.service.modules.social.chat.find({
       params: {
         ...props.params,
         ...(!admin

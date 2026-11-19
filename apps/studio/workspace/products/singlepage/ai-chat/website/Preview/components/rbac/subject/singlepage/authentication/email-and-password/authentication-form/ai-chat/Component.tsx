@@ -1,15 +1,17 @@
 "use client";
-import { type ReactNode as ReactNode } from "react";
-import { type InputHTMLAttributes as InputHTMLAttributes } from "react";
-import { useId as useIdPresentation } from "react";
-import { useState as useStatePresentation } from "react";
-import { Component as WebsiteBuilderModuleButton } from "../../../../../../../website-builder/button/index";
 import {
+  useId as useIdPresentation,
+  useState as useStatePresentation,
   forwardRef as forwardRefControl,
+  useId,
+  useState,
+  type ReactNode,
+  type InputHTMLAttributes,
   type ButtonHTMLAttributes as ButtonControlProps,
+  type FormEvent,
 } from "react";
-import IconGlyphs from "../../../../../../../website-builder/feature/singlepage/icon/icons.json";
-import { useId, useState, type FormEvent } from "react";
+import { Component as WebsiteBuilderModuleButton } from "../../../../../../../website-builder/button/index";
+import IconGlyphs from "../../../../../../../../../../../../../design/singlepage/interface-kit/ai-chat/icons.json";
 import {
   AccountPage,
   PageSection,

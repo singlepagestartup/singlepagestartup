@@ -6,7 +6,11 @@ it.each([0, -1, 1.5, quantityBounds.max + 1])(
   async (quantity) => {
     const findById = jest.fn();
     const service = new Service({
-      ecommerceModule: { product: { findById } },
+      modules: {
+        ecommerce: {
+          product: { findById },
+        },
+      },
     } as any);
     await expect(
       service.execute({

@@ -29,3 +29,27 @@ The module generator inserts its import and entry into `apps/api/app.ts`'s
 `apiModules` registry. The API uses this registry for HTTP mounting and Host
 resource discovery. Keep this composition point in owned API entrypoints;
 no separate module route registration is generated.
+
+## Server service dependencies
+
+Add a new module at its approved position in the
+[module dependency order](../../../.agents/contracts/engineering/module-dependencies.md)
+before running the module generator. Creating or removing a module, model or
+relation refreshes the generated service registries. A registry entry calls
+the owner's service factory only when a consumer reads it.
+
+Add a project-specific public method to the entity's
+`backend/app/api/src/lib/service/startup/index.ts`. A higher module can call
+it with its inferred argument and result types. For example, Agent can call
+`this.modules.ecommerce.order.findById({ id })` and use methods added to the
+same Order startup class. Inside Ecommerce, Order can call
+`this.module.product.findById({ id })`. The generator adds `module` only to
+entities with local dependencies and derives its keys from outgoing relations.
+Product cannot resolve Order through either registry.
+
+Every entity exports `serviceBootstrap` from
+`backend/app/api/src/lib/bootstrap.ts`. For a scoped test, call
+`createAppAssembly(({ overrideService }) => overrideService(serviceBootstrap, replacement))`
+and pass that assembly to the owner and consumer bootstraps. The service factory
+resolves the effective service synchronously. The HTTP controller receives the
+same instance when its application starts.

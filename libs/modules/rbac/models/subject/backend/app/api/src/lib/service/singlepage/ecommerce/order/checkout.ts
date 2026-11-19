@@ -1,12 +1,11 @@
+import type { SubjectServiceDependencies } from "../../index";
 import { Service as InitialGrantProducts } from "../../billing/initial-grant-products";
 import { Service as CheckoutClaim } from "../../../startup/ecommerce/order/checkout-claim";
 import type { Repository } from "../../../../repository";
-import { Service as SubjectsToEcommerceModuleOrdersService } from "@sps/rbac/relations/subjects-to-ecommerce-module-orders/backend/app/api/src/lib/service";
 import {
   NEXT_PUBLIC_API_SERVICE_URL,
   RBAC_SECRET_KEY,
 } from "@sps/shared-utils";
-import { type IBillingModule, type IEcommerceModule } from "../../../../di";
 import { api as ecommerceModuleOrderApi } from "@sps/ecommerce/models/order/sdk/server";
 import type { IModel as IInvoice } from "@sps/billing/models/invoice/sdk/model";
 import {
@@ -75,28 +74,26 @@ export type IExecuteProps =
     };
 
 export interface IConstructorProps {
+  module: Pick<
+    SubjectServiceDependencies["module"],
+    "subjectsToEcommerceModuleOrders"
+  >;
+  modules: Pick<SubjectServiceDependencies["modules"], "billing" | "ecommerce">;
   repository: Pick<Repository, "withSubjectLock">;
   settledOrderIds: (props: { orderIds: string[] }) => Promise<Set<string>>;
   findById: ({ id }: { id: string }) => Promise<any>;
-  ecommerceModule: IEcommerceModule;
-  billingModule: IBillingModule;
-  subjectsToEcommerceModuleOrders: SubjectsToEcommerceModuleOrdersService;
 }
 
 export class Service {
-  findById: ({ id }: { id: string }) => Promise<any>;
-  ecommerceModule: IEcommerceModule;
-  billingModule: IBillingModule;
-  subjectsToEcommerceModuleOrders: SubjectsToEcommerceModuleOrdersService;
-
-  constructor(private readonly dependencies: IConstructorProps) {
-    const props = dependencies;
-    this.findById = props.findById;
-    this.ecommerceModule = props.ecommerceModule;
-    this.billingModule = props.billingModule;
-    this.subjectsToEcommerceModuleOrders =
-      props.subjectsToEcommerceModuleOrders;
+  get module() {
+    return this.dependencies.module;
   }
+
+  get modules() {
+    return this.dependencies.modules;
+  }
+
+  constructor(private readonly dependencies: IConstructorProps) {}
 
   async execute(
     props: IExecuteProps,
@@ -111,7 +108,7 @@ export class Service {
     }
     const rbacSecretKey = RBAC_SECRET_KEY;
 
-    const entity = await this.findById({
+    const entity = await this.dependencies.findById({
       id: props.id,
     });
 
@@ -119,7 +116,7 @@ export class Service {
       throw new Error("Not Found error. No entity found");
     }
 
-    const ecommerceModuleOrders = await this.ecommerceModule.order.find({
+    const ecommerceModuleOrders = await this.modules.ecommerce.order.find({
       params: {
         filters: {
           and: [
@@ -139,19 +136,21 @@ export class Service {
       throw new Error("Not Found error. No ecommerce module orders found");
     }
 
-    const ordersToProducts = await this.ecommerceModule.ordersToProducts.find({
-      params: {
-        filters: {
-          and: [
-            {
-              column: "orderId",
-              method: "inArray",
-              value: ecommerceModuleOrders.map((order) => order.id),
-            },
-          ],
+    const ordersToProducts = await this.modules.ecommerce.ordersToProducts.find(
+      {
+        params: {
+          filters: {
+            and: [
+              {
+                column: "orderId",
+                method: "inArray",
+                value: ecommerceModuleOrders.map((order) => order.id),
+              },
+            ],
+          },
         },
       },
-    });
+    );
 
     if (!ordersToProducts?.length) {
       throw new Error("Not Found error. No orders to products found");
@@ -169,25 +168,26 @@ export class Service {
       );
     }
     const existingPaymentLinks =
-      await this.ecommerceModule.ordersToBillingModulePaymentIntents.find({
-        params: {
-          filters: {
-            and: [
-              {
-                column: "orderId",
-                method: "inArray",
-                value: ecommerceModuleOrders.map((order) => order.id),
-              },
-            ],
+      await this.modules.ecommerce.order.ordersToBillingModulePaymentIntents.find(
+        {
+          params: {
+            filters: {
+              and: [
+                {
+                  column: "orderId",
+                  method: "inArray",
+                  value: ecommerceModuleOrders.map((order) => order.id),
+                },
+              ],
+            },
           },
         },
-      });
+      );
     if (existingPaymentLinks.length) {
       const existing = await new CheckoutClaim({
         repository: this.dependencies.repository,
-        ecommerceModule: this.ecommerceModule,
-        billingModule: this.billingModule,
-        subjectsToEcommerceModuleOrders: this.subjectsToEcommerceModuleOrders,
+        module: this.module,
+        modules: this.modules,
         settledOrderIds: this.dependencies.settledOrderIds,
       }).execute({
         subjectId: props.id,
@@ -196,9 +196,10 @@ export class Service {
         comment: props.comment,
       });
       if (existing.invoices) {
-        const trustedIntent = await this.billingModule.paymentIntent.findById({
-          id: existingPaymentLinks[0].billingModulePaymentIntentId,
-        });
+        const trustedIntent =
+          await this.modules.ecommerce.order.paymentIntent.findById({
+            id: existingPaymentLinks[0].billingModulePaymentIntentId,
+          });
         await this.registerCheckoutObservers({
           orderIds: ecommerceModuleOrders.map((order) => order.id),
           subjectId: props.id,
@@ -240,7 +241,7 @@ export class Service {
       );
     }
 
-    const ecommerceModuleProducts = await this.ecommerceModule.product.find({
+    const ecommerceModuleProducts = await this.modules.ecommerce.product.find({
       params: {
         filters: {
           and: [
@@ -262,7 +263,7 @@ export class Service {
 
     if (
       await new InitialGrantProducts(
-        this.ecommerceModule.storesToProducts,
+        this.modules.ecommerce.storesToProducts,
       ).includesAny(ecommerceModuleProducts.map((product) => product.id))
     ) {
       throw new Error(
@@ -271,7 +272,7 @@ export class Service {
     }
 
     const ecommerceModuleProductsToAttributes =
-      await this.ecommerceModule.productsToAttributes.find({
+      await this.modules.ecommerce.productsToAttributes.find({
         params: {
           filters: {
             and: [
@@ -295,7 +296,7 @@ export class Service {
     }
 
     const ecommerceModuleAttributesKeysToAttributes =
-      await this.ecommerceModule.attributeKeysToAttributes.find({
+      await this.modules.ecommerce.attributeKeysToAttributes.find({
         params: {
           filters: {
             and: [
@@ -319,7 +320,7 @@ export class Service {
     }
 
     const ecommerceModuleAttributesKeys =
-      await this.ecommerceModule.attributeKey.find({
+      await this.modules.ecommerce.attributeKey.find({
         params: {
           filters: {
             and: [
@@ -348,8 +349,8 @@ export class Service {
       );
     }
 
-    const ecommerceModuleAttributes = await this.ecommerceModule.attribute.find(
-      {
+    const ecommerceModuleAttributes =
+      await this.modules.ecommerce.attribute.find({
         params: {
           filters: {
             and: [
@@ -364,15 +365,14 @@ export class Service {
             ],
           },
         },
-      },
-    );
+      });
 
     if (!ecommerceModuleAttributes?.length && !offerBacked) {
       throw new Error("Not Found error. No ecommerce module attributes found");
     }
 
     const ecommerceModuleAttributesToBillingModuleCurrencies =
-      await this.ecommerceModule.attributesToBillingModuleCurrencies.find({
+      await this.modules.ecommerce.attributesToBillingModuleCurrencies.find({
         params: {
           filters: {
             and: [
@@ -388,7 +388,9 @@ export class Service {
         },
       });
 
-    const billingModuleCurrencies = await this.billingModule.currency.find({});
+    const billingModuleCurrencies = await this.modules.billing.currency.find(
+      {},
+    );
 
     const metadata:
       | {
@@ -518,7 +520,7 @@ export class Service {
     };
 
     const ordersToBillingModuleCurrencies =
-      await this.ecommerceModule.ordersToBillingModuleCurrencies.find({
+      await this.modules.ecommerce.ordersToBillingModuleCurrencies.find({
         params: {
           filters: {
             and: [
@@ -579,7 +581,7 @@ export class Service {
       const primary = lines.filter((line) => !line.parentLineId);
       if (!primary.some((line) => line.offerId)) {
         const attributes =
-          await this.ecommerceModule.order.findByIdCheckoutAttributesByCurrency(
+          await this.modules.ecommerce.order.findByIdCheckoutAttributesByCurrency(
             {
               id: order.id,
               billingModuleCurrencyId: currencyLinks[0].billingModuleCurrencyId,
@@ -621,7 +623,7 @@ export class Service {
     for (const { order } of offerSelections) {
       if (order.subscriptionSourceOrderId) {
         const fulfillment =
-          await this.ecommerceModule.order.fulfillmentQuoteOptions({
+          await this.modules.ecommerce.order.fulfillmentQuoteOptions({
             id: order.id,
           });
         fulfilledLineIds.push(...fulfillment.fulfilledLineIds);
@@ -634,13 +636,13 @@ export class Service {
     if (offerSelections.length) {
       const inputs = offerSelections.map((selection) => selection.input);
       if (quoteOptions) {
-        previews = await this.ecommerceModule.storesToProducts.quoteMany(
+        previews = await this.modules.ecommerce.storesToProducts.quoteMany(
           inputs,
           quoteOptions,
         );
       } else {
         previews =
-          await this.ecommerceModule.storesToProducts.quoteMany(inputs);
+          await this.modules.ecommerce.storesToProducts.quoteMany(inputs);
       }
     }
     if (previews.length !== offerSelections.length) {
@@ -746,9 +748,11 @@ export class Service {
       });
       if (
         type === "subscription" &&
-        !this.billingModule.paymentIntent.schedulesSubscriptionPayments({
-          provider: props.provider,
-        }) &&
+        !this.modules.ecommerce.order.paymentIntent.schedulesSubscriptionPayments(
+          {
+            provider: props.provider,
+          },
+        ) &&
         (primaryProduct?.kind === "physical" ||
           quote.charges.some(
             (charge) =>
@@ -772,7 +776,7 @@ export class Service {
       ),
     ];
     const checkoutStores = checkoutStoreIds.length
-      ? await this.ecommerceModule.store.find({
+      ? await this.modules.ecommerce.store.find({
           params: {
             filters: {
               and: [
@@ -792,9 +796,11 @@ export class Service {
     ) => {
       const selected = orderQuotes.get(orderId);
       if (!selected) {
-        await this.ecommerceModule.ordersToBillingModulePaymentIntents.create({
-          data: { orderId, billingModulePaymentIntentId: paymentIntentId },
-        });
+        await this.modules.ecommerce.order.ordersToBillingModulePaymentIntents.create(
+          {
+            data: { orderId, billingModulePaymentIntentId: paymentIntentId },
+          },
+        );
         return;
       }
       const lines = ordersToProducts.filter((line) => line.orderId === orderId);
@@ -881,9 +887,8 @@ export class Service {
       async () => {
         const claim = await new CheckoutClaim({
           repository: this.dependencies.repository,
-          ecommerceModule: this.ecommerceModule,
-          billingModule: this.billingModule,
-          subjectsToEcommerceModuleOrders: this.subjectsToEcommerceModuleOrders,
+          module: this.module,
+          modules: this.modules,
           settledOrderIds: this.dependencies.settledOrderIds,
         }).execute({
           subjectId: props.id,
@@ -897,7 +902,7 @@ export class Service {
           return claim;
         }
         if (orderQuotes.size) {
-          await this.ecommerceModule.ordersToBillingModulePaymentIntents.lockOffers(
+          await this.modules.ecommerce.order.ordersToBillingModulePaymentIntents.lockOffers(
             {
               offerIds: [...orderQuotes.values()].flatMap(({ quote }) =>
                 quote.charges.map((charge) => charge.offerId),
@@ -906,7 +911,7 @@ export class Service {
           );
           const selections = [...orderQuotes.entries()];
           const refreshed =
-            await this.ecommerceModule.storesToProducts.quotesUnderLock(
+            await this.modules.ecommerce.storesToProducts.quotesUnderLock(
               selections.map(([, selected]) => selected.input),
               selections.map(([, selected]) => selected.quote),
               quoteOptions,
@@ -979,7 +984,7 @@ export class Service {
                 );
               }
               sourceOrderIds.add(sourceOrderId);
-              const source = await this.ecommerceModule.order.findById({
+              const source = await this.modules.ecommerce.order.findById({
                 id: sourceOrderId,
               });
               if (!source) {
@@ -990,7 +995,7 @@ export class Service {
               sourceOrderId = source.subscriptionSourceOrderId;
             }
             const subjectToEcommerceModuleOrders =
-              await this.subjectsToEcommerceModuleOrders.find({
+              await this.module.subjectsToEcommerceModuleOrders.find({
                 params: {
                   filters: {
                     and: [
@@ -1007,7 +1012,7 @@ export class Service {
             if (subjectToEcommerceModuleOrders?.length) {
               for (const subjectToEcommerceModuleOrder of subjectToEcommerceModuleOrders) {
                 const ecommerceModuleOrder =
-                  await this.ecommerceModule.order.findById({
+                  await this.modules.ecommerce.order.findById({
                     id: subjectToEcommerceModuleOrder.ecommerceModuleOrderId,
                   });
 
@@ -1049,9 +1054,11 @@ export class Service {
                 }
 
                 const ecommerceModuleOrderCheckoutAttributes =
-                  await this.ecommerceModule.order.findByIdCheckoutAttributes({
-                    id: ecommerceModuleOrder.id,
-                  });
+                  await this.modules.ecommerce.order.findByIdCheckoutAttributes(
+                    {
+                      id: ecommerceModuleOrder.id,
+                    },
+                  );
 
                 if (
                   ecommerceModuleOrderCheckoutAttributes.type !== "subscription"
@@ -1060,7 +1067,7 @@ export class Service {
                 }
 
                 const existingOrdersToProducts =
-                  await this.ecommerceModule.ordersToProducts.find({
+                  await this.modules.ecommerce.ordersToProducts.find({
                     params: {
                       filters: {
                         and: [
@@ -1106,7 +1113,7 @@ export class Service {
             existingBillingModulePaymentIntentWithSameBillingModuleCurrencyAndCheckoutAttributes
           ) {
             const updatedBillingModulePaymentIntent =
-              await this.billingModule.paymentIntent.update({
+              await this.modules.ecommerce.order.paymentIntent.update({
                 id: existingBillingModulePaymentIntentWithSameBillingModuleCurrencyAndCheckoutAttributes
                   .billingModulePaymentIntent.id,
                 data: {
@@ -1118,6 +1125,10 @@ export class Service {
                   ),
                 },
               });
+
+            if (!updatedBillingModulePaymentIntent) {
+              throw new Error("Conflict error. Payment intent is unavailable");
+            }
 
             billingModulePaymentIntents.splice(
               billingModulePaymentIntents.indexOf(
@@ -1148,7 +1159,7 @@ export class Service {
           }
 
           const billingModulePaymentIntent =
-            await this.billingModule.paymentIntent.create({
+            await this.modules.ecommerce.order.paymentIntent.create({
               data: {
                 amount,
                 interval,
@@ -1175,83 +1186,86 @@ export class Service {
         }
 
         for (const [paymentIntentId, lines] of pendingReservations) {
-          await this.ecommerceModule.ordersToBillingModulePaymentIntents.reserveCharges(
+          await this.modules.ecommerce.order.ordersToBillingModulePaymentIntents.reserveCharges(
             { paymentIntentId, lines },
           );
         }
         for (const attempt of billingModulePaymentIntents) {
-          await this.billingModule.paymentIntent.prepareCheckoutDispatch({
-            id: attempt.billingModulePaymentIntent.id,
-            provider: props.provider,
-            currencyId: attempt.billingModuleCurrencyId,
-            metadata: {
-              ...metadata,
-              ...(internal?.providerContractPaymentIntentId
-                ? {
-                    providerContractPaymentIntentId:
-                      internal.providerContractPaymentIntentId,
-                  }
-                : {}),
-              ...(this.billingModule.paymentIntent.schedulesSubscriptionPayments(
-                {
-                  provider: props.provider,
-                },
-              ) && attempt.checkoutAttributesByCurrency.type === "subscription"
-                ? {
-                    providerRecurringAmount: moneyFromMinorUnits(
-                      attempt.orderIds.reduce((total, orderId) => {
-                        const selected = orderQuotes.get(orderId);
-                        if (!selected) {
+          await this.modules.ecommerce.order.paymentIntent.prepareCheckoutDispatch(
+            {
+              id: attempt.billingModulePaymentIntent.id,
+              provider: props.provider,
+              currencyId: attempt.billingModuleCurrencyId,
+              metadata: {
+                ...metadata,
+                ...(internal?.providerContractPaymentIntentId
+                  ? {
+                      providerContractPaymentIntentId:
+                        internal.providerContractPaymentIntentId,
+                    }
+                  : {}),
+                ...(this.modules.ecommerce.order.paymentIntent.schedulesSubscriptionPayments(
+                  {
+                    provider: props.provider,
+                  },
+                ) &&
+                attempt.checkoutAttributesByCurrency.type === "subscription"
+                  ? {
+                      providerRecurringAmount: moneyFromMinorUnits(
+                        attempt.orderIds.reduce((total, orderId) => {
+                          const selected = orderQuotes.get(orderId);
+                          if (!selected) {
+                            return (
+                              total +
+                              moneyMinorUnits(
+                                attempt.billingModulePaymentIntent.amount,
+                              )
+                            );
+                          }
                           return (
                             total +
-                            moneyMinorUnits(
-                              attempt.billingModulePaymentIntent.amount,
-                            )
+                            selected.quote.charges
+                              .filter(
+                                (charge) =>
+                                  charge.role === "product" ||
+                                  charge.recurrence === "each",
+                              )
+                              .reduce(
+                                (sum, charge) =>
+                                  sum + moneyMinorUnits(charge.amount),
+                                0n,
+                              )
                           );
-                        }
-                        return (
-                          total +
-                          selected.quote.charges
-                            .filter(
-                              (charge) =>
-                                charge.role === "product" ||
-                                charge.recurrence === "each",
-                            )
-                            .reduce(
-                              (sum, charge) =>
-                                sum + moneyMinorUnits(charge.amount),
-                              0n,
-                            )
-                        );
-                      }, 0n),
-                    ),
-                  }
-                : {}),
-              ecommerceModule: {
-                ...metadata.ecommerceModule,
-                orders: metadata.ecommerceModule.orders.filter((order) =>
-                  attempt.orderIds.includes(order.id),
-                ),
+                        }, 0n),
+                      ),
+                    }
+                  : {}),
+                ecommerceModule: {
+                  ...metadata.ecommerceModule,
+                  orders: metadata.ecommerceModule.orders.filter((order) =>
+                    attempt.orderIds.includes(order.id),
+                  ),
+                },
               },
             },
-          });
+          );
         }
         if (internal?.deferProviderCheckout) {
           for (const attempt of billingModulePaymentIntents) {
-            await this.billingModule.paymentIntentsToCurrencies.create({
+            await this.modules.billing.paymentIntentsToCurrencies.create({
               data: {
                 paymentIntentId: attempt.billingModulePaymentIntent.id,
                 currencyId: attempt.billingModuleCurrencyId,
               },
             });
-            const invoice = await this.billingModule.invoice.create({
+            const invoice = await this.modules.billing.invoice.create({
               data: {
                 provider: props.provider,
                 status: "draft",
                 amount: attempt.billingModulePaymentIntent.amount,
               },
             });
-            await this.billingModule.paymentIntentsToInvoices.create({
+            await this.modules.billing.paymentIntentsToInvoices.create({
               data: {
                 paymentIntentId: attempt.billingModulePaymentIntent.id,
                 invoiceId: invoice.id,
@@ -1273,14 +1287,15 @@ export class Service {
             if (exposedPaymentIntentIds.has(billingModulePaymentIntent.id)) {
               return;
             }
-            const current = await this.billingModule.paymentIntent.findById({
-              id: billingModulePaymentIntent.id,
-            });
+            const current =
+              await this.modules.ecommerce.order.paymentIntent.findById({
+                id: billingModulePaymentIntent.id,
+              });
             if (
               current &&
               !["succeeded", "failed", "canceled"].includes(current.status)
             ) {
-              await this.billingModule.paymentIntent.failUnpaidIntent(
+              await this.modules.ecommerce.order.paymentIntent.failUnpaidIntent(
                 current.id,
                 current.status,
               );
@@ -1347,7 +1362,7 @@ export class Service {
     }
 
     const billingModulePaymentIntentsToInvoices =
-      await this.billingModule.paymentIntentsToInvoices.find({
+      await this.modules.billing.paymentIntentsToInvoices.find({
         params: {
           filters: {
             and: [
@@ -1370,7 +1385,7 @@ export class Service {
       );
     }
 
-    const billingModuleInvoices = await this.billingModule.invoice.find({
+    const billingModuleInvoices = await this.modules.billing.invoice.find({
       params: {
         filters: {
           and: [
@@ -1397,7 +1412,9 @@ export class Service {
       throw new Error("Configuration error. RBAC_SECRET_KEY is required");
     }
     for (const id of ids) {
-      const intent = await this.billingModule.paymentIntent.findById({ id });
+      const intent = await this.modules.ecommerce.order.paymentIntent.findById({
+        id,
+      });
       if (
         !intent?.checkoutProvider ||
         !intent.checkoutCurrencyId ||
@@ -1412,7 +1429,9 @@ export class Service {
         data: {
           provider: intent.checkoutProvider,
           currencyId: intent.checkoutCurrencyId,
-          metadata: intent.checkoutMetadata,
+          metadata: intent.checkoutMetadata as Parameters<
+            typeof subjectPaymentApi.ecommerceModuleOrderPaymentProvider
+          >[0]["data"]["metadata"],
         },
         options: { headers: { "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY } },
       });
@@ -1423,7 +1442,7 @@ export class Service {
     ids: string[],
     existingInvoices: IInvoice[] = [],
   ) {
-    const links = await this.billingModule.paymentIntentsToInvoices.find({
+    const links = await this.modules.billing.paymentIntentsToInvoices.find({
       params: {
         filters: {
           and: [
@@ -1436,7 +1455,7 @@ export class Service {
         },
       },
     });
-    const invoices = await this.billingModule.invoice.find({
+    const invoices = await this.modules.billing.invoice.find({
       params: {
         filters: {
           and: [

@@ -1,5 +1,7 @@
 import { Repository as MessageRepository } from "@sps/broadcast/models/message/backend/app/api/src/lib/repository";
 import { Service as TopicService } from "@sps/notification/models/topic/backend/app/api/src/lib/service";
+import { serviceBootstrap as notificationOwner } from "@sps/notification/models/notification/backend/app/api/src/lib/bootstrap";
+import { createAppAssembly } from "@sps/shared-backend-api";
 import { Repository as TopicRepository } from "@sps/notification/models/topic/backend/app/api/src/lib/repository";
 import { Configuration as TopicConfiguration } from "@sps/notification/models/topic/backend/app/api/src/lib/configuration";
 import { DeliveryRepository } from "@sps/broadcast/models/channel/backend/app/api/src/lib/repository/delivery";
@@ -82,15 +84,13 @@ describe("Security summaries and password limits with real storage", () => {
     new TemplateConfiguration(),
   );
   const templateService = new TemplateService(templateRepository);
-  const notification = new NotificationService(
-    notificationRepository,
-    { channel: { queue } as any },
-    templateService,
-  );
+  const notification = new NotificationService(notificationRepository);
+  const assembly = createAppAssembly(({ overrideService }) => {
+    overrideService(notificationOwner, notification);
+  });
   const topic = new TopicService(
     new TopicRepository(new TopicConfiguration()),
-    { notification } as any,
-  );
+  ).withAppAssembly(assembly);
   const topicId = randomUUID();
   const telegramTemplateId = randomUUID();
   const emailTemplateId = randomUUID();
@@ -322,12 +322,12 @@ describe("Security summaries and password limits with real storage", () => {
       return result;
     });
     const createWorker = () =>
-      new Service(
-        role as any,
-        assignments as any,
-        links as any,
-        identities as any,
-        {
+      new Service({
+        role: role as any,
+        subjectsToRoles: assignments as any,
+        subjectsToIdentities: links as any,
+        identity: identities as any,
+        ...({
           topic: { find: async () => [{ id: topicId }], sendBounded },
           template: {
             find: async () => {
@@ -348,11 +348,11 @@ describe("Security summaries and password limits with real storage", () => {
               return templates;
             },
           },
-        } as any,
-        {
+        } as any),
+        ...({
           channel: { find: async () => [{ id: channelId }], queue },
-        } as any,
-      );
+        } as any),
+      });
     await Promise.all(
       Array.from({ length: 8 }, () => createWorker().execute()),
     );

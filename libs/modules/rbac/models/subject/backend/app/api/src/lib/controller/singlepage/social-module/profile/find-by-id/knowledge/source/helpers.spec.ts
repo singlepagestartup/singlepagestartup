@@ -3,17 +3,23 @@ import { resolveKnowledgeSourceProfileId } from "./helpers";
 function setup({ admin = false, requester = false, target = true } = {}) {
   const service = {
     socialModuleChatLifecycleIsSubjectAdmin: jest.fn().mockResolvedValue(admin),
-    socialModule: {
-      profilesToChats: {
-        find: jest
-          .fn()
-          .mockImplementation(({ params }) =>
-            Promise.resolve(
-              (params.filters.and[0].value === "requester" ? requester : target)
-                ? [{ id: "membership" }]
-                : [],
+    modules: {
+      social: {
+        profilesToChats: {
+          find: jest
+            .fn()
+            .mockImplementation(({ params }) =>
+              Promise.resolve(
+                (
+                  params.filters.and[0].value === "requester"
+                    ? requester
+                    : target
+                )
+                  ? [{ id: "membership" }]
+                  : [],
+              ),
             ),
-          ),
+        },
       },
     },
   };
@@ -69,5 +75,5 @@ it("rejects a target scope without a Chat ID before querying memberships", async
       socialModuleChatId: undefined,
     }),
   ).rejects.toThrow("socialModuleChatId is required");
-  expect(service.socialModule.profilesToChats.find).not.toHaveBeenCalled();
+  expect(service.modules.social.profilesToChats.find).not.toHaveBeenCalled();
 });

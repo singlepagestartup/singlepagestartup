@@ -5,17 +5,15 @@ import {
   normalizeRoutePath,
 } from "@sps/shared-utils";
 import { operatorOnlyRoutes } from "@sps/rbac/models/permission/backend/app/api/src/lib/service/singlepage/sensitive-routes";
-import { DI, type IRepository } from "@sps/shared-backend-api";
-import { Service as PermissionService } from "@sps/rbac/models/permission/backend/app/api/src/lib/service";
-import { Service as RolesToPermissionsService } from "@sps/rbac/relations/roles-to-permissions/backend/app/api/src/lib/service";
+import type { IRepository } from "@sps/shared-backend-api";
+import type { Service as PermissionService } from "@sps/rbac/models/permission/backend/app/api/src/lib/service";
+import type { Service as RolesToPermissionsService } from "@sps/rbac/relations/roles-to-permissions/backend/app/api/src/lib/service";
 import { verifyJwt } from "@sps/backend-utils";
-import { Service as SubjectsToRolesService } from "@sps/rbac/relations/subjects-to-roles/backend/app/api/src/lib/service";
+import type { Service as SubjectsToRolesService } from "@sps/rbac/relations/subjects-to-roles/backend/app/api/src/lib/service";
 import {
   type IModel as ISubject,
   isRbacSubjectTokenRevoked,
 } from "@sps/rbac/models/subject/sdk/model";
-import { inject, injectable } from "inversify";
-import { SubjectDI } from "../../di";
 
 const cache = createMemoryCache({ ttlMs: 30_000, maxSize: 10_000 });
 const operatorOnlyOperations = new RouteMatcher(operatorOnlyRoutes);
@@ -31,27 +29,17 @@ export type IExecuteProps = {
   };
 };
 
-@injectable()
-export class Service {
-  permissionService: PermissionService;
-  rolesToPermissionsService: RolesToPermissionsService;
-  subjectsToRolesService: SubjectsToRolesService;
-  repository: IRepository;
+interface IAuthorizationServices {
+  permission: Pick<PermissionService, "resolveByRoute" | "isSensitiveRoute">;
+  rolesToPermissions: Pick<RolesToPermissionsService, "find">;
+  subjectsToRoles: Pick<SubjectsToRolesService, "find">;
+}
 
+export class Service {
   constructor(
-    @inject(SubjectDI.IPermissionService)
-    permissionService: PermissionService,
-    @inject(SubjectDI.IRolesToPermissionsService)
-    rolesToPermissionsService: RolesToPermissionsService,
-    @inject(SubjectDI.ISubjectsToRolesService)
-    subjectsToRolesService: SubjectsToRolesService,
-    @inject(DI.IRepository) repository: IRepository,
-  ) {
-    this.permissionService = permissionService;
-    this.rolesToPermissionsService = rolesToPermissionsService;
-    this.subjectsToRolesService = subjectsToRolesService;
-    this.repository = repository;
-  }
+    readonly repository: IRepository,
+    private readonly services: IAuthorizationServices,
+  ) {}
 
   invalidateSubjectRoleCache(subjectId: string) {
     cache.del(`subjects-to-roles:subject:${subjectId}`);
@@ -122,7 +110,7 @@ export class Service {
       return cachedRoleIds;
     }
 
-    const subjectsToRoles = await this.subjectsToRolesService
+    const subjectsToRoles = await this.services.subjectsToRoles
       .find({
         params: {
           filters: {
@@ -158,7 +146,7 @@ export class Service {
       return [];
     }
 
-    const rolesToPermissions = await this.rolesToPermissionsService.find({
+    const rolesToPermissions = await this.services.rolesToPermissions.find({
       params: {
         filters: {
           and: [
@@ -218,7 +206,7 @@ export class Service {
     >(permissionResolutionCacheKey);
 
     if (!permissionResolution) {
-      permissionResolution = await this.permissionService.resolveByRoute({
+      permissionResolution = await this.services.permission.resolveByRoute({
         permission: {
           method: props.permission.method,
           route: props.permission.route,
@@ -258,7 +246,7 @@ export class Service {
        * only subtracts: every other role-less row keeps its behavior.
        */
       if (!permissionRoleIds.size) {
-        authorized = !(await this.permissionService.isSensitiveRoute(
+        authorized = !(await this.services.permission.isSensitiveRoute(
           props.permission.route,
           props.permission.method,
           permission.path,

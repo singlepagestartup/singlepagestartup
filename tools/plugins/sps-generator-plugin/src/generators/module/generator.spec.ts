@@ -8,6 +8,7 @@ import { createTreeWithEmptyWorkspace } from "@nx/devkit/testing";
 import { moduleGenerator } from "./generator";
 import { readFileSync } from "node:fs";
 import path from "node:path";
+import { moduleDependencyContract } from "../../utils/service-registries";
 
 it("generates a module using ModuleApp and its typed public interface", async () => {
   const tree = createTreeWithEmptyWorkspace();
@@ -15,6 +16,7 @@ it("generates a module using ModuleApp and its typed public interface", async ()
     "tsconfig.base.json",
     JSON.stringify({ compilerOptions: { paths: {} } }),
   );
+  tree.write(moduleDependencyContract, "1. `probe`\n");
   tree.write(
     "apps/api/app.ts",
     readFileSync(
@@ -37,6 +39,8 @@ it("generates a module using ModuleApp and its typed public interface", async ()
   const bootstrap = tree.read(`${root}/bootstrap.ts`)!.toString();
   expect(bootstrap).toContain("createAppBootstrap<IModuleApp<Apps>>");
   expect(bootstrap).not.toContain("new Container()");
+  expect(tree.read(`${root}/services.ts`, "utf8")).toContain("createServices");
+  expect(tree.read(`${root}/modules.ts`, "utf8")).toContain("createModules");
   const composition = tree.read("apps/api/app.ts")!.toString();
   expect(composition).toContain('"probe": probeApp,');
   expect(composition).toContain("export const app = new Hono<Env>()");

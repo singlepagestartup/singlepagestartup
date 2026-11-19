@@ -21,7 +21,7 @@ export class Handler {
       logger.info("Billing module invoice delete failed started");
 
       const notSucceededInvoices =
-        await this.service.billingModule.invoice.find({
+        await this.service.modules.billing.invoice.find({
           params: {
             filters: {
               and: [

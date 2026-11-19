@@ -1,4 +1,4 @@
-import Glyphs from "../../../../../website-builder/feature/singlepage/icon/icons.json";
+import Glyphs from "../../../../../../../../../../../design/singlepage/interface-kit/ai-chat/icons.json";
 function WebsiteBuilderModuleFeature({
   name,
   size = 20,

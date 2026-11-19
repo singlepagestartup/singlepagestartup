@@ -1,31 +1,28 @@
+import { createModule } from "../module";
+import { createModules } from "@sps/rbac/backend/app/api/src/lib/modules";
 import "reflect-metadata";
-import { inject, injectable } from "inversify";
-import { CRUDService, DI } from "@sps/shared-backend-api";
+import { injectFromBase, injectable } from "inversify";
+import { CRUDService } from "@sps/shared-backend-api";
 import { Table } from "@sps/rbac/models/role/backend/repository/database";
 
-import { Repository } from "../../repository";
-import { RoleDI } from "../../di";
-import { Service as PermissionService } from "@sps/rbac/models/permission/backend/app/api/src/lib/service";
-import { Service as RolesToPermissionsService } from "@sps/rbac/relations/roles-to-permissions/backend/app/api/src/lib/service";
 import { Service as PublicResourceIdsService } from "../startup/public-resource-ids";
 import type { IPublicResourceIdsParams } from "@sps/rbac/models/role/sdk/model";
 
 @injectable()
+@injectFromBase()
 export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
-  constructor(
-    @inject(DI.IRepository) repository: Repository,
-    @inject(RoleDI.IPermissionService)
-    private readonly permission: PermissionService,
-    @inject(RoleDI.IRolesToPermissionsService)
-    private readonly rolesToPermissions: RolesToPermissionsService,
-  ) {
-    super(repository);
+  get modules() {
+    return this.appAssembly.getOrCreate(createModules);
+  }
+
+  get module() {
+    return this.appAssembly.getOrCreate(createModule);
   }
 
   publicResourceIds(props: IPublicResourceIdsParams) {
     return new PublicResourceIdsService({
-      permission: this.permission,
-      rolesToPermissions: this.rolesToPermissions,
+      permission: this.module.permission,
+      rolesToPermissions: this.module.rolesToPermissions,
     }).execute(props);
   }
 }

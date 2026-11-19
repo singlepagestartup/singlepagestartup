@@ -67,10 +67,10 @@ export class Handler {
       });
 
       const [profile, skill] = await Promise.all([
-        this.service.socialModule.profile.findById({
+        this.service.modules.social.profile.findById({
           id: socialModuleProfileId,
         }),
-        this.service.socialModule.skill.findById({
+        this.service.modules.social.skill.findById({
           id: socialModuleSkillId,
         }),
       ]);
@@ -107,7 +107,7 @@ export class Handler {
       });
       if (!knowledgeIngest.source)
         throw new Error("Knowledge Source was not saved");
-      await this.service.socialModule.skillsToKnowledgeModuleSources.findOrCreate(
+      await this.service.modules.social.skillsToKnowledgeModuleSources.findOrCreate(
         {
           data: {
             skillId: skill.id,
@@ -178,7 +178,7 @@ export class Handler {
         },
       });
 
-      await this.service.socialModule.messagesToKnowledgeModuleSources.findOrCreate(
+      await this.service.modules.social.messagesToKnowledgeModuleSources.findOrCreate(
         {
           data: {
             messageId: userMessage.id,
@@ -224,7 +224,7 @@ export class Handler {
     socialModuleChatId: string;
   }) {
     const socialModuleProfilesToChats =
-      await this.service.socialModule.profilesToChats.find({
+      await this.service.modules.social.profilesToChats.find({
         params: {
           filters: {
             and: [
@@ -261,7 +261,7 @@ export class Handler {
     socialModuleSkillId: string;
   }) {
     const profilesToSkills =
-      await this.service.socialModule.profilesToSkills.find({
+      await this.service.modules.social.profilesToSkills.find({
         params: {
           filters: {
             and: [
@@ -292,7 +292,7 @@ export class Handler {
     knowledgeModuleSourceId: string;
   }) {
     const existing =
-      await this.service.socialModule.profilesToKnowledgeModuleSources.find({
+      await this.service.modules.social.profilesToKnowledgeModuleSources.find({
         params: {
           filters: {
             and: [
@@ -316,7 +316,7 @@ export class Handler {
       return existing[0];
     }
 
-    return this.service.socialModule.profilesToKnowledgeModuleSources.create({
+    return this.service.modules.social.profilesToKnowledgeModuleSources.create({
       data: {
         profileId: props.socialModuleProfileId,
         knowledgeModuleSourceId: props.knowledgeModuleSourceId,
@@ -325,7 +325,7 @@ export class Handler {
   }
 
   private async isSubjectAdmin(subjectId: string): Promise<boolean> {
-    const subjectsToRoles = await this.service.subjectsToRoles.find({
+    const subjectsToRoles = await this.service.module.subjectsToRoles.find({
       params: {
         filters: {
           and: [
@@ -347,7 +347,7 @@ export class Handler {
       return false;
     }
 
-    const roles = await this.service.role.find({
+    const roles = await this.service.module.role.find({
       params: {
         filters: {
           and: [
