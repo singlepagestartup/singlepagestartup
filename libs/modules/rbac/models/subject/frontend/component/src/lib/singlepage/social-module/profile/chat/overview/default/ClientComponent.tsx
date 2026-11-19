@@ -942,10 +942,7 @@ export function Component(props: IComponentPropsExtended) {
       data-module="rbac"
       data-model="subject"
       data-variant={props.variant}
-      className={cn(
-        "mx-auto min-w-0 w-full max-w-6xl px-4 py-6 sm:px-6",
-        props.className,
-      )}
+      className={cn("w-full min-w-0", props.className)}
     >
       <ChatWorkspace
         siteLayout

@@ -14,9 +14,8 @@ export function ChatWorkspace({
     <div
       className={cn(
         "flex min-w-0 overflow-hidden rounded-2xl border border-border bg-card",
-        // The site navbar, Social page padding and layout space before the footer.
         siteLayout
-          ? "h-[calc(100dvh-11rem-1px)] min-h-72"
+          ? "h-[100cqh] min-h-0"
           : "h-[calc(100dvh-9rem)] min-h-[560px]",
         className,
       )}
