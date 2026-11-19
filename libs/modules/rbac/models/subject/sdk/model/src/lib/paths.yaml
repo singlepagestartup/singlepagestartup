@@ -1513,6 +1513,65 @@ paths:
               schema:
                 $ref: "../../../../../../../../../libs/modules/social/models/thread/sdk/model/src/lib/social-thread.yaml"
 
+  /rbac/subjects/{id}/social-module/chats/{socialModuleChatId}/threads/{socialModuleThreadId}/read:
+    post:
+      tags:
+        - "rbac-subject"
+      summary: Mark thread messages read
+      description: Advance the acting Subject's read position through the supplied message
+      parameters:
+        - $ref: "../../../../../../../../../libs/shared/backend/api/src/lib/query-builder/id.yaml"
+        - name: socialModuleChatId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: socialModuleThreadId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                data:
+                  type: string
+                  description: JSON object containing messageId
+              required:
+                - data
+      responses:
+        "200":
+          description: Remaining unread counts for the thread and chat
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      threadId:
+                        type: string
+                        format: uuid
+                      unreadCount:
+                        type: integer
+                        minimum: 0
+                      chatUnreadCount:
+                        type: integer
+                        minimum: 0
+                    required:
+                      - threadId
+                      - unreadCount
+                      - chatUnreadCount
+                required:
+                  - data
+
   /rbac/subjects/{id}/social-module/chats:
     post:
       tags:
