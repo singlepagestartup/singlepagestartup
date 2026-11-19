@@ -14,8 +14,8 @@ import {app} from "@sps/rbac/models/subject/backend/app/api";
 
 assert(["localhost","127.0.0.1","::1"].includes(String(DATABASE_OPTIONS.host)),"Local PostgreSQL is required for rollback fixtures");
 const subjectService=app.controller.service;
-const crm=subjectService.crmModule;
-const notifications=subjectService.notificationModule;
+const crm=subjectService.modules.crm;
+const notifications=subjectService.modules.notification;
 const postgres=getPostgresClient();
 const prefix="issue376-crm-"+randomUUID();
 const created=[];
@@ -50,14 +50,14 @@ try{
  await getDrizzle({}).transaction(async tx=>withConsistencyDatabase(tx,async()=>{
   subject=await create(subjectService,{slug:prefix+"-guest"});
   const admin=await create(subjectService,{slug:prefix+"-recipient"});
-  let [role]=await subjectService.role.find(filter("slug","admin"));
-  if(!role)role=await create(subjectService.role,{slug:"admin",title:"Administrator"});
-  await create(subjectService.subjectsToRoles,{subjectId:admin.id,roleId:role.id});
+  let [role]=await subjectService.module.role.find(filter("slug","admin"));
+  if(!role)role=await create(subjectService.module.role,{slug:"admin",title:"Administrator"});
+  await create(subjectService.module.subjectsToRoles,{subjectId:admin.id,roleId:role.id});
   let [topic]=await notifications.topic.find(filter("slug","information"));
   if(!topic)topic=await create(notifications.topic,{slug:"information",title:"Information"});
   const fixtureTemplate=await create(notifications.template,{slug:prefix+"-template",title:"CRM acceptance",variant:"crm-form-request-created-admin"});
   const templates=await notifications.template.find(filter("variant","crm-form-request-created-admin","ilike"));
-  const admins=await subjectService.subjectsToRoles.find(filter("roleId",role.id));
+  const admins=await subjectService.module.subjectsToRoles.find(filter("roleId",role.id));
   const recipientIds=[...new Set(admins.map(link=>link.subjectId))];
   assert(templates.some(template=>template.id===fixtureTemplate.id));
   assert(recipientIds.includes(admin.id));

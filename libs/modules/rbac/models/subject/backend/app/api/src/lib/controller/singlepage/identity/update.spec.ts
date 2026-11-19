@@ -39,27 +39,33 @@ function fixture(
     resetPasswordCode: "code",
   };
   const service = {
-    subjectsToIdentities: {
-      find: jest.fn(async ({ params }: any) =>
-        links.filter((link) =>
-          params.filters.and.every(
-            (filter: any) =>
-              link[filter.column as keyof typeof link] === filter.value,
+    module: {
+      subjectsToIdentities: {
+        find: jest
+          .fn()
+          .mockImplementation(async ({ params }: any) =>
+            links.filter((link) =>
+              params.filters.and.every(
+                (filter: any) =>
+                  link[filter.column as keyof typeof link] === filter.value,
+              ),
+            ),
           ),
+      },
+      identity: {
+        findById: jest.fn(async () => identity),
+        changePassword: jest.fn(async () =>
+          Object.assign(identity, { password: "new-hash" }),
         ),
-      ),
-    },
-    identity: {
-      findById: jest.fn(async () => identity),
-      changePassword: jest.fn(async () =>
-        Object.assign(identity, { password: "new-hash" }),
-      ),
+      },
     },
   };
   const app = new Hono();
   app.patch(
     "/:uuid/identities/:identityUuid",
-    new RequestSubjectOwnsIdentity(service).init(),
+    new RequestSubjectOwnsIdentity(
+      () => service.module.subjectsToIdentities,
+    ).init(),
     (c) => new Handler(service as any).execute(c, undefined),
   );
   const request = (
@@ -83,7 +89,7 @@ it("changes the owned Identity through its service and returns only safe output"
   const { request, service } = fixture();
   const res = await request();
   expect(res.status).toBe(201);
-  expect(service.identity.changePassword).toHaveBeenCalledWith({
+  expect(service.module.identity.changePassword).toHaveBeenCalledWith({
     id: "identity",
     data: passwordBody,
   });
@@ -94,7 +100,7 @@ it("changes the owned Identity through its service and returns only safe output"
       email: "old@example.com",
     },
   });
-  expect(service.subjectsToIdentities.find).toHaveBeenCalledWith({
+  expect(service.module.subjectsToIdentities.find).toHaveBeenCalledWith({
     params: {
       filters: {
         and: [
@@ -134,8 +140,8 @@ it.each([
   async (_label, subjectId, identityId, links) => {
     const { request, service } = fixture(passwordBody, [...links]);
     expect((await request(subjectId, identityId)).status).toBe(400);
-    expect(service.identity.findById).not.toHaveBeenCalled();
-    expect(service.identity.changePassword).not.toHaveBeenCalled();
+    expect(service.module.identity.findById).not.toHaveBeenCalled();
+    expect(service.module.identity.changePassword).not.toHaveBeenCalled();
   },
 );
 
@@ -146,12 +152,12 @@ it("requires the effective user JWT even when a privileged secret is supplied", 
       .status,
   ).toBe(400);
   expect(verify).not.toHaveBeenCalled();
-  expect(service.identity.changePassword).not.toHaveBeenCalled();
+  expect(service.module.identity.changePassword).not.toHaveBeenCalled();
 });
 
 it("preserves invalid-current-password errors without returning or mutating credentials", async () => {
   const { request, service } = fixture();
-  service.identity.changePassword.mockRejectedValue(
+  service.module.identity.changePassword.mockRejectedValue(
     new Error("Validation error. Invalid credentials"),
   );
   const response = await request();
@@ -169,7 +175,7 @@ it.each([
   async (data) => {
     const { request, service } = fixture(data);
     expect((await request()).status).toBe(400);
-    expect(service.identity.changePassword).not.toHaveBeenCalled();
+    expect(service.module.identity.changePassword).not.toHaveBeenCalled();
   },
 );
 
@@ -177,5 +183,5 @@ it("rejects credentials managed by an external provider", async () => {
   const { request, service, identity } = fixture();
   identity.provider = "oauth_google";
   expect((await request()).status).toBe(400);
-  expect(service.identity.changePassword).not.toHaveBeenCalled();
+  expect(service.module.identity.changePassword).not.toHaveBeenCalled();
 });

@@ -2,7 +2,6 @@ import { DeliveryRepository } from "@sps/broadcast/models/channel/backend/app/ap
 import { Service as DeliveryQueue } from "@sps/broadcast/models/channel/backend/app/api/src/lib/service/singlepage/delivery-queue";
 import { randomUUID, createHash } from "node:crypto";
 import { getPostgresClient } from "@sps/shared-backend-database-config";
-import { CRUDService } from "@sps/shared-backend-api";
 import { DeliveryDeferredError } from "@sps/backend-utils";
 import { Configuration as MessageConfiguration } from "@sps/broadcast/models/message/backend/app/api/src/lib/configuration";
 import { Repository as ChannelRepository } from "@sps/broadcast/models/channel/backend/app/api/src/lib/repository";
@@ -45,20 +44,17 @@ describe("Notification delivery on Broadcast", () => {
     new DeliveryRepository(new MessageConfiguration()),
   );
   const repository = new Repository(new Configuration());
-  const notifications = new NotificationService(
-    repository,
-    {
-      channel: Object.assign(new CRUDService(channelRepository), { queue }),
-    },
-    { find: jest.fn(), render: jest.fn() },
-  );
+  const notifications = new NotificationService(repository);
   const channel = {
     queue,
-    find: jest.fn(async () => [{ id: channelId }]),
+    find: jest.fn(async () => {
+      const active = await channelRepository.findFirstByField("id", channelId);
+      return active ? [active] : [];
+    }),
     create: jest.fn(),
   };
   const ids: string[] = [];
-  const worker = () => new Service(notifications, { channel: channel as any });
+  const worker = () => new Service(notifications, channel);
   beforeAll(async () => {
     const client = (redis.client as any).client;
     if (client.status !== "ready") {

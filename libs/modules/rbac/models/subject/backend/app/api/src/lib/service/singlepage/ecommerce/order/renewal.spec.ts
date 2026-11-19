@@ -52,74 +52,82 @@ function fixture(provider = "stripe") {
     ecommerceOrderCheckout: jest.fn(async () => {
       nextLinks = [{ billingModulePaymentIntentId: "next-intent" }];
     }),
-    ecommerceModule: {
-      order: {
-        findById: jest.fn(async ({ id }) => (id === source.id ? source : next)),
-        find: jest.fn(async ({ params }) =>
-          params.filters.and[0].value === source.id ? [next] : [],
-        ),
-        lockForLifecycle: jest.fn(),
-        configureNextPeriod: jest.fn(async ({ startsAt, endsAt }) =>
-          Object.assign(next, {
-            subscriptionScheduledStartsAt: startsAt,
-            subscriptionScheduledEndsAt: endsAt,
-          }),
-        ),
-        update: jest.fn(),
-        stopSubscriptionRenewal: jest.fn(),
-        fulfillmentQuoteOptions: jest
-          .fn()
-          .mockResolvedValue({ fulfilledLineIds: [] }),
-      },
-      ordersToBillingModulePaymentIntents: {
-        find: jest.fn(async ({ params }) =>
-          params.filters.and[0].value === source.id
-            ? snapshots.map((purchaseSnapshot) => ({
-                billingModulePaymentIntentId: intent.id,
-                purchaseSnapshot,
-              }))
-            : nextLinks,
-        ),
-      },
-      ordersToBillingModuleCurrencies: {
-        find: jest.fn().mockResolvedValue([{ billingModuleCurrencyId: "usd" }]),
-      },
-      ordersToProducts: {
-        find: jest.fn().mockResolvedValue([
-          { id: "line", offerId: "offer", quantity: 1, parentLineId: null },
-          {
-            id: "delivery",
-            offerId: "delivery-offer",
-            quantity: 1,
-            parentLineId: "line",
-          },
-        ]),
-      },
-      storesToProducts: {
-        quoteMany: jest.fn().mockResolvedValue([{ amount: "120", issues: [] }]),
-      },
-    },
     ecommerceModuleOrderStripePayment: { reconcile: jest.fn() },
-    billingModule: {
-      paymentIntentsToInvoices: {
-        find: jest
-          .fn()
-          .mockResolvedValue([
-            { paymentIntentId: intent.id, invoiceId: "paid" },
+    modules: {
+      ecommerce: {
+        ordersToBillingModuleCurrencies: {
+          find: jest
+            .fn()
+            .mockResolvedValue([{ billingModuleCurrencyId: "usd" }]),
+        },
+        ordersToProducts: {
+          find: jest.fn().mockResolvedValue([
+            { id: "line", offerId: "offer", quantity: 1, parentLineId: null },
+            {
+              id: "delivery",
+              offerId: "delivery-offer",
+              quantity: 1,
+              parentLineId: "line",
+            },
           ]),
+        },
+        storesToProducts: {
+          quoteMany: jest
+            .fn()
+            .mockResolvedValue([{ amount: "120", issues: [] }]),
+        },
+        order: {
+          findById: jest.fn(async ({ id }) =>
+            id === source.id ? source : next,
+          ),
+          find: jest.fn(async ({ params }) =>
+            params.filters.and[0].value === source.id ? [next] : [],
+          ),
+          lockForLifecycle: jest.fn(),
+          configureNextPeriod: jest.fn(async ({ startsAt, endsAt }) =>
+            Object.assign(next, {
+              subscriptionScheduledStartsAt: startsAt,
+              subscriptionScheduledEndsAt: endsAt,
+            }),
+          ),
+          update: jest.fn(),
+          stopSubscriptionRenewal: jest.fn(),
+          fulfillmentQuoteOptions: jest
+            .fn()
+            .mockResolvedValue({ fulfilledLineIds: [] }),
+          ordersToBillingModulePaymentIntents: {
+            find: jest.fn(async ({ params }) =>
+              params.filters.and[0].value === source.id
+                ? snapshots.map((purchaseSnapshot) => ({
+                    billingModulePaymentIntentId: intent.id,
+                    purchaseSnapshot,
+                  }))
+                : nextLinks,
+            ),
+          },
+          paymentIntent: {
+            schedulesSubscriptionPayments: jest.fn(
+              ({ provider }: { provider: string }) => provider === "stripe",
+            ),
+            findById: jest.fn().mockResolvedValue(intent),
+            failUnpaidIntent: jest.fn(),
+          },
+        },
       },
-      paymentIntent: {
-        schedulesSubscriptionPayments: jest.fn(
-          ({ provider }: { provider: string }) => provider === "stripe",
-        ),
-        findById: jest.fn().mockResolvedValue(intent),
-        failUnpaidIntent: jest.fn(),
-      },
-      invoice: {
-        findById: jest
-          .fn()
-          .mockResolvedValue({ id: "paid", status: "paid", provider }),
-        update: jest.fn(),
+      billing: {
+        paymentIntentsToInvoices: {
+          find: jest
+            .fn()
+            .mockResolvedValue([
+              { paymentIntentId: intent.id, invoiceId: "paid" },
+            ]),
+        },
+        invoice: {
+          findById: jest
+            .fn()
+            .mockResolvedValue({ id: "paid", status: "paid", provider }),
+          update: jest.fn(),
+        },
       },
     },
   };
@@ -160,12 +168,13 @@ it("prepares one local Stripe payment and reuses it while reconciling provider r
 
 it("defers renewal checkout for another provider that owns subscription scheduling", async () => {
   const f = fixture("custom-scheduled");
-  f.service.billingModule.paymentIntent.schedulesSubscriptionPayments.mockReturnValue(
+  f.service.modules.ecommerce.order.paymentIntent.schedulesSubscriptionPayments.mockReturnValue(
     true,
   );
   await f.operation.execute({ subjectId: "buyer", orderId: "source" });
   expect(
-    f.service.billingModule.paymentIntent.schedulesSubscriptionPayments,
+    f.service.modules.ecommerce.order.paymentIntent
+      .schedulesSubscriptionPayments,
   ).toHaveBeenCalledWith({ provider: "custom-scheduled" });
   expect(f.service.ecommerceOrderCheckout).toHaveBeenCalledWith(
     expect.objectContaining({ provider: "custom-scheduled" }),
@@ -192,7 +201,7 @@ it("does not recursively reconcile while resolving a provider receipt", async ()
 
 it("requires buyer confirmation when the recurring price changes and stops the scheduled debit", async () => {
   const f = fixture();
-  f.service.ecommerceModule.storesToProducts.quoteMany.mockResolvedValue([
+  f.service.modules.ecommerce.storesToProducts.quoteMany.mockResolvedValue([
     { amount: "121", issues: [] },
   ]);
   await expect(
@@ -200,7 +209,7 @@ it("requires buyer confirmation when the recurring price changes and stops the s
   ).resolves.toEqual({ orderId: "next", requiresConfirmation: true });
   expect(f.service.ecommerceOrderCheckout).not.toHaveBeenCalled();
   expect(
-    f.service.ecommerceModule.order.stopSubscriptionRenewal,
+    f.service.modules.ecommerce.order.stopSubscriptionRenewal,
   ).toHaveBeenCalledWith({ id: "source" });
 });
 
@@ -243,20 +252,20 @@ it("keeps a manual Stripe subscription period payable without inventing a remote
   expect(
     f.service.ecommerceModuleOrderStripePayment.reconcile,
   ).not.toHaveBeenCalled();
-  f.service.ecommerceModule.storesToProducts.quoteMany.mockResolvedValue([
+  f.service.modules.ecommerce.storesToProducts.quoteMany.mockResolvedValue([
     { amount: "121", issues: [] },
   ]);
   f.setLinks([]);
   await f.operation.execute({ subjectId: "buyer", orderId: "source" });
   expect(
-    f.service.ecommerceModule.order.stopSubscriptionRenewal,
+    f.service.modules.ecommerce.order.stopSubscriptionRenewal,
   ).not.toHaveBeenCalled();
 });
 
 it("keeps the original automatic Stripe contract when preparing the third period", async () => {
   const f = fixture();
   f.intent.id = "second-period-intent";
-  f.service.billingModule.paymentIntentsToInvoices.find.mockResolvedValue([
+  f.service.modules.billing.paymentIntentsToInvoices.find.mockResolvedValue([
     { paymentIntentId: f.intent.id, invoiceId: "paid" },
   ]);
   f.intent.checkoutMetadata.providerContractPaymentIntentId =
@@ -283,7 +292,7 @@ it("keeps the provider contract active when preparation fails transiently", asyn
     f.operation.execute({ subjectId: "buyer", orderId: "source" }),
   ).rejects.toThrow("database unavailable");
   expect(
-    f.service.ecommerceModule.order.stopSubscriptionRenewal,
+    f.service.modules.ecommerce.order.stopSubscriptionRenewal,
   ).not.toHaveBeenCalled();
   f.service.ecommerceModuleOrderRepeat.mockRejectedValueOnce(
     new Error(
@@ -294,6 +303,6 @@ it("keeps the provider contract active when preparation fails transiently", asyn
     f.operation.execute({ subjectId: "buyer", orderId: "source" }),
   ).rejects.toThrow("insufficient_stock");
   expect(
-    f.service.ecommerceModule.order.stopSubscriptionRenewal,
+    f.service.modules.ecommerce.order.stopSubscriptionRenewal,
   ).toHaveBeenCalledTimes(1);
 });

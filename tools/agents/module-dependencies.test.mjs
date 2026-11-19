@@ -198,8 +198,8 @@ test("reports a cycle through service factories and ignores schema or type-only 
         return createParent();
       };
     `,
-    [`${source}/service/modules.ts`]:
-      "import * as services from '@sps/knowledge'; export const createServices = () => services.createTopic();",
+    [`${source}/service/module.ts`]:
+      "import * as services from '@sps/knowledge'; export const createModule = () => services.createTopic();",
     "libs/modules/knowledge/index.ts": `
       export { createService, createService as createTopic } from './models/topic/backend/app/api/src/lib/bootstrap';
       export const readPolicy = () => ({});
@@ -226,7 +226,7 @@ test("reports a cycle through service factories and ignores schema or type-only 
       result.violations[0].cycle.at(-1),
     );
 
-    rmSync(join(root, source, "service", "modules.ts"));
+    rmSync(join(root, source, "service", "module.ts"));
     assert.deepEqual(checkModuleDependencies(root).violations, []);
   } finally {
     rmSync(root, { recursive: true, force: true });

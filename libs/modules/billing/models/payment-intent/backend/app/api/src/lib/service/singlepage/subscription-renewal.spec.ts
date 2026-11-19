@@ -1,5 +1,8 @@
-import { Service } from "./index";
-import { withConsistencyDatabase } from "@sps/shared-backend-api";
+import { createService } from "../../bootstrap";
+import {
+  createAppAssembly,
+  withConsistencyDatabase,
+} from "@sps/shared-backend-api";
 
 const mockRetrieveInvoice = jest.fn();
 const mockRetrieveSubscription = jest.fn();
@@ -20,25 +23,25 @@ jest.mock("stripe", () => ({
 }));
 
 function fixture(type = "subscription", provider = "stripe", amount = 100) {
-  const service = new Service(
-    {} as any,
-    {
-      paymentIntentsToInvoices: {
-        find: jest
-          .fn()
-          .mockResolvedValue([
-            { paymentIntentId: "intent", invoiceId: "invoice" },
-          ]),
-      },
-      invoice: {
-        find: jest
-          .fn()
-          .mockResolvedValue([
-            { id: "invoice", status: "paid", provider, providerId: "in_paid" },
-          ]),
-      },
-    } as any,
-  );
+  const service = createService(createAppAssembly());
+  jest
+    .spyOn(service.module.paymentIntentsToInvoices, "find")
+    .mockImplementation(
+      jest
+        .fn()
+        .mockResolvedValue([
+          { paymentIntentId: "intent", invoiceId: "invoice" },
+        ]),
+    );
+  jest
+    .spyOn(service.module.invoice, "find")
+    .mockImplementation(
+      jest
+        .fn()
+        .mockResolvedValue([
+          { id: "invoice", status: "paid", provider, providerId: "in_paid" },
+        ]),
+    );
   jest
     .spyOn(service, "findById")
     .mockResolvedValue({ id: "intent", type, amount } as any);

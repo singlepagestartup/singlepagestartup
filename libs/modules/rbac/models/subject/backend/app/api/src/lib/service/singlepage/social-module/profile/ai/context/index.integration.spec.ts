@@ -78,8 +78,6 @@ it("merges two responding profiles across real JSONB CAS conflicts and rejects e
   };
   const create = (profileId: string) =>
     new Service({
-      socialModule: social,
-      fileStorageModule: { file: { find: async () => [] } } as any,
       chatId: randomUUID(),
       threadId: thread.id,
       profileId,
@@ -88,6 +86,10 @@ it("merges two responding profiles across real JSONB CAS conflicts and rejects e
       history,
       documentThread: false,
       mode: "compact",
+      modules: {
+        social: social,
+        fileStorage: { file: { find: async () => [] } } as any,
+      },
     });
   const provider: any = {
     generate: async ({ context }: any) => ({

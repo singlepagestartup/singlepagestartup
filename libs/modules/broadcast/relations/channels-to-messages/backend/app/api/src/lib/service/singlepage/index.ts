@@ -1,27 +1,19 @@
-import { createModules } from "../modules";
-import type { Repository } from "../../repository";
+import { createModule } from "../module";
+import { createModules } from "@sps/broadcast/backend/app/api/src/lib/modules";
 import "reflect-metadata";
-import { inject, injectable } from "inversify";
-import {
-  CRUDService,
-  DI,
-  withConsistencySnapshot,
-} from "@sps/shared-backend-api";
+import { injectFromBase, injectable } from "inversify";
+import { CRUDService, withConsistencySnapshot } from "@sps/shared-backend-api";
 import type { ISelectSchema } from "@sps/broadcast/relations/channels-to-messages/backend/repository/database";
-import { ChannelsToMessagesDI, type IMessageService } from "../../di";
 
 @injectable()
+@injectFromBase()
 export class Service extends CRUDService<ISelectSchema> {
   get modules() {
     return this.appAssembly.getOrCreate(createModules);
   }
 
-  constructor(
-    @inject(DI.IRepository) repository: Repository,
-    @inject(ChannelsToMessagesDI.IMessageService)
-    private readonly messages: IMessageService,
-  ) {
-    super(repository);
+  get module() {
+    return this.appAssembly.getOrCreate(createModule);
   }
 
   findWithMessage(id: string) {
@@ -31,7 +23,7 @@ export class Service extends CRUDService<ISelectSchema> {
         return null;
       }
 
-      const message = await this.messages.findPayloadById({
+      const message = await this.module.message.findPayloadById({
         id: relation.messageId,
       });
       if (!message) {

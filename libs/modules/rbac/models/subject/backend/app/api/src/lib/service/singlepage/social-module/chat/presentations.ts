@@ -3,13 +3,13 @@ import type { IProfilePresentation } from "@sps/social/models/profile/sdk/model"
 
 /** Only use IDs obtained from records in an already authorized Chat scope. */
 export class Service {
-  constructor(readonly service: SubjectServiceDependencies<"socialModule">) {}
+  constructor(readonly service: SubjectServiceDependencies) {}
 
   async find(profileIds: string[]): Promise<Map<string, IProfilePresentation>> {
     const selected = [...new Set(profileIds.filter(Boolean))];
     const values = await Promise.all(
       selected.map((id) =>
-        this.service.socialModule.profile.profilePresentation({ id }),
+        this.service.modules.social.profile.profilePresentation({ id }),
       ),
     );
     return new Map(

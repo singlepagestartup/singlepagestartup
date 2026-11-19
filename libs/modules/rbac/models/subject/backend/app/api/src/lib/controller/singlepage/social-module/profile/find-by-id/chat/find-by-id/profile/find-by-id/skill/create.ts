@@ -39,7 +39,7 @@ export class Handler {
         service: this.service,
         targetSocialModuleProfileId,
       });
-      const skill = await this.service.socialModule.skill.create({
+      const skill = await this.service.modules.social.skill.create({
         data: {
           variant: "default",
           className: "",
@@ -50,7 +50,7 @@ export class Handler {
         },
       });
 
-      await this.service.socialModule.profilesToSkills.create({
+      await this.service.modules.social.profilesToSkills.create({
         data: {
           variant: "default",
           className: "",

@@ -51,7 +51,7 @@ export class Service {
       throw new Error("Validation error. Currency is required");
     }
 
-    const currency = await this.service.billingModule.currency.findById({
+    const currency = await this.service.module.currency.findById({
       id: data.currencyId,
     });
 
@@ -69,21 +69,20 @@ export class Service {
         provider,
       });
       if (!claimed) {
-        const links =
-          await this.service.billingModule.paymentIntentsToInvoices.find({
-            params: {
-              filters: {
-                and: [
-                  {
-                    column: "paymentIntentId",
-                    method: "eq",
-                    value: entity.id,
-                  },
-                ],
-              },
+        const links = await this.service.module.paymentIntentsToInvoices.find({
+          params: {
+            filters: {
+              and: [
+                {
+                  column: "paymentIntentId",
+                  method: "eq",
+                  value: entity.id,
+                },
+              ],
             },
-          });
-        const invoices = await this.service.billingModule.invoice.find({
+          },
+        });
+        const invoices = await this.service.module.invoice.find({
           params: {
             filters: {
               and: [

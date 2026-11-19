@@ -48,12 +48,8 @@ type IConstructorProps = {
   attributeKey: AttributeKeyService;
   attributesToBillingModuleCurrencies: AttributesToBillingModuleCurrenciesService;
   productsToFileStorageModuleFiles: ProductsToFileStorageModuleFilesService;
-  billingModule: {
-    currency: BillingCurrencyService;
-  };
-  fileStorageModule: {
-    file: FileStorageFileService;
-  };
+  currency: BillingCurrencyService;
+  file: FileStorageFileService;
 };
 
 export class Service {
@@ -64,8 +60,8 @@ export class Service {
   attributeKey: AttributeKeyService;
   attributesToBillingModuleCurrencies: AttributesToBillingModuleCurrenciesService;
   productsToFileStorageModuleFiles: ProductsToFileStorageModuleFilesService;
-  billingModule: IConstructorProps["billingModule"];
-  fileStorageModule: IConstructorProps["fileStorageModule"];
+  currency: IConstructorProps["currency"];
+  file: IConstructorProps["file"];
 
   constructor(props: IConstructorProps) {
     this.findById = props.findById;
@@ -77,8 +73,8 @@ export class Service {
       props.attributesToBillingModuleCurrencies;
     this.productsToFileStorageModuleFiles =
       props.productsToFileStorageModuleFiles;
-    this.billingModule = props.billingModule;
-    this.fileStorageModule = props.fileStorageModule;
+    this.currency = props.currency;
+    this.file = props.file;
   }
 
   protected async extendedEcommerceModuleAttributeById(props: {
@@ -141,7 +137,7 @@ export class Service {
           })
         : Promise.resolve([]),
       attributesToBillingModuleCurrencies?.length
-        ? this.billingModule.currency.find({
+        ? this.currency.find({
             params: {
               filters: {
                 and: [
@@ -245,7 +241,7 @@ export class Service {
 
     let fileStorageModuleFiles: IFileStorageModuleFile[] | null;
     if (productsToFileStorageModuleFiles?.length) {
-      fileStorageModuleFiles = await this.fileStorageModule.file.find({
+      fileStorageModuleFiles = await this.file.find({
         params: {
           filters: {
             and: [

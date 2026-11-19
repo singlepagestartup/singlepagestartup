@@ -11,11 +11,7 @@ export interface IExecuteProps {
 }
 export interface IConstructorProps {
   repository: Pick<Repository, "withSubjectLock">;
-  service: SubjectServiceDependencies<
-    | "ecommerceModule"
-    | "subjectsToEcommerceModuleOrders"
-    | "ecommerceModuleOrderAssertAccess"
-  >;
+  service: SubjectServiceDependencies<"ecommerceModuleOrderAssertAccess">;
 }
 
 export class Service {
@@ -29,7 +25,7 @@ export class Service {
         orderId: props.orderId,
         lineIds: props.lines.map((line) => line.id),
       });
-      const lines = await service.ecommerceModule.ordersToProducts.find({
+      const lines = await service.modules.ecommerce.ordersToProducts.find({
         params: {
           filters: {
             and: [{ column: "orderId", method: "eq", value: props.orderId }],
@@ -42,7 +38,7 @@ export class Service {
         ) ?? [];
       if (primary.length === 1 && primary[0].offerId) {
         const currencies =
-          await service.ecommerceModule.ordersToBillingModuleCurrencies.find({
+          await service.modules.ecommerce.ordersToBillingModuleCurrencies.find({
             params: {
               filters: {
                 and: [
@@ -69,8 +65,8 @@ export class Service {
               (line: { parentLineId?: string | null }) =>
                 line.parentLineId === primary[0].id,
             )
-            .map((line: { id: string; offerId: string; quantity: number }) => ({
-              offerId: line.offerId,
+            .map((line) => ({
+              offerId: line.offerId!,
               quantity: updates.get(line.id) ?? line.quantity,
             })),
         };
@@ -110,22 +106,23 @@ export class Service {
             ? { lineIds: props.lines.map((line) => line.id) }
             : {}),
         });
-        await service.ecommerceModule.order.lockForLifecycle({
+        await service.modules.ecommerce.order.lockForLifecycle({
           id: props.orderId,
         });
-        const owners = await service.subjectsToEcommerceModuleOrders.find({
-          params: {
-            filters: {
-              and: [
-                {
-                  column: "ecommerceModuleOrderId",
-                  method: "eq",
-                  value: props.orderId,
-                },
-              ],
+        const owners =
+          await service.module.subjectsToEcommerceModuleOrders.find({
+            params: {
+              filters: {
+                and: [
+                  {
+                    column: "ecommerceModuleOrderId",
+                    method: "eq",
+                    value: props.orderId,
+                  },
+                ],
+              },
             },
-          },
-        });
+          });
         if (
           !owners.length ||
           owners.some((owner) => owner.subjectId !== props.subjectId)
@@ -134,7 +131,7 @@ export class Service {
             "Permission error. Order must belong only to the current subject",
           );
         }
-        const order = await service.ecommerceModule.order.findById({
+        const order = await service.modules.ecommerce.order.findById({
           id: props.orderId,
         });
         if (!order || order.type !== "cart" || order.status !== "new") {
@@ -143,7 +140,7 @@ export class Service {
           );
         }
         const paymentLinks =
-          await service.ecommerceModule.ordersToBillingModulePaymentIntents.find(
+          await service.modules.ecommerce.order.ordersToBillingModulePaymentIntents.find(
             {
               params: {
                 filters: {
@@ -160,7 +157,7 @@ export class Service {
           );
         }
         if (!props.lines) {
-          await service.ecommerceModule.order.delete({ id: props.orderId });
+          await service.modules.ecommerce.order.delete({ id: props.orderId });
           return;
         }
         if (
@@ -176,7 +173,7 @@ export class Service {
             `Validation error. Quantity must be an integer between ${quantityBounds.min} and ${quantityBounds.max}`,
           );
         }
-        const lines = await service.ecommerceModule.ordersToProducts.find({
+        const lines = await service.modules.ecommerce.ordersToProducts.find({
           params: {
             filters: {
               and: [{ column: "orderId", method: "eq", value: props.orderId }],
@@ -184,13 +181,13 @@ export class Service {
           },
         });
         for (const line of lines) {
-          const product = await service.ecommerceModule.product.findById({
+          const product = await service.modules.ecommerce.product.findById({
             id: line.productId,
           });
           if (
             product &&
             (await new InitialGrantProducts(
-              service.ecommerceModule.storesToProducts,
+              service.modules.ecommerce.storesToProducts,
             ).includes(product.id))
           ) {
             throw new Error(
@@ -199,7 +196,7 @@ export class Service {
           }
         }
         for (const line of props.lines) {
-          await service.ecommerceModule.ordersToProducts.update({
+          await service.modules.ecommerce.ordersToProducts.update({
             id: line.id,
             data: { quantity: line.quantity, selectionUpdatedAt: new Date() },
           });

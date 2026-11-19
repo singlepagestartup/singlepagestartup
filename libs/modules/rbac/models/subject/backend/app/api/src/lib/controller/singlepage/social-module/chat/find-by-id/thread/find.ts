@@ -40,7 +40,7 @@ export class Handler {
       const orderBy = parsedQuery?.orderBy;
 
       const socialModuleChatsToThreads =
-        await this.service.socialModule.chatsToThreads.find({
+        await this.service.modules.social.chatsToThreads.find({
           params: {
             filters: {
               and: [
@@ -63,22 +63,24 @@ export class Handler {
         });
       }
 
-      const socialModuleThreads = await this.service.socialModule.thread.find({
-        params: {
-          filters: {
-            and: [
-              {
-                column: "id",
-                method: "inArray",
-                value: socialModuleChatsToThreads.map((chatToThread) => {
-                  return chatToThread.threadId;
-                }),
-              },
-            ],
+      const socialModuleThreads = await this.service.modules.social.thread.find(
+        {
+          params: {
+            filters: {
+              and: [
+                {
+                  column: "id",
+                  method: "inArray",
+                  value: socialModuleChatsToThreads.map((chatToThread) => {
+                    return chatToThread.threadId;
+                  }),
+                },
+              ],
+            },
+            orderBy,
           },
-          orderBy,
         },
-      });
+      );
 
       return c.json({
         data: socialModuleThreads,

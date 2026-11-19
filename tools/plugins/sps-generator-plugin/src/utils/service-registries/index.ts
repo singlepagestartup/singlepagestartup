@@ -225,7 +225,7 @@ function renderAccess({
 }: {
   imports: string[];
   properties: string[];
-  factory: "createServices" | "createModules";
+  factory: "createServices" | "createModules" | "createModule";
 }) {
   const hasProperties = properties.length > 0;
   const argument = hasProperties ? "assembly" : "_assembly";
@@ -282,40 +282,65 @@ function writeModuleViews(
 function writeEntityView(tree: Tree, entity: IEntity, dependencies: IEntity[]) {
   const lowerView = `@sps/${entity.module}/${appLib}/modules`;
   const directory = `${entity.directory}/${appLib}/service`;
-  const localView = `${directory}/modules.ts`;
-  if (dependencies.length) {
-    const { imports, properties } = entityAccess(dependencies);
-    writeChanged(
-      tree,
-      localView,
-      renderAccess({
-        imports: [
-          `import { createModules as createLowerModules } from "${lowerView}";`,
-          ...imports,
-        ],
-        properties: [
-          "...assembly.getOrCreate(createLowerModules),",
-          `${names(entity.module).propertyName}: {\n${renderProperties(properties, 2)}\n},`,
-        ],
-        factory: "createModules",
-      }),
+  const localView = `${directory}/module.ts`;
+  const legacyView = `${directory}/modules.ts`;
+  const localSource = tree.read(localView, "utf8");
+  const hasLocalServices = dependencies.length > 0;
+  if (
+    hasLocalServices &&
+    localSource !== null &&
+    !localSource.startsWith(generated)
+  ) {
+    throw new Error(
+      `Cannot overwrite a manually maintained registry in ${localView}`,
     );
-  } else if (tree.read(localView, "utf8")?.startsWith(generated)) {
-    tree.delete(localView);
   }
-
   const path = `${directory}/singlepage/index.ts`;
   const source = tree.read(path, "utf8");
   if (!source) {
     throw new Error(`Cannot find the service implementation in ${path}`);
   }
-  const viewImport = dependencies.length ? "../modules" : lowerView;
-  const importStatement = `import { createModules } from "${viewImport}";`;
-  const existingImport = /^import \{ createModules \} from "[^"]+";$/m;
-  if (existingImport.test(source)) {
-    writeChanged(tree, path, source.replace(existingImport, importStatement));
-    return;
+  const updated = updateEntityService(
+    path,
+    source,
+    lowerView,
+    hasLocalServices,
+  );
+  if (hasLocalServices) {
+    writeChanged(
+      tree,
+      localView,
+      renderAccess({
+        ...entityAccess(dependencies),
+        factory: "createModule",
+      }),
+    );
+  } else if (localSource?.startsWith(generated)) {
+    tree.delete(localView);
   }
+  if (tree.read(legacyView, "utf8")?.startsWith(generated)) {
+    tree.delete(legacyView);
+  }
+
+  writeChanged(tree, path, updated);
+}
+
+interface ISourceEdit {
+  start: number;
+  end: number;
+  text: string;
+}
+
+function registryGetter(name: "module" | "modules", factory: string) {
+  return `  get ${name}() {\n    return this.appAssembly.getOrCreate(${factory});\n  }`;
+}
+
+function updateEntityService(
+  path: string,
+  source: string,
+  lowerView: string,
+  hasLocalServices: boolean,
+) {
   const parsed = ts.createSourceFile(path, source, ts.ScriptTarget.Latest);
   const service = parsed.statements.find(
     (node): node is ts.ClassDeclaration =>
@@ -324,16 +349,144 @@ function writeEntityView(tree: Tree, entity: IEntity, dependencies: IEntity[]) {
   if (!service) {
     throw new Error(`Cannot find the Service class in ${path}`);
   }
-  const open = service.members.pos;
-  const rest = source.slice(open);
-  const gap = rest.startsWith("}") ? "\n" : "";
-  const getter =
-    "\n  get modules() {\n    return this.appAssembly.getOrCreate(createModules);\n  }\n";
-  writeChanged(
-    tree,
-    path,
-    `${importStatement}\n${source.slice(0, open)}${getter}${gap}${rest}`,
+  const edits: ISourceEdit[] = [];
+  const newImports: string[] = [];
+  const modulesImport = findFactoryImport(parsed, "createModules", [
+    lowerView,
+    "../modules",
+  ]);
+  if (!modulesImport) {
+    newImports.push(`import { createModules } from "${lowerView}";`);
+  } else if (modulesImport.moduleSpecifier.text !== lowerView) {
+    assertDedicatedImport(parsed, modulesImport, "createModules");
+    edits.push({
+      start: modulesImport.moduleSpecifier.getStart(parsed),
+      end: modulesImport.moduleSpecifier.end,
+      text: `"${lowerView}"`,
+    });
+  }
+  const localImport = findFactoryImport(parsed, "createModule", ["../module"]);
+  const modulesGetter = service.members.find(
+    (member) =>
+      ts.isGetAccessor(member) && member.name.getText(parsed) === "modules",
   );
+  const localGetter = service.members.find(
+    (member) =>
+      ts.isGetAccessor(member) && member.name.getText(parsed) === "module",
+  );
+  const newGetters: string[] = [];
+  if (!modulesGetter) {
+    newGetters.push(registryGetter("modules", "createModules"));
+  }
+  if (hasLocalServices) {
+    if (!localImport) {
+      newImports.push('import { createModule } from "../module";');
+    }
+    if (!localGetter) {
+      newGetters.push(registryGetter("module", "createModule"));
+    }
+  } else if (localImport) {
+    assertDedicatedImport(parsed, localImport, "createModule");
+    const defaultGetter = registryGetter("module", "createModule").trimStart();
+    if (localGetter?.getText(parsed) !== defaultGetter) {
+      throw new Error(`Cannot remove a customized module getter in ${path}`);
+    }
+    const start = localGetter.getStart(parsed);
+    const leading = source.slice(localGetter.getFullStart(), start);
+    edits.push({
+      start: localImport.getStart(parsed),
+      end: localImport.end + Number(source[localImport.end] === "\n"),
+      text: "",
+    });
+    edits.push({
+      start: leading.trim() ? start : localGetter.getFullStart(),
+      end: localGetter.end,
+      text: "",
+    });
+  }
+  if (newImports.length) {
+    edits.push({ start: 0, end: 0, text: `${newImports.join("\n")}\n` });
+  }
+  if (newGetters.length) {
+    const start = modulesGetter?.end ?? service.members.pos;
+    const before = modulesGetter ? "\n\n" : "\n";
+    const after = source[start] === "\n" ? "" : "\n";
+    edits.push({
+      start,
+      end: start,
+      text: `${before}${newGetters.join("\n\n")}${after}`,
+    });
+  }
+  return edits
+    .sort((left, right) => right.start - left.start)
+    .reduce(
+      (result, { start, end, text }) =>
+        `${result.slice(0, start)}${text}${result.slice(end)}`,
+      source,
+    );
+}
+
+function findFactoryImport(
+  source: ts.SourceFile,
+  name: string,
+  paths: string[],
+) {
+  return source.statements.find(
+    (
+      statement,
+    ): statement is ts.ImportDeclaration & {
+      moduleSpecifier: ts.StringLiteral;
+    } => {
+      if (
+        !ts.isImportDeclaration(statement) ||
+        !ts.isStringLiteral(statement.moduleSpecifier)
+      ) {
+        return false;
+      }
+      const clause = statement.importClause;
+      const bindings = clause?.namedBindings;
+      const named =
+        bindings && ts.isNamedImports(bindings)
+          ? bindings.elements.find((binding) => binding.name.text === name)
+          : undefined;
+      const namespace =
+        bindings &&
+        ts.isNamespaceImport(bindings) &&
+        bindings.name.text === name;
+      if (!named && !namespace && clause?.name?.text !== name) {
+        return false;
+      }
+      if (
+        !named ||
+        (named.propertyName && named.propertyName.text !== name) ||
+        named.isTypeOnly ||
+        clause?.isTypeOnly ||
+        !paths.includes(statement.moduleSpecifier.text)
+      ) {
+        throw new Error(`Conflicting ${name} import in ${source.fileName}`);
+      }
+      return true;
+    },
+  );
+}
+
+function assertDedicatedImport(
+  source: ts.SourceFile,
+  statement: ts.ImportDeclaration,
+  name: string,
+) {
+  const clause = statement.importClause;
+  const bindings = clause?.namedBindings;
+  if (
+    clause?.name ||
+    !bindings ||
+    !ts.isNamedImports(bindings) ||
+    bindings.elements.length !== 1
+  ) {
+    throw new Error(
+      `Use a dedicated ${name} import before regenerating ${source.fileName}`,
+    );
+  }
 }
 
 export function synchronizeServiceRegistries(tree: Tree) {

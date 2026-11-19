@@ -13,12 +13,16 @@ import { Service as StartupBalance } from "../../../service/startup/billing/bala
 it("serves the project balance to its owner and rejects another Subject", async () => {
   const balances = { find: jest.fn().mockResolvedValue([{ amount: "3000" }]) };
   const handler = new Handler({
-    billingModule: {
-      currency: {
-        find: jest.fn().mockResolvedValue([{ id: "token-currency" }]),
+    module: {
+      subjectsToBillingModuleCurrencies: balances,
+    },
+    modules: {
+      billing: {
+        currency: {
+          find: jest.fn().mockResolvedValue([{ id: "token-currency" }]),
+        },
       },
     },
-    subjectsToBillingModuleCurrencies: balances,
   } as any);
   const app = new Hono().get(
     "/subjects/:id/billing-module/balance",

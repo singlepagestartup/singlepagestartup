@@ -60,7 +60,7 @@ export class Handler {
         });
 
         const socialModuleThreadsToMessages =
-          await this.service.socialModule.threadsToMessages.find({
+          await this.service.modules.social.threadsToMessages.find({
             params: {
               filters: {
                 and: [
@@ -84,7 +84,7 @@ export class Handler {
         }
 
         const socialModuleMessages =
-          await this.service.socialModule.message.find({
+          await this.service.modules.social.message.find({
             params: {
               filters: {
                 and: [
@@ -113,7 +113,7 @@ export class Handler {
       }
 
       const socialModuleChatsToMessages =
-        await this.service.socialModule.chatsToMessages.find({
+        await this.service.modules.social.chatsToMessages.find({
           params: {
             filters: {
               and: [
@@ -136,8 +136,8 @@ export class Handler {
         });
       }
 
-      const socialModuleMessages = await this.service.socialModule.message.find(
-        {
+      const socialModuleMessages =
+        await this.service.modules.social.message.find({
           params: {
             filters: {
               and: [
@@ -154,8 +154,7 @@ export class Handler {
             },
             orderBy,
           },
-        },
-      );
+        });
 
       const messages = await new SocialModuleChatMessages(this.service).enrich(
         socialModuleMessages,
@@ -176,7 +175,7 @@ export class Handler {
     socialModuleChatId: string;
   }) {
     const socialModuleProfilesToChats =
-      await this.service.socialModule.profilesToChats.find({
+      await this.service.modules.social.profilesToChats.find({
         params: {
           filters: {
             and: [
@@ -209,7 +208,7 @@ export class Handler {
   }
 
   async isSubjectAdmin(subjectId: string): Promise<boolean> {
-    const subjectsToRoles = await this.service.subjectsToRoles.find({
+    const subjectsToRoles = await this.service.module.subjectsToRoles.find({
       params: {
         filters: {
           and: [
@@ -232,7 +231,7 @@ export class Handler {
       return false;
     }
 
-    const roles = await this.service.role.find({
+    const roles = await this.service.module.role.find({
       params: {
         filters: {
           and: [

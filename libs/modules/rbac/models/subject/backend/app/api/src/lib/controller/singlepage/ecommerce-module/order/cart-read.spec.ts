@@ -68,19 +68,23 @@ function createService() {
       ecommerceModuleOrderPurchasePayments: jest
         .fn()
         .mockResolvedValue({ retryableIds: new Set(), paymentUrls: new Map() }),
-      subjectsToEcommerceModuleOrders: {
-        find: jest
-          .fn()
-          .mockResolvedValue([{ ecommerceModuleOrderId: "order-1" }]),
-      },
-      ecommerceModule: {
-        ordersToBillingModulePaymentIntents: {
-          find: jest.fn().mockResolvedValue([]),
+      module: {
+        subjectsToEcommerceModuleOrders: {
+          find: jest
+            .fn()
+            .mockResolvedValue([{ ecommerceModuleOrderId: "order-1" }]),
         },
-        order: {
-          find: orderFind,
-          findByIdQuantity: jest.fn(),
-          findByIdTotal: jest.fn(),
+      },
+      modules: {
+        ecommerce: {
+          order: {
+            find: orderFind,
+            findByIdQuantity: jest.fn(),
+            findByIdTotal: jest.fn(),
+            ordersToBillingModulePaymentIntents: {
+              find: jest.fn().mockResolvedValue([]),
+            },
+          },
         },
       },
     } as any,
@@ -219,7 +223,7 @@ describe("Subject order history", () => {
 
   it("returns an empty list without querying orders when the subject has no links", async () => {
     const { service, orderFind } = createService();
-    service.subjectsToEcommerceModuleOrders.find.mockResolvedValue([]);
+    service.module.subjectsToEcommerceModuleOrders.find.mockResolvedValue([]);
     expect(
       await new ListHandler(service).execute(createContext(), jest.fn()),
     ).toEqual({ data: [] });
@@ -235,7 +239,7 @@ describe("Subject order history", () => {
       retryableIds: new Set([order.id]),
       paymentUrls: new Map([[order.id, paymentUrl]]),
     });
-    service.ecommerceModule.order.findByIdTotal.mockResolvedValue({
+    service.modules.ecommerce.order.findByIdTotal.mockResolvedValue({
       totals: [],
       unpriced: [],
     });
@@ -276,18 +280,18 @@ describe("Subject order history", () => {
         billingModuleCurrency: { id: "usd", slug: "usd", symbol: "$" },
       },
     ];
-    service.ecommerceModule.order.findByIdTotal.mockResolvedValue({
+    service.modules.ecommerce.order.findByIdTotal.mockResolvedValue({
       totals,
       unpriced: [],
     });
-    service.ecommerceModule.ordersToFileStorageModuleFiles = {
+    service.modules.ecommerce.ordersToFileStorageModuleFiles = {
       find: jest
         .fn()
         .mockResolvedValue([
           { orderId: "order-1", fileStorageModuleFileId: "receipt" },
         ]),
     };
-    service.fileStorageModule = {
+    service.modules.fileStorage = {
       file: {
         find: jest
           .fn()
@@ -304,14 +308,14 @@ describe("Subject order history", () => {
       }),
       jest.fn(),
     );
-    expect(service.ecommerceModule.order.findByIdTotal).toHaveBeenCalledTimes(
+    expect(service.modules.ecommerce.order.findByIdTotal).toHaveBeenCalledTimes(
       1,
     );
-    expect(service.ecommerceModule.order.findByIdTotal).toHaveBeenCalledWith({
+    expect(service.modules.ecommerce.order.findByIdTotal).toHaveBeenCalledWith({
       id: "order-1",
     });
     expect(
-      service.ecommerceModule.ordersToFileStorageModuleFiles.find,
+      service.modules.ecommerce.ordersToFileStorageModuleFiles.find,
     ).toHaveBeenCalledWith({
       params: {
         filters: {
@@ -360,7 +364,7 @@ describe("Subject order history", () => {
         charge: { role: "product", productId: "table-product" },
       },
     ];
-    service.ecommerceModule.ordersToBillingModulePaymentIntents.find.mockResolvedValue(
+    service.modules.ecommerce.order.ordersToBillingModulePaymentIntents.find.mockResolvedValue(
       charges.map(({ orderLineId, ...purchaseSnapshot }) => ({
         orderId: "order-1",
         billingModulePaymentIntentId: "intent",
@@ -372,20 +376,20 @@ describe("Subject order history", () => {
         },
       })),
     );
-    service.ecommerceModule.product = {
+    service.modules.ecommerce.product = {
       find: jest
         .fn()
         .mockResolvedValue([{ id: "chair-product", slug: "birch-chair" }]),
     };
-    service.ecommerceModule.ordersToFileStorageModuleFiles = {
+    service.modules.ecommerce.ordersToFileStorageModuleFiles = {
       find: jest.fn().mockResolvedValue([]),
     };
-    service.billingModule = {
-      paymentIntent: {
-        find: jest
-          .fn()
-          .mockResolvedValue([{ id: "intent", status: "succeeded" }]),
-      },
+    service.modules.ecommerce.order.paymentIntent = {
+      find: jest
+        .fn()
+        .mockResolvedValue([{ id: "intent", status: "succeeded" }]),
+    };
+    service.modules.billing = {
       paymentIntentsToInvoices: {
         find: jest
           .fn()
@@ -414,7 +418,7 @@ describe("Subject order history", () => {
       jest.fn(),
     );
 
-    expect(service.ecommerceModule.product.find).toHaveBeenCalledWith({
+    expect(service.modules.ecommerce.product.find).toHaveBeenCalledWith({
       params: {
         filters: {
           and: [{ column: "id", method: "inArray", value: ["chair-product"] }],
@@ -442,7 +446,7 @@ describe("Private cart projection", () => {
       { id: "foreign", type: "cart", status: "new" },
       { id: "old", type: "history", status: "paid" },
     ]);
-    service.subjectsToEcommerceModuleOrders.find.mockResolvedValue([
+    service.module.subjectsToEcommerceModuleOrders.find.mockResolvedValue([
       { ecommerceModuleOrderId: "order-1" },
       { ecommerceModuleOrderId: "old" },
     ]);
@@ -451,7 +455,7 @@ describe("Private cart projection", () => {
       totals: [{ total: 250 }],
       storeIds: ["store"],
     });
-    service.ecommerceModule.storesToOrders = {
+    service.modules.ecommerce.storesToOrders = {
       find: jest.fn().mockResolvedValue([{ storeId: "store" }]),
     };
     const result = await new ListHandler(service).execute(
@@ -490,7 +494,9 @@ describe("Private cart projection", () => {
         jest.fn(),
       ),
     ).rejects.toThrow();
-    expect(service.subjectsToEcommerceModuleOrders.find).not.toHaveBeenCalled();
+    expect(
+      service.module.subjectsToEcommerceModuleOrders.find,
+    ).not.toHaveBeenCalled();
   });
 });
 
@@ -503,7 +509,7 @@ describe("Empty cart total response", () => {
     "keeps the total envelope when subject order links exist: %s",
     async (hasLinks) => {
       const { service } = createService();
-      service.subjectsToEcommerceModuleOrders.find.mockResolvedValue(
+      service.module.subjectsToEcommerceModuleOrders.find.mockResolvedValue(
         hasLinks ? [{ ecommerceModuleOrderId: "order-1" }] : [],
       );
       expect(

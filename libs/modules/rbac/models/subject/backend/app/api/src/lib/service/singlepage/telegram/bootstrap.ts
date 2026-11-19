@@ -21,7 +21,7 @@ import { api as subjectsToIdentitiesApi } from "@sps/rbac/relations/subjects-to-
 import { api as subjectsToSocialModuleProfilesApi } from "@sps/rbac/relations/subjects-to-social-module-profiles/sdk/server";
 import { Service as SubjectsToIdentitiesService } from "@sps/rbac/relations/subjects-to-identities/backend/app/api/src/lib/service";
 import { Service as SubjectsToSocialModuleProfilesService } from "@sps/rbac/relations/subjects-to-social-module-profiles/backend/app/api/src/lib/service";
-import { type ISocialModule } from "../../../di";
+import type { SubjectServiceDependencies } from "../index";
 import { Service as IdentityService } from "@sps/rbac/models/identity/backend/app/api/src/lib/service";
 import { OpenRouter } from "@sps/shared-third-parties";
 import { isUniqueConstraintError } from "@sps/backend-utils";
@@ -76,7 +76,18 @@ type IEnsureProfileManagementAccess = (props: {
 export interface IConstructorProps {
   findById: IFindById;
   identity: IdentityService;
-  socialModule: ISocialModule;
+  social: Pick<
+    SubjectServiceDependencies["modules"]["social"],
+    | "attribute"
+    | "attributeKey"
+    | "attributeKeysToAttributes"
+    | "chat"
+    | "chatsToThreads"
+    | "profile"
+    | "profilesToAttributes"
+    | "profilesToChats"
+    | "thread"
+  >;
   subjectsToIdentities: SubjectsToIdentitiesService;
   subjectsToSocialModuleProfiles: SubjectsToSocialModuleProfilesService;
   resolvePersonalAiAgent?: IResolvePersonalAiAgent;
@@ -86,7 +97,18 @@ export interface IConstructorProps {
 export class Service {
   findById: IFindById;
   identity: IdentityService;
-  socialModule: ISocialModule;
+  social: Pick<
+    SubjectServiceDependencies["modules"]["social"],
+    | "attribute"
+    | "attributeKey"
+    | "attributeKeysToAttributes"
+    | "chat"
+    | "chatsToThreads"
+    | "profile"
+    | "profilesToAttributes"
+    | "profilesToChats"
+    | "thread"
+  >;
   subjectsToIdentities: SubjectsToIdentitiesService;
   subjectsToSocialModuleProfiles: SubjectsToSocialModuleProfilesService;
   resolvePersonalAiAgent: IResolvePersonalAiAgent;
@@ -95,7 +117,7 @@ export class Service {
   constructor(props: IConstructorProps) {
     this.findById = props.findById;
     this.identity = props.identity;
-    this.socialModule = props.socialModule;
+    this.social = props.social;
     this.subjectsToIdentities = props.subjectsToIdentities;
     this.subjectsToSocialModuleProfiles = props.subjectsToSocialModuleProfiles;
     this.resolvePersonalAiAgent =
@@ -413,7 +435,7 @@ export class Service {
   }
 
   protected async findTelegramChats(chatId: string) {
-    const chats = await this.socialModule.chat.find({
+    const chats = await this.social.chat.find({
       params: {
         filters: {
           and: [
@@ -461,7 +483,7 @@ export class Service {
     }
 
     const chat = chats[0];
-    const profileLinks = await this.socialModule.profilesToChats.find({
+    const profileLinks = await this.social.profilesToChats.find({
       params: {
         filters: {
           and: [
@@ -497,7 +519,7 @@ export class Service {
     chatId: string;
     headers: Record<string, string>;
   }): Promise<ISocialModuleThread> {
-    const chatToThreads = await this.socialModule.chatsToThreads.find({
+    const chatToThreads = await this.social.chatsToThreads.find({
       params: {
         filters: {
           and: [
@@ -519,7 +541,7 @@ export class Service {
         ) || [];
 
     if (threadIds.length) {
-      const threads = await this.socialModule.thread.find({
+      const threads = await this.social.thread.find({
         params: {
           filters: {
             and: [
@@ -590,7 +612,7 @@ export class Service {
       });
     }
 
-    const chatToThreads = await this.socialModule.chatsToThreads.find({
+    const chatToThreads = await this.social.chatsToThreads.find({
       params: {
         filters: {
           and: [
@@ -612,7 +634,7 @@ export class Service {
         ) || [];
 
     if (threadIds.length) {
-      const threads = await this.socialModule.thread.find({
+      const threads = await this.social.thread.find({
         params: {
           filters: {
             and: [
@@ -690,7 +712,7 @@ export class Service {
     headers: Record<string, string>;
   }) {
     const [existingRelations, telegramBotProfiles] = await Promise.all([
-      this.socialModule.profilesToChats.find({
+      this.social.profilesToChats.find({
         params: {
           filters: {
             and: [
@@ -703,7 +725,7 @@ export class Service {
           },
         },
       }),
-      this.socialModule.profile.find({
+      this.social.profile.find({
         params: {
           filters: {
             and: [
@@ -781,7 +803,7 @@ export class Service {
     );
     let connectedProfiles;
     if (connectedProfileIds.length) {
-      connectedProfiles = await this.socialModule.profile.find({
+      connectedProfiles = await this.social.profile.find({
         params: {
           filters: {
             and: [
@@ -1003,7 +1025,7 @@ export class Service {
     });
 
     if (subjectToProfiles?.length) {
-      const socialModuleProfiles = await this.socialModule.profile.find({
+      const socialModuleProfiles = await this.social.profile.find({
         params: {
           filters: {
             and: [
@@ -1080,20 +1102,19 @@ export class Service {
     if (isStartCommand && referralCode) {
       let socialModuleReferrerAttributeKey: ISocialModuleAttributeKey;
 
-      const socialModuleAttributeKeys =
-        await this.socialModule.attributeKey.find({
-          params: {
-            filters: {
-              and: [
-                {
-                  column: "slug",
-                  method: "eq",
-                  value: "referrer",
-                },
-              ],
-            },
+      const socialModuleAttributeKeys = await this.social.attributeKey.find({
+        params: {
+          filters: {
+            and: [
+              {
+                column: "slug",
+                method: "eq",
+                value: "referrer",
+              },
+            ],
           },
-        });
+        },
+      });
 
       if (socialModuleAttributeKeys?.length) {
         socialModuleReferrerAttributeKey = socialModuleAttributeKeys[0];
@@ -1114,7 +1135,7 @@ export class Service {
 
       let socialModuleReferrerAttribute: ISocialModuleAttribute;
 
-      const socialModuleAttributes = await this.socialModule.attribute.find({
+      const socialModuleAttributes = await this.social.attribute.find({
         params: {
           filters: {
             and: [
@@ -1145,7 +1166,7 @@ export class Service {
       }
 
       const socialModuleAttributeKeysToAttributes =
-        await this.socialModule.attributeKeysToAttributes.find({
+        await this.social.attributeKeysToAttributes.find({
           params: {
             filters: {
               and: [
@@ -1175,7 +1196,7 @@ export class Service {
       }
 
       const socialModuleProfilesToAttributes =
-        await this.socialModule.profilesToAttributes.find({
+        await this.social.profilesToAttributes.find({
           params: {
             filters: {
               and: [

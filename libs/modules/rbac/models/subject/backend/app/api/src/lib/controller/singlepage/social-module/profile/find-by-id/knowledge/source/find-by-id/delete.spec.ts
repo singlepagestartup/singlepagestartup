@@ -1,11 +1,3 @@
-/**
- * BDD Suite: RBAC profile-scoped Knowledge Source deletion.
- *
- * Given: Knowledge Source deletion is orchestrated by RBAC.
- * When: a profile-scoped delete request is handled.
- * Then: RBAC validates profile source access before deleting Knowledge data.
- */
-
 const deleteSource = jest.fn();
 
 jest.mock("@sps/knowledge/backend/app/api/src/lib/service", () => {
@@ -72,12 +64,14 @@ describe("rbac profile-scoped Knowledge Source deletion", () => {
       .fn()
       .mockResolvedValue([{ id: "profile-source-link" }]);
     const service = {
-      socialModule: {
-        profilesToChats: {
-          find: profilesToChatsFind,
-        },
-        profilesToKnowledgeModuleSources: {
-          find: profilesToKnowledgeModuleSourcesFind,
+      modules: {
+        social: {
+          profilesToChats: {
+            find: profilesToChatsFind,
+          },
+          profilesToKnowledgeModuleSources: {
+            find: profilesToKnowledgeModuleSourcesFind,
+          },
         },
       },
     } as any;
@@ -124,15 +118,17 @@ describe("rbac profile-scoped Knowledge Source deletion", () => {
    */
   it("does not delete a source that is not linked to the target profile", async () => {
     const service = {
-      socialModule: {
-        profilesToChats: {
-          find: jest
-            .fn()
-            .mockResolvedValueOnce([{ id: "requester-chat-link" }])
-            .mockResolvedValueOnce([{ id: "target-chat-link" }]),
-        },
-        profilesToKnowledgeModuleSources: {
-          find: jest.fn().mockResolvedValue([]),
+      modules: {
+        social: {
+          profilesToChats: {
+            find: jest
+              .fn()
+              .mockResolvedValueOnce([{ id: "requester-chat-link" }])
+              .mockResolvedValueOnce([{ id: "target-chat-link" }]),
+          },
+          profilesToKnowledgeModuleSources: {
+            find: jest.fn().mockResolvedValue([]),
+          },
         },
       },
     } as any;

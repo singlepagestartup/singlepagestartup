@@ -1,9 +1,3 @@
-/**
- * BDD Suite: subject-scoped Knowledge Source pagination
- * Given: ordered profile-source relations.
- * When: a bounded Knowledge page is requested.
- * Then: pagination is applied before source hydration.
- */
 jest.mock("@sps/knowledge/backend/app/api/src/lib/service", () => ({
   Service: jest.fn().mockImplementation(() => ({
     listSources: jest.fn().mockResolvedValue([{ id: "source-2" }]),
@@ -15,10 +9,16 @@ import { Handler } from "./find";
 describe("Knowledge Source find", () => {
   it("does not create an owner grant from shared Chat membership", async () => {
     const service = {
-      subjectsToSocialModuleProfiles: { find: jest.fn().mockResolvedValue([]) },
       socialModuleProfileKnowledgeAccessEnsure: jest.fn(),
-      socialModule: {
-        profilesToKnowledgeModuleSources: {
+      modules: {
+        social: {
+          profilesToKnowledgeModuleSources: {
+            find: jest.fn().mockResolvedValue([]),
+          },
+        },
+      },
+      module: {
+        subjectsToSocialModuleProfiles: {
           find: jest.fn().mockResolvedValue([]),
         },
       },
@@ -35,7 +35,9 @@ describe("Knowledge Source find", () => {
     expect(
       service.socialModuleProfileKnowledgeAccessEnsure,
     ).not.toHaveBeenCalled();
-    expect(service.subjectsToSocialModuleProfiles.find).toHaveBeenCalledWith(
+    expect(
+      service.module.subjectsToSocialModuleProfiles.find,
+    ).toHaveBeenCalledWith(
       expect.objectContaining({
         params: {
           filters: {
@@ -64,12 +66,16 @@ describe("Knowledge Source find", () => {
       .fn()
       .mockResolvedValue([{ knowledgeModuleSourceId: "source-2" }]);
     const service = {
-      subjectsToSocialModuleProfiles: {
-        find: jest.fn().mockResolvedValue([{ variant: "assistant" }]),
-      },
       socialModuleProfileKnowledgeAccessEnsure: jest.fn(),
-      socialModule: {
-        profilesToKnowledgeModuleSources: { find: relationsFind },
+      modules: {
+        social: {
+          profilesToKnowledgeModuleSources: { find: relationsFind },
+        },
+      },
+      module: {
+        subjectsToSocialModuleProfiles: {
+          find: jest.fn().mockResolvedValue([{ variant: "assistant" }]),
+        },
       },
     } as any;
     const c = {

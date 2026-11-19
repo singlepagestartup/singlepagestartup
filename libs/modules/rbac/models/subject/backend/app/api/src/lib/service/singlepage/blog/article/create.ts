@@ -1,65 +1,13 @@
-import type { FindServiceProps } from "@sps/shared-backend-api";
 import {
   articleCreateSchema,
   type IArticleCreateInput,
   type IArticleCreateResult,
 } from "@sps/rbac/models/subject/sdk/model/src/lib/blog-article-create";
-import type { IModel as ISubject } from "@sps/rbac/models/subject/sdk/model";
 import type { IModel as IArticle } from "@sps/blog/models/article/sdk/model";
-import type {
-  IModel as IProfile,
-  IAuthorSummary,
-} from "@sps/social/models/profile/sdk/model";
 import type { SubjectServiceDependencies } from "../../index";
-interface IRead<T> {
-  find(props?: FindServiceProps): Promise<T[]>;
-  findById(props: { id: string }): Promise<T | null | undefined>;
-}
-interface ICreate<T> extends IRead<T> {
-  create(props: { data: Record<string, unknown> }): Promise<T>;
-}
-interface IOwnerLink {
-  id: string;
-  subjectId: string;
-  blogModuleArticleId: string;
-}
-interface IAuthorLink {
-  id: string;
-  profileId: string;
-  blogModuleArticleId: string;
-}
-interface ICategoryLink {
-  id: string;
-  categoryId: string;
-  articleId: string;
-}
-export interface IDependencies extends SubjectServiceDependencies {
-  repository: {
-    withSubjectLock<T>(
-      scope: { subjectId: string },
-      operation: () => Promise<T>,
-    ): Promise<T>;
-  };
-  findById(props: { id: string }): Promise<ISubject | null | undefined>;
-  subjectsToIdentities: {
-    find(props: FindServiceProps): Promise<{ subjectId: string }[]>;
-  };
-  socialModuleProfileOwnershipEnsure(props: {
-    subjectId: string;
-  }): Promise<{ profile: IProfile }>;
-  subjectsToBlogModuleArticles: ICreate<IOwnerLink>;
-  blogModule: {
-    article: ICreate<IArticle>;
-    category: IRead<{ id: string }>;
-    categoriesToArticles: ICreate<ICategoryLink>;
-  };
-  socialModule: {
-    profilesToBlogModuleArticles: ICreate<IAuthorLink>;
-    profile: {
-      authorFind(params: { profileId: string }): Promise<IAuthorSummary[]>;
-    };
-  };
-}
+export type IDependencies = SubjectServiceDependencies<
+  "repository" | "findById" | "socialModuleProfileOwnershipEnsure"
+>;
 export class Service {
   constructor(readonly service: IDependencies) {}
   async execute(props: {
@@ -75,15 +23,20 @@ export class Service {
         { subjectId: props.subjectId },
         async () => {
           const subject = await this.service.findById({ id: props.subjectId });
-          const identities = await this.service.subjectsToIdentities.find({
-            params: {
-              filters: {
-                and: [
-                  { column: "subjectId", method: "eq", value: props.subjectId },
-                ],
+          const identities =
+            await this.service.module.subjectsToIdentities.find({
+              params: {
+                filters: {
+                  and: [
+                    {
+                      column: "subjectId",
+                      method: "eq",
+                      value: props.subjectId,
+                    },
+                  ],
+                },
               },
-            },
-          });
+            });
           if (
             !subject ||
             subject.variant !== "default" ||
@@ -98,7 +51,7 @@ export class Service {
             });
           if (
             input.categoryId &&
-            !(await this.service.blogModule.category.findById({
+            !(await this.service.modules.blog.category.findById({
               id: input.categoryId,
             }))
           )
@@ -106,7 +59,7 @@ export class Service {
               "Validation error. Article category is unavailable",
             );
           const slug = `article-${input.requestId}`;
-          const candidates = await this.service.blogModule.article.find({
+          const candidates = await this.service.modules.blog.article.find({
             params: {
               filters: { and: [{ column: "slug", method: "eq", value: slug }] },
               limit: 2,
@@ -117,7 +70,7 @@ export class Service {
             if (candidates.length !== 1) this.conflict();
             article = candidates[0];
             const [owners, authors, categories] = await Promise.all([
-              this.service.subjectsToBlogModuleArticles.find({
+              this.service.module.subjectsToBlogModuleArticles.find({
                 params: {
                   filters: {
                     and: [
@@ -130,7 +83,7 @@ export class Service {
                   },
                 },
               }),
-              this.service.socialModule.profilesToBlogModuleArticles.find({
+              this.service.modules.social.profilesToBlogModuleArticles.find({
                 params: {
                   filters: {
                     and: [
@@ -143,7 +96,7 @@ export class Service {
                   },
                 },
               }),
-              this.service.blogModule.categoriesToArticles.find({
+              this.service.modules.blog.categoriesToArticles.find({
                 params: {
                   filters: {
                     and: [
@@ -171,7 +124,7 @@ export class Service {
             )
               this.conflict();
           } else {
-            article = await this.service.blogModule.article.create({
+            article = await this.service.modules.blog.article.create({
               data: {
                 slug,
                 variant: "default",
@@ -180,14 +133,14 @@ export class Service {
                 description: input.description,
               },
             });
-            await this.service.subjectsToBlogModuleArticles.create({
+            await this.service.module.subjectsToBlogModuleArticles.create({
               data: {
                 subjectId: subject.id,
                 blogModuleArticleId: article.id,
                 variant: "default",
               },
             });
-            await this.service.socialModule.profilesToBlogModuleArticles.create(
+            await this.service.modules.social.profilesToBlogModuleArticles.create(
               {
                 data: {
                   profileId: profile.id,
@@ -197,7 +150,7 @@ export class Service {
               },
             );
             if (input.categoryId)
-              await this.service.blogModule.categoriesToArticles.create({
+              await this.service.modules.blog.categoriesToArticles.create({
                 data: {
                   categoryId: input.categoryId,
                   articleId: article.id,
@@ -206,7 +159,7 @@ export class Service {
               });
           }
           const author = (
-            await this.service.socialModule.profile.authorFind({
+            await this.service.modules.social.profile.authorFind({
               profileId: profile.id,
             })
           )[0];

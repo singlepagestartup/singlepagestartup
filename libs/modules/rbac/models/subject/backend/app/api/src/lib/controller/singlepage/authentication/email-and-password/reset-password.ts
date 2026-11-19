@@ -34,7 +34,7 @@ export class Handler {
         throw new Error("Validation error. Passwords do not match");
       }
 
-      await this.service.identity.resetPassword({
+      await this.service.module.identity.resetPassword({
         code: data.code,
         password: data.password,
       });

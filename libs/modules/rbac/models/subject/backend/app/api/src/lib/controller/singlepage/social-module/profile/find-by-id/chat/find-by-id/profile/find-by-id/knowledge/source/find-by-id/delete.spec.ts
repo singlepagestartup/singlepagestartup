@@ -1,9 +1,3 @@
-/**
- * BDD Suite: chat-scoped Knowledge unlink and deletion.
- * Given: access middleware has admitted a Source linked to the target profile.
- * When: the caller unlinks it or requests global deletion.
- * Then: unlink removes only that profile's relations; deletion uses Knowledge.
- */
 const listSources = jest.fn();
 const deleteSource = jest.fn();
 const deleteRelation = jest.fn();
@@ -27,8 +21,10 @@ describe("chat-scoped Knowledge Source removal", () => {
   const source = { id: "source-1", content: "Human notes" };
   const findRelations = jest.fn();
   const service = {
-    socialModule: {
-      profilesToKnowledgeModuleSources: { find: findRelations },
+    modules: {
+      social: {
+        profilesToKnowledgeModuleSources: { find: findRelations },
+      },
     },
   } as any;
   function context(unlink: boolean) {

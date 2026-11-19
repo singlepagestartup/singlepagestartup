@@ -53,7 +53,7 @@ export class Handler {
         title,
         content,
         onSourceSaved: async (sourceId) => {
-          await this.service.socialModule.profilesToKnowledgeModuleSources.create(
+          await this.service.modules.social.profilesToKnowledgeModuleSources.create(
             {
               data: {
                 profileId: documentProfileId,

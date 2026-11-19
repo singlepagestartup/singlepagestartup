@@ -4,8 +4,14 @@ it("reads only the requesting Subject's token balance", async () => {
   const currency = { find: jest.fn().mockResolvedValue([{ id: "tokens" }]) };
   const balances = { find: jest.fn().mockResolvedValue([{ amount: "3000" }]) };
   const service = new Service({
-    billingModule: { currency },
-    subjectsToBillingModuleCurrencies: balances,
+    module: {
+      subjectsToBillingModuleCurrencies: balances,
+    },
+    modules: {
+      billing: {
+        currency,
+      },
+    },
   } as any);
   expect(await service.execute("owner")).toEqual({
     amount: "3000",
@@ -26,10 +32,14 @@ it("reads only the requesting Subject's token balance", async () => {
 it("returns zero for an empty balance without fetching another Subject", async () => {
   const balances = { find: jest.fn().mockResolvedValue([]) };
   const service = new Service({
-    billingModule: {
-      currency: { find: jest.fn().mockResolvedValue([{ id: "tokens" }]) },
+    module: {
+      subjectsToBillingModuleCurrencies: balances,
     },
-    subjectsToBillingModuleCurrencies: balances,
+    modules: {
+      billing: {
+        currency: { find: jest.fn().mockResolvedValue([{ id: "tokens" }]) },
+      },
+    },
   } as any);
   expect(await service.execute("new-user")).toEqual({
     amount: "0",
@@ -40,11 +50,17 @@ it("returns zero for an empty balance without fetching another Subject", async (
 
 it("shows the whole token balance when older deliveries created more than one relation", async () => {
   const service = new Service({
-    billingModule: {
-      currency: { find: jest.fn().mockResolvedValue([{ id: "tokens" }]) },
+    module: {
+      subjectsToBillingModuleCurrencies: {
+        find: jest
+          .fn()
+          .mockResolvedValue([{ amount: "2982" }, { amount: "8" }]),
+      },
     },
-    subjectsToBillingModuleCurrencies: {
-      find: jest.fn().mockResolvedValue([{ amount: "2982" }, { amount: "8" }]),
+    modules: {
+      billing: {
+        currency: { find: jest.fn().mockResolvedValue([{ id: "tokens" }]) },
+      },
     },
   } as any);
   expect(await service.execute("owner")).toEqual({

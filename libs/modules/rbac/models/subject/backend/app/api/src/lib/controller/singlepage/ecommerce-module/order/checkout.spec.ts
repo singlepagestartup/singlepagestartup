@@ -51,23 +51,27 @@ function createContext(
 
 function createService(subjectOrderIds = [firstOrderId, secondOrderId]) {
   return {
-    ecommerceModule: {
-      order: { find: (...args: unknown[]) => orderFindMock(...args) },
-    },
     findById: jest.fn().mockResolvedValue({ id: "subject-1" }),
     deanonymize: jest.fn().mockResolvedValue(undefined),
-    subjectsToEcommerceModuleOrders: {
-      find: jest.fn().mockResolvedValue(
-        subjectOrderIds.map((ecommerceModuleOrderId) => ({
-          subjectId: "subject-1",
-          ecommerceModuleOrderId,
-        })),
-      ),
-    },
     ecommerceOrderCheckout: jest.fn().mockResolvedValue({
       provider: "stripe",
       checkoutUrl: "https://example.test/pay",
     }),
+    module: {
+      subjectsToEcommerceModuleOrders: {
+        find: jest.fn().mockResolvedValue(
+          subjectOrderIds.map((ecommerceModuleOrderId) => ({
+            subjectId: "subject-1",
+            ecommerceModuleOrderId,
+          })),
+        ),
+      },
+    },
+    modules: {
+      ecommerce: {
+        order: { find: (...args: unknown[]) => orderFindMock(...args) },
+      },
+    },
   } as any;
 }
 
@@ -131,7 +135,9 @@ describe("Given: ecommerce order checkout handler", () => {
     await expect(
       new Handler(service).execute(context, jest.fn()),
     ).rejects.toThrow("Validation error");
-    expect(service.subjectsToEcommerceModuleOrders.find).not.toHaveBeenCalled();
+    expect(
+      service.module.subjectsToEcommerceModuleOrders.find,
+    ).not.toHaveBeenCalled();
     expect(service.deanonymize).not.toHaveBeenCalled();
   });
 
@@ -172,7 +178,9 @@ describe("Given: ecommerce order checkout handler", () => {
       id: "subject-1",
       email: "user@example.test",
     });
-    expect(service.subjectsToEcommerceModuleOrders.find).toHaveBeenCalledWith({
+    expect(
+      service.module.subjectsToEcommerceModuleOrders.find,
+    ).toHaveBeenCalledWith({
       params: {
         filters: {
           and: [

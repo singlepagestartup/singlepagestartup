@@ -94,7 +94,7 @@ export class Handler {
     socialModuleChatId: string;
   }) {
     const profileChatRelations =
-      await this.service.socialModule.profilesToChats.find({
+      await this.service.modules.social.profilesToChats.find({
         params: {
           filters: {
             and: [
@@ -117,7 +117,7 @@ export class Handler {
     }
 
     const subjectProfileRelations =
-      await this.service.subjectsToSocialModuleProfiles.find({
+      await this.service.module.subjectsToSocialModuleProfiles.find({
         params: {
           filters: {
             and: [

@@ -3,7 +3,8 @@
  * to the same atomic settlement; incomplete or forged notifications do not.
  */
 import { createHmac } from "node:crypto";
-import { Service } from "./index";
+import { createService } from "../../bootstrap";
+import { createAppAssembly } from "@sps/shared-backend-api";
 import { api as invoiceApi } from "@sps/billing/models/invoice/sdk/server";
 
 jest.mock("@sps/shared-utils", () => ({
@@ -49,10 +50,10 @@ function fixture(provider: string) {
     provider,
     providerId: "456",
   };
-  const service = new Service(
-    {} as any,
-    { invoice: { find: invoiceApi.find } } as any,
-  );
+  const service = createService(createAppAssembly());
+  jest
+    .spyOn(service.module.invoice, "find")
+    .mockImplementation(invoiceApi.find as jest.Mock);
   const settle = jest
     .spyOn(service, "settlePayment")
     .mockResolvedValue({ ...invoice, status: "paid" } as any);
@@ -168,9 +169,9 @@ it.each([
   async (providerId, object, status, terminal) => {
     const { service, settle, invoice } = fixture("stripe");
     const expire = jest.spyOn(service, "expireInvoice").mockResolvedValue();
-    service.billingModule.invoice = {
-      findById: jest.fn().mockResolvedValue(invoice),
-    } as any;
+    jest
+      .spyOn(service.module.invoice, "findById")
+      .mockImplementation(invoiceApi.findById as jest.Mock);
     const retrieve =
       object === "invoice" ? mockRetrieveInvoice : mockRetrieveSession;
     retrieve.mockResolvedValue({

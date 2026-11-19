@@ -18,11 +18,7 @@ export interface IExecuteProps {
 interface IConstructorProps {
   repository: Pick<Repository, "withSubjectLock">;
   service: SubjectServiceDependencies<
-    | "ecommerceModule"
-    | "billingModule"
-    | "subjectsToEcommerceModuleOrders"
-    | "ecommerceModuleFindOpenCartOrderWithProduct"
-    | "ecommerceModuleCartQuote"
+    "ecommerceModuleFindOpenCartOrderWithProduct" | "ecommerceModuleCartQuote"
   >;
 }
 
@@ -41,7 +37,7 @@ export class Service {
   ): Promise<{ orderId: string; lineId: string }> {
     const { repository, service } = this.dependencies;
     const offers =
-      await service.ecommerceModule.storesToProducts.offersForProduct({
+      await service.modules.ecommerce.storesToProducts.offersForProduct({
         productId: props.productId,
         ...(props.storeId ? { storeId: props.storeId } : {}),
       });
@@ -64,9 +60,9 @@ export class Service {
       services: props.services,
     };
     let prepared =
-      await service.ecommerceModule.storesToProducts.quote(selection);
+      await service.modules.ecommerce.storesToProducts.quote(selection);
     if (!selection.currencyId) {
-      const currencies = await service.billingModule.currency.find({
+      const currencies = await service.modules.billing.currency.find({
         params: {
           filters: {
             and: [{ column: "isDefault", method: "eq", value: true }],
@@ -85,7 +81,7 @@ export class Service {
         );
       }
       prepared =
-        await service.ecommerceModule.storesToProducts.quote(selection);
+        await service.modules.ecommerce.storesToProducts.quote(selection);
     }
     selection.services = prepared.selectedServices ?? selection.services;
     if (
@@ -108,7 +104,7 @@ export class Service {
         if (existingOrderId) {
           throw new Error("Conflict error. Product is already in the cart");
         }
-        await service.ecommerceModule.ordersToBillingModulePaymentIntents.lockOffers(
+        await service.modules.ecommerce.order.ordersToBillingModulePaymentIntents.lockOffers(
           {
             offerIds: [
               ...new Set([
@@ -121,7 +117,7 @@ export class Service {
           },
         );
         const [lockedQuote] =
-          await service.ecommerceModule.storesToProducts.quotesUnderLock(
+          await service.modules.ecommerce.storesToProducts.quotesUnderLock(
             [selection],
             [prepared],
             { allowIncompleteDelivery: true },
@@ -190,35 +186,37 @@ export class Service {
             "Validation error. Complete the selected fulfillment method before adding this product",
           );
         }
-        const order = await service.ecommerceModule.order.create({
+        const order = await service.modules.ecommerce.order.create({
           data: { comment: props.comment },
         });
         if (!order) {
           throw new Error("Not Found error. No order found");
         }
-        await service.subjectsToEcommerceModuleOrders.create({
+        await service.module.subjectsToEcommerceModuleOrders.create({
           data: {
             subjectId: props.subjectId,
             ecommerceModuleOrderId: order.id,
           },
         });
-        const primary = await service.ecommerceModule.ordersToProducts.create({
-          data: {
-            orderId: order.id,
-            productId: props.productId,
-            offerId: offer.id,
-            quantity: props.quantity,
-            destination: quote.destination ?? props.destination ?? {},
-            selectionUpdatedAt: new Date(),
-            quoteVersion: quote.version,
-            quoteExpiresAt: new Date(quote.expiresAt),
+        const primary = await service.modules.ecommerce.ordersToProducts.create(
+          {
+            data: {
+              orderId: order.id,
+              productId: props.productId,
+              offerId: offer.id,
+              quantity: props.quantity,
+              destination: quote.destination ?? props.destination ?? {},
+              selectionUpdatedAt: new Date(),
+              quoteVersion: quote.version,
+              quoteExpiresAt: new Date(quote.expiresAt),
+            },
           },
-        });
+        );
         if (!primary) {
           throw new Error("Not Found error. No orders to products found");
         }
         for (const selected of selectedServices) {
-          await service.ecommerceModule.ordersToProducts.create({
+          await service.modules.ecommerce.ordersToProducts.create({
             data: {
               orderId: order.id,
               productId: selected.productId,
@@ -230,19 +228,21 @@ export class Service {
             },
           });
         }
-        const store = await service.ecommerceModule.storesToOrders.create({
+        const store = await service.modules.ecommerce.storesToOrders.create({
           data: { storeId: offer.storeId, orderId: order.id },
         });
         if (!store) {
           throw new Error("Not Found error. No stores to orders found");
         }
         const currency =
-          await service.ecommerceModule.ordersToBillingModuleCurrencies.create({
-            data: {
-              orderId: order.id,
-              billingModuleCurrencyId: selection.currencyId,
+          await service.modules.ecommerce.ordersToBillingModuleCurrencies.create(
+            {
+              data: {
+                orderId: order.id,
+                billingModuleCurrencyId: selection.currencyId,
+              },
             },
-          });
+          );
         if (!currency) {
           throw new Error(
             "Not Found error. No orders to billing module currencies found",

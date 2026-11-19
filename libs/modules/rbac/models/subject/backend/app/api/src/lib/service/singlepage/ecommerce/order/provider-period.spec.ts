@@ -17,64 +17,73 @@ function fixture() {
     ecommerceModuleOrderRenewal: jest
       .fn()
       .mockResolvedValue({ orderId: "next" }),
-    subjectsToEcommerceModuleOrders: {
-      find: jest
-        .fn()
-        .mockResolvedValue([
-          { subjectId: "buyer", ecommerceModuleOrderId: "root" },
-        ]),
+    module: {
+      subjectsToEcommerceModuleOrders: {
+        find: jest
+          .fn()
+          .mockResolvedValue([
+            { subjectId: "buyer", ecommerceModuleOrderId: "root" },
+          ]),
+      },
     },
-    ecommerceModule: {
-      order: {
-        findById: jest.fn(async ({ id }) =>
-          orders.find((order) => order.id === id),
-        ),
-        find: jest.fn(async ({ params }) => {
-          const filter = params.filters.and[0];
-          if (filter.column === "subscriptionProviderInvoiceId") {
+    modules: {
+      ecommerce: {
+        order: {
+          findById: jest.fn(async ({ id }) =>
+            orders.find((order) => order.id === id),
+          ),
+          find: jest.fn(async ({ params }) => {
+            const filter = params.filters.and[0];
+            if (filter.column === "subscriptionProviderInvoiceId") {
+              return orders.filter(
+                (order) => order.subscriptionProviderInvoiceId === filter.value,
+              );
+            }
             return orders.filter(
-              (order) => order.subscriptionProviderInvoiceId === filter.value,
+              (order) => order.subscriptionSourceOrderId === filter.value,
             );
-          }
-          return orders.filter(
-            (order) => order.subscriptionSourceOrderId === filter.value,
-          );
-        }),
-        lockForLifecycle: jest.fn(),
-        configureNextPeriod: jest.fn(
-          async ({ id, startsAt, endsAt, providerInvoiceId }) => {
-            Object.assign(
-              orders.find((order) => order.id === id)!,
-              {
-                subscriptionScheduledStartsAt: startsAt,
-                subscriptionScheduledEndsAt: endsAt,
-                subscriptionProviderInvoiceId: providerInvoiceId,
-              },
-            );
-          },
-        ),
-      },
-      ordersToBillingModulePaymentIntents: {
-        find: jest.fn(async ({ params }) => {
-          const filter = params.filters.and[0];
-          return filter.column === "billingModulePaymentIntentId"
-            ? [{ orderId: "root", billingModulePaymentIntentId: "contract" }]
-            : [
+          }),
+          lockForLifecycle: jest.fn(),
+          configureNextPeriod: jest.fn(
+            async ({ id, startsAt, endsAt, providerInvoiceId }) => {
+              Object.assign(
+                orders.find((order) => order.id === id)!,
                 {
-                  orderId: filter.value,
-                  billingModulePaymentIntentId: intents[filter.value].id,
+                  subscriptionScheduledStartsAt: startsAt,
+                  subscriptionScheduledEndsAt: endsAt,
+                  subscriptionProviderInvoiceId: providerInvoiceId,
                 },
-              ];
-        }),
+              );
+            },
+          ),
+          ordersToBillingModulePaymentIntents: {
+            find: jest.fn(async ({ params }) => {
+              const filter = params.filters.and[0];
+              return filter.column === "billingModulePaymentIntentId"
+                ? [
+                    {
+                      orderId: "root",
+                      billingModulePaymentIntentId: "contract",
+                    },
+                  ]
+                : [
+                    {
+                      orderId: filter.value,
+                      billingModulePaymentIntentId: intents[filter.value].id,
+                    },
+                  ];
+            }),
+          },
+          paymentIntent: {
+            findById: jest.fn(async ({ id }) =>
+              Object.values(intents).find((intent: any) => intent.id === id),
+            ),
+          },
+        },
       },
-    },
-    billingModule: {
-      paymentIntent: {
-        findById: jest.fn(async ({ id }) =>
-          Object.values(intents).find((intent: any) => intent.id === id),
-        ),
+      billing: {
+        currency: { findById: jest.fn().mockResolvedValue({ slug: "usd" }) },
       },
-      currency: { findById: jest.fn().mockResolvedValue({ slug: "usd" }) },
     },
   };
   const repository = {

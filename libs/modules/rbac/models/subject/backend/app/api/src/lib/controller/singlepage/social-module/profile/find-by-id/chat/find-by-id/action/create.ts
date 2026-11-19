@@ -20,7 +20,7 @@ export class Handler {
     socialModuleMessageId: string;
   }) {
     const socialModuleThreadsToMessages =
-      await this.service.socialModule.threadsToMessages.find({
+      await this.service.modules.social.threadsToMessages.find({
         params: {
           filters: {
             and: [
@@ -39,7 +39,7 @@ export class Handler {
     }
 
     const socialModuleChatsToThreads =
-      await this.service.socialModule.chatsToThreads.find({
+      await this.service.modules.social.chatsToThreads.find({
         params: {
           filters: {
             and: [

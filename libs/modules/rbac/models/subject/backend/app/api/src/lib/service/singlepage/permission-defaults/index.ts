@@ -25,7 +25,7 @@ export class Service {
     const permissions = this.permission.repository.configuration?.repository;
     const roles = this.rolesToPermissions.repository.configuration?.repository;
     const billing =
-      this.permission.permissionsToBillingModuleCurrenciesService.repository
+      this.permission.module.permissionsToBillingModuleCurrencies.repository
         .configuration?.repository;
     if (
       !permissions?.seed.active ||

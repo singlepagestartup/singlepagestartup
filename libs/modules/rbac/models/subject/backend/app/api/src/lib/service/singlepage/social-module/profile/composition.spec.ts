@@ -149,8 +149,6 @@ describe("Given: rbac.subject profile AI service composition", () => {
 it("routes context creation through the replaceable Subject factory with its module dependencies", () => {
   const factory = jest.fn().mockReturnValue({ mode: "compact" });
   const service = Object.assign(Object.create(StartupService.prototype), {
-    socialModule: { thread: {} },
-    fileStorageModule: { file: {} },
     createSocialModuleProfileAiContextService: factory,
   }) as StartupService;
   const props = {
@@ -167,8 +165,7 @@ it("routes context creation through the replaceable Subject factory with its mod
   });
   expect(factory).toHaveBeenCalledWith({
     ...props,
-    socialModule: service.socialModule,
-    fileStorageModule: service.fileStorageModule,
+    modules: service.modules,
   });
 });
 
@@ -181,7 +178,7 @@ it("resolves document skills through the Subject factory and permits a startup o
   const find = jest.fn().mockResolvedValue(skill);
   class CustomSubjectService extends StartupService {
     protected override getSocialModuleProfileSkillsService() {
-      const service = new SocialModuleProfileSkillsService(this.socialModule);
+      const service = new SocialModuleProfileSkillsService(this.modules.social);
       jest.spyOn(service, "forDocument").mockImplementation(find);
       return service;
     }

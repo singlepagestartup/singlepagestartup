@@ -35,7 +35,7 @@ describe("AI profile bootstrap identity", () => {
     const ensureKnowledgeAccess = jest.fn();
     const service = new Service({
       findSubjects: jest.fn().mockResolvedValue([]),
-      socialModule: {
+      social: {
         profile: { find: profileFind },
         profilesToChats: { find: jest.fn().mockResolvedValue([]) },
       } as any,
@@ -99,7 +99,7 @@ describe("AI profile bootstrap identity", () => {
     }));
     const service = new Service({
       findSubjects: jest.fn().mockResolvedValue([]),
-      socialModule: {
+      social: {
         profile: { find: jest.fn().mockResolvedValue([]) },
         profilesToChats: { find: jest.fn().mockResolvedValue([]) },
       } as any,
@@ -133,7 +133,7 @@ describe("AI profile bootstrap identity", () => {
       findSubjects: jest
         .fn()
         .mockResolvedValue([{ id: "agent", variant: "agent" }]),
-      socialModule: {
+      social: {
         profilesToChats: { find: jest.fn().mockResolvedValue([]) },
       } as any,
       subjectsToSocialModuleProfiles: {

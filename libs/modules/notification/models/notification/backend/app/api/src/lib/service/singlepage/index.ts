@@ -1,17 +1,13 @@
-import { createModules } from "../modules";
-import {
-  NotificationDI,
-  type IBroadcastModule,
-  type ITemplateService,
-} from "../../di";
+import { createModule } from "../module";
+import { createModules } from "@sps/notification/backend/app/api/src/lib/modules";
 import { Service as Delivery } from "../startup/delivery";
 import type { IDeliveryProgress } from "./delivery";
 import { Repository } from "../../repository";
 import "reflect-metadata";
 import { readFile } from "node:fs/promises";
 import { join, normalize } from "node:path";
-import { inject, injectable } from "inversify";
-import { CRUDService, DI } from "@sps/shared-backend-api";
+import { injectFromBase, injectable } from "inversify";
+import { CRUDService } from "@sps/shared-backend-api";
 import { Table } from "@sps/notification/models/notification/backend/repository/database";
 import { AWS, TelegramBot } from "@sps/shared-third-parties";
 import {
@@ -35,21 +31,17 @@ import { IModel } from "@sps/notification/models/notification/sdk/model";
 type INotificationAttachment = NonNullable<IModel["attachments"]>[number];
 
 @injectable()
+@injectFromBase()
 export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
   get modules() {
     return this.appAssembly.getOrCreate(createModules);
   }
 
-  declare repository: Repository;
-  constructor(
-    @inject(DI.IRepository) repository: Repository,
-    @inject(NotificationDI.IBroadcastModule)
-    private readonly broadcast: IBroadcastModule,
-    @inject(NotificationDI.ITemplateService)
-    private readonly templates: ITemplateService,
-  ) {
-    super(repository);
+  get module() {
+    return this.appAssembly.getOrCreate(createModule);
   }
+
+  declare repository: Repository;
 
   async updateDelivery(props: {
     id: string;
@@ -93,7 +85,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     if (!AWS_SES_FROM_EMAIL) {
       throw new Error("Configuration error. Email delivery is not configured.");
     }
-    const templates = await this.templates.find({
+    const templates = await this.module.template.find({
       params: {
         limit: 2,
         filters: {
@@ -108,7 +100,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     }
 
     const template = templates[0];
-    const html = await this.templates.render({
+    const html = await this.module.template.render({
       id: template.id,
       type: "email",
       payload: { code: props.code },
@@ -1237,7 +1229,9 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     if (new Date(notification.sendAfter ?? 0).getTime() > Date.now()) {
       return notification;
     }
-    return new Delivery(this, this.broadcast).execute(params.id);
+    return new Delivery(this, this.modules.broadcast.channel).execute(
+      params.id,
+    );
   }
 
   async sendPending() {
@@ -1276,7 +1270,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
       }
     }
     await this.deleteExpired();
-    await new Delivery(this, this.broadcast).cleanup();
+    await new Delivery(this, this.modules.broadcast.channel).cleanup();
   }
 
   async sendNow(

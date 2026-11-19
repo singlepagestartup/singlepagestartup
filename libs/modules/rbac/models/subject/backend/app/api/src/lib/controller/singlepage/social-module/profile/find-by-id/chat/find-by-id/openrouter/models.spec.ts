@@ -1,11 +1,3 @@
-/**
- * BDD Suite: OpenRouter model metadata.
- *
- * Given: the chat UI receives live model metadata from OpenRouter.
- * When: models are transformed for the composer model selector.
- * Then: only locally allowed models and reasoning efforts are exposed.
- */
-
 const mockOpenRouterGetModels = jest.fn();
 
 jest.mock("@sps/shared-third-parties", () => {
@@ -32,16 +24,18 @@ import { Handler } from "./models";
 
 function createService() {
   return {
-    socialModule: {
-      profilesToChats: {
-        find: jest.fn(async () => {
-          return [
-            {
-              profileId: "profile-1",
-              chatId: "chat-1",
-            },
-          ];
-        }),
+    modules: {
+      social: {
+        profilesToChats: {
+          find: jest.fn(async () => {
+            return [
+              {
+                profileId: "profile-1",
+                chatId: "chat-1",
+              },
+            ];
+          }),
+        },
       },
     },
   };
@@ -181,12 +175,12 @@ describe("Given: OpenRouter model metadata", () => {
       },
     ]);
     const service = createService();
-    service.socialModule.profilesToChats.find.mockResolvedValue([]);
+    service.modules.social.profilesToChats.find.mockResolvedValue([]);
     const handler = new Handler(service as any);
 
     const response = (await handler.execute(createContext(), undefined)) as any;
 
-    expect(service.socialModule.profilesToChats.find).not.toHaveBeenCalled();
+    expect(service.modules.social.profilesToChats.find).not.toHaveBeenCalled();
     expect(response.data.groups[0].models).toEqual([
       expect.objectContaining({
         id: "openai/gpt-6.1-sol",

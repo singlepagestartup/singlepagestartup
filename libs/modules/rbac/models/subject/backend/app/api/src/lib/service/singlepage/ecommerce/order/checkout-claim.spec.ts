@@ -21,56 +21,59 @@ function fixture() {
     billingModuleCurrencyId: "usd",
   }));
   const repository = { withSubjectLock: jest.fn(async (_scope, run) => run()) };
-  const ecommerceModule = {
-    order: {
-      lockForLifecycle: jest.fn(),
-      findById: jest.fn(async ({ id }) =>
-        orders.find((order) => order.id === id),
-      ),
-      update: jest.fn(async ({ id, data }) =>
-        Object.assign(
-          orders.find((order) => order.id === id)!,
-          data,
+  const modules = {
+    ecommerce: {
+      order: {
+        lockForLifecycle: jest.fn(),
+        findById: jest.fn(async ({ id }) =>
+          orders.find((order) => order.id === id),
         ),
-      ),
+        update: jest.fn(async ({ id, data }) =>
+          Object.assign(
+            orders.find((order) => order.id === id)!,
+            data,
+          ),
+        ),
+        ordersToBillingModulePaymentIntents: {
+          find: jest.fn().mockResolvedValue([]),
+        },
+        paymentIntent: {
+          find: jest
+            .fn()
+            .mockResolvedValue([{ id: "intent", status: "requires_action" }]),
+        },
+      },
+      ordersToProducts: { find: jest.fn().mockResolvedValue(lines) },
+      ordersToBillingModuleCurrencies: {
+        find: jest.fn().mockResolvedValue(currencies),
+      },
     },
-    ordersToProducts: { find: jest.fn().mockResolvedValue(lines) },
-    ordersToBillingModuleCurrencies: {
-      find: jest.fn().mockResolvedValue(currencies),
-    },
-    ordersToBillingModulePaymentIntents: {
-      find: jest.fn().mockResolvedValue([]),
-    },
-  };
-  const billingModule = {
-    paymentIntent: {
-      find: jest
-        .fn()
-        .mockResolvedValue([{ id: "intent", status: "requires_action" }]),
-    },
-    paymentIntentsToInvoices: {
-      find: jest
-        .fn()
-        .mockResolvedValue([
-          { paymentIntentId: "intent", invoiceId: "invoice" },
-        ]),
-    },
-    invoice: {
-      find: jest
-        .fn()
-        .mockResolvedValue([
-          { id: "invoice", status: "open", paymentUrl: "https://pay.test" },
-        ]),
+    billing: {
+      paymentIntentsToInvoices: {
+        find: jest
+          .fn()
+          .mockResolvedValue([
+            { paymentIntentId: "intent", invoiceId: "invoice" },
+          ]),
+      },
+      invoice: {
+        find: jest
+          .fn()
+          .mockResolvedValue([
+            { id: "invoice", status: "open", paymentUrl: "https://pay.test" },
+          ]),
+      },
     },
   };
   const settledOrderIds = jest.fn().mockResolvedValue(new Set());
   const operation = new Service({
     repository,
-    ecommerceModule,
-    billingModule,
+    modules,
     settledOrderIds,
-    subjectsToEcommerceModuleOrders: {
-      find: jest.fn().mockResolvedValue(owners),
+    module: {
+      subjectsToEcommerceModuleOrders: {
+        find: jest.fn().mockResolvedValue(owners),
+      },
     },
   } as any);
   const props = {
@@ -86,8 +89,7 @@ function fixture() {
     lines,
     currencies,
     repository,
-    ecommerceModule,
-    billingModule,
+    modules,
     settledOrderIds,
     operation,
     props,
@@ -99,7 +101,7 @@ it("locks sorted IDs and claims every cart before a second checkout can claim it
   await expect(f.operation.execute(f.props)).resolves.toEqual({
     invoices: undefined,
   });
-  expect(f.ecommerceModule.order.lockForLifecycle.mock.calls).toEqual([
+  expect(f.modules.ecommerce.order.lockForLifecycle.mock.calls).toEqual([
     [{ id: "a" }],
     [{ id: "b" }],
   ]);
@@ -117,7 +119,7 @@ it("locks sorted IDs and claims every cart before a second checkout can claim it
   await expect(f.operation.execute(f.props)).rejects.toThrow(
     "no longer an open cart",
   );
-  expect(f.ecommerceModule.order.update).toHaveBeenCalledTimes(2);
+  expect(f.modules.ecommerce.order.update).toHaveBeenCalledTimes(2);
 });
 
 it.each(["owner", "status", "lines", "currency", "settled", "period"])(
@@ -145,15 +147,15 @@ it.each(["owner", "status", "lines", "currency", "settled", "period"])(
       });
     }
     await expect(f.operation.execute(f.props)).rejects.toThrow();
-    expect(f.ecommerceModule.order.update).not.toHaveBeenCalled();
+    expect(f.modules.ecommerce.order.update).not.toHaveBeenCalled();
   },
 );
 
 it("resumes the existing invoice of one legacy cart without creating another attempt", async () => {
   const f = fixture();
-  f.ecommerceModule.ordersToBillingModulePaymentIntents.find.mockResolvedValue([
-    { orderId: "a", billingModulePaymentIntentId: "intent" },
-  ]);
+  f.modules.ecommerce.order.ordersToBillingModulePaymentIntents.find.mockResolvedValue(
+    [{ orderId: "a", billingModulePaymentIntentId: "intent" }],
+  );
   const result = await f.operation.execute({
     ...f.props,
     orderIds: ["a"],
@@ -164,17 +166,21 @@ it("resumes the existing invoice of one legacy cart without creating another att
     { id: "invoice", status: "open", paymentUrl: "https://pay.test" },
   ]);
   expect(f.orders[1].status).toBe("paying");
+  expect(
+    f.modules.ecommerce.order.ordersToBillingModulePaymentIntents.find,
+  ).toHaveBeenCalled();
+  expect(f.modules.ecommerce.order.paymentIntent.find).toHaveBeenCalled();
 });
 
 it.each(["missing-link", "mixed"])(
   "does not duplicate an unresolved legacy attempt for %s",
   async (scenario) => {
     const f = fixture();
-    f.ecommerceModule.ordersToBillingModulePaymentIntents.find.mockResolvedValue(
+    f.modules.ecommerce.order.ordersToBillingModulePaymentIntents.find.mockResolvedValue(
       [{ orderId: "a", billingModulePaymentIntentId: "intent" }],
     );
     if (scenario === "missing-link") {
-      f.billingModule.invoice.find.mockResolvedValue([]);
+      f.modules.billing.invoice.find.mockResolvedValue([]);
     }
     await expect(
       f.operation.execute({
@@ -184,7 +190,7 @@ it.each(["missing-link", "mixed"])(
         expectedCurrencies: undefined,
       }),
     ).rejects.toThrow("unresolved payment");
-    expect(f.ecommerceModule.order.update).not.toHaveBeenCalled();
+    expect(f.modules.ecommerce.order.update).not.toHaveBeenCalled();
   },
 );
 
@@ -228,24 +234,25 @@ it.each(["one shared intent", "one invoice covering two intents"])(
         method === "eq" ? row[column] === value : value.includes(row[column]),
       );
     }
-    f.ecommerceModule.ordersToBillingModulePaymentIntents.find.mockImplementation(
+    f.modules.ecommerce.order.ordersToBillingModulePaymentIntents.find.mockImplementation(
       async (props) => filterRows(orderLinks, props),
     );
-    f.billingModule.paymentIntentsToInvoices.find.mockImplementation(
+    f.modules.billing.paymentIntentsToInvoices.find.mockImplementation(
       async (props) => filterRows(invoiceLinks, props),
     );
-    f.billingModule.paymentIntent.find.mockImplementation(async (props) =>
-      filterRows(
-        intentIds.map((id) => ({ id, status: "requires_action" })),
-        props,
-      ),
+    f.modules.ecommerce.order.paymentIntent.find.mockImplementation(
+      async (props) =>
+        filterRows(
+          intentIds.map((id) => ({ id, status: "requires_action" })),
+          props,
+        ),
     );
-    f.billingModule.invoice.find.mockResolvedValue([invoice]);
+    f.modules.billing.invoice.find.mockResolvedValue([invoice]);
 
     await expect(
       f.operation.execute({ subjectId: "subject", orderIds: ["a"] }),
     ).rejects.toThrow("unresolved payment");
-    expect(f.ecommerceModule.order.update).not.toHaveBeenCalled();
+    expect(f.modules.ecommerce.order.update).not.toHaveBeenCalled();
 
     await expect(f.operation.execute(f.props)).resolves.toEqual({
       invoices: [invoice],
@@ -260,19 +267,19 @@ it.each(["one shared intent", "one invoice covering two intents"])(
 
 it("preserves failed intent links while allowing a cart with no live invoices to start a fresh attempt", async () => {
   const f = fixture();
-  f.ecommerceModule.ordersToBillingModulePaymentIntents.find.mockResolvedValue([
-    { orderId: "a", billingModulePaymentIntentId: "intent" },
-  ]);
-  f.billingModule.paymentIntent.find.mockResolvedValue([
+  f.modules.ecommerce.order.ordersToBillingModulePaymentIntents.find.mockResolvedValue(
+    [{ orderId: "a", billingModulePaymentIntentId: "intent" }],
+  );
+  f.modules.ecommerce.order.paymentIntent.find.mockResolvedValue([
     { id: "intent", status: "failed" },
   ]);
-  f.billingModule.invoice.find.mockResolvedValue([
+  f.modules.billing.invoice.find.mockResolvedValue([
     { id: "invoice", status: "void", paymentUrl: "" },
   ]);
   await expect(f.operation.execute(f.props)).resolves.toEqual({
     invoices: undefined,
   });
-  expect(f.ecommerceModule.order.update).toHaveBeenCalledTimes(2);
+  expect(f.modules.ecommerce.order.update).toHaveBeenCalledTimes(2);
 });
 
 it("reopens an exact selection with separate currency invoices and preserves a paid free invoice without a payment URL", async () => {
@@ -280,15 +287,17 @@ it("reopens an exact selection with separate currency invoices and preserves a p
   Object.assign(f.orders[0], { type: "history", status: "paid" });
   Object.assign(f.orders[1], { type: "history", status: "paying" });
   f.settledOrderIds.mockResolvedValue(new Set(["b"]));
-  f.ecommerceModule.ordersToBillingModulePaymentIntents.find.mockResolvedValue([
-    { orderId: "a", billingModulePaymentIntentId: "usd-intent" },
-    { orderId: "b", billingModulePaymentIntentId: "rub-intent" },
-  ]);
-  f.billingModule.paymentIntent.find.mockResolvedValue([
+  f.modules.ecommerce.order.ordersToBillingModulePaymentIntents.find.mockResolvedValue(
+    [
+      { orderId: "a", billingModulePaymentIntentId: "usd-intent" },
+      { orderId: "b", billingModulePaymentIntentId: "rub-intent" },
+    ],
+  );
+  f.modules.ecommerce.order.paymentIntent.find.mockResolvedValue([
     { id: "rub-intent", status: "succeeded" },
     { id: "usd-intent", status: "requires_payment_method" },
   ]);
-  f.billingModule.paymentIntentsToInvoices.find.mockResolvedValue([
+  f.modules.billing.paymentIntentsToInvoices.find.mockResolvedValue([
     { paymentIntentId: "rub-intent", invoiceId: "rub-invoice" },
     { paymentIntentId: "usd-intent", invoiceId: "usd-invoice" },
   ]);
@@ -301,9 +310,9 @@ it("reopens an exact selection with separate currency invoices and preserves a p
       paymentUrl: "https://pay.test/usd",
     },
   ];
-  f.billingModule.invoice.find.mockResolvedValue(invoices);
+  f.modules.billing.invoice.find.mockResolvedValue(invoices);
   await expect(
     f.operation.execute({ ...f.props, resumeExisting: true }),
   ).resolves.toEqual({ invoices });
-  expect(f.ecommerceModule.order.update).not.toHaveBeenCalled();
+  expect(f.modules.ecommerce.order.update).not.toHaveBeenCalled();
 });

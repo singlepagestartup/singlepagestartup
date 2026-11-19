@@ -40,7 +40,7 @@ function createPermissionService(props: {
   permission?: Record<string, unknown>;
   rootPermission?: Record<string, unknown>;
 }) {
-  const service = new PermissionService({} as any, { find: jest.fn() } as any);
+  const service = new PermissionService({} as any);
 
   service.find = jest.fn().mockResolvedValue([]);
   service.resolveByRoute = jest.fn().mockResolvedValue({
@@ -79,12 +79,11 @@ describe("Given: injected RBAC services", () => {
     const rolesToPermissionsService = {
       find: jest.fn().mockResolvedValue([]),
     };
-    const service = new Service(
-      permissionService as any,
-      rolesToPermissionsService as any,
-      { find: jest.fn() } as any,
-      createSubjectRepository() as any,
-    );
+    const service = new Service(createSubjectRepository() as any, {
+      permission: permissionService as any,
+      rolesToPermissions: rolesToPermissionsService as any,
+      subjectsToRoles: { find: jest.fn() } as any,
+    });
 
     await expect(
       service.execute({
@@ -129,15 +128,17 @@ describe("Given: injected RBAC services", () => {
         .mockResolvedValue([{ subjectId: "subject-1", roleId: "role-owner" }]),
     };
     const service = new Service(
-      createPermissionService({
-        permission: { id: "permission-private" },
-      }) as any,
-      rolesToPermissionsService as any,
-      subjectsToRolesService as any,
       createSubjectRepository({
         id: "subject-1",
         tokensValidAfter: null,
       }) as any,
+      {
+        permission: createPermissionService({
+          permission: { id: "permission-private" },
+        }) as any,
+        rolesToPermissions: rolesToPermissionsService as any,
+        subjectsToRoles: subjectsToRolesService as any,
+      },
     );
 
     await expect(
@@ -173,12 +174,11 @@ describe("Given: injected RBAC services", () => {
 
     (verify as jest.Mock).mockRejectedValueOnce(new JwtTokenExpired(token));
 
-    const service = new Service(
-      { resolveByRoute: jest.fn() } as any,
-      { find: jest.fn() } as any,
-      { find: jest.fn() } as any,
-      createSubjectRepository() as any,
-    );
+    const service = new Service(createSubjectRepository() as any, {
+      permission: { resolveByRoute: jest.fn() } as any,
+      rolesToPermissions: { find: jest.fn() } as any,
+      subjectsToRoles: { find: jest.fn() } as any,
+    });
 
     const execution = service.execute({
       permission: {
@@ -211,8 +211,8 @@ describe("Given: a role-less permission on a sensitive route", () => {
    * Then: it is refused instead of falling public by omission.
    */
   it("When: an anonymous request hits it Then: refuses the read", async () => {
-    const service = new Service(
-      createPermissionService({
+    const service = new Service(createSubjectRepository() as any, {
+      permission: createPermissionService({
         permission: {
           id: "permission-identities-find",
           type: "HTTP",
@@ -220,10 +220,9 @@ describe("Given: a role-less permission on a sensitive route", () => {
           path: "/api/rbac/identities",
         },
       }) as any,
-      { find: jest.fn().mockResolvedValue([]) } as any,
-      { find: jest.fn() } as any,
-      createSubjectRepository() as any,
-    );
+      rolesToPermissions: { find: jest.fn().mockResolvedValue([]) } as any,
+      subjectsToRoles: { find: jest.fn() } as any,
+    });
 
     await expect(
       service.execute({
@@ -256,27 +255,29 @@ describe("Given: a role-less permission on a sensitive route", () => {
         ]),
     };
     const service = new Service(
-      createPermissionService({
-        permission: {
-          id: "permission-identities-count",
-          type: "HTTP",
-          method: "GET",
-          path: "/api/rbac/identities/count",
-        },
-      }) as any,
-      {
-        find: jest.fn().mockResolvedValue([
-          {
-            permissionId: "permission-identities-count",
-            roleId: "role-admin",
-          },
-        ]),
-      } as any,
-      subjectsToRolesService as any,
       createSubjectRepository({
         id: "subject-admin",
         tokensValidAfter: null,
       }) as any,
+      {
+        permission: createPermissionService({
+          permission: {
+            id: "permission-identities-count",
+            type: "HTTP",
+            method: "GET",
+            path: "/api/rbac/identities/count",
+          },
+        }) as any,
+        rolesToPermissions: {
+          find: jest.fn().mockResolvedValue([
+            {
+              permissionId: "permission-identities-count",
+              roleId: "role-admin",
+            },
+          ]),
+        } as any,
+        subjectsToRoles: subjectsToRolesService as any,
+      },
     );
 
     await expect(
@@ -304,35 +305,37 @@ describe("Given: a role-less permission on a sensitive route", () => {
     });
 
     const service = new Service(
-      createPermissionService({
-        permission: {
-          id: "permission-subjects-find",
-          type: "HTTP",
-          method: "GET",
-          path: "/api/rbac/subjects",
-        },
-        rootPermission: { id: "permission-root", path: "*", method: "*" },
-      }) as any,
-      {
-        find: jest.fn(async (props?: any) => {
-          const permissionId = props?.params?.filters?.and?.[0]?.value;
-
-          return permissionId === "permission-root"
-            ? [{ permissionId, roleId: "role-admin" }]
-            : [];
-        }),
-      } as any,
-      {
-        find: jest
-          .fn()
-          .mockResolvedValue([
-            { subjectId: "subject-member", roleId: "role-user" },
-          ]),
-      } as any,
       createSubjectRepository({
         id: "subject-member",
         tokensValidAfter: null,
       }) as any,
+      {
+        permission: createPermissionService({
+          permission: {
+            id: "permission-subjects-find",
+            type: "HTTP",
+            method: "GET",
+            path: "/api/rbac/subjects",
+          },
+          rootPermission: { id: "permission-root", path: "*", method: "*" },
+        }) as any,
+        rolesToPermissions: {
+          find: jest.fn(async (props?: any) => {
+            const permissionId = props?.params?.filters?.and?.[0]?.value;
+
+            return permissionId === "permission-root"
+              ? [{ permissionId, roleId: "role-admin" }]
+              : [];
+          }),
+        } as any,
+        subjectsToRoles: {
+          find: jest
+            .fn()
+            .mockResolvedValue([
+              { subjectId: "subject-member", roleId: "role-user" },
+            ]),
+        } as any,
+      },
     );
 
     await expect(
@@ -366,12 +369,11 @@ describe("Given: a role-less permission on a sensitive route", () => {
       return route !== "/api/rbac/roles";
     };
 
-    const service = new Service(
-      permissionService as any,
-      { find: jest.fn().mockResolvedValue([]) } as any,
-      { find: jest.fn() } as any,
-      createSubjectRepository() as any,
-    );
+    const service = new Service(createSubjectRepository() as any, {
+      permission: permissionService as any,
+      rolesToPermissions: { find: jest.fn().mockResolvedValue([]) } as any,
+      subjectsToRoles: { find: jest.fn() } as any,
+    });
 
     await expect(
       service.execute({
@@ -396,11 +398,11 @@ describe("Given: a request that carries a subject token", () => {
     subjectId: string;
     subjectRepository: ReturnType<typeof createSubjectRepository>;
   }) {
-    return new Service(
-      createPermissionService({
+    return new Service(props.subjectRepository as any, {
+      permission: createPermissionService({
         permission: { id: `permission-for-${props.subjectId}` },
       }) as any,
-      {
+      rolesToPermissions: {
         find: jest.fn().mockResolvedValue([
           {
             permissionId: `permission-for-${props.subjectId}`,
@@ -408,15 +410,14 @@ describe("Given: a request that carries a subject token", () => {
           },
         ]),
       } as any,
-      {
+      subjectsToRoles: {
         find: jest
           .fn()
           .mockResolvedValue([
             { subjectId: props.subjectId, roleId: "role-member" },
           ]),
       } as any,
-      props.subjectRepository as any,
-    );
+    });
   }
 
   function authorize(service: Service, token: string) {
@@ -660,14 +661,13 @@ describe("roleless Chat access", () => {
   ] as const)(
     "checks the resolved grant before authorizing %s",
     async (route, permissionPath, allowed) => {
-      const service = new Service(
-        createPermissionService({
+      const service = new Service(createSubjectRepository() as any, {
+        permission: createPermissionService({
           permission: { id: "roleless", path: permissionPath },
         }) as any,
-        { find: jest.fn().mockResolvedValue([]) } as any,
-        { find: jest.fn() } as any,
-        createSubjectRepository() as any,
-      );
+        rolesToPermissions: { find: jest.fn().mockResolvedValue([]) } as any,
+        subjectsToRoles: { find: jest.fn() } as any,
+      });
       const check = service.execute({
         permission: { route, method: "GET", type: "HTTP" },
         authorization: {},
@@ -708,24 +708,26 @@ describe("catalogue write permissions", () => {
       (verify as jest.Mock).mockResolvedValue({ subject: { id: actor } });
       const permission = { id: `grant-${actor}`, path: resource };
       const service = new Service(
-        createPermissionService(
-          grant === "wildcard"
-            ? { rootPermission: { ...permission, method: "*", path: "*" } }
-            : { permission },
-        ) as any,
-        {
-          find: jest
-            .fn()
-            .mockResolvedValue(
-              permissionRole ? [{ roleId: permissionRole }] : [],
-            ),
-        } as any,
-        {
-          find: jest
-            .fn()
-            .mockResolvedValue(actorRole ? [{ roleId: actorRole }] : []),
-        } as any,
         createSubjectRepository({ tokensValidAfter: null }) as any,
+        {
+          permission: createPermissionService(
+            grant === "wildcard"
+              ? { rootPermission: { ...permission, method: "*", path: "*" } }
+              : { permission },
+          ) as any,
+          rolesToPermissions: {
+            find: jest
+              .fn()
+              .mockResolvedValue(
+                permissionRole ? [{ roleId: permissionRole }] : [],
+              ),
+          } as any,
+          subjectsToRoles: {
+            find: jest
+              .fn()
+              .mockResolvedValue(actorRole ? [{ roleId: actorRole }] : []),
+          } as any,
+        },
       );
       for (const [method, suffix] of [
         ["POST", ""],
@@ -749,24 +751,26 @@ describe("catalogue write permissions", () => {
       subject: { id: "catalogue-admin-allowed" },
     });
     const service = new Service(
-      createPermissionService({
-        rootPermission: {
-          id: "catalogue-admin-root-allowed",
-          method: "*",
-          path: "*",
-        },
-      }) as any,
-      {
-        find: jest
-          .fn()
-          .mockResolvedValue([{ roleId: "catalogue-role-admin-allowed" }]),
-      } as any,
-      {
-        find: jest
-          .fn()
-          .mockResolvedValue([{ roleId: "catalogue-role-admin-allowed" }]),
-      } as any,
       createSubjectRepository({ tokensValidAfter: null }) as any,
+      {
+        permission: createPermissionService({
+          rootPermission: {
+            id: "catalogue-admin-root-allowed",
+            method: "*",
+            path: "*",
+          },
+        }) as any,
+        rolesToPermissions: {
+          find: jest
+            .fn()
+            .mockResolvedValue([{ roleId: "catalogue-role-admin-allowed" }]),
+        } as any,
+        subjectsToRoles: {
+          find: jest
+            .fn()
+            .mockResolvedValue([{ roleId: "catalogue-role-admin-allowed" }]),
+        } as any,
+      },
     );
     await expect(
       service.execute({
@@ -810,12 +814,11 @@ it("leaves provider webhook notifications outside the central operator-only poli
       path: "/api/rbac/subjects/ecommerce-module/orders/payment-intents/stripe/webhook",
     },
   });
-  const service = new Service(
-    permissionService as any,
-    { find: jest.fn().mockResolvedValue([]) } as any,
-    { find: jest.fn().mockResolvedValue([]) } as any,
-    createSubjectRepository() as any,
-  );
+  const service = new Service(createSubjectRepository() as any, {
+    permission: permissionService as any,
+    rolesToPermissions: { find: jest.fn().mockResolvedValue([]) } as any,
+    subjectsToRoles: { find: jest.fn().mockResolvedValue([]) } as any,
+  });
   await expect(
     service.execute({
       permission: {

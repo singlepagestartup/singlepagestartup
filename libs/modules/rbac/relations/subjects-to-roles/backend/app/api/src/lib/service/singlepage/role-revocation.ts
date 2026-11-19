@@ -4,20 +4,16 @@ import type { Service as ProductsService } from "@sps/rbac/relations/roles-to-ec
 import type { IRevocationDependencies } from "./index";
 
 export interface IConstructorProps {
-  service: {
-    subjectsToEcommerceModuleOrders: Pick<OrdersService, "find">;
-    rolesToEcommerceModuleProducts: Pick<ProductsService, "find">;
-    ecommerceModule: {
-      order: Pick<
-        OrderService,
-        "findByIdExtended" | "findByIdCheckoutAttributes" | "revokeSubscription"
-      >;
-    };
-  };
+  subjectsToEcommerceModuleOrders: Pick<OrdersService, "find">;
+  rolesToEcommerceModuleProducts: Pick<ProductsService, "find">;
+  order: Pick<
+    OrderService,
+    "findByIdExtended" | "findByIdCheckoutAttributes" | "revokeSubscription"
+  >;
 }
 
 export class Service implements IRevocationDependencies {
-  constructor(readonly service: IConstructorProps["service"]) {}
+  constructor(readonly service: IConstructorProps) {}
   async revoke(grant: Parameters<IRevocationDependencies["revoke"]>[0]) {
     const [owners, requirements] = await Promise.all([
       this.service.subjectsToEcommerceModuleOrders.find({
@@ -41,7 +37,7 @@ export class Service implements IRevocationDependencies {
       requirements.map((link) => link.ecommerceModuleProductId),
     );
     for (const owner of owners) {
-      const order = await this.service.ecommerceModule.order.findByIdExtended({
+      const order = await this.service.order.findByIdExtended({
         id: owner.ecommerceModuleOrderId,
       });
       if (
@@ -49,7 +45,7 @@ export class Service implements IRevocationDependencies {
           products.has(line.productId),
         )
       ) {
-        await this.service.ecommerceModule.order.revokeSubscription({
+        await this.service.order.revokeSubscription({
           id: owner.ecommerceModuleOrderId,
         });
       }
@@ -82,7 +78,7 @@ export class Service implements IRevocationDependencies {
     ) {
       return false;
     }
-    const order = await this.service.ecommerceModule.order.findByIdExtended({
+    const order = await this.service.order.findByIdExtended({
       id: scope.orderId,
     });
     const products = new Set(
@@ -108,10 +104,9 @@ export class Service implements IRevocationDependencies {
     const now = Date.now();
     for (const owner of owners) {
       if (owner.ecommerceModuleOrderId !== scope.orderId) {
-        const active =
-          await this.service.ecommerceModule.order.findByIdExtended({
-            id: owner.ecommerceModuleOrderId,
-          });
+        const active = await this.service.order.findByIdExtended({
+          id: owner.ecommerceModuleOrderId,
+        });
         if (
           active &&
           ["delivering", "requested_cancelation"].includes(active.status) &&
@@ -126,10 +121,9 @@ export class Service implements IRevocationDependencies {
         }
       }
     }
-    const attributes =
-      await this.service.ecommerceModule.order.findByIdCheckoutAttributes({
-        id: scope.orderId,
-      });
+    const attributes = await this.service.order.findByIdCheckoutAttributes({
+      id: scope.orderId,
+    });
     return (
       attributes?.type === "one_off" ||
       (attributes?.type === "subscription" &&

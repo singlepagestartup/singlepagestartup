@@ -1,13 +1,20 @@
 import { ConsistencyStore } from "@sps/providers-db";
-import { resourceIdentity, scopeDependencyKey } from "@sps/shared-backend-api";
+import {
+  createAppAssembly,
+  resourceIdentity,
+  scopeDependencyKey,
+} from "@sps/shared-backend-api";
 import { randomUUID } from "node:crypto";
 import { Service } from "@sps/crm/models/request/backend/app/api/src/lib/service";
+import { serviceBootstrap as requestOwner } from "@sps/crm/models/request/backend/app/api/src/lib/bootstrap";
 import { Repository } from "@sps/crm/models/request/backend/app/api/src/lib/repository";
 import { Configuration } from "@sps/crm/models/request/backend/app/api/src/lib/configuration";
 import { Service as FormService } from "@sps/crm/models/form/backend/app/api/src/lib/service";
+import { serviceBootstrap as formOwner } from "@sps/crm/models/form/backend/app/api/src/lib/bootstrap";
 import { Repository as FormRepository } from "@sps/crm/models/form/backend/app/api/src/lib/repository";
 import { Configuration as FormConfiguration } from "@sps/crm/models/form/backend/app/api/src/lib/configuration";
 import { Service as FormsToRequestsService } from "@sps/crm/relations/forms-to-requests/backend/app/api/src/lib/service";
+import { serviceBootstrap as relationOwner } from "@sps/crm/relations/forms-to-requests/backend/app/api/src/lib/bootstrap";
 import { Repository as FormsToRequestsRepository } from "@sps/crm/relations/forms-to-requests/backend/app/api/src/lib/repository";
 import { Configuration as FormsToRequestsConfiguration } from "@sps/crm/relations/forms-to-requests/backend/app/api/src/lib/configuration";
 import {
@@ -32,11 +39,19 @@ class EffectiveRelationService extends FormsToRequestsService {
     });
   }
 }
-const form = new FormService(
-  new FormRepository(new FormConfiguration()),
-  {} as any,
-  {} as any,
-);
+const form = new FormService(new FormRepository(new FormConfiguration()));
+
+function formWithOverrides(
+  request: Service,
+  relations: FormsToRequestsService,
+) {
+  const assembly = createAppAssembly(({ overrideService }) => {
+    overrideService(requestOwner, request);
+    overrideService(relationOwner, relations);
+  });
+  return formOwner.createService(assembly);
+}
+
 afterAll(async () => {
   await getPostgresClient().end();
   resetPostgresClient();
@@ -53,11 +68,7 @@ it("serializes concurrent retries into one committed Request and relation while 
   const requestDb = request.repository.db;
   const relationDb = relations.repository.db;
   const key = `pr374-${randomUUID()}`;
-  const submissions = new FormService(
-    new FormRepository(new FormConfiguration()),
-    {} as any,
-    { request, formsToRequests: relations },
-  );
+  const submissions = formWithOverrides(request, relations);
   let requestId: string | undefined;
   try {
     const results = await Promise.all(
@@ -110,7 +121,7 @@ it("serializes concurrent retries into one committed Request and relation while 
 
 it("rolls back both records when the relation service fails after its insert", async () => {
   class FailingRelationService extends FormsToRequestsService {
-    override async create(props: { data: any }) {
+    override async create(props: { data: any }): Promise<never> {
       await super.create(props);
       throw new Error("relation failure");
     }
@@ -120,11 +131,7 @@ it("rolls back both records when the relation service fails after its insert", a
   const relations = new FailingRelationService(
     new FormsToRequestsRepository(new FormsToRequestsConfiguration()),
   );
-  const submissions = new FormService(
-    new FormRepository(new FormConfiguration()),
-    {} as any,
-    { request, formsToRequests: relations },
-  );
+  const submissions = formWithOverrides(request, relations);
   const key = `pr374-${randomUUID()}`;
   try {
     await expect(

@@ -3,8 +3,6 @@ import type { IModel as IOrderIntent } from "@sps/ecommerce/relations/orders-to-
 import type { IModel as IIntentInvoice } from "@sps/billing/relations/payment-intents-to-invoices/sdk/model";
 import type { IModel as IPaymentIntent } from "@sps/billing/models/payment-intent/sdk/model";
 import type { IModel as IInvoice } from "@sps/billing/models/invoice/sdk/model";
-import type { IReadService } from "../../../../di";
-import type { Service as SubjectsToOrdersService } from "@sps/rbac/relations/subjects-to-ecommerce-module-orders/backend/app/api/src/lib/service";
 import type { SubjectServiceDependencies } from "../../index";
 
 export interface IExecuteProps {
@@ -19,17 +17,6 @@ export interface IExecuteProps {
   >[];
 }
 
-interface IConstructorProps extends SubjectServiceDependencies {
-  subjectsToEcommerceModuleOrders: Pick<SubjectsToOrdersService, "find">;
-  ecommerceModule: {
-    ordersToBillingModulePaymentIntents: Pick<IReadService, "find">;
-  };
-  billingModule: Record<
-    "paymentIntent" | "paymentIntentsToInvoices" | "invoice",
-    Pick<IReadService, "find">
-  >;
-}
-
 interface IBillingRecords {
   orderIntents: IOrderIntent[];
   intents: IPaymentIntent[];
@@ -38,7 +25,7 @@ interface IBillingRecords {
 }
 
 export class Service {
-  constructor(private readonly dependencies: IConstructorProps) {}
+  constructor(private readonly dependencies: SubjectServiceDependencies) {}
 
   async settledIds({ orderIds }: { orderIds: string[] }): Promise<Set<string>> {
     const records = await this.billingRecords(orderIds);
@@ -130,9 +117,9 @@ export class Service {
     if (!orderIds.length) {
       return records;
     }
-    const { ecommerceModule, billingModule } = this.dependencies;
+    const { ecommerce, billing } = this.dependencies.modules;
     records.orderIntents =
-      await ecommerceModule.ordersToBillingModulePaymentIntents.find(
+      await ecommerce.order.ordersToBillingModulePaymentIntents.find(
         this.filterByIds("orderId", orderIds),
       );
     if (!records.orderIntents.length) {
@@ -142,13 +129,13 @@ export class Service {
       (link) => link.billingModulePaymentIntentId,
     );
     [records.intents, records.invoiceLinks] = await Promise.all([
-      billingModule.paymentIntent.find(this.filterByIds("id", intentIds)),
-      billingModule.paymentIntentsToInvoices.find(
+      ecommerce.order.paymentIntent.find(this.filterByIds("id", intentIds)),
+      billing.paymentIntentsToInvoices.find(
         this.filterByIds("paymentIntentId", intentIds),
       ),
     ]);
     if (records.invoiceLinks.length) {
-      records.invoices = await billingModule.invoice.find(
+      records.invoices = await billing.invoice.find(
         this.filterByIds(
           "id",
           records.invoiceLinks.map((link) => link.invoiceId),
@@ -178,9 +165,9 @@ export class Service {
 
     // A single invoice may charge several orders. Follow every link back to its owner
     // before exposing the provider URL, including links outside the history response.
-    const { billingModule, ecommerceModule } = this.dependencies;
+    const { ecommerce, billing } = this.dependencies.modules;
     const invoiceIntents: IIntentInvoice[] =
-      await billingModule.paymentIntentsToInvoices.find(
+      await billing.paymentIntentsToInvoices.find(
         this.filterByIds(
           "invoiceId",
           open.map((invoice) => invoice.id),
@@ -202,7 +189,7 @@ export class Service {
       return paymentUrls;
     }
     const linkedOrders: IOrderIntent[] =
-      await ecommerceModule.ordersToBillingModulePaymentIntents.find(
+      await ecommerce.order.ordersToBillingModulePaymentIntents.find(
         this.filterByIds("billingModulePaymentIntentId", intentIds),
       );
     const orderIds = linkedOrders.map((link) => link.orderId);
@@ -210,7 +197,7 @@ export class Service {
       return paymentUrls;
     }
     const ownership =
-      await this.dependencies.subjectsToEcommerceModuleOrders.find(
+      await this.dependencies.module.subjectsToEcommerceModuleOrders.find(
         this.filterByIds("ecommerceModuleOrderId", orderIds),
       );
     const exclusive = new Set(

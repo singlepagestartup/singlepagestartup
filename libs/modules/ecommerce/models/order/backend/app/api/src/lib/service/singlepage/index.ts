@@ -1,4 +1,5 @@
-import { createModules } from "../modules";
+import { createModule } from "../module";
+import { createModules } from "@sps/ecommerce/backend/app/api/src/lib/modules";
 import { Service as FulfillmentQuoteOptionsService } from "../startup/fulfillment-quote-options";
 import { Service as CartDetailsService } from "../startup/find-by-id/cart-details";
 import "reflect-metadata";
@@ -26,18 +27,8 @@ import type {
   IResult as IGetExtendedResult,
 } from "./find-by-id/extended";
 import { OrderDI } from "../../di";
-import { Service as ProductService } from "@sps/ecommerce/models/product/backend/app/api/src/lib/service";
-import { Service as OrdersToProductsService } from "@sps/ecommerce/relations/orders-to-products/backend/app/api/src/lib/service";
-import { Service as OrdersToBillingModuleCurrenciesService } from "@sps/ecommerce/relations/orders-to-billing-module-currencies/backend/app/api/src/lib/service";
-import { Service as OrdersToFileStorageModuleFilesService } from "@sps/ecommerce/relations/orders-to-file-storage-module-files/backend/app/api/src/lib/service";
-import { Service as ProductsToFileStorageModuleFilesService } from "@sps/ecommerce/relations/products-to-file-storage-module-files/backend/app/api/src/lib/service";
-import { Service as BillingCurrencyService } from "@sps/billing/models/currency/backend/app/api/src/lib/service";
 import { Service as OrdersToBillingModulePaymentIntentsService } from "@sps/ecommerce/relations/orders-to-billing-module-payment-intents/backend/app/api/src/lib/service";
 import { Service as BillingPaymentIntentService } from "@sps/billing/models/payment-intent/backend/app/api/src/lib/service";
-import { Service as BillingPaymentIntentsToCurrenciesService } from "@sps/billing/relations/payment-intents-to-currencies/backend/app/api/src/lib/service";
-import { Service as BillingPaymentIntentsToInvoicesService } from "@sps/billing/relations/payment-intents-to-invoices/backend/app/api/src/lib/service";
-import { Service as BillingInvoiceService } from "@sps/billing/models/invoice/backend/app/api/src/lib/service";
-import { Service as FileStorageFileService } from "@sps/file-storage/models/file/backend/app/api/src/lib/service";
 import { Service as SubscriptionPeriodService } from "../startup/subscription-period";
 import { Service as LifecycleService } from "../startup/lifecycle";
 import type {
@@ -53,80 +44,25 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     return this.appAssembly.getOrCreate(createModules);
   }
 
-  declare repository: Repository;
-  billingModule: {
-    currency: BillingCurrencyService;
-    paymentIntent: BillingPaymentIntentService;
-    paymentIntentsToCurrencies: BillingPaymentIntentsToCurrenciesService;
-    paymentIntentsToInvoices: BillingPaymentIntentsToInvoicesService;
-    invoice: BillingInvoiceService;
-  };
-  fileStorageModule: {
-    file: FileStorageFileService;
-  };
-  findByIdCheckoutAttributesService: FindByIdCheckoutAttributesService;
-  findByIdTotalService: FindByIdTotalService;
-  findByIdQuantityService: FindByIdQuantityService;
-  product: ProductService;
-  ordersToProducts: OrdersToProductsService;
-  ordersToBillingModuleCurrencies: OrdersToBillingModuleCurrenciesService;
-  ordersToFileStorageModuleFiles: OrdersToFileStorageModuleFilesService;
-  productsToFileStorageModuleFiles: ProductsToFileStorageModuleFilesService;
-  ordersToBillingModulePaymentIntents: OrdersToBillingModulePaymentIntentsService;
+  get module() {
+    return this.appAssembly.getOrCreate(createModule);
+  }
 
+  declare repository: Repository;
   constructor(
     @inject(DI.IRepository) repository: Repository,
     @inject(OrderDI.IFindByIdCheckoutAttributesService)
-    findByIdCheckoutAttributesService: FindByIdCheckoutAttributesService,
+    readonly findByIdCheckoutAttributesService: FindByIdCheckoutAttributesService,
     @inject(OrderDI.IFindByIdTotalService)
-    findByIdTotalService: FindByIdTotalService,
+    readonly findByIdTotalService: FindByIdTotalService,
     @inject(OrderDI.IFindByIdQuantityService)
-    findByIdQuantityService: FindByIdQuantityService,
-    @inject(OrderDI.IProductsService) product: ProductService,
-    @inject(OrderDI.IOrdersToProductsService)
-    ordersToProducts: OrdersToProductsService,
-    @inject(OrderDI.IOrdersToBillingModuleCurrenciesService)
-    ordersToBillingModuleCurrencies: OrdersToBillingModuleCurrenciesService,
-    @inject(OrderDI.IOrdersToFileStorageModuleFilesService)
-    ordersToFileStorageModuleFiles: OrdersToFileStorageModuleFilesService,
-    @inject(OrderDI.IProductsToFileStorageModuleFilesService)
-    productsToFileStorageModuleFiles: ProductsToFileStorageModuleFilesService,
+    readonly findByIdQuantityService: FindByIdQuantityService,
     @inject(OrderDI.IOrdersToBillingModulePaymentIntentsService)
-    ordersToBillingModulePaymentIntents: OrdersToBillingModulePaymentIntentsService,
-    @inject(OrderDI.IBillingModuleCurrencyService)
-    billingModuleCurrency: BillingCurrencyService,
-    @inject(OrderDI.IBillingModulePaymentIntentService)
-    billingModulePaymentIntent: BillingPaymentIntentService,
-    @inject(OrderDI.IBillingModulePaymentIntentsToCurrenciesService)
-    billingModulePaymentIntentsToCurrencies: BillingPaymentIntentsToCurrenciesService,
-    @inject(OrderDI.IBillingModulePaymentIntentsToInvoicesService)
-    billingModulePaymentIntentsToInvoices: BillingPaymentIntentsToInvoicesService,
-    @inject(OrderDI.IBillingModuleInvoiceService)
-    billingModuleInvoice: BillingInvoiceService,
-    @inject(OrderDI.IFileStorageModuleFileService)
-    fileStorageModuleFile: FileStorageFileService,
+    readonly ordersToBillingModulePaymentIntents: OrdersToBillingModulePaymentIntentsService,
+    @inject(OrderDI.IPaymentIntentService)
+    readonly paymentIntent: BillingPaymentIntentService,
   ) {
     super(repository);
-    this.billingModule = {
-      currency: billingModuleCurrency,
-      paymentIntent: billingModulePaymentIntent,
-      paymentIntentsToCurrencies: billingModulePaymentIntentsToCurrencies,
-      paymentIntentsToInvoices: billingModulePaymentIntentsToInvoices,
-      invoice: billingModuleInvoice,
-    };
-    this.fileStorageModule = {
-      file: fileStorageModuleFile,
-    };
-    this.findByIdCheckoutAttributesService = findByIdCheckoutAttributesService;
-    this.findByIdTotalService = findByIdTotalService;
-    this.findByIdQuantityService = findByIdQuantityService;
-    this.product = product;
-    this.ordersToProducts = ordersToProducts;
-    this.ordersToBillingModuleCurrencies = ordersToBillingModuleCurrencies;
-    this.ordersToFileStorageModuleFiles = ordersToFileStorageModuleFiles;
-    this.productsToFileStorageModuleFiles = productsToFileStorageModuleFiles;
-    this.ordersToBillingModulePaymentIntents =
-      ordersToBillingModulePaymentIntents;
   }
 
   protected override async insert(data: Record<string, unknown>) {
@@ -154,10 +90,10 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
 
   async findByIdCartDetails(props: { id: string }) {
     return new CartDetailsService({
-      ordersToProducts: this.ordersToProducts,
-      product: this.product,
+      ordersToProducts: this.module.ordersToProducts,
+      product: this.module.product,
       total: (input) => this.findByIdTotal(input),
-      ordersToCurrencies: this.ordersToBillingModuleCurrencies,
+      ordersToCurrencies: this.module.ordersToBillingModuleCurrencies,
     }).execute(props);
   }
 
@@ -194,9 +130,9 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
         continue;
       }
       if (
-        await this.billingModule.paymentIntent.hasProviderManagedSubscriptionRenewal(
-          { id: intent.id },
-        )
+        await this.paymentIntent.hasProviderManagedSubscriptionRenewal({
+          id: intent.id,
+        })
       ) {
         intentIds.push(intent.id);
       }
@@ -234,7 +170,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     for (const {
       billingModulePaymentIntent: intent,
     } of order.ordersToBillingModulePaymentIntents) {
-      await this.billingModule.paymentIntent.stopSubscriptionRenewal({
+      await this.paymentIntent.stopSubscriptionRenewal({
         id: intent.id,
       });
     }
@@ -414,14 +350,21 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
       findById: ({ id }) => this.findById({ id }),
       findByIdCheckoutAttributes: this.findByIdCheckoutAttributesService,
       findByIdExtendedProduct: ({ id }) =>
-        this.product.findByIdExtended({ id }),
-      ordersToProducts: this.ordersToProducts,
-      ordersToBillingModuleCurrencies: this.ordersToBillingModuleCurrencies,
-      ordersToFileStorageModuleFiles: this.ordersToFileStorageModuleFiles,
+        this.module.product.findByIdExtended({ id }),
+      ordersToProducts: this.module.ordersToProducts,
+      ordersToBillingModuleCurrencies:
+        this.module.ordersToBillingModuleCurrencies,
+      ordersToFileStorageModuleFiles:
+        this.module.ordersToFileStorageModuleFiles,
       ordersToBillingModulePaymentIntents:
         this.ordersToBillingModulePaymentIntents,
-      billingModule: this.billingModule,
-      fileStorageModule: this.fileStorageModule,
+      currency: this.modules.billing.currency,
+      paymentIntent: this.paymentIntent,
+      paymentIntentsToCurrencies:
+        this.modules.billing.paymentIntentsToCurrencies,
+      paymentIntentsToInvoices: this.modules.billing.paymentIntentsToInvoices,
+      invoice: this.modules.billing.invoice,
+      file: this.modules.fileStorage.file,
     }).execute(props);
   }
 
@@ -473,9 +416,11 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
   async fulfillmentQuoteOptions(props: { id: string }) {
     return new FulfillmentQuoteOptionsService({
       findById: (input) => this.findById(input),
-      ordersToProducts: this.ordersToProducts,
+      ordersToProducts: this.module.ordersToProducts,
       payments: this.ordersToBillingModulePaymentIntents,
-      billingModule: this.billingModule,
+      paymentIntent: this.paymentIntent,
+      paymentIntentsToInvoices: this.modules.billing.paymentIntentsToInvoices,
+      invoice: this.modules.billing.invoice,
     }).execute(props);
   }
 

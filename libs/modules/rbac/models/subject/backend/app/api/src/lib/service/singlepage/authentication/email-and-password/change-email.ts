@@ -46,7 +46,7 @@ export class Service {
     return createHmac("sha256", RBAC_SECRET_KEY!).update(value).digest("hex");
   }
   private async ownIdentity(subjectId: string, identityId: string) {
-    const links = await this.service.subjectsToIdentities.find({
+    const links = await this.service.module.subjectsToIdentities.find({
       params: {
         filters: {
           and: [
@@ -60,7 +60,9 @@ export class Service {
       throw new Error(
         "Authorization error. The identity does not belong to this Subject",
       );
-    const identity = await this.service.identity.findById({ id: identityId });
+    const identity = await this.service.module.identity.findById({
+      id: identityId,
+    });
     if (!identity?.email || identity.provider !== "email_and_password")
       throw new Error(
         "Validation error. An email and password identity is required",
@@ -143,7 +145,7 @@ export class Service {
         "email-change-current-verified",
       );
       verificationId = props.data.verificationId;
-      const duplicates = await this.service.identity.find({
+      const duplicates = await this.service.module.identity.find({
         params: {
           filters: {
             and: [
@@ -189,10 +191,12 @@ export class Service {
       options: this.options(),
     });
     try {
-      await this.service.notificationModule.notification.sendVerificationCode({
-        email,
-        code,
-      });
+      await this.service.modules.notification.notification.sendVerificationCode(
+        {
+          email,
+          code,
+        },
+      );
     } catch (error) {
       await actionApi.delete({ id: action.id, options: this.options() });
       throw error;
@@ -254,7 +258,9 @@ export class Service {
       data: { email: payload.email },
       options: this.options(),
     });
-    const updated = await this.service.identity.findById({ id: identity.id });
+    const updated = await this.service.module.identity.findById({
+      id: identity.id,
+    });
     return { stage: "complete" as const, identity: updated };
   }
 }

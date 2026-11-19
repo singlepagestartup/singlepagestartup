@@ -35,7 +35,7 @@ export class Handler {
         return c.json(ACCEPTED, 201);
       }
       const email = data.email.trim().toLowerCase();
-      const identities = await this.service.identity.find({
+      const identities = await this.service.module.identity.find({
         params: {
           filters: {
             and: [
@@ -60,8 +60,8 @@ export class Handler {
         return c.json(ACCEPTED, 201);
       }
 
-      const subjectsToIdentities = await this.service.subjectsToIdentities.find(
-        {
+      const subjectsToIdentities =
+        await this.service.module.subjectsToIdentities.find({
           params: {
             filters: {
               and: [
@@ -73,20 +73,19 @@ export class Handler {
               ],
             },
           },
-        },
-      );
+        });
 
       if (!subjectsToIdentities?.length) {
         return c.json(ACCEPTED, 201);
       }
 
-      const code = await this.service.identity.issuePasswordResetCode({
+      const code = await this.service.module.identity.issuePasswordResetCode({
         id: identities[0].id,
         email,
       });
       if (code) {
         // Mail-provider latency must not reveal whether the address has an account.
-        void this.service.notificationModule.notification
+        void this.service.modules.notification.notification
           .sendPasswordReset({ email, code })
           .catch((error: unknown) => {
             const errorType =

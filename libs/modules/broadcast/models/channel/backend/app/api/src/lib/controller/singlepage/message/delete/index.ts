@@ -26,30 +26,31 @@ export class Handler {
         );
       }
 
-      await this.service.messages.requireOrdinaryMessage(messageId);
+      await this.service.module.message.requireOrdinaryMessage(messageId);
 
-      const channelsToMessages = await this.service.channelsToMessages.find({
-        params: {
-          filters: {
-            and: [
-              {
-                column: "channelId",
-                method: "eq",
-                value: id,
-              },
-              {
-                column: "messageId",
-                method: "eq",
-                value: messageId,
-              },
-            ],
+      const channelsToMessages =
+        await this.service.module.channelsToMessages.find({
+          params: {
+            filters: {
+              and: [
+                {
+                  column: "channelId",
+                  method: "eq",
+                  value: id,
+                },
+                {
+                  column: "messageId",
+                  method: "eq",
+                  value: messageId,
+                },
+              ],
+            },
           },
-        },
-      });
+        });
 
       if (channelsToMessages?.length) {
         for (const channelToMessage of channelsToMessages) {
-          await this.service.channelsToMessages
+          await this.service.module.channelsToMessages
             .delete({
               id: channelToMessage.id,
             })
@@ -59,7 +60,7 @@ export class Handler {
         }
       }
 
-      await this.service.messages
+      await this.service.module.message
         .delete({
           id: messageId,
         })

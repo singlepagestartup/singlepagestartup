@@ -1,11 +1,8 @@
-import { createService as createAttributesToBillingModuleCurrenciesService } from "@sps/ecommerce/relations/attributes-to-billing-module-currencies/backend/app/api/src/lib/bootstrap";
-import { createService as createBillingModuleCurrencyService } from "@sps/billing/models/currency/backend/app/api/src/lib/bootstrap";
 import { ContainerModule } from "inversify";
 import {
   createAppBootstrap,
   DI,
   ExceptionFilter,
-  type IAppAssembly,
   type IExceptionFilter,
 } from "@sps/shared-backend-api";
 import { Configuration } from "./configuration";
@@ -13,9 +10,6 @@ import { Repository } from "./repository";
 import { Controller } from "./controller";
 import { Service } from "./service";
 import { App } from "./app";
-import { AttributeDI } from "./di";
-import type { Service as AttributesToBillingModuleCurrenciesService } from "@sps/ecommerce/relations/attributes-to-billing-module-currencies/backend/app/api/src/lib/service";
-import type { Service as BillingModuleCurrencyService } from "@sps/billing/models/currency/backend/app/api/src/lib/service";
 
 const bindings = new ContainerModule(({ bind }) => {
   bind<IExceptionFilter>(DI.IExceptionFilter).to(ExceptionFilter);
@@ -24,20 +18,6 @@ const bindings = new ContainerModule(({ bind }) => {
   bind<Repository>(DI.IRepository).to(Repository);
   bind<Service>(DI.IService).to(Service).inSingletonScope();
   bind<Configuration>(DI.IConfiguration).to(Configuration);
-  bind<AttributesToBillingModuleCurrenciesService>(
-    AttributeDI.IAttributesToBillingModuleCurrenciesService,
-  )
-    .toDynamicValue(({ get }) =>
-      createAttributesToBillingModuleCurrenciesService(
-        get<IAppAssembly>(DI.IAppAssembly),
-      ),
-    )
-    .inSingletonScope();
-  bind<BillingModuleCurrencyService>(AttributeDI.IBillingModuleCurrencyService)
-    .toDynamicValue(({ get }) =>
-      createBillingModuleCurrencyService(get<IAppAssembly>(DI.IAppAssembly)),
-    )
-    .inSingletonScope();
 });
 
 export const serviceBootstrap = createAppBootstrap<App, Service>(bindings);

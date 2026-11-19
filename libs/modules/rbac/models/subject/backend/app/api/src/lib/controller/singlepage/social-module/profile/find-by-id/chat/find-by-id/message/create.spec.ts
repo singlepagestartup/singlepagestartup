@@ -161,48 +161,53 @@ function createService() {
     socialModuleChatLifecycleAssertThreadBelongsToChat: jest
       .fn()
       .mockResolvedValue(undefined),
-    socialModule: {
-      message: {
-        create: (...args: unknown[]) => mockSocialModuleMessageCreate(...args),
-      },
-      profilesToMessages: {
-        create: (...args: unknown[]) =>
-          mockSocialModuleProfilesToMessagesCreate(...args),
-      },
-      chatsToMessages: {
-        create: (...args: unknown[]) =>
-          mockSocialModuleChatsToMessagesCreate(...args),
-      },
-      threadsToMessages: {
-        create: (...args: unknown[]) =>
-          mockSocialModuleThreadsToMessagesCreate(...args),
-      },
-      chat: {
-        findById: jest
-          .fn()
-          .mockResolvedValue({ id: "chat-1", variant: "ai-chat" }),
-      },
-      thread: {
-        findById: jest.fn().mockResolvedValue({ id: "thread-1", metadata: {} }),
-      },
-      profilesToChats: {
-        find: jest.fn().mockResolvedValue([
-          {
-            chatId: "chat-1",
-            profileId: "profile-1",
-          },
-        ]),
-      },
-      profile: {
-        findById: jest.fn().mockResolvedValue({
-          id: "assistant-profile",
-          variant: "artificial-intelligence",
-        }),
-      },
-      messagesToFileStorageModuleFiles: {
-        create: (...args: unknown[]) =>
-          mockSocialModuleMessagesToFilesCreate(...args),
-        find: jest.fn().mockResolvedValue([]),
+    modules: {
+      social: {
+        message: {
+          create: (...args: unknown[]) =>
+            mockSocialModuleMessageCreate(...args),
+        },
+        profilesToMessages: {
+          create: (...args: unknown[]) =>
+            mockSocialModuleProfilesToMessagesCreate(...args),
+        },
+        chatsToMessages: {
+          create: (...args: unknown[]) =>
+            mockSocialModuleChatsToMessagesCreate(...args),
+        },
+        threadsToMessages: {
+          create: (...args: unknown[]) =>
+            mockSocialModuleThreadsToMessagesCreate(...args),
+        },
+        chat: {
+          findById: jest
+            .fn()
+            .mockResolvedValue({ id: "chat-1", variant: "ai-chat" }),
+        },
+        thread: {
+          findById: jest
+            .fn()
+            .mockResolvedValue({ id: "thread-1", metadata: {} }),
+        },
+        profilesToChats: {
+          find: jest.fn().mockResolvedValue([
+            {
+              chatId: "chat-1",
+              profileId: "profile-1",
+            },
+          ]),
+        },
+        profile: {
+          findById: jest.fn().mockResolvedValue({
+            id: "assistant-profile",
+            variant: "artificial-intelligence",
+          }),
+        },
+        messagesToFileStorageModuleFiles: {
+          create: (...args: unknown[]) =>
+            mockSocialModuleMessagesToFilesCreate(...args),
+          find: jest.fn().mockResolvedValue([]),
+        },
       },
     },
   } as any;
@@ -421,7 +426,7 @@ describe("Given: rbac social message create author relation", () => {
 
   it("When: a document message arrives via API Then: its linked profession is persisted", async () => {
     const service = createService();
-    service.socialModule.thread.findById.mockResolvedValue({
+    service.modules.social.thread.findById.mockResolvedValue({
       id: "thread-1",
       metadata: {
         aiChatDocument: {
@@ -431,7 +436,7 @@ describe("Given: rbac social message create author relation", () => {
         },
       },
     });
-    service.socialModule.skill = {
+    service.modules.social.skill = {
       find: jest.fn().mockResolvedValue([
         {
           id: "brief-skill",
@@ -440,7 +445,7 @@ describe("Given: rbac social message create author relation", () => {
         },
       ]),
     };
-    service.socialModule.profilesToSkills = {
+    service.modules.social.profilesToSkills = {
       find: jest
         .fn()
         .mockResolvedValue([
@@ -494,12 +499,12 @@ describe("Given: rbac social message create author relation", () => {
       socialModuleProfileId: "assistant-profile",
       documentKey: "brief",
     });
-    expect(service.socialModule.profilesToSkills.find).not.toHaveBeenCalled();
+    expect(service.modules.social.profilesToSkills.find).not.toHaveBeenCalled();
   });
 
   it("When: a document selects another document's Source Then: no message is written", async () => {
     const service = createService();
-    service.socialModule.thread.findById.mockResolvedValue({
+    service.modules.social.thread.findById.mockResolvedValue({
       id: "thread-1",
       metadata: {
         aiChatDocument: {
@@ -576,41 +581,47 @@ describe("Given: rbac social message create author relation", () => {
    */
   it("When: Telegram delivery finishes late Then: newer message content is preserved", async () => {
     const service = {
-      socialModule: {
-        chat: {
-          findById: jest.fn().mockResolvedValue({
-            id: "chat-1",
-            sourceSystemId: "153077581",
-            variant: "telegram",
-          }),
-        },
-        thread: {
-          findById: jest.fn().mockResolvedValue({ id: "thread-1" }),
-        },
-        profilesToChats: {
-          find: jest
-            .fn()
-            .mockResolvedValue([{ chatId: "chat-1", profileId: "profile-2" }]),
-        },
-        profile: {
-          find: jest.fn().mockResolvedValue([{ id: "profile-2" }]),
-        },
-      },
-      subjectsToSocialModuleProfiles: {
-        find: jest.fn().mockResolvedValue([
-          {
-            subjectId: "subject-2",
-            socialModuleProfileId: "profile-2",
-          },
-        ]),
-      },
       find: jest.fn().mockResolvedValue([{ id: "subject-2" }]),
-      notificationModule: {
-        template: {
+      modules: {
+        social: {
+          chat: {
+            findById: jest.fn().mockResolvedValue({
+              id: "chat-1",
+              sourceSystemId: "153077581",
+              variant: "telegram",
+            }),
+          },
+          thread: {
+            findById: jest.fn().mockResolvedValue({ id: "thread-1" }),
+          },
+          profilesToChats: {
+            find: jest
+              .fn()
+              .mockResolvedValue([
+                { chatId: "chat-1", profileId: "profile-2" },
+              ]),
+          },
+          profile: {
+            find: jest.fn().mockResolvedValue([{ id: "profile-2" }]),
+          },
+        },
+        notification: {
+          template: {
+            find: jest.fn().mockResolvedValue([
+              {
+                id: "template-1",
+                variant: "telegram-social-module-message-created",
+              },
+            ]),
+          },
+        },
+      },
+      module: {
+        subjectsToSocialModuleProfiles: {
           find: jest.fn().mockResolvedValue([
             {
-              id: "template-1",
-              variant: "telegram-social-module-message-created",
+              subjectId: "subject-2",
+              socialModuleProfileId: "profile-2",
             },
           ]),
         },

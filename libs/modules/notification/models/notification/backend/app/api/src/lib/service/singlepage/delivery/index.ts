@@ -1,6 +1,6 @@
 import { createHash } from "node:crypto";
 import { GrammyError, type Transformer } from "grammy";
-import type { IBroadcastModule } from "../../../di";
+import type { Service as ChannelService } from "@sps/broadcast/models/channel/backend/app/api/src/lib/service";
 import type { Service as NotificationService } from "..";
 import {
   DeliveryDeferredError,
@@ -30,11 +30,14 @@ export interface IDeliveryProgress {
 export class Service {
   constructor(
     private readonly notifications: NotificationService,
-    private readonly broadcast: IBroadcastModule,
+    private readonly channels: Pick<
+      ChannelService,
+      "queue" | "find" | "create"
+    >,
   ) {}
 
   async execute(id: string) {
-    const queue = this.broadcast.channel.queue;
+    const queue = this.channels.queue;
     const channel = await this.channel();
     const key = id;
     await queue.publish({
@@ -212,7 +215,7 @@ export class Service {
     const before = new Date(
       Date.now() - NOTIFICATION_MODULE_NOTIFICATION_EXPIRATION_TIMEOUT,
     );
-    await this.broadcast.channel.queue.removeExpired(channel.id, before, 100);
+    await this.channels.queue.removeExpired(channel.id, before, 100);
   }
 
   private async channel() {
@@ -230,16 +233,16 @@ export class Service {
         },
       },
     };
-    const existing = await this.broadcast.channel.find(props);
+    const existing = await this.channels.find(props);
     if (existing?.length) {
       return existing[0];
     }
     try {
-      return await this.broadcast.channel.create({
+      return await this.channels.create({
         data: { slug: "notification-delivery", title: "Notification delivery" },
       });
     } catch (error) {
-      const created = await this.broadcast.channel.find(props);
+      const created = await this.channels.find(props);
       if (created?.length) {
         return created[0];
       }

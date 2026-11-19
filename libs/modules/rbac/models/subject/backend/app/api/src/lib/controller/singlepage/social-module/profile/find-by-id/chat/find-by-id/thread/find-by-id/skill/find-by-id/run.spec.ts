@@ -1,11 +1,3 @@
-/**
- * BDD Suite: rbac social skill transcript run.
- *
- * Given: a social profile has profile-scoped skills.
- * When: the subject runs a selected skill from a chat thread.
- * Then: the transcript is learned by Knowledge and the generated output is saved only as chat messages.
- */
-
 const mockKnowledgeLearnContent = jest.fn();
 const mockLlmComplete = jest.fn();
 const mockSocialModuleMessageCreate = jest.fn();
@@ -126,61 +118,65 @@ function createService(
   } = {},
 ) {
   return {
-    socialModule: {
-      profilesToChats: {
-        find: jest.fn().mockResolvedValue([
-          {
-            profileId: "profile-1",
-            chatId: "chat-1",
-          },
-        ]),
-      },
-      profilesToSkills: {
-        find: jest.fn().mockResolvedValue(
-          overrides.profilesToSkills ?? [
+    modules: {
+      social: {
+        profilesToChats: {
+          find: jest.fn().mockResolvedValue([
             {
               profileId: "profile-1",
-              skillId: "skill-1",
+              chatId: "chat-1",
             },
-          ],
-        ),
+          ]),
+        },
+        profilesToSkills: {
+          find: jest.fn().mockResolvedValue(
+            overrides.profilesToSkills ?? [
+              {
+                profileId: "profile-1",
+                skillId: "skill-1",
+              },
+            ],
+          ),
+        },
+        skillsToKnowledgeModuleSources: {
+          findOrCreate: jest.fn().mockResolvedValue({}),
+        },
+        messagesToKnowledgeModuleSources: {
+          findOrCreate: jest.fn().mockResolvedValue({}),
+        },
+        profilesToKnowledgeModuleSources: {
+          find: jest.fn().mockResolvedValue([]),
+          create: jest.fn().mockResolvedValue({
+            id: "profile-document-relation-1",
+          }),
+        },
+        profile: {
+          findById: jest.fn().mockResolvedValue({
+            id: "profile-1",
+            slug: "signlepagestartup",
+            adminTitle: "signlepagestartup",
+            description: {
+              en: "Commercial real estate profile",
+            },
+          }),
+        },
+        skill: {
+          findById: jest.fn().mockResolvedValue({
+            id: "skill-1",
+            slug: "youtube-description",
+            title: "YouTube Description",
+            description: "Return a YouTube description.",
+          }),
+        },
       },
-      skillsToKnowledgeModuleSources: {
-        findOrCreate: jest.fn().mockResolvedValue({}),
-      },
-      messagesToKnowledgeModuleSources: {
-        findOrCreate: jest.fn().mockResolvedValue({}),
-      },
-      profilesToKnowledgeModuleSources: {
+    },
+    module: {
+      subjectsToRoles: {
         find: jest.fn().mockResolvedValue([]),
-        create: jest.fn().mockResolvedValue({
-          id: "profile-document-relation-1",
-        }),
       },
-      profile: {
-        findById: jest.fn().mockResolvedValue({
-          id: "profile-1",
-          slug: "signlepagestartup",
-          adminTitle: "signlepagestartup",
-          description: {
-            en: "Commercial real estate profile",
-          },
-        }),
+      role: {
+        find: jest.fn().mockResolvedValue([]),
       },
-      skill: {
-        findById: jest.fn().mockResolvedValue({
-          id: "skill-1",
-          slug: "youtube-description",
-          title: "YouTube Description",
-          description: "Return a YouTube description.",
-        }),
-      },
-    },
-    subjectsToRoles: {
-      find: jest.fn().mockResolvedValue([]),
-    },
-    role: {
-      find: jest.fn().mockResolvedValue([]),
     },
   } as any;
 }
@@ -243,7 +239,7 @@ describe("Given: rbac social skill transcript run", () => {
       }),
     );
     expect(
-      service.socialModule.profilesToKnowledgeModuleSources.create,
+      service.modules.social.profilesToKnowledgeModuleSources.create,
     ).toHaveBeenCalledWith(
       expect.objectContaining({
         data: {
@@ -300,7 +296,7 @@ describe("Given: rbac social skill transcript run", () => {
   it("When: profile description is legacy TipTap JSON Then: skill prompt uses plain text", async () => {
     const service = createService();
 
-    service.socialModule.profile.findById.mockResolvedValue({
+    service.modules.social.profile.findById.mockResolvedValue({
       id: "profile-1",
       slug: "signlepagestartup",
       adminTitle: "signlepagestartup",

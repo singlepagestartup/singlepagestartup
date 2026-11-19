@@ -1,6 +1,5 @@
 import { Service as PaymentIntent } from "@sps/billing/models/payment-intent/backend/app/api/src/lib/service";
 import type { Repository } from "@sps/billing/models/payment-intent/backend/app/api/src/lib/repository";
-import type { IBillingModule } from "@sps/billing/models/payment-intent/backend/app/api/src/lib/di";
 import type {
   IExecuteProps,
   IExpireProps,
@@ -12,10 +11,9 @@ export class Service extends PaymentIntent {
 
   constructor(
     repository: Repository,
-    billingModule: IBillingModule,
     private readonly reservations: Reservations,
   ) {
-    super(repository, billingModule);
+    super(repository);
   }
 
   override settlePayment(props: IExecuteProps) {

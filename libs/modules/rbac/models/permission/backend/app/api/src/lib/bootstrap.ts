@@ -10,8 +10,6 @@ import { Repository } from "./repository";
 import { Controller } from "./controller";
 import { Service } from "./service";
 import { App } from "./app";
-import { createModules } from "./service/modules";
-import { PermissionDI } from "./di";
 
 const bindings = new ContainerModule(({ bind }) => {
   bind<IExceptionFilter>(DI.IExceptionFilter).to(ExceptionFilter);
@@ -22,14 +20,5 @@ const bindings = new ContainerModule(({ bind }) => {
   bind<Configuration>(DI.IConfiguration).to(Configuration);
 });
 
-export const serviceBootstrap = createAppBootstrap<App, Service>(
-  bindings,
-  (container, assembly) => {
-    const { rbac } = assembly.getOrCreate(createModules);
-    container
-      .bind(PermissionDI.IPermissionsToBillingModuleCurrenciesService)
-      .toDynamicValue(() => rbac.permissionsToBillingModuleCurrencies)
-      .inSingletonScope();
-  },
-);
+export const serviceBootstrap = createAppBootstrap<App, Service>(bindings);
 export const { bootstrap, createService } = serviceBootstrap;

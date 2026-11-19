@@ -159,10 +159,6 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     return this.appAssembly.getOrCreate(createModules);
   }
 
-  get ecommerceModule() {
-    return this.modules.ecommerce;
-  }
-
   constructor(
     @inject(DI.IRepository) repository: Repository,
     @inject(AgentDI.ITelegramConversationRuntime)
@@ -170,10 +166,10 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
   ) {
     super(repository);
     this.telegramConversationRuntime = telegramConversationRuntime;
-    const getBroadcastModule = () => this.modules.broadcast;
+    const getChannel = () => this.modules.broadcast.channel;
     this.agentRun = new AgentRun({
-      get broadcastModule() {
-        return getBroadcastModule();
+      get channel() {
+        return getChannel();
       },
     });
     this.cronQueue = new CronQueue(repository, this.agentRun);

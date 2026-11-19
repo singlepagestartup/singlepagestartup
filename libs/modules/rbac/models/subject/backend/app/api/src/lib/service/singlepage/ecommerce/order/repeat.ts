@@ -1,3 +1,4 @@
+import type { FindServiceProps } from "@sps/shared-backend-api";
 import {
   REGISTRATION_GRANT_VARIANT,
   ECOMMERCE_ORDER_LINE_QUANTITY_BOUNDS as quantityBounds,
@@ -24,9 +25,6 @@ export interface IResult {
 export interface IConstructorProps {
   repository: Pick<Repository, "withSubjectLock">;
   service: SubjectServiceDependencies<
-    | "ecommerceModule"
-    | "billingModule"
-    | "subjectsToEcommerceModuleOrders"
     | "ecommerceModuleOrderRetryableIds"
     | "ecommerceModuleOrderAssertAccess"
     | "ecommerceModuleResolveOrderCurrency"
@@ -45,26 +43,27 @@ export class Service {
       { subjectId: props.subjectId },
       async () => {
         await service.ecommerceModuleOrderAssertAccess(props);
-        const owners = await service.subjectsToEcommerceModuleOrders.find({
-          params: {
-            filters: {
-              and: [
-                {
-                  column: "subjectId",
-                  method: "eq",
-                  value: props.subjectId,
-                },
-              ],
+        const owners =
+          await service.module.subjectsToEcommerceModuleOrders.find({
+            params: {
+              filters: {
+                and: [
+                  {
+                    column: "subjectId",
+                    method: "eq",
+                    value: props.subjectId,
+                  },
+                ],
+              },
             },
-          },
-        });
+          });
         const subjectOrderIds = owners.map(
           (owner: { ecommerceModuleOrderId: string }) =>
             owner.ecommerceModuleOrderId,
         );
         let carts: IOrder[] = [];
         if (subjectOrderIds.length) {
-          carts = await service.ecommerceModule.order.find({
+          carts = await service.modules.ecommerce.order.find({
             params: {
               filters: {
                 and: [
@@ -80,10 +79,10 @@ export class Service {
           ...new Set([props.orderId, ...carts.map((cart) => cart.id)]),
         ].sort();
         for (const id of lockedIds) {
-          await service.ecommerceModule.order.lockForLifecycle({ id });
+          await service.modules.ecommerce.order.lockForLifecycle({ id });
         }
         await service.ecommerceModuleOrderAssertAccess(props);
-        const source = await service.ecommerceModule.order.findById({
+        const source = await service.modules.ecommerce.order.findById({
           id: props.orderId,
         });
         if (!source) {
@@ -99,24 +98,26 @@ export class Service {
           );
         }
 
-        const sourceFilters = {
+        const sourceFilters: NonNullable<
+          NonNullable<FindServiceProps["params"]>["filters"]
+        > = {
           and: [{ column: "orderId", method: "eq", value: source.id }],
         };
         const lines: IOrderLine[] =
-          await service.ecommerceModule.ordersToProducts.find({
+          await service.modules.ecommerce.ordersToProducts.find({
             params: { filters: sourceFilters },
           });
         if (!lines.length) {
           throw new Error("Validation error. Source order has no products");
         }
-        const stores = await service.ecommerceModule.storesToOrders.find({
+        const stores = await service.modules.ecommerce.storesToOrders.find({
           params: { filters: sourceFilters },
         });
         if (stores.length !== 1 || !stores[0].storeId) {
           throw new Error("Validation error. Source order must have one store");
         }
         const storeId: string = stores[0].storeId;
-        const store = await service.ecommerceModule.store.findById({
+        const store = await service.modules.ecommerce.store.findById({
           id: storeId,
         });
         if (!store) {
@@ -125,7 +126,7 @@ export class Service {
           );
         }
         const currencies =
-          await service.ecommerceModule.ordersToBillingModuleCurrencies.find({
+          await service.modules.ecommerce.ordersToBillingModuleCurrencies.find({
             params: { filters: sourceFilters },
           });
         if (currencies.length !== 1 || !currencies[0].billingModuleCurrencyId) {
@@ -135,7 +136,7 @@ export class Service {
         }
         const billingModuleCurrencyId: string =
           currencies[0].billingModuleCurrencyId;
-        const currency = await service.billingModule.currency.findById({
+        const currency = await service.modules.billing.currency.findById({
           id: billingModuleCurrencyId,
         });
         if (!currency) {
@@ -153,7 +154,7 @@ export class Service {
               `Validation error. Quantity must be an integer between ${quantityBounds.min} and ${quantityBounds.max}`,
             );
           }
-          const product = await service.ecommerceModule.product.findById({
+          const product = await service.modules.ecommerce.product.findById({
             id: line.productId,
           });
           if (!product) {
@@ -163,7 +164,7 @@ export class Service {
           }
           if (
             await new InitialGrantProducts(
-              service.ecommerceModule.storesToProducts,
+              service.modules.ecommerce.storesToProducts,
             ).includes(product.id)
           ) {
             throw new Error(
@@ -185,7 +186,7 @@ export class Service {
           }
         }
         if (!lines.some((line) => line.offerId)) {
-          await service.ecommerceModule.order.findByIdCheckoutAttributesByCurrency(
+          await service.modules.ecommerce.order.findByIdCheckoutAttributesByCurrency(
             {
               id: source.id,
               billingModuleCurrencyId,
@@ -199,7 +200,7 @@ export class Service {
             ...props,
             orderId: cart.id,
           });
-          const current = await service.ecommerceModule.order.findById({
+          const current = await service.modules.ecommerce.order.findById({
             id: cart.id,
           });
           if (current?.type !== "cart" || current.status !== "new") {
@@ -211,20 +212,21 @@ export class Service {
         }
         // The source and every cart have been validated before the first write.
         for (const cart of replaceable) {
-          await service.ecommerceModule.order.delete({ id: cart.id });
+          await service.modules.ecommerce.order.delete({ id: cart.id });
         }
-        const order = await service.ecommerceModule.order.create({
+        const order = await service.modules.ecommerce.order.create({
           data: { type: "cart", status: "new" },
         });
         if (!order) {
           throw new Error("Not Found error. No order found");
         }
-        const owner = await service.subjectsToEcommerceModuleOrders.create({
-          data: {
-            subjectId: props.subjectId,
-            ecommerceModuleOrderId: order.id,
-          },
-        });
+        const owner =
+          await service.module.subjectsToEcommerceModuleOrders.create({
+            data: {
+              subjectId: props.subjectId,
+              ecommerceModuleOrderId: order.id,
+            },
+          });
         if (!owner) {
           throw new Error("Not Found error. No order owner found");
         }
@@ -250,8 +252,8 @@ export class Service {
             } = destination;
             destination = currentDestination;
           }
-          const created = await service.ecommerceModule.ordersToProducts.create(
-            {
+          const created =
+            await service.modules.ecommerce.ordersToProducts.create({
               data: {
                 orderId: order.id,
                 productId: line.productId,
@@ -267,23 +269,26 @@ export class Service {
                     }
                   : {}),
               },
-            },
-          );
+            });
           if (!created) {
             throw new Error("Not Found error. No orders to products found");
           }
           createdLineIds.set(line.id, created.id);
         }
-        const storeLink = await service.ecommerceModule.storesToOrders.create({
-          data: { orderId: order.id, storeId },
-        });
+        const storeLink = await service.modules.ecommerce.storesToOrders.create(
+          {
+            data: { orderId: order.id, storeId },
+          },
+        );
         if (!storeLink) {
           throw new Error("Not Found error. No stores to orders found");
         }
         const currencyLink =
-          await service.ecommerceModule.ordersToBillingModuleCurrencies.create({
-            data: { orderId: order.id, billingModuleCurrencyId },
-          });
+          await service.modules.ecommerce.ordersToBillingModuleCurrencies.create(
+            {
+              data: { orderId: order.id, billingModuleCurrencyId },
+            },
+          );
         if (!currencyLink) {
           throw new Error(
             "Not Found error. No orders to billing module currencies found",
@@ -297,7 +302,7 @@ export class Service {
   private async nextPeriod(props: IExecuteProps): Promise<IResult> {
     const { repository, service } = this.dependencies;
     await service.ecommerceModuleOrderAssertAccess(props);
-    const source = await service.ecommerceModule.order.findById({
+    const source = await service.modules.ecommerce.order.findById({
       id: props.orderId,
     });
     if (
@@ -319,22 +324,24 @@ export class Service {
       );
     }
     const paymentLinks: IPaymentLink[] =
-      await service.ecommerceModule.ordersToBillingModulePaymentIntents.find({
-        params: {
-          filters: {
-            and: [{ column: "orderId", method: "eq", value: source.id }],
+      await service.modules.ecommerce.order.ordersToBillingModulePaymentIntents.find(
+        {
+          params: {
+            filters: {
+              and: [{ column: "orderId", method: "eq", value: source.id }],
+            },
           },
         },
-      });
+      );
     const invoiceLinks =
-      await service.billingModule.paymentIntentsToInvoices.find({
+      await service.modules.billing.paymentIntentsToInvoices.find({
         params: {
           filters: {
             and: [
               {
                 column: "invoiceId",
                 method: "eq",
-                value: source.subscriptionPeriodInvoiceId,
+                value: source.subscriptionPeriodInvoiceId!,
               },
             ],
           },
@@ -357,8 +364,10 @@ export class Service {
       );
     }
     const [intent, invoice] = await Promise.all([
-      service.billingModule.paymentIntent.findById({ id: intentIds[0] }),
-      service.billingModule.invoice.findById({
+      service.modules.ecommerce.order.paymentIntent.findById({
+        id: intentIds[0],
+      }),
+      service.modules.billing.invoice.findById({
         id: source.subscriptionPeriodInvoiceId,
       }),
     ]);
@@ -380,7 +389,8 @@ export class Service {
       (snapshot) => snapshot.charge.role === "product",
     );
     if (
-      !["one_off", "subscription"].includes(intent?.type ?? "") ||
+      !intent ||
+      !["one_off", "subscription"].includes(intent.type) ||
       intent.status !== "succeeded" ||
       invoice?.status !== "paid" ||
       !main ||
@@ -391,7 +401,7 @@ export class Service {
         "Conflict error. Next period requires a confirmed separately paid subscription",
       );
     }
-    const prior = await service.ecommerceModule.order.find({
+    const prior = await service.modules.ecommerce.order.find({
       params: {
         filters: {
           and: [
@@ -403,7 +413,7 @@ export class Service {
             {
               column: "subscriptionSourceInvoiceId",
               method: "eq",
-              value: source.subscriptionPeriodInvoiceId,
+              value: source.subscriptionPeriodInvoiceId!,
             },
           ],
         },
@@ -448,7 +458,7 @@ export class Service {
     };
     // Delivery routing and current prices resolve before acquiring database locks.
     const fulfillment =
-      await service.ecommerceModule.order.fulfillmentQuoteOptions({
+      await service.modules.ecommerce.order.fulfillmentQuoteOptions({
         id: source.id,
       });
     const quoteOptions = fulfillment.fulfilledLineIds.length
@@ -456,12 +466,12 @@ export class Service {
       : undefined;
     let quote: IOfferQuote;
     if (quoteOptions) {
-      quote = await service.ecommerceModule.storesToProducts.quote(
+      quote = await service.modules.ecommerce.storesToProducts.quote(
         input,
         quoteOptions,
       );
     } else {
-      quote = await service.ecommerceModule.storesToProducts.quote(input);
+      quote = await service.modules.ecommerce.storesToProducts.quote(input);
     }
     if (quote.amount === null || quote.issues.length) {
       throw new Error(
@@ -471,10 +481,12 @@ export class Service {
     return repository.withSubjectLock(
       { subjectId: props.subjectId },
       async () => {
-        await service.ecommerceModule.order.lockForLifecycle({ id: source.id });
+        await service.modules.ecommerce.order.lockForLifecycle({
+          id: source.id,
+        });
         await service.ecommerceModuleOrderAssertAccess(props);
         await this.assertExclusiveOwner(props.subjectId, source.id);
-        const current = await service.ecommerceModule.order.findById({
+        const current = await service.modules.ecommerce.order.findById({
           id: source.id,
         });
         if (
@@ -499,7 +511,7 @@ export class Service {
             "Conflict error. Subscription period changed during renewal",
           );
         }
-        const existing = await service.ecommerceModule.order.find({
+        const existing = await service.modules.ecommerce.order.find({
           params: {
             filters: {
               and: [
@@ -511,7 +523,7 @@ export class Service {
                 {
                   column: "subscriptionSourceInvoiceId",
                   method: "eq",
-                  value: source.subscriptionPeriodInvoiceId,
+                  value: source.subscriptionPeriodInvoiceId!,
                 },
               ],
             },
@@ -529,21 +541,22 @@ export class Service {
           });
           return { orderIds: [existing[0].id] };
         }
-        const order = await service.ecommerceModule.order.createNextPeriodCart({
-          sourceOrderId: source.id,
-          sourceInvoiceId: source.subscriptionPeriodInvoiceId!,
-          interval: main.interval!,
-        });
-        await service.subjectsToEcommerceModuleOrders.create({
+        const order =
+          await service.modules.ecommerce.order.createNextPeriodCart({
+            sourceOrderId: source.id,
+            sourceInvoiceId: source.subscriptionPeriodInvoiceId!,
+            interval: main.interval!,
+          });
+        await service.module.subjectsToEcommerceModuleOrders.create({
           data: {
             subjectId: props.subjectId,
             ecommerceModuleOrderId: order.id,
           },
         });
-        await service.ecommerceModule.storesToOrders.create({
+        await service.modules.ecommerce.storesToOrders.create({
           data: { orderId: order.id, storeId: quote.storeId },
         });
-        await service.ecommerceModule.ordersToBillingModuleCurrencies.create({
+        await service.modules.ecommerce.ordersToBillingModuleCurrencies.create({
           data: {
             orderId: order.id,
             billingModuleCurrencyId: quote.currencyId,
@@ -561,8 +574,8 @@ export class Service {
               "Validation error. Next delivery has no primary line",
             );
           }
-          const created = await service.ecommerceModule.ordersToProducts.create(
-            {
+          const created =
+            await service.modules.ecommerce.ordersToProducts.create({
               data: {
                 orderId: order.id,
                 productId: charge.productId,
@@ -576,8 +589,7 @@ export class Service {
                 quoteVersion: primary ? quote.version : null,
                 quoteExpiresAt: primary ? new Date(quote.expiresAt) : null,
               },
-            },
-          );
+            });
           if (primary) {
             createdPrimaryId = created.id;
           }
@@ -593,7 +605,7 @@ export class Service {
     intentId: string,
   ): Promise<IResult> {
     const { service, repository } = this.dependencies;
-    const extended = await service.ecommerceModule.order.findByIdExtended({
+    const extended = await service.modules.ecommerce.order.findByIdExtended({
       id: source.id,
     });
     const primary = extended.ordersToProducts.filter(
@@ -618,13 +630,13 @@ export class Service {
     if (
       extended.variant === REGISTRATION_GRANT_VARIANT ||
       (await new InitialGrantProducts(
-        service.ecommerceModule.storesToProducts,
+        service.modules.ecommerce.storesToProducts,
       ).includes(line.productId))
     ) {
       throw new Error("Permission error. Initial Free cannot be renewed");
     }
     const [shared, currencies, stores] = await Promise.all([
-      service.ecommerceModule.ordersToBillingModulePaymentIntents.find({
+      service.modules.ecommerce.order.ordersToBillingModulePaymentIntents.find({
         params: {
           filters: {
             and: [
@@ -637,14 +649,14 @@ export class Service {
           },
         },
       }),
-      service.ecommerceModule.ordersToBillingModuleCurrencies.find({
+      service.modules.ecommerce.ordersToBillingModuleCurrencies.find({
         params: {
           filters: {
             and: [{ column: "orderId", method: "eq", value: source.id }],
           },
         },
       }),
-      service.ecommerceModule.storesToOrders.find({
+      service.modules.ecommerce.storesToOrders.find({
         params: {
           filters: {
             and: [{ column: "orderId", method: "eq", value: source.id }],
@@ -664,10 +676,12 @@ export class Service {
     return repository.withSubjectLock(
       { subjectId: props.subjectId },
       async () => {
-        await service.ecommerceModule.order.lockForLifecycle({ id: source.id });
+        await service.modules.ecommerce.order.lockForLifecycle({
+          id: source.id,
+        });
         await service.ecommerceModuleOrderAssertAccess(props);
         await this.assertExclusiveOwner(props.subjectId, source.id);
-        const current = await service.ecommerceModule.order.findById({
+        const current = await service.modules.ecommerce.order.findById({
           id: source.id,
         });
         if (
@@ -686,7 +700,7 @@ export class Service {
             "Conflict error. Subscription period changed during renewal",
           );
         }
-        const existing = await service.ecommerceModule.order.find({
+        const existing = await service.modules.ecommerce.order.find({
           params: {
             filters: {
               and: [
@@ -698,7 +712,7 @@ export class Service {
                 {
                   column: "subscriptionSourceInvoiceId",
                   method: "eq",
-                  value: source.subscriptionPeriodInvoiceId,
+                  value: source.subscriptionPeriodInvoiceId!,
                 },
               ],
             },
@@ -716,29 +730,30 @@ export class Service {
           });
           return { orderIds: [existing[0].id] };
         }
-        const order = await service.ecommerceModule.order.createNextPeriodCart({
-          sourceOrderId: source.id,
-          sourceInvoiceId: source.subscriptionPeriodInvoiceId!,
-          interval: extended.checkoutAttributesByCurrency.interval,
-        });
-        await service.subjectsToEcommerceModuleOrders.create({
+        const order =
+          await service.modules.ecommerce.order.createNextPeriodCart({
+            sourceOrderId: source.id,
+            sourceInvoiceId: source.subscriptionPeriodInvoiceId!,
+            interval: extended.checkoutAttributesByCurrency.interval!,
+          });
+        await service.module.subjectsToEcommerceModuleOrders.create({
           data: {
             subjectId: props.subjectId,
             ecommerceModuleOrderId: order.id,
           },
         });
-        await service.ecommerceModule.ordersToBillingModuleCurrencies.create({
+        await service.modules.ecommerce.ordersToBillingModuleCurrencies.create({
           data: {
             orderId: order.id,
             billingModuleCurrencyId: currencies[0].billingModuleCurrencyId,
           },
         });
         for (const store of stores) {
-          await service.ecommerceModule.storesToOrders.create({
+          await service.modules.ecommerce.storesToOrders.create({
             data: { orderId: order.id, storeId: store.storeId },
           });
         }
-        await service.ecommerceModule.ordersToProducts.create({
+        await service.modules.ecommerce.ordersToProducts.create({
           data: {
             orderId: order.id,
             productId: line.productId,
@@ -757,19 +772,21 @@ export class Service {
     orderId: string,
   ): Promise<void> {
     const owners =
-      await this.dependencies.service.subjectsToEcommerceModuleOrders.find({
-        params: {
-          filters: {
-            and: [
-              {
-                column: "ecommerceModuleOrderId",
-                method: "eq",
-                value: orderId,
-              },
-            ],
+      await this.dependencies.service.module.subjectsToEcommerceModuleOrders.find(
+        {
+          params: {
+            filters: {
+              and: [
+                {
+                  column: "ecommerceModuleOrderId",
+                  method: "eq",
+                  value: orderId,
+                },
+              ],
+            },
           },
         },
-      });
+      );
     if (
       !owners.length ||
       owners.some((owner) => owner.subjectId !== subjectId)
@@ -781,9 +798,9 @@ export class Service {
   }
 
   private async assertNoPaymentAttempt(orderId: string): Promise<void> {
-    const { ecommerceModule } = this.dependencies.service;
+    const { ecommerce } = this.dependencies.service.modules;
     const links =
-      await ecommerceModule.ordersToBillingModulePaymentIntents.find({
+      await ecommerce.order.ordersToBillingModulePaymentIntents.find({
         params: {
           filters: {
             and: [{ column: "orderId", method: "eq", value: orderId }],

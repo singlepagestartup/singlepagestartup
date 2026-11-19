@@ -47,7 +47,7 @@ export class Handler {
       });
 
       const allSocialModuleProfilesToChats =
-        await this.service.socialModule.profilesToChats.find({
+        await this.service.modules.social.profilesToChats.find({
           params: {
             filters: {
               and: [

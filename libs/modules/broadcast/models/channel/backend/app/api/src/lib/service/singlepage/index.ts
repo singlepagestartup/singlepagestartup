@@ -1,4 +1,5 @@
-import { createModules } from "../modules";
+import { createModule } from "../module";
+import { createModules } from "@sps/broadcast/backend/app/api/src/lib/modules";
 import { Service as DeliveryQueue } from "../startup/delivery-queue";
 import { DeliveryRepository } from "../../repository/delivery";
 import "reflect-metadata";
@@ -10,8 +11,6 @@ import {
 } from "@sps/shared-backend-api";
 import { Table } from "@sps/broadcast/models/channel/backend/repository/database";
 import { Repository } from "../../repository";
-import type { Service as MessageService } from "@sps/broadcast/models/message/backend/app/api/src/lib/service";
-import type { Service as ChannelsToMessagesService } from "@sps/broadcast/relations/channels-to-messages/backend/app/api/src/lib/service";
 import { ChannelDI } from "../../di";
 
 @injectable()
@@ -20,22 +19,19 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     return this.appAssembly.getOrCreate(createModules);
   }
 
+  get module() {
+    return this.appAssembly.getOrCreate(createModule);
+  }
+
   readonly queue: DeliveryQueue;
-  messages: MessageService;
-  channelsToMessages: ChannelsToMessagesService;
 
   constructor(
     @inject(DI.IRepository) repository: Repository,
-    @inject(ChannelDI.IMessageService) messages: MessageService,
-    @inject(ChannelDI.IChannelsToMessagesService)
-    channelsToMessages: ChannelsToMessagesService,
     @inject(ChannelDI.IDeliveryRepository)
     private readonly deliveryRepository: DeliveryRepository,
   ) {
     super(repository);
     this.queue = new DeliveryQueue(deliveryRepository);
-    this.messages = messages;
-    this.channelsToMessages = channelsToMessages;
   }
   findMessages(props: FindServiceProps) {
     return this.deliveryRepository.find(props);
@@ -46,7 +42,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
   }
 
   async deleteExpired() {
-    await this.messages.deleteExpired();
+    await this.module.message.deleteExpired();
     let orphans = await this.deliveryRepository.deleteOrphanedDeliveries(100);
     while (orphans.length === 100) {
       orphans = await this.deliveryRepository.deleteOrphanedDeliveries(100);

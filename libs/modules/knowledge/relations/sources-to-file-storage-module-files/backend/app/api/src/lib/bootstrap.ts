@@ -1,4 +1,3 @@
-import { createService as createFile } from "@sps/file-storage/models/file/backend/app/api/src/lib/bootstrap";
 import { mutateSourceAttachment } from "@sps/knowledge/backend/app/api/src/lib/composition/attachment-mutation";
 import { ContainerModule } from "inversify";
 import {
@@ -26,9 +25,6 @@ const bindings = new ContainerModule(({ bind }) => {
       const assembly = get<IAppAssembly>(DI.IAppAssembly);
       service.configure({
         inTransaction: false,
-        get fileStorageFile() {
-          return createFile(assembly);
-        },
         mutate(operation) {
           return mutateSourceAttachment(assembly, operation);
         },

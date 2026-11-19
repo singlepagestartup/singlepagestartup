@@ -18,8 +18,6 @@ export type IRenewal = (props: IExecuteProps) => Promise<IResult>;
 interface IConstructorProps {
   repository: Pick<Repository, "withSubjectLock">;
   service: SubjectServiceDependencies<
-    | "ecommerceModule"
-    | "billingModule"
     | "ecommerceModuleOrderStripePayment"
     | "ecommerceModuleOrderAssertAccess"
     | "ecommerceModuleOrderRepeat"
@@ -41,7 +39,7 @@ export class Service {
       await this.cancelSuccessors(props);
       return {};
     }
-    let source = (await service.ecommerceModule.order.findById({
+    let source = (await service.modules.ecommerce.order.findById({
       id: props.orderId,
     })) as IOrder | null;
     if (
@@ -57,15 +55,17 @@ export class Service {
       return {};
     }
     const links =
-      (await service.ecommerceModule.ordersToBillingModulePaymentIntents.find({
-        params: {
-          filters: {
-            and: [{ column: "orderId", method: "eq", value: source.id }],
+      (await service.modules.ecommerce.order.ordersToBillingModulePaymentIntents.find(
+        {
+          params: {
+            filters: {
+              and: [{ column: "orderId", method: "eq", value: source.id }],
+            },
           },
         },
-      })) as IPaymentLink[];
+      )) as IPaymentLink[];
     const anchorLinks =
-      await service.billingModule.paymentIntentsToInvoices.find({
+      await service.modules.billing.paymentIntentsToInvoices.find({
         params: {
           filters: {
             and: [
@@ -92,10 +92,12 @@ export class Service {
         "Conflict error. Subscription period payment is ambiguous",
       );
     }
-    const intent = await service.billingModule.paymentIntent.findById({
-      id: ids[0],
-    });
-    const invoice = await service.billingModule.invoice.findById({
+    const intent = await service.modules.ecommerce.order.paymentIntent.findById(
+      {
+        id: ids[0],
+      },
+    );
+    const invoice = await service.modules.billing.invoice.findById({
       id: source.subscriptionPeriodInvoiceId,
     });
     const snapshots = links
@@ -107,23 +109,27 @@ export class Service {
     if (intent?.status !== "succeeded" || invoice?.status !== "paid") {
       return {};
     }
+    const providerContractId =
+      intent.checkoutMetadata?.providerContractPaymentIntentId;
+    const contractId =
+      typeof providerContractId === "string" ? providerContractId : intent.id;
     const providerManagedRenewal =
-      service.billingModule.paymentIntent.schedulesSubscriptionPayments({
-        provider: invoice.provider ?? "",
-      }) &&
+      service.modules.ecommerce.order.paymentIntent.schedulesSubscriptionPayments(
+        {
+          provider: invoice.provider ?? "",
+        },
+      ) &&
       (intent.type === "subscription" ||
-        typeof intent.checkoutMetadata?.providerContractPaymentIntentId ===
-          "string");
+        typeof providerContractId === "string");
     if (
       providerManagedRenewal &&
       !source.subscriptionScheduledEndsAt &&
       !internal?.skipProviderReconciliation
     ) {
       await service.ecommerceModuleOrderStripePayment.reconcile({
-        id:
-          intent.checkoutMetadata?.providerContractPaymentIntentId ?? intent.id,
+        id: contractId,
       });
-      source = (await service.ecommerceModule.order.findById({
+      source = (await service.modules.ecommerce.order.findById({
         id: props.orderId,
       })) as IOrder;
     }
@@ -152,15 +158,17 @@ export class Service {
       );
     }
     const existing =
-      await service.ecommerceModule.ordersToBillingModulePaymentIntents.find({
-        params: {
-          filters: {
-            and: [{ column: "orderId", method: "eq", value: orderId }],
+      await service.modules.ecommerce.order.ordersToBillingModulePaymentIntents.find(
+        {
+          params: {
+            filters: {
+              and: [{ column: "orderId", method: "eq", value: orderId }],
+            },
           },
         },
-      });
+      );
     if (existing.length) {
-      const next = await service.ecommerceModule.order.findById({
+      const next = await service.modules.ecommerce.order.findById({
         id: orderId,
       });
       if (next?.subscriptionPeriodInvoiceId) {
@@ -168,21 +176,19 @@ export class Service {
       }
       if (providerManagedRenewal && !internal?.skipProviderReconciliation) {
         await service.ecommerceModuleOrderStripePayment.reconcile({
-          id:
-            intent.checkoutMetadata?.providerContractPaymentIntentId ??
-            intent.id,
+          id: contractId,
         });
       }
       return { orderId };
     }
-    const lines = await service.ecommerceModule.ordersToProducts.find({
+    const lines = await service.modules.ecommerce.ordersToProducts.find({
       params: {
         filters: { and: [{ column: "orderId", method: "eq", value: orderId }] },
       },
     });
     const main = lines.find((line) => !line.parentLineId);
     const currencies =
-      await service.ecommerceModule.ordersToBillingModuleCurrencies.find({
+      await service.modules.ecommerce.ordersToBillingModuleCurrencies.find({
         params: {
           filters: {
             and: [{ column: "orderId", method: "eq", value: orderId }],
@@ -202,7 +208,7 @@ export class Service {
     let quote: { amount: string | null; issues: unknown[] };
     if (main.offerId) {
       const fulfillment =
-        await service.ecommerceModule.order.fulfillmentQuoteOptions({
+        await service.modules.ecommerce.order.fulfillmentQuoteOptions({
           id: orderId,
         });
       const inputs = [
@@ -221,17 +227,17 @@ export class Service {
             })),
         },
       ];
-      const quotes = await service.ecommerceModule.storesToProducts.quoteMany(
+      const quotes = await service.modules.ecommerce.storesToProducts.quoteMany(
         inputs,
         fulfillment,
       );
       quote = quotes[0];
     } else {
       const terms =
-        await service.ecommerceModule.order.findByIdCheckoutAttributesByCurrency(
+        await service.modules.ecommerce.order.findByIdCheckoutAttributesByCurrency(
           { id: orderId, billingModuleCurrencyId: currencyId },
         );
-      const next = await service.ecommerceModule.order.findById({
+      const next = await service.modules.ecommerce.order.findById({
         id: orderId,
       });
       quote = {
@@ -263,7 +269,7 @@ export class Service {
       moneyMinorUnits(quote.amount) !== expected
     ) {
       if (providerManagedRenewal) {
-        await service.ecommerceModule.order.stopSubscriptionRenewal({
+        await service.modules.ecommerce.order.stopSubscriptionRenewal({
           id: source.id,
         });
       }
@@ -273,37 +279,47 @@ export class Service {
     if (!provider) {
       throw new Error("Conflict error. Subscription provider is unavailable");
     }
-    const contractId =
-      intent.checkoutMetadata?.providerContractPaymentIntentId ?? intent.id;
     if (providerManagedRenewal && source.subscriptionScheduledEndsAt) {
       await this.dependencies.repository.withSubjectLock(
         { subjectId: props.subjectId },
         async () => {
-          await service.ecommerceModule.order.lockForLifecycle({ id: orderId });
-          const next = await service.ecommerceModule.order.findById({
+          await service.modules.ecommerce.order.lockForLifecycle({
             id: orderId,
           });
+          const next = await service.modules.ecommerce.order.findById({
+            id: orderId,
+          });
+          if (!next) {
+            throw new Error(
+              "Conflict error. Next subscription period is unavailable",
+            );
+          }
           if (
             !next.subscriptionScheduledStartsAt &&
             !next.subscriptionPeriodInvoiceId
           ) {
             const startsAt = new Date(source!.subscriptionScheduledEndsAt!);
-            await service.ecommerceModule.order.configureNextPeriod({
+            await service.modules.ecommerce.order.configureNextPeriod({
               id: orderId,
               startsAt,
-              endsAt: intervalEnd(startsAt, next.subscriptionSourceInterval),
+              endsAt: intervalEnd(startsAt, next.subscriptionSourceInterval!),
             });
           }
         },
       );
     }
+    const email = intent.checkoutMetadata?.email;
+    const account = intent.checkoutMetadata?.account;
     try {
       await service.ecommerceOrderCheckout(
         {
           id: props.subjectId,
           provider,
-          email: intent.checkoutMetadata?.email,
-          account: intent.checkoutMetadata?.account,
+          email: typeof email === "string" ? email : undefined,
+          account:
+            typeof account === "string" || account === null
+              ? account
+              : undefined,
           ecommerceModule: { orders: [{ id: orderId }] },
         },
         providerManagedRenewal
@@ -344,7 +360,7 @@ export class Service {
           "Conflict error. Legacy physical subscription needs an offer",
         ));
     if (providerManagedRenewal && businessConflict) {
-      await this.dependencies.service.ecommerceModule.order.stopSubscriptionRenewal(
+      await this.dependencies.service.modules.ecommerce.order.stopSubscriptionRenewal(
         { id: sourceId },
       );
     }
@@ -364,7 +380,7 @@ export class Service {
             continue;
           }
           seen.add(sourceId);
-          const children = (await service.ecommerceModule.order.find({
+          const children = (await service.modules.ecommerce.order.find({
             params: {
               filters: {
                 and: [
@@ -382,11 +398,11 @@ export class Service {
               subjectId: props.subjectId,
               orderId: child.id,
             });
-            await service.ecommerceModule.order.lockForLifecycle({
+            await service.modules.ecommerce.order.lockForLifecycle({
               id: child.id,
             });
             queue.push(child.id);
-            const current = (await service.ecommerceModule.order.findById({
+            const current = (await service.modules.ecommerce.order.findById({
               id: child.id,
             })) as IOrder;
             if (current.subscriptionPeriodInvoiceId) {
@@ -399,7 +415,7 @@ export class Service {
                   "expired",
                 ].includes(current.status)
               ) {
-                await service.ecommerceModule.order.update({
+                await service.modules.ecommerce.order.update({
                   id: current.id,
                   data: { ...current, status: "requested_cancelation" },
                 });
@@ -407,7 +423,7 @@ export class Service {
               continue;
             }
             const links =
-              await service.ecommerceModule.ordersToBillingModulePaymentIntents.find(
+              await service.modules.ecommerce.order.ordersToBillingModulePaymentIntents.find(
                 {
                   params: {
                     filters: {
@@ -427,25 +443,26 @@ export class Service {
               ),
             ];
             for (const id of intentIds) {
-              const intent = await service.billingModule.paymentIntent.findById(
-                { id },
-              );
+              const intent =
+                await service.modules.ecommerce.order.paymentIntent.findById({
+                  id,
+                });
               if (
                 intent &&
                 !["succeeded", "requires_reconciliation"].includes(
                   intent.status,
                 )
               ) {
-                await service.billingModule.paymentIntent.failUnpaidIntent(
+                await service.modules.ecommerce.order.paymentIntent.failUnpaidIntent(
                   id,
                   intent.status,
                 );
-                await service.billingModule.paymentIntent.update({
+                await service.modules.ecommerce.order.paymentIntent.update({
                   id,
                   data: { status: "canceled" },
                 });
                 const invoiceLinks =
-                  await service.billingModule.paymentIntentsToInvoices.find({
+                  await service.modules.billing.paymentIntentsToInvoices.find({
                     params: {
                       filters: {
                         and: [
@@ -459,11 +476,12 @@ export class Service {
                     },
                   });
                 for (const link of invoiceLinks) {
-                  const invoice = await service.billingModule.invoice.findById({
-                    id: link.invoiceId,
-                  });
+                  const invoice =
+                    await service.modules.billing.invoice.findById({
+                      id: link.invoiceId,
+                    });
                   if (invoice && ["open", "draft"].includes(invoice.status)) {
-                    await service.billingModule.invoice.update({
+                    await service.modules.billing.invoice.update({
                       id: invoice.id,
                       data: { ...invoice, status: "void" },
                     });
@@ -471,7 +489,7 @@ export class Service {
                 }
               }
             }
-            await service.ecommerceModule.order.update({
+            await service.modules.ecommerce.order.update({
               id: child.id,
               data: { ...current, type: "history", status: "canceled" },
             });

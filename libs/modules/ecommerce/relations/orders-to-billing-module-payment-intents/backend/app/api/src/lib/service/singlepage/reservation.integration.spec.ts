@@ -82,9 +82,8 @@ async function fixture(stock = 1) {
     new Repository(new Configuration()),
     relation.attribute,
   );
-  const intents =
-    createOrderBootstrap(relation).createService().billingModule.paymentIntent;
-  const invoices = intents.billingModule.invoice;
+  const intents = createOrderBootstrap(relation).createService().paymentIntent;
+  const invoices = intents.module.invoice;
   const attempts: {
     intentId: string;
     invoiceId: string;

@@ -71,16 +71,12 @@ type IConstructorProps = {
   ordersToBillingModuleCurrencies: OrdersToBillingModuleCurrenciesService;
   ordersToFileStorageModuleFiles: OrdersToFileStorageModuleFilesService;
   ordersToBillingModulePaymentIntents: OrdersToBillingModulePaymentIntentsService;
-  billingModule: {
-    currency: BillingCurrencyService;
-    paymentIntent: BillingPaymentIntentService;
-    paymentIntentsToCurrencies: BillingPaymentIntentsToCurrenciesService;
-    paymentIntentsToInvoices: BillingPaymentIntentsToInvoicesService;
-    invoice: BillingInvoiceService;
-  };
-  fileStorageModule: {
-    file: FileStorageFileService;
-  };
+  currency: BillingCurrencyService;
+  paymentIntent: BillingPaymentIntentService;
+  paymentIntentsToCurrencies: BillingPaymentIntentsToCurrenciesService;
+  paymentIntentsToInvoices: BillingPaymentIntentsToInvoicesService;
+  invoice: BillingInvoiceService;
+  file: FileStorageFileService;
 };
 
 export class Service {
@@ -91,8 +87,12 @@ export class Service {
   ordersToBillingModuleCurrencies: OrdersToBillingModuleCurrenciesService;
   ordersToFileStorageModuleFiles: OrdersToFileStorageModuleFilesService;
   ordersToBillingModulePaymentIntents: OrdersToBillingModulePaymentIntentsService;
-  billingModule: IConstructorProps["billingModule"];
-  fileStorageModule: IConstructorProps["fileStorageModule"];
+  currency: IConstructorProps["currency"];
+  paymentIntent: IConstructorProps["paymentIntent"];
+  paymentIntentsToCurrencies: IConstructorProps["paymentIntentsToCurrencies"];
+  paymentIntentsToInvoices: IConstructorProps["paymentIntentsToInvoices"];
+  invoice: IConstructorProps["invoice"];
+  file: IConstructorProps["file"];
 
   constructor(props: IConstructorProps) {
     this.findById = props.findById;
@@ -104,8 +104,12 @@ export class Service {
     this.ordersToFileStorageModuleFiles = props.ordersToFileStorageModuleFiles;
     this.ordersToBillingModulePaymentIntents =
       props.ordersToBillingModulePaymentIntents;
-    this.billingModule = props.billingModule;
-    this.fileStorageModule = props.fileStorageModule;
+    this.currency = props.currency;
+    this.paymentIntent = props.paymentIntent;
+    this.paymentIntentsToCurrencies = props.paymentIntentsToCurrencies;
+    this.paymentIntentsToInvoices = props.paymentIntentsToInvoices;
+    this.invoice = props.invoice;
+    this.file = props.file;
   }
 
   async execute(props: IExecuteProps): Promise<IResult> {
@@ -201,7 +205,7 @@ export class Service {
 
     const [billingModuleCurrencies, fileStorageModuleFiles] = await Promise.all(
       [
-        this.billingModule.currency.find({
+        this.currency.find({
           params: {
             filters: {
               and: [
@@ -217,7 +221,7 @@ export class Service {
           },
         }),
         ordersToFileStorageModuleFiles?.length
-          ? this.fileStorageModule.file.find({
+          ? this.file.find({
               params: {
                 filters: {
                   and: [
@@ -245,23 +249,21 @@ export class Service {
 
     let billingModulePaymentIntents: IBillingModulePaymentIntent[] | null;
     if (ordersToBillingModulePaymentIntents?.length) {
-      billingModulePaymentIntents = await this.billingModule.paymentIntent.find(
-        {
-          params: {
-            filters: {
-              and: [
-                {
-                  column: "id",
-                  method: "inArray",
-                  value: ordersToBillingModulePaymentIntents.map(
-                    (item) => item.billingModulePaymentIntentId,
-                  ),
-                },
-              ],
-            },
+      billingModulePaymentIntents = await this.paymentIntent.find({
+        params: {
+          filters: {
+            and: [
+              {
+                column: "id",
+                method: "inArray",
+                value: ordersToBillingModulePaymentIntents.map(
+                  (item) => item.billingModulePaymentIntentId,
+                ),
+              },
+            ],
           },
         },
-      );
+      });
     } else {
       billingModulePaymentIntents = [];
     }
@@ -269,7 +271,7 @@ export class Service {
     const [paymentIntentsToCurrencies, paymentIntentsToInvoices] =
       await Promise.all([
         billingModulePaymentIntents?.length
-          ? this.billingModule.paymentIntentsToCurrencies.find({
+          ? this.paymentIntentsToCurrencies.find({
               params: {
                 filters: {
                   and: [
@@ -284,7 +286,7 @@ export class Service {
             })
           : Promise.resolve([]),
         billingModulePaymentIntents?.length
-          ? this.billingModule.paymentIntentsToInvoices.find({
+          ? this.paymentIntentsToInvoices.find({
               params: {
                 filters: {
                   and: [
@@ -303,7 +305,7 @@ export class Service {
     const [paymentIntentsCurrencies, paymentIntentsInvoices] =
       await Promise.all([
         paymentIntentsToCurrencies?.length
-          ? this.billingModule.currency.find({
+          ? this.currency.find({
               params: {
                 filters: {
                   and: [
@@ -320,7 +322,7 @@ export class Service {
             })
           : Promise.resolve([]),
         paymentIntentsToInvoices?.length
-          ? this.billingModule.invoice.find({
+          ? this.invoice.find({
               params: {
                 filters: {
                   and: [

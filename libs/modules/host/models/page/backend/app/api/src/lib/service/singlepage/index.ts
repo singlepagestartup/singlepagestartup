@@ -1,4 +1,5 @@
-import { createModules } from "../modules";
+import { createModule } from "../module";
+import { createModules } from "@sps/host/backend/app/api/src/lib/modules";
 import "reflect-metadata";
 import { injectFromBase, injectable } from "inversify";
 import {
@@ -32,6 +33,10 @@ export interface FindByUrlServiceProps extends Partial<FindByIdServiceProps> {
 export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
   get modules() {
     return this.appAssembly.getOrCreate(createModules);
+  }
+
+  get module() {
+    return this.appAssembly.getOrCreate(createModule);
   }
 
   private routeSourceProvider?: RouteSourceProvider;

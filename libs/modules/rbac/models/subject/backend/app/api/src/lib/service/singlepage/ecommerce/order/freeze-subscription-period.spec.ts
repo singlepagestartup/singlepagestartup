@@ -6,31 +6,39 @@ describe("legacy subscription freeze ownership", () => {
       .fn()
       .mockResolvedValue({ accepted: true });
     const service: any = {
-      subjectsToEcommerceModuleOrders: {
-        find: jest
-          .fn()
-          .mockResolvedValue([
-            { subjectId: "subject", ecommerceModuleOrderId: "order" },
-          ]),
+      module: {
+        subjectsToEcommerceModuleOrders: {
+          find: jest
+            .fn()
+            .mockResolvedValue([
+              { subjectId: "subject", ecommerceModuleOrderId: "order" },
+            ]),
+        },
+        subjectsToRoles: {
+          find: jest
+            .fn()
+            .mockResolvedValue([{ subjectId: "subject", roleId: "role" }]),
+        },
+        role: {
+          module: {
+            rolesToEcommerceModuleProducts: {
+              find: jest
+                .fn()
+                .mockResolvedValue([
+                  { roleId: "role", ecommerceModuleProductId: "product" },
+                ]),
+            },
+          },
+        },
       },
-      subjectsToRoles: {
-        find: jest
-          .fn()
-          .mockResolvedValue([{ subjectId: "subject", roleId: "role" }]),
-      },
-      rolesToEcommerceModuleProducts: {
-        find: jest
-          .fn()
-          .mockResolvedValue([
-            { roleId: "role", ecommerceModuleProductId: "product" },
-          ]),
-      },
-      ecommerceModule: {
-        order: {
-          findByIdExtended: jest.fn().mockResolvedValue({
-            ordersToProducts: [{ productId: "product" }],
-          }),
-          freezeSubscriptionPeriod,
+      modules: {
+        ecommerce: {
+          order: {
+            findByIdExtended: jest.fn().mockResolvedValue({
+              ordersToProducts: [{ productId: "product" }],
+            }),
+            freezeSubscriptionPeriod,
+          },
         },
       },
     };
@@ -55,7 +63,7 @@ describe("legacy subscription freeze ownership", () => {
   });
   it("rejects another subject's order", async () => {
     const { service, action, freezeSubscriptionPeriod } = fixture();
-    service.subjectsToEcommerceModuleOrders.find.mockResolvedValue([
+    service.module.subjectsToEcommerceModuleOrders.find.mockResolvedValue([
       { subjectId: "other", ecommerceModuleOrderId: "order" },
     ]);
     await expect(action.execute(input)).rejects.toThrow("does not belong");
@@ -68,7 +76,7 @@ describe("legacy subscription freeze ownership", () => {
     "does not backfill a missing or cross-account grant",
     async ({ grants }) => {
       const { service, action, freezeSubscriptionPeriod } = fixture();
-      service.subjectsToRoles.find.mockResolvedValue(grants);
+      service.module.subjectsToRoles.find.mockResolvedValue(grants);
       await expect(action.execute(input)).rejects.toThrow(
         "current complete product grant",
       );

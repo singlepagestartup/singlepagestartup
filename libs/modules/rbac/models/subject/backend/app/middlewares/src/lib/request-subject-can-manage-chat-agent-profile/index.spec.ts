@@ -1,13 +1,3 @@
-/**
- * BDD Suite: chat agent profile management authorization.
- *
- * Given: an authenticated subject owns the chat and its requesting profile but
- * the requesting profile is not itself a chat participant.
- * When: the subject manages an AI profile that is connected to the chat.
- * Then: RBAC plus target-profile guards authorize the request without a
- * duplicate requester-profile-to-chat requirement.
- */
-
 import { Hono } from "hono";
 import { Middleware } from ".";
 
@@ -18,52 +8,56 @@ function createService() {
   return {
     find: jest.fn(async () => [{ id: "agent-subject-id", variant: "agent" }]),
     socialModuleChatLifecycleAssertSubjectOwnsChat: jest.fn(async () => true),
-    socialModule: {
-      profile: {
-        findById: jest.fn(async () => ({
-          id: targetProfileId,
-          variant: "artificial-intelligence",
-        })),
+    modules: {
+      social: {
+        profile: {
+          findById: jest.fn(async () => ({
+            id: targetProfileId,
+            variant: "artificial-intelligence",
+          })),
+        },
+        profilesToChats: {
+          find: jest.fn(async (props: any) => {
+            const filters = props?.params?.filters?.and || [];
+            const profileId = filters.find(
+              (filter: any) => filter.column === "profileId",
+            )?.value;
+
+            return profileId === targetProfileId
+              ? [{ id: "target-chat-relation" }]
+              : [];
+          }),
+        },
+        profilesToSkills: { find: jest.fn(async () => []) },
+        profilesToKnowledgeModuleSources: {
+          find: jest.fn(async () => []),
+        },
       },
-      profilesToChats: {
+    },
+    module: {
+      subjectsToSocialModuleProfiles: {
         find: jest.fn(async (props: any) => {
           const filters = props?.params?.filters?.and || [];
           const profileId = filters.find(
-            (filter: any) => filter.column === "profileId",
+            (filter: any) => filter.column === "socialModuleProfileId",
           )?.value;
 
-          return profileId === targetProfileId
-            ? [{ id: "target-chat-relation" }]
-            : [];
+          if (profileId === requesterProfileId) {
+            return [{ id: "requester-owner-relation" }];
+          }
+
+          if (profileId === targetProfileId) {
+            return [
+              {
+                id: "target-owner-relation",
+                subjectId: "agent-subject-id",
+              },
+            ];
+          }
+
+          return [];
         }),
       },
-      profilesToSkills: { find: jest.fn(async () => []) },
-      profilesToKnowledgeModuleSources: {
-        find: jest.fn(async () => []),
-      },
-    },
-    subjectsToSocialModuleProfiles: {
-      find: jest.fn(async (props: any) => {
-        const filters = props?.params?.filters?.and || [];
-        const profileId = filters.find(
-          (filter: any) => filter.column === "socialModuleProfileId",
-        )?.value;
-
-        if (profileId === requesterProfileId) {
-          return [{ id: "requester-owner-relation" }];
-        }
-
-        if (profileId === targetProfileId) {
-          return [
-            {
-              id: "target-owner-relation",
-              subjectId: "agent-subject-id",
-            },
-          ];
-        }
-
-        return [];
-      }),
     },
   };
 }
@@ -99,7 +93,9 @@ describe("Given: RBAC authorizes management of a chat AI profile", () => {
       subjectId: "subject-id",
       socialModuleChatId: "chat-id",
     });
-    expect(service.socialModule.profilesToChats.find).toHaveBeenCalledTimes(1);
+    expect(service.modules.social.profilesToChats.find).toHaveBeenCalledTimes(
+      1,
+    );
   });
 
   /**
@@ -126,7 +122,7 @@ describe("Given: RBAC authorizes management of a chat AI profile", () => {
     );
 
     expect(response.status).toBe(200);
-    expect(service.socialModule.profilesToSkills.find).not.toHaveBeenCalled();
+    expect(service.modules.social.profilesToSkills.find).not.toHaveBeenCalled();
   });
 
   /**
@@ -151,6 +147,8 @@ describe("Given: RBAC authorizes management of a chat AI profile", () => {
     );
 
     expect(response.status).toBe(401);
-    expect(service.socialModule.profilesToSkills.find).toHaveBeenCalledTimes(1);
+    expect(service.modules.social.profilesToSkills.find).toHaveBeenCalledTimes(
+      1,
+    );
   });
 });

@@ -128,38 +128,6 @@ it("reconciles both legacy clients after exact-offer Product checkout through th
   const find = jest.fn(async () => []);
   const service = new Service({
     findById: jest.fn(async () => ({ id: "subject" })),
-    subjectsToIdentities: {
-      find: jest.fn(async () => [{ identityId: "identity" }]),
-    },
-    billingModule: {
-      paymentIntent: { isProviderAllowed: jest.fn(() => true) },
-      currency: {
-        findById: jest.fn(async () => ({
-          id: "currency",
-          slug: "usd",
-          minorUnitDigits: 2,
-        })),
-      },
-    },
-    ecommerceModule: {
-      product: {
-        findById: jest.fn(async () => ({
-          id: "product",
-          slug: "fixture-product",
-        })),
-      },
-      storesToProducts: {
-        find: jest.fn().mockResolvedValue([]),
-        offersForProduct: jest.fn(async () => [
-          { id: "offer", productId: "product", storeId: "store" },
-        ]),
-        quote: jest.fn(async () => ({
-          amount: "100",
-          currencyIds: ["currency"],
-          issues: [],
-        })),
-      },
-    },
     ecommerceModuleOrderCreate: jest.fn(async () => {
       orders.push({ id });
       generation = String(Number(generation) + 1);
@@ -168,6 +136,44 @@ it("reconciles both legacy clients after exact-offer Product checkout through th
     ecommerceOrderCheckout: jest.fn(async () => ({
       billingModule: { invoices: [] },
     })),
+    module: {
+      subjectsToIdentities: {
+        find: jest.fn(async () => [{ identityId: "identity" }]),
+      },
+    },
+    modules: {
+      ecommerce: {
+        product: {
+          findById: jest.fn(async () => ({
+            id: "product",
+            slug: "fixture-product",
+          })),
+        },
+        storesToProducts: {
+          find: jest.fn().mockResolvedValue([]),
+          offersForProduct: jest.fn(async () => [
+            { id: "offer", productId: "product", storeId: "store" },
+          ]),
+          quote: jest.fn(async () => ({
+            amount: "100",
+            currencyIds: ["currency"],
+            issues: [],
+          })),
+        },
+        order: {
+          paymentIntent: { isProviderAllowed: jest.fn(() => true) },
+        },
+      },
+      billing: {
+        currency: {
+          findById: jest.fn(async () => ({
+            id: "currency",
+            slug: "usd",
+            minorUnitDigits: 2,
+          })),
+        },
+      },
+    },
   } as any);
   try {
     const response = await mockApp.request(rpc, { method: "POST" });

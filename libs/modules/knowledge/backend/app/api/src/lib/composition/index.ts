@@ -60,14 +60,12 @@ export function createKnowledgeServices(
         new SourcesToFilesRepository(new SourcesToFilesConfiguration()),
       )
     ).withAppAssembly(assembly),
-    fileStorageModule: {
-      file: (
-        props.fileStorageModule?.file ??
-        new FileStorageFileService(
-          new FileStorageFileRepository(new FileStorageFileConfiguration()),
-        )
-      ).withAppAssembly(assembly),
-    },
+    fileStorageFile: (
+      props.fileStorageFile ??
+      new FileStorageFileService(
+        new FileStorageFileRepository(new FileStorageFileConfiguration()),
+      )
+    ).withAppAssembly(assembly),
   };
   configureSource(
     graph,

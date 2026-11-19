@@ -20,7 +20,8 @@ import {
   providerMinorUnits,
   parseExactMonetaryAmount,
 } from "@sps/backend-utils";
-import type { IBillingModule } from "../../di";
+import type { Service as InvoiceService } from "@sps/billing/models/invoice/backend/app/api/src/lib/service";
+import type { Service as PaymentIntentsToInvoicesService } from "@sps/billing/relations/payment-intents-to-invoices/backend/app/api/src/lib/service";
 import type { IExecuteProps as ISettlementProps } from "./paykeeper-settlement";
 
 interface IMetadata {
@@ -219,7 +220,8 @@ export type IServiceProceedProps =
     };
 
 interface IConstructorProps {
-  billingModule: Pick<IBillingModule, "invoice" | "paymentIntentsToInvoices">;
+  invoice: Pick<InvoiceService, "findById">;
+  paymentIntentsToInvoices: Pick<PaymentIntentsToInvoicesService, "find">;
   settle: (props: ISettlementProps) => Promise<void>;
 }
 
@@ -489,20 +491,19 @@ export class Service {
         throw new Error(
           "Configuration error. PayKeeper settlement dependencies not set",
         );
-      const links =
-        await this.dependencies.billingModule.paymentIntentsToInvoices.find({
-          params: {
-            filters: {
-              and: [
-                {
-                  column: "paymentIntentId",
-                  method: "eq",
-                  value: event.orderid,
-                },
-              ],
-            },
+      const links = await this.dependencies.paymentIntentsToInvoices.find({
+        params: {
+          filters: {
+            and: [
+              {
+                column: "paymentIntentId",
+                method: "eq",
+                value: event.orderid,
+              },
+            ],
           },
-        });
+        },
+      });
       if (!links?.length)
         throw new Error(
           "Not Found error. Payment intent to invoice relation not found",
@@ -511,7 +512,7 @@ export class Service {
         throw new Error(
           "Conflict error. Ambiguous PayKeeper invoice association",
         );
-      const invoice = await this.dependencies.billingModule.invoice.findById({
+      const invoice = await this.dependencies.invoice.findById({
         id: links[0].invoiceId,
       });
       if (!invoice || invoice.provider !== "paykeeper" || !invoice.providerId)

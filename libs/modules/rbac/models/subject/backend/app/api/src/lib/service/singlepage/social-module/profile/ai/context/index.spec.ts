@@ -78,8 +78,6 @@ function fixture(
     }),
   };
   const service = new Service({
-    socialModule: social,
-    fileStorageModule: { file: { find: jest.fn() } } as any,
     chatId: "chat",
     threadId: "thread",
     profileId: "profile",
@@ -88,6 +86,10 @@ function fixture(
     history,
     documentThread: false,
     mode: options.mode ?? "compact",
+    modules: {
+      social: social,
+      fileStorage: { file: { find: jest.fn() } } as any,
+    },
   });
   const ledger: any[] = [];
   const prepare = () =>

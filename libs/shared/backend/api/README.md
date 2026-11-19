@@ -127,12 +127,30 @@ const { app } = await orderBootstrap.bootstrap(assembly);
 In an owner binding, resolve the assembly from `DI.IAppAssembly`. A service
 that extends `CRUDService` can use its protected `appAssembly` in methods
 and getters after construction. Direct construction uses the default
-assembly. The module's service registry derives its service types from the
-owner bootstraps, so a public method added to a `service/startup` class is
-available through `this.modules` without a signature in the consumer.
+assembly.
+
+Use `this.module` for an entity's outgoing relations and child services in
+its own module. For example, Order can call
+`this.module.product.findById({ id })`. Product has no path back to Order.
+An entity with no local children has no `module` getter. Use `this.modules`
+for other modules below the consumer in the module order. Subject can call
+`this.modules.billing.currency.findById({ id })`. A controller starts from
+its service, for example `this.service.modules.crm.form`. Each path resolves
+the owning bootstrap in the caller's assembly.
+
+When upgrading a child project, migrate uses of constructor groups such as
+`billingModule` and `ecommerceModule`, including test doubles and startup
+subclasses with explicit `super(...)` calls. Use the new constructor signature
+of the owning service. A public method on the owner's `service/startup` class
+appears on each permitted path with its inferred signature. Add the method
+once on that class. Use an assembly override when a caller needs a replacement
+instance. For order checkout, resolve the Order and use its `paymentIntent` and
+`ordersToBillingModulePaymentIntents`. These collaborators handle the reservations
+for that order. The Billing module's payment intent handles ordinary billing.
+
 `withRepository(repository, assembly)` copies a service into a transaction
-assembly. Register each participating copy as an override so lookups through
-`this.modules` use the repositories from that transaction. Use
+assembly. Register each participating copy as an override so local and foreign
+lookups use the repositories from that transaction. Use
 `createChildAppAssembly(parent, configure)` to keep all other owner lookups
 in the parent assembly.
 

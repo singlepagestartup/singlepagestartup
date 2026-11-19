@@ -81,18 +81,16 @@ function signedData(overrides: Record<string, unknown> = {}) {
   return data;
 }
 const dependencies = {
-  billingModule: {
-    paymentIntentsToInvoices: {
-      find: (...args: unknown[]) => mockedPaymentIntentToInvoiceFind(...args),
-    },
-    invoice: {
-      findById: (...args: unknown[]) => mockedInvoiceFindById(...args),
-    },
+  paymentIntentsToInvoices: {
+    find: (...args: unknown[]) => mockedPaymentIntentToInvoiceFind(...args),
+  },
+  invoice: {
+    findById: (...args: unknown[]) => mockedInvoiceFindById(...args),
   },
   settle: jest.fn().mockResolvedValue(undefined),
 };
 function service() {
-  return new Service(dependencies as any);
+  return new Service(dependencies);
 }
 
 function webhookProps(overrides: Record<string, unknown> = {}) {

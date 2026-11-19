@@ -7,7 +7,7 @@ import { getProfileDocumentSkillSlug } from "@sps/backend-utils";
 import { api as skillApi } from "@sps/social/models/skill/sdk/server";
 import { api as linksApi } from "@sps/social/relations/profiles-to-skills/sdk/server";
 import type { IModel as ISkill } from "@sps/social/models/skill/sdk/model";
-import type { ISocialModule } from "../../../../di";
+import type { SubjectServiceDependencies } from "../../index";
 
 export interface IForDocumentProps {
   socialModuleProfileId: string;
@@ -16,7 +16,10 @@ export interface IForDocumentProps {
 
 export class Service {
   constructor(
-    readonly socialModule: Pick<ISocialModule, "skill" | "profilesToSkills">,
+    readonly social: Pick<
+      SubjectServiceDependencies["modules"]["social"],
+      "profilesToSkills" | "skill"
+    >,
   ) {}
 
   async ensure(profileId: string): Promise<ISkill[]> {
@@ -31,12 +34,12 @@ export class Service {
     const slugs = AI_CHAT_DOCUMENTS.map((document) =>
       getProfileDocumentSkillSlug(document.skillSlug, profileId),
     );
-    const existing: ISkill[] = await this.socialModule.skill.find({
+    const existing: ISkill[] = await this.social.skill.find({
       params: {
         filters: { and: [{ column: "slug", method: "inArray", value: slugs }] },
       },
     });
-    const links = await this.socialModule.profilesToSkills.find({
+    const links = await this.social.profilesToSkills.find({
       params: {
         filters: {
           and: [{ column: "profileId", method: "eq", value: profileId }],
@@ -100,7 +103,7 @@ export class Service {
       definition.skillSlug,
       profileId,
     );
-    const links = await this.socialModule.profilesToSkills.find({
+    const links = await this.social.profilesToSkills.find({
       params: {
         filters: {
           and: [{ column: "profileId", method: "eq", value: profileId }],
@@ -110,7 +113,7 @@ export class Service {
     const skillIds = links.map((link) => link.skillId);
     let skills: ISkill[];
     if (skillIds.length) {
-      skills = await this.socialModule.skill.find({
+      skills = await this.social.skill.find({
         params: {
           filters: {
             and: [

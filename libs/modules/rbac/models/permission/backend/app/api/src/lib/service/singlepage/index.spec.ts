@@ -10,7 +10,7 @@ import type { FindServiceProps } from "@sps/shared-backend-api";
 import { Service } from ".";
 
 function createService() {
-  const service = new Service({} as any, { find: jest.fn() } as any);
+  const service = new Service({} as any);
   service.invalidateRouteResolutionCache();
   return service;
 }

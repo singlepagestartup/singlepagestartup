@@ -10,9 +10,7 @@ export interface IExecuteProps {
 }
 export interface IConstructorProps {
   service: SubjectServiceDependencies<
-    | "ecommerceModule"
-    | "ecommerceModuleOrderAssertAccess"
-    | "ecommerceModuleResolveOrderCurrency"
+    "ecommerceModuleOrderAssertAccess" | "ecommerceModuleResolveOrderCurrency"
   >;
 }
 
@@ -25,20 +23,22 @@ export class Service {
       subjectId: props.subjectId,
       orderId: props.orderId,
     });
-    const preparedLines = await service.ecommerceModule.ordersToProducts.find({
-      params: {
-        filters: {
-          and: [{ column: "orderId", method: "eq", value: props.orderId }],
+    const preparedLines = await service.modules.ecommerce.ordersToProducts.find(
+      {
+        params: {
+          filters: {
+            and: [{ column: "orderId", method: "eq", value: props.orderId }],
+          },
         },
       },
-    });
+    );
     for (const line of preparedLines.filter(
       (line: { parentLineId?: string | null; offerId?: string | null }) =>
         !line.parentLineId && line.offerId,
     )) {
       await service.ecommerceModuleResolveOrderCurrency({
         productId: line.productId,
-        offerId: line.offerId,
+        offerId: line.offerId ?? undefined,
         billingModuleCurrencyId: props.currencyId,
         destination: line.destination,
         services: preparedLines
@@ -46,8 +46,8 @@ export class Service {
             (child: { parentLineId?: string | null }) =>
               child.parentLineId === line.id,
           )
-          .map((child: { offerId: string; quantity: number }) => ({
-            offerId: child.offerId,
+          .map((child) => ({
+            offerId: child.offerId!,
             quantity: child.quantity,
           })),
       });
@@ -58,10 +58,10 @@ export class Service {
           subjectId: props.subjectId,
           orderId: props.orderId,
         });
-        await service.ecommerceModule.order.lockForLifecycle({
+        await service.modules.ecommerce.order.lockForLifecycle({
           id: props.orderId,
         });
-        const order = await service.ecommerceModule.order.findById({
+        const order = await service.modules.ecommerce.order.findById({
           id: props.orderId,
         });
         if (!order || order.type !== "cart" || order.status !== "new") {
@@ -70,7 +70,7 @@ export class Service {
           );
         }
         const paymentLinks =
-          await service.ecommerceModule.ordersToBillingModulePaymentIntents.find(
+          await service.modules.ecommerce.order.ordersToBillingModulePaymentIntents.find(
             {
               params: {
                 filters: {
@@ -86,7 +86,7 @@ export class Service {
             "Conflict error. Cart has a payment attempt and cannot be changed",
           );
         }
-        const lines = await service.ecommerceModule.ordersToProducts.find({
+        const lines = await service.modules.ecommerce.ordersToProducts.find({
           params: {
             filters: {
               and: [{ column: "orderId", method: "eq", value: props.orderId }],
@@ -99,13 +99,13 @@ export class Service {
         for (const line of lines.filter(
           (line: { parentLineId?: string | null }) => !line.parentLineId,
         )) {
-          const product = await service.ecommerceModule.product.findById({
+          const product = await service.modules.ecommerce.product.findById({
             id: line.productId,
           });
           if (
             !product ||
             (await new InitialGrantProducts(
-              service.ecommerceModule.storesToProducts,
+              service.modules.ecommerce.storesToProducts,
             ).includes(product.id))
           ) {
             throw new Error(
@@ -136,7 +136,7 @@ export class Service {
         }
         // Validate every line before the first write; normalize legacy duplicate links.
         const currencies =
-          service.ecommerceModule.ordersToBillingModuleCurrencies;
+          service.modules.ecommerce.ordersToBillingModuleCurrencies;
         const links = await currencies.find({
           params: {
             filters: {
@@ -166,7 +166,7 @@ export class Service {
         for (const line of lines.filter(
           (line: { parentLineId?: string | null }) => !line.parentLineId,
         )) {
-          await service.ecommerceModule.ordersToProducts.update({
+          await service.modules.ecommerce.ordersToProducts.update({
             id: line.id,
             data: {
               selectionUpdatedAt: new Date(),

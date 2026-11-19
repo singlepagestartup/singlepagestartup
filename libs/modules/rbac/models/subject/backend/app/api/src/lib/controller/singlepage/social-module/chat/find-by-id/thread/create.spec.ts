@@ -1,11 +1,3 @@
-/**
- * BDD Suite: Telegram thread creation mirror.
- *
- * Given: a subject creates a thread in a Telegram-backed SPS chat.
- * When: the RBAC thread create handler persists the thread.
- * Then: a Telegram forum topic is created first and its message_thread_id is stored on social.thread.
- */
-
 const mockSocialModuleThreadCreate = jest.fn();
 const mockSocialModuleThreadUpdate = jest.fn();
 const mockSocialModuleChatsToThreadsCreate = jest.fn();
@@ -64,19 +56,21 @@ function createService() {
     socialModuleChatLifecycleAssertSubjectOwnsChat: jest
       .fn()
       .mockResolvedValue(undefined),
-    socialModule: {
-      chat: {
-        findById: jest.fn().mockResolvedValue({
-          id: "chat-1",
-          variant: "telegram",
-          sourceSystemId: "-100123",
-        }),
-      },
-      chatsToThreads: {
-        find: jest.fn().mockResolvedValue([]),
-      },
-      thread: {
-        find: jest.fn().mockResolvedValue([]),
+    modules: {
+      social: {
+        chat: {
+          findById: jest.fn().mockResolvedValue({
+            id: "chat-1",
+            variant: "telegram",
+            sourceSystemId: "-100123",
+          }),
+        },
+        chatsToThreads: {
+          find: jest.fn().mockResolvedValue([]),
+        },
+        thread: {
+          find: jest.fn().mockResolvedValue([]),
+        },
       },
     },
   } as any;

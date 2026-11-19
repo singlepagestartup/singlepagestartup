@@ -17,7 +17,7 @@ import {
 } from "@sps/shared-utils";
 import type { Service as KnowledgeService } from "@sps/knowledge/backend/app/api/src/lib/service";
 import type { KnowledgeMissingFilesError } from "@sps/knowledge/backend/app/api/src/lib/types";
-import type { ISocialModule } from "../../../../../di";
+import type { SubjectServiceDependencies } from "../../../index";
 import type { ISocialProfileAiTool } from "./tool-loop";
 
 export interface IAIChatDocumentContext {
@@ -36,7 +36,14 @@ interface IAIChatDocumentSaveResult {
 
 export class Service {
   constructor(
-    readonly socialModule: ISocialModule,
+    readonly social: Pick<
+      SubjectServiceDependencies["modules"]["social"],
+      | "messagesToFileStorageModuleFiles"
+      | "messagesToKnowledgeModuleSources"
+      | "profilesToKnowledgeModuleSources"
+      | "profilesToMessages"
+      | "thread"
+    >,
     readonly knowledge: KnowledgeService,
   ) {}
 
@@ -45,26 +52,25 @@ export class Service {
     threadId: string;
     message: IMessage;
   }): Promise<IAIChatDocumentContext | null> {
-    const thread: IThread = await this.socialModule.thread.findById({
+    const thread = await this.social.thread.findById({
       id: props.threadId,
     });
-    const document = getAIChatDocument(thread?.metadata);
+    if (!thread) {
+      return null;
+    }
+    const document = getAIChatDocument(thread.metadata);
     if (!document) return null;
     if (document.profileId !== props.profileId)
       throw new Error(
         "Authorization error. Document belongs to another replying profile.",
       );
-    const links = await this.socialModule.profilesToKnowledgeModuleSources.find(
-      {
-        params: {
-          filters: {
-            and: [
-              { column: "profileId", method: "eq", value: props.profileId },
-            ],
-          },
+    const links = await this.social.profilesToKnowledgeModuleSources.find({
+      params: {
+        filters: {
+          and: [{ column: "profileId", method: "eq", value: props.profileId }],
         },
       },
-    );
+    });
     const allowed = new Set(
       links.map(
         (link: { knowledgeModuleSourceId: string }) =>
@@ -187,15 +193,14 @@ export class Service {
             );
           expectedContentHash = source.contentHash;
         }
-        const links =
-          await this.socialModule.messagesToFileStorageModuleFiles.find({
-            params: {
-              filters: {
-                and: [{ column: "messageId", method: "eq", value: message.id }],
-              },
-              orderBy: { and: [{ column: "orderIndex", method: "asc" }] },
+        const links = await this.social.messagesToFileStorageModuleFiles.find({
+          params: {
+            filters: {
+              and: [{ column: "messageId", method: "eq", value: message.id }],
             },
-          });
+            orderBy: { and: [{ column: "orderIndex", method: "asc" }] },
+          },
+        });
         const proposal: IAIChatDocumentProposal = {
           version: 1,
           id: randomUUID(),
@@ -289,9 +294,12 @@ export class Service {
     action: "confirm" | "reject" | "revise" | "none",
     messageId: string,
   ): Promise<Record<string, unknown> | null> {
-    const fresh: IThread = await this.socialModule.thread.findById({
+    const fresh = await this.social.thread.findById({
       id: context.thread.id,
     });
+    if (!fresh) {
+      throw new Error("Not found error. Document thread no longer exists.");
+    }
     const proposal = getAIChatDocumentProposal(fresh.metadata);
     if (!proposal || !["confirm", "reject", "revise"].includes(action))
       return null;
@@ -344,7 +352,7 @@ export class Service {
       throw new Error(
         "Authorization error. Proposal Source no longer belongs to this document.",
       );
-    const author = await this.socialModule.profilesToMessages.find({
+    const author = await this.social.profilesToMessages.find({
       params: {
         filters: {
           and: [
@@ -445,12 +453,17 @@ export class Service {
           confirmationMessageId: messageId,
         });
       } catch (error) {
-        const current = await this.socialModule.thread.findById({
+        const current = await this.social.thread.findById({
           id: context.thread.id,
         });
         const competing = getAIChatDocumentProposal(current?.metadata);
-        if (competing?.id !== proposal.id || !competing.confirmationMessageId)
+        if (
+          !current ||
+          competing?.id !== proposal.id ||
+          !competing.confirmationMessageId
+        ) {
           throw error;
+        }
         context.thread = current;
         context.proposal = competing;
         return this.resolve(context, "confirm", messageId);
@@ -477,7 +490,7 @@ export class Service {
           fileIds: proposal.fileIds,
           onSourceSaved: async (sourceId) => {
             await this.ensureRelation({
-              service: this.socialModule.profilesToKnowledgeModuleSources,
+              service: this.social.profilesToKnowledgeModuleSources,
               data: {
                 profileId: context.document.profileId,
                 knowledgeModuleSourceId: sourceId,
@@ -485,7 +498,7 @@ export class Service {
               identity: ["profileId", "knowledgeModuleSourceId"],
             });
             await this.ensureRelation({
-              service: this.socialModule.messagesToKnowledgeModuleSources,
+              service: this.social.messagesToKnowledgeModuleSources,
               data: {
                 messageId: proposal.triggerMessageId,
                 knowledgeModuleSourceId: sourceId,
@@ -542,7 +555,7 @@ export class Service {
         ...(processingError ? { processingError } : {}),
       });
     } catch (error) {
-      const current = await this.socialModule.thread.findById({
+      const current = await this.social.thread.findById({
         id: context.thread.id,
       });
       const applied = getAIChatDocumentProposal(current?.metadata);
@@ -573,7 +586,7 @@ export class Service {
         fileIds: proposal.fileIds.filter((id) => !missingFileIds.includes(id)),
       });
     } catch (error) {
-      const thread = await this.socialModule.thread.findById({
+      const thread = await this.social.thread.findById({
         id: context.thread.id,
       });
       const current = getAIChatDocumentProposal(thread?.metadata);
@@ -583,8 +596,13 @@ export class Service {
           status: "already_applied",
           sourceId: current.sourceId,
         };
-      if (current?.id !== proposal.id || current.status !== "needs_revision")
+      if (
+        !thread ||
+        current?.id !== proposal.id ||
+        current.status !== "needs_revision"
+      ) {
         throw error;
+      }
       context.thread = thread;
       context.proposal = current;
     }
@@ -642,11 +660,12 @@ export class Service {
   }
 
   private async attach(context: IAIChatDocumentContext, sourceId: string) {
-    const current: IThread = await this.socialModule.thread.findById({
+    const current = await this.social.thread.findById({
       id: context.thread.id,
     });
-    const document = getAIChatDocument(current.metadata);
+    const document = getAIChatDocument(current?.metadata);
     if (
+      !current ||
       !document ||
       document.profileId !== context.document.profileId ||
       document.key !== context.document.key
@@ -675,11 +694,12 @@ export class Service {
       },
     });
     if (!thread) {
-      const latest = await this.socialModule.thread.findById({
+      const latest = await this.social.thread.findById({
         id: current.id,
       });
       const linked = getAIChatDocument(latest?.metadata);
       if (
+        latest &&
         linked?.profileId === document.profileId &&
         linked.key === document.key &&
         linked.sourceIds.includes(sourceId)

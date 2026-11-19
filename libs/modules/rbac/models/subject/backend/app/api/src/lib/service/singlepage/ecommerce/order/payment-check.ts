@@ -20,7 +20,7 @@ export class Service {
     }
 
     const paymentIntentsToInvoices =
-      await this.service.billingModule.paymentIntentsToInvoices.find({
+      await this.service.module.paymentIntentsToInvoices.find({
         params: {
           filters: {
             and: [
@@ -54,7 +54,7 @@ export class Service {
     }
 
     const invoiceIds = paymentIntentsToInvoices.map((link) => link.invoiceId);
-    const invoices = await this.service.billingModule.invoice.find({
+    const invoices = await this.service.module.invoice.find({
       params: {
         filters: {
           and: [{ column: "id", method: "inArray", value: invoiceIds }],

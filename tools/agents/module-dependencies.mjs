@@ -9,8 +9,8 @@ const entityPattern =
 const serviceEntryPattern =
   /^backend\/app\/api\/src\/lib\/service\/(?:(?:singlepage|startup)\/)?index\.[cm]?[jt]s$/;
 const bootstrapPattern = /^backend\/app\/api\/src\/lib\/bootstrap\.[cm]?[jt]s$/;
-const localModulesPattern =
-  /^backend\/app\/api\/src\/lib\/service\/modules\.[cm]?[jt]s$/;
+const localModulePattern =
+  /^backend\/app\/api\/src\/lib\/service\/module\.[cm]?[jt]s$/;
 
 function sourceFiles(directory) {
   return readdirSync(directory, { withFileTypes: true }).flatMap((entry) => {
@@ -285,7 +285,7 @@ export function checkModuleDependencies(root) {
       (ownerPath &&
         (bootstrapPattern.test(ownerPath) ||
           serviceEntryPattern.test(ownerPath) ||
-          localModulesPattern.test(ownerPath)));
+          localModulePattern.test(ownerPath)));
     function visit(node) {
       const specifier = moduleSpecifier(node);
       if (trackServiceUse) {
@@ -478,7 +478,7 @@ export function checkModuleDependencies(root) {
     const composition =
       bootstrapPattern.test(layerPath) ||
       serviceEntryPattern.test(layerPath) ||
-      localModulesPattern.test(layerPath);
+      localModulePattern.test(layerPath);
     if (!model && !composition) {
       continue;
     }

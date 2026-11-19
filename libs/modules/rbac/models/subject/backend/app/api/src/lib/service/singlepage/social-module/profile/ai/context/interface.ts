@@ -1,4 +1,4 @@
-import type { ISocialModule, IFileStorageModule } from "../../../../../../di";
+import type { SubjectServiceDependencies } from "../../../../index";
 import type { IModel as IFile } from "@sps/file-storage/models/file/sdk/model";
 import type {
   OpenRouter,
@@ -30,8 +30,10 @@ export interface IAiContextHistoryMessage extends IOpenRouterRequestMessage {
 }
 
 export interface IAiContextServiceProps {
-  socialModule: ISocialModule;
-  fileStorageModule: IFileStorageModule;
+  modules: Pick<
+    SubjectServiceDependencies["modules"],
+    "social" | "fileStorage"
+  >;
   chatId: string;
   threadId: string;
   profileId: string;

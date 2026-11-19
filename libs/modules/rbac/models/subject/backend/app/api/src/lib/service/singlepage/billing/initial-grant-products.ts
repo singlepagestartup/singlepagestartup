@@ -1,9 +1,9 @@
 import type { IModel as IOffer } from "@sps/ecommerce/relations/stores-to-products/sdk/model";
-import type { IReadService } from "../../../di";
+import type { Service as Offers } from "@sps/ecommerce/relations/stores-to-products/backend/app/api/src/lib/service";
 
 /** Reads trusted, operator-configured registration associations. */
 export class Service {
-  constructor(readonly offers: Pick<IReadService, "find">) {}
+  constructor(readonly offers: Pick<Offers, "find">) {}
 
   async find(): Promise<IOffer[]> {
     const offers: IOffer[] = await this.offers.find({
@@ -48,7 +48,7 @@ export class Service {
               ? [
                   {
                     column: "settings->>initialGrantLegacyHistory",
-                    method: "eq",
+                    method: "eq" as const,
                     value: "true",
                   },
                 ]

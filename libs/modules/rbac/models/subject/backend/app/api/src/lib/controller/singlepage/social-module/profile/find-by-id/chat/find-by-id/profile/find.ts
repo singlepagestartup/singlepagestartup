@@ -15,7 +15,7 @@ export class Handler {
       }
 
       const chatRelations =
-        await this.service.socialModule.profilesToChats.find({
+        await this.service.modules.social.profilesToChats.find({
           params: {
             filters: {
               and: [
@@ -40,7 +40,7 @@ export class Handler {
         return c.json({ data: [] });
       }
 
-      const profiles = await this.service.socialModule.profile.find({
+      const profiles = await this.service.modules.social.profile.find({
         params: {
           filters: {
             and: [
@@ -63,7 +63,7 @@ export class Handler {
       }
 
       const subjectRelations =
-        await this.service.subjectsToSocialModuleProfiles.find({
+        await this.service.module.subjectsToSocialModuleProfiles.find({
           params: {
             filters: {
               and: [

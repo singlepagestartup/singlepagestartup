@@ -1,5 +1,6 @@
+import { createModule } from "../../../module";
 import { createAppAssembly } from "@sps/shared-backend-api";
-import { createModules } from "../../../modules";
+import { createModules } from "@sps/rbac/backend/app/api/src/lib/modules";
 import { Service, type IExecuteProps } from "./retryable-ids";
 
 function history(id: string, status: string): IExecuteProps["orders"][number] {
@@ -14,30 +15,41 @@ function history(id: string, status: string): IExecuteProps["orders"][number] {
 }
 
 function setup() {
-  const reader = () => ({ find: jest.fn().mockResolvedValue([]) });
-  const subjectsToEcommerceModuleOrders = reader();
-  const ecommerceModule = { ordersToBillingModulePaymentIntents: reader() };
-  const billingModule = {
-    paymentIntent: reader(),
-    paymentIntentsToInvoices: reader(),
-    invoice: reader(),
+  const finds = {
+    owners: jest.fn().mockResolvedValue([]),
+    reservations: jest.fn().mockResolvedValue([]),
+    orderPayments: jest.fn().mockResolvedValue([]),
+    paymentInvoices: jest.fn().mockResolvedValue([]),
+    invoices: jest.fn().mockResolvedValue([]),
   };
+  const assembly = createAppAssembly();
+  const module = assembly.getOrCreate(createModule);
+  const modules = assembly.getOrCreate(createModules);
+  const order = modules.ecommerce.order;
+  jest
+    .spyOn(module.subjectsToEcommerceModuleOrders, "find")
+    .mockImplementation(finds.owners);
+  jest
+    .spyOn(order.ordersToBillingModulePaymentIntents, "find")
+    .mockImplementation(finds.reservations);
+  jest
+    .spyOn(order.paymentIntent, "find")
+    .mockImplementation(finds.orderPayments);
+  jest
+    .spyOn(modules.billing.paymentIntentsToInvoices, "find")
+    .mockImplementation(finds.paymentInvoices);
+  jest
+    .spyOn(modules.billing.invoice, "find")
+    .mockImplementation(finds.invoices);
   return {
-    service: new Service({
-      modules: createAppAssembly().getOrCreate(createModules),
-      ecommerceModule,
-      billingModule,
-      subjectsToEcommerceModuleOrders,
-    }),
-    subjectsToEcommerceModuleOrders,
-    ecommerceModule,
-    billingModule,
+    service: new Service({ module, modules }),
+    finds,
   };
 }
 
 describe("retrying payment from order history", () => {
   it("excludes previously billed periods and fulfilled orders before reading Billing", async () => {
-    const { service, ecommerceModule } = setup();
+    const { service, finds } = setup();
     const orders = [
       { ...history("cart", "new"), type: "cart" },
       history("fulfilled", "completed"),
@@ -49,13 +61,11 @@ describe("retrying payment from order history", () => {
       },
     ];
     expect(await service.execute({ orders })).toEqual(new Set());
-    expect(
-      ecommerceModule.ordersToBillingModulePaymentIntents.find,
-    ).not.toHaveBeenCalled();
+    expect(finds.reservations).not.toHaveBeenCalled();
   });
 
   it("checks billing in batches and excludes either sign of settlement even while order status lags", async () => {
-    const { service, ecommerceModule, billingModule } = setup();
+    const { service, finds } = setup();
     const orders = [
       history("no attempt", "canceling"),
       history("pending", "paying"),
@@ -63,7 +73,7 @@ describe("retrying payment from order history", () => {
       history("settled", "paying"),
       history("paid invoice", "canceled"),
     ];
-    ecommerceModule.ordersToBillingModulePaymentIntents.find.mockResolvedValue([
+    finds.reservations.mockResolvedValue([
       { orderId: "pending", billingModulePaymentIntentId: "open" },
       { orderId: "rejected", billingModulePaymentIntentId: "declined" },
       { orderId: "settled", billingModulePaymentIntentId: "success" },
@@ -72,23 +82,25 @@ describe("retrying payment from order history", () => {
         billingModulePaymentIntentId: "not reconciled",
       },
     ]);
-    billingModule.paymentIntent.find.mockResolvedValue([
+    finds.orderPayments.mockResolvedValue([
       { id: "success", status: "succeeded" },
     ]);
-    billingModule.paymentIntentsToInvoices.find.mockResolvedValue([
+    finds.paymentInvoices.mockResolvedValue([
       { paymentIntentId: "open", invoiceId: "unpaid" },
       { paymentIntentId: "not reconciled", invoiceId: "confirmed" },
     ]);
-    billingModule.invoice.find.mockResolvedValue([
-      { id: "confirmed", status: "paid" },
-    ]);
+    finds.invoices.mockResolvedValue([{ id: "confirmed", status: "paid" }]);
     expect(await service.execute({ orders })).toEqual(
       new Set(["no attempt", "pending", "rejected"]),
     );
-    for (const reader of Object.values(billingModule)) {
-      expect(reader.find).toHaveBeenCalledTimes(1);
+    for (const reader of [
+      finds.orderPayments,
+      finds.paymentInvoices,
+      finds.invoices,
+    ]) {
+      expect(reader).toHaveBeenCalledTimes(1);
     }
-    expect(billingModule.invoice.find).toHaveBeenCalledWith({
+    expect(finds.invoices).toHaveBeenCalledWith({
       params: {
         filters: {
           and: [
@@ -113,26 +125,21 @@ describe("continuing an existing hosted invoice", () => {
     orphanIntent = false,
     secondInvoice = false,
   } = {}) {
-    const {
-      service,
-      billingModule,
-      ecommerceModule,
-      subjectsToEcommerceModuleOrders,
-    } = setup();
+    const { service, finds } = setup();
     const order = history("mine", orderStatus);
     const orderIntent = {
       orderId: order.id,
       billingModulePaymentIntentId: "intent",
     };
     const link = { paymentIntentId: "intent", invoiceId: "invoice" };
-    ecommerceModule.ordersToBillingModulePaymentIntents.find
+    finds.reservations
       .mockResolvedValueOnce([orderIntent])
       .mockResolvedValueOnce(
         foreignOrder
           ? [orderIntent, { ...orderIntent, orderId: "outside" }]
           : [orderIntent],
       );
-    billingModule.paymentIntent.find.mockResolvedValue([
+    finds.orderPayments.mockResolvedValue([
       { id: "intent", status: intentStatus },
     ]);
     const invoice = {
@@ -144,12 +151,12 @@ describe("continuing an existing hosted invoice", () => {
     const invoiceLinks = secondInvoice
       ? [link, { ...link, invoiceId: "second" }]
       : [link];
-    billingModule.invoice.find.mockResolvedValue(
+    finds.invoices.mockResolvedValue(
       secondInvoice
         ? [invoice, { ...invoice, id: "second", paymentUrl: url + "/2" }]
         : [invoice],
     );
-    billingModule.paymentIntentsToInvoices.find
+    finds.paymentInvoices
       .mockResolvedValueOnce(invoiceLinks)
       .mockResolvedValueOnce(
         orphanIntent
@@ -157,18 +164,13 @@ describe("continuing an existing hosted invoice", () => {
           : invoiceLinks,
       );
     const owner = { subjectId: "subject", ecommerceModuleOrderId: order.id };
-    subjectsToEcommerceModuleOrders.find.mockResolvedValue(
+    finds.owners.mockResolvedValue(
       otherOwner ? [owner, { ...owner, subjectId: "other" }] : [owner],
     );
     return service.purchasePayments({ subjectId: "subject", orders: [order] });
   }
   it("shows a single invoice shared by two pending orders of the same subject", async () => {
-    const {
-      service,
-      billingModule,
-      ecommerceModule,
-      subjectsToEcommerceModuleOrders,
-    } = setup();
+    const { service, finds } = setup();
     const orders = ["first", "second"].map((id) => history(id, "paying"));
     const orderIntents = orders.map(({ id }) => ({
       orderId: id,
@@ -178,20 +180,18 @@ describe("continuing an existing hosted invoice", () => {
       paymentIntentId: link.billingModulePaymentIntentId,
       invoiceId: "shared",
     }));
-    ecommerceModule.ordersToBillingModulePaymentIntents.find.mockResolvedValue(
-      orderIntents,
-    );
-    billingModule.paymentIntent.find.mockResolvedValue(
+    finds.reservations.mockResolvedValue(orderIntents);
+    finds.orderPayments.mockResolvedValue(
       links.map((link) => ({
         id: link.paymentIntentId,
         status: "requires_payment_method",
       })),
     );
-    billingModule.paymentIntentsToInvoices.find.mockResolvedValue(links);
-    billingModule.invoice.find.mockResolvedValue([
+    finds.paymentInvoices.mockResolvedValue(links);
+    finds.invoices.mockResolvedValue([
       { id: "shared", status: "open", provider: "stripe", paymentUrl: url },
     ]);
-    subjectsToEcommerceModuleOrders.find.mockResolvedValue(
+    finds.owners.mockResolvedValue(
       orders.map(({ id }) => ({
         subjectId: "subject",
         ecommerceModuleOrderId: id,

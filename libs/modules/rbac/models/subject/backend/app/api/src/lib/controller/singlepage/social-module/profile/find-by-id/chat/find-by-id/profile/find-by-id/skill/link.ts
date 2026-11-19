@@ -17,7 +17,7 @@ export class Handler {
         "targetSocialModuleProfileId",
       );
       const socialModuleSkillId = requireParam(c, "socialModuleSkillId");
-      const skill = await this.service.socialModule.skill.findById({
+      const skill = await this.service.modules.social.skill.findById({
         id: socialModuleSkillId,
       });
 
@@ -33,28 +33,30 @@ export class Handler {
           "Authorization error. This document skill belongs to another profile.",
         );
 
-      const relations = await this.service.socialModule.profilesToSkills.find({
-        params: {
-          filters: {
-            and: [
-              {
-                column: "profileId",
-                method: "eq",
-                value: targetSocialModuleProfileId,
-              },
-              { column: "skillId", method: "eq", value: socialModuleSkillId },
-            ],
+      const relations = await this.service.modules.social.profilesToSkills.find(
+        {
+          params: {
+            filters: {
+              and: [
+                {
+                  column: "profileId",
+                  method: "eq",
+                  value: targetSocialModuleProfileId,
+                },
+                { column: "skillId", method: "eq", value: socialModuleSkillId },
+              ],
+            },
+            limit: 1,
           },
-          limit: 1,
         },
-      });
+      );
 
       if (!relations?.length) {
         const linkedIds = await findProfileSkillIds({
           service: this.service,
           targetSocialModuleProfileId,
         });
-        await this.service.socialModule.profilesToSkills.create({
+        await this.service.modules.social.profilesToSkills.create({
           data: {
             variant: "default",
             className: "",

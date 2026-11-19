@@ -4,12 +4,12 @@ import { Service as Presentations } from "../../../startup/social-module/chat/pr
 
 /** The caller must prove Chat access before supplying its selected Actions. */
 export class Service {
-  constructor(readonly service: SubjectServiceDependencies<"socialModule">) {}
+  constructor(readonly service: SubjectServiceDependencies) {}
 
   async enrich(actions: IModel[]): Promise<IChatAction[]> {
     if (!actions.length) return [];
     const actionIds = new Set(actions.map((action) => action.id));
-    const relations = await this.service.socialModule.profilesToActions.find({
+    const relations = await this.service.modules.social.profilesToActions.find({
       params: {
         filters: {
           and: [

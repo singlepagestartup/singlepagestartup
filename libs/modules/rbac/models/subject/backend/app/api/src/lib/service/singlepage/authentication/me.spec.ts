@@ -8,8 +8,8 @@ it("returns a default visitor Subject as unauthenticated without creating a prof
   };
   const dependencies = {
     findById: jest.fn().mockResolvedValue(subject),
-    subjectsToIdentities: { find: jest.fn().mockResolvedValue([]) },
     socialModuleProfileOwnershipEnsure: jest.fn(),
+    module: { subjectsToIdentities: { find: jest.fn().mockResolvedValue([]) } },
   };
   expect(
     await new Service(dependencies as any).execute({ subjectId: "visitor" }),
@@ -17,7 +17,7 @@ it("returns a default visitor Subject as unauthenticated without creating a prof
   expect(
     dependencies.socialModuleProfileOwnershipEnsure,
   ).not.toHaveBeenCalled();
-  expect(dependencies.subjectsToIdentities.find).toHaveBeenCalledWith(
+  expect(dependencies.module.subjectsToIdentities.find).toHaveBeenCalledWith(
     expect.objectContaining({
       params: expect.objectContaining({
         filters: {
@@ -32,10 +32,14 @@ it("returns the current registered Subject with authenticated status", async () 
   const subject = { id: "account", variant: "default", slug: "account" };
   const dependencies = {
     findById: jest.fn().mockResolvedValue(subject),
-    subjectsToIdentities: {
-      find: jest
-        .fn()
-        .mockResolvedValue([{ subjectId: "account", identityId: "identity" }]),
+    module: {
+      subjectsToIdentities: {
+        find: jest
+          .fn()
+          .mockResolvedValue([
+            { subjectId: "account", identityId: "identity" },
+          ]),
+      },
     },
   };
   expect(
@@ -46,10 +50,10 @@ it("returns the current registered Subject with authenticated status", async () 
 it("does not treat a deleted Subject's token snapshot as an account", async () => {
   const dependencies = {
     findById: jest.fn().mockResolvedValue(undefined),
-    subjectsToIdentities: { find: jest.fn() },
+    module: { subjectsToIdentities: { find: jest.fn() } },
   };
   expect(
     await new Service(dependencies as any).execute({ subjectId: "deleted" }),
   ).toBeUndefined();
-  expect(dependencies.subjectsToIdentities.find).not.toHaveBeenCalled();
+  expect(dependencies.module.subjectsToIdentities.find).not.toHaveBeenCalled();
 });

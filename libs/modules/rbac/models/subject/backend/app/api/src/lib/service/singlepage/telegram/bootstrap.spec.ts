@@ -119,7 +119,7 @@ describe("Given: Telegram bootstrap initializes a topic thread", () => {
         identity: {} as any,
         subjectsToIdentities: {} as any,
         subjectsToSocialModuleProfiles: {} as any,
-        socialModule: {
+        social: {
           chatsToThreads: {
             find: jest.fn().mockResolvedValue([]),
           },
@@ -229,7 +229,7 @@ describe("Given: Telegram bootstrap initializes a topic thread", () => {
         identity: {} as any,
         subjectsToIdentities: {} as any,
         subjectsToSocialModuleProfiles: {} as any,
-        socialModule: {
+        social: {
           chatsToThreads: {
             find: jest.fn().mockResolvedValue([]),
           },
@@ -292,7 +292,7 @@ describe("Given: Telegram bootstrap initializes a topic thread", () => {
         identity: {} as any,
         subjectsToIdentities: {} as any,
         subjectsToSocialModuleProfiles: {} as any,
-        socialModule: {} as any,
+        social: {} as any,
       });
 
       expect(
@@ -321,7 +321,7 @@ describe("Given: Telegram bootstrap initializes a topic thread", () => {
         identity: {} as any,
         subjectsToIdentities: {} as any,
         subjectsToSocialModuleProfiles: {} as any,
-        socialModule: {} as any,
+        social: {} as any,
       });
 
       const title = await (service as any).generateTelegramThreadTitle({
@@ -349,7 +349,7 @@ describe("Given: Telegram bootstrap initializes a topic thread", () => {
         identity: {} as any,
         subjectsToIdentities: {} as any,
         subjectsToSocialModuleProfiles: {} as any,
-        socialModule: {} as any,
+        social: {} as any,
       });
 
       const title = await (service as any).generateTelegramThreadTitle({
@@ -371,7 +371,7 @@ describe("Given: Telegram bootstrap initializes a topic thread", () => {
         identity: {} as any,
         subjectsToIdentities: {} as any,
         subjectsToSocialModuleProfiles: {} as any,
-        socialModule: {
+        social: {
           chatsToThreads: {
             find: jest.fn().mockResolvedValue([
               {
@@ -449,7 +449,7 @@ describe("Given: Telegram bootstrap initializes a topic thread", () => {
         identity: {} as any,
         subjectsToIdentities: {} as any,
         subjectsToSocialModuleProfiles: {} as any,
-        socialModule: {
+        social: {
           chatsToThreads: {
             find: jest.fn().mockResolvedValue([
               {
@@ -514,7 +514,7 @@ describe("Given: Telegram bootstrap initializes a topic thread", () => {
         identity: {} as any,
         subjectsToIdentities: {} as any,
         subjectsToSocialModuleProfiles: {} as any,
-        socialModule: {
+        social: {
           chatsToThreads: {
             find: jest.fn().mockResolvedValue([]),
           },
@@ -613,7 +613,7 @@ describe("Given: Telegram automatic chat participants", () => {
       identity: {} as any,
       subjectsToIdentities: {} as any,
       subjectsToSocialModuleProfiles: {} as any,
-      socialModule: {
+      social: {
         profilesToChats,
         profile,
       } as any,
@@ -679,7 +679,7 @@ describe("Given: two Telegram updates race to bootstrap the same account", () =>
       identity: {} as any,
       subjectsToIdentities: {} as any,
       subjectsToSocialModuleProfiles: {} as any,
-      socialModule: {} as any,
+      social: {} as any,
     });
   }
 
@@ -807,7 +807,7 @@ describe("Given: a telegram identity is claimed by two requests at once", () => 
       identity: {} as any,
       subjectsToIdentities: {} as any,
       subjectsToSocialModuleProfiles: {} as any,
-      socialModule: {} as any,
+      social: {} as any,
     });
   }
 

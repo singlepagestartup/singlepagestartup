@@ -22,10 +22,12 @@ jest.mock("@sps/shared-utils", () => {
 });
 
 import { Service } from "./index";
+import { Configuration } from "../../configuration";
+import { Repository } from "../../repository";
 
 describe("Given: the payment-intent service", () => {
   function createService() {
-    return new Service({} as any, {} as any);
+    return new Service(new Repository(new Configuration()));
   }
 
   it("declares adapter scheduling independently from provider availability and permits startup overrides", () => {
@@ -44,7 +46,7 @@ describe("Given: the payment-intent service", () => {
         );
       }
     }
-    const custom = new CustomService({} as any, {} as any);
+    const custom = new CustomService(new Repository(new Configuration()));
     expect(
       custom.schedulesSubscriptionPayments({ provider: "custom-scheduled" }),
     ).toBe(true);

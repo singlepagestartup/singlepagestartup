@@ -20,7 +20,7 @@ export interface IKnowledgeServices {
   chunk: ChunkService;
   sourcesToChunks: SourcesToChunksService;
   sourcesToFileStorageModuleFiles: SourcesToFilesService;
-  fileStorageModule: { file: FileStorageFileService };
+  fileStorageFile: FileStorageFileService;
 }
 
 export function createKnowledgeAssembly(
@@ -36,7 +36,7 @@ export function createKnowledgeAssembly(
       sourcesToFilesOwner,
       () => getGraph().sourcesToFileStorageModuleFiles,
     );
-    overrideServiceWith(fileOwner, () => getGraph().fileStorageModule.file);
+    overrideServiceWith(fileOwner, () => getGraph().fileStorageFile);
   });
 }
 
@@ -106,9 +106,7 @@ export function configureSource(
         tx,
         assembly,
       ),
-      fileStorageModule: {
-        file: bindTransaction(graph.fileStorageModule.file, tx, assembly),
-      },
+      fileStorageFile: bindTransaction(graph.fileStorageFile, tx, assembly),
     };
     configureSource(
       graph,
@@ -124,18 +122,6 @@ export function configureSource(
   };
 
   scope.source.configure({
-    get chunk() {
-      return scope.chunk;
-    },
-    get sourcesToChunks() {
-      return scope.sourcesToChunks;
-    },
-    get sourcesToFileStorageModuleFiles() {
-      return scope.sourcesToFileStorageModuleFiles;
-    },
-    get fileStorageFile() {
-      return scope.fileStorageModule.file;
-    },
     inTransaction,
     afterCommit(operation) {
       queue.push(operation);
@@ -167,9 +153,6 @@ export function configureFiles(
 ): void {
   scope.sourcesToFileStorageModuleFiles.configure({
     inTransaction,
-    get fileStorageFile() {
-      return scope.fileStorageModule.file;
-    },
     async mutate(operation) {
       const mutation = await scope.source.mutateFileRelation(operation);
       return mutation.relation;
@@ -185,18 +168,16 @@ export function configureScopedKnowledgeSource(
   const graph: IKnowledgeServices = {
     source,
     get chunk() {
-      return chunkOwner.createService(assembly);
+      return source.module.chunk;
     },
     get sourcesToChunks() {
-      return sourcesToChunksOwner.createService(assembly);
+      return source.module.sourcesToChunks;
     },
     get sourcesToFileStorageModuleFiles() {
-      return sourcesToFilesOwner.createService(assembly);
+      return source.module.sourcesToFileStorageModuleFiles;
     },
-    fileStorageModule: {
-      get file() {
-        return fileOwner.createService(assembly);
-      },
+    get fileStorageFile() {
+      return source.modules.fileStorage.file;
     },
   };
   configureSource(graph, graph, true, false, [], sourceOwner, assembly);

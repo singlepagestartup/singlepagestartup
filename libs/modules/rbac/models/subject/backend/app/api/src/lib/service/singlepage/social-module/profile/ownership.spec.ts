@@ -75,18 +75,18 @@ function dependencies() {
       }),
     },
     findById: jest.fn(async () => subject),
-    subjectsToIdentities: {
-      find: jest.fn(async () => [
-        { identityId: "identity", subjectId: "owner" },
-      ]),
-    },
-    subjectsToSocialModuleProfiles: links,
-    socialModule: { profile: profiles },
-    role,
-    permission,
-    subjectsToRoles,
-    rolesToPermissions,
+    modules: { social: { profile: profiles } },
     isAuthorizedService: { invalidateSubjectRoleCache: jest.fn() },
+    module: {
+      subjectsToIdentities: {
+        find: jest.fn(async () => [
+          { identityId: "identity", subjectId: "owner" },
+        ]),
+      },
+      subjectsToSocialModuleProfiles: links,
+      subjectsToRoles,
+      role: { ...role, module: { permission, rolesToPermissions } },
+    },
   };
   return {
     service,
@@ -198,7 +198,7 @@ it("reuses an owned Telegram personal Profile even after its private slug change
 
 it("does not create a personal profile or ownership grant for an anonymous session", async () => {
   const deps = dependencies();
-  deps.service.subjectsToIdentities.find.mockResolvedValue([]);
+  deps.service.module.subjectsToIdentities.find.mockResolvedValue([]);
   await expect(
     new Service(deps.service as any).ensure({ subjectId: "owner" }),
   ).rejects.toThrow("Sign in");

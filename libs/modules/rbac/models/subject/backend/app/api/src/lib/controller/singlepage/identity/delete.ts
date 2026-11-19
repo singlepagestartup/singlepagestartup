@@ -46,7 +46,7 @@ export class Handler {
       }
 
       const subjectsToAllIdentities =
-        await this.service.subjectsToIdentities.find({
+        await this.service.module.subjectsToIdentities.find({
           params: {
             filters: {
               and: [
@@ -64,8 +64,8 @@ export class Handler {
         throw new Error("Internal error. Cannot delete last identity");
       }
 
-      const subjectsToIdentities = await this.service.subjectsToIdentities.find(
-        {
+      const subjectsToIdentities =
+        await this.service.module.subjectsToIdentities.find({
           params: {
             filters: {
               and: [
@@ -82,8 +82,7 @@ export class Handler {
               ],
             },
           },
-        },
-      );
+        });
 
       if (!subjectsToIdentities?.length) {
         throw new Error("Not Found error. No subjects to identities found");

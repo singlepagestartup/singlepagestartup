@@ -211,17 +211,18 @@ async function fixture() {
         throw new Error("Permission error. Order is not owned");
       }
     },
-    subjectsToEcommerceModuleOrders: ownerApp.controller.service,
-    ecommerceModule: {
-      order,
-      ordersToProducts: order.ordersToProducts,
-      ordersToBillingModuleCurrencies: order.ordersToBillingModuleCurrencies,
-      ordersToBillingModulePaymentIntents:
-        order.ordersToBillingModulePaymentIntents,
-      storesToOrders: storesToOrdersApp.controller.service,
-      storesToProducts: { quote },
+    module: { subjectsToEcommerceModuleOrders: ownerApp.controller.service },
+    modules: {
+      ecommerce: {
+        order,
+        ordersToProducts: order.module.ordersToProducts,
+        ordersToBillingModuleCurrencies:
+          order.module.ordersToBillingModuleCurrencies,
+        storesToOrders: storesToOrdersApp.controller.service,
+        storesToProducts: { quote },
+      },
+      billing: order.modules.billing,
     },
-    billingModule: order.billingModule,
   };
   const operation = new Service({
     repository: new Repository(new Configuration()),

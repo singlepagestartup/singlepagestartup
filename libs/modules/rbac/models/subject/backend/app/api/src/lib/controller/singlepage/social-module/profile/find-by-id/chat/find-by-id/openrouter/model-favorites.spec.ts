@@ -1,11 +1,3 @@
-/**
- * BDD Suite: OpenRouter model favorites.
- *
- * Given: a user stores OpenRouter model favorites for chat controls.
- * When: favorites are read and updated through the RBAC-scoped endpoint.
- * Then: values are stored in KV per subject and normalized before persistence.
- */
-
 const mockKvGet = jest.fn();
 const mockKvSet = jest.fn();
 const mockDefaultKvGet = jest.fn();
@@ -30,9 +22,11 @@ import { Handler } from "./model-favorites";
 
 function createService() {
   return {
-    socialModule: {
-      profilesToChats: {
-        find: jest.fn(),
+    modules: {
+      social: {
+        profilesToChats: {
+          find: jest.fn(),
+        },
       },
     },
   };
@@ -173,7 +167,7 @@ describe("Given: OpenRouter model favorites", () => {
     )) as any;
 
     expect(response.data.favoriteModelIds).toEqual(["openai/gpt-5.2"]);
-    expect(service.socialModule.profilesToChats.find).not.toHaveBeenCalled();
+    expect(service.modules.social.profilesToChats.find).not.toHaveBeenCalled();
     expect(mockKvGet).toHaveBeenCalledWith(
       expect.objectContaining({
         key: "subject-1",

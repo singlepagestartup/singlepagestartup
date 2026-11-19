@@ -7,7 +7,7 @@ export interface IExecuteProps {
 
 /** The caller must establish Chat access before expanding its participants. */
 export class Service {
-  constructor(readonly service: SubjectServiceDependencies<"socialModule">) {}
+  constructor(readonly service: SubjectServiceDependencies) {}
 
   async execute(props: IExecuteProps): Promise<ISocialModuleProfile[]> {
     if (!props.socialModuleChatId) {
@@ -28,7 +28,7 @@ export class Service {
     const selected = [...new Set<string>(chatIds.filter(Boolean))];
     const result = new Map<string, ISocialModuleProfile[]>();
     if (!selected.length) return result;
-    const links = await this.service.socialModule.profilesToChats.find({
+    const links = await this.service.modules.social.profilesToChats.find({
       params: {
         filters: {
           and: [
@@ -50,7 +50,7 @@ export class Service {
       ),
     ];
     if (!ids.length) return result;
-    const profiles = await this.service.socialModule.profile.find({
+    const profiles = await this.service.modules.social.profile.find({
       params: {
         filters: { and: [{ column: "id", method: "inArray", value: ids }] },
       },

@@ -21,19 +21,21 @@ it("returns authors and all ordered attachments only for the authorized messages
   };
   readFiles.mockResolvedValue([{ id: "first" }, { id: "second" }]);
   const result = await new Service({
-    socialModule: {
-      profile: {
-        profilePresentation: jest.fn(async ({ id }) => ({
-          id,
-          title: { en: "Former member" },
-          subtitle: {},
-          avatar: null,
-        })),
+    modules: {
+      social: {
+        profile: {
+          profilePresentation: jest.fn(async ({ id }) => ({
+            id,
+            title: { en: "Former member" },
+            subtitle: {},
+            avatar: null,
+          })),
+        },
+        profilesToMessages: authors,
+        messagesToFileStorageModuleFiles: links,
       },
-      profilesToMessages: authors,
-      messagesToFileStorageModuleFiles: links,
+      fileStorage: { file: { find: readFiles, readBytes } },
     },
-    fileStorageModule: { file: { find: readFiles, readBytes } },
   } as any).enrich([{ id: "message", description: "hello" }] as any);
   expect(result[0].authorProfileIds).toEqual(["owner"]);
   expect(result[0].authorProfiles).toEqual([
@@ -61,7 +63,9 @@ it("returns authors and all ordered attachments only for the authorized messages
 });
 
 it("does not enumerate authors or files for an empty chat", async () => {
-  const result = await new Service({ socialModule: {} } as any).enrich([]);
+  const result = await new Service({ modules: { social: {} } } as any).enrich(
+    [],
+  );
   expect(result).toEqual([]);
   expect(readFiles).not.toHaveBeenCalled();
 });
@@ -77,19 +81,21 @@ it("blocks a legacy renamed SVG read projection and preserves its File record an
     Buffer.from('<svg xmlns="http://www.w3.org/2000/svg"/>'),
   );
   const result = await new Service({
-    socialModule: {
-      profilesToMessages: { find: async () => [] },
-      messagesToFileStorageModuleFiles: {
-        find: async () => [
-          {
-            messageId: "message",
-            fileStorageModuleFileId: "legacy",
-            orderIndex: 0,
-          },
-        ],
+    modules: {
+      social: {
+        profilesToMessages: { find: async () => [] },
+        messagesToFileStorageModuleFiles: {
+          find: async () => [
+            {
+              messageId: "message",
+              fileStorageModuleFileId: "legacy",
+              orderIndex: 0,
+            },
+          ],
+        },
       },
+      fileStorage: { file: { find: async () => [stored], readBytes } },
     },
-    fileStorageModule: { file: { find: async () => [stored], readBytes } },
   } as any).enrich([{ id: "message" }] as any);
   expect(result[0].attachments).toEqual([
     expect.objectContaining({ id: "legacy", mimeType: "image/svg+xml" }),

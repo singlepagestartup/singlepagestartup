@@ -12,7 +12,7 @@ import {
 } from "@sps/agent/models/agent/sdk/model";
 import { CronExpressionParser } from "cron-parser";
 import { logger } from "@sps/backend-utils";
-import type { createModules } from "@sps/agent/backend/app/api/src/lib/modules";
+import type { Service as BroadcastChannel } from "@sps/broadcast/models/channel/backend/app/api/src/lib/service";
 
 export interface IAgentRunChannel {
   id: string;
@@ -58,12 +58,10 @@ export interface IAgentRunClaim {
 }
 
 export interface IAgentRunProps {
-  broadcastModule: {
-    channel: Pick<
-      ReturnType<typeof createModules>["broadcast"]["channel"],
-      "find" | "queue" | "transientChannelMessages"
-    >;
-  };
+  channel: Pick<
+    BroadcastChannel,
+    "find" | "queue" | "transientChannelMessages"
+  >;
 }
 
 /**
@@ -73,13 +71,13 @@ export interface IAgentRunProps {
  */
 export class Service {
   get queue() {
-    return this.props.broadcastModule.channel.queue;
+    return this.props.channel.queue;
   }
 
   constructor(private readonly props: IAgentRunProps) {}
 
   async findChannel(): Promise<IAgentRunChannel> {
-    const channels = await this.props.broadcastModule.channel.find({
+    const channels = await this.props.channel.find({
       params: {
         filters: {
           and: [
@@ -101,10 +99,9 @@ export class Service {
   }): Promise<IAgentRunMarker[]> {
     const channel = props?.channel || (await this.findChannel());
 
-    const messages =
-      await this.props.broadcastModule.channel.transientChannelMessages(
-        channel.id,
-      );
+    const messages = await this.props.channel.transientChannelMessages(
+      channel.id,
+    );
 
     const markers: IAgentRunMarker[] = [];
 

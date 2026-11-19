@@ -23,7 +23,7 @@ export class Handler {
       const socialModuleSkillId = requireParam(c, "socialModuleSkillId");
       const body = await parseRequestBody(c);
       const payload = normalizeSkillPayload(body);
-      const currentSkill = await this.service.socialModule.skill.findById({
+      const currentSkill = await this.service.modules.social.skill.findById({
         id: socialModuleSkillId,
       });
 
@@ -38,7 +38,7 @@ export class Handler {
           "Validation error. A document profession's command cannot be renamed.",
         );
 
-      const updatedSkill = await this.service.socialModule.skill.update({
+      const updatedSkill = await this.service.modules.social.skill.update({
         id: socialModuleSkillId,
         data: {
           variant: currentSkill.variant || "default",

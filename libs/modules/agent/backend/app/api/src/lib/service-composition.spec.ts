@@ -37,6 +37,12 @@ const {
   bootstrap: startSubject,
   createService: createSubject,
 } = await import("@sps/rbac/models/subject/backend/app/api/src/lib/bootstrap");
+const { createService: createProduct, serviceBootstrap: productBootstrap } =
+  await import("@sps/ecommerce/models/product/backend/app/api/src/lib/bootstrap");
+const { serviceBootstrap: offerLinksOwner, createOfferLinksBootstrap } =
+  await import("@sps/ecommerce/relations/offers-to-offers/backend/app/api/src/lib/bootstrap");
+const { createService: createRolesLink } =
+  await import("@sps/rbac/relations/subjects-to-roles/backend/app/api/src/lib/bootstrap");
 const { serviceBootstrap: fileWidgetBootstrap } =
   await import("@sps/file-storage/models/widget/backend/app/api/src/lib/bootstrap");
 const { Service: FileWidget } =
@@ -48,20 +54,21 @@ const { Configuration: FileWidgetConfiguration } =
 
 function assertAgentOrder(agent, order) {
   assert.equal(agent.modules.ecommerce.order, order);
-  assert.equal(agent.ecommerceModule.order, order);
+  assert.ok(!("ecommerceModule" in agent));
+  assert.ok(!("agent" in agent.modules));
 }
 
 function assertSubjectOrder(subject, order, assembly) {
   assert.equal(subject.modules.ecommerce.order, order);
-  assert.equal(subject.ecommerceModule.order, order);
-  assert.equal(subject.billingModule.paymentIntent, order.billingModule.paymentIntent);
+  assert.ok(!("billingModule" in subject));
+  assert.ok(!("rbac" in subject.modules));
+  assert.equal(subject.module.subjectsToRoles, createRolesLink(assembly));
+  assert.equal(order.module.product, createProduct(assembly));
+  assert.ok(!("order" in order.module));
+  assert.ok(!("order" in order.module.product.module));
+  assert.ok(!("ecommerce" in order.modules));
   assert.equal(subject.modules.billing.paymentIntent, createBillingPaymentIntent(assembly));
-  assert.notEqual(subject.modules.billing.paymentIntent, order.billingModule.paymentIntent);
-  assert.equal(subject.subjectsToRoles, subject.modules.rbac.subjectsToRoles);
-  assert.equal(
-    subject.ecommerceModule.ordersToBillingModulePaymentIntents,
-    order.ordersToBillingModulePaymentIntents,
-  );
+  assert.notEqual(subject.modules.billing.paymentIntent, order.paymentIntent);
   assert.equal(
     subject.ecommerceCatalog.dependencies.stock,
     order.ordersToBillingModulePaymentIntents,
@@ -108,12 +115,22 @@ assertAgentOrder(retryAgent, retryOrder);
 
 const collaborators = createOrder(createAppAssembly());
 const reservations = collaborators.ordersToBillingModulePaymentIntents;
-const payment = collaborators.billingModule.paymentIntent;
+const payment = collaborators.paymentIntent;
+let productReplacement;
+const paymentRecord = { id: "assembly-payment", status: "succeeded" };
+payment.findById = async ({ id }) => {
+  assert.equal(id, paymentRecord.id);
+  return paymentRecord;
+};
 const specializedOrder = createOrderBootstrap(reservations, payment);
 const alternateOrder = createOrderBootstrap();
 let specializedCreations = 0;
 let fileWidgetCreations = 0;
 const leftAssembly = createAppAssembly(({ overrideServiceWith }) => {
+  overrideServiceWith(productBootstrap, (assembly) => {
+    productReplacement = collaborators.module.product.withAppAssembly(assembly);
+    return productReplacement;
+  });
   overrideServiceWith(orderBootstrap, (assembly) => {
     specializedCreations += 1;
     return specializedOrder.createService(assembly);
@@ -123,7 +140,10 @@ const leftAssembly = createAppAssembly(({ overrideServiceWith }) => {
     return new FileWidget(new FileWidgetRepository(new FileWidgetConfiguration()));
   });
 });
+const offerReader = { find: async () => [{ id: "visible-offer" }] };
+const customOfferLinks = createOfferLinksBootstrap(() => offerReader);
 const rightAssembly = createAppAssembly(({ overrideServiceWith }) => {
+  overrideServiceWith(offerLinksOwner, (assembly) => customOfferLinks.createService(assembly));
   overrideServiceWith(orderBootstrap, (assembly) =>
     alternateOrder.createService(assembly),
   );
@@ -142,7 +162,13 @@ const leftSubject = await startSubject(leftAssembly);
 assert.notEqual(leftOrder, rightOrder);
 assert.equal(specializedCreations, 1);
 assert.equal(leftOrder.ordersToBillingModulePaymentIntents, reservations);
-assert.equal(leftOrder.billingModule.paymentIntent, payment);
+assert.equal(leftOrder.paymentIntent, payment);
+assert.equal(leftOrder.module.product, productReplacement);
+assert.notEqual(rightOrder.module.product, productReplacement);
+assert.equal(
+  await leftSubject.app.controller.service.ecommerceModuleOrderPaymentCheck.execute(paymentRecord.id),
+  paymentRecord,
+);
 assertAgentOrder(leftAgent.service, leftOrder);
 assertAgentOrder(rightAgent.service, rightOrder);
 assert.equal(leftSubject.app.controller.service, leftSubject.service);
@@ -150,6 +176,11 @@ assertSubjectOrder(leftSubject.service, leftOrder, leftAssembly);
 assertSubjectOrder(createSubject(rightAssembly), rightOrder, rightAssembly);
 assert.equal(leftHttp.app.controller.service, leftOrder);
 assert.equal(rightHttp.app.controller.service, rightOrder);
+const links = rightAgent.service.modules.ecommerce.offersToOffers;
+assert.equal(links, (await offerLinksOwner.bootstrap(rightAssembly)).app.controller.service);
+assert.equal(links.offers, offerReader);
+assert.deepEqual(await links.offers.find(), [{ id: "visible-offer" }]);
+assert.notEqual(leftAgent.service.modules.ecommerce.offersToOffers.offers, offerReader);
 assert.equal(createOrder(), order);
 assertAgentOrder(createAgent(), order);
 

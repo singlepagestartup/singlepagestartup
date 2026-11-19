@@ -7,11 +7,7 @@ import { assertKnowledgeAttachmentBytes } from "@sps/backend-utils";
 import { Service as Presentations } from "../../../startup/social-module/chat/presentations";
 
 export class Service {
-  constructor(
-    readonly service: SubjectServiceDependencies<
-      "socialModule" | "fileStorageModule"
-    >,
-  ) {}
+  constructor(readonly service: SubjectServiceDependencies) {}
 
   async enrich(messages: IModel[]): Promise<IChatMessage[]> {
     if (!messages.length) return [];
@@ -20,24 +16,28 @@ export class Service {
         and: [
           {
             column: "messageId",
-            method: "inArray",
+            method: "inArray" as const,
             value: messages.map((m) => m.id),
           },
         ],
       },
     };
     const [authors, links] = await Promise.all([
-      this.service.socialModule.profilesToMessages.find({ params }),
-      this.service.socialModule.messagesToFileStorageModuleFiles.find({
+      this.service.modules.social.profilesToMessages.find({ params }),
+      this.service.modules.social.messagesToFileStorageModuleFiles.find({
         params,
       }),
     ]);
     const fileIds = [
       ...new Set(links.map((link) => link.fileStorageModuleFileId as string)),
     ];
-    let files;
+    let files: Awaited<
+      ReturnType<
+        SubjectServiceDependencies["modules"]["fileStorage"]["file"]["find"]
+      >
+    >;
     if (fileIds.length) {
-      files = await this.service.fileStorageModule.file.find({
+      files = await this.service.modules.fileStorage.file.find({
         params: {
           filters: {
             and: [{ column: "id", method: "inArray", value: fileIds }],
@@ -56,7 +56,7 @@ export class Service {
           mimeType: file.mimeType || undefined,
         });
         assertKnowledgeAttachmentBytes({
-          bytes: await this.service.fileStorageModule.file.readBytes(file),
+          bytes: await this.service.modules.fileStorage.file.readBytes(file),
           name: file.file,
           mimeType: file.mimeType || undefined,
         });

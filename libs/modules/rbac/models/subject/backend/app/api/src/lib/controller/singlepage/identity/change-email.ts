@@ -67,7 +67,7 @@ export class Handler {
                 ...result,
                 identity: applyOutputSchema({
                   c,
-                  service: this.service.identity,
+                  service: this.service.module.identity,
                   data: result.identity,
                 }),
               }

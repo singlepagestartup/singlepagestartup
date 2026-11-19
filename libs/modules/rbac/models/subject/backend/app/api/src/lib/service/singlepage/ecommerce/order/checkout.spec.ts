@@ -128,272 +128,278 @@ function createTestContext(props?: {
 
   const findById = jest.fn().mockResolvedValue(subject);
 
-  const ecommerceModule = {
-    order: {
-      find: jest.fn().mockResolvedValue(checkoutOrders),
-      lockForLifecycle: jest.fn(),
-      update: jest.fn(async (input) => {
-        const order = checkoutOrderById.get(input.id);
-        if (order) {
-          Object.assign(order, input.data);
-        }
-        await mockEcommerceOrderUpdate(input);
-        return order;
-      }),
-      findById: jest.fn().mockImplementation(({ id }: { id: string }) => {
-        if (id === activeSubscriptionOrder.id) {
-          return Promise.resolve(activeSubscriptionOrder);
-        }
-
-        return Promise.resolve(checkoutOrderById.get(id));
-      }),
-      findByIdCheckoutAttributesByCurrency: jest.fn().mockResolvedValue({
-        amount: 100,
-        type: productType,
-        interval,
-      }),
-      findByIdCheckoutAttributes: jest.fn().mockResolvedValue({
-        type: productType,
-        interval,
-      }),
-    },
-    ordersToProducts: {
-      find: jest.fn().mockImplementation((args?: any) => {
-        const filters = args?.params?.filters?.and ?? [];
-        const inArrayOrderIds = filters.find((filter: any) => {
-          return filter.column === "orderId" && filter.method === "inArray";
-        });
-        const eqOrderId = filters.find((filter: any) => {
-          return filter.column === "orderId" && filter.method === "eq";
-        });
-
-        if (inArrayOrderIds) {
-          return Promise.resolve(
-            checkoutOrders.map((checkoutOrder, index) => ({
-              id: `otp-checkout-${index + 1}`,
-              orderId: checkoutOrder.id,
-              productId: "product-target",
-              quantity: 1,
-              offerId: "offer-target",
-              parentLineId: null,
-              destination: {},
-            })),
-          );
-        }
-
-        if (eqOrderId?.value === activeSubscriptionOrder.id) {
-          return Promise.resolve([
-            {
-              id: "otp-active-1",
-              orderId: activeSubscriptionOrder.id,
-              productId: activeOrderProductId,
-              quantity: 1,
-            },
-          ]);
-        }
-
-        return Promise.resolve([]);
-      }),
-    },
-    product: {
-      find: jest.fn().mockResolvedValue([
-        {
-          id: "product-target",
-          slug: props?.productSlug ?? "paid-product",
-          type: productType,
-          kind: "digital",
-        },
-      ]),
-    },
-    productsToAttributes: {
-      find: jest.fn().mockResolvedValue([
-        {
-          id: "pta-1",
-          productId: "product-target",
-          attributeId: "attribute-price-1",
-        },
-        ...(interval
-          ? [
-              {
-                id: "pta-interval",
-                productId: "product-target",
-                attributeId: "attribute-interval",
-              },
-            ]
-          : []),
-      ]),
-    },
-    attributeKeysToAttributes: {
-      find: jest.fn().mockResolvedValue([
-        {
-          id: "aka-1",
-          attributeId: "attribute-price-1",
-          attributeKeyId: "attribute-key-price-1",
-        },
-        ...(interval
-          ? [
-              {
-                id: "aka-interval",
-                attributeId: "attribute-interval",
-                attributeKeyId: "key-interval",
-              },
-            ]
-          : []),
-      ]),
-    },
-    attributeKey: {
-      find: jest.fn().mockResolvedValue([
-        {
-          id: "attribute-key-price-1",
-          type: "price",
-        },
-        ...(interval ? [{ id: "key-interval", type: "interval" }] : []),
-      ]),
-    },
-    attribute: {
-      find: jest.fn().mockResolvedValue([
-        {
-          id: "attribute-price-1",
-          number: "100",
-        },
-        ...(interval
-          ? [{ id: "attribute-interval", string: { en: interval } }]
-          : []),
-      ]),
-    },
-    attributesToBillingModuleCurrencies: {
-      find: jest.fn().mockResolvedValue([]),
-    },
-    ordersToBillingModuleCurrencies: {
-      find: jest.fn().mockResolvedValue(
-        checkoutOrders.map((checkoutOrder, index) => ({
-          id: `otbc-${index + 1}`,
-          orderId: checkoutOrder.id,
-          billingModuleCurrencyId:
-            props?.currencyByOrderId?.[checkoutOrder.id] ?? "currency-1",
-        })),
-      ),
-    },
-    ordersToBillingModulePaymentIntents: {
-      find: jest.fn().mockResolvedValue([]),
-      create: jest.fn((input) =>
-        mockOrdersToBillingModulePaymentIntentsCreate(input),
-      ),
-      lockOffers: jest.fn(),
-      reserveCharges: jest.fn(async ({ paymentIntentId, lines }) => {
-        for (const line of lines) {
-          await mockOrdersToBillingModulePaymentIntentsCreate({
-            data: {
-              orderId: line.orderId,
-              billingModulePaymentIntentId: paymentIntentId,
-            },
-          });
-        }
-      }),
-    },
-    store: {
-      find: jest
-        .fn()
-        .mockResolvedValue([{ id: "store-1", title: { en: "Seller" } }]),
-    },
-    storesToProducts: {
-      find: jest.fn().mockResolvedValue(
-        props?.productSlug === "free-subscription"
-          ? [
-              {
-                productId: "product-target",
-                settings: { initialGrant: true },
-              },
-            ]
-          : [],
-      ),
-      quoteMany: jest.fn(async (inputs) =>
-        inputs.map((input) => ({
-          offerId: input.offerId,
-          productId: "product-target",
-          storeId: "store-1",
-          currencyId: input.currencyId,
-          quantity: input.quantity,
-          amount: "100",
-          issues: [],
-          currencyIds: [input.currencyId],
-          serviceOptions: [],
-          version: "v1",
-          expiresAt: new Date(Date.now() + 60_000).toISOString(),
-          charges: [
-            {
-              offerId: input.offerId,
-              productId: "product-target",
-              storeId: "store-1",
-              providerStoreId: "store-1",
-              lineId: input.lineId,
-              role: "product",
-              recurrence: "each",
-              quantity: input.quantity,
-              stockQuantity: null,
-              amount: "100",
-              formula: "unit_price * quantity",
-              formulaVersion: "v1",
-              inputs: {},
-            },
-          ],
-        })),
-      ),
-      quotesUnderLock: jest.fn(async (_inputs, previews) => previews),
-    },
-  } as any;
-
-  const billingModule = {
-    paymentIntent: {
-      schedulesSubscriptionPayments: jest.fn(
-        ({ provider }: { provider: string }) => provider === "stripe",
-      ),
-      prepareCheckoutDispatch: jest.fn(),
-      create: jest.fn((input) => mockBillingModulePaymentIntentCreate(input)),
-      update: jest.fn((input) => mockBillingModulePaymentIntentUpdate(input)),
-      find: jest.fn().mockResolvedValue([]),
-      findById: jest.fn().mockResolvedValue({
-        id: "payment-intent-1",
-        status: "requires_payment_method",
-      }),
-      failUnpaidIntent: jest.fn(async (id, status) =>
-        mockBillingModulePaymentIntentUpdate({
-          id,
-          data: { status: "failed" },
+  const modules = {
+    ecommerce: {
+      order: {
+        find: jest.fn().mockResolvedValue(checkoutOrders),
+        lockForLifecycle: jest.fn(),
+        update: jest.fn(async (input) => {
+          const order = checkoutOrderById.get(input.id);
+          if (order) {
+            Object.assign(order, input.data);
+          }
+          await mockEcommerceOrderUpdate(input);
+          return order;
         }),
-      ),
-    },
-    currency: {
-      find: jest
-        .fn()
-        .mockResolvedValue(
-          [
-            ...new Set(
-              checkoutOrders.map(
-                (order) => props?.currencyByOrderId?.[order.id] ?? "currency-1",
-              ),
-            ),
-          ].map((id) => ({ id, slug: "usd", symbol: "$" })),
+        findById: jest.fn().mockImplementation(({ id }: { id: string }) => {
+          if (id === activeSubscriptionOrder.id) {
+            return Promise.resolve(activeSubscriptionOrder);
+          }
+
+          return Promise.resolve(checkoutOrderById.get(id));
+        }),
+        findByIdCheckoutAttributesByCurrency: jest.fn().mockResolvedValue({
+          amount: 100,
+          type: productType,
+          interval,
+        }),
+        findByIdCheckoutAttributes: jest.fn().mockResolvedValue({
+          type: productType,
+          interval,
+        }),
+        ordersToBillingModulePaymentIntents: {
+          find: jest.fn().mockResolvedValue([]),
+          create: jest.fn((input) =>
+            mockOrdersToBillingModulePaymentIntentsCreate(input),
+          ),
+          lockOffers: jest.fn(),
+          reserveCharges: jest.fn(async ({ paymentIntentId, lines }) => {
+            for (const line of lines) {
+              await mockOrdersToBillingModulePaymentIntentsCreate({
+                data: {
+                  orderId: line.orderId,
+                  billingModulePaymentIntentId: paymentIntentId,
+                },
+              });
+            }
+          }),
+        },
+        paymentIntent: {
+          schedulesSubscriptionPayments: jest.fn(
+            ({ provider }: { provider: string }) => provider === "stripe",
+          ),
+          prepareCheckoutDispatch: jest.fn(),
+          create: jest.fn((input) =>
+            mockBillingModulePaymentIntentCreate(input),
+          ),
+          update: jest.fn((input) =>
+            mockBillingModulePaymentIntentUpdate(input),
+          ),
+          find: jest.fn().mockResolvedValue([]),
+          findById: jest.fn().mockResolvedValue({
+            id: "payment-intent-1",
+            status: "requires_payment_method",
+          }),
+          failUnpaidIntent: jest.fn(async (id, status) =>
+            mockBillingModulePaymentIntentUpdate({
+              id,
+              data: { status: "failed" },
+            }),
+          ),
+        },
+      },
+      ordersToProducts: {
+        find: jest.fn().mockImplementation((args?: any) => {
+          const filters = args?.params?.filters?.and ?? [];
+          const inArrayOrderIds = filters.find((filter: any) => {
+            return filter.column === "orderId" && filter.method === "inArray";
+          });
+          const eqOrderId = filters.find((filter: any) => {
+            return filter.column === "orderId" && filter.method === "eq";
+          });
+
+          if (inArrayOrderIds) {
+            return Promise.resolve(
+              checkoutOrders.map((checkoutOrder, index) => ({
+                id: `otp-checkout-${index + 1}`,
+                orderId: checkoutOrder.id,
+                productId: "product-target",
+                quantity: 1,
+                offerId: "offer-target",
+                parentLineId: null,
+                destination: {},
+              })),
+            );
+          }
+
+          if (eqOrderId?.value === activeSubscriptionOrder.id) {
+            return Promise.resolve([
+              {
+                id: "otp-active-1",
+                orderId: activeSubscriptionOrder.id,
+                productId: activeOrderProductId,
+                quantity: 1,
+              },
+            ]);
+          }
+
+          return Promise.resolve([]);
+        }),
+      },
+      product: {
+        find: jest.fn().mockResolvedValue([
+          {
+            id: "product-target",
+            slug: props?.productSlug ?? "paid-product",
+            type: productType,
+            kind: "digital",
+          },
+        ]),
+      },
+      productsToAttributes: {
+        find: jest.fn().mockResolvedValue([
+          {
+            id: "pta-1",
+            productId: "product-target",
+            attributeId: "attribute-price-1",
+          },
+          ...(interval
+            ? [
+                {
+                  id: "pta-interval",
+                  productId: "product-target",
+                  attributeId: "attribute-interval",
+                },
+              ]
+            : []),
+        ]),
+      },
+      attributeKeysToAttributes: {
+        find: jest.fn().mockResolvedValue([
+          {
+            id: "aka-1",
+            attributeId: "attribute-price-1",
+            attributeKeyId: "attribute-key-price-1",
+          },
+          ...(interval
+            ? [
+                {
+                  id: "aka-interval",
+                  attributeId: "attribute-interval",
+                  attributeKeyId: "key-interval",
+                },
+              ]
+            : []),
+        ]),
+      },
+      attributeKey: {
+        find: jest.fn().mockResolvedValue([
+          {
+            id: "attribute-key-price-1",
+            type: "price",
+          },
+          ...(interval ? [{ id: "key-interval", type: "interval" }] : []),
+        ]),
+      },
+      attribute: {
+        find: jest.fn().mockResolvedValue([
+          {
+            id: "attribute-price-1",
+            number: "100",
+          },
+          ...(interval
+            ? [{ id: "attribute-interval", string: { en: interval } }]
+            : []),
+        ]),
+      },
+      attributesToBillingModuleCurrencies: {
+        find: jest.fn().mockResolvedValue([]),
+      },
+      ordersToBillingModuleCurrencies: {
+        find: jest.fn().mockResolvedValue(
+          checkoutOrders.map((checkoutOrder, index) => ({
+            id: `otbc-${index + 1}`,
+            orderId: checkoutOrder.id,
+            billingModuleCurrencyId:
+              props?.currencyByOrderId?.[checkoutOrder.id] ?? "currency-1",
+          })),
         ),
-    },
-    paymentIntentsToInvoices: {
-      find: jest.fn().mockResolvedValue([
-        {
-          id: "pitin-1",
-          paymentIntentId: "payment-intent-1",
-          invoiceId: "invoice-1",
-        },
-      ]),
-    },
-    invoice: {
-      find: jest.fn().mockResolvedValue([
-        {
-          id: "invoice-1",
-          paymentUrl: "https://pay.test/invoice-1",
-        },
-      ]),
-    },
-  } as any;
+      },
+      store: {
+        find: jest
+          .fn()
+          .mockResolvedValue([{ id: "store-1", title: { en: "Seller" } }]),
+      },
+      storesToProducts: {
+        find: jest.fn().mockResolvedValue(
+          props?.productSlug === "free-subscription"
+            ? [
+                {
+                  productId: "product-target",
+                  settings: { initialGrant: true },
+                },
+              ]
+            : [],
+        ),
+        quoteMany: jest.fn(async (inputs) =>
+          inputs.map((input) => ({
+            offerId: input.offerId,
+            productId: "product-target",
+            storeId: "store-1",
+            currencyId: input.currencyId,
+            quantity: input.quantity,
+            amount: "100",
+            issues: [],
+            currencyIds: [input.currencyId],
+            serviceOptions: [],
+            version: "v1",
+            expiresAt: new Date(Date.now() + 60_000).toISOString(),
+            charges: [
+              {
+                offerId: input.offerId,
+                productId: "product-target",
+                storeId: "store-1",
+                providerStoreId: "store-1",
+                lineId: input.lineId,
+                role: "product",
+                recurrence: "each",
+                quantity: input.quantity,
+                stockQuantity: null,
+                amount: "100",
+                formula: "unit_price * quantity",
+                formulaVersion: "v1",
+                inputs: {},
+              },
+            ],
+          })),
+        ),
+        quotesUnderLock: jest.fn(async (_inputs, previews) => previews),
+      },
+    } as any,
+    billing: {
+      currency: {
+        find: jest
+          .fn()
+          .mockResolvedValue(
+            [
+              ...new Set(
+                checkoutOrders.map(
+                  (order) =>
+                    props?.currencyByOrderId?.[order.id] ?? "currency-1",
+                ),
+              ),
+            ].map((id) => ({ id, slug: "usd", symbol: "$" })),
+          ),
+      },
+      paymentIntentsToInvoices: {
+        find: jest.fn().mockResolvedValue([
+          {
+            id: "pitin-1",
+            paymentIntentId: "payment-intent-1",
+            invoiceId: "invoice-1",
+          },
+        ]),
+      },
+      invoice: {
+        find: jest.fn().mockResolvedValue([
+          {
+            id: "invoice-1",
+            paymentUrl: "https://pay.test/invoice-1",
+          },
+        ]),
+      },
+    } as any,
+  };
 
   const subjectsToEcommerceModuleOrders = {
     find: jest.fn().mockResolvedValue([
@@ -441,9 +447,8 @@ function createTestContext(props?: {
         ),
     ),
     findById,
-    ecommerceModule,
-    billingModule,
-    subjectsToEcommerceModuleOrders,
+    modules,
+    module: { subjectsToEcommerceModuleOrders },
   });
 
   mockCheckoutAttributesByCurrency.mockResolvedValue({
@@ -549,10 +554,9 @@ describe("Given: subject starts checkout for a product", () => {
     const { service, checkoutOrders } = createTestContext({
       activeOrderProductId: "another-product",
     });
-    service.billingModule.paymentIntent.schedulesSubscriptionPayments = jest
-      .fn()
-      .mockReturnValue(true);
-    (service.ecommerceModule.product.find as jest.Mock).mockResolvedValue([
+    service.modules.ecommerce.order.paymentIntent.schedulesSubscriptionPayments =
+      jest.fn().mockReturnValue(true);
+    (service.modules.ecommerce.product.find as jest.Mock).mockResolvedValue([
       {
         id: "product-target",
         slug: "paid-product",
@@ -567,7 +571,8 @@ describe("Given: subject starts checkout for a product", () => {
       ecommerceModule: { orders: [{ id: checkoutOrders[0].id }] },
     });
     expect(
-      service.billingModule.paymentIntent.schedulesSubscriptionPayments,
+      service.modules.ecommerce.order.paymentIntent
+        .schedulesSubscriptionPayments,
     ).toHaveBeenCalledWith({ provider: "custom-scheduled" });
     expect(mockBillingModulePaymentIntentCreate).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -575,7 +580,7 @@ describe("Given: subject starts checkout for a product", () => {
       }),
     );
     expect(
-      service.billingModule.paymentIntent.prepareCheckoutDispatch,
+      service.modules.ecommerce.order.paymentIntent.prepareCheckoutDispatch,
     ).toHaveBeenCalledWith(
       expect.objectContaining({
         provider: "custom-scheduled",
@@ -619,7 +624,7 @@ describe("Given: subject starts checkout for a product", () => {
       subscriptionSourceInvoiceId: "previous-invoice",
       subscriptionSourceInterval: "month",
     });
-    (context.service.ecommerceModule.order as any).fulfillmentQuoteOptions =
+    (context.service.modules.ecommerce.order as any).fulfillmentQuoteOptions =
       jest.fn().mockResolvedValue({ fulfilledLineIds: [] });
     await expect(
       context.service.execute({
@@ -719,7 +724,7 @@ describe("Given: subject starts checkout for a product", () => {
       });
 
       expect(
-        service.ecommerceModule.order.findByIdCheckoutAttributes,
+        service.modules.ecommerce.order.findByIdCheckoutAttributes,
       ).not.toHaveBeenCalled();
       expect(mockBillingModulePaymentIntentProvider).toHaveBeenCalledTimes(1);
     });
@@ -856,7 +861,7 @@ describe("Given: subject starts checkout for a product", () => {
       amount: 200,
     });
     (
-      service.billingModule.paymentIntentsToInvoices.find as jest.Mock
+      service.modules.billing.paymentIntentsToInvoices.find as jest.Mock
     ).mockResolvedValue([
       { paymentIntentId: "payment-usd", invoiceId: "invoice-usd" },
       { paymentIntentId: "payment-rub", invoiceId: "invoice-rub" },
@@ -865,7 +870,7 @@ describe("Given: subject starts checkout for a product", () => {
       { id: "invoice-usd", paymentUrl: "https://pay.test/usd" },
       { id: "invoice-rub", paymentUrl: "https://pay.test/rub" },
     ];
-    (service.billingModule.invoice.find as jest.Mock).mockResolvedValue(
+    (service.modules.billing.invoice.find as jest.Mock).mockResolvedValue(
       invoices,
     );
 
@@ -924,10 +929,10 @@ describe("Given: subject starts checkout for a product", () => {
       });
 
       expect(
-        service.ecommerceModule.storesToProducts.quoteMany,
+        service.modules.ecommerce.storesToProducts.quoteMany,
       ).toHaveBeenCalledTimes(1);
       expect(
-        service.ecommerceModule.storesToProducts.quoteMany,
+        service.modules.ecommerce.storesToProducts.quoteMany,
       ).toHaveBeenCalledWith([
         expect.objectContaining({ lineId: "otp-checkout-1" }),
       ]);
@@ -1103,7 +1108,7 @@ it("requires saving a newly defaulted service before any checkout writes", async
   const { service, checkoutOrders } = createTestContext({
     productType: "one_off",
   });
-  const quoteMany = service.ecommerceModule.storesToProducts
+  const quoteMany = service.modules.ecommerce.storesToProducts
     .quoteMany as jest.Mock;
   const originalQuote = quoteMany.getMockImplementation()!;
   quoteMany.mockImplementation(async (inputs) => {
@@ -1130,11 +1135,12 @@ it("requires saving a newly defaulted service before any checkout writes", async
       ecommerceModule: { orders: [{ id: checkoutOrders[0].id }] },
     }),
   ).rejects.toThrow("Save the current cart service selection");
-  expect(service.ecommerceModule.order.update).not.toHaveBeenCalled();
+  expect(service.modules.ecommerce.order.update).not.toHaveBeenCalled();
   expect(mockBillingModulePaymentIntentCreate).not.toHaveBeenCalled();
   expect(mockBillingModulePaymentIntentProvider).not.toHaveBeenCalled();
   expect(
-    service.ecommerceModule.ordersToBillingModulePaymentIntents.reserveCharges,
+    service.modules.ecommerce.order.ordersToBillingModulePaymentIntents
+      .reserveCharges,
   ).not.toHaveBeenCalled();
 });
 
@@ -1181,10 +1187,10 @@ it.each([false, true])(
       },
     ];
     const originalLines = (
-      service.ecommerceModule.ordersToProducts.find as jest.Mock
+      service.modules.ecommerce.ordersToProducts.find as jest.Mock
     ).getMockImplementation()!;
     (
-      service.ecommerceModule.ordersToProducts.find as jest.Mock
+      service.modules.ecommerce.ordersToProducts.find as jest.Mock
     ).mockImplementation((props) => {
       const filters = props?.params?.filters?.and ?? [];
       if (
@@ -1199,7 +1205,7 @@ it.each([false, true])(
       }
       return originalLines(props);
     });
-    (service.ecommerceModule.product.find as jest.Mock).mockResolvedValue([
+    (service.modules.ecommerce.product.find as jest.Mock).mockResolvedValue([
       {
         id: "product-target",
         slug: "paid-product",
@@ -1221,10 +1227,10 @@ it.each([false, true])(
       },
     ]);
     const originalQuotes = (
-      service.ecommerceModule.storesToProducts.quoteMany as jest.Mock
+      service.modules.ecommerce.storesToProducts.quoteMany as jest.Mock
     ).getMockImplementation()!;
     (
-      service.ecommerceModule.storesToProducts.quoteMany as jest.Mock
+      service.modules.ecommerce.storesToProducts.quoteMany as jest.Mock
     ).mockImplementation(async (inputs) => {
       const [quote] = await originalQuotes(inputs);
       const charge = quote.charges[0];
@@ -1268,7 +1274,7 @@ it.each([false, true])(
       ecommerceModule: { orders: [{ id: orderId }] },
     });
     expect(
-      service.ecommerceModule.storesToProducts.quoteMany,
+      service.modules.ecommerce.storesToProducts.quoteMany,
     ).toHaveBeenCalledWith([
       {
         offerId: "offer-target",
@@ -1282,8 +1288,8 @@ it.each([false, true])(
         ],
       },
     ]);
-    const reserve = service.ecommerceModule.ordersToBillingModulePaymentIntents
-      .reserveCharges as jest.Mock;
+    const reserve = service.modules.ecommerce.order
+      .ordersToBillingModulePaymentIntents.reserveCharges as jest.Mock;
     expect(reserve).toHaveBeenCalledTimes(1);
     expect(
       reserve.mock.calls[0][0].lines.map((line: any) => ({
@@ -1328,7 +1334,7 @@ it.each([false, true])(
       parentLineId: "primary",
       charge: { recurrence: "first", role: "add-on", amount: "10.00" },
     });
-    expect(service.ecommerceModule.order.find).toHaveBeenNthCalledWith(1, {
+    expect(service.modules.ecommerce.order.find).toHaveBeenNthCalledWith(1, {
       params: {
         filters: {
           and: [{ column: "id", method: "inArray", value: [orderId] }],
@@ -1336,7 +1342,7 @@ it.each([false, true])(
       },
     });
     expect(
-      (service.ecommerceModule.order.update as jest.Mock).mock.calls.every(
+      (service.modules.ecommerce.order.update as jest.Mock).mock.calls.every(
         ([props]) => props.id === orderId,
       ),
     ).toBe(true);
@@ -1362,18 +1368,18 @@ it("keeps every committed history recoverable after a multi-currency provider fa
     billingModulePaymentIntentId: string;
   }[] = [];
   (
-    service.billingModule.paymentIntentsToInvoices.find as jest.Mock
+    service.modules.billing.paymentIntentsToInvoices.find as jest.Mock
   ).mockResolvedValue([]);
   (
-    service.billingModule.paymentIntent.findById as jest.Mock
+    service.modules.ecommerce.order.paymentIntent.findById as jest.Mock
   ).mockImplementation(async ({ id }) => intents.get(id));
   (
-    service.billingModule.paymentIntent.failUnpaidIntent as jest.Mock
+    service.modules.ecommerce.order.paymentIntent.failUnpaidIntent as jest.Mock
   ).mockImplementation(async (id) => {
     intents.get(id)!.status = "failed";
   });
   (
-    service.ecommerceModule.ordersToBillingModulePaymentIntents
+    service.modules.ecommerce.order.ordersToBillingModulePaymentIntents
       .find as jest.Mock
   ).mockImplementation(async (query) => {
     const intentIds = query.params.filters.and.find(
@@ -1384,10 +1390,12 @@ it("keeps every committed history recoverable after a multi-currency provider fa
         !intentIds || intentIds.includes(link.billingModulePaymentIntentId),
     );
   });
-  const deleteLink = jest.fn(async ({ id }) => {
+  const deleteLink = jest.fn().mockImplementation(async ({ id }) => {
+    const deleted = links.find((link) => link.id === id);
     links = links.filter((link) => link.id !== id);
+    return deleted;
   });
-  service.ecommerceModule.ordersToBillingModulePaymentIntents.delete =
+  service.modules.ecommerce.order.ordersToBillingModulePaymentIntents.delete =
     deleteLink;
   for (const intent of intents.values()) {
     mockBillingModulePaymentIntentCreate.mockResolvedValueOnce(intent);
@@ -1442,7 +1450,7 @@ it("validates every requested order before claiming any cart", async () => {
     checkoutOrderIds: ["first", "empty"],
   });
   (
-    service.ecommerceModule.ordersToProducts.find as jest.Mock
+    service.modules.ecommerce.ordersToProducts.find as jest.Mock
   ).mockResolvedValue([
     {
       id: "line-first",
@@ -1559,7 +1567,7 @@ it("fails every unexposed intent when recovery observer registration fails", asy
     .mockResolvedValueOnce({ id: "first-intent", amount: 100 })
     .mockResolvedValueOnce({ id: "second-intent", amount: 100 });
   (
-    service.billingModule.paymentIntent.findById as jest.Mock
+    service.modules.ecommerce.order.paymentIntent.findById as jest.Mock
   ).mockImplementation(async ({ id }) => ({
     id,
     status: "requires_payment_method",
@@ -1604,7 +1612,7 @@ it.each([
     const order = checkoutOrders[0];
     if (resume) {
       (
-        service.ecommerceModule.ordersToBillingModulePaymentIntents
+        service.modules.ecommerce.order.ordersToBillingModulePaymentIntents
           .find as jest.Mock
       ).mockResolvedValue([
         {
@@ -1613,10 +1621,10 @@ it.each([
           billingModulePaymentIntentId: "payment-intent-1",
         },
       ]);
-      (service.billingModule.paymentIntent.find as jest.Mock).mockResolvedValue(
-        [{ id: "payment-intent-1", status: "processing" }],
-      );
-      (service.billingModule.invoice.find as jest.Mock).mockResolvedValue([
+      (
+        service.modules.ecommerce.order.paymentIntent.find as jest.Mock
+      ).mockResolvedValue([{ id: "payment-intent-1", status: "processing" }]);
+      (service.modules.billing.invoice.find as jest.Mock).mockResolvedValue([
         {
           id: "invoice-1",
           status: "open",
@@ -1687,14 +1695,12 @@ it.each([
           { billingModulePaymentIntentId: "payment-intent-1" },
         ],
       },
-      billingModule: {
-        paymentIntent: {
-          prepareCheckoutDispatch: jest.fn(),
-          findById: async () => ({
-            id: "payment-intent-1",
-            status: paymentStatus,
-          }),
-        },
+      paymentIntent: {
+        prepareCheckoutDispatch: jest.fn(),
+        findById: async () => ({
+          id: "payment-intent-1",
+          status: paymentStatus,
+        }),
       },
       completePaymentStatus: async () => {
         Object.assign(order, { status: "paid" });
@@ -1799,14 +1805,12 @@ it("fulfills through the webhook pipeline after an earlier pending check consume
     ordersToBillingModulePaymentIntents: {
       find: async () => [{ billingModulePaymentIntentId: "payment-intent-1" }],
     },
-    billingModule: {
-      paymentIntent: {
-        prepareCheckoutDispatch: jest.fn(),
-        findById: async () => ({
-          id: "payment-intent-1",
-          status: paymentStatus,
-        }),
-      },
+    paymentIntent: {
+      prepareCheckoutDispatch: jest.fn(),
+      findById: async () => ({
+        id: "payment-intent-1",
+        status: paymentStatus,
+      }),
     },
     completePaymentStatus: async () => {
       Object.assign(order, { status: "paid" });

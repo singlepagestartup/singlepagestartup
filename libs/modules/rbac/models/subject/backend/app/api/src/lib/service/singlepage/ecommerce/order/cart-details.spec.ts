@@ -27,46 +27,48 @@ it("keeps an unavailable offer in its own row while quoting the remaining legacy
   const service: any = {
     ecommerceModuleOrderAssertAccess: jest.fn(),
     ecommerceModuleCartQuote: jest.fn().mockResolvedValue([quote]),
-    ecommerceModule: {
-      order: {
-        fulfillmentQuoteOptions: jest
-          .fn()
-          .mockResolvedValue({ fulfilledLineIds: [] }),
-        findByIdCartDetails: jest.fn().mockResolvedValue({
-          lines: [
-            {
-              id: "first-line",
-              productId: "first",
-              offerId: hidden.id,
-              quantity: 1,
-              destination: {},
-              product: { kind: "physical" },
-            },
-            {
-              id: "second-line",
-              productId: "second",
-              offerId: available.id,
-              quantity: 1,
-              destination: {},
-              product: { kind: "physical" },
-            },
-          ],
-          totals: [{ total: 7000 }],
-          billingModuleCurrencyId: "rub",
-        }),
+    modules: {
+      ecommerce: {
+        order: {
+          fulfillmentQuoteOptions: jest
+            .fn()
+            .mockResolvedValue({ fulfilledLineIds: [] }),
+          findByIdCartDetails: jest.fn().mockResolvedValue({
+            lines: [
+              {
+                id: "first-line",
+                productId: "first",
+                offerId: hidden.id,
+                quantity: 1,
+                destination: {},
+                product: { kind: "physical" },
+              },
+              {
+                id: "second-line",
+                productId: "second",
+                offerId: available.id,
+                quantity: 1,
+                destination: {},
+                product: { kind: "physical" },
+              },
+            ],
+            totals: [{ total: 7000 }],
+            billingModuleCurrencyId: "rub",
+          }),
+        },
+        storesToOrders: {
+          find: jest.fn().mockResolvedValue([{ storeId: "store" }]),
+        },
+        storesToProducts: {
+          findById: jest.fn(async ({ id }) =>
+            id === hidden.id ? hidden : available,
+          ),
+          offersForProduct: jest.fn(async ({ productId }) =>
+            productId === "second" ? [available] : [],
+          ),
+        },
+        store: { find: jest.fn().mockResolvedValue([{ id: "store" }]) },
       },
-      storesToOrders: {
-        find: jest.fn().mockResolvedValue([{ storeId: "store" }]),
-      },
-      storesToProducts: {
-        findById: jest.fn(async ({ id }) =>
-          id === hidden.id ? hidden : available,
-        ),
-        offersForProduct: jest.fn(async ({ productId }) =>
-          productId === "second" ? [available] : [],
-        ),
-      },
-      store: { find: jest.fn().mockResolvedValue([{ id: "store" }]) },
     },
   };
   const details = await new Service({ service }).execute({
@@ -113,25 +115,27 @@ it("reports the same incomplete delivery once when both total and offer quote ex
         issues: [{ code: "delivery_required", message: reason }],
       },
     ]),
-    ecommerceModule: {
-      order: {
-        fulfillmentQuoteOptions: jest
-          .fn()
-          .mockResolvedValue({ fulfilledLineIds: [] }),
-        findByIdCartDetails: jest.fn().mockResolvedValue({
-          lines: [line],
-          unpriced: [
-            { ordersToProductsId: "line", productId: "product", reason },
-          ],
-          billingModuleCurrencyId: "rub",
-        }),
+    modules: {
+      ecommerce: {
+        order: {
+          fulfillmentQuoteOptions: jest
+            .fn()
+            .mockResolvedValue({ fulfilledLineIds: [] }),
+          findByIdCartDetails: jest.fn().mockResolvedValue({
+            lines: [line],
+            unpriced: [
+              { ordersToProductsId: "line", productId: "product", reason },
+            ],
+            billingModuleCurrencyId: "rub",
+          }),
+        },
+        storesToOrders: { find: jest.fn().mockResolvedValue([]) },
+        storesToProducts: {
+          findById: jest.fn().mockResolvedValue(offer),
+          offersForProduct: jest.fn().mockResolvedValue([offer]),
+        },
+        store: { find: jest.fn().mockResolvedValue([]) },
       },
-      storesToOrders: { find: jest.fn().mockResolvedValue([]) },
-      storesToProducts: {
-        findById: jest.fn().mockResolvedValue(offer),
-        offersForProduct: jest.fn().mockResolvedValue([offer]),
-      },
-      store: { find: jest.fn().mockResolvedValue([]) },
     },
   };
   const details = await new Service({ service }).execute({

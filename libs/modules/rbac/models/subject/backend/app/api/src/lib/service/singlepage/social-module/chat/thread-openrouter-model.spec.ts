@@ -1,12 +1,7 @@
-/**
- * BDD Suite: startup-overridable thread model persistence.
- *
- * Given: the Subject service owns a chat thread.
- * When: an OpenRouter model is selected for that thread.
- * Then: the base singlepage service persists the typed preference in thread metadata.
- */
-
 import { Service } from "../../index";
+import { createAppAssembly } from "@sps/shared-backend-api";
+import { Service as ThreadService } from "@sps/social/models/thread/backend/app/api/src/lib/service";
+import { serviceBootstrap as threadOwner } from "@sps/social/models/thread/backend/app/api/src/lib/bootstrap";
 
 describe("Given: the Subject service owns a chat thread", () => {
   /**
@@ -26,24 +21,22 @@ describe("Given: the Subject service owns a chat thread", () => {
           data.metadataNamespaceUpdate.value,
       },
     }));
-    const service = Object.assign(Object.create(Service.prototype), {
+    const thread = Object.assign(new ThreadService({} as never), {
+      findById: jest.fn().mockResolvedValue({
+        id: "thread-1",
+        metadata: { anotherFeature: { enabled: true } },
+      }),
+      update,
+    });
+    const assembly = createAppAssembly(({ overrideService }) => {
+      overrideService(threadOwner, thread);
+    });
+    const subject = Object.create(Service.prototype) as Service;
+    const service = Object.assign(subject, {
       socialModuleChatLifecycleAssertSubjectOwnsChat: assertSubjectOwnsChat,
       socialModuleChatLifecycleAssertThreadBelongsToChat:
         assertThreadBelongsToChat,
-      socialModule: {
-        thread: {
-          findById: jest.fn().mockResolvedValue({
-            id: "thread-1",
-            metadata: {
-              anotherFeature: {
-                enabled: true,
-              },
-            },
-          }),
-          update,
-        },
-      },
-    }) as Service;
+    }).withAppAssembly(assembly);
 
     await expect(
       service.socialModuleChatThreadOpenRouterModelUpdate({

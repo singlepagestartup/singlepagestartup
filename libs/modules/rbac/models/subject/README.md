@@ -12,9 +12,13 @@ Subjects represent visitors, registered accounts and actors, and connect identit
 
 When a backend operation narrows the Subject service to selected members,
 `SubjectServiceDependencies<Keys>` from `backend/app/api/src/lib/service/singlepage`
-keeps the generated `service.modules` registry available alongside those
-members. The registry resolves services from the Subject's API assembly,
-including startup overrides bound there.
+includes the two registries from the Subject's API assembly. Use
+`service.module.identity` or `service.module.subjectsToEcommerceModuleOrders`
+for local dependencies. Use `service.modules.crm.form` or
+`service.modules.ecommerce.order` for a lower module. A controller uses the
+same paths from `this.service`. For checkout, use the resolved Order's
+`paymentIntent` and `ordersToBillingModulePaymentIntents` so both payment and
+reservation handling respect its overrides.
 
 ### Current-Subject cart components
 

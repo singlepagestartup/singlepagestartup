@@ -6,17 +6,11 @@ import {
   type IAppAssembly,
   type IExceptionFilter,
 } from "@sps/shared-backend-api";
-import { createService as createProduct } from "@sps/ecommerce/models/product/backend/app/api/src/lib/bootstrap";
-import { createService as createOfferAttribute } from "@sps/ecommerce/relations/stores-to-products-to-attributes/backend/app/api/src/lib/bootstrap";
-import { createService as createProductAttribute } from "@sps/ecommerce/relations/products-to-attributes/backend/app/api/src/lib/bootstrap";
 import { createService as createStoreAttribute } from "@sps/ecommerce/relations/stores-to-attributes/backend/app/api/src/lib/bootstrap";
-import { createService as createAttribute } from "@sps/ecommerce/models/attribute/backend/app/api/src/lib/bootstrap";
 import { createService as createAttributeKey } from "@sps/ecommerce/models/attribute-key/backend/app/api/src/lib/bootstrap";
-import { createService as createKeyValue } from "@sps/ecommerce/relations/attribute-keys-to-attributes/backend/app/api/src/lib/bootstrap";
-import { createService as createValueCurrency } from "@sps/ecommerce/relations/attributes-to-billing-module-currencies/backend/app/api/src/lib/bootstrap";
-import { createService as createCurrency } from "@sps/billing/models/currency/backend/app/api/src/lib/bootstrap";
 import { createService as createReservations } from "@sps/ecommerce/relations/orders-to-billing-module-payment-intents/backend/app/api/src/lib/bootstrap";
-import { createService as createLinks } from "@sps/ecommerce/relations/offers-to-offers/backend/app/api/src/lib/bootstrap";
+import { createModules } from "@sps/ecommerce/backend/app/api/src/lib/modules";
+import { createModule } from "./service/module";
 import { Configuration } from "./configuration";
 import { Repository } from "./repository";
 import { Controller } from "./controller";
@@ -30,37 +24,39 @@ function createCatalog(
   assembly: IAppAssembly,
   offers: ICatalogDependencies["offers"],
 ) {
+  const module = assembly.getOrCreate(createModule);
+  const modules = assembly.getOrCreate(createModules);
   return new Catalog({
     offers,
     get links() {
-      return createLinks(assembly);
+      return module.offersToOffers;
     },
     get products() {
-      return createProduct(assembly);
+      return module.product;
     },
     get offerAttributes() {
-      return createOfferAttribute(assembly);
+      return module.storesToProductsToAttributes;
     },
     get productAttributes() {
-      return createProductAttribute(assembly);
+      return module.product.module.productsToAttributes;
     },
     get storeAttributes() {
       return createStoreAttribute(assembly);
     },
     get attributes() {
-      return createAttribute(assembly);
+      return module.attribute;
     },
     get attributeKeys() {
       return createAttributeKey(assembly);
     },
     get keyValues() {
-      return createKeyValue(assembly);
+      return createAttributeKey(assembly).module.attributeKeysToAttributes;
     },
     get valueCurrencies() {
-      return createValueCurrency(assembly);
+      return module.attribute.module.attributesToBillingModuleCurrencies;
     },
     get currencies() {
-      return createCurrency(assembly);
+      return modules.billing.currency;
     },
   });
 }

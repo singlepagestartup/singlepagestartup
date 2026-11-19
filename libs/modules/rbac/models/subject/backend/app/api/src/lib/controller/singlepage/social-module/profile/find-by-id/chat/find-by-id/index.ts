@@ -40,7 +40,7 @@ export class Handler {
         }
 
         const subjectToSocialModuleProfiles =
-          await this.service.subjectsToSocialModuleProfiles.find({
+          await this.service.module.subjectsToSocialModuleProfiles.find({
             params: {
               filters: {
                 and: [
@@ -73,7 +73,7 @@ export class Handler {
 
         if (await this.isSubjectAdmin(id)) {
           const socialModuleChat =
-            await this.service.socialModule.chat.findById({
+            await this.service.modules.social.chat.findById({
               id: socialModuleChatId,
             });
 
@@ -87,7 +87,7 @@ export class Handler {
         }
 
         const socialModuleProfilesToChats =
-          await this.service.socialModule.profilesToChats.find({
+          await this.service.modules.social.profilesToChats.find({
             params: {
               filters: {
                 and: [
@@ -112,9 +112,10 @@ export class Handler {
           );
         }
 
-        const socialModuleChat = await this.service.socialModule.chat.findById({
-          id: socialModuleChatId,
-        });
+        const socialModuleChat =
+          await this.service.modules.social.chat.findById({
+            id: socialModuleChatId,
+          });
 
         if (!socialModuleChat) {
           throw new Error(
@@ -162,7 +163,7 @@ export class Handler {
   }
 
   protected async isSubjectAdmin(subjectId: string): Promise<boolean> {
-    const subjectsToRoles = await this.service.subjectsToRoles.find({
+    const subjectsToRoles = await this.service.module.subjectsToRoles.find({
       params: {
         filters: {
           and: [
@@ -187,7 +188,7 @@ export class Handler {
       return false;
     }
 
-    const roles = await this.service.role.find({
+    const roles = await this.service.module.role.find({
       params: {
         filters: {
           and: [

@@ -1,11 +1,3 @@
-/**
- * BDD Suite: Telegram thread rename mirror.
- *
- * Given: a subject renames a Telegram-backed SPS thread.
- * When: the RBAC thread update handler persists the title.
- * Then: the Telegram forum topic is renamed before the SPS thread update succeeds.
- */
-
 const mockSocialModuleThreadUpdate = jest.fn();
 
 jest.mock("@sps/shared-utils", () => ({
@@ -70,21 +62,23 @@ function createService() {
         },
       },
     }),
-    socialModule: {
-      chat: {
-        findById: jest.fn().mockResolvedValue({
-          id: "chat-1",
-          variant: "telegram",
-          sourceSystemId: "-100123",
-        }),
-      },
-      thread: {
-        findById: jest.fn().mockResolvedValue({
-          id: "thread-1",
-          variant: "telegram",
-          title: "Support",
-          sourceSystemId: "42",
-        }),
+    modules: {
+      social: {
+        chat: {
+          findById: jest.fn().mockResolvedValue({
+            id: "chat-1",
+            variant: "telegram",
+            sourceSystemId: "-100123",
+          }),
+        },
+        thread: {
+          findById: jest.fn().mockResolvedValue({
+            id: "thread-1",
+            variant: "telegram",
+            title: "Support",
+            sourceSystemId: "42",
+          }),
+        },
       },
     },
   } as any;

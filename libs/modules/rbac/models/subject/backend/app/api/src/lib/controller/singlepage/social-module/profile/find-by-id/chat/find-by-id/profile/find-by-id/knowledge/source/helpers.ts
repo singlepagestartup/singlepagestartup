@@ -7,7 +7,7 @@ export async function findProfileKnowledgeSourceIds(props: {
   offset?: number;
 }) {
   const relations =
-    await props.service.socialModule.profilesToKnowledgeModuleSources.find({
+    await props.service.modules.social.profilesToKnowledgeModuleSources.find({
       params: {
         filters: {
           and: [

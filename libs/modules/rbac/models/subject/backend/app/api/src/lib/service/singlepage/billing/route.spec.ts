@@ -56,7 +56,7 @@ function createService(
 
   const service = new Service(
     {} as any,
-    subjectsToBillingModuleCurrenciesService as any,
+    () => subjectsToBillingModuleCurrenciesService as any,
     { getSubjectId } as any,
   );
 

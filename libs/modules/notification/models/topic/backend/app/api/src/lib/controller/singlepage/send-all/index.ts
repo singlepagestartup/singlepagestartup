@@ -12,7 +12,7 @@ export class Handler {
 
   async execute(c: Context, next: any): Promise<Response> {
     try {
-      await this.service.notificationModule.notification.sendPending();
+      await this.service.module.notification.sendPending();
 
       return c.json({
         ok: true,

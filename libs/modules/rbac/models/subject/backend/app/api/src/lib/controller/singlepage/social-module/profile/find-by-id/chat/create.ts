@@ -30,7 +30,7 @@ export class Handler {
       }
 
       const socialModuleProfile =
-        await this.service.socialModule.profile.findById({
+        await this.service.modules.social.profile.findById({
           id: socialModuleProfileId,
         });
 

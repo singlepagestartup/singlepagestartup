@@ -47,9 +47,10 @@ export class Handler {
         throw new Error("Not Found error. Order not found");
       }
 
-      const orderToProduct = await this.service.ordersToProducts.findById({
-        id: orderToProductId,
-      });
+      const orderToProduct =
+        await this.service.module.ordersToProducts.findById({
+          id: orderToProductId,
+        });
 
       if (!orderToProduct) {
         throw new Error("Not Found error. Order to product not found");

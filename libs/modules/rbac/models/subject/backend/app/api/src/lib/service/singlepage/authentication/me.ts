@@ -15,7 +15,7 @@ export class Service {
   > {
     const subject = await this.service.findById({ id: subjectId });
     if (!subject) return;
-    const identities = await this.service.subjectsToIdentities.find({
+    const identities = await this.service.module.subjectsToIdentities.find({
       params: {
         filters: {
           and: [{ column: "subjectId", method: "eq", value: subjectId }],

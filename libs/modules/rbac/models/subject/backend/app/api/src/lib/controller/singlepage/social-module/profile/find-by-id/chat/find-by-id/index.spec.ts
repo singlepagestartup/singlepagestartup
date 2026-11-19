@@ -22,21 +22,25 @@ function setup(include: boolean) {
   ]);
   const chat = { id: "chat", title: "QA" };
   const handler = new Handler({
-    subjectsToSocialModuleProfiles: { find: profileLinks },
-    subjectsToRoles: { find: jest.fn().mockResolvedValue([]) },
-    socialModule: {
-      profile: {
-        profilePresentation: jest.fn(async ({ id }) => ({
-          id,
-          title: { en: id },
-          subtitle: {},
-          avatar: null,
-        })),
-      },
-      profilesToChats: { find: chatLinks },
-      chat: { findById: jest.fn().mockResolvedValue(chat) },
-    },
     socialModuleChatParticipants: participants,
+    modules: {
+      social: {
+        profile: {
+          profilePresentation: jest.fn(async ({ id }) => ({
+            id,
+            title: { en: id },
+            subtitle: {},
+            avatar: null,
+          })),
+        },
+        profilesToChats: { find: chatLinks },
+        chat: { findById: jest.fn().mockResolvedValue(chat) },
+      },
+    },
+    module: {
+      subjectsToSocialModuleProfiles: { find: profileLinks },
+      subjectsToRoles: { find: jest.fn().mockResolvedValue([]) },
+    },
   } as any);
   const context = {
     req: {

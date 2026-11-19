@@ -28,12 +28,10 @@ function fixture() {
     rolesToEcommerceModuleProducts: {
       find: jest.fn(async () => [{ ecommerceModuleProductId: "product" }]),
     },
-    ecommerceModule: {
-      order: {
-        findByIdExtended: jest.fn(async ({ id }) => orders.get(id)),
-        revokeSubscription: jest.fn(async () => {}),
-        findByIdCheckoutAttributes: jest.fn(async () => ({ type: "one_off" })),
-      },
+    order: {
+      findByIdExtended: jest.fn(async ({ id }) => orders.get(id)),
+      revokeSubscription: jest.fn(async () => {}),
+      findByIdCheckoutAttributes: jest.fn(async () => ({ type: "one_off" })),
     },
   };
   return { orders, service, revocation: new Service(service as any) };
@@ -49,12 +47,10 @@ it("revokes only the subject's orders containing a product linked to the removed
       },
     },
   });
-  expect(
-    service.ecommerceModule.order.revokeSubscription,
-  ).toHaveBeenCalledTimes(1);
-  expect(service.ecommerceModule.order.revokeSubscription).toHaveBeenCalledWith(
-    { id: "matching" },
-  );
+  expect(service.order.revokeSubscription).toHaveBeenCalledTimes(1);
+  expect(service.order.revokeSubscription).toHaveBeenCalledWith({
+    id: "matching",
+  });
 });
 it("rejects cleanup for a foreign order or a product unrelated to the grant", async () => {
   const { revocation } = fixture();

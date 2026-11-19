@@ -93,7 +93,7 @@ export class Handler {
       }
 
       const socialModuleProfile =
-        await this.service.socialModule.profile.findById({
+        await this.service.modules.social.profile.findById({
           id: socialModuleProfileId,
         });
 
@@ -104,7 +104,7 @@ export class Handler {
       }
 
       const socialModuleProfilesToChats =
-        await this.service.socialModule.profilesToChats.find({
+        await this.service.modules.social.profilesToChats.find({
           params: {
             filters: {
               and: [
@@ -235,7 +235,7 @@ export class Handler {
     socialModuleChatId: string;
   }) {
     const subjectProfileRelations =
-      await this.service.subjectsToSocialModuleProfiles.find({
+      await this.service.module.subjectsToSocialModuleProfiles.find({
         params: {
           filters: {
             and: [
@@ -258,7 +258,7 @@ export class Handler {
     }
 
     const [profiles, profileChatRelations] = await Promise.all([
-      this.service.socialModule.profile.find({
+      this.service.modules.social.profile.find({
         params: {
           filters: {
             and: [
@@ -276,7 +276,7 @@ export class Handler {
           },
         },
       }),
-      this.service.socialModule.profilesToChats.find({
+      this.service.modules.social.profilesToChats.find({
         params: {
           filters: {
             and: [

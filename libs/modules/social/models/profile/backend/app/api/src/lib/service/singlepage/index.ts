@@ -1,66 +1,41 @@
-import { createModules } from "../modules";
+import { createModule } from "../module";
+import { createModules } from "@sps/social/backend/app/api/src/lib/modules";
 import "reflect-metadata";
-import { inject, injectable } from "inversify";
-import { CRUDService, DI } from "@sps/shared-backend-api";
+import { injectFromBase, injectable } from "inversify";
+import { CRUDService } from "@sps/shared-backend-api";
 import { Table } from "@sps/social/models/profile/backend/repository/database";
-import { Repository } from "../../repository";
-import { Service as ChatService } from "@sps/social/models/chat/backend/app/api/src/lib/service";
-import { Service as ProfilesToChatsService } from "@sps/social/relations/profiles-to-chats/backend/app/api/src/lib/service";
-import { ProfileDI } from "../../di";
 import { Service as Authors } from "../startup/authors";
-import type { IDependencies as IAuthorDependencies } from "./authors";
 import type {
   IAuthorFindParams,
   IAuthorFilters,
 } from "@sps/social/models/profile/sdk/model";
 
 @injectable()
+@injectFromBase()
 export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
   get modules() {
     return this.appAssembly.getOrCreate(createModules);
   }
 
-  chat: ChatService;
-  profilesToChats: ProfilesToChatsService;
-
-  constructor(
-    @inject(DI.IRepository) repository: Repository,
-    @inject(ProfileDI.IChatsService) chat: ChatService,
-    @inject(ProfileDI.IProfilesToChatsService)
-    profilesToChats: ProfilesToChatsService,
-    @inject(ProfileDI.IAuthorDependencies)
-    readonly authorDependencies: Omit<IAuthorDependencies, "profile">,
-  ) {
-    super(repository);
-    this.chat = chat;
-    this.profilesToChats = profilesToChats;
+  get module() {
+    return this.appAssembly.getOrCreate(createModule);
   }
 
   authorFind(params: IAuthorFindParams = {}) {
-    return new Authors({
-      ...this.authorDependencies,
-      profile: this,
-    }).authorFind(params);
+    return this.createAuthors().authorFind(params);
   }
   authorFindCount(params: IAuthorFilters = {}) {
-    return new Authors({
-      ...this.authorDependencies,
-      profile: this,
-    }).authorFindCount(params);
+    return this.createAuthors().authorFindCount(params);
   }
   authorFindById(props: { id: string }) {
-    return new Authors({
-      ...this.authorDependencies,
-      profile: this,
-    }).authorFindById(props);
+    return this.createAuthors().authorFindById(props);
   }
   async profilePresentation(props: { id: string }) {
     const profile = await this.findById(props);
-    if (!profile) return null;
-    const presentation = await new Authors({
-      ...this.authorDependencies,
-      profile: this,
-    }).presentation(profile);
+    if (!profile) {
+      return null;
+    }
+    const presentation = await this.createAuthors().presentation(profile);
     // This service capability is used only after Chat access is established.
     // Preserve its existing display name without returning private field names.
     if (
@@ -69,9 +44,35 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
       )
     ) {
       const displayTitle = profile.adminTitle?.trim();
-      if (displayTitle)
+      if (displayTitle) {
         presentation.title = { en: displayTitle, ru: displayTitle };
+      }
     }
     return presentation;
+  }
+
+  private createAuthors(): Authors {
+    const { module, modules } = this;
+    return new Authors({
+      profile: this,
+      get article() {
+        return modules.blog.article;
+      },
+      get product() {
+        return modules.ecommerce.product;
+      },
+      get file() {
+        return modules.fileStorage.file;
+      },
+      get profilesToArticles() {
+        return module.profilesToBlogModuleArticles;
+      },
+      get profilesToProducts() {
+        return module.profilesToEcommerceModuleProducts;
+      },
+      get profilesToFiles() {
+        return module.profilesToFileStorageModuleFiles;
+      },
+    });
   }
 }

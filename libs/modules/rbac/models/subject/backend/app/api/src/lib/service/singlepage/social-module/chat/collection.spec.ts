@@ -10,26 +10,32 @@ function setup(admin = false) {
     .fn()
     .mockResolvedValue([{ id: "shared" }, { id: "second-only" }]);
   const service = {
-    subjectsToSocialModuleProfiles: {
-      find: jest
-        .fn()
-        .mockResolvedValue([
-          { socialModuleProfileId: "primary" },
-          { socialModuleProfileId: "second" },
-        ]),
-    },
     socialModuleChatLifecycleIsSubjectAdmin: jest.fn().mockResolvedValue(admin),
-    socialModule: {
-      profilesToChats: { find: memberships },
-      chat: { find: chatFind },
-      profile: {
-        profilePresentation: jest.fn(async ({ id }) => ({
-          id,
-          title: { en: id },
-          subtitle: {},
-          avatar: null,
-        })),
-        find: jest.fn().mockResolvedValue([{ id: "primary" }, { id: "peer" }]),
+    modules: {
+      social: {
+        profilesToChats: { find: memberships },
+        chat: { find: chatFind },
+        profile: {
+          profilePresentation: jest.fn(async ({ id }) => ({
+            id,
+            title: { en: id },
+            subtitle: {},
+            avatar: null,
+          })),
+          find: jest
+            .fn()
+            .mockResolvedValue([{ id: "primary" }, { id: "peer" }]),
+        },
+      },
+    },
+    module: {
+      subjectsToSocialModuleProfiles: {
+        find: jest
+          .fn()
+          .mockResolvedValue([
+            { socialModuleProfileId: "primary" },
+            { socialModuleProfileId: "second" },
+          ]),
       },
     },
   };

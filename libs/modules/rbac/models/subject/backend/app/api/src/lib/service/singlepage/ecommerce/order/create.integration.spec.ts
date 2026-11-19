@@ -103,22 +103,26 @@ async function fixture() {
   }));
   services.offers.quotesUnderLock = async (_inputs: any[], previews: any[]) =>
     previews;
-  const ecommerceModule = {
-    order: services.order,
+  const ecommerce = {
+    order: Object.create(services.order, {
+      ordersToBillingModulePaymentIntents: { value: services.payments },
+    }),
     storesToProducts: services.offers,
-    ordersToBillingModulePaymentIntents: services.payments,
     ordersToProducts: services.lines,
     storesToOrders: services.stores,
     ordersToBillingModuleCurrencies: services.currencies,
   } as any;
   const find = new FindOpenCart({
-    ecommerceModule,
+    order: ecommerce.order,
+    ordersToProducts: ecommerce.ordersToProducts,
     subjectsToEcommerceModuleOrders: services.owners,
   });
   const dependencies: any = {
-    billingModule: { currency: services.currency },
-    ecommerceModule,
-    subjectsToEcommerceModuleOrders: services.owners,
+    module: { subjectsToEcommerceModuleOrders: services.owners },
+    modules: {
+      billing: { currency: services.currency },
+      ecommerce,
+    },
     ecommerceModuleFindOpenCartOrderWithProduct: find.execute.bind(find),
     ecommerceModuleResolveOrderCurrency: jest
       .fn()

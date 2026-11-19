@@ -1,11 +1,3 @@
-/**
- * BDD Suite: Telegram thread delete mirror.
- *
- * Given: a subject deletes a Telegram-backed SPS thread.
- * When: the RBAC thread delete handler removes the thread.
- * Then: the Telegram forum topic is deleted before the SPS thread is removed.
- */
-
 const mockSocialModuleMessageDelete = jest.fn();
 const mockSocialModuleThreadDelete = jest.fn();
 
@@ -66,65 +58,67 @@ function createService() {
     socialModuleChatLifecycleAssertThreadBelongsToChat: jest
       .fn()
       .mockResolvedValue(undefined),
-    socialModule: {
-      chat: {
-        findById: jest.fn().mockResolvedValue({
-          id: "chat-1",
-          variant: "telegram",
-          sourceSystemId: "-100123",
-        }),
-      },
-      thread: {
-        findById: jest.fn().mockResolvedValue({
-          id: "thread-1",
-          variant: "telegram",
-          title: "Support",
-          sourceSystemId: "42",
-        }),
-      },
-      chatsToThreads: {
-        find: jest.fn().mockResolvedValue([
-          {
-            id: "chat-thread-1",
-            chatId: "chat-1",
-            threadId: "thread-1",
-          },
-        ]),
-      },
-      threadsToMessages: {
-        find: jest.fn().mockImplementation((props?: any) => {
-          const filters = props?.params?.filters?.and ?? [];
-          const messageFilter = filters.find((filter: any) => {
-            return filter.column === "messageId";
-          });
+    modules: {
+      social: {
+        chat: {
+          findById: jest.fn().mockResolvedValue({
+            id: "chat-1",
+            variant: "telegram",
+            sourceSystemId: "-100123",
+          }),
+        },
+        thread: {
+          findById: jest.fn().mockResolvedValue({
+            id: "thread-1",
+            variant: "telegram",
+            title: "Support",
+            sourceSystemId: "42",
+          }),
+        },
+        chatsToThreads: {
+          find: jest.fn().mockResolvedValue([
+            {
+              id: "chat-thread-1",
+              chatId: "chat-1",
+              threadId: "thread-1",
+            },
+          ]),
+        },
+        threadsToMessages: {
+          find: jest.fn().mockImplementation((props?: any) => {
+            const filters = props?.params?.filters?.and ?? [];
+            const messageFilter = filters.find((filter: any) => {
+              return filter.column === "messageId";
+            });
 
-          if (messageFilter) {
+            if (messageFilter) {
+              return Promise.resolve([
+                {
+                  id: "thread-message-1",
+                  threadId: "thread-1",
+                  messageId: messageFilter.value,
+                },
+              ]);
+            }
+
             return Promise.resolve([
               {
                 id: "thread-message-1",
                 threadId: "thread-1",
-                messageId: messageFilter.value,
+                messageId: "message-1",
               },
             ]);
-          }
-
-          return Promise.resolve([
+          }),
+        },
+        chatsToMessages: {
+          find: jest.fn().mockResolvedValue([
             {
-              id: "thread-message-1",
-              threadId: "thread-1",
+              id: "chat-message-1",
+              chatId: "chat-1",
               messageId: "message-1",
             },
-          ]);
-        }),
-      },
-      chatsToMessages: {
-        find: jest.fn().mockResolvedValue([
-          {
-            id: "chat-message-1",
-            chatId: "chat-1",
-            messageId: "message-1",
-          },
-        ]),
+          ]),
+        },
       },
     },
   } as any;

@@ -76,7 +76,7 @@ export class Handler {
       }
 
       const subjectsToEcommerceModuleOrders =
-        await this.service.subjectsToEcommerceModuleOrders.find({
+        await this.service.module.subjectsToEcommerceModuleOrders.find({
           params: {
             filters: {
               and: [
@@ -103,7 +103,7 @@ export class Handler {
         (link) => link.ecommerceModuleOrderId,
       );
       const ecommerceModuleOrders =
-        await this.service.ecommerceModule.order.find({
+        await this.service.modules.ecommerce.order.find({
           params: {
             filters: {
               and: [

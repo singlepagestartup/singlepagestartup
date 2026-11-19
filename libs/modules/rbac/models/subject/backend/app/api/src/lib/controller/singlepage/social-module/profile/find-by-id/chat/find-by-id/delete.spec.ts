@@ -1,11 +1,3 @@
-/**
- * BDD Suite: RBAC social chat deletion.
- *
- * Given: an admin subject can view all social-module chats.
- * When: the admin deletes a chat through the profile-scoped chat endpoint.
- * Then: the chat is deleted even if the current profile is not linked to that chat.
- */
-
 const mockSocialModuleChatDelete = jest.fn();
 const mockSocialModuleActionDelete = jest.fn();
 const mockSocialModuleMessageDelete = jest.fn();
@@ -70,53 +62,57 @@ function createService(props: { isAdmin: boolean }) {
     socialModuleChatLifecycleAssertSubjectOwnsChat: jest
       .fn()
       .mockResolvedValue(undefined),
-    subjectsToRoles: {
-      find: jest.fn().mockResolvedValue(
-        props.isAdmin
-          ? [
-              {
-                subjectId: "subject-1",
-                roleId: "role-admin",
-              },
-            ]
-          : [],
-      ),
+    modules: {
+      social: {
+        profile: {
+          findById: jest.fn(),
+        },
+        chat: {
+          findById: jest.fn().mockResolvedValue({
+            id: "chat-1",
+            title: {
+              en: "Lupapupa",
+            },
+          }),
+        },
+        profilesToChats: {
+          find: jest.fn().mockResolvedValue([]),
+        },
+        chatsToThreads: {
+          find: jest.fn().mockResolvedValue([]),
+        },
+        chatsToMessages: {
+          find: jest.fn().mockResolvedValue([]),
+        },
+        chatsToActions: {
+          find: jest.fn().mockResolvedValue([]),
+        },
+      },
     },
-    role: {
-      find: jest.fn().mockResolvedValue(
-        props.isAdmin
-          ? [
-              {
-                id: "role-admin",
-                slug: "admin",
-              },
-            ]
-          : [],
-      ),
-    },
-    socialModule: {
-      profile: {
-        findById: jest.fn(),
+    module: {
+      subjectsToRoles: {
+        find: jest.fn().mockResolvedValue(
+          props.isAdmin
+            ? [
+                {
+                  subjectId: "subject-1",
+                  roleId: "role-admin",
+                },
+              ]
+            : [],
+        ),
       },
-      chat: {
-        findById: jest.fn().mockResolvedValue({
-          id: "chat-1",
-          title: {
-            en: "Lupapupa",
-          },
-        }),
-      },
-      profilesToChats: {
-        find: jest.fn().mockResolvedValue([]),
-      },
-      chatsToThreads: {
-        find: jest.fn().mockResolvedValue([]),
-      },
-      chatsToMessages: {
-        find: jest.fn().mockResolvedValue([]),
-      },
-      chatsToActions: {
-        find: jest.fn().mockResolvedValue([]),
+      role: {
+        find: jest.fn().mockResolvedValue(
+          props.isAdmin
+            ? [
+                {
+                  id: "role-admin",
+                  slug: "admin",
+                },
+              ]
+            : [],
+        ),
       },
     },
   } as any;
@@ -148,7 +144,9 @@ describe("Given: RBAC social chat deletion", () => {
       subjectId: "subject-1",
       socialModuleChatId: "chat-1",
     });
-    expect(service.socialModule.profilesToChats.find).not.toHaveBeenCalledWith(
+    expect(
+      service.modules.social.profilesToChats.find,
+    ).not.toHaveBeenCalledWith(
       expect.objectContaining({
         params: expect.objectContaining({
           filters: expect.objectContaining({

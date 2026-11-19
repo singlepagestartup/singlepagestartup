@@ -1,9 +1,12 @@
 import { Service as SourceService } from "@sps/knowledge/models/source/backend/app/api/src/lib/service";
 import { Service as ChunkService } from "@sps/knowledge/models/chunk/backend/app/api/src/lib/service";
 import { Service as LinkService } from "@sps/knowledge/relations/sources-to-chunks/backend/app/api/src/lib/service";
+import { Service as AttachmentService } from "@sps/knowledge/relations/sources-to-file-storage-module-files/backend/app/api/src/lib/service";
 import { Service as FileService } from "@sps/file-storage/models/file/backend/app/api/src/lib/service";
+import { serviceBootstrap as fileOwner } from "@sps/file-storage/models/file/backend/app/api/src/lib/bootstrap";
 import { serviceBootstrap as sourceOwner } from "@sps/knowledge/models/source/backend/app/api/src/lib/bootstrap";
 import { serviceBootstrap as chunkOwner } from "@sps/knowledge/models/chunk/backend/app/api/src/lib/bootstrap";
+import { serviceBootstrap as linkOwner } from "@sps/knowledge/relations/sources-to-chunks/backend/app/api/src/lib/bootstrap";
 import { serviceBootstrap as attachmentOwner } from "@sps/knowledge/relations/sources-to-file-storage-module-files/backend/app/api/src/lib/bootstrap";
 import { serviceBootstrap as templateOwner } from "@sps/notification/models/template/backend/app/api/src/lib/bootstrap";
 import { Service as TemplateService } from "@sps/notification/models/template/backend/app/api/src/lib/service";
@@ -46,11 +49,11 @@ it("resolves each explicit graph's File without rebinding its existing services"
   const secondFile = new FileService({} as never);
   const first = createKnowledgeServices({
     chunk,
-    fileStorageModule: { file: firstFile },
+    fileStorageFile: firstFile,
   });
   const second = createKnowledgeServices({
     chunk,
-    fileStorageModule: { file: secondFile },
+    fileStorageFile: secondFile,
   });
   expect(first.chunk).toBe(chunk);
   expect(second.chunk).not.toBe(chunk);
@@ -97,7 +100,7 @@ function sourceFixture() {
   const find = jest.fn(async () => [fresh, stale]);
   const freshHeaders = jest.fn(async () => [fresh]);
   const source = new SourceService({ find, freshHeaders } as any);
-  const chunk = {
+  const chunk = Object.assign(new ChunkService({} as never), {
     search: jest.fn(async () => [
       {
         id: "chunk",
@@ -108,19 +111,28 @@ function sourceFixture() {
         similarity: 1,
       },
     ]),
-  };
-  const sourcesToChunks = {
+  });
+  const sourcesToChunks = Object.assign(new LinkService({} as never), {
     forSources: jest.fn(async () => [{ sourceId: fresh.id, chunkId: "chunk" }]),
-  };
-  const sourcesToFileStorageModuleFiles = {
-    sourceFiles: jest.fn(async () => ["effective relation result"]),
-  };
-  source.configure({
-    chunk,
-    sourcesToChunks,
-    sourcesToFileStorageModuleFiles,
+  });
+  const sourcesToFileStorageModuleFiles = Object.assign(
+    new AttachmentService({} as never),
+    {
+      sourceFiles: jest.fn(async () => ["effective relation result"]),
+    },
+  );
+  const assembly = createAppAssembly(({ overrideService }) => {
+    overrideService(chunkOwner, chunk);
+    overrideService(linkOwner, sourcesToChunks);
+    overrideService(attachmentOwner, sourcesToFileStorageModuleFiles);
+  });
+  source.withAppAssembly(assembly).configure({
     inTransaction: true,
-  } as any);
+    readSnapshot: (operation) => operation(source),
+    transaction: (operation) => operation(source),
+    afterCommit: jest.fn(),
+    process: jest.fn(),
+  });
   return {
     source,
     find,
@@ -213,7 +225,7 @@ it("resolves the transaction File and the parent override through a Chunk startu
     assembly,
     source,
     chunk,
-    fileStorageModule: { file },
+    fileStorageFile: file,
     sourcesToChunks: links,
     processing: false,
   });
@@ -365,15 +377,18 @@ it("expands global vector candidates past stale results without reading every So
 it("retains an imported File when Source association fails", async () => {
   const events: string[] = [];
   const source = new SourceService({} as any);
-  source.configure({
-    sourcesToFileStorageModuleFiles: { sourceFiles: async () => [] },
-    fileStorageFile: {
-      importPath: async () => {
-        events.push("create File");
-        return { id: "new-file" };
-      },
-    },
-  } as any);
+  const attachment = new AttachmentService({} as never);
+  const file = new FileService({} as never);
+  jest.spyOn(attachment, "sourceFiles").mockResolvedValue([]);
+  jest.spyOn(file, "importPath").mockImplementation(async () => {
+    events.push("create File");
+    return { id: "new-file" } as Awaited<ReturnType<FileService["importPath"]>>;
+  });
+  const assembly = createAppAssembly(({ overrideService }) => {
+    overrideService(attachmentOwner, attachment);
+    overrideService(fileOwner, file);
+  });
+  source.withAppAssembly(assembly);
   source.attachFiles = jest.fn(async () => {
     events.push("attach");
     throw new Error("link refused");

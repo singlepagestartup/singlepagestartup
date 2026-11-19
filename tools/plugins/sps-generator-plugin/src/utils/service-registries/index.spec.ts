@@ -97,11 +97,19 @@ it("generates scoped, typed registries and refreshes them when entities change",
     await relationGenerator(tree, { ...salesRelation, action: "create" });
 
     const order = `libs/modules/ledger/models/order/${servicePath}/startup/index.ts`;
+    const detail = `libs/modules/sales/models/detail/${servicePath}/startup/index.ts`;
     tree.write(
       order,
       read(tree, order).replace(
         "extends ParentService {}",
         'extends ParentService { quote(cents: number) { return { cents, currency: "USD" as const }; } }',
+      ),
+    );
+    tree.write(
+      detail,
+      read(tree, detail).replace(
+        "extends ParentService {}",
+        "extends ParentService { check(id: number) { return { id, ready: true as const }; } }",
       ),
     );
     const entry = "compiler-probe.ts";
@@ -129,26 +137,33 @@ it("generates scoped, typed registries and refreshes them when entities change",
       }
       class SalesReceipt extends Receipt {
         check() {
-          this.modules.sales.receiptsToDetails;
-          this.modules.sales.detail;
+          this.module.receiptsToDetails;
+          const result = this.module.detail.check(42);
+          type Exact = Assert<Equal<typeof result, { id: number; ready: true }>>;
+          // @ts-expect-error the Detail startup method requires a number
+          this.module.detail.check("42");
           this.modules.ledger.order.quote(42);
           // @ts-expect-error Sales is below Observer
           this.modules.observer.worker;
+          // @ts-expect-error same-module access has a separate flat view
+          this.modules.sales.detail;
           // @ts-expect-error a parent does not receive itself
-          this.modules.sales.receipt;
+          this.module.receipt;
         }
       }
       class SalesDetail extends Detail {
-        check() {
-          // @ts-expect-error the child cannot access its incoming relation
+        verify() {
+          // @ts-expect-error a leaf needs no same-module registry
+          this.module;
+          // @ts-expect-error the child cannot access its incoming relation through modules
           this.modules.sales.receiptsToDetails;
         }
       }
       class SalesReceiptDetail extends ReceiptsToDetails {
         check() {
-          this.modules.sales.detail;
+          this.module.detail;
           // @ts-expect-error the relation cannot assemble its parent
-          this.modules.sales.receipt;
+          this.module.receipt;
         }
       }
     `,
@@ -156,13 +171,60 @@ it("generates scoped, typed registries and refreshes them when entities change",
     expect(compile(tree, entry)).toBe("");
 
     const ownerServices = `libs/modules/sales/${registryPath}/services.ts`;
-    const receiptView = `libs/modules/sales/models/receipt/${servicePath}/modules.ts`;
+    const receiptService = `libs/modules/sales/models/receipt/${servicePath}`;
+    const receiptView = `${receiptService}/module.ts`;
+    const receiptClass = `${receiptService}/singlepage/index.ts`;
+    const legacy = `${receiptService}/modules.ts`;
     const initial = read(tree, ownerServices);
     const relationFactory =
       'import { createService as createReceiptsToDetailsService } from "@sps/sales/relations/receipts-to-details/backend/app/api/src/lib/bootstrap";';
     expect(initial).toContain(relationFactory);
     expect(read(tree, receiptView)).toContain(relationFactory);
+    expect(read(tree, receiptView)).not.toContain("createModules");
+    expect(read(tree, receiptView)).toContain("export function createModule(");
+    const expectedService = read(tree, receiptClass);
+    const generatedLocalView = read(tree, receiptView);
+    const customizedView = "export const handmade = true;\n";
+    tree.write(receiptView, customizedView);
+    expect(() => synchronizeServiceRegistries(tree)).toThrow(
+      `Cannot overwrite a manually maintained registry in ${receiptView}`,
+    );
+    expect(read(tree, receiptView)).toBe(customizedView);
+    expect(read(tree, receiptClass)).toBe(expectedService);
+    tree.write(receiptView, generatedLocalView);
+    const conflicting = expectedService.replace(
+      'from "@sps/sales/backend/app/api/src/lib/modules";',
+      'from "./custom";',
+    );
+    tree.write(receiptClass, conflicting);
+    expect(() => synchronizeServiceRegistries(tree)).toThrow(
+      `Conflicting createModules import in ${receiptClass}`,
+    );
+    expect(read(tree, receiptClass)).toBe(conflicting);
+    expect(read(tree, receiptView)).toBe(generatedLocalView);
+    tree.write(legacy, generatedLocalView);
+    tree.delete(receiptView);
+    tree.write(
+      receiptClass,
+      expectedService
+        .replace('import { createModule } from "../module";\n', "")
+        .replace(
+          'import { createModules } from "@sps/sales/backend/app/api/src/lib/modules";',
+          "import {\n  createModules,\n} from '../modules';",
+        )
+        .replace(/\n\n  get module\(\) \{[^}]+\}/, ""),
+    );
+    await relationGenerator(tree, { ...salesRelation, action: "create" });
+    expect(tree.isFile(legacy)).toBe(false);
+    expect(read(tree, receiptView)).toBe(generatedLocalView);
+    expect(read(tree, receiptClass)).toContain(
+      'from "@sps/sales/backend/app/api/src/lib/modules"',
+    );
+    expect(read(tree, receiptClass)).toContain("get module()");
+    expect(compile(tree, entry)).toBe("");
+    const before = tree.listChanges();
     synchronizeServiceRegistries(tree);
+    expect(tree.listChanges()).toEqual(before);
     await relationGenerator(tree, { ...salesRelation, action: "create" });
     expect(read(tree, ownerServices)).toBe(initial);
     expect(initial.match(/get receiptsToDetails\(/g)).toHaveLength(1);
@@ -170,6 +232,8 @@ it("generates scoped, typed registries and refreshes them when entities change",
     await relationGenerator(tree, { ...salesRelation, action: "remove" });
     expect(read(tree, ownerServices)).not.toContain("receiptsToDetails");
     expect(tree.isFile(receiptView)).toBe(false);
+    expect(read(tree, receiptClass)).not.toContain("get module()");
+    expect(read(tree, receiptClass)).not.toContain('"../module"');
     await modelGenerator(tree, {
       module: "sales",
       name: "detail",

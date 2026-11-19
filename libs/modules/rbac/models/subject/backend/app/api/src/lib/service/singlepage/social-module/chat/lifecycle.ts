@@ -96,10 +96,10 @@ export class Service {
     ) {
       throw new Error("Validation error. Invalid Thread document");
     }
-    const profile = await this.service.socialModule.profile.findById({
+    const profile = await this.service.modules.social.profile.findById({
       id: document.profileId,
     });
-    const links = await this.service.socialModule.profilesToChats.find({
+    const links = await this.service.modules.social.profilesToChats.find({
       params: {
         filters: {
           and: [
@@ -122,7 +122,7 @@ export class Service {
         "Authorization error. Document profile does not belong to this Chat",
       );
     const sourceLinks =
-      await this.service.socialModule.profilesToKnowledgeModuleSources.find({
+      await this.service.modules.social.profilesToKnowledgeModuleSources.find({
         params: {
           filters: {
             and: [
@@ -163,7 +163,7 @@ export class Service {
     });
 
     const socialModuleProfilesToChats =
-      await this.service.socialModule.profilesToChats.find({
+      await this.service.modules.social.profilesToChats.find({
         params: {
           filters: {
             and: [
@@ -199,7 +199,7 @@ export class Service {
     });
 
     const socialModuleProfilesToChats =
-      await this.service.socialModule.profilesToChats.find({
+      await this.service.modules.social.profilesToChats.find({
         params: {
           filters: {
             and: [
@@ -258,7 +258,7 @@ export class Service {
     socialModuleThreadId: string;
   }) {
     const socialModuleChatsToThreads =
-      await this.service.socialModule.chatsToThreads.find({
+      await this.service.modules.social.chatsToThreads.find({
         params: {
           filters: {
             and: [
@@ -292,7 +292,7 @@ export class Service {
     }
 
     const secretKey = RBAC_SECRET_KEY;
-    const socialModuleChat = await this.service.socialModule.chat.findById({
+    const socialModuleChat = await this.service.modules.social.chat.findById({
       id: props.socialModuleChatId,
     });
 
@@ -303,7 +303,7 @@ export class Service {
     }
 
     const socialModuleChatsToThreads =
-      await this.service.socialModule.chatsToThreads.find({
+      await this.service.modules.social.chatsToThreads.find({
         params: {
           filters: {
             and: [
@@ -325,19 +325,21 @@ export class Service {
         .filter((threadId): threadId is string => Boolean(threadId)) || [];
 
     if (linkedThreadIds.length) {
-      const socialModuleThreads = await this.service.socialModule.thread.find({
-        params: {
-          filters: {
-            and: [
-              {
-                column: "id",
-                method: "inArray",
-                value: linkedThreadIds,
-              },
-            ],
+      const socialModuleThreads = await this.service.modules.social.thread.find(
+        {
+          params: {
+            filters: {
+              and: [
+                {
+                  column: "id",
+                  method: "inArray",
+                  value: linkedThreadIds,
+                },
+              ],
+            },
           },
         },
-      });
+      );
 
       const primarySocialModuleThread =
         selectPrimaryLinkedThread<ISocialModuleThread>({
@@ -420,7 +422,7 @@ export class Service {
 
     if (props.requestedSocialModuleProfileId) {
       const requestedSocialModuleProfile =
-        await this.service.socialModule.profile.findById({
+        await this.service.modules.social.profile.findById({
           id: props.requestedSocialModuleProfileId,
         });
 
@@ -460,8 +462,8 @@ export class Service {
     }
 
     if (linkedProfileIds.length) {
-      const socialModuleProfiles = await this.service.socialModule.profile.find(
-        {
+      const socialModuleProfiles =
+        await this.service.modules.social.profile.find({
           params: {
             filters: {
               and: [
@@ -473,8 +475,7 @@ export class Service {
               ],
             },
           },
-        },
-      );
+        });
 
       const existingProfileIds = new Set(
         socialModuleProfiles
@@ -530,7 +531,7 @@ export class Service {
     requireAny?: boolean;
   }): Promise<string[]> {
     const subjectToProfiles =
-      await this.service.subjectsToSocialModuleProfiles.find({
+      await this.service.module.subjectsToSocialModuleProfiles.find({
         params: {
           filters: {
             and: [
@@ -568,7 +569,7 @@ export class Service {
   }
 
   async isSubjectAdmin(subjectId: string): Promise<boolean> {
-    const subjectToRoles = await this.service.subjectsToRoles.find({
+    const subjectToRoles = await this.service.module.subjectsToRoles.find({
       params: {
         filters: {
           and: [
@@ -593,7 +594,7 @@ export class Service {
       return false;
     }
 
-    const roles = await this.service.role.find({
+    const roles = await this.service.module.role.find({
       params: {
         filters: {
           and: [

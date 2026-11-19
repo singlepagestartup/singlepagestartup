@@ -37,7 +37,7 @@ export type IExpireProps = { invoiceId: string } & (
 
 interface IConstructorProps {
   repository: Pick<Repository, "withPaymentIntentLocks">;
-  service: Pick<PaymentIntentService, "findById" | "update" | "billingModule">;
+  service: Pick<PaymentIntentService, "findById" | "update" | "module">;
 }
 
 export class Service {
@@ -53,7 +53,7 @@ export class Service {
   ): Promise<T> {
     const { repository, service } = this.dependencies;
     const readLinks = () =>
-      service.billingModule.paymentIntentsToInvoices.find({
+      service.module.paymentIntentsToInvoices.find({
         params: {
           filters: {
             and: [
@@ -76,7 +76,7 @@ export class Service {
       );
     }
     return repository.withPaymentIntentLocks(ids, async () => {
-      await service.billingModule.invoice.lockForSettlement(props.invoiceId);
+      await service.module.invoice.lockForSettlement(props.invoiceId);
       const currentLinks = await readLinks();
       const currentIds = [
         ...new Set((currentLinks || []).map((link) => link.paymentIntentId)),
@@ -86,7 +86,7 @@ export class Service {
           "Conflict error. Invoice payment intent association changed",
         );
       }
-      const invoice = await service.billingModule.invoice.findById({
+      const invoice = await service.module.invoice.findById({
         id: props.invoiceId,
       });
       if (!invoice) {
@@ -177,7 +177,7 @@ export class Service {
     const paid =
       invoice.status === "paid"
         ? invoice
-        : await service.billingModule.invoice.update({
+        : await service.module.invoice.update({
             id: invoice.id,
             data: {
               ...invoice,
@@ -222,7 +222,7 @@ export class Service {
         ) {
           return invoice;
         }
-        const updated = await service.billingModule.invoice.update({
+        const updated = await service.module.invoice.update({
           id: invoice.id,
           data: { ...invoice, paymentUrl: "" },
         });
@@ -261,7 +261,7 @@ export class Service {
       return failed;
     }
     if (invoice.status !== "failed") {
-      const updatedInvoice = await service.billingModule.invoice.update({
+      const updatedInvoice = await service.module.invoice.update({
         id: invoice.id,
         data: { ...invoice, status: "failed" },
       });
@@ -273,7 +273,7 @@ export class Service {
       if (intent.status === "failed") {
         continue;
       }
-      const links = await service.billingModule.paymentIntentsToInvoices.find({
+      const links = await service.module.paymentIntentsToInvoices.find({
         params: {
           filters: {
             and: [
@@ -283,7 +283,7 @@ export class Service {
         },
       });
       const invoiceIds = [...new Set(links.map((link) => link.invoiceId))];
-      const invoices = await service.billingModule.invoice.find({
+      const invoices = await service.module.invoice.find({
         params: {
           filters: {
             and: [{ column: "id", method: "inArray", value: invoiceIds }],

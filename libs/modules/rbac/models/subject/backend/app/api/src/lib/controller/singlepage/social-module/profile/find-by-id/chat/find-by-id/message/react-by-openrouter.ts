@@ -527,7 +527,7 @@ export class Handler {
 
     while (true) {
       const socialModuleThreadToMessages =
-        await this.service.socialModule.threadsToMessages.find({
+        await this.service.modules.social.threadsToMessages.find({
           params: {
             filters: {
               and: [
@@ -575,7 +575,7 @@ export class Handler {
     }
 
     const socialModuleChatToMessages =
-      await this.service.socialModule.chatsToMessages.find({
+      await this.service.modules.social.chatsToMessages.find({
         params: {
           filters: {
             and: [
@@ -684,13 +684,13 @@ export class Handler {
 
       const [socialModuleProfile, socialModuleChat, socialModuleMessage] =
         await Promise.all([
-          this.service.socialModule.profile.findById({
+          this.service.modules.social.profile.findById({
             id: socialModuleProfileId,
           }),
-          this.service.socialModule.chat.findById({
+          this.service.modules.social.chat.findById({
             id: socialModuleChatId,
           }),
-          this.service.socialModule.message.findById({
+          this.service.modules.social.message.findById({
             id: socialModuleMessageId,
           }),
         ]);
@@ -751,7 +751,7 @@ export class Handler {
       let currentAttachmentTitles: string[] = [];
       const isAIChat = socialModuleChat.variant === "ai-chat";
       const documentService = new DocumentService(
-        this.service.socialModule,
+        this.service.modules.social,
         this.knowledgeService,
       );
       let documentContext;
@@ -767,7 +767,7 @@ export class Handler {
       let documentSkill;
       if (documentContext) {
         documentSkill = await new ProfileSkills(
-          this.service.socialModule,
+          this.service.modules.social,
         ).forDocument(
           replyBySocialModuleProfile.id,
           documentContext.document.key,
@@ -801,7 +801,7 @@ export class Handler {
 
       if (chatThreadMessageIds.length) {
         const socialModuleMessages =
-          await this.service.socialModule.message.find({
+          await this.service.modules.social.message.find({
             params: {
               filters: {
                 and: [
@@ -825,7 +825,7 @@ export class Handler {
 
         if (socialModuleMessages?.length) {
           const socialModuleProfilesToMessages =
-            await this.service.socialModule.profilesToMessages.find({
+            await this.service.modules.social.profilesToMessages.find({
               params: {
                 filters: {
                   and: [
@@ -933,7 +933,7 @@ export class Handler {
               let fileStorageFiles: IFileStorageModuleFile[] | undefined = [];
 
               const socialModuleMessagesToFileStorageModuleFiles =
-                await this.service.socialModule.messagesToFileStorageModuleFiles.find(
+                await this.service.modules.social.messagesToFileStorageModuleFiles.find(
                   {
                     params: {
                       filters: {
@@ -959,7 +959,7 @@ export class Handler {
 
               if (socialModuleMessagesToFileStorageModuleFiles?.length) {
                 const foundFileStorageFiles =
-                  (await this.service.fileStorageModule.file.find({
+                  (await this.service.modules.fileStorage.file.find({
                     params: {
                       filters: {
                         and: [
@@ -1598,9 +1598,10 @@ export class Handler {
         socialProfileTools.length
       ) {
         let generationCallCount = 0;
-        const socialModuleChat = await this.service.socialModule.chat.findById({
-          id: socialModuleChatId,
-        });
+        const socialModuleChat =
+          await this.service.modules.social.chat.findById({
+            id: socialModuleChatId,
+          });
         const executionActionReporter = RBAC_SECRET_KEY
           ? this.service.socialModuleProfileAiExecutionActionReporterCreate({
               chatId: socialModuleChatId,
@@ -1922,7 +1923,7 @@ export class Handler {
           .map((source) => source.sourceId)
           .filter((id): id is string => Boolean(id)),
       )) {
-        await this.service.socialModule.messagesToKnowledgeModuleSources.findOrCreate(
+        await this.service.modules.social.messagesToKnowledgeModuleSources.findOrCreate(
           {
             data: {
               messageId: repliedSocialModuleMessage.id,
@@ -1969,9 +1970,10 @@ export class Handler {
   private async loadReplyBySocialModuleProfile(
     replySocialProfileId: string,
   ): Promise<ISocialModuleProfile | undefined> {
-    return this.service.socialModule.profile.findById({
+    const profile = await this.service.modules.social.profile.findById({
       id: replySocialProfileId,
     });
+    return profile ?? undefined;
   }
 
   private resolveAiReactionRequest(props: {
@@ -2017,7 +2019,7 @@ export class Handler {
     socialModuleProfileId: string;
     socialModuleChatId: string;
   }) {
-    const relations = await this.service.socialModule.profilesToChats.find({
+    const relations = await this.service.modules.social.profilesToChats.find({
       params: {
         filters: {
           and: [
@@ -2050,25 +2052,27 @@ export class Handler {
     socialModuleProfileId: string;
     socialModuleMessageId: string;
   }) {
-    const relations = await this.service.socialModule.profilesToMessages.find({
-      params: {
-        filters: {
-          and: [
-            {
-              column: "profileId",
-              method: "eq",
-              value: props.socialModuleProfileId,
-            },
-            {
-              column: "messageId",
-              method: "eq",
-              value: props.socialModuleMessageId,
-            },
-          ],
+    const relations = await this.service.modules.social.profilesToMessages.find(
+      {
+        params: {
+          filters: {
+            and: [
+              {
+                column: "profileId",
+                method: "eq",
+                value: props.socialModuleProfileId,
+              },
+              {
+                column: "messageId",
+                method: "eq",
+                value: props.socialModuleMessageId,
+              },
+            ],
+          },
+          limit: 1,
         },
-        limit: 1,
       },
-    });
+    );
 
     if (!relations?.length) {
       throw new Error(
@@ -2081,7 +2085,7 @@ export class Handler {
     socialModuleChatId: string;
     socialModuleMessageId: string;
   }) {
-    const relations = await this.service.socialModule.chatsToMessages.find({
+    const relations = await this.service.modules.social.chatsToMessages.find({
       params: {
         filters: {
           and: [
@@ -2112,7 +2116,7 @@ export class Handler {
     socialModuleProfileId: string;
     socialModuleChatId: string;
   }) {
-    const relations = await this.service.socialModule.profilesToChats.find({
+    const relations = await this.service.modules.social.profilesToChats.find({
       params: {
         filters: {
           and: [
@@ -2140,7 +2144,7 @@ export class Handler {
   }
 
   private async isSubjectAdmin(subjectId: string): Promise<boolean> {
-    const subjectsToRoles = await this.service.subjectsToRoles.find({
+    const subjectsToRoles = await this.service.module.subjectsToRoles.find({
       params: {
         filters: {
           and: [
@@ -2162,7 +2166,7 @@ export class Handler {
       return false;
     }
 
-    const roles = await this.service.role.find({
+    const roles = await this.service.module.role.find({
       params: {
         filters: {
           and: [
@@ -2182,19 +2186,20 @@ export class Handler {
   private async resolveRbacSubjectForSocialProfile(
     socialModuleProfileId: string,
   ) {
-    const relations = await this.service.subjectsToSocialModuleProfiles.find({
-      params: {
-        filters: {
-          and: [
-            {
-              column: "socialModuleProfileId",
-              method: "eq",
-              value: socialModuleProfileId,
-            },
-          ],
+    const relations =
+      await this.service.module.subjectsToSocialModuleProfiles.find({
+        params: {
+          filters: {
+            and: [
+              {
+                column: "socialModuleProfileId",
+                method: "eq",
+                value: socialModuleProfileId,
+              },
+            ],
+          },
         },
-      },
-    });
+      });
 
     const replyRelations =
       relations?.filter((relation) => relation.variant !== "assistant") || [];
@@ -2466,7 +2471,7 @@ export class Handler {
     socialModuleProfileId: string,
   ) {
     const relations =
-      await this.service.socialModule.profilesToKnowledgeModuleSources.find({
+      await this.service.modules.social.profilesToKnowledgeModuleSources.find({
         params: {
           filters: {
             and: [
@@ -2508,7 +2513,7 @@ export class Handler {
     knowledgeModuleSourceId: string;
   }) {
     const existing =
-      await this.service.socialModule.profilesToKnowledgeModuleSources.find({
+      await this.service.modules.social.profilesToKnowledgeModuleSources.find({
         params: {
           filters: {
             and: [
@@ -2532,7 +2537,7 @@ export class Handler {
       return existing[0];
     }
 
-    return this.service.socialModule.profilesToKnowledgeModuleSources.create({
+    return this.service.modules.social.profilesToKnowledgeModuleSources.create({
       data: {
         profileId: props.socialModuleProfileId,
         knowledgeModuleSourceId: props.knowledgeModuleSourceId,
@@ -2585,7 +2590,7 @@ export class Handler {
     skillIds?: string[];
     requireRequestedSkillsLinked: boolean;
   }) {
-    const relations = await this.service.socialModule.profilesToSkills.find({
+    const relations = await this.service.modules.social.profilesToSkills.find({
       params: {
         filters: {
           and: [
@@ -2638,7 +2643,7 @@ export class Handler {
       }
     }
 
-    const skills = await this.service.socialModule.skill.find({
+    const skills = await this.service.modules.social.skill.find({
       params: {
         filters: {
           and: [
@@ -2718,7 +2723,7 @@ export class Handler {
     )
       tools.push(
         new DocumentService(
-          this.service.socialModule,
+          this.service.modules.social,
           this.knowledgeService,
         ).tool(props.documentContext, props.socialModuleMessage),
       );
@@ -2756,7 +2761,7 @@ export class Handler {
         },
         execute: async (args) => {
           const relations =
-            await this.service.socialModule.messagesToFileStorageModuleFiles.find(
+            await this.service.modules.social.messagesToFileStorageModuleFiles.find(
               {
                 params: {
                   filters: {
@@ -2784,7 +2789,7 @@ export class Handler {
                 socialModuleProfileId: profileId,
                 knowledgeModuleSourceId: sourceId,
               });
-              await this.service.socialModule.messagesToKnowledgeModuleSources.findOrCreate(
+              await this.service.modules.social.messagesToKnowledgeModuleSources.findOrCreate(
                 {
                   data: {
                     messageId: message.id,
@@ -3439,7 +3444,7 @@ export class Handler {
     sourceSocialModuleProfileId: string;
   }) {
     const relations =
-      await this.service.socialModule.messagesToFileStorageModuleFiles.find({
+      await this.service.modules.social.messagesToFileStorageModuleFiles.find({
         params: {
           filters: {
             and: [
@@ -3477,7 +3482,7 @@ export class Handler {
           socialModuleProfileId: props.replyProfile.id,
           knowledgeModuleSourceId: sourceId,
         });
-        await this.service.socialModule.messagesToKnowledgeModuleSources.findOrCreate(
+        await this.service.modules.social.messagesToKnowledgeModuleSources.findOrCreate(
           {
             data: {
               messageId: props.socialModuleMessage.id,
@@ -3758,7 +3763,7 @@ export class Handler {
     socialModuleMessageId: string;
   }): Promise<string> {
     const socialModuleChatsToThreads =
-      await this.service.socialModule.chatsToThreads.find({
+      await this.service.modules.social.chatsToThreads.find({
         params: {
           filters: {
             and: [
@@ -3780,7 +3785,7 @@ export class Handler {
         .filter((threadId): threadId is string => Boolean(threadId)) || [];
 
     const socialModuleThreadsToMessages =
-      await this.service.socialModule.threadsToMessages.find({
+      await this.service.modules.social.threadsToMessages.find({
         params: {
           filters: {
             and: [
@@ -3828,7 +3833,7 @@ export class Handler {
       });
 
     const existingThreadToMessageLinks =
-      await this.service.socialModule.threadsToMessages.find({
+      await this.service.modules.social.threadsToMessages.find({
         params: {
           filters: {
             and: [
@@ -3849,7 +3854,7 @@ export class Handler {
       });
 
     if (!existingThreadToMessageLinks?.length) {
-      await this.service.socialModule.threadsToMessages.create({
+      await this.service.modules.social.threadsToMessages.create({
         data: {
           threadId: socialModuleDefaultThread.id,
           messageId: props.socialModuleMessageId,
@@ -3888,7 +3893,9 @@ export class Handler {
           mimeType: fileStorageFile.mimeType || undefined,
         });
         attachmentBytes =
-          await this.service.fileStorageModule.file.readBytes(fileStorageFile);
+          await this.service.modules.fileStorage.file.readBytes(
+            fileStorageFile,
+          );
         assertKnowledgeAttachmentBytes({
           bytes: attachmentBytes,
           name: fileStorageFile.file,

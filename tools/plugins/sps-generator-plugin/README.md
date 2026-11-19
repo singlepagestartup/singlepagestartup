@@ -42,8 +42,10 @@ Add a project-specific public method to the entity's
 `backend/app/api/src/lib/service/startup/index.ts`. A higher module can call
 it with its inferred argument and result types. For example, Agent can call
 `this.modules.ecommerce.order.findById({ id })` and use methods added to the
-same Order startup class. A parent can also use its outgoing relations and
-their same-module children through the generated view.
+same Order startup class. Inside Ecommerce, Order can call
+`this.module.product.findById({ id })`. The generator adds `module` only to
+entities with local dependencies and derives its keys from outgoing relations.
+Product cannot resolve Order through either registry.
 
 Every entity exports `serviceBootstrap` from
 `backend/app/api/src/lib/bootstrap.ts`. For a scoped test, call

@@ -7,11 +7,7 @@ import { moneyMinorUnits } from "@sps/backend-utils";
 interface IConstructorProps {
   repository: Pick<Repository, "withSubjectLock">;
   service: SubjectServiceDependencies<
-    | "ecommerceModule"
-    | "billingModule"
-    | "subjectsToEcommerceModuleOrders"
-    | "ecommerceModuleOrderRenewal"
-    | "ecommerceModuleOrderAssertAccess"
+    "ecommerceModuleOrderRenewal" | "ecommerceModuleOrderAssertAccess"
   >;
 }
 
@@ -23,19 +19,21 @@ export class Service {
   ): Promise<{ paymentIntentId: string }> {
     const { service, repository } = this.dependencies;
     const contractLinks =
-      await service.ecommerceModule.ordersToBillingModulePaymentIntents.find({
-        params: {
-          filters: {
-            and: [
-              {
-                column: "billingModulePaymentIntentId",
-                method: "eq",
-                value: receipt.contractPaymentIntentId,
-              },
-            ],
+      await service.modules.ecommerce.order.ordersToBillingModulePaymentIntents.find(
+        {
+          params: {
+            filters: {
+              and: [
+                {
+                  column: "billingModulePaymentIntentId",
+                  method: "eq",
+                  value: receipt.contractPaymentIntentId,
+                },
+              ],
+            },
           },
         },
-      });
+      );
     const orderIds = [
       ...new Set<string>(
         contractLinks.map((link: { orderId: string }) => link.orderId),
@@ -47,7 +45,7 @@ export class Service {
       );
     }
     const rootId = orderIds[0];
-    const owners = await service.subjectsToEcommerceModuleOrders.find({
+    const owners = await service.module.subjectsToEcommerceModuleOrders.find({
       params: {
         filters: {
           and: [
@@ -68,19 +66,21 @@ export class Service {
     if (receipt.recordedPaymentIntentId) {
       const recordedIntentId = receipt.recordedPaymentIntentId;
       const recordedLinks =
-        await service.ecommerceModule.ordersToBillingModulePaymentIntents.find({
-          params: {
-            filters: {
-              and: [
-                {
-                  column: "billingModulePaymentIntentId",
-                  method: "eq",
-                  value: recordedIntentId,
-                },
-              ],
+        await service.modules.ecommerce.order.ordersToBillingModulePaymentIntents.find(
+          {
+            params: {
+              filters: {
+                and: [
+                  {
+                    column: "billingModulePaymentIntentId",
+                    method: "eq",
+                    value: recordedIntentId,
+                  },
+                ],
+              },
             },
           },
-        });
+        );
       const ids = [
         ...new Set<string>(
           recordedLinks.map((link: { orderId: string }) => link.orderId),
@@ -96,14 +96,14 @@ export class Service {
           subjectId,
           orderId: ids[0],
         });
-        await service.ecommerceModule.order.lockForLifecycle({ id: ids[0] });
-        const recordedOrder = (await service.ecommerceModule.order.findById({
+        await service.modules.ecommerce.order.lockForLifecycle({ id: ids[0] });
+        const recordedOrder = (await service.modules.ecommerce.order.findById({
           id: ids[0],
         })) as IOrder | null;
         if (!recordedOrder?.subscriptionPeriodInvoiceId) {
           return { paymentIntentId: recordedIntentId };
         }
-        const accepted = await service.billingModule.invoice.findById({
+        const accepted = await service.modules.billing.invoice.findById({
           id: recordedOrder.subscriptionPeriodInvoiceId,
         });
         if (
@@ -116,7 +116,7 @@ export class Service {
             new Date(recordedOrder.subscriptionScheduledEndsAt!).getTime() !==
               new Date(receipt.periodEnd).getTime())
         ) {
-          await service.ecommerceModule.order.configureNextPeriod({
+          await service.modules.ecommerce.order.configureNextPeriod({
             id: recordedOrder.id,
             startsAt: new Date(receipt.periodStart),
             endsAt: new Date(receipt.periodEnd),
@@ -127,7 +127,7 @@ export class Service {
       });
     }
     const providerInvoiceId = `${receipt.provider}:${receipt.providerInvoiceId}`;
-    const existing = (await service.ecommerceModule.order.find({
+    const existing = (await service.modules.ecommerce.order.find({
       params: {
         filters: {
           and: [
@@ -148,7 +148,7 @@ export class Service {
       orderId = rootId;
     }
     if (!orderId) {
-      let source = (await service.ecommerceModule.order.findById({
+      let source = (await service.modules.ecommerce.order.findById({
         id: rootId,
       })) as IOrder | null;
       const visited = new Set<string>();
@@ -161,7 +161,7 @@ export class Service {
             "Conflict error. Previous provider period is not confirmed yet",
           );
         }
-        const next = (await service.ecommerceModule.order.find({
+        const next = (await service.modules.ecommerce.order.find({
           params: {
             filters: {
               and: [
@@ -207,15 +207,17 @@ export class Service {
     }
     const targetId = orderId;
     return repository.withSubjectLock({ subjectId }, async () => {
-      await service.ecommerceModule.order.lockForLifecycle({ id: rootId });
+      await service.modules.ecommerce.order.lockForLifecycle({ id: rootId });
       if (targetId !== rootId) {
-        await service.ecommerceModule.order.lockForLifecycle({ id: targetId });
+        await service.modules.ecommerce.order.lockForLifecycle({
+          id: targetId,
+        });
       }
       await service.ecommerceModuleOrderAssertAccess({
         subjectId,
         orderId: targetId,
       });
-      const order = (await service.ecommerceModule.order.findById({
+      const order = (await service.modules.ecommerce.order.findById({
         id: targetId,
       })) as IOrder | null;
       if (
@@ -236,13 +238,15 @@ export class Service {
         );
       }
       const links =
-        await service.ecommerceModule.ordersToBillingModulePaymentIntents.find({
-          params: {
-            filters: {
-              and: [{ column: "orderId", method: "eq", value: targetId }],
+        await service.modules.ecommerce.order.ordersToBillingModulePaymentIntents.find(
+          {
+            params: {
+              filters: {
+                and: [{ column: "orderId", method: "eq", value: targetId }],
+              },
             },
           },
-        });
+        );
       const intentIds = [
         ...new Set<string>(
           links.map(
@@ -256,9 +260,10 @@ export class Service {
           "Conflict error. Provider period must have one local payment intent",
         );
       }
-      const intent = await service.billingModule.paymentIntent.findById({
-        id: intentIds[0],
-      });
+      const intent =
+        await service.modules.ecommerce.order.paymentIntent.findById({
+          id: intentIds[0],
+        });
       if (
         !intent ||
         moneyMinorUnits(intent.amount) !== moneyMinorUnits(receipt.amount)
@@ -270,7 +275,7 @@ export class Service {
       let currencyId = intent.checkoutCurrencyId;
       if (!currencyId) {
         const currencies =
-          await service.ecommerceModule.ordersToBillingModuleCurrencies.find({
+          await service.modules.ecommerce.ordersToBillingModuleCurrencies.find({
             params: {
               filters: {
                 and: [{ column: "orderId", method: "eq", value: targetId }],
@@ -284,7 +289,7 @@ export class Service {
         }
         currencyId = currencies[0].billingModuleCurrencyId;
       }
-      const currency = await service.billingModule.currency.findById({
+      const currency = await service.modules.billing.currency.findById({
         id: currencyId,
       });
       if (
@@ -309,7 +314,7 @@ export class Service {
       if (order.subscriptionProviderInvoiceId === providerInvoiceId) {
         return { paymentIntentId: intent.id };
       }
-      await service.ecommerceModule.order.configureNextPeriod({
+      await service.modules.ecommerce.order.configureNextPeriod({
         id: targetId,
         startsAt: new Date(receipt.periodStart),
         endsAt: new Date(receipt.periodEnd),

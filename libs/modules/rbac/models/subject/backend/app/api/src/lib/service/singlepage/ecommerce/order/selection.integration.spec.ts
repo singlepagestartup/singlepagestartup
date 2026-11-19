@@ -204,13 +204,14 @@ async function fixture() {
     Promise.all(inputs.map((input) => services.offer.quote(input)));
   services.offer.quotesUnderLock = (inputs: any[]) =>
     services.offer.quoteMany(inputs);
-  const ecommerceModule: any = {
+  const ecommerce: any = {
     product: services.product,
-    order: services.order,
+    order: Object.create(services.order, {
+      ordersToBillingModulePaymentIntents: { value: services.payment },
+    }),
     ordersToProducts: services.line,
     storesToOrders: services.storeLink,
     ordersToBillingModuleCurrencies: services.currencyLink,
-    ordersToBillingModulePaymentIntents: services.payment,
     storesToProducts: services.offer,
   };
   const access = new Access({
@@ -219,9 +220,13 @@ async function fixture() {
   });
   const subjectService: any = {
     repository: subjects,
-    subjectsToIdentities: { find: jest.fn().mockResolvedValue([]) },
-    ecommerceModule,
-    subjectsToEcommerceModuleOrders: services.owner,
+    module: {
+      subjectsToIdentities: { find: jest.fn().mockResolvedValue([]) },
+      subjectsToEcommerceModuleOrders: services.owner,
+    },
+    modules: {
+      ecommerce,
+    },
     ecommerceModuleOrderAssertAccess: access.execute.bind(access),
   };
   const operation = () =>

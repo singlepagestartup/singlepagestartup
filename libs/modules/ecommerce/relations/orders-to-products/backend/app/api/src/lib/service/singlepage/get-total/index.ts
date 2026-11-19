@@ -23,7 +23,7 @@ export interface IExecuteResult extends IOrderLineTotals {}
 type IConstructorProps = {
   findById: (props: { id: string }) => Promise<IOrderToProduct | null>;
   product: ProductService;
-  billingModule: ProductService["billingModule"];
+  currency: Pick<ProductService["modules"]["billing"]["currency"], "findById">;
   attribute: AttributeService;
   attributeKey: AttributeKeyService;
   productsToAttributes: ProductsToAttributesService;
@@ -42,7 +42,7 @@ type IConstructorProps = {
 export class Service {
   findById: IConstructorProps["findById"];
   product: ProductService;
-  billingModule: ProductService["billingModule"];
+  currency: Pick<ProductService["modules"]["billing"]["currency"], "findById">;
   attribute: AttributeService;
   attributeKey: AttributeKeyService;
   productsToAttributes: ProductsToAttributesService;
@@ -52,7 +52,7 @@ export class Service {
   constructor(props: IConstructorProps) {
     this.findById = props.findById;
     this.product = props.product;
-    this.billingModule = props.billingModule;
+    this.currency = props.currency;
     this.attribute = props.attribute;
     this.attributeKey = props.attributeKey;
     this.productsToAttributes = props.productsToAttributes;
@@ -184,7 +184,7 @@ export class Service {
         continue;
       }
 
-      const billingModuleCurrency = await this.billingModule.currency.findById({
+      const billingModuleCurrency = await this.currency.findById({
         id: attributesToBillingModuleCurrencies[0].billingModuleCurrencyId,
       });
 

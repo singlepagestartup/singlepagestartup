@@ -1,4 +1,5 @@
-import { createModules } from "../modules";
+import { createModule } from "../module";
+import { createModules } from "@sps/rbac/backend/app/api/src/lib/modules";
 import { Service as OrderPaymentDispatch } from "../startup/ecommerce/order/payment-dispatch";
 import { Service as OrderPaymentCheck } from "../startup/ecommerce/order/payment-check";
 import { Service as StripeOrderPayment } from "../startup/ecommerce/order/stripe-payment";
@@ -41,8 +42,8 @@ import type { IExecuteProps as IEcommerceOrderAccessProps } from "./ecommerce/or
 import { Service as CrmFormRequestCreate } from "../startup/crm/form/request";
 import type { IExecuteProps as ICrmFormRequestCreateProps } from "./crm/form/request";
 import "reflect-metadata";
-import { inject, injectable, optional } from "inversify";
-import { CRUDService, defaultAppAssembly, DI } from "@sps/shared-backend-api";
+import { inject, injectable } from "inversify";
+import { CRUDService, DI } from "@sps/shared-backend-api";
 import { Repository } from "../../repository";
 import { verify } from "hono/jwt";
 import { requestHostRevalidation } from "@sps/backend-utils";
@@ -62,7 +63,6 @@ import type { IConstructorProps as IFreeSubscriptionDependencies } from "./billi
 import { Service as BlogArticleCreate } from "../startup/blog/article/create";
 import { Service as RoleRevocation } from "../startup/ecommerce/order/role-revocation";
 import type { IArticleCreateInput } from "@sps/rbac/models/subject/sdk/model/src/lib/blog-article-create";
-import type { Service as SubjectsToBlogModuleArticlesService } from "@sps/rbac/relations/subjects-to-blog-module-articles/backend/app/api/src/lib/service";
 import { Table } from "@sps/rbac/models/subject/backend/repository/database";
 import { Service as Logout } from "../startup/logout";
 import type { IExecuteProps as ILogoutExecuteProps } from "./logout";
@@ -112,27 +112,7 @@ import type {
   Service as EcommerceOrderProceed,
   IExecuteProps as IEcommerceOrderProceedProps,
 } from "./ecommerce/order/proceed";
-import {
-  SubjectDI,
-  type IBlogModule,
-  type IBillingModule,
-  type IBroadcastModule,
-  type ICrmModule,
-  type IEcommerceModule,
-  type IFileStorageModule,
-  type INotificationModule,
-  type ISocialModule,
-} from "../../di";
-import { Service as IdentityService } from "@sps/rbac/models/identity/backend/app/api/src/lib/service";
-import { Service as RoleService } from "@sps/rbac/models/role/backend/app/api/src/lib/service";
-import { Service as PermissionService } from "@sps/rbac/models/permission/backend/app/api/src/lib/service";
-import { Service as RolesToPermissionsService } from "@sps/rbac/relations/roles-to-permissions/backend/app/api/src/lib/service";
-import { Service as SubjectsToIdentitiesService } from "@sps/rbac/relations/subjects-to-identities/backend/app/api/src/lib/service";
-import { Service as SubjectsToSocialModuleProfilesService } from "@sps/rbac/relations/subjects-to-social-module-profiles/backend/app/api/src/lib/service";
-import { Service as SubjectsToRolesService } from "@sps/rbac/relations/subjects-to-roles/backend/app/api/src/lib/service";
-import { Service as SubjectsToEcommerceModuleOrdersService } from "@sps/rbac/relations/subjects-to-ecommerce-module-orders/backend/app/api/src/lib/service";
-import { Service as SubjectsToBillingModuleCurrenciesService } from "@sps/rbac/relations/subjects-to-billing-module-currencies/backend/app/api/src/lib/service";
-import { Service as RolesToEcommerceModuleProductsService } from "@sps/rbac/relations/roles-to-ecommerce-module-products/backend/app/api/src/lib/service";
+import { SubjectDI } from "../../di";
 import { Service as TelegramBootstrap } from "../startup/telegram/bootstrap";
 import type {
   IExecuteProps as ITelegramBootstrapExecuteProps,
@@ -182,7 +162,7 @@ import type { IExecuteProps as ISocialModuleProfileAvatarUpdateProps } from "./s
 import { Service as PermissionDefaults } from "../startup/permission-defaults";
 
 export type SubjectServiceDependencies<Keys extends keyof Service = never> =
-  Pick<Service, "modules" | Keys>;
+  Pick<Service, "module" | "modules" | Keys>;
 
 @injectable()
 export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
@@ -190,105 +170,25 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     return this.appAssembly.getOrCreate(createModules);
   }
 
-  declare repository: Repository;
-  blogModule: IBlogModule;
-  subjectsToBlogModuleArticles: SubjectsToBlogModuleArticlesService;
-  socialModule: ISocialModule;
-  ecommerceModule: IEcommerceModule;
-  billingModule: IBillingModule;
-  notificationModule: INotificationModule;
-  fileStorageModule: IFileStorageModule;
-  crmModule: ICrmModule;
-  broadcastModule: IBroadcastModule;
-  isAuthorizedService: IsAuthorized;
-  billRouteService: BillRoute;
-  ecommerceOrderProceedService: EcommerceOrderProceed;
-  identity: IdentityService;
-  role: RoleService;
-  permission: PermissionService;
-  rolesToPermissions: RolesToPermissionsService;
-  rolesToEcommerceModuleProducts: RolesToEcommerceModuleProductsService;
-  subjectsToIdentities: SubjectsToIdentitiesService;
-  subjectsToSocialModuleProfiles: SubjectsToSocialModuleProfilesService;
-  subjectsToRoles: SubjectsToRolesService;
-  subjectsToEcommerceModuleOrders: SubjectsToEcommerceModuleOrdersService;
-  subjectsToBillingModuleCurrencies: SubjectsToBillingModuleCurrenciesService;
+  get module() {
+    return this.appAssembly.getOrCreate(createModule);
+  }
 
+  declare repository: Repository;
   constructor(
+    @inject(DI.IRepository) repository: Repository,
     @inject(SubjectDI.ISecurityNotificationsService)
     private readonly securityNotifications: SecurityNotifications,
-    @inject(DI.IRepository) repository: Repository,
-    @inject(SubjectDI.ISocialModule)
-    @optional()
-    socialModule: ISocialModule | undefined,
-    @inject(SubjectDI.IEcommerceModule) ecommerceModule: IEcommerceModule,
-    @inject(SubjectDI.IBillingModule) billingModule: IBillingModule,
-    @inject(SubjectDI.INotificationModule)
-    @optional()
-    notificationModule: INotificationModule | undefined,
-    @inject(SubjectDI.IFileStorageModule)
-    @optional()
-    fileStorageModule: IFileStorageModule | undefined,
-    @inject(SubjectDI.ICrmModule) @optional() crmModule: ICrmModule | undefined,
-    @inject(SubjectDI.IBroadcastModule)
-    @optional()
-    broadcastModule: IBroadcastModule | undefined,
-    @inject(SubjectDI.IIdentityService) identity: IdentityService,
-    @inject(SubjectDI.IRoleService) role: RoleService,
-    @inject(SubjectDI.IPermissionService) permission: PermissionService,
-    @inject(SubjectDI.IRolesToPermissionsService)
-    rolesToPermissions: RolesToPermissionsService,
-    @inject(SubjectDI.IRolesToEcommerceModuleProductsService)
-    rolesToEcommerceModuleProducts: RolesToEcommerceModuleProductsService,
     @inject(SubjectDI.IIsAuthorizedService)
-    isAuthorizedService: IsAuthorized,
+    readonly isAuthorizedService: IsAuthorized,
     @inject(SubjectDI.IBillRouteService)
-    billRouteService: BillRoute,
+    private readonly billRouteService: BillRoute,
     @inject(SubjectDI.IEcommerceOrderProceedService)
-    ecommerceOrderProceedService: EcommerceOrderProceed,
-    @inject(SubjectDI.ISubjectsToIdentitiesService)
-    subjectsToIdentities: SubjectsToIdentitiesService,
-    @inject(SubjectDI.ISubjectsToSocialModuleProfilesService)
-    subjectsToSocialModuleProfiles: SubjectsToSocialModuleProfilesService,
-    @inject(SubjectDI.ISubjectsToRolesService)
-    subjectsToRoles: SubjectsToRolesService,
-    @inject(SubjectDI.ISubjectsToEcommerceModuleOrdersService)
-    subjectsToEcommerceModuleOrders: SubjectsToEcommerceModuleOrdersService,
-    @inject(SubjectDI.ISubjectsToBillingModuleCurrenciesService)
-    subjectsToBillingModuleCurrencies: SubjectsToBillingModuleCurrenciesService,
-    @inject(SubjectDI.IBlogModule)
-    @optional()
-    blogModule: IBlogModule | undefined,
-    @inject(SubjectDI.ISubjectsToBlogModuleArticlesService)
-    subjectsToBlogModuleArticles: SubjectsToBlogModuleArticlesService,
+    private readonly ecommerceOrderProceedService: EcommerceOrderProceed,
     @inject(SubjectDI.IEcommerceCatalogService)
     readonly ecommerceCatalog: EcommerceCatalog,
-    @inject(DI.IAppAssembly) @optional() assembly = defaultAppAssembly,
   ) {
     super(repository);
-    const modules = assembly.getOrCreate(createModules);
-    this.socialModule = socialModule ?? modules.social;
-    this.ecommerceModule = ecommerceModule;
-    this.billingModule = billingModule;
-    this.notificationModule = notificationModule ?? modules.notification;
-    this.fileStorageModule = fileStorageModule ?? modules.fileStorage;
-    this.crmModule = crmModule ?? modules.crm;
-    this.broadcastModule = broadcastModule ?? modules.broadcast;
-    this.identity = identity;
-    this.role = role;
-    this.permission = permission;
-    this.rolesToPermissions = rolesToPermissions;
-    this.rolesToEcommerceModuleProducts = rolesToEcommerceModuleProducts;
-    this.isAuthorizedService = isAuthorizedService;
-    this.billRouteService = billRouteService;
-    this.ecommerceOrderProceedService = ecommerceOrderProceedService;
-    this.subjectsToIdentities = subjectsToIdentities;
-    this.subjectsToSocialModuleProfiles = subjectsToSocialModuleProfiles;
-    this.subjectsToRoles = subjectsToRoles;
-    this.subjectsToEcommerceModuleOrders = subjectsToEcommerceModuleOrders;
-    this.subjectsToBillingModuleCurrencies = subjectsToBillingModuleCurrencies;
-    this.blogModule = blogModule ?? modules.blog;
-    this.subjectsToBlogModuleArticles = subjectsToBlogModuleArticles;
   }
 
   async sendSecurityNotifications() {
@@ -296,8 +196,19 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
   }
 
   configureRoleRevocation() {
-    const revocation = new RoleRevocation(this);
-    this.subjectsToRoles.configureRevocation(revocation);
+    const { module, modules } = this;
+    const revocation = new RoleRevocation({
+      get subjectsToEcommerceModuleOrders() {
+        return module.subjectsToEcommerceModuleOrders;
+      },
+      get rolesToEcommerceModuleProducts() {
+        return module.role.module.rolesToEcommerceModuleProducts;
+      },
+      get order() {
+        return modules.ecommerce.order;
+      },
+    });
+    module.subjectsToRoles.configureRevocation(revocation);
     return revocation;
   }
 
@@ -344,15 +255,23 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     props: IFindOpenCartOrderWithProductProps,
   ): Promise<string | null> {
     return new FindOpenCartOrderWithProduct({
-      ecommerceModule: this.ecommerceModule,
-      subjectsToEcommerceModuleOrders: this.subjectsToEcommerceModuleOrders,
+      order: this.modules.ecommerce.order,
+      ordersToProducts: this.modules.ecommerce.ordersToProducts,
+      subjectsToEcommerceModuleOrders:
+        this.module.subjectsToEcommerceModuleOrders,
     }).execute(props);
   }
 
   async ecommerceModuleResolveOrderCurrency(props: IResolveOrderCurrencyProps) {
     return new ResolveOrderCurrency({
-      ecommerceModule: this.ecommerceModule,
-      billingModule: this.billingModule,
+      storesToProducts: this.modules.ecommerce.storesToProducts,
+      attributeKey: this.modules.ecommerce.attributeKey,
+      attributeKeysToAttributes:
+        this.modules.ecommerce.attributeKeysToAttributes,
+      productsToAttributes: this.modules.ecommerce.productsToAttributes,
+      attributesToBillingModuleCurrencies:
+        this.modules.ecommerce.attributesToBillingModuleCurrencies,
+      currency: this.modules.billing.currency,
     }).execute(props);
   }
 
@@ -380,8 +299,8 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
 
   async ecommerceModuleOrderAssertAccess(props: IEcommerceOrderAccessProps) {
     return new EcommerceOrderAccess({
-      subjectsToOrders: this.subjectsToEcommerceModuleOrders,
-      ordersToProducts: this.ecommerceModule.ordersToProducts,
+      subjectsToOrders: this.module.subjectsToEcommerceModuleOrders,
+      ordersToProducts: this.modules.ecommerce.ordersToProducts,
     }).execute(props);
   }
 
@@ -399,7 +318,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     props: ISocialModuleProfileAvatarUpdateProps,
   ) {
     return new SocialModuleProfileAvatarUpdate({
-      fileStorageModule: this.fileStorageModule,
+      file: this.modules.fileStorage.file,
     }).execute(props);
   }
 
@@ -422,7 +341,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     socialModuleProfileId: string | undefined;
   }) {
     return new SocialModuleProfileAvatarUpdate({
-      fileStorageModule: this.fileStorageModule,
+      file: this.modules.fileStorage.file,
     }).find(props.socialModuleProfileId);
   }
 
@@ -433,12 +352,11 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
   }
 
   socialModuleProfileAiContextCreate(
-    props: Omit<IAiContextServiceProps, "socialModule" | "fileStorageModule">,
+    props: Omit<IAiContextServiceProps, "modules">,
   ): IAiContextService {
     return this.createSocialModuleProfileAiContextService({
       ...props,
-      socialModule: this.socialModule,
-      fileStorageModule: this.fileStorageModule,
+      modules: this.modules,
     });
   }
 
@@ -469,7 +387,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
       socialModuleThreadId: props.socialModuleThreadId,
     });
 
-    const thread = await this.socialModule.thread.findById({
+    const thread = await this.modules.social.thread.findById({
       id: props.socialModuleThreadId,
     });
 
@@ -480,7 +398,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     for (let attempt = 0; attempt < 2; attempt++) {
       let current;
       if (attempt) {
-        current = await this.socialModule.thread.findById({ id: thread.id });
+        current = await this.modules.social.thread.findById({ id: thread.id });
       } else {
         current = thread;
       }
@@ -488,7 +406,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
         metadata: current.metadata,
         modelId: props.modelId,
       });
-      const updated = await this.socialModule.thread.update({
+      const updated = await this.modules.social.thread.update({
         id: current.id,
         data: {
           metadataNamespaceUpdate: {
@@ -622,14 +540,14 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
 
   permissionDefaults() {
     return new PermissionDefaults(
-      this.permission,
-      this.rolesToPermissions,
+      this.module.role.module.permission,
+      this.module.role.module.rolesToPermissions,
     ).execute();
   }
 
   async isAdmin(subjectId: string) {
     const [adminRole] =
-      (await this.role.find({
+      (await this.module.role.find({
         params: {
           filters: { and: [{ column: "slug", method: "eq", value: "admin" }] },
           limit: 1,
@@ -637,7 +555,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
       })) ?? [];
     if (!adminRole) return false;
 
-    const links = await this.subjectsToRoles.find({
+    const links = await this.module.subjectsToRoles.find({
       params: {
         filters: {
           and: [
@@ -679,7 +597,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     productId: string;
   }) {
     return new InitialGrantProducts(
-      this.ecommerceModule.storesToProducts,
+      this.modules.ecommerce.storesToProducts,
     ).includes(props.productId);
   }
 
@@ -692,10 +610,8 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
   protected getFreeSubscriptionDependencies(): IFreeSubscriptionDependencies {
     return {
       repository: this.repository,
-      ecommerceModule: this.ecommerceModule,
-      billingModule: this.billingModule,
-      subjectsToEcommerceModuleOrders: this.subjectsToEcommerceModuleOrders,
-      subjectsToIdentities: this.subjectsToIdentities,
+      module: this.module,
+      modules: this.modules,
       fulfillPaidOrderInTransaction: (scope) =>
         this.ecommerceOrderProceedService.fulfillPaidOrderInTransaction(scope),
       dispatchPaidEffects: (effect) =>
@@ -720,26 +636,26 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     return [
       {
         reason: "identity",
-        find: (findProps) => this.subjectsToIdentities.find(findProps),
+        find: (findProps) => this.module.subjectsToIdentities.find(findProps),
       },
       {
         reason: "ecommerce-module-order",
         find: (findProps) =>
-          this.subjectsToEcommerceModuleOrders.find(findProps),
+          this.module.subjectsToEcommerceModuleOrders.find(findProps),
       },
       {
         reason: "social-module-profile",
         find: (findProps) =>
-          this.subjectsToSocialModuleProfiles.find(findProps),
+          this.module.subjectsToSocialModuleProfiles.find(findProps),
       },
       {
         reason: "role",
-        find: (findProps) => this.subjectsToRoles.find(findProps),
+        find: (findProps) => this.module.subjectsToRoles.find(findProps),
       },
       {
         reason: "billing-module-currency",
         find: (findProps) =>
-          this.subjectsToBillingModuleCurrencies.find(findProps),
+          this.module.subjectsToBillingModuleCurrencies.find(findProps),
       },
     ];
   }
@@ -747,18 +663,18 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
   async deanonymize(props: IDeanonymizeExecuteProps) {
     return new Deanonymize({
       findById: ({ id }) => this.findById({ id }),
-      identity: this.identity,
-      subjectsToIdentities: this.subjectsToIdentities,
+      identity: this.module.identity,
+      subjectsToIdentities: this.module.subjectsToIdentities,
     }).execute(props);
   }
 
   get ecommerceModuleOrderPaymentDispatch() {
-    return new OrderPaymentDispatch(this.billingModule.paymentIntent);
+    return new OrderPaymentDispatch(this.modules.ecommerce.order.paymentIntent);
   }
 
   get ecommerceModuleOrderPaymentCheck() {
     return new OrderPaymentCheck(
-      this.billingModule.paymentIntent,
+      this.modules.ecommerce.order.paymentIntent,
       this.ecommerceModuleOrderStripePayment,
     );
   }
@@ -798,9 +714,8 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
       repository: this.repository,
       settledOrderIds: (input) => this.ecommerceModuleOrderSettledIds(input),
       findById: ({ id }) => this.findById({ id }),
-      ecommerceModule: this.ecommerceModule,
-      billingModule: this.billingModule,
-      subjectsToEcommerceModuleOrders: this.subjectsToEcommerceModuleOrders,
+      module: this.module,
+      modules: this.modules,
     }).execute(props, internal);
   }
 
@@ -824,8 +739,9 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     props: IEcommerceOrdersToProductsListExecuteProps,
   ) {
     return new EcommerceOrdersToProductsList({
-      ecommerceModule: this.ecommerceModule,
-      subjectsToEcommerceModuleOrders: this.subjectsToEcommerceModuleOrders,
+      ordersToProducts: this.modules.ecommerce.ordersToProducts,
+      subjectsToEcommerceModuleOrders:
+        this.module.subjectsToEcommerceModuleOrders,
     }).execute(props);
   }
 
@@ -897,10 +813,11 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
   ): Promise<ITelegramBootstrapResult> {
     const result = await new TelegramBootstrap({
       findById: ({ id }) => this.findById({ id }),
-      identity: this.identity,
-      socialModule: this.socialModule,
-      subjectsToIdentities: this.subjectsToIdentities,
-      subjectsToSocialModuleProfiles: this.subjectsToSocialModuleProfiles,
+      identity: this.module.identity,
+      social: this.modules.social,
+      subjectsToIdentities: this.module.subjectsToIdentities,
+      subjectsToSocialModuleProfiles:
+        this.module.subjectsToSocialModuleProfiles,
       resolvePersonalAiAgent: (personalAiAgentProps) =>
         this.telegramPersonalAiAgentEnsure(personalAiAgentProps),
       ensureProfileManagementAccess: (accessProps) =>
@@ -917,8 +834,9 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
   ): Promise<ITelegramPersonalAiAgentResult> {
     return new TelegramPersonalAiAgent({
       findSubjects: (findProps) => this.find(findProps),
-      socialModule: this.socialModule,
-      subjectsToSocialModuleProfiles: this.subjectsToSocialModuleProfiles,
+      social: this.modules.social,
+      subjectsToSocialModuleProfiles:
+        this.module.subjectsToSocialModuleProfiles,
       ensureKnowledgeAccess: (accessProps) =>
         this.socialModuleProfileKnowledgeAccessEnsure(accessProps),
     }).execute(props);
@@ -928,10 +846,10 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     props: IEnsureSocialProfileKnowledgeAccessProps,
   ) {
     const result = await new SocialProfileKnowledgeAccessService({
-      permission: this.permission,
-      role: this.role,
-      rolesToPermissions: this.rolesToPermissions,
-      subjectsToRoles: this.subjectsToRoles,
+      permission: this.module.role.module.permission,
+      role: this.module.role,
+      rolesToPermissions: this.module.role.module.rolesToPermissions,
+      subjectsToRoles: this.module.subjectsToRoles,
     }).ensure(props);
 
     this.isAuthorizedService.invalidateSubjectRoleCache(
@@ -945,9 +863,10 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     props: ITelegramSyncMembershipExecuteProps,
   ): Promise<ITelegramSyncMembershipResult> {
     return new TelegramSyncMembership({
-      role: this.role,
-      subjectsToRoles: this.subjectsToRoles,
-      rolesToEcommerceModuleProducts: this.rolesToEcommerceModuleProducts,
+      role: this.module.role,
+      subjectsToRoles: this.module.subjectsToRoles,
+      rolesToEcommerceModuleProducts:
+        this.module.role.module.rolesToEcommerceModuleProducts,
     }).execute(props);
   }
 
@@ -972,7 +891,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
   }
 
   protected getSocialModuleProfileSkillsService() {
-    return new ProfileSkills(this.socialModule);
+    return new ProfileSkills(this.modules.social);
   }
 
   protected getSocialModuleProfileMcpCatalogService() {

@@ -1,10 +1,9 @@
+import type { SubjectServiceDependencies } from "../../index";
 import type { IModel as IOrder } from "@sps/ecommerce/models/order/sdk/model";
-import type { Service as SubjectService } from "../../index";
 import type { Repository } from "../../../../repository";
 import type { IModel as IOrderIntent } from "@sps/ecommerce/relations/orders-to-billing-module-payment-intents/sdk/model";
 import { moneyMinorUnits } from "@sps/backend-utils";
 import type { IModel as IInvoice } from "@sps/billing/models/invoice/sdk/model";
-import type { IBillingModule, IEcommerceModule } from "../../../../di";
 
 interface ILineSnapshot {
   id: string;
@@ -28,20 +27,13 @@ export interface IExecuteProps {
   resumeExisting?: boolean;
 }
 export interface IConstructorProps {
+  module: Pick<
+    SubjectServiceDependencies["module"],
+    "subjectsToEcommerceModuleOrders"
+  >;
+  modules: Pick<SubjectServiceDependencies["modules"], "billing" | "ecommerce">;
   repository: Pick<Repository, "withSubjectLock">;
-  ecommerceModule: Pick<
-    IEcommerceModule,
-    | "order"
-    | "ordersToProducts"
-    | "ordersToBillingModuleCurrencies"
-    | "ordersToBillingModulePaymentIntents"
-  >;
-  billingModule: IBillingModule;
   settledOrderIds: (props: { orderIds: string[] }) => Promise<Set<string>>;
-  subjectsToEcommerceModuleOrders: Pick<
-    SubjectService["subjectsToEcommerceModuleOrders"],
-    "find"
-  >;
 }
 
 export class Service {
@@ -50,18 +42,15 @@ export class Service {
   async execute(
     props: IExecuteProps,
   ): Promise<{ invoices?: IInvoice[]; preparedPaymentIntentIds?: string[] }> {
-    const {
-      repository,
-      ecommerceModule,
-      billingModule,
-      subjectsToEcommerceModuleOrders,
-    } = this.dependencies;
+    const { repository, module, modules } = this.dependencies;
+    const { ecommerce, billing } = modules;
+    const { subjectsToEcommerceModuleOrders } = module;
     return repository.withSubjectLock(
       { subjectId: props.subjectId },
       async () => {
         const orderIds = [...new Set(props.orderIds)].sort();
         for (const id of orderIds) {
-          await ecommerceModule.order.lockForLifecycle({ id });
+          await ecommerce.order.lockForLifecycle({ id });
         }
         const owners = await subjectsToEcommerceModuleOrders.find({
           params: {
@@ -89,7 +78,7 @@ export class Service {
               "Permission error. Checkout order no longer belongs to the current subject",
             );
           }
-          const order = await ecommerceModule.order.findById({ id });
+          const order = await ecommerce.order.findById({ id });
           const openCart = order?.type === "cart" && order.status === "new";
           const payingHistory =
             props.resumeExisting &&
@@ -119,10 +108,10 @@ export class Service {
             );
           }
           if (order.subscriptionSourceOrderId && !payingHistory) {
-            await ecommerceModule.order.lockForLifecycle({
+            await ecommerce.order.lockForLifecycle({
               id: order.subscriptionSourceOrderId,
             });
-            const source = await ecommerceModule.order.findById({
+            const source = await ecommerce.order.findById({
               id: order.subscriptionSourceOrderId,
             });
             const sourceOwners = await subjectsToEcommerceModuleOrders.find({
@@ -160,10 +149,12 @@ export class Service {
           lockedOrders.push(order);
         }
         const filters = {
-          and: [{ column: "orderId", method: "inArray", value: orderIds }],
+          and: [
+            { column: "orderId", method: "inArray" as const, value: orderIds },
+          ],
         };
         const paymentLinks: IOrderIntent[] =
-          await ecommerceModule.ordersToBillingModulePaymentIntents.find({
+          await ecommerce.order.ordersToBillingModulePaymentIntents.find({
             params: { filters },
           });
         const settledIds = await this.dependencies.settledOrderIds({
@@ -188,30 +179,29 @@ export class Service {
               ),
             ),
           ];
-          const intents = await billingModule.paymentIntent.find({
+          const intents = await ecommerce.order.paymentIntent.find({
             params: {
               filters: {
                 and: [{ column: "id", method: "inArray", value: intentIds }],
               },
             },
           });
-          const invoiceLinks =
-            await billingModule.paymentIntentsToInvoices.find({
-              params: {
-                filters: {
-                  and: [
-                    {
-                      column: "paymentIntentId",
-                      method: "inArray",
-                      value: intentIds,
-                    },
-                  ],
-                },
+          const invoiceLinks = await billing.paymentIntentsToInvoices.find({
+            params: {
+              filters: {
+                and: [
+                  {
+                    column: "paymentIntentId",
+                    method: "inArray",
+                    value: intentIds,
+                  },
+                ],
               },
-            });
+            },
+          });
           let invoices: IInvoice[] = [];
           if (invoiceLinks.length) {
-            invoices = await billingModule.invoice.find({
+            invoices = await billing.invoice.find({
               params: {
                 filters: {
                   and: [
@@ -341,7 +331,7 @@ export class Service {
         }
 
         if (props.expectedLines) {
-          const lines = await ecommerceModule.ordersToProducts.find({
+          const lines = await ecommerce.ordersToProducts.find({
             params: { filters },
           });
           if (
@@ -354,7 +344,7 @@ export class Service {
         }
         if (props.expectedCurrencies) {
           const currencies =
-            await ecommerceModule.ordersToBillingModuleCurrencies.find({
+            await ecommerce.ordersToBillingModuleCurrencies.find({
               params: { filters },
             });
           if (
@@ -379,7 +369,7 @@ export class Service {
           if (order.type === "history") {
             continue;
           }
-          await ecommerceModule.order.update({
+          await ecommerce.order.update({
             id: order.id,
             data: {
               ...order,
@@ -435,9 +425,9 @@ export class Service {
     orderIds: string[],
     selectedIntentIds: string[],
   ): Promise<boolean> {
-    const { ecommerceModule, billingModule } = this.dependencies;
+    const { ecommerce, billing } = this.dependencies.modules;
     if (invoiceIds.length) {
-      const invoiceLinks = await billingModule.paymentIntentsToInvoices.find({
+      const invoiceLinks = await billing.paymentIntentsToInvoices.find({
         params: {
           filters: {
             and: [
@@ -455,7 +445,7 @@ export class Service {
       }
     }
     const orderLinks: IOrderIntent[] =
-      await ecommerceModule.ordersToBillingModulePaymentIntents.find({
+      await ecommerce.order.ordersToBillingModulePaymentIntents.find({
         params: {
           filters: {
             and: [

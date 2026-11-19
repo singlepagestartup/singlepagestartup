@@ -1,4 +1,5 @@
-import { createModules } from "../modules";
+import { createModule } from "../module";
+import { createModules } from "@sps/rbac/backend/app/api/src/lib/modules";
 import "reflect-metadata";
 import { injectFromBase, injectable } from "inversify";
 import { CRUDService } from "@sps/shared-backend-api";
@@ -19,6 +20,10 @@ export interface IRevocationDependencies {
 export class Service extends CRUDService<IGrant> {
   get modules() {
     return this.appAssembly.getOrCreate(createModules);
+  }
+
+  get module() {
+    return this.appAssembly.getOrCreate(createModule);
   }
 
   private revocation?: IRevocationDependencies;

@@ -5,48 +5,11 @@ import { MiddlewareHandler } from "hono";
 
 export interface IMiddlewareGeneric {}
 
-type IService = {
-  find(props: unknown): Promise<Array<{ id?: string; variant?: string }>>;
-  socialModuleChatLifecycleAssertSubjectOwnsChat(props: {
-    subjectId: string;
-    socialModuleChatId: string;
-  }): Promise<unknown>;
-  socialModule: {
-    profile: {
-      findById(props: {
-        id: string;
-      }): Promise<{ id?: string; variant?: string } | null>;
-    };
-    profilesToChats: {
-      find(
-        props: unknown,
-      ): Promise<Array<{ id?: string; profileId?: string; chatId?: string }>>;
-    };
-    profilesToSkills: {
-      find(
-        props: unknown,
-      ): Promise<Array<{ id?: string; profileId?: string; skillId?: string }>>;
-    };
-    profilesToKnowledgeModuleSources: {
-      find(props: unknown): Promise<
-        Array<{
-          id?: string;
-          profileId?: string;
-          knowledgeModuleSourceId?: string;
-        }>
-      >;
-    };
-  };
-  subjectsToSocialModuleProfiles: {
-    find(props: unknown): Promise<
-      Array<{
-        id?: string;
-        subjectId?: string;
-        socialModuleProfileId?: string;
-      }>
-    >;
-  };
-};
+import type { SubjectServiceDependencies } from "@sps/rbac/models/subject/backend/app/api/src/lib/service/singlepage";
+
+type IService = SubjectServiceDependencies<
+  "find" | "socialModuleChatLifecycleAssertSubjectOwnsChat"
+>;
 
 function requireParam(
   c: Parameters<MiddlewareHandler<any, any, {}>>[0],
@@ -121,7 +84,7 @@ export class Middleware {
     socialModuleProfileId: string;
   }) {
     const subjectProfileRelations =
-      await this.service.subjectsToSocialModuleProfiles.find({
+      await this.service.module.subjectsToSocialModuleProfiles.find({
         params: {
           filters: {
             and: [
@@ -152,7 +115,7 @@ export class Middleware {
     targetSocialModuleProfileId: string;
     socialModuleChatId: string;
   }) {
-    const targetProfile = await this.service.socialModule.profile.findById({
+    const targetProfile = await this.service.modules.social.profile.findById({
       id: props.targetSocialModuleProfileId,
     });
 
@@ -169,7 +132,7 @@ export class Middleware {
     }
 
     const [targetChatRelations, subjectProfileRelations] = await Promise.all([
-      this.service.socialModule.profilesToChats.find({
+      this.service.modules.social.profilesToChats.find({
         params: {
           filters: {
             and: [
@@ -188,7 +151,7 @@ export class Middleware {
           limit: 1,
         },
       }),
-      this.service.subjectsToSocialModuleProfiles.find({
+      this.service.module.subjectsToSocialModuleProfiles.find({
         params: {
           filters: {
             and: [
@@ -250,7 +213,7 @@ export class Middleware {
     targetSocialModuleProfileId: string;
     socialModuleSkillId: string;
   }) {
-    const relations = await this.service.socialModule.profilesToSkills.find({
+    const relations = await this.service.modules.social.profilesToSkills.find({
       params: {
         filters: {
           and: [
@@ -282,7 +245,7 @@ export class Middleware {
     knowledgeModuleSourceId: string;
   }) {
     const relations =
-      await this.service.socialModule.profilesToKnowledgeModuleSources.find({
+      await this.service.modules.social.profilesToKnowledgeModuleSources.find({
         params: {
           filters: {
             and: [

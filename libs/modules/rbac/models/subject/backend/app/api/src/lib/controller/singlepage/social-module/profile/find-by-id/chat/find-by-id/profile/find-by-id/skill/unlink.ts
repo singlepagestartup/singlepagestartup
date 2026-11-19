@@ -14,26 +14,28 @@ export class Handler {
         "targetSocialModuleProfileId",
       );
       const socialModuleSkillId = requireParam(c, "socialModuleSkillId");
-      const relations = await this.service.socialModule.profilesToSkills.find({
-        params: {
-          filters: {
-            and: [
-              {
-                column: "profileId",
-                method: "eq",
-                value: targetSocialModuleProfileId,
-              },
-              { column: "skillId", method: "eq", value: socialModuleSkillId },
-            ],
+      const relations = await this.service.modules.social.profilesToSkills.find(
+        {
+          params: {
+            filters: {
+              and: [
+                {
+                  column: "profileId",
+                  method: "eq",
+                  value: targetSocialModuleProfileId,
+                },
+                { column: "skillId", method: "eq", value: socialModuleSkillId },
+              ],
+            },
           },
         },
-      });
+      );
 
       await Promise.all(
         (relations || [])
           .filter((relation) => Boolean(relation.id))
           .map((relation) =>
-            this.service.socialModule.profilesToSkills.delete({
+            this.service.modules.social.profilesToSkills.delete({
               id: relation.id,
             }),
           ),

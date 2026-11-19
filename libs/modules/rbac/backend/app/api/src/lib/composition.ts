@@ -12,10 +12,8 @@ export function createRoleRevocation(assembly: IAppAssembly) {
     get rolesToEcommerceModuleProducts() {
       return createProducts(assembly);
     },
-    ecommerceModule: {
-      get order() {
-        return createOrder(assembly);
-      },
+    get order() {
+      return createOrder(assembly);
     },
   });
 }

@@ -152,7 +152,7 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
         path: "/ecommerce-module/orders/payment-intents/:provider/webhook",
         handler: (c, next) =>
           new OrderPaymentWebhook(
-            this.service.billingModule.paymentIntent,
+            this.service.modules.ecommerce.order.paymentIntent,
             this.service.ecommerceModuleOrderStripePayment,
           ).execute(c, next),
       },
@@ -622,7 +622,11 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
         method: "PATCH",
         path: "/:uuid/identities/:identityUuid",
         handler: this.identitiesUpdate,
-        middlewares: [new RequestSubjectOwnsIdentity(this.service).init()],
+        middlewares: [
+          new RequestSubjectOwnsIdentity(
+            () => this.service.module.subjectsToIdentities,
+          ).init(),
+        ],
       },
       {
         method: "POST",

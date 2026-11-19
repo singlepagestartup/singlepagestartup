@@ -1,10 +1,9 @@
-import { createModules } from "../modules";
+import { createModule } from "../module";
+import { createModules } from "@sps/rbac/backend/app/api/src/lib/modules";
 import "reflect-metadata";
-import { inject, injectable } from "inversify";
-import { CRUDService, DI } from "@sps/shared-backend-api";
+import { injectFromBase, injectable } from "inversify";
+import { CRUDService } from "@sps/shared-backend-api";
 import { Table } from "@sps/rbac/models/permission/backend/repository/database";
-import { Repository } from "../../repository";
-import type { Service as PermissionsToBillingModuleCurrenciesService } from "@sps/rbac/relations/permissions-to-billing-module-currencies/backend/app/api/src/lib/service";
 import {
   RouteMatcher,
   isExactResourceGrant,
@@ -13,7 +12,6 @@ import {
   normalizeRoutePath,
 } from "@sps/shared-utils";
 import { match } from "path-to-regexp";
-import { PermissionDI } from "../../di";
 import { type IModel as IPermissionsToBillingModuleCurrencies } from "@sps/rbac/relations/permissions-to-billing-module-currencies/sdk/model";
 import { sensitiveRoutes } from "./sensitive-routes";
 
@@ -37,21 +35,14 @@ export type IResolveByRouteResult = {
 };
 
 @injectable()
+@injectFromBase()
 export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
   get modules() {
     return this.appAssembly.getOrCreate(createModules);
   }
 
-  permissionsToBillingModuleCurrenciesService: PermissionsToBillingModuleCurrenciesService;
-
-  constructor(
-    @inject(DI.IRepository) repository: Repository,
-    @inject(PermissionDI.IPermissionsToBillingModuleCurrenciesService)
-    permissionsToBillingModuleCurrenciesService: PermissionsToBillingModuleCurrenciesService,
-  ) {
-    super(repository);
-    this.permissionsToBillingModuleCurrenciesService =
-      permissionsToBillingModuleCurrenciesService;
+  get module() {
+    return this.appAssembly.getOrCreate(createModule);
   }
 
   invalidateRouteResolutionCache() {
@@ -193,7 +184,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
 
     if (!requirements) {
       const fetched =
-        await this.permissionsToBillingModuleCurrenciesService.find({
+        await this.module.permissionsToBillingModuleCurrencies.find({
           params: {
             filters: {
               and: [

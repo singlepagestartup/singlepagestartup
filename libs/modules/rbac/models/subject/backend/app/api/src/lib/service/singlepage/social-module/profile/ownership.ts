@@ -50,7 +50,7 @@ export class Service {
       subject.variant === "anonymous"
     )
       throw new Error("Authorization error. A registered Subject is required");
-    const identities = await this.service.subjectsToIdentities.find({
+    const identities = await this.service.module.subjectsToIdentities.find({
       params: {
         filters: {
           and: [{ column: "subjectId", method: "eq", value: subjectId }],
@@ -61,7 +61,7 @@ export class Service {
       throw new Error("Authorization error. Sign in to manage profiles");
 
     // Existing assistant grants identify the owner independently of shared Chat membership.
-    const assignments = await this.service.subjectsToRoles.find({
+    const assignments = await this.service.module.subjectsToRoles.find({
       params: {
         filters: {
           and: [{ column: "subjectId", method: "eq", value: subjectId }],
@@ -70,7 +70,7 @@ export class Service {
     });
     let ownedRoles;
     if (assignments.length) {
-      ownedRoles = await this.service.role.find({
+      ownedRoles = await this.service.module.role.find({
         params: {
           filters: {
             and: [
@@ -92,45 +92,48 @@ export class Service {
           ownedRole.slug,
         )?.[1];
       if (!profileId) continue;
-      const descriptors = await this.service.permission.find({
-        params: {
-          filters: {
-            and: [
-              {
-                column: "path",
-                method: "eq",
-                value: `/api/rbac/subjects/${subjectId}/social-module/profiles/[social.profiles.id]/chats/[social.chats.id]/profiles/${profileId}/knowledge/sources`,
-              },
-              { column: "method", method: "eq", value: "GET" },
-              { column: "type", method: "eq", value: "HTTP" },
-            ],
+      const descriptors = await this.service.module.role.module.permission.find(
+        {
+          params: {
+            filters: {
+              and: [
+                {
+                  column: "path",
+                  method: "eq",
+                  value: `/api/rbac/subjects/${subjectId}/social-module/profiles/[social.profiles.id]/chats/[social.chats.id]/profiles/${profileId}/knowledge/sources`,
+                },
+                { column: "method", method: "eq", value: "GET" },
+                { column: "type", method: "eq", value: "HTTP" },
+              ],
+            },
+            limit: 2,
           },
-          limit: 2,
         },
-      });
+      );
       if (descriptors.length !== 1) continue;
-      const grants = await this.service.rolesToPermissions.find({
-        params: {
-          filters: {
-            and: [
-              { column: "roleId", method: "eq", value: ownedRole.id },
-              {
-                column: "permissionId",
-                method: "eq",
-                value: descriptors[0].id,
-              },
-            ],
+      const grants =
+        await this.service.module.role.module.rolesToPermissions.find({
+          params: {
+            filters: {
+              and: [
+                { column: "roleId", method: "eq", value: ownedRole.id },
+                {
+                  column: "permissionId",
+                  method: "eq",
+                  value: descriptors[0].id,
+                },
+              ],
+            },
+            limit: 1,
           },
-          limit: 1,
-        },
-      });
+        });
       if (!grants.length) continue;
-      const assistant = await this.service.socialModule.profile.findById({
+      const assistant = await this.service.modules.social.profile.findById({
         id: profileId,
       });
       if (assistant?.variant !== "artificial-intelligence") continue;
       await this.ensureEntity({
-        service: this.service.subjectsToSocialModuleProfiles,
+        service: this.service.module.subjectsToSocialModuleProfiles,
         filters: [
           { column: "subjectId", method: "eq", value: subjectId },
           { column: "socialModuleProfileId", method: "eq", value: profileId },
@@ -143,16 +146,18 @@ export class Service {
       });
     }
 
-    const links = await this.service.subjectsToSocialModuleProfiles.find({
-      params: {
-        filters: {
-          and: [{ column: "subjectId", method: "eq", value: subjectId }],
+    const links = await this.service.module.subjectsToSocialModuleProfiles.find(
+      {
+        params: {
+          filters: {
+            and: [{ column: "subjectId", method: "eq", value: subjectId }],
+          },
         },
       },
-    });
+    );
     let profiles;
     if (links.length) {
-      profiles = await this.service.socialModule.profile.find({
+      profiles = await this.service.modules.social.profile.find({
         params: {
           filters: {
             and: [
@@ -177,7 +182,7 @@ export class Service {
             profile.variant === "artificial-intelligence",
         )
       )
-        await this.service.subjectsToSocialModuleProfiles.update({
+        await this.service.module.subjectsToSocialModuleProfiles.update({
           id: link.id,
           data: { ...link, variant: "assistant" },
         });
@@ -199,8 +204,8 @@ export class Service {
       personal[0] ??
       (await this.ensureEntity({
         service: {
-          find: (props) => this.service.socialModule.profile.find(props),
-          create: (props) => this.service.socialModule.profile.create(props),
+          find: (props) => this.service.modules.social.profile.find(props),
+          create: (props) => this.service.modules.social.profile.create(props),
         },
         filters: [
           { column: "slug", method: "eq", value: `subject-${subjectId}` },
@@ -212,7 +217,7 @@ export class Service {
         },
       }));
     const profileOwners =
-      await this.service.subjectsToSocialModuleProfiles.find({
+      await this.service.module.subjectsToSocialModuleProfiles.find({
         params: {
           filters: {
             and: [
@@ -233,7 +238,7 @@ export class Service {
         "Data integrity error. The personal profile belongs to another Subject",
       );
     await this.ensureEntity({
-      service: this.service.subjectsToSocialModuleProfiles,
+      service: this.service.module.subjectsToSocialModuleProfiles,
       filters: [
         { column: "subjectId", method: "eq", value: subjectId },
         { column: "socialModuleProfileId", method: "eq", value: profile.id },
@@ -246,7 +251,7 @@ export class Service {
     });
 
     const role = await this.ensureEntity({
-      service: this.service.role,
+      service: this.service.module.role,
       filters: [
         {
           column: "slug",
@@ -293,7 +298,7 @@ export class Service {
     ];
     for (const { method, path: permissionPath } of descriptors) {
       const permission = await this.ensureEntity({
-        service: this.service.permission,
+        service: this.service.module.role.module.permission,
         filters: [
           { column: "path", method: "eq", value: permissionPath },
           { column: "method", method: "eq", value: method },
@@ -307,7 +312,7 @@ export class Service {
         },
       });
       await this.ensureEntity({
-        service: this.service.rolesToPermissions,
+        service: this.service.module.role.module.rolesToPermissions,
         filters: [
           { column: "roleId", method: "eq", value: role.id },
           { column: "permissionId", method: "eq", value: permission.id },
@@ -321,14 +326,14 @@ export class Service {
       permissions.push(permission);
     }
     await this.ensureEntity({
-      service: this.service.subjectsToRoles,
+      service: this.service.module.subjectsToRoles,
       filters: [
         { column: "subjectId", method: "eq", value: subjectId },
         { column: "roleId", method: "eq", value: role.id },
       ],
       data: { subjectId, roleId: role.id, variant: "default" },
     });
-    this.service.permission.invalidateRouteResolutionCache();
+    this.service.module.role.module.permission.invalidateRouteResolutionCache();
     this.service.isAuthorizedService.invalidateSubjectRoleCache(subjectId);
     return { profile, role, permissions };
   }

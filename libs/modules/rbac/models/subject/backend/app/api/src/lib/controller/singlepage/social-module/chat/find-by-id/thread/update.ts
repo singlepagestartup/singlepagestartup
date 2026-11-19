@@ -55,7 +55,7 @@ export class Handler {
         socialModuleThreadId,
       });
 
-      const socialModuleChat = await this.service.socialModule.chat.findById({
+      const socialModuleChat = await this.service.modules.social.chat.findById({
         id: socialModuleChatId,
       });
 
@@ -64,7 +64,7 @@ export class Handler {
       }
 
       const existingSocialModuleThread =
-        await this.service.socialModule.thread.findById({
+        await this.service.modules.social.thread.findById({
           id: socialModuleThreadId,
         });
 

@@ -26,11 +26,11 @@ export class Handler {
 
       const data = JSON.parse(body["data"]);
 
-      const message = await this.service.messages.create({
+      const message = await this.service.module.message.create({
         data,
       });
 
-      await this.service.channelsToMessages.create({
+      await this.service.module.channelsToMessages.create({
         data: {
           channelId: id,
           messageId: message.id,

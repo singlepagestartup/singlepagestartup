@@ -4,13 +4,11 @@ import type { SubjectServiceDependencies } from "../../index";
 
 export class Service {
   constructor(
-    private readonly subject: SubjectServiceDependencies<
-      "billingModule" | "ecommerceModuleOrderResolveProviderPeriod"
-    >,
+    private readonly subject: SubjectServiceDependencies<"ecommerceModuleOrderResolveProviderPeriod">,
   ) {}
 
   private get payments() {
-    return this.subject.billingModule.paymentIntent;
+    return this.subject.modules.ecommerce.order.paymentIntent;
   }
 
   async webhook(event: Stripe.Response<Stripe.Event>) {
@@ -26,14 +24,13 @@ export class Service {
 
   async check(invoice: IInvoice) {
     if (invoice.status === "draft" && !invoice.providerId) {
-      const links =
-        await this.payments.billingModule.paymentIntentsToInvoices.find({
-          params: {
-            filters: {
-              and: [{ column: "invoiceId", method: "eq", value: invoice.id }],
-            },
+      const links = await this.payments.module.paymentIntentsToInvoices.find({
+        params: {
+          filters: {
+            and: [{ column: "invoiceId", method: "eq", value: invoice.id }],
           },
-        });
+        },
+      });
       if (links?.length === 1) {
         const intent = await this.payments.findById({
           id: links[0].paymentIntentId,

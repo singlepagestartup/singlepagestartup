@@ -88,15 +88,17 @@ describe("Given: a delivering subscription with an hourly interval", () => {
       ordersToBillingModulePaymentIntents: {
         find: jest.fn().mockResolvedValue([]),
       },
-      billingModule: {
-        paymentIntent: {
-          findById: jest.fn(),
-        },
-        paymentIntentsToInvoices: {
-          find: jest.fn(),
-        },
-        invoice: {
-          findById: jest.fn(),
+      paymentIntent: {
+        findById: jest.fn(),
+      },
+      modules: {
+        billing: {
+          paymentIntentsToInvoices: {
+            find: jest.fn(),
+          },
+          invoice: {
+            findById: jest.fn(),
+          },
         },
       },
     };
@@ -155,20 +157,22 @@ describe("Given: a paying order is waiting for payment initialization", () => {
       ordersToBillingModulePaymentIntents: {
         find: jest.fn().mockResolvedValue(props.orderToPaymentIntents ?? []),
       },
-      billingModule: {
-        paymentIntent: {
-          failUninitializedPaymentIntent: mockPaymentIntentUpdate,
-          findById: jest.fn().mockImplementation(({ id }: { id: string }) => {
-            return Promise.resolve(paymentIntents[id]);
-          }),
-        },
-        paymentIntentsToInvoices: {
-          find: jest
-            .fn()
-            .mockResolvedValue(props.paymentIntentsToInvoices ?? []),
-        },
-        invoice: {
-          findById: jest.fn(),
+      paymentIntent: {
+        failUninitializedPaymentIntent: mockPaymentIntentUpdate,
+        findById: jest.fn().mockImplementation(({ id }: { id: string }) => {
+          return Promise.resolve(paymentIntents[id]);
+        }),
+      },
+      modules: {
+        billing: {
+          paymentIntentsToInvoices: {
+            find: jest
+              .fn()
+              .mockResolvedValue(props.paymentIntentsToInvoices ?? []),
+          },
+          invoice: {
+            findById: jest.fn(),
+          },
         },
       },
     };

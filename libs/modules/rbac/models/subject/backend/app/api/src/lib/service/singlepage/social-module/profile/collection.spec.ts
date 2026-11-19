@@ -40,65 +40,7 @@ function dependencies() {
   ];
   const deps = {
     find: jest.fn(),
-    subjectsToIdentities: {
-      find: jest
-        .fn()
-        .mockResolvedValue([{ subjectId: "owner", identityId: "identity" }]),
-    },
     findById: jest.fn().mockResolvedValue({ id: "owner", variant: "default" }),
-    subjectsToSocialModuleProfiles: {
-      find: jest.fn().mockResolvedValue([
-        {
-          subjectId: "owner",
-          socialModuleProfileId: "human",
-          variant: "default",
-        },
-        {
-          subjectId: "owner",
-          socialModuleProfileId: "AI-one",
-          variant: "assistant",
-        },
-        {
-          subjectId: "owner",
-          socialModuleProfileId: "AI-two",
-          variant: "assistant",
-        },
-      ]),
-    },
-    socialModule: {
-      chat: { find: jest.fn().mockResolvedValue([]) },
-      profilesToChats: {
-        find: jest.fn().mockImplementation(({ params }) =>
-          Promise.resolve(
-            params.filters.and.length > 1
-              ? [{ profileId: "AI-one", chatId: "existing-chat" }]
-              : params.filters.and[0].column === "profileId"
-                ? [{ profileId: "human", chatId: "chat" }]
-                : [
-                    { profileId: "human", chatId: "chat" },
-                    { profileId: "AI-one", chatId: "chat" },
-                    { profileId: "AI-two", chatId: "chat" },
-                    { profileId: "other-human", chatId: "chat" },
-                  ],
-          ),
-        ),
-      },
-      profile: {
-        find: jest
-          .fn()
-          .mockImplementation(({ params }) =>
-            Promise.resolve(
-              records.filter((record) =>
-                params.filters.and.every((filter: any) =>
-                  filter.method === "eq"
-                    ? (record as any)[filter.column] === filter.value
-                    : filter.value.includes((record as any)[filter.column]),
-                ),
-              ),
-            ),
-          ),
-      },
-    },
     socialModuleChatLifecycleIsSubjectAdmin: jest.fn().mockResolvedValue(false),
     socialModuleChatLifecycleAssertSubjectOwnsChat: jest.fn(),
     socialModuleChatLifecycleCreateChatWithDefaultThread: jest
@@ -108,6 +50,68 @@ function dependencies() {
         socialModuleDefaultThread: { id: "thread", metadata: { saved: true } },
       })),
     socialModuleProfileKnowledgeAccessEnsure: jest.fn(),
+    modules: {
+      social: {
+        chat: { find: jest.fn().mockResolvedValue([]) },
+        profilesToChats: {
+          find: jest.fn().mockImplementation(({ params }) =>
+            Promise.resolve(
+              params.filters.and.length > 1
+                ? [{ profileId: "AI-one", chatId: "existing-chat" }]
+                : params.filters.and[0].column === "profileId"
+                  ? [{ profileId: "human", chatId: "chat" }]
+                  : [
+                      { profileId: "human", chatId: "chat" },
+                      { profileId: "AI-one", chatId: "chat" },
+                      { profileId: "AI-two", chatId: "chat" },
+                      { profileId: "other-human", chatId: "chat" },
+                    ],
+            ),
+          ),
+        },
+        profile: {
+          find: jest
+            .fn()
+            .mockImplementation(({ params }) =>
+              Promise.resolve(
+                records.filter((record) =>
+                  params.filters.and.every((filter: any) =>
+                    filter.method === "eq"
+                      ? (record as any)[filter.column] === filter.value
+                      : filter.value.includes((record as any)[filter.column]),
+                  ),
+                ),
+              ),
+            ),
+        },
+      },
+    },
+    module: {
+      subjectsToIdentities: {
+        find: jest
+          .fn()
+          .mockResolvedValue([{ subjectId: "owner", identityId: "identity" }]),
+      },
+      subjectsToSocialModuleProfiles: {
+        find: jest.fn().mockResolvedValue([
+          {
+            subjectId: "owner",
+            socialModuleProfileId: "human",
+            variant: "default",
+          },
+          {
+            subjectId: "owner",
+            socialModuleProfileId: "AI-one",
+            variant: "assistant",
+          },
+          {
+            subjectId: "owner",
+            socialModuleProfileId: "AI-two",
+            variant: "assistant",
+          },
+        ]),
+      },
+    },
   };
   return deps;
 }
@@ -135,8 +139,8 @@ describe("Subject profile collection", () => {
       "AI-one",
       "AI-two",
     ]);
-    expect(deps.socialModule.chat.find).not.toHaveBeenCalled();
-    expect(deps.socialModule.profilesToChats.find).not.toHaveBeenCalled();
+    expect(deps.modules.social.chat.find).not.toHaveBeenCalled();
+    expect(deps.modules.social.profilesToChats.find).not.toHaveBeenCalled();
     expect(mockBootstrap).not.toHaveBeenCalled();
     expect(
       deps.socialModuleChatLifecycleCreateChatWithDefaultThread,
@@ -159,7 +163,7 @@ describe("Subject profile collection", () => {
       params,
     });
     expect(result.map((profile) => profile.id)).toEqual(["AI-one", "AI-two"]);
-    expect(deps.socialModule.profile.find).toHaveBeenCalledWith({
+    expect(deps.modules.social.profile.find).toHaveBeenCalledWith({
       params: {
         ...params,
         filters: {
@@ -188,11 +192,11 @@ describe("Subject profile collection", () => {
   });
   it("an unlinked subject receives an empty collection without an unscoped profile query", async () => {
     const deps = dependencies();
-    deps.subjectsToSocialModuleProfiles.find.mockResolvedValue([]);
+    deps.module.subjectsToSocialModuleProfiles.find.mockResolvedValue([]);
     expect(await new Service(deps as any).find({ subjectId: "owner" })).toEqual(
       [],
     );
-    expect(deps.socialModule.profile.find).not.toHaveBeenCalled();
+    expect(deps.modules.social.profile.find).not.toHaveBeenCalled();
   });
   it("rejects manually creating another personal profile before any write", async () => {
     const deps = dependencies();
@@ -337,8 +341,8 @@ describe("Subject profile collection", () => {
     });
     expect(profile.slug).toBe("automatic-slug-1");
     expect(profile.adminTitle).toBe("Automatic admin title");
-    expect(deps.socialModule.profile.find).not.toHaveBeenCalled();
-    expect(deps.socialModule.chat.find).not.toHaveBeenCalled();
+    expect(deps.modules.social.profile.find).not.toHaveBeenCalled();
+    expect(deps.modules.social.chat.find).not.toHaveBeenCalled();
     expect(mockProfileCreate.mock.calls[0][0].data).not.toHaveProperty("slug");
     expect(mockProfileCreate.mock.calls[0][0].data).not.toHaveProperty(
       "adminTitle",
@@ -381,7 +385,7 @@ describe("Subject profile collection", () => {
   it("an anonymous subject cannot create a profile", async () => {
     const deps = dependencies();
     deps.findById.mockResolvedValue({ id: "anonymous", variant: "default" });
-    deps.subjectsToIdentities.find.mockResolvedValue([]);
+    deps.module.subjectsToIdentities.find.mockResolvedValue([]);
     await expect(
       new Service(deps as any).create({
         subjectId: "anonymous",
@@ -412,7 +416,7 @@ it("returns no profile for a chat none of the subject's profiles joined", async 
       socialModuleChatId: "unjoined-chat",
     }),
   ).toEqual([]);
-  expect(deps.socialModule.profile.find).not.toHaveBeenCalled();
+  expect(deps.modules.social.profile.find).not.toHaveBeenCalled();
 });
 it("preserves the existing administrator fallback using only their own profiles", async () => {
   const deps = dependencies();

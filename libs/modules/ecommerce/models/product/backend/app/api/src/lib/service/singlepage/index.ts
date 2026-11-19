@@ -1,18 +1,12 @@
-import { createModules } from "../modules";
+import { createModule } from "../module";
+import { createModules } from "@sps/ecommerce/backend/app/api/src/lib/modules";
 import "reflect-metadata";
 import { inject, injectable } from "inversify";
 import { CRUDService, DI } from "@sps/shared-backend-api";
 import { Table } from "@sps/ecommerce/models/product/backend/repository/database";
 import { Repository } from "../../repository";
 import { ProductDI } from "../../di";
-import { Service as ProductsToAttributesService } from "@sps/ecommerce/relations/products-to-attributes/backend/app/api/src/lib/service";
-import { Service as AttributeService } from "@sps/ecommerce/models/attribute/backend/app/api/src/lib/service";
-import { Service as AttributeKeysToAttributesService } from "@sps/ecommerce/relations/attribute-keys-to-attributes/backend/app/api/src/lib/service";
 import { Service as AttributeKeyService } from "@sps/ecommerce/models/attribute-key/backend/app/api/src/lib/service";
-import { Service as AttributesToBillingModuleCurrenciesService } from "@sps/ecommerce/relations/attributes-to-billing-module-currencies/backend/app/api/src/lib/service";
-import { Service as ProductsToFileStorageModuleFilesService } from "@sps/ecommerce/relations/products-to-file-storage-module-files/backend/app/api/src/lib/service";
-import { Service as BillingCurrencyService } from "@sps/billing/models/currency/backend/app/api/src/lib/service";
-import { Service as FileStorageFileService } from "@sps/file-storage/models/file/backend/app/api/src/lib/service";
 import { Service as GetExtendedService } from "../startup/get-extended";
 import type {
   IExecuteProps as IFindByIdExtendedExecuteProps,
@@ -27,50 +21,16 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     return this.appAssembly.getOrCreate(createModules);
   }
 
-  productsToAttributes: ProductsToAttributesService;
-  attribute: AttributeService;
-  attributeKeysToAttributes: AttributeKeysToAttributesService;
-  attributeKey: AttributeKeyService;
-  attributesToBillingModuleCurrencies: AttributesToBillingModuleCurrenciesService;
-  productsToFileStorageModuleFiles: ProductsToFileStorageModuleFilesService;
-  billingModule: {
-    currency: BillingCurrencyService;
-  };
-  fileStorageModule: {
-    file: FileStorageFileService;
-  };
+  get module() {
+    return this.appAssembly.getOrCreate(createModule);
+  }
 
   constructor(
     @inject(DI.IRepository) repository: Repository,
-    @inject(ProductDI.IProductsToAttributesService)
-    productsToAttributes: ProductsToAttributesService,
-    @inject(ProductDI.IAttributesService) attribute: AttributeService,
-    @inject(ProductDI.IAttributeKeysToAttributesService)
-    attributeKeysToAttributes: AttributeKeysToAttributesService,
-    @inject(ProductDI.IAttributeKeysService) attributeKey: AttributeKeyService,
-    @inject(ProductDI.IAttributesToBillingModuleCurrenciesService)
-    attributesToBillingModuleCurrencies: AttributesToBillingModuleCurrenciesService,
-    @inject(ProductDI.IProductsToFileStorageModuleFilesService)
-    productsToFileStorageModuleFiles: ProductsToFileStorageModuleFilesService,
-    @inject(ProductDI.IBillingModuleCurrencyService)
-    billingModuleCurrency: BillingCurrencyService,
-    @inject(ProductDI.IFileStorageModuleFileService)
-    fileStorageModuleFile: FileStorageFileService,
+    @inject(ProductDI.IAttributeKeysService)
+    private readonly attributeKey: AttributeKeyService,
   ) {
     super(repository);
-    this.productsToAttributes = productsToAttributes;
-    this.attribute = attribute;
-    this.attributeKeysToAttributes = attributeKeysToAttributes;
-    this.attributeKey = attributeKey;
-    this.attributesToBillingModuleCurrencies =
-      attributesToBillingModuleCurrencies;
-    this.productsToFileStorageModuleFiles = productsToFileStorageModuleFiles;
-    this.billingModule = {
-      currency: billingModuleCurrency,
-    };
-    this.fileStorageModule = {
-      file: fileStorageModuleFile,
-    };
   }
 
   async findByIdExtended(
@@ -78,15 +38,17 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
   ): Promise<IFindByIdExtendedResult> {
     return new GetExtendedService({
       findById: ({ id }) => this.findById({ id }),
-      productsToAttributes: this.productsToAttributes,
-      attribute: this.attribute,
-      attributeKeysToAttributes: this.attributeKeysToAttributes,
+      productsToAttributes: this.module.productsToAttributes,
+      attribute: this.module.attribute,
+      attributeKeysToAttributes:
+        this.attributeKey.module.attributeKeysToAttributes,
       attributeKey: this.attributeKey,
       attributesToBillingModuleCurrencies:
-        this.attributesToBillingModuleCurrencies,
-      productsToFileStorageModuleFiles: this.productsToFileStorageModuleFiles,
-      billingModule: this.billingModule,
-      fileStorageModule: this.fileStorageModule,
+        this.module.attribute.module.attributesToBillingModuleCurrencies,
+      productsToFileStorageModuleFiles:
+        this.module.productsToFileStorageModuleFiles,
+      currency: this.modules.billing.currency,
+      file: this.modules.fileStorage.file,
     }).execute(props);
   }
 }

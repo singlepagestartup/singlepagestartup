@@ -36,8 +36,11 @@ const modules={
 const services={};
 for(const [module,owner] of Object.entries(modules))for(const entry of owner.apps.apps)services[module+entry.route]=entry.app.controller.service;
 const service=resource=>{assert(services[resource],"Missing effective owner: "+resource);return services[resource];};
-const paymentIntents = service("rbac/subjects").billingModule.paymentIntent;
-assert.equal(service("ecommerce/orders").billingModule.paymentIntent, paymentIntents);
+const subjectService = service("rbac/subjects");
+const paymentIntents = subjectService.modules.ecommerce.order.paymentIntent;
+assert.equal(service("ecommerce/orders").paymentIntent, paymentIntents);
+assert.equal(subjectService.modules.billing.paymentIntent, service("billing/payment-intents"));
+assert.notEqual(subjectService.modules.billing.paymentIntent, paymentIntents);
 const create=async(resource,data)=>{const row=await service(resource).create({data});assert(row?.id,resource+" did not persist an ID");return row;};
 const find=(resource,and)=>service(resource).find({params:{filters:{and}}});
 const eq=(column,value)=>({column,method:"eq",value});
@@ -158,7 +161,7 @@ try{
     const quantityResponse = await app.request("/api/ecommerce/orders/" + removedCart.id + "/quantity");
     assert.equal(quantityResponse.status, 200);
     assert.equal((await quantityResponse.json()).data, 37);
-    const subjectOrder = service("rbac/subjects").ecommerceModule.order;
+    const subjectOrder = service("rbac/subjects").modules.ecommerce.order;
     assert.equal(await subjectOrder.findByIdQuantity({ id: removedCart.id }), 37);
   } finally {
     projectQuantity.mockRestore();

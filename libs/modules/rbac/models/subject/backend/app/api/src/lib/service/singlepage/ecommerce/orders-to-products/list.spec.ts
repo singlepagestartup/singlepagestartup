@@ -39,12 +39,10 @@ function createService(props?: {
     .mockResolvedValue({ totals: total, unpriced: [] });
 
   const service = new Service({
-    ecommerceModule: {
-      ordersToProducts: {
-        find: ordersToProductsFind,
-        getTotal: ordersToProductsGetTotal,
-      },
-    } as any,
+    ordersToProducts: {
+      find: ordersToProductsFind,
+      getTotal: ordersToProductsGetTotal,
+    },
     subjectsToEcommerceModuleOrders: {
       find: subjectsToEcommerceModuleOrdersFind,
     } as any,

@@ -134,18 +134,16 @@ function fixture() {
     ordersToBillingModulePaymentIntents: {
       find: jest.fn(async () => state.orderIntents),
     },
-    billingModule: {
-      currency: { find: jest.fn(async () => state.currencies) },
-      paymentIntent: { find: jest.fn(async () => state.intents) },
-      paymentIntentsToCurrencies: {
-        find: jest.fn(async () => state.intentCurrencies),
-      },
-      paymentIntentsToInvoices: {
-        find: jest.fn(async () => state.intentInvoices),
-      },
-      invoice: { find: jest.fn(async () => state.invoices) },
+    currency: { find: jest.fn(async () => state.currencies) },
+    paymentIntent: { find: jest.fn(async () => state.intents) },
+    paymentIntentsToCurrencies: {
+      find: jest.fn(async () => state.intentCurrencies),
     },
-    fileStorageModule: { file: { find: jest.fn(async () => []) } },
+    paymentIntentsToInvoices: {
+      find: jest.fn(async () => state.intentInvoices),
+    },
+    invoice: { find: jest.fn(async () => state.invoices) },
+    file: { find: jest.fn(async () => []) },
   };
   const service = new Service(
     dependencies as unknown as ConstructorParameters<typeof Service>[0],

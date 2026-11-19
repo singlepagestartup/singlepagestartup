@@ -10,7 +10,6 @@ import { Repository } from "./repository";
 import { Controller } from "./controller";
 import { Service } from "./service";
 import { App } from "./app";
-import { createModules } from "./service/modules";
 import { ChannelDI } from "./di";
 import { DeliveryRepository } from "./repository/delivery";
 import { Configuration as MessageConfiguration } from "@sps/broadcast/models/message/backend/app/api/src/lib/configuration";
@@ -27,18 +26,5 @@ const bindings = new ContainerModule(({ bind }) => {
     .inSingletonScope();
 });
 
-export const serviceBootstrap = createAppBootstrap<App, Service>(
-  bindings,
-  (container, assembly) => {
-    const { broadcast } = assembly.getOrCreate(createModules);
-    container
-      .bind(ChannelDI.IMessageService)
-      .toDynamicValue(() => broadcast.message)
-      .inSingletonScope();
-    container
-      .bind(ChannelDI.IChannelsToMessagesService)
-      .toDynamicValue(() => broadcast.channelsToMessages)
-      .inSingletonScope();
-  },
-);
+export const serviceBootstrap = createAppBootstrap<App, Service>(bindings);
 export const { bootstrap, createService } = serviceBootstrap;

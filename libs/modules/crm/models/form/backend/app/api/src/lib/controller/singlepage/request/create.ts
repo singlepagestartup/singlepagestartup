@@ -71,7 +71,7 @@ export class Handler {
         },
       });
 
-      const topics = await this.service.notificationModule.topic.find({
+      const topics = await this.service.modules.notification.topic.find({
         params: {
           filters: {
             and: [
@@ -91,7 +91,7 @@ export class Handler {
 
       const topic = topics[0];
 
-      const templates = await this.service.notificationModule.template.find({
+      const templates = await this.service.modules.notification.template.find({
         params: {
           filters: {
             and: [

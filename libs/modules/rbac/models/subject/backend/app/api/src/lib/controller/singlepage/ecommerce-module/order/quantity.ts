@@ -42,7 +42,7 @@ export class Handler {
       }
 
       const subjectsToEcommerceModuleOrders =
-        await this.service.subjectsToEcommerceModuleOrders.find({
+        await this.service.module.subjectsToEcommerceModuleOrders.find({
           params: {
             filters: {
               and: [
@@ -63,7 +63,7 @@ export class Handler {
       }
 
       const ecommerceModuleOrdersWithCartType =
-        await this.service.ecommerceModule.order.find({
+        await this.service.modules.ecommerce.order.find({
           params: {
             filters: {
               and: [
@@ -100,7 +100,7 @@ export class Handler {
 
       for (const ecommerceModuleOrderWithCartType of ecommerceModuleOrdersWithCartType) {
         const ecommerceModuleOrderQuantity =
-          await this.service.ecommerceModule.order.findByIdQuantity({
+          await this.service.modules.ecommerce.order.findByIdQuantity({
             id: ecommerceModuleOrderWithCartType.id,
           });
 

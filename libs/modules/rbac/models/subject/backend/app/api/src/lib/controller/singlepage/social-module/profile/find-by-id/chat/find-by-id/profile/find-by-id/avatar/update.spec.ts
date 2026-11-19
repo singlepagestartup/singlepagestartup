@@ -1,11 +1,3 @@
-/**
- * BDD Suite: subject-scoped AI profile avatar updates.
- *
- * Given: an authorized operator manages an AI profile avatar.
- * When: an image replacement or default reset is submitted.
- * Then: the canonical avatar route keeps exactly one active File Storage relation.
- */
-
 const mockFileCreate = jest.fn();
 const mockRelationFind = jest.fn();
 const mockRelationCreate = jest.fn();
@@ -45,15 +37,19 @@ function createContext(formData: FormData) {
 
 function createService(defaultFiles: Array<Record<string, unknown>> = []) {
   const service = {
-    fileStorageModule: {
-      file: {
-        find: jest.fn().mockResolvedValue(defaultFiles),
-        findById: jest.fn(),
-        readBytes: jest.fn(),
+    socialModuleProfileAvatarUpdate: (props: any) =>
+      new AvatarService({ file: service.modules.fileStorage.file }).execute(
+        props,
+      ),
+    modules: {
+      fileStorage: {
+        file: {
+          find: jest.fn().mockResolvedValue(defaultFiles),
+          findById: jest.fn(),
+          readBytes: jest.fn(),
+        },
       },
     },
-    socialModuleProfileAvatarUpdate: (props: any) =>
-      new AvatarService(service).execute(props),
   };
   return service as any;
 }
@@ -166,7 +162,7 @@ describe("AI profile avatar update", () => {
       jest.fn(),
     );
 
-    expect(service.fileStorageModule.file.find).toHaveBeenCalledWith({
+    expect(service.modules.fileStorage.file.find).toHaveBeenCalledWith({
       params: {
         filters: {
           and: [

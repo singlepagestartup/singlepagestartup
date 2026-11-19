@@ -1,8 +1,5 @@
-import "reflect-metadata";
-import { inject, injectable, optional } from "inversify";
-import { defaultAppAssembly, DI } from "@sps/shared-backend-api";
-import { createModules } from "@sps/rbac/backend/app/api/src/lib/modules";
 import { Provider } from "@sps/providers-kv";
+import type { FindServiceProps } from "@sps/shared-backend-api";
 import {
   KV_PROVIDER,
   SECURITY_NOTIFICATIONS_ENABLED,
@@ -20,12 +17,7 @@ import {
   logger,
   type ISecuritySummary,
 } from "@sps/backend-utils";
-import {
-  SubjectDI,
-  type IReadService,
-  type IBroadcastModule,
-  type INotificationModule,
-} from "../../../di";
+import type { SubjectServiceDependencies } from "..";
 
 import {
   renderRequestSchema,
@@ -50,34 +42,39 @@ interface IRecipient {
   email?: string;
 }
 
+interface ISecurityNotificationServices {
+  role: Pick<SubjectServiceDependencies["module"]["role"], "find">;
+  subjectsToRoles: Pick<
+    SubjectServiceDependencies["module"]["subjectsToRoles"],
+    "find"
+  >;
+  subjectsToIdentities: Pick<
+    SubjectServiceDependencies["module"]["subjectsToIdentities"],
+    "find"
+  >;
+  identity: Pick<SubjectServiceDependencies["module"]["identity"], "find">;
+  topic: Pick<
+    SubjectServiceDependencies["modules"]["notification"]["topic"],
+    "find" | "sendBounded"
+  >;
+  template: Pick<
+    SubjectServiceDependencies["modules"]["notification"]["template"],
+    "find"
+  >;
+  channel: Pick<
+    SubjectServiceDependencies["modules"]["broadcast"]["channel"],
+    "find" | "create" | "queue"
+  >;
+}
+
 // One recurring, private Broadcast message coalesces security events. A new
 // window replaces an undelivered old summary; there is no per-request backlog.
-@injectable()
 export class Service {
-  private readonly notifications: INotificationModule;
-  private readonly broadcast: IBroadcastModule;
   private readonly events = new SecurityEvents(
     new Provider({ type: KV_PROVIDER }),
   );
 
-  constructor(
-    @inject(SubjectDI.IRoleService) private readonly role: IReadService,
-    @inject(SubjectDI.ISubjectsToRolesService)
-    private readonly subjectsToRoles: IReadService,
-    @inject(SubjectDI.ISubjectsToIdentitiesService)
-    private readonly subjectsToIdentities: IReadService,
-    @inject(SubjectDI.IIdentityService) private readonly identity: IReadService,
-    @inject(SubjectDI.INotificationModule)
-    @optional()
-    notifications: INotificationModule | undefined,
-    @inject(SubjectDI.IBroadcastModule)
-    @optional()
-    broadcast: IBroadcastModule | undefined,
-    @inject(DI.IAppAssembly) @optional() assembly = defaultAppAssembly,
-  ) {
-    const modules = assembly.getOrCreate(createModules);
-    this.notifications = notifications ?? modules.notification;
-    this.broadcast = broadcast ?? modules.broadcast;
+  constructor(private readonly services: ISecurityNotificationServices) {
     if (
       !Number.isSafeInteger(SECURITY_NOTIFICATION_FAILURE_THRESHOLD) ||
       SECURITY_NOTIFICATION_FAILURE_THRESHOLD < 1
@@ -114,7 +111,7 @@ export class Service {
       return;
     }
     const channel = await this.channel();
-    const queue = this.broadcast.channel.queue;
+    const queue = this.services.channel.queue;
     const key = "security-summary";
     const existing = await queue.states(channel.id, [key]);
     if (!existing.length) {
@@ -206,7 +203,7 @@ export class Service {
   }
 
   private async channel() {
-    const props = {
+    const props: FindServiceProps = {
       params: {
         limit: 1,
         filters: {
@@ -216,12 +213,12 @@ export class Service {
         },
       },
     };
-    const existing = await this.broadcast.channel.find(props);
+    const existing = await this.services.channel.find(props);
     if (existing?.length) {
       return existing[0];
     }
     try {
-      return await this.broadcast.channel.create({
+      return await this.services.channel.create({
         data: {
           slug: "security-notifications",
           title: "Security notifications",
@@ -229,7 +226,7 @@ export class Service {
       });
     } catch (error) {
       // Another API instance may have created the unique slug concurrently.
-      const created = await this.broadcast.channel.find(props);
+      const created = await this.services.channel.find(props);
       if (created?.length) {
         return created[0];
       }
@@ -258,7 +255,7 @@ export class Service {
   }
 
   private async recipients(): Promise<IRecipient[]> {
-    const roles = await this.role.find({
+    const roles = await this.services.role.find({
       params: {
         limit: 1,
         filters: { and: [{ column: "slug", method: "eq", value: "admin" }] },
@@ -267,7 +264,7 @@ export class Service {
     if (!roles?.length) {
       return [];
     }
-    const assignments = await this.subjectsToRoles.find({
+    const assignments = await this.services.subjectsToRoles.find({
       params: {
         limit: 21,
         orderBy: { and: [{ column: "id", method: "asc" }] },
@@ -286,7 +283,7 @@ export class Service {
         continue;
       }
       seen.add(assignment.subjectId);
-      const links = await this.subjectsToIdentities.find({
+      const links = await this.services.subjectsToIdentities.find({
         params: {
           limit: 20,
           filters: {
@@ -303,7 +300,7 @@ export class Service {
       if (!links?.length) {
         continue;
       }
-      const identities = await this.identity.find({
+      const identities = await this.services.identity.find({
         params: {
           limit: 20,
           filters: {
@@ -324,7 +321,8 @@ export class Service {
         if (
           TELEGRAM_SERVICE_BOT_TOKEN &&
           identity.provider === "telegram" &&
-          /^-?\d+$/.test(identity.account ?? "")
+          identity.account &&
+          /^-?\d+$/.test(identity.account)
         ) {
           recipient.telegram = identity.account;
         }
@@ -340,7 +338,7 @@ export class Service {
   }
 
   private async configuration(): Promise<INotificationConfiguration | null> {
-    const topics = await this.notifications.topic.find({
+    const topics = await this.services.topic.find({
       params: {
         limit: 1,
         filters: {
@@ -357,7 +355,7 @@ export class Service {
     if (!topics?.length) {
       return null;
     }
-    const templates = await this.notifications.template.find({
+    const templates = await this.services.template.find({
       params: {
         limit: 2,
         filters: {
@@ -426,7 +424,7 @@ export class Service {
       if (!receiver || !template) {
         continue;
       }
-      const result = await this.notifications.topic.sendBounded({
+      const result = await this.services.topic.sendBounded({
         key: incidentId,
         recipientKey: recipient.subjectId,
         method,

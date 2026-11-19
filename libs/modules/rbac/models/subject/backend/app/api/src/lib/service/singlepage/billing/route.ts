@@ -1,4 +1,4 @@
-import { DI, type IRepository } from "@sps/shared-backend-api";
+import type { IRepository } from "@sps/shared-backend-api";
 import {
   RBAC_JWT_SECRET,
   RBAC_SECRET_KEY,
@@ -7,8 +7,6 @@ import {
 import { api as permissionApi } from "@sps/rbac/models/permission/sdk/server";
 import { type IModel as ISubjectsToBillingModuleCurrencies } from "@sps/rbac/relations/subjects-to-billing-module-currencies/sdk/model";
 import type { Service as SubjectsToBillingModuleCurrenciesService } from "@sps/rbac/relations/subjects-to-billing-module-currencies/backend/app/api/src/lib/service";
-import { inject, injectable } from "inversify";
-import { SubjectDI } from "../../../di";
 import type { Service as IsAuthorizedService } from "../is-authorized";
 import {
   isOpenRouterBillingRoute,
@@ -43,22 +41,17 @@ type TResolvedBillingContext = {
   balanceAmount: number;
 };
 
-@injectable()
 export class Service {
   repository: IRepository;
-  subjectsToBillingModuleCurrenciesService: SubjectsToBillingModuleCurrenciesService;
+
   isAuthorizedService: IsAuthorizedService;
 
   constructor(
-    @inject(DI.IRepository) repository: IRepository,
-    @inject(SubjectDI.ISubjectsToBillingModuleCurrenciesService)
-    subjectsToBillingModuleCurrenciesService: SubjectsToBillingModuleCurrenciesService,
-    @inject(SubjectDI.IIsAuthorizedService)
+    repository: IRepository,
+    private readonly getSubjectsToBillingModuleCurrencies: () => SubjectsToBillingModuleCurrenciesService,
     isAuthorizedService: IsAuthorizedService,
   ) {
     this.repository = repository;
-    this.subjectsToBillingModuleCurrenciesService =
-      subjectsToBillingModuleCurrenciesService;
     this.isAuthorizedService = isAuthorizedService;
   }
 
@@ -144,7 +137,7 @@ export class Service {
       return undefined;
     }
 
-    const fetched = await this.subjectsToBillingModuleCurrenciesService.find({
+    const fetched = await this.getSubjectsToBillingModuleCurrencies().find({
       params: {
         filters: {
           and: [
@@ -265,7 +258,7 @@ export class Service {
       const balance = billingContext.subjectToBillingModuleCurrency;
       if (deltaAmount !== 0) {
         const updated =
-          await this.subjectsToBillingModuleCurrenciesService.updateAmountIfUnchanged(
+          await this.getSubjectsToBillingModuleCurrencies().updateAmountIfUnchanged(
             {
               id: balance.id,
               expectedAmount: balance.amount,
