@@ -7,27 +7,37 @@ import { Component as Profile } from "@sps/social/models/profile/frontend/compon
 import { Component as SocialModuleMessagesToFileStorageModuleFiles } from "@sps/social/relations/messages-to-file-storage-module-files/frontend/component";
 import { CollapsibleContent, CollapsibleTrigger } from "@sps/shared-ui-shadcn";
 import { Collapsible } from "@radix-ui/react-collapsible";
-import { Check, ChevronDown, Copy, Pencil, Trash2 } from "lucide-react";
+import {
+  Bot,
+  Check,
+  ChevronDown,
+  Copy,
+  Pencil,
+  Trash2,
+  User,
+} from "lucide-react";
 import Markdown from "markdown-to-jsx";
 import { useEffect, useRef, useState } from "react";
 
 const markdownOptions = {
+  disableParsingRawHTML: true,
   forceWrapper: true,
   overrides: {
     h1: {
       props: {
-        className: "mb-2 mt-3 text-lg font-semibold leading-7 text-slate-900",
+        className: "mb-2 mt-3 text-lg font-semibold leading-7 text-foreground",
       },
     },
     h2: {
       props: {
-        className: "mb-2 mt-3 text-base font-semibold leading-7 text-slate-900",
+        className:
+          "mb-2 mt-3 text-base font-semibold leading-7 text-foreground",
       },
     },
     h3: {
       props: {
         className:
-          "mb-1.5 mt-2.5 text-sm font-semibold leading-6 text-slate-900",
+          "mb-1.5 mt-2.5 text-sm font-semibold leading-6 text-foreground",
       },
     },
     li: {
@@ -47,7 +57,7 @@ const markdownOptions = {
     },
     strong: {
       props: {
-        className: "font-semibold text-slate-800",
+        className: "font-semibold text-foreground",
       },
     },
     ul: {
@@ -86,7 +96,7 @@ function getAudioTranscriptionStatus(
   };
 }
 
-function formatTimelineDate(value?: string | Date | null) {
+function formatTimelineDate(language: string, value?: string | Date | null) {
   if (!value) {
     return "";
   }
@@ -97,7 +107,7 @@ function formatTimelineDate(value?: string | Date | null) {
     return "";
   }
 
-  return date.toLocaleString([], {
+  return date.toLocaleString(language || undefined, {
     month: "short",
     day: "numeric",
     hour: "2-digit",
@@ -138,13 +148,16 @@ function getProfileDisplayName(props: IClientComponentProps) {
 }
 
 const avatarTriggerClassName =
-  "sticky top-3 mt-1 flex h-8 w-8 shrink-0 items-center justify-center self-start rounded-full transition hover:opacity-90";
+  "sticky top-3 grid h-8 w-8 shrink-0 place-items-center self-start rounded-lg";
+const actionButtonClassName =
+  "inline-flex size-7 shrink-0 items-center justify-center rounded-md text-muted-foreground hover:bg-muted hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring disabled:opacity-40";
 
 export function Component(props: IClientComponentProps) {
+  const ru = props.language === "ru";
   const [isCopied, setIsCopied] = useState(false);
   const copyResetTimeoutRef = useRef<number | null>(null);
   const profileDisplayName = getProfileDisplayName(props);
-  const createdAt = formatTimelineDate(props.message.createdAt);
+  const createdAt = formatTimelineDate(props.language, props.message.createdAt);
   const interaction = props.message.interaction;
   const hasInteraction = interaction && Object.keys(interaction).length > 0;
   const audioTranscription = getAudioTranscriptionStatus(props.message);
@@ -153,6 +166,37 @@ export function Component(props: IClientComponentProps) {
     props.profile &&
     props.profile.id === props.data.id &&
     props.data.id !== "unknown",
+  );
+  const isAssistant = props.profile?.variant === "artificial-intelligence";
+  const avatar = (
+    <Profile
+      isServer={false}
+      variant="chat-profile-avatar"
+      dataSource="props"
+      data={props.data}
+      file={props.avatar ?? null}
+      language={props.language}
+      className="rounded-lg bg-muted text-muted-foreground"
+      fallback={
+        isAssistant || props.isOwnMessage ? (
+          <span
+            className={cn(
+              "grid size-8 place-items-center rounded-lg",
+              isAssistant
+                ? "bg-primary text-primary-foreground"
+                : "bg-muted text-foreground",
+            )}
+            aria-hidden="true"
+          >
+            {isAssistant ? (
+              <Bot className="size-4" />
+            ) : (
+              <User className="size-4" />
+            )}
+          </span>
+        ) : undefined
+      }
+    />
   );
 
   useEffect(() => {
@@ -196,13 +240,16 @@ export function Component(props: IClientComponentProps) {
   }
 
   return (
-    <div
+    <article
       data-module="social"
       data-model="profile"
       data-id={props.data?.id || ""}
       data-variant="chat-message-row"
       className={cn(
-        "group/message relative flex gap-3 rounded-lg px-3 py-2.5 transition hover:bg-slate-50",
+        "group/message flex w-fit min-w-0 max-w-[95%] gap-3 rounded-2xl p-3 sm:p-5",
+        props.isOwnMessage
+          ? "ml-auto rounded-br-sm bg-muted/50"
+          : "mr-auto rounded-bl-sm bg-card",
         props.className,
       )}
     >
@@ -210,56 +257,56 @@ export function Component(props: IClientComponentProps) {
         <button
           type="button"
           onClick={onProfileOpen}
-          className={avatarTriggerClassName}
-          aria-label={`Open ${profileDisplayName} profile`}
+          className={cn(
+            avatarTriggerClassName,
+            "hover:opacity-80 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring",
+          )}
+          aria-label={
+            ru
+              ? `Открыть профиль «${profileDisplayName}»`
+              : `Open ${profileDisplayName} profile`
+          }
         >
-          <Profile
-            isServer={false}
-            variant="chat-profile-avatar"
-            dataSource="props"
-            data={props.data}
-            file={props.avatar ?? null}
-            language={props.language}
-          />
+          {avatar}
         </button>
       ) : (
-        <span className={avatarTriggerClassName}>
-          <Profile
-            isServer={false}
-            variant="chat-profile-avatar"
-            dataSource="props"
-            data={props.data}
-            file={props.avatar ?? null}
-            language={props.language}
-          />
-        </span>
+        <span className={avatarTriggerClassName}>{avatar}</span>
       )}
       <div className="min-w-0 flex-1">
-        <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
+        <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-muted-foreground">
           {canOpenProfile ? (
             <button
               type="button"
               onClick={onProfileOpen}
-              className="truncate text-left text-sm font-medium text-slate-950 hover:underline"
+              className="max-w-full truncate rounded-sm text-left font-semibold hover:text-foreground hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+              title={profileDisplayName}
             >
               {profileDisplayName}
             </button>
           ) : (
-            <span className="truncate text-sm font-medium text-slate-950">
+            <span
+              className="max-w-full truncate font-semibold"
+              title={profileDisplayName}
+            >
               {profileDisplayName}
             </span>
           )}
           {props.message.variant !== "customer-work" &&
           props.message.sourceSystemId ? (
-            <span className="truncate text-xs text-slate-400">
-              source {props.message.sourceSystemId}
+            <span
+              className="max-w-full truncate"
+              title={props.message.sourceSystemId}
+            >
+              {ru ? "Источник" : "Source"} {props.message.sourceSystemId}
             </span>
           ) : null}
           {createdAt ? (
-            <span className="text-xs text-slate-400">{createdAt}</span>
+            <time dateTime={new Date(props.message.createdAt).toISOString()}>
+              {createdAt}
+            </time>
           ) : null}
         </div>
-        <div className="mt-1 max-w-none text-sm leading-6 text-slate-700">
+        <div className="prose mt-1 max-w-none overflow-x-auto text-sm leading-6 wrap-anywhere text-foreground">
           <Markdown options={markdownOptions}>
             {normalizeChatMessageMarkdown(props.message.description)}
           </Markdown>
@@ -267,12 +314,21 @@ export function Component(props: IClientComponentProps) {
         {props.messageContentSlot}
         {audioTranscription?.status &&
         audioTranscription.status !== "completed" ? (
-          <div className="mt-2 rounded-md border border-slate-200 bg-slate-50 px-3 py-2 text-xs text-slate-500">
+          <div
+            role="status"
+            className="mt-2 rounded-md border border-border bg-muted/50 px-3 py-2 text-xs text-muted-foreground"
+          >
             {audioTranscription.status !== "failed"
-              ? "Transcription processing"
+              ? ru
+                ? "Расшифровываем запись…"
+                : "Transcription processing"
               : audioTranscription.errorCategory === "silence"
-                ? "No speech detected"
-                : "Transcription failed"}
+                ? ru
+                  ? "Речь не обнаружена"
+                  : "No speech detected"
+                : ru
+                  ? "Не удалось расшифровать запись"
+                  : "Transcription failed"}
           </div>
         ) : null}
         {props.message.variant !== "customer-work" && (
@@ -305,7 +361,7 @@ export function Component(props: IClientComponentProps) {
                       return (
                         <div
                           key={socialModuleMessageToFileStorageModuleFile.id}
-                          className="overflow-hidden rounded-lg border border-slate-100 bg-slate-50 p-2"
+                          className="overflow-hidden rounded-lg border border-border bg-muted/30 p-2"
                         >
                           <SocialModuleMessagesToFileStorageModuleFiles
                             variant="default"
@@ -324,27 +380,34 @@ export function Component(props: IClientComponentProps) {
         )}
         {hasInteraction ? (
           <Collapsible className="mt-2">
-            <CollapsibleTrigger className="inline-flex items-center gap-1 rounded-full border border-slate-200 px-2.5 py-1 text-xs text-slate-500 transition hover:bg-slate-50">
-              Interaction details
-              <ChevronDown className="h-3 w-3" />
+            <CollapsibleTrigger className="inline-flex items-center gap-1 rounded-full border border-border px-2.5 py-1 text-xs text-muted-foreground hover:bg-muted">
+              {ru ? "Данные взаимодействия" : "Interaction details"}
+              <ChevronDown className="size-3" aria-hidden="true" />
             </CollapsibleTrigger>
             <CollapsibleContent>
-              <pre className="mt-2 max-h-48 overflow-auto rounded-lg bg-slate-950 p-3 text-[11px] leading-5 text-slate-50">
+              <pre className="mt-2 max-h-48 overflow-auto rounded-lg bg-muted p-3 text-[11px] leading-5 text-foreground">
                 {JSON.stringify(interaction, null, 2)}
               </pre>
             </CollapsibleContent>
           </Collapsible>
         ) : null}
-        <div className="absolute right-2 top-2 hidden items-center gap-1 rounded-md border border-slate-200 bg-white p-1 shadow-sm group-hover/message:flex focus-within:flex">
+        <div className="mt-1 flex flex-wrap items-center gap-1 sm:opacity-0 sm:group-hover/message:opacity-100 sm:group-focus-within/message:opacity-100 pointer-coarse:opacity-100">
           <button
             type="button"
-            className="inline-flex h-7 w-7 items-center justify-center rounded text-slate-500 transition hover:bg-slate-100 hover:text-slate-900 disabled:cursor-not-allowed disabled:opacity-40"
+            className={actionButtonClassName}
             onClick={() => {
               void onCopyMessage();
             }}
             disabled={!props.message.description}
-            aria-label={isCopied ? "Message copied" : "Copy message"}
-            title={isCopied ? "Copied" : "Copy message"}
+            aria-label={
+              isCopied
+                ? ru
+                  ? "Сообщение скопировано"
+                  : "Message copied"
+                : ru
+                  ? "Скопировать сообщение"
+                  : "Copy message"
+            }
           >
             {isCopied ? (
               <Check className="h-3.5 w-3.5" />
@@ -355,11 +418,11 @@ export function Component(props: IClientComponentProps) {
           {props.onEdit && (
             <button
               type="button"
-              className="inline-flex h-7 w-7 items-center justify-center rounded text-slate-500 transition hover:bg-slate-100 hover:text-slate-900"
+              className={actionButtonClassName}
               onClick={() => {
                 props.onEdit?.(props.message);
               }}
-              aria-label="Edit message"
+              aria-label={ru ? "Изменить сообщение" : "Edit message"}
             >
               <Pencil className="h-3.5 w-3.5" />
             </button>
@@ -367,18 +430,21 @@ export function Component(props: IClientComponentProps) {
           {props.onDelete && (
             <button
               type="button"
-              className="inline-flex h-7 w-7 items-center justify-center rounded text-slate-500 transition hover:bg-red-50 hover:text-red-600"
+              className={cn(
+                actionButtonClassName,
+                "hover:bg-destructive/10 hover:text-destructive",
+              )}
               onClick={() => {
                 props.onDelete?.(props.message);
               }}
               disabled={props.isDeleting}
-              aria-label="Delete message"
+              aria-label={ru ? "Удалить сообщение" : "Delete message"}
             >
               <Trash2 className="h-3.5 w-3.5" />
             </button>
           )}
         </div>
       </div>
-    </div>
+    </article>
   );
 }

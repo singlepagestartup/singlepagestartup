@@ -2276,7 +2276,7 @@ paths:
       tags: [rbac-subject]
       summary: Read the task conversation available to the signed-in buyer
       responses:
-        "200": { description: Task and current assignment }
+        "200": { description: "Task, published funnel and current stage names, and current assignment" }
   /rbac/subjects/{id}/customer-work/threads/{threadId}/messages/{messageId}/attachments/{attachmentId}:
     parameters:
       - { name: id, in: path, required: true, schema: { type: string, format: uuid } }

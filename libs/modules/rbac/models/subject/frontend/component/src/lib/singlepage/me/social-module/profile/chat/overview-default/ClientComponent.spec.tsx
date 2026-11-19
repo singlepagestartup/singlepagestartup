@@ -1,5 +1,6 @@
 import { renderToStaticMarkup } from "react-dom/server";
 let mockProfiles: any[] = [];
+let mockAuthenticated = false;
 let mockWork: { chatId: string } | undefined;
 const mockPrivateThread = jest.fn();
 const mockRead = jest.fn();
@@ -36,13 +37,18 @@ jest.mock("../../../../../authentication/me-default/client", () => ({
       data: { id: string };
       authenticated: boolean;
     }) => React.ReactNode;
-  }) => children({ data: { id: "verified-guest" }, authenticated: false }),
+  }) =>
+    children({
+      data: { id: "verified-guest" },
+      authenticated: mockAuthenticated,
+    }),
 }));
 import { Component } from "./Component";
 import Client from "./client";
 beforeEach(() => {
   jest.clearAllMocks();
   mockWork = undefined;
+  mockAuthenticated = false;
   mockProfiles = [
     { id: "ai", variant: "artificial-intelligence" },
     { id: "personal", variant: "default" },
@@ -106,4 +112,19 @@ it("never starts a detail read when no owned profile can access the chat", () =>
     ),
   ).toContain("Chat unavailable");
   expect(mockOverview).not.toHaveBeenCalled();
+});
+
+it("opens a signed-in member's Social thread without querying for a private order", () => {
+  mockAuthenticated = true;
+  const html = renderToStaticMarkup(
+    <Client
+      variant="me-social-module-profile-chat-overview-default"
+      isServer={false}
+      language="ru"
+      socialModuleChatId="regular-chat"
+      socialModuleThreadId="regular-thread"
+    />,
+  );
+  expect(html).toContain("Authorized chat");
+  expect(mockPrivateThread).not.toHaveBeenCalled();
 });

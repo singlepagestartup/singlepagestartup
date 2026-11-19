@@ -24,7 +24,9 @@ export function Component(props: IComponentPropsExtended) {
             socialModuleThreadId={props.socialModuleThreadId}
           />
         ) : (
-          <p role="status">Chat unavailable.</p>
+          <p role="status">
+            {props.language === "ru" ? "Чат недоступен." : "Chat unavailable."}
+          </p>
         );
       }}
     </Subject>

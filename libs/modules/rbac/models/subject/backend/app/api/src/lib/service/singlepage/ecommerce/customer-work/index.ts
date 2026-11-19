@@ -582,6 +582,9 @@ export class Service {
   ): Promise<ICustomerWorkView> {
     const task = await this.taskForCustomer(customerId, scope);
     const publication = await this.crm.task.getPublication(scope);
+    const stage = publication.definition.stages.find(
+      ({ id }) => id === task.stageId,
+    );
     const funding = publication.definition.workFunding;
     const customerPays = funding?.payer === "customer";
     const price = customerPays ? await this.price(task, funding) : undefined;
@@ -651,6 +654,9 @@ export class Service {
       offerId: task.offerId ?? undefined,
       productSlug: product?.slug,
       consultationTaskId: channel.consultationTaskId ?? undefined,
+      workflow: stage
+        ? { title: publication.name, stageTitle: stage.name }
+        : undefined,
       status: task.status,
       customerPays,
       requiredMaximum: customerPays ? funding.maxTaskAmount : undefined,

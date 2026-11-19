@@ -12,6 +12,7 @@ export interface IComponentProps extends ISpsComponentBase {
   socialModuleProfile: ISocialModuleProfile;
   socialModuleChatId: string;
   currentSocialModuleChatId?: string;
+  onSelectChat?: () => void;
   variant: typeof variant;
   className?: string;
   dataSource?: "api" | "props";

@@ -184,6 +184,7 @@ export interface ICustomerWorkView {
   productSlug?: string;
   consultationTaskId?: string;
   operator?: string;
+  workflow?: { title: string; stageTitle: string };
   assignment: "assistant" | "manager" | "unassigned";
   status: "active" | "waiting" | "closed";
   customerPays: boolean;

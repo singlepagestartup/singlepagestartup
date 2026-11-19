@@ -18,4 +18,5 @@ export interface IChatThreadPanelProps {
   composer: ReactNode;
   knowledge?: ReactNode;
   documentDownload?: ReactNode;
+  context?: ReactNode;
 }

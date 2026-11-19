@@ -25,6 +25,7 @@ interface OpenRouterControlsProps {
   favoriteModelIds: string[];
   isUpdatingFavorites: boolean;
   isLoadingModels: boolean;
+  language: string;
   modelGroups: OpenRouterChatModelGroup[];
   onFavoriteToggle: (modelId: string) => void;
   selectedModelId: string;
@@ -38,6 +39,7 @@ interface OpenRouterControlsProps {
 }
 
 export function OpenRouterControls(props: OpenRouterControlsProps) {
+  const ru = props.language === "ru";
   const [modelSearch, setModelSearch] = useState("");
   const favoriteModelIdsSet = useMemo(() => {
     return new Set(props.favoriteModelIds);
@@ -95,19 +97,25 @@ export function OpenRouterControls(props: OpenRouterControlsProps) {
       >
         <span className="flex min-w-0 flex-1 flex-col">
           <span className="truncate">{model.name}</span>
-          <span className="truncate text-xs text-slate-500">{model.id}</span>
+          <span className="truncate text-xs text-muted-foreground">
+            {model.id}
+          </span>
         </span>
         <button
           type="button"
           className={cn(
-            "inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-slate-400 transition hover:bg-white hover:text-slate-700",
+            "inline-flex size-7 shrink-0 items-center justify-center rounded-md text-muted-foreground transition hover:bg-background hover:text-foreground",
             isFavorite && "text-amber-500 hover:text-amber-600",
           )}
           disabled={props.isUpdatingFavorites}
           aria-label={
             isFavorite
-              ? "Remove model from favorites"
-              : "Add model to favorites"
+              ? ru
+                ? "Убрать модель из избранного"
+                : "Remove model from favorites"
+              : ru
+                ? "Добавить модель в избранное"
+                : "Add model to favorites"
           }
           onClick={(event) => {
             event.preventDefault();
@@ -122,25 +130,31 @@ export function OpenRouterControls(props: OpenRouterControlsProps) {
   }
 
   return (
-    <div className="hidden shrink-0 items-center gap-1 sm:flex">
+    <div className="flex min-w-0 max-w-full flex-wrap items-center gap-1">
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button
             type="button"
             variant="ghost"
             size="sm"
-            className="h-9 w-auto max-w-36 gap-1 px-2 text-xs font-medium text-slate-600 hover:bg-white hover:text-slate-900"
-            aria-label="Select OpenRouter model"
+            className="h-9 w-auto max-w-36 gap-1 px-2 text-xs font-medium text-muted-foreground hover:bg-muted hover:text-foreground"
+            aria-label={
+              ru ? "Выбрать модель OpenRouter" : "Select OpenRouter model"
+            }
           >
             <Bot className="h-4 w-4 shrink-0" />
             <span className="truncate">{props.selectedModelLabel}</span>
             <ChevronDown className="h-3.5 w-3.5 shrink-0" />
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" side="top" className="w-96">
-          <DropdownMenuLabel>Model</DropdownMenuLabel>
+        <DropdownMenuContent
+          align="end"
+          side="top"
+          className="w-96 max-w-[calc(100vw-2rem)]"
+        >
+          <DropdownMenuLabel>{ru ? "Модель" : "Model"}</DropdownMenuLabel>
           <div className="relative px-2 pb-2">
-            <Search className="pointer-events-none absolute left-4 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-slate-400" />
+            <Search className="pointer-events-none absolute left-4 top-1/2 size-3.5 -translate-y-1/2 text-muted-foreground" />
             <Input
               value={modelSearch}
               onChange={(event) => {
@@ -150,7 +164,9 @@ export function OpenRouterControls(props: OpenRouterControlsProps) {
                 event.stopPropagation();
               }}
               className="h-9 pl-8 text-sm"
-              placeholder="Search model or slug..."
+              placeholder={
+                ru ? "Название или ID модели…" : "Search model or slug..."
+              }
             />
           </div>
           <DropdownMenuRadioGroup
@@ -159,17 +175,17 @@ export function OpenRouterControls(props: OpenRouterControlsProps) {
           >
             <DropdownMenuRadioItem value="auto">
               <span className="flex min-w-0 flex-col">
-                <span className="truncate">Auto</span>
-                <span className="truncate text-xs text-slate-500">
-                  Choose automatically
+                <span className="truncate">{ru ? "Авто" : "Auto"}</span>
+                <span className="truncate text-xs text-muted-foreground">
+                  {ru ? "Выбрать автоматически" : "Choose automatically"}
                 </span>
               </span>
             </DropdownMenuRadioItem>
             {favoriteModels.length ? (
               <>
                 <DropdownMenuSeparator />
-                <DropdownMenuLabel className="text-xs uppercase tracking-normal text-slate-500">
-                  Favorites
+                <DropdownMenuLabel className="text-xs uppercase tracking-normal text-muted-foreground">
+                  {ru ? "Избранное" : "Favorites"}
                 </DropdownMenuLabel>
                 {favoriteModels.map((model) => renderModelOption(model))}
               </>
@@ -183,7 +199,7 @@ export function OpenRouterControls(props: OpenRouterControlsProps) {
 
                 return (
                   <div key={group.id}>
-                    <DropdownMenuLabel className="text-xs uppercase tracking-normal text-slate-500">
+                    <DropdownMenuLabel className="text-xs uppercase tracking-normal text-muted-foreground">
                       {group.title}
                     </DropdownMenuLabel>
                     {group.models.map((model) => {
@@ -194,15 +210,15 @@ export function OpenRouterControls(props: OpenRouterControlsProps) {
               })}
             </div>
             {!props.modelGroups.length && props.isLoadingModels ? (
-              <DropdownMenuLabel className="text-xs font-normal text-slate-500">
-                Loading models...
+              <DropdownMenuLabel className="text-xs font-normal text-muted-foreground">
+                {ru ? "Загружаем модели…" : "Loading models..."}
               </DropdownMenuLabel>
             ) : null}
             {props.modelGroups.length &&
             !filteredModelGroups.length &&
             !favoriteModels.length ? (
-              <DropdownMenuLabel className="text-xs font-normal text-slate-500">
-                No models found.
+              <DropdownMenuLabel className="text-xs font-normal text-muted-foreground">
+                {ru ? "Модели не найдены" : "No models found."}
               </DropdownMenuLabel>
             ) : null}
           </DropdownMenuRadioGroup>
@@ -215,8 +231,12 @@ export function OpenRouterControls(props: OpenRouterControlsProps) {
               type="button"
               variant="ghost"
               size="sm"
-              className="h-9 w-auto max-w-28 gap-1 px-2 text-xs font-medium text-slate-600 hover:bg-white hover:text-slate-900"
-              aria-label="Select OpenRouter thinking"
+              className="h-9 w-auto max-w-28 gap-1 px-2 text-xs font-medium text-muted-foreground hover:bg-muted hover:text-foreground"
+              aria-label={
+                ru
+                  ? "Выбрать режим рассуждения OpenRouter"
+                  : "Select OpenRouter thinking"
+              }
             >
               <Brain className="h-4 w-4 shrink-0" />
               <span className="truncate">{props.selectedReasoningLabel}</span>
@@ -224,7 +244,9 @@ export function OpenRouterControls(props: OpenRouterControlsProps) {
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" side="top" className="w-48">
-            <DropdownMenuLabel>Thinking</DropdownMenuLabel>
+            <DropdownMenuLabel>
+              {ru ? "Режим рассуждения" : "Thinking"}
+            </DropdownMenuLabel>
             <DropdownMenuRadioGroup
               value={props.selectedReasoning}
               onValueChange={(value) => {

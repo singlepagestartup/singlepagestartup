@@ -11,52 +11,66 @@ import {
   DialogTrigger,
 } from "@sps/shared-ui-shadcn";
 import { Plus } from "lucide-react";
+import { useCallback, useState } from "react";
 
 export function Component(props: IComponentPropsExtended) {
+  const ru = props.language === "ru";
+  const Heading = props.compact ? "h2" : "h1";
+  const newChat = ru ? "Новый чат" : "New chat";
+  const [createOpen, setCreateOpen] = useState(false);
+  const onSelectChat = props.onSelectChat;
+  const handleChatCreated = useCallback(() => {
+    setCreateOpen(false);
+    onSelectChat?.();
+  }, [onSelectChat]);
+
   return (
     <div
       data-module="rbac"
       data-model="subject"
       data-variant={props.variant}
       className={cn(
-        "flex h-[calc(100vh-4rem)] min-h-0 w-full flex-col overflow-hidden bg-slate-50",
+        "flex min-h-0 w-full flex-col overflow-hidden bg-card",
+        props.compact
+          ? "max-h-[80dvh]"
+          : "mx-auto my-4 h-[calc(100dvh-5rem)] max-w-3xl rounded-2xl border border-border",
         props.className,
       )}
     >
-      <div className="flex min-h-0 w-full flex-1 flex-col overflow-hidden border-r border-slate-200 bg-slate-50">
-        <div className="flex shrink-0 items-center justify-between gap-3 border-b border-slate-200 px-4 py-3">
-          <div className="min-w-0">
-            <h1 className="truncate text-sm font-medium text-slate-950">
-              Chats
-            </h1>
-            <p className="truncate text-xs text-slate-500">
-              {props.socialModuleChats.length
-                ? `${props.socialModuleChats.length} active chat${
-                    props.socialModuleChats.length === 1 ? "" : "s"
-                  }`
-                : "No chats yet"}
-            </p>
-          </div>
-          <Dialog>
+      <div className="flex min-h-0 w-full flex-1 flex-col overflow-hidden">
+        <div
+          className={cn(
+            "flex shrink-0 items-center justify-between gap-3 border-b border-border px-4 py-3",
+            props.compact && "pr-12",
+          )}
+        >
+          <Heading className="text-base font-semibold">
+            {ru ? "Чаты" : "Chats"}
+          </Heading>
+          <Dialog open={createOpen} onOpenChange={setCreateOpen}>
             <DialogTrigger asChild>
               <Button
                 variant="outline"
                 size="icon"
-                className="h-8 w-8 shrink-0"
-                title="New chat"
+                className="size-9 shrink-0"
+                title={newChat}
               >
                 <Plus className="h-4 w-4" />
-                <span className="sr-only">New chat</span>
+                <span className="sr-only">{newChat}</span>
               </Button>
             </DialogTrigger>
-            <DialogContent>
-              <DialogTitle>New Chat</DialogTitle>
+            <DialogContent
+              aria-describedby={undefined}
+              closeLabel={ru ? "Закрыть форму" : "Close form"}
+            >
+              <DialogTitle>{newChat}</DialogTitle>
               <Subject
                 isServer={false}
                 variant="social-module-profile-chat-create"
                 data={props.data}
                 socialModuleProfile={props.socialModuleProfile}
                 language={props.language}
+                onCreate={handleChatCreated}
               />
             </DialogContent>
           </Dialog>
@@ -77,18 +91,15 @@ export function Component(props: IComponentPropsExtended) {
                     dataSource="props"
                     socialModuleChat={socialModuleChat}
                     language={props.language}
+                    onSelectChat={props.onSelectChat}
                   />
                 );
               })}
             </div>
           ) : (
-            <div className="flex min-h-72 flex-col items-center justify-center rounded-lg border border-dashed border-slate-200 bg-slate-50 px-4 text-center">
-              <h2 className="text-sm font-medium text-slate-900">
-                Start a chat
-              </h2>
-              <p className="mt-1 max-w-sm text-xs text-slate-500">
-                Create a chat to open a shared workspace with threads and
-                messages.
+            <div className="grid min-h-32 place-items-center px-4 text-center">
+              <p className="text-sm text-muted-foreground">
+                {ru ? "Чатов пока нет" : "No chats yet"}
               </p>
             </div>
           )}

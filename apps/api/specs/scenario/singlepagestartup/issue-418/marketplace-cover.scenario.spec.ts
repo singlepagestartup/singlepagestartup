@@ -287,6 +287,17 @@ async function verifyCover(provider: "openai" | "openrouter") {
         }
         const view = await subject.customerWork.execute(buyer.id, command);
         expect(view.orderId).toBeDefined();
+        const threadWork = await subject.customerWork.viewForThread(
+          buyer.id,
+          view.threadId,
+        );
+        expect(threadWork.workflow).toEqual({
+          title: "Commissioned cover",
+          stageTitle: startsInIntake ? "Бриф" : "Обложка",
+        });
+        await expect(
+          subject.customerWork.viewForThread(stranger.id, view.threadId),
+        ).rejects.toThrow("The customer conversation could not be found");
         if (command.operation === "open-cart-discussion") {
           expect(view.orderId).toBe(command.orderId);
           const retry = await subject.customerWork.execute(buyer.id, {

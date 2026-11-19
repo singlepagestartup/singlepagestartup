@@ -14,6 +14,8 @@ interface IProps {
   subjectId: string;
   work: IOrderWorkView;
   language: string;
+  selectedVersionId?: string;
+  onVersionSelect?: (id: string) => void;
 }
 
 export async function downloadOrderArtifact(
@@ -42,7 +44,13 @@ export async function downloadOrderArtifact(
   setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 
-export function ResultReview({ subjectId, work, language }: IProps) {
+export function ResultReview({
+  subjectId,
+  work,
+  language,
+  selectedVersionId,
+  onVersionSelect,
+}: IProps) {
   const ru = language === "ru";
   const [selection, setSelection] = useState("");
   const [reason, setReason] = useState("");
@@ -59,7 +67,11 @@ export function ResultReview({ subjectId, work, language }: IProps) {
   const version =
     availableVersions.find(
       ({ id }) =>
-        id === (work.paidVersionId ?? work.acceptedVersionId ?? selection),
+        id ===
+        (work.paidVersionId ??
+          work.acceptedVersionId ??
+          selectedVersionId ??
+          selection),
     ) ?? availableVersions.at(-1);
   const currencies = currencyApi.find({
     params: {
@@ -148,7 +160,9 @@ export function ResultReview({ subjectId, work, language }: IProps) {
             {ru ? "Версия результата" : "Result version"}
             <select
               value={version.id}
-              onChange={(event) => setSelection(event.currentTarget.value)}
+              onChange={(event) =>
+                (onVersionSelect ?? setSelection)(event.currentTarget.value)
+              }
               className="min-h-11 rounded-lg border border-input bg-background px-3 text-sm"
             >
               {availableVersions.map(({ id, number }) => (

@@ -198,7 +198,7 @@ describe("GIVEN: social profile chat message markdown rendering", () => {
     });
 
     const avatarButton = container.querySelector(
-      "button[aria-label='Open Chat GPT 1 profile']",
+      "button[aria-label='Открыть профиль «Chat GPT 1»']",
     );
 
     expect(avatarButton?.className).toContain("sticky");
@@ -254,6 +254,7 @@ describe("GIVEN: social profile chat message markdown rendering", () => {
         <Component
           isServer={false}
           language="ru"
+          isOwnMessage
           data={
             {
               id: "profile-1",
@@ -279,8 +280,9 @@ describe("GIVEN: social profile chat message markdown rendering", () => {
     });
 
     const copyButton = container.querySelector(
-      "button[aria-label='Copy message']",
+      "button[aria-label='Скопировать сообщение']",
     );
+    expect(container.querySelector("article")?.classList).toContain("ml-auto");
 
     await act(async () => {
       copyButton?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
@@ -289,7 +291,7 @@ describe("GIVEN: social profile chat message markdown rendering", () => {
 
     expect(writeText).toHaveBeenCalledWith(description);
     expect(
-      container.querySelector("button[aria-label='Message copied']"),
+      container.querySelector("button[aria-label='Сообщение скопировано']"),
     ).not.toBeNull();
   });
 });

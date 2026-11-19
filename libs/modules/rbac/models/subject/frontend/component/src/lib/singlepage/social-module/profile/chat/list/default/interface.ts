@@ -14,6 +14,8 @@ export interface IComponentProps extends ISpsComponentBase {
   className?: string;
   includeSubjectProfiles?: boolean;
   currentSocialModuleChatId?: string;
+  compact?: boolean;
+  onSelectChat?: () => void;
 }
 
 export interface IComponentPropsExtended extends IComponentProps {

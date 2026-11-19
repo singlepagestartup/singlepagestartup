@@ -19,6 +19,7 @@ export interface IClientComponentProps extends Pick<
   message: ISocialModuleMessage;
   messageContentSlot?: ReactNode;
   isDeleting?: boolean;
+  isOwnMessage?: boolean;
   onProfileOpen?: (profile: IModel) => void;
   onEdit?: (message: ISocialModuleMessage) => void;
   onDelete?: (message: ISocialModuleMessage) => void;

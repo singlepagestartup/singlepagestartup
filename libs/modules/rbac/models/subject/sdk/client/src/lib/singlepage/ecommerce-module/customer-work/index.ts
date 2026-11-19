@@ -1,6 +1,7 @@
 "use client";
 
 import { useMutation, useQuery } from "@tanstack/react-query";
+import { useEffect } from "react";
 import { api } from "@sps/rbac/models/subject/sdk/server";
 import type {
   IAvailabilityProps,
@@ -15,6 +16,7 @@ import { saturateHeaders } from "@sps/shared-frontend-client-utils";
 import {
   invalidateRouteQueries,
   queryClient,
+  subscription,
 } from "@sps/shared-frontend-client-api";
 
 function path(id: string, storeId: string) {
@@ -88,17 +90,32 @@ function threadKey(id: string, threadId: string) {
 }
 
 export function customerWorkForThread(props: IThreadProps) {
+  const key = threadKey(props.id, props.threadId);
+  const scopedRoute = key[0];
+  const enabled = Boolean(props.id && props.threadId);
+  useEffect(
+    () => (enabled ? subscription(scopedRoute, queryClient) : undefined),
+    [enabled, scopedRoute],
+  );
   return useQuery({
-    queryKey: threadKey(props.id, props.threadId),
-    enabled: Boolean(props.id && props.threadId),
+    queryKey: key,
+    enabled,
+    meta: {
+      topics: [
+        "crm.tasks",
+        "crm.task-events",
+        "social.threads-to-crm-module-tasks",
+      ],
+    },
     retry: false,
-    queryFn: () =>
+    queryFn: ({ signal }) =>
       api.customerWorkForThread({
         ...props,
         host: props.host ?? clientHost,
         options: {
           ...props.options,
           headers: saturateHeaders(props.options?.headers),
+          signal,
         },
       }),
   });

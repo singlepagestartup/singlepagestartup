@@ -54,6 +54,10 @@ jest.mock("@sps/social/models/action/frontend/component", () => ({
   ).Component,
 }));
 
+jest.mock("@sps/file-storage/models/file/frontend/component", () => ({
+  Component: () => null,
+}));
+
 jest.mock(
   "@sps/social/relations/profiles-to-messages/frontend/component",
   () => {

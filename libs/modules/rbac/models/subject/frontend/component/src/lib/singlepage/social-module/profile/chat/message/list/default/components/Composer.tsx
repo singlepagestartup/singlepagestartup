@@ -24,9 +24,8 @@ import {
   knowledgeMentionOption,
   shouldShowKnowledgeMentionOption,
 } from "../utils";
-import { cn } from "@sps/shared-frontend-client-utils";
-import { Button, Form } from "@sps/shared-ui-shadcn";
-import { Paperclip, Send, Smile } from "lucide-react";
+import { Form } from "@sps/shared-ui-shadcn";
+import { Paperclip, Send } from "lucide-react";
 import { Controller, useWatch } from "react-hook-form";
 import {
   useCallback,
@@ -87,6 +86,7 @@ interface ComposerProps {
  * shell and timeline never rerender because of composer activity.
  */
 export function Composer(props: ComposerProps) {
+  const ru = props.language === "ru";
   const composer = useChatComposer({
     isCustomerWork: props.isCustomerWork,
     subjectId: props.subjectId,
@@ -324,7 +324,9 @@ export function Composer(props: ComposerProps) {
     });
 
     if (!(typeof File !== "undefined" && file instanceof File)) {
-      toast.error("Selected file preview is unavailable");
+      toast.error(
+        ru ? "Не удалось открыть файл" : "Could not open the selected file",
+      );
       return;
     }
 
@@ -415,6 +417,8 @@ export function Composer(props: ComposerProps) {
   function onComposerTextareaKeyDown(
     event: KeyboardEvent<HTMLTextAreaElement>,
   ) {
+    if (event.nativeEvent.isComposing) return;
+
     if (isKnowledgeCommandPickerOpen && knowledgeCommandCount > 0) {
       if (event.key === "ArrowDown") {
         event.preventDefault();
@@ -481,44 +485,12 @@ export function Composer(props: ComposerProps) {
     }
   }
 
-  const attachmentButton = (
-    <button
-      type="button"
-      className={cn(
-        "inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-slate-500 transition hover:text-slate-900",
-        props.isArtificialIntelligenceOpponent
-          ? "hover:bg-slate-100"
-          : "hover:bg-white",
-      )}
-      onClick={() => {
-        composer.fileInputRef.current?.click();
-      }}
-      aria-label="Attach files"
-    >
-      <Paperclip className="h-4 w-4" />
-    </button>
-  );
-
-  const emojiButton = (
-    <button
-      type="button"
-      className={cn(
-        "hidden h-9 w-9 shrink-0 items-center justify-center rounded-lg text-slate-500 transition hover:text-slate-900 sm:inline-flex",
-        props.isArtificialIntelligenceOpponent
-          ? "hover:bg-slate-100"
-          : "hover:bg-white",
-      )}
-      aria-label="Add emoji"
-    >
-      <Smile className="h-4 w-4" />
-    </button>
-  );
-
   const openRouterControls = props.showOpenRouterControls ? (
     <OpenRouterControls
       favoriteModelIds={props.openRouterFavoriteModelIds}
       isUpdatingFavorites={props.isOpenRouterModelFavoritesUpdating}
       isLoadingModels={props.isOpenRouterModelsLoading}
+      language={props.language}
       modelGroups={props.openRouterModelGroups}
       onFavoriteToggle={props.onOpenRouterModelFavoriteToggle}
       selectedModelId={props.openRouterModelId}
@@ -532,67 +504,12 @@ export function Composer(props: ComposerProps) {
     />
   ) : null;
 
-  const sendButton = (
-    <Button
-      type="submit"
-      variant="primary"
-      size="icon"
-      className="h-9 w-9 shrink-0"
-      disabled={!canSubmit}
-      aria-label="Send message"
-    >
-      <Send className="h-4 w-4" />
-    </Button>
-  );
-
-  const composerTextarea = (
-    <Controller
-      name="description"
-      control={composer.form.control}
-      render={({ field }) => {
-        return (
-          <textarea
-            {...field}
-            ref={(element) => {
-              field.ref(element);
-              composer.textareaRef.current = element;
-            }}
-            rows={props.isArtificialIntelligenceOpponent ? 3 : 1}
-            placeholder="Write a message..."
-            className={cn(
-              "resize-none bg-transparent text-sm text-slate-900 outline-none placeholder:text-slate-400",
-              props.isArtificialIntelligenceOpponent
-                ? "max-h-44 min-h-20 w-full px-1 py-1 leading-6"
-                : "max-h-32 min-h-9 flex-1 px-1 py-2 leading-5",
-            )}
-            onChange={(event) => {
-              field.onChange(event);
-              event.currentTarget.style.height = "auto";
-              event.currentTarget.style.height = `${event.currentTarget.scrollHeight}px`;
-            }}
-            onKeyDown={onComposerTextareaKeyDown}
-          />
-        );
-      }}
-    />
-  );
-
   return (
     <Form {...composer.form}>
       <form
-        className="shrink-0 border-t border-slate-200 bg-white px-4 py-3"
+        className="max-h-[75%] min-w-0 shrink-0 overflow-y-auto border-t border-border bg-background p-4"
         onSubmit={composer.form.handleSubmit(composer.onSubmit)}
       >
-        <SelectedComposerPills
-          files={selectedFileItems}
-          isKnowledgeSearchSelected={isKnowledgeSearchSelected}
-          skills={props.selectedSkills}
-          language={props.language}
-          onOpenFile={openSelectedFile}
-          onRemoveKnowledgeSearch={removeKnowledgeMention}
-          onRemoveFile={removeSelectedFile}
-          onRemoveSkill={removeSelectedSkill}
-        />
         {isKnowledgeCommandPickerOpen ? (
           <KnowledgeCommandPicker
             activeIndex={activeKnowledgeCommandIndex}
@@ -639,26 +556,74 @@ export function Composer(props: ComposerProps) {
             event.currentTarget.value = "";
           }}
         />
-        {props.isArtificialIntelligenceOpponent ? (
-          <div className="mx-auto flex w-full max-w-4xl flex-col gap-2 rounded-2xl border border-slate-200 bg-white p-3 shadow-sm">
-            {composerTextarea}
-            <div className="flex items-center gap-2">
-              {attachmentButton}
-              {emojiButton}
-              <div className="min-w-0 flex-1" />
+        <div className="rounded-2xl border border-border bg-background p-3">
+          <SelectedComposerPills
+            files={selectedFileItems}
+            isKnowledgeSearchSelected={isKnowledgeSearchSelected}
+            skills={props.selectedSkills}
+            language={props.language}
+            onOpenFile={openSelectedFile}
+            onRemoveKnowledgeSearch={removeKnowledgeMention}
+            onRemoveFile={removeSelectedFile}
+            onRemoveSkill={removeSelectedSkill}
+          />
+          <Controller
+            name="description"
+            control={composer.form.control}
+            render={({ field }) => (
+              <textarea
+                {...field}
+                ref={(element) => {
+                  field.ref(element);
+                  composer.textareaRef.current = element;
+                }}
+                aria-label={ru ? "Сообщение" : "Message"}
+                placeholder={ru ? "Напишите сообщение…" : "Write a message..."}
+                rows={4}
+                className="min-h-24 max-h-[min(45dvh,22rem)] w-full resize-y rounded-sm bg-transparent text-sm leading-6 outline-none placeholder:text-muted-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring sm:min-h-32"
+                onChange={(event) => {
+                  field.onChange(event);
+                  event.currentTarget.style.height = "auto";
+                  event.currentTarget.style.height = `${event.currentTarget.scrollHeight}px`;
+                }}
+                onKeyDown={onComposerTextareaKeyDown}
+              />
+            )}
+          />
+          <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
+            <button
+              type="button"
+              className="inline-flex min-h-10 shrink-0 items-center gap-2 rounded-md text-xs font-semibold text-muted-foreground hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+              onClick={() => composer.fileInputRef.current?.click()}
+            >
+              <Paperclip className="size-4" aria-hidden="true" />
+              {ru ? "Прикрепить файлы" : "Attach files"}
+            </button>
+            <div className="ml-auto flex min-w-0 flex-wrap items-center justify-end gap-2">
               {openRouterControls}
-              {sendButton}
+              <button
+                type="submit"
+                className="inline-flex min-h-10 shrink-0 items-center gap-2 rounded-xl bg-primary px-4 text-sm font-semibold text-primary-foreground hover:bg-primary/90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring disabled:opacity-50"
+                disabled={!canSubmit}
+                aria-label={ru ? "Отправить сообщение" : "Send message"}
+              >
+                <Send className="size-4" aria-hidden="true" />
+                {composer.createMessage.isPending
+                  ? ru
+                    ? "Отправляем…"
+                    : "Sending…"
+                  : ru
+                    ? "Отправить"
+                    : "Send"}
+              </button>
             </div>
           </div>
-        ) : (
-          <div className="mx-auto flex w-full max-w-4xl items-end gap-2 rounded-xl border border-slate-200 bg-slate-50 p-2">
-            {attachmentButton}
-            {composerTextarea}
-            {emojiButton}
-            {openRouterControls}
-            {sendButton}
-          </div>
-        )}
+          <p className="mt-2 text-xs text-muted-foreground">
+            {ru
+              ? "Enter — отправить. Shift + Enter — новая строка."
+              : "Enter to send. Shift + Enter for a new line."}
+          </p>
+        </div>
       </form>
     </Form>
   );

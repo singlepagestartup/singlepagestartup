@@ -13,6 +13,7 @@ export function Component(props: IComponentPropsExtended) {
       message={props.message}
       messageContentSlot={props.messageContentSlot}
       isDeleting={props.isDeleting}
+      isOwnMessage={props.isOwnMessage}
       onProfileOpen={props.onProfileOpen}
       onEdit={props.onEdit}
       onDelete={props.onDelete}

@@ -215,14 +215,15 @@ describe("Given: OpenRouter chat profile sidebar", () => {
    * BDD Scenario
    * Given: the active chat has an artificial-intelligence opponent.
    * When: the composer is rendered.
-   * Then: the message input reserves three rows and hides Thinking until a compatible model is selected.
+   * Then: the multiline composer shows model selection and only offers Thinking for compatible models.
    */
   it("When: rendering an AI-opponent chat Then: the composer uses the expanded layout", () => {
     renderComponent("knowledge");
 
-    const textarea = screen.getByPlaceholderText("Write a message...");
+    const textarea = screen.getByRole("textbox", { name: "Message" });
 
-    expect(textarea.getAttribute("rows")).toBe("3");
+    expect(textarea.getAttribute("rows")).toBe("4");
+    expect(screen.getByRole("button", { name: "Attach files" })).toBeTruthy();
     expect(screen.getByLabelText("Select OpenRouter model")).toBeTruthy();
     expect(screen.queryByLabelText("Select OpenRouter thinking")).toBeNull();
   });
@@ -231,9 +232,9 @@ describe("Given: OpenRouter chat profile sidebar", () => {
    * BDD Scenario
    * Given: the active chat does not have an artificial-intelligence opponent.
    * When: the composer is rendered.
-   * Then: the compact one-row composer is preserved.
+   * Then: the same multiline input is shown without AI-only controls.
    */
-  it("When: rendering a non-AI-opponent chat Then: the compact composer remains", () => {
+  it("When: rendering a non-AI-opponent chat Then: the composer omits model controls", () => {
     renderComponent("knowledge", {
       knowledgeAssistantProfile: {
         id: "assistant-profile-1",
@@ -243,9 +244,9 @@ describe("Given: OpenRouter chat profile sidebar", () => {
       },
     });
 
-    const textarea = screen.getByPlaceholderText("Write a message...");
+    const textarea = screen.getByRole("textbox", { name: "Message" });
 
-    expect(textarea.getAttribute("rows")).toBe("1");
+    expect(textarea.getAttribute("rows")).toBe("4");
     expect(screen.queryByLabelText("Select OpenRouter model")).toBeNull();
     expect(screen.queryByLabelText("Select OpenRouter thinking")).toBeNull();
   });

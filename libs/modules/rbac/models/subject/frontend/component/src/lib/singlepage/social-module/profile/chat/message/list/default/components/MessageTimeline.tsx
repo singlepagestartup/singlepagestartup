@@ -12,6 +12,7 @@ import type { ISocialModuleMessagesAndActionsQuery } from "../interface";
 import type { IModel as ISocialModuleMessage } from "@sps/social/models/message/sdk/model";
 import type { IModel as ISocialModuleProfile } from "@sps/social/models/profile/sdk/model";
 import { AI_EXECUTION_ACTION_VARIANT } from "@sps/rbac/models/subject/sdk/model";
+import { MessageSquare } from "lucide-react";
 import { memo, type RefObject } from "react";
 
 type TimelineItem = ISocialModuleMessagesAndActionsQuery[number];
@@ -23,16 +24,19 @@ interface MessageTimelineProps {
   items: ISocialModuleMessagesAndActionsQuery | undefined;
   participants?: ISocialModuleProfile[];
   language: string;
+  socialModuleProfileId: string;
   subjectId: string;
   threadId: string;
   messagesContentRef: RefObject<HTMLDivElement | null>;
   onMessageDelete: (message: ISocialModuleMessage) => void;
   onMessageEdit: (message: ISocialModuleMessage) => void;
   onProfileOpen?: (profile: ISocialModuleProfile) => void;
+  onResultReview?: (versionId: string) => void;
 }
 
 interface MessageRowProps {
   isDeleting: boolean;
+  isOwnMessage: boolean;
   language: string;
   message: TimelineMessage;
   subjectId: string;
@@ -41,6 +45,7 @@ interface MessageRowProps {
   onMessageDelete: (message: ISocialModuleMessage) => void;
   onMessageEdit: (message: ISocialModuleMessage) => void;
   onProfileOpen?: (profile: ISocialModuleProfile) => void;
+  onResultReview?: (versionId: string) => void;
 }
 
 /**
@@ -71,6 +76,7 @@ const MemoizedMessageRow = memo(function MemoizedMessageRow(
             profile={profile}
             language={props.language}
             message={props.message}
+            isOwnMessage={props.isOwnMessage}
             messageContentSlot={
               <>
                 {privateAttachments?.length ? (
@@ -88,6 +94,7 @@ const MemoizedMessageRow = memo(function MemoizedMessageRow(
                     threadId={props.threadId}
                     versionId={resultVersionId}
                     language={props.language}
+                    onReview={props.onResultReview}
                   />
                 )}
               </>
@@ -148,13 +155,27 @@ const MemoizedActionRow = memo(function MemoizedActionRow(
 }, areActionRowPropsEqual);
 
 export function MessageTimeline(props: MessageTimelineProps) {
+  const ru = props.language === "ru";
   if (!props.items?.length) {
     return (
-      <div className="flex h-full min-h-80 flex-col items-center justify-center text-center">
-        <h3 className="text-sm font-medium text-slate-700">No messages yet</h3>
-        <p className="mt-1 max-w-sm text-xs text-slate-400">
-          Send the first message to start this thread.
-        </p>
+      <div
+        ref={props.messagesContentRef}
+        className="flex gap-3 p-5"
+        role="status"
+      >
+        <span className="grid size-8 shrink-0 place-items-center rounded-lg bg-primary text-primary-foreground">
+          <MessageSquare className="size-4" aria-hidden="true" />
+        </span>
+        <div>
+          <p className="mb-2 text-xs font-semibold text-muted-foreground">
+            {ru ? "Сообщений пока нет" : "No messages yet"}
+          </p>
+          <p className="text-sm leading-6">
+            {ru
+              ? "Отправьте первое сообщение."
+              : "Send the first message to start this thread."}
+          </p>
+        </div>
       </div>
     );
   }
@@ -162,7 +183,9 @@ export function MessageTimeline(props: MessageTimelineProps) {
   return (
     <div
       ref={props.messagesContentRef}
-      className="mx-auto flex w-full max-w-4xl flex-col gap-1"
+      className="flex min-w-0 flex-col gap-3"
+      role="log"
+      aria-label={ru ? "Сообщения" : "Messages"}
     >
       {props.items.map((socialModuleMessageOrAction) => {
         if (socialModuleMessageOrAction.type === "message") {
@@ -172,6 +195,14 @@ export function MessageTimeline(props: MessageTimelineProps) {
             <MemoizedMessageRow
               key={message.id}
               isDeleting={props.deletingMessageId === message.id}
+              isOwnMessage={Boolean(
+                message.authorProfileIds?.includes(
+                  props.socialModuleProfileId,
+                ) ||
+                message.authorProfiles?.some(
+                  ({ id }) => id === props.socialModuleProfileId,
+                ),
+              )}
               language={props.language}
               message={message}
               subjectId={props.subjectId}
@@ -180,6 +211,7 @@ export function MessageTimeline(props: MessageTimelineProps) {
               onMessageDelete={props.onMessageDelete}
               onMessageEdit={props.onMessageEdit}
               onProfileOpen={props.onProfileOpen}
+              onResultReview={props.onResultReview}
             />
           );
         }

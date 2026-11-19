@@ -2,100 +2,67 @@ import { memo } from "react";
 import { IComponentPropsExtended } from "./interface";
 import { cn } from "@sps/shared-frontend-client-utils";
 import Link from "next/link";
+import { MessageCircle } from "lucide-react";
 import { getLocalizedText } from "../title";
 
 export const Component = memo(function Component(
   props: IComponentPropsExtended,
 ) {
+  const ru = props.language === "ru";
   const createdAt = new Date(props.socialModuleChat.createdAt);
   const isActive =
     props.currentSocialModuleChatId === props.socialModuleChat.id;
   const chatTitle = getLocalizedText(
     props.socialModuleChat.title,
     props.language,
-    "Untitled chat",
+    ru ? "Чат без названия" : "Untitled chat",
   );
-  const participants = props.socialModuleChat.participants || [];
+  const participantNames = (props.socialModuleChat.participants || [])
+    .filter((profile) => profile.id !== props.socialModuleProfile.id)
+    .map((profile) => getLocalizedText(profile.title, props.language, ""))
+    .filter((name) => name && !/^subject-[0-9a-f-]{36}$/i.test(name));
   return (
     <Link
       href={`/${props.language}/social/chats/${props.socialModuleChat.id}`}
+      prefetch={false}
+      aria-current={isActive ? "page" : undefined}
+      onNavigate={
+        props.onSelectChat
+          ? (event) => {
+              if (isActive) event.preventDefault();
+              props.onSelectChat?.();
+            }
+          : undefined
+      }
       data-module="rbac"
       data-model="subject"
       data-variant={props.variant}
       className={cn(
-        "group flex w-full cursor-pointer items-center gap-3 rounded-lg px-3 py-2.5 text-left transition",
-        isActive
-          ? "bg-slate-900 text-white"
-          : "text-slate-700 hover:bg-slate-100",
+        "flex min-h-14 w-full min-w-0 items-center gap-3 rounded-lg px-3 py-2.5 text-left transition focus-visible:outline-2 focus-visible:outline-offset-2",
+        isActive ? "bg-muted text-foreground" : "hover:bg-muted/70",
         props.className,
       )}
     >
-      <div
-        className={cn(
-          "flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-sm font-medium transition",
-          isActive
-            ? "bg-white/10 text-white"
-            : "bg-slate-200/70 text-slate-600 group-hover:bg-slate-200",
-        )}
-      >
-        {props.socialModuleChat.variant?.slice(0, 1).toUpperCase() || "C"}
+      <div className="grid size-9 shrink-0 place-items-center rounded-lg border border-border bg-card text-muted-foreground">
+        <MessageCircle className="size-4" aria-hidden="true" />
       </div>
       <div className="min-w-0 flex-1">
-        <div className="flex w-full min-w-0 items-center justify-between gap-2">
-          <h2
-            className={cn(
-              "min-w-0 flex-1 truncate text-sm font-medium",
-              isActive ? "text-white" : "text-slate-900",
-            )}
-          >
+        <div className="flex min-w-0 items-baseline justify-between gap-2">
+          <span className="line-clamp-2 min-w-0 break-words text-sm font-medium">
             {chatTitle}
-          </h2>
-          <span
-            className={cn(
-              "shrink-0 text-[10px] tabular-nums",
-              isActive ? "text-white/50" : "text-slate-400",
-            )}
-          >
-            {createdAt.toLocaleDateString()}
           </span>
+          <time
+            className="shrink-0 text-xs tabular-nums text-muted-foreground"
+            dateTime={createdAt.toISOString()}
+          >
+            {createdAt.toLocaleDateString(props.language)}
+          </time>
         </div>
-        <div className="mt-1 flex min-w-0 items-center gap-1.5">
-          {participants.slice(0, 3).map((profile) => (
-            <span
-              key={profile.id}
-              className={cn(
-                "max-w-28 truncate rounded-full px-2 py-0.5 text-[11px]",
-                isActive
-                  ? "bg-white/10 text-white/70"
-                  : "bg-slate-100 text-slate-600",
-              )}
-            >
-              {profile.slug}
-            </span>
-          ))}
-          {participants.length > 3 ? (
-            <span
-              className={cn(
-                "rounded-full px-2 py-0.5 text-[11px]",
-                isActive
-                  ? "bg-white/10 text-white/60"
-                  : "bg-slate-100 text-slate-500",
-              )}
-            >
-              +{participants.length - 3}
-            </span>
-          ) : null}
-          {!participants.length ? (
-            <span
-              className={cn(
-                "truncate text-xs",
-                isActive ? "text-white/50" : "text-slate-400",
-              )}
-            >
-              Participant details unavailable
-            </span>
-          ) : null}
-        </div>
+        {participantNames.length > 0 && (
+          <p className="mt-1 truncate text-xs text-muted-foreground">
+            {participantNames.slice(0, 3).join(", ")}
+          </p>
+        )}
       </div>
     </Link>
   );
