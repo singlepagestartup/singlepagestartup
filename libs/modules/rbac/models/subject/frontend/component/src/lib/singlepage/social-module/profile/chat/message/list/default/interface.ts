@@ -1,5 +1,6 @@
 export { type IModel } from "@sps/rbac/models/subject/sdk/model";
 import { IModel } from "@sps/rbac/models/subject/sdk/model";
+import type { IAIChatProject } from "@sps/rbac/models/subject/sdk/model";
 import { IModel as ISocialModuleProfile } from "@sps/social/models/profile/sdk/model";
 import { IModel as ISocialModuleChat } from "@sps/social/models/chat/sdk/model";
 import { IModel as ISocialModuleThread } from "@sps/social/models/thread/sdk/model";
@@ -47,4 +48,7 @@ export type ISocialModuleMessagesAndActionsQuery = (
     }
 )[];
 
-export interface IComponentPropsExtended extends IComponentProps {}
+export interface IComponentPropsExtended extends IComponentProps {
+  /** Verified by the Subject's socialModuleProfileProjects reader. */
+  documentProject?: IAIChatProject;
+}

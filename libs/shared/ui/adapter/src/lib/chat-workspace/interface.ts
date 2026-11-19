@@ -13,8 +13,10 @@ export interface IChatThreadPanelProps {
   onPaneChange?: (pane: "chat" | "document") => void;
   language?: string;
   isDocument?: boolean;
+  isProjectThread?: boolean;
   navigation?: ReactNode;
   messages: ReactNode;
+  messagesOwnScroll?: boolean;
   composer: ReactNode;
   knowledge?: ReactNode;
   documentDownload?: ReactNode;

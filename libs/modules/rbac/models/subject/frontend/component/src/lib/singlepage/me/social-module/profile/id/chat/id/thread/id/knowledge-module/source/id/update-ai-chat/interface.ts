@@ -18,10 +18,13 @@ export interface IComponentProps extends IParent<IModel, typeof variant> {
   language?: string;
   project: IAIChatProject;
   source: import("@sps/knowledge/models/source/sdk/model").IModel;
-  onDiscuss: (id: string) => void;
+  onDiscuss: (id: string, title: string) => void;
 }
-export interface IComponentPropsExtended
-  extends IParentExtended<IModel, typeof variant, IComponentProps> {
+export interface IComponentPropsExtended extends IParentExtended<
+  IModel,
+  typeof variant,
+  IComponentProps
+> {
   /** Loaded by the specialized socialModuleProfileFindByIdChatFindByIdProfileFindByIdKnowledgeSourceFindByIdFilesFind reader; retry is client-only. */
   attachmentsRead: {
     data?: IResult["ISocialModuleProfileFindByIdChatFindByIdProfileFindByIdKnowledgeSourceFindByIdFilesFindResult"];

@@ -13,7 +13,7 @@ jest.mock("@sps/rbac/models/subject/sdk/client", () => ({
 it("shows the filename and uses only an authenticated download for a script", async () => {
   jest.useFakeTimers();
   const file = new Blob(["const fixture = 1;"], {
-    type: "application/octet-stream",
+    type: "text/javascript",
   });
   mockDownload.mockResolvedValueOnce(file);
   const original = URL.createObjectURL;
@@ -42,6 +42,9 @@ it("shows the filename and uses only an authenticated download for a script", as
     );
     await waitFor(() =>
       expect(download).toHaveBeenCalledWith("blob:fixture", "preview.js"),
+    );
+    expect(URL.createObjectURL).toHaveBeenCalledWith(
+      expect.objectContaining({ type: "application/octet-stream" }),
     );
     expect(mockDownload).toHaveBeenCalledWith({
       id: "buyer",

@@ -4,6 +4,13 @@ import { QueryClientProvider } from "@tanstack/react-query";
 import { queryClient } from "@sps/shared-frontend-client-api";
 
 jest.mock("client-only", () => ({}), { virtual: true });
+jest.mock(
+  "../../../../../../../../../social-module/profile/chat/message/list/default/components/ThreadFiles",
+  () => ({
+    useThreadHasFiles: () => false,
+    ThreadFiles: () => null,
+  }),
+);
 jest.mock("server-only", () => ({}), { virtual: true });
 jest.mock("@paralleldrive/cuid2", () => ({ createId: () => "request" }));
 const subject = { id: "owner", slug: "owner" };

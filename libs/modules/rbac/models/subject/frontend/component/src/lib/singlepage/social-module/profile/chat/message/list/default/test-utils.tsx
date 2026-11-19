@@ -1,5 +1,6 @@
 import { render } from "@testing-library/react";
-import { Component } from "./ClientComponent";
+import Component from "./client";
+import type { IAIChatProject } from "@sps/rbac/models/subject/sdk/model";
 
 export const mockMessageCreateMutate = jest.fn();
 export const mockMessageDeleteMutate = jest.fn();
@@ -18,6 +19,32 @@ export const mockSocialSkillUpdateMutateAsync = jest.fn();
 export const mockProfilesToSkillsCreateMutateAsync = jest.fn();
 export const mockToastError = jest.fn();
 export const mockToastSuccess = jest.fn();
+export const mockProjectsRead = jest.fn();
+export const mockDocumentWidget = jest.fn();
+
+jest.mock("client-only", () => ({}), { virtual: true });
+jest.mock("@sps/rbac/models/subject/frontend/component", () => ({
+  Component: (props: {
+    variant: string;
+    onDiscuss?: (id: string, title: string) => void;
+  }) => {
+    mockDocumentWidget(props);
+    if (props.variant.endsWith("download-ai-chat")) {
+      return <button type="button">Download Markdown</button>;
+    }
+    if (props.variant.endsWith("list-document-ai-chat")) {
+      return (
+        <button
+          type="button"
+          onClick={() => props.onDiscuss?.("section-1", "Audience")}
+        >
+          Discuss Audience
+        </button>
+      );
+    }
+    return null;
+  },
+}));
 
 export const mockChatComponentState = {
   knowledgeSources: [] as any[],
@@ -366,10 +393,13 @@ jest.mock("@sps/rbac/models/subject/sdk/client", () => {
 
   return {
     api: {
+      socialModuleProfileProjects: (...args: unknown[]) =>
+        mockProjectsRead(...args),
       socialModuleProfileFindByIdChatFindByIdThreadFindByIdMessageFind: jest.fn(
-        () => {
+        (request) => {
+          const data = mockChatComponentState.socialModuleMessages;
           return {
-            data: mockChatComponentState.socialModuleMessages,
+            data: request.reactQueryOptions?.select?.(data) ?? data,
             isLoading: false,
           };
         },
@@ -637,7 +667,7 @@ interface RenderComponentOptions {
 }
 
 export function renderComponent(
-  chatVariant: "default" | "knowledge",
+  chatVariant: "default" | "knowledge" | "ai-chat",
   options: RenderComponentOptions = {},
 ) {
   // Timeline data now flows through the mocked SDK find queries consumed by
@@ -713,6 +743,9 @@ export function resetChatComponentMocks() {
   // Reset the real shared QueryClient cache between tests so seeded list
   // queries do not leak across cache specs (issue #195).
   mockSharedApiQueryClient.clear();
+  mockProjectsRead
+    .mockReset()
+    .mockReturnValue({ data: [] as IAIChatProject[] });
   mockMessageCreateMutate.mockReset();
   mockMessageDeleteMutate.mockReset();
   mockMessageUpdateMutate.mockReset();

@@ -4,6 +4,7 @@ import { IComponentPropsExtended } from "./interface";
 import { cn } from "@sps/shared-frontend-client-utils";
 import { Component as Subject } from "@sps/rbac/models/subject/frontend/component";
 import { Component as SocialModuleProfile } from "@sps/social/models/profile/frontend/component";
+import { Component as SocialModuleThread } from "@sps/social/models/thread/frontend/component";
 import {
   emptyLocalizedTextFields,
   getLocalizedText,
@@ -13,10 +14,12 @@ import {
 } from "../../title";
 import { api, queryClient } from "@sps/rbac/models/subject/sdk/client";
 import {
+  getAIChatDocument,
   route,
   type IModel as IRbacSubject,
 } from "@sps/rbac/models/subject/sdk/model";
-import { ChatWorkspace, FormField } from "@sps/ui-adapter";
+import { AI_CHAT_DOCUMENTS } from "@sps/shared-utils";
+import { ChatWorkspace, FormField, Icon } from "@sps/ui-adapter";
 import type { IModel as ISocialModuleProfile } from "@sps/social/models/profile/sdk/model";
 import { internationalization } from "@sps/shared-configuration";
 import {
@@ -24,63 +27,24 @@ import {
   DialogContent,
   DialogTitle,
   Form,
-  Sheet,
-  SheetContent,
-  SheetTitle,
-  SheetTrigger,
 } from "@sps/shared-ui-shadcn";
 import {
-  ChevronsUpDown,
   Edit3,
   LogOut,
   Menu,
-  MessageCircle,
-  MessagesSquare,
   Plus,
   Search,
-  Settings,
   Trash2,
   UserMinus,
   UserPlus,
   X,
 } from "lucide-react";
-import { memo, useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useId, useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useRouter } from "next/navigation";
-import Link from "next/link";
 import { toast } from "sonner";
 
 type SettingsTab = "general" | "threads" | "members";
-
-interface IThreadLinkProps {
-  href: string;
-  title: string;
-  active: boolean;
-  onNavigate: () => void;
-}
-
-const ThreadLink = memo(function ThreadLink(props: IThreadLinkProps) {
-  return (
-    <Link
-      href={props.href}
-      prefetch={false}
-      onNavigate={props.onNavigate}
-      aria-current={props.active ? "page" : undefined}
-      className={cn(
-        "flex min-h-10 min-w-0 items-center gap-2 rounded-lg px-2 py-2 text-sm leading-snug focus-visible:outline-2 focus-visible:outline-offset-2",
-        props.active
-          ? "bg-card/10 font-medium text-default-foreground"
-          : "text-default-foreground/75 hover:bg-card/10 hover:text-default-foreground",
-      )}
-    >
-      <MessageCircle
-        aria-hidden="true"
-        className="size-4 shrink-0 text-default-foreground/65"
-      />
-      <span className="min-w-0 break-words">{props.title}</span>
-    </Link>
-  );
-});
 
 type ProfileListItem = {
   profile: ISocialModuleProfile;
@@ -255,6 +219,7 @@ export function Component(props: IComponentPropsExtended) {
   const router = useRouter();
   const ru = props.language === "ru";
   const chatHref = `/${props.language}/social/chats/${props.socialModuleChat.id}`;
+  const mobileNavigationId = useId();
   const [navigationOpen, setNavigationOpen] = useState(false);
   const [chatPickerOpen, setChatPickerOpen] = useState(false);
   const closeNavigation = useCallback(() => setNavigationOpen(false), []);
@@ -433,18 +398,40 @@ export function Component(props: IComponentPropsExtended) {
   const activeSocialModuleThread = socialModuleThreads?.find(
     (thread) => thread.id === activeSocialModuleThreadId,
   );
+  const socialModuleMemberProfiles = props.socialModuleChat.participants;
+  const documentItems = useMemo(() => {
+    if (props.socialModuleChat.variant !== "ai-chat") return [];
+
+    return AI_CHAT_DOCUMENTS.flatMap(({ key }) =>
+      threadItems.flatMap((item) => {
+        const document = getAIChatDocument(item.data.metadata);
+        if (document?.key !== key) return [];
+
+        const owner = socialModuleMemberProfiles?.find(
+          (profile) =>
+            profile.id === document.profileId &&
+            profile.variant === "artificial-intelligence",
+        );
+
+        return owner ? [{ ...item, owner }] : [];
+      }),
+    );
+  }, [props.socialModuleChat.variant, socialModuleMemberProfiles, threadItems]);
+  const ordinaryThreadItems = useMemo(() => {
+    const documentIds = new Set(documentItems.map(({ data }) => data.id));
+    return threadItems.filter(({ data }) => !documentIds.has(data.id));
+  }, [documentItems, threadItems]);
   const filteredThreadItems = useMemo(() => {
     const normalizedSearch = threadSearch.trim().toLowerCase();
 
     if (!normalizedSearch) {
-      return threadItems;
+      return ordinaryThreadItems;
     }
 
-    return threadItems.filter(({ title, data }) =>
+    return ordinaryThreadItems.filter(({ title, data }) =>
       `${title} ${data.id}`.toLowerCase().includes(normalizedSearch),
     );
-  }, [threadItems, threadSearch]);
-  const socialModuleMemberProfiles = props.socialModuleChat.participants;
+  }, [ordinaryThreadItems, threadSearch]);
   const memberProfileIds = useMemo(
     () =>
       new Set((socialModuleMemberProfiles || []).map((profile) => profile.id)),
@@ -834,17 +821,28 @@ export function Component(props: IComponentPropsExtended) {
 
   const canManageChat = props.socialModuleChat.variant !== "customer-work";
   const navigationLabel = ru ? "Навигация по чату" : "Chat navigation";
+  const documentOwner = documentItems[0]?.owner;
   const openSettings = (tab: SettingsTab) => {
     closeNavigation();
     setSettingsTab(tab);
     setShowSettings(true);
   };
   const navigation = (
-    <nav aria-label={navigationLabel} className="min-w-0 space-y-4">
-      <div>
-        <h2 className="mb-3 break-words text-lg font-semibold leading-snug">
-          {chatDisplayTitle}
-        </h2>
+    <nav aria-label={navigationLabel} className="min-w-0">
+      <h2 className="mb-3 break-words text-lg font-semibold">
+        {chatDisplayTitle}
+      </h2>
+      <div className="space-y-1">
+        {canManageChat && (
+          <button
+            type="button"
+            onClick={() => openSettings("general")}
+            className="flex min-h-11 w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm font-medium text-default-foreground/80 hover:bg-card/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground"
+          >
+            <Icon name="gear-six" className="size-4 shrink-0" />
+            {ru ? "Настройки" : "Settings"}
+          </button>
+        )}
         <button
           type="button"
           aria-haspopup="dialog"
@@ -852,37 +850,45 @@ export function Component(props: IComponentPropsExtended) {
             closeNavigation();
             setChatPickerOpen(true);
           }}
-          className="flex min-h-11 w-full items-center gap-2 rounded-lg px-2 text-left text-sm text-default-foreground/80 hover:bg-card/10 focus-visible:outline-2 focus-visible:outline-offset-2"
+          className="flex min-h-11 w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm font-medium text-default-foreground/80 hover:bg-card/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground"
         >
-          <MessagesSquare className="size-4 shrink-0" aria-hidden="true" />
+          <Icon name="chat-circle" className="size-4 shrink-0" />
           <span className="flex-1">{ru ? "Все чаты" : "All chats"}</span>
-          <ChevronsUpDown className="size-4 shrink-0" aria-hidden="true" />
+          <Icon name="caret-down" className="size-4 shrink-0" />
         </button>
-        {canManageChat && (
-          <button
-            type="button"
-            onClick={() => openSettings("general")}
-            className="flex min-h-11 w-full items-center gap-2 rounded-lg px-2 text-left text-sm text-default-foreground/80 hover:bg-card/10 focus-visible:outline-2 focus-visible:outline-offset-2"
-          >
-            <Settings className="size-4 shrink-0" aria-hidden="true" />
-            {ru ? "Настройки" : "Settings"}
-          </button>
-        )}
       </div>
+      {documentOwner && (
+        <SocialModuleProfile
+          isServer={false}
+          variant="thread-list-sidebar-ai-chat"
+          language={props.language}
+          data={documentOwner}
+          dataSource="props"
+          className="my-4"
+          documents={documentItems.map(({ data, title }) => ({
+            data,
+            dataSource: "props",
+            title,
+            href: `${chatHref}/threads/${data.id}`,
+            selected: data.id === activeSocialModuleThreadId,
+            onNavigate: closeNavigation,
+          }))}
+        />
+      )}
       <section
         aria-label={ru ? "Обсуждения" : "Threads"}
-        className="space-y-2 border-t border-default-foreground/10 pt-4"
+        className="mt-5 border-t border-default-foreground/10 pt-4"
       >
-        <h3 className="mb-2 text-xs font-semibold text-default-foreground/65">
+        <h3 className="mb-3 text-xs font-semibold text-default-foreground/60">
           {ru ? "Обсуждения" : "Threads"}
         </h3>
-        {threadItems.length > 0 && (
-          <label className="relative block">
+        {ordinaryThreadItems.length > 0 && (
+          <label className="relative mb-2 block">
             <span className="sr-only">
               {ru ? "Поиск обсуждений" : "Search threads"}
             </span>
-            <Search
-              aria-hidden="true"
+            <Icon
+              name="magnifying-glass"
               className="pointer-events-none absolute left-2.5 top-1/2 size-4 -translate-y-1/2 text-default-foreground/55"
             />
             <input
@@ -902,20 +908,27 @@ export function Component(props: IComponentPropsExtended) {
             {ru ? "Загрузка обсуждений…" : "Loading threads…"}
           </p>
         ) : filteredThreadItems.length ? (
-          <ul className="space-y-1">
+          <ul>
             {filteredThreadItems.map(({ data, title }) => (
               <li key={data.id}>
-                <ThreadLink
+                <SocialModuleThread
+                  isServer={false}
+                  variant="list-item-sidebar-ai-chat"
+                  language={props.language}
+                  data={data}
+                  dataSource="props"
+                  topic
                   href={`${chatHref}/threads/${data.id}`}
                   title={title}
-                  active={data.id === activeSocialModuleThreadId}
+                  selected={data.id === activeSocialModuleThreadId}
                   onNavigate={closeNavigation}
                 />
               </li>
             ))}
           </ul>
         ) : (
-          !socialModuleThreadsIsError && (
+          !socialModuleThreadsIsError &&
+          (!documentOwner || threadSearch) && (
             <p className="px-2 py-1 text-sm text-default-foreground/65">
               {threadSearch
                 ? ru
@@ -931,9 +944,9 @@ export function Component(props: IComponentPropsExtended) {
           <button
             type="button"
             onClick={() => openSettings("threads")}
-            className="flex min-h-11 w-full items-center gap-2 rounded-xl border border-default-foreground/15 px-2 text-left text-sm text-default-foreground/80 hover:bg-card/10 focus-visible:outline-2 focus-visible:outline-offset-2"
+            className="flex min-h-11 w-full items-center gap-2 rounded-xl border border-default-foreground/15 px-3 py-2 text-left text-sm text-default-foreground/80 hover:bg-card/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground"
           >
-            <Plus className="size-4 shrink-0" aria-hidden="true" />
+            <Icon name="plus" className="size-4 shrink-0" />
             {ru ? "Новое обсуждение" : "New thread"}
           </button>
         )}
@@ -941,15 +954,16 @@ export function Component(props: IComponentPropsExtended) {
     </nav>
   );
   const navigationTrigger = (
-    <SheetTrigger asChild>
-      <button
-        type="button"
-        aria-label={navigationLabel}
-        className="flex size-11 shrink-0 items-center justify-center rounded-lg text-foreground hover:bg-muted focus-visible:outline-2 focus-visible:outline-offset-2 lg:hidden"
-      >
-        <Menu className="size-5" aria-hidden="true" />
-      </button>
-    </SheetTrigger>
+    <button
+      type="button"
+      aria-label={navigationLabel}
+      aria-controls={mobileNavigationId}
+      aria-expanded={navigationOpen}
+      onClick={() => setNavigationOpen((open) => !open)}
+      className="flex size-11 shrink-0 items-center justify-center rounded-lg text-foreground hover:bg-muted focus-visible:outline-2 focus-visible:outline-offset-2 lg:hidden"
+    >
+      <Menu className="size-5" aria-hidden="true" />
+    </button>
   );
 
   return (
@@ -958,82 +972,75 @@ export function Component(props: IComponentPropsExtended) {
       data-model="subject"
       data-variant={props.variant}
       className={cn(
-        "mx-auto h-[calc(100dvh-3rem)] min-h-[320px] w-full max-w-7xl sm:px-6 sm:py-4",
+        "mx-auto min-w-0 w-full max-w-6xl px-4 py-6 sm:px-6",
         props.className,
       )}
     >
-      <Sheet open={navigationOpen} onOpenChange={setNavigationOpen}>
-        <ChatWorkspace
-          className="h-full min-h-0 rounded-none border-x-0 border-t-0 sm:rounded-2xl sm:border"
-          navigation={navigation}
-        >
-          {activeSocialModuleThreadId && activeSocialModuleThread ? (
-            <Subject
-              isServer={false}
-              data={props.data}
-              language={props.language}
-              socialModuleChat={props.socialModuleChat}
-              socialModuleProfile={props.socialModuleProfile}
-              artificialIntelligenceOpponentProfile={
-                artificialIntelligenceOpponentProfile
-              }
-              knowledgeAssistantProfile={knowledgeAssistantProfile}
-              socialModuleThread={activeSocialModuleThread}
-              socialModuleThreadId={activeSocialModuleThreadId}
-              variant="social-module-profile-chat-message-list-default"
-              navigation={navigationTrigger}
-            />
-          ) : (
-            <section className="flex min-h-0 min-w-0 flex-1 flex-col">
-              <header className="flex shrink-0 items-center gap-2 border-b border-border px-3 py-2 lg:hidden">
-                {navigationTrigger}
-                <h2 className="truncate text-sm font-semibold">
-                  {chatDisplayTitle}
-                </h2>
-              </header>
-              <div className="grid min-h-0 flex-1 place-items-center overflow-y-auto p-6 text-center">
-                <div>
-                  <p role="status" className="text-sm text-muted-foreground">
-                    {socialModuleThreadsIsLoading
+      <div
+        id={mobileNavigationId}
+        hidden={!navigationOpen}
+        className="mb-3 max-h-[70dvh] overflow-y-auto rounded-2xl bg-default p-4 text-default-foreground lg:hidden"
+      >
+        {navigationOpen && navigation}
+      </div>
+      <ChatWorkspace navigation={navigation}>
+        {activeSocialModuleThreadId && activeSocialModuleThread ? (
+          <Subject
+            isServer={false}
+            data={props.data}
+            language={props.language}
+            socialModuleChat={props.socialModuleChat}
+            socialModuleProfile={props.socialModuleProfile}
+            artificialIntelligenceOpponentProfile={
+              artificialIntelligenceOpponentProfile
+            }
+            knowledgeAssistantProfile={knowledgeAssistantProfile}
+            socialModuleThread={activeSocialModuleThread}
+            socialModuleThreadId={activeSocialModuleThreadId}
+            variant="social-module-profile-chat-message-list-default"
+            navigation={navigationTrigger}
+          />
+        ) : (
+          <section className="flex min-h-0 min-w-0 flex-1 flex-col">
+            <header className="flex shrink-0 items-center gap-2 border-b border-border px-3 py-2 lg:hidden">
+              {navigationTrigger}
+              <h2 className="truncate text-sm font-semibold">
+                {chatDisplayTitle}
+              </h2>
+            </header>
+            <div className="grid min-h-0 flex-1 place-items-center overflow-y-auto p-6 text-center">
+              <div>
+                <p role="status" className="text-sm text-muted-foreground">
+                  {socialModuleThreadsIsLoading
+                    ? ru
+                      ? "Загрузка обсуждений…"
+                      : "Loading threads…"
+                    : socialModuleThreadsIsError
                       ? ru
-                        ? "Загрузка обсуждений…"
-                        : "Loading threads…"
-                      : socialModuleThreadsIsError
+                        ? "Не удалось загрузить обсуждения."
+                        : "Could not load threads."
+                      : props.socialModuleThreadId
                         ? ru
-                          ? "Не удалось загрузить обсуждения."
-                          : "Could not load threads."
-                        : props.socialModuleThreadId
-                          ? ru
-                            ? "Обсуждение недоступно."
-                            : "This thread is unavailable."
-                          : ru
-                            ? "В этом чате пока нет обсуждений."
-                            : "This chat has no threads yet."}
-                  </p>
-                  {socialModuleThreadsIsError && (
-                    <button
-                      type="button"
-                      onClick={() => void refetchSocialModuleThreads()}
-                      className="mt-3 rounded-lg border border-border px-3 py-2 text-sm"
-                    >
-                      {ru ? "Повторить попытку" : "Try again"}
-                    </button>
-                  )}
-                </div>
+                          ? "Обсуждение недоступно."
+                          : "This thread is unavailable."
+                        : ru
+                          ? "В этом чате пока нет обсуждений."
+                          : "This chat has no threads yet."}
+                </p>
+                {socialModuleThreadsIsError && (
+                  <button
+                    type="button"
+                    onClick={() => void refetchSocialModuleThreads()}
+                    className="mt-3 rounded-lg border border-border px-3 py-2 text-sm"
+                  >
+                    {ru ? "Повторить попытку" : "Try again"}
+                  </button>
+                )}
               </div>
-            </section>
-          )}
-        </ChatWorkspace>
-        <SheetContent
-          side="left"
-          aria-describedby={undefined}
-          closeLabel={ru ? "Закрыть навигацию" : "Close navigation"}
-          className="w-[min(19rem,90vw)] overflow-y-auto bg-default px-4 pb-4 pt-12 text-default-foreground"
-        >
-          <SheetTitle className="sr-only">{navigationLabel}</SheetTitle>
-          {navigation}
-        </SheetContent>
-      </Sheet>
+            </div>
+          </section>
+        )}
+      </ChatWorkspace>
       <Dialog open={chatPickerOpen} onOpenChange={setChatPickerOpen}>
         <DialogContent
           aria-describedby={undefined}

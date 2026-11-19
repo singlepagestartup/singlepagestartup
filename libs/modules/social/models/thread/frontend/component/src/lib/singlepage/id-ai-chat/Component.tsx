@@ -15,6 +15,7 @@ export function Component(props: IComponentPropsExtended) {
       isDocument={props.isDocument}
       knowledge={props.knowledge}
       documentDownload={props.documentDownload}
+      context={props.context}
       navigation={props.navigation}
     />
   );

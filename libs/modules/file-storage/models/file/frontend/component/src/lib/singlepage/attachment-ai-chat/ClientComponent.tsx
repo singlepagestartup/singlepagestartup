@@ -25,6 +25,8 @@ export function Component(props: IClientComponentProps) {
         mimeType={props.mimeType}
         extension={props.extension}
         textContent={props.textContent}
+        layout={props.layout}
+        availability={props.availability}
         onDownload={download}
       />
     </div>

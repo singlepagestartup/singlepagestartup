@@ -251,6 +251,7 @@ export function Component(props: IComponentPropsExtended) {
           key={source.id}
           source={source}
           isServer={false}
+          dataSource="props"
           variant="me-social-module-profile-id-chat-id-thread-id-knowledge-module-source-id-update-ai-chat"
           data={props.data}
           project={project}

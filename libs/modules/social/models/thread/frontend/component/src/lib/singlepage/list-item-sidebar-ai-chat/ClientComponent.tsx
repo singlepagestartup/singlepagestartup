@@ -15,6 +15,7 @@ export const Component = memo(function Component(
     <Link
       prefetch={false}
       href={getLocalizedHref(localeBase, props.href)}
+      onNavigate={props.onNavigate}
       aria-current={props.selected ? "page" : undefined}
       data-module="social"
       data-model="thread"
@@ -27,7 +28,7 @@ export const Component = memo(function Component(
         className="size-4 shrink-0 text-default-foreground/50"
       />
       <span className="min-w-0 flex-1 break-words">
-        {props.data.title || props.data.adminTitle}
+        {props.title || props.data.title || props.data.adminTitle}
       </span>
     </Link>
   );

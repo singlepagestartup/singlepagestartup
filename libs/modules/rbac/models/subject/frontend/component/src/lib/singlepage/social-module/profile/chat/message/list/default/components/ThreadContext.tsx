@@ -1,18 +1,16 @@
 "use client";
 
-import { memo, useMemo, type Ref } from "react";
-import { FileText, Files } from "lucide-react";
+import { memo, type Ref } from "react";
+import { FileText } from "lucide-react";
 import { api } from "@sps/rbac/models/subject/sdk/client";
 import {
   getAIChatDocument,
   type IAIChatDocument,
 } from "@sps/rbac/models/subject/sdk/model";
-import { Component as FileStorageModuleFile } from "@sps/file-storage/models/file/frontend/component";
 import { readKnowledgeDocumentContent } from "@sps/shared-utils";
 import type { IModel as ISocialModuleThread } from "@sps/social/models/thread/sdk/model";
-import { useThreadMessages } from "../hooks/use-thread-messages";
-import { PrivateMessageAttachments } from "./PrivateMessageAttachments";
 import { ThreadCustomerWork } from "./ThreadCustomerWork";
+import { ThreadFiles } from "./ThreadFiles";
 
 interface IProps {
   subjectId: string;
@@ -21,6 +19,7 @@ interface IProps {
   socialModuleThreadId: string;
   socialModuleThread: ISocialModuleThread;
   isCustomerWork: boolean;
+  hideDocumentKnowledge?: boolean;
   language: string;
   resultSectionRef: Ref<HTMLElement>;
   selectedVersionId?: string;
@@ -28,7 +27,6 @@ interface IProps {
 }
 
 export const ThreadContext = memo(function ThreadContext(props: IProps) {
-  const ru = props.language === "ru";
   const document = getAIChatDocument(props.socialModuleThread.metadata);
   return (
     <div className="grid min-w-0 gap-6">
@@ -42,7 +40,9 @@ export const ThreadContext = memo(function ThreadContext(props: IProps) {
           onVersionSelect={props.onVersionSelect}
         />
       )}
-      {!props.isCustomerWork && document?.sourceIds.length ? (
+      {!props.isCustomerWork &&
+      !props.hideDocumentKnowledge &&
+      document?.sourceIds.length ? (
         <ThreadDocumentKnowledge
           document={document}
           subjectId={props.subjectId}
@@ -51,20 +51,14 @@ export const ThreadContext = memo(function ThreadContext(props: IProps) {
           language={props.language}
         />
       ) : null}
-      <section className="grid min-w-0 gap-3">
-        <h4 className="flex items-center gap-2 text-sm font-semibold">
-          <Files className="size-4 shrink-0" aria-hidden="true" />
-          {ru ? "Файлы" : "Files"}
-        </h4>
-        <ThreadFiles
-          isCustomerWork={props.isCustomerWork}
-          subjectId={props.subjectId}
-          socialModuleProfileId={props.socialModuleProfileId}
-          socialModuleChatId={props.socialModuleChatId}
-          socialModuleThreadId={props.socialModuleThreadId}
-          language={props.language}
-        />
-      </section>
+      <ThreadFiles
+        isCustomerWork={props.isCustomerWork}
+        subjectId={props.subjectId}
+        socialModuleProfileId={props.socialModuleProfileId}
+        socialModuleChatId={props.socialModuleChatId}
+        socialModuleThreadId={props.socialModuleThreadId}
+        language={props.language}
+      />
     </div>
   );
 });
@@ -130,83 +124,5 @@ function ThreadDocumentKnowledge(props: IThreadDocumentKnowledgeProps) {
         </p>
       )}
     </section>
-  );
-}
-
-function ThreadFiles(
-  props: Pick<
-    IProps,
-    | "subjectId"
-    | "socialModuleProfileId"
-    | "socialModuleChatId"
-    | "socialModuleThreadId"
-    | "isCustomerWork"
-    | "language"
-  >,
-) {
-  const ru = props.language === "ru";
-  const messages = useThreadMessages(props);
-  const attachments = useMemo(() => {
-    const seen = new Set<string>();
-    const files = (messages.data ?? []).flatMap((message) => {
-      if (props.isCustomerWork || message.variant === "customer-work")
-        return [];
-      return (message.attachments ?? []).filter((file) => {
-        if (seen.has(file.id)) return false;
-        seen.add(file.id);
-        return true;
-      });
-    });
-    const privateFiles = (messages.data ?? []).filter(
-      (message) => message.privateAttachments?.length,
-    );
-    return { files, privateFiles };
-  }, [messages.data, props.isCustomerWork]);
-
-  if (messages.isError) {
-    return (
-      <p role="alert" className="text-sm text-destructive">
-        {ru ? "Не удалось загрузить файлы." : "Could not load files."}
-      </p>
-    );
-  }
-  if (messages.isLoading) {
-    return (
-      <p role="status" className="text-sm text-muted-foreground">
-        {ru ? "Загружаем файлы…" : "Loading files…"}
-      </p>
-    );
-  }
-  if (!attachments.files.length && !attachments.privateFiles.length) {
-    return (
-      <p className="text-sm text-muted-foreground">
-        {ru ? "В обсуждении пока нет файлов." : "This thread has no files yet."}
-      </p>
-    );
-  }
-
-  return (
-    <div className="grid min-w-0 gap-2">
-      {attachments.files.map((file) => (
-        <FileStorageModuleFile
-          key={file.id}
-          variant="attachment-ai-chat"
-          isServer={false}
-          data={file}
-          dataSource="props"
-          language={props.language}
-        />
-      ))}
-      {attachments.privateFiles.map((message) => (
-        <PrivateMessageAttachments
-          key={message.id}
-          subjectId={props.subjectId}
-          threadId={props.socialModuleThreadId}
-          messageId={message.id}
-          language={props.language}
-          attachments={message.privateAttachments ?? []}
-        />
-      ))}
-    </div>
   );
 }

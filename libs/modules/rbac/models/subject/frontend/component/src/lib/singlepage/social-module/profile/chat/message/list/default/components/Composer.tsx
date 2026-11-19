@@ -25,7 +25,7 @@ import {
   shouldShowKnowledgeMentionOption,
 } from "../utils";
 import { Form } from "@sps/shared-ui-shadcn";
-import { Paperclip, Send } from "lucide-react";
+import { FileText, Paperclip, Send, X } from "lucide-react";
 import { Controller, useWatch } from "react-hook-form";
 import {
   useCallback,
@@ -38,6 +38,9 @@ import { toast } from "sonner";
 
 interface ComposerProps {
   isCustomerWork: boolean;
+  isDocument?: boolean;
+  documentSource?: { sourceId: string; title: string };
+  onDiscussWholeDocument?: () => void;
   canSelectOpenRouterReasoning: boolean;
   canUseKnowledge: boolean;
   clearSelectedSkills: () => void;
@@ -89,6 +92,8 @@ export function Composer(props: ComposerProps) {
   const ru = props.language === "ru";
   const composer = useChatComposer({
     isCustomerWork: props.isCustomerWork,
+    isDocument: props.isDocument,
+    documentSourceId: props.documentSource?.sourceId,
     subjectId: props.subjectId,
     socialModuleProfileId: props.socialModuleProfileId,
     socialModuleChatId: props.socialModuleChatId,
@@ -507,7 +512,7 @@ export function Composer(props: ComposerProps) {
   return (
     <Form {...composer.form}>
       <form
-        className="max-h-[75%] min-w-0 shrink-0 overflow-y-auto border-t border-border bg-background p-4"
+        className="max-h-[75%] min-w-0 shrink-0 overflow-y-auto border-t border-border p-4"
         onSubmit={composer.form.handleSubmit(composer.onSubmit)}
       >
         {isKnowledgeCommandPickerOpen ? (
@@ -556,7 +561,28 @@ export function Composer(props: ComposerProps) {
             event.currentTarget.value = "";
           }}
         />
-        <div className="rounded-2xl border border-border bg-background p-3">
+        <div className="min-w-0 rounded-2xl border border-border p-3">
+          {props.isDocument && (
+            <div className="mb-2 flex min-w-0 items-center gap-2 text-xs text-muted-foreground">
+              <FileText className="size-4 shrink-0" aria-hidden="true" />
+              <span className="truncate">
+                {props.documentSource?.title ||
+                  (ru ? "Весь документ" : "Whole document")}
+              </span>
+              {props.documentSource && (
+                <button
+                  type="button"
+                  className="grid size-8 shrink-0 place-items-center rounded-md hover:bg-muted focus-visible:outline-2"
+                  aria-label={
+                    ru ? "Обсудить весь документ" : "Discuss whole document"
+                  }
+                  onClick={props.onDiscussWholeDocument}
+                >
+                  <X className="size-4" aria-hidden="true" />
+                </button>
+              )}
+            </div>
+          )}
           <SelectedComposerPills
             files={selectedFileItems}
             isKnowledgeSearchSelected={isKnowledgeSearchSelected}
@@ -578,9 +604,17 @@ export function Composer(props: ComposerProps) {
                   composer.textareaRef.current = element;
                 }}
                 aria-label={ru ? "Сообщение" : "Message"}
-                placeholder={ru ? "Напишите сообщение…" : "Write a message..."}
+                placeholder={
+                  props.isDocument
+                    ? ru
+                      ? "Обсудите знания или предложите изменение."
+                      : "Discuss this knowledge or request a change."
+                    : ru
+                      ? "Напишите сообщение…"
+                      : "Write a message..."
+                }
                 rows={4}
-                className="min-h-24 max-h-[min(45dvh,22rem)] w-full resize-y rounded-sm bg-transparent text-sm leading-6 outline-none placeholder:text-muted-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring sm:min-h-32"
+                className="h-32 min-h-24 max-h-[min(50dvh,480px)] w-full resize-y rounded-lg bg-transparent text-sm leading-6 outline-none placeholder:text-muted-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
                 onChange={(event) => {
                   field.onChange(event);
                   event.currentTarget.style.height = "auto";

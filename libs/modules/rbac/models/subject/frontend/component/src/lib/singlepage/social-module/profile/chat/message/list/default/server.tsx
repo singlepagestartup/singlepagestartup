@@ -2,14 +2,28 @@
 import "server-only";
 
 import { IComponentProps } from "./interface";
-import { Component as ChildComponent } from "./Component";
+import Client from "./client";
 
 /**
- * Messages and actions are fetched client-side inside MessageTimelineSection
- * (issue #195) — the server variant renders the same shell without
- * prefetching message arrays, keeping the timeline data boundary in one
- * place.
+ * The browser session loads the owner project, messages, and actions.
  */
 export default async function Component(props: IComponentProps) {
-  return <ChildComponent {...props} />;
+  return (
+    <Client
+      isServer={false}
+      variant={props.variant}
+      data={props.data}
+      language={props.language}
+      className={props.className}
+      socialModuleProfile={props.socialModuleProfile}
+      artificialIntelligenceOpponentProfile={
+        props.artificialIntelligenceOpponentProfile
+      }
+      knowledgeAssistantProfile={props.knowledgeAssistantProfile}
+      socialModuleChat={props.socialModuleChat}
+      socialModuleThread={props.socialModuleThread}
+      socialModuleThreadId={props.socialModuleThreadId}
+      navigation={props.navigation}
+    />
+  );
 }

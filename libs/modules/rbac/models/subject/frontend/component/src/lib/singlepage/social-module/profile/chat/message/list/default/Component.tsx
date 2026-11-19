@@ -18,6 +18,7 @@ export function Component(props: IComponentPropsExtended) {
       socialModuleThread={props.socialModuleThread}
       socialModuleThreadId={props.socialModuleThreadId}
       navigation={props.navigation}
+      documentProject={props.documentProject}
     />
   );
 }

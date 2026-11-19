@@ -17,6 +17,8 @@ export interface IDocumentLinkProps {
   data: import("@sps/social/models/thread/sdk/model").IModel;
   href: string;
   selected?: boolean;
+  title?: string;
+  onNavigate?: () => void;
 }
 
 export const variant = "thread-list-sidebar-ai-chat" as const;
@@ -28,5 +30,8 @@ export interface IComponentProps extends IParent<IModel, typeof variant> {
   documents: IDocumentLinkProps[];
 }
 
-export interface IComponentPropsExtended
-  extends IParentExtended<IModel, typeof variant, IComponentProps> {}
+export interface IComponentPropsExtended extends IParentExtended<
+  IModel,
+  typeof variant,
+  IComponentProps
+> {}

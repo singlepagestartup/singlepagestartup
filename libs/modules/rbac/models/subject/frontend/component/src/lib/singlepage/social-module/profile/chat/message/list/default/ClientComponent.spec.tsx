@@ -11,6 +11,7 @@
 import { fireEvent, screen, waitFor } from "@testing-library/react";
 import {
   mockChatComponentState,
+  mockDocumentWidget,
   mockKnowledgeSourceCreateMutate,
   mockKnowledgeSourceDeleteMutateAsync,
   mockKnowledgeSourceUpdateMutate,
@@ -18,6 +19,7 @@ import {
   mockMessageCreateMutate,
   mockOpenRouterModelFavoriteUpdateMutate,
   mockProfileSkillFind,
+  mockProjectsRead,
   mockThreadUpdateMutate,
   mockSocialSkillCreateMutateAsync,
   mockSocialSkillUpdateMutateAsync,
@@ -49,6 +51,147 @@ function aiReactionRequest(
     ...overrides,
   };
 }
+
+describe("AI Chat documents in Social", () => {
+  const project = {
+    chat: { id: "chat-1" },
+    profile: aiOpponentProfile,
+    requesterProfileId: "profile-1",
+    thread: { id: "thread-1" },
+  };
+  const documentThread = {
+    id: "thread-1",
+    title: "Brief.md",
+    metadata: {
+      aiChatDocument: {
+        key: "brief",
+        profileId: aiOpponentProfile.id,
+        sourceIds: [],
+      },
+    },
+  };
+
+  beforeEach(() => {
+    resetChatComponentMocks();
+  });
+
+  it("opens the native editor and export for an owned document with no saved sections", () => {
+    mockProjectsRead.mockReturnValue({ data: [project] });
+    renderComponent("ai-chat", { socialModuleThread: documentThread });
+
+    expect(mockProjectsRead).toHaveBeenCalledWith({
+      id: "subject-1",
+      reactQueryOptions: { enabled: true },
+    });
+    expect(mockDocumentWidget).toHaveBeenCalledWith(
+      expect.objectContaining({
+        variant:
+          "me-social-module-profile-id-chat-id-thread-id-knowledge-module-source-list-document-ai-chat",
+        project,
+        thread: documentThread,
+        dataSource: "props",
+      }),
+    );
+    expect(
+      screen.getByRole("region", { name: "Brief.md editor", hidden: true }),
+    ).toBeTruthy();
+    expect(
+      screen.getByRole("button", { name: "Download Markdown", hidden: true }),
+    ).toBeTruthy();
+    expect(screen.getByRole("textbox", { name: "Message" })).toBeTruthy();
+  });
+
+  it.each([
+    { chat: { id: "other-chat" } },
+    { requesterProfileId: "other-requester" },
+    { profile: { id: "other-assistant" } },
+  ])(
+    "requires the exact chat, requester and assistant (mismatch %j)",
+    (otherProject) => {
+      mockProjectsRead.mockReturnValue({
+        data: [{ ...project, ...otherProject }],
+      });
+      renderComponent("ai-chat", { socialModuleThread: documentThread });
+
+      expect(mockDocumentWidget).not.toHaveBeenCalled();
+      expect(screen.getByRole("textbox", { name: "Message" })).toBeTruthy();
+    },
+  );
+
+  it("ignores a matching project left in cache after permission is revoked", () => {
+    mockProjectsRead.mockReturnValue({
+      data: [project],
+      error: Object.assign(new Error("Forbidden"), { status: 403 }),
+    });
+    renderComponent("ai-chat", { socialModuleThread: documentThread });
+
+    expect(mockDocumentWidget).not.toHaveBeenCalled();
+  });
+
+  it("uses the thread link and metadata for documents, and leaves an ordinary thread full width", () => {
+    mockProjectsRead.mockReturnValue({ data: [project] });
+    renderComponent("ai-chat", {
+      socialModuleThread: {
+        ...documentThread,
+        title: "Brief.md",
+        metadata: {},
+      },
+    });
+
+    expect(mockProjectsRead).toHaveBeenCalledWith({
+      id: "subject-1",
+      reactQueryOptions: { enabled: false },
+    });
+    expect(mockDocumentWidget).not.toHaveBeenCalled();
+    expect(
+      screen.queryByRole("complementary", { name: "Context", hidden: true }),
+    ).toBeNull();
+    expect(
+      screen.queryByRole("button", { name: "Context", hidden: true }),
+    ).toBeNull();
+  });
+
+  it("sends the selected knowledge section with the existing Social composer", async () => {
+    mockProjectsRead.mockReturnValue({ data: [project] });
+    renderComponent("ai-chat", {
+      socialModuleThread: {
+        ...documentThread,
+        metadata: {
+          aiChatDocument: {
+            ...documentThread.metadata.aiChatDocument,
+            sourceIds: ["section-1"],
+          },
+        },
+      },
+    });
+
+    fireEvent.click(screen.getByRole("button", { name: "Document" }));
+    fireEvent.click(screen.getByRole("button", { name: "Discuss Audience" }));
+    const textarea = screen.getByRole("textbox", { name: "Message" });
+    expect(document.activeElement).toBe(textarea);
+    expect(
+      screen.getByRole("button", { name: "Chat" }).getAttribute("aria-pressed"),
+    ).toBe("true");
+    fireEvent.change(textarea, { target: { value: "Refine this section" } });
+    fireEvent.click(screen.getByRole("button", { name: "Send message" }));
+
+    await waitFor(() => {
+      expect(mockMessageCreateMutate).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({
+            metadata: expect.objectContaining({
+              aiChatDocumentSourceId: "section-1",
+              rbacAiReactionRequest: aiReactionRequest({
+                useKnowledgeSearch: true,
+              }),
+            }),
+          }),
+        }),
+        expect.any(Object),
+      );
+    });
+  });
+});
 
 describe("Given: OpenRouter chat profile sidebar", () => {
   beforeEach(() => {

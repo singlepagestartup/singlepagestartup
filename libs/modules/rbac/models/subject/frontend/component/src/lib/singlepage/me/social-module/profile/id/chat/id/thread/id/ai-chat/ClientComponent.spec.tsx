@@ -1,6 +1,14 @@
 import { renderToStaticMarkup } from "react-dom/server";
 
+const mockThreadHasFiles = jest.fn();
 jest.mock("client-only", () => ({}), { virtual: true });
+jest.mock(
+  "../../../../../../../../../social-module/profile/chat/message/list/default/components/ThreadFiles",
+  () => ({
+    useThreadHasFiles: (...args: unknown[]) => mockThreadHasFiles(...args),
+    ThreadFiles: () => <div>Thread files</div>,
+  }),
+);
 jest.mock("next/navigation", () => ({
   useRouter: () => ({ refresh: jest.fn() }),
 }));
@@ -26,7 +34,7 @@ jest.mock("@sps/rbac/models/subject/frontend/component", () => ({
 jest.mock("@sps/social/models/thread/frontend/component", () => ({
   Component: (props: any) => (
     <div data-thread-language={props.language}>
-      {props.composer}Private messages
+      {props.composer}Private messages{props.context}
     </div>
   ),
 }));
@@ -38,11 +46,13 @@ const props = {
     profile: { id: "profile" },
     chat: { id: "chat" },
     thread: { id: "thread" },
+    requesterProfileId: "requester",
   },
   loading: <div role="status">Chat skeleton</div>,
 } as any;
 beforeEach(() => {
   mockRefetch.mockClear();
+  mockThreadHasFiles.mockReset().mockReturnValue(false);
   mockThreads = { data: [], isPending: false, refetch: mockRefetch };
 });
 it.each(["ru", "en"])(
@@ -62,6 +72,27 @@ it("renders the supplied loading slot before messages or actions", () => {
   expect(html).toContain("Chat skeleton");
   expect(html).not.toContain("Private messages");
   expect(html).not.toContain("Private actions");
+});
+it("shows files for the selected project thread when its scoped query has attachments", () => {
+  mockThreads.data = [
+    { id: "thread", title: "First thread" },
+    { id: "selected", title: "Selected thread" },
+  ];
+  const selected = <Component {...props} socialModuleThreadId="selected" />;
+  expect(renderToStaticMarkup(selected)).not.toContain("Thread files");
+
+  mockThreadHasFiles.mockReturnValue(true);
+  expect(renderToStaticMarkup(selected)).toContain("Thread files");
+  expect(mockThreadHasFiles).toHaveBeenLastCalledWith(
+    {
+      subjectId: "owner",
+      socialModuleProfileId: "requester",
+      socialModuleChatId: "chat",
+      socialModuleThreadId: "selected",
+    },
+    false,
+    true,
+  );
 });
 it.each([true, false])(
   "supplies the retry action and distinguishes missing threads from load errors (%s)",

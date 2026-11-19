@@ -14,12 +14,18 @@ import { act } from "react";
 import { createRoot, Root } from "react-dom/client";
 import { Component, normalizeChatMessageMarkdown } from "./ClientComponent";
 
+const mockRelationComponent = jest.fn(() => null);
 jest.mock(
   "@sps/social/relations/messages-to-file-storage-module-files/frontend/component",
   () => ({
-    Component: () => null,
+    Component: () => mockRelationComponent(),
   }),
 );
+jest.mock("@sps/file-storage/models/file/frontend/component", () => ({
+  Component: ({ data }: { data: { id: string } }) => (
+    <span data-file-id={data.id}>{data.id}</span>
+  ),
+}));
 
 jest.mock("@sps/social/models/profile/frontend/component", () => ({
   Component: (props: {
@@ -65,6 +71,7 @@ describe("GIVEN: social profile chat message markdown rendering", () => {
   });
 
   beforeEach(() => {
+    mockRelationComponent.mockClear();
     writeText = jest.fn().mockResolvedValue(undefined);
     Object.defineProperty(navigator, "clipboard", {
       configurable: true,
@@ -83,6 +90,31 @@ describe("GIVEN: social profile chat message markdown rendering", () => {
       root.unmount();
     });
     container.remove();
+  });
+
+  it("renders ordered scoped files and skips the relation when the list was loaded", () => {
+    const view = (ids: string[]) => (
+      <Component
+        isServer={false}
+        language="en"
+        data={{ id: "profile", title: {}, subtitle: {} }}
+        message={
+          {
+            id: "message",
+            attachments: ids.map((id) => ({ id })),
+          } as any
+        }
+      />
+    );
+    act(() => root.render(view(["first", "second"])));
+    expect(
+      Array.from(container.querySelectorAll("[data-file-id]"), (file) =>
+        file.getAttribute("data-file-id"),
+      ),
+    ).toEqual(["first", "second"]);
+    act(() => root.render(view([])));
+    expect(container.querySelector("ul")).toBeNull();
+    expect(mockRelationComponent).not.toHaveBeenCalled();
   });
 
   /**

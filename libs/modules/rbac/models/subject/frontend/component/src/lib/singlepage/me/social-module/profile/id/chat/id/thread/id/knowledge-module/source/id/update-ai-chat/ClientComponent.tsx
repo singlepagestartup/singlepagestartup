@@ -79,8 +79,8 @@ export const Component = memo(function Component(
     refetch: props.attachmentsRead.refetch || (() => window.location.reload()),
   };
   const discuss = useCallback(
-    () => onDiscuss(source.id),
-    [onDiscuss, source.id],
+    () => onDiscuss(source.id, source.title),
+    [onDiscuss, source.id, source.title],
   );
   const remove = useCallback(
     async (fileId: string) => {

@@ -21,6 +21,7 @@ export function Component(props: IComponentPropsExtended) {
         composer={props.composer}
         knowledge={props.knowledge}
         documentDownload={props.documentDownload}
+        context={props.context}
       />
     </div>
   );

@@ -2,7 +2,10 @@ import {
   IModel,
   type IProfileAvatar,
 } from "@sps/social/models/profile/sdk/model";
-import { IModel as ISocialModuleMessage } from "@sps/social/models/message/sdk/model";
+import type {
+  IChatMessage as ISocialModuleChatMessage,
+  IModel as ISocialModuleMessage,
+} from "@sps/social/models/message/sdk/model";
 import { ISpsComponentBase } from "@sps/ui-adapter";
 import type { ReactNode } from "react";
 
@@ -16,7 +19,7 @@ export interface IClientComponentProps extends Pick<
   data: Pick<IModel, "id" | "title" | "subtitle">;
   profile?: IModel;
   avatar?: IProfileAvatar | null;
-  message: ISocialModuleMessage;
+  message: ISocialModuleChatMessage;
   messageContentSlot?: ReactNode;
   isDeleting?: boolean;
   isOwnMessage?: boolean;

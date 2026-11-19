@@ -8,6 +8,7 @@ import { ProfileEditDialog } from "./components/ProfileEditDialog";
 import { ProfileSidebarPanel } from "./components/ProfileSidebarPanel";
 import { ProfileSidebarSheet } from "./components/ProfileSidebarSheet";
 import { ThreadContext } from "./components/ThreadContext";
+import { useThreadHasFiles } from "./components/ThreadFiles";
 import { useKnowledgeSources } from "./hooks/use-knowledge-sources";
 import { useOpenRouterModelControls } from "./hooks/use-openrouter-model-controls";
 import { useProfileSidebar } from "./hooks/use-profile-sidebar";
@@ -17,6 +18,8 @@ import { IComponentPropsExtended } from "./interface";
 import type { KnowledgeSource, SocialSkill } from "./types";
 import { cn } from "@sps/shared-frontend-client-utils";
 import { ChatThreadPanel } from "@sps/ui-adapter";
+import { Component as Subject } from "@sps/rbac/models/subject/frontend/component";
+import { getAIChatDocument } from "@sps/rbac/models/subject/sdk/model";
 import { Component as SocialModuleSkill } from "@sps/social/models/skill/frontend/component";
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { IModel as SocialProfile } from "@sps/social/models/profile/sdk/model";
@@ -37,6 +40,12 @@ interface IResultSelection {
   focus?: boolean;
 }
 
+interface IDocumentDiscussion {
+  threadId: string;
+  sourceId: string;
+  title: string;
+}
+
 /**
  * Chat shell (issue #195): renders the sidebar, dialogs, and the two isolated
  * boundaries — MessageTimelineSection (owns the message/action queries and
@@ -50,6 +59,8 @@ export function Component(props: IComponentPropsExtended) {
   const threadId = props.socialModuleThreadId;
   const [threadPane, setThreadPane] = useState<IThreadPane>();
   const [resultSelection, setResultSelection] = useState<IResultSelection>();
+  const [documentDiscussion, setDocumentDiscussion] =
+    useState<IDocumentDiscussion>();
   const resultSectionRef = useRef<HTMLElement>(null);
   const [isSkillDialogOpen, setIsSkillDialogOpen] = useState(false);
   const [isMcpServersDialogOpen, setIsMcpServersDialogOpen] = useState(false);
@@ -81,6 +92,18 @@ export function Component(props: IComponentPropsExtended) {
     },
     [setPane, threadId],
   );
+  const discussDocumentSource = useCallback(
+    (sourceId: string, title: string) => {
+      setDocumentDiscussion({ threadId, sourceId, title });
+      setPane("chat");
+      focusComposerTextAreaRef.current();
+    },
+    [setPane, threadId],
+  );
+  const discussWholeDocument = useCallback(() => {
+    setDocumentDiscussion(undefined);
+    focusComposerTextAreaRef.current();
+  }, []);
 
   useEffect(() => {
     if (resultSelection?.threadId !== threadId || !resultSelection.focus)
@@ -97,9 +120,27 @@ export function Component(props: IComponentPropsExtended) {
     socialModuleThreadId: props.socialModuleThreadId,
   });
   const isCustomerWork = props.socialModuleChat.variant === "customer-work";
+  const hasThreadFiles = useThreadHasFiles(
+    {
+      subjectId: props.data.id,
+      socialModuleProfileId: props.socialModuleProfile.id,
+      socialModuleChatId: props.socialModuleChat.id,
+      socialModuleThreadId: props.socialModuleThreadId,
+    },
+    isCustomerWork,
+  );
+  const document = getAIChatDocument(props.socialModuleThread.metadata);
+  const documentProject = props.documentProject;
+  const documentSource =
+    documentProject &&
+    documentDiscussion?.threadId === threadId &&
+    document?.sourceIds.includes(documentDiscussion.sourceId)
+      ? documentDiscussion
+      : undefined;
   const assistantProfile = isCustomerWork
     ? null
-    : props.knowledgeAssistantProfile ||
+    : documentProject?.profile ||
+      props.knowledgeAssistantProfile ||
       props.artificialIntelligenceOpponentProfile ||
       null;
   // Single source of truth: OpenRouter controls, knowledge access, and the
@@ -190,6 +231,10 @@ export function Component(props: IComponentPropsExtended) {
     profileSidebar.isSidebarOpen &&
     profileSidebar.selectedProfile &&
     !profileSidebar.isMobileSheetOpen;
+  const showThreadContext =
+    isCustomerWork ||
+    hasThreadFiles ||
+    (!documentProject && Boolean(document?.sourceIds.length));
   const title =
     props.socialModuleThread.title?.trim() ||
     (props.language === "ru" ? "Без названия" : "Untitled");
@@ -257,8 +302,41 @@ export function Component(props: IComponentPropsExtended) {
         threadId={props.socialModuleThreadId}
         language={props.language}
         navigation={props.navigation}
+        isDocument={Boolean(documentProject)}
+        isProjectThread={props.socialModuleChat.variant === "ai-chat"}
+        messagesOwnScroll
         pane={threadPane?.threadId === threadId ? threadPane.pane : "chat"}
         onPaneChange={setPane}
+        knowledge={
+          documentProject && (
+            <div className={showProfileContext ? "hidden" : "grid gap-4"}>
+              <Subject
+                key={threadId}
+                isServer={false}
+                dataSource="props"
+                variant="me-social-module-profile-id-chat-id-thread-id-knowledge-module-source-list-document-ai-chat"
+                data={props.data}
+                language={props.language}
+                project={documentProject}
+                thread={props.socialModuleThread}
+                onDiscuss={discussDocumentSource}
+              />
+            </div>
+          )
+        }
+        documentDownload={
+          documentProject && (
+            <Subject
+              isServer={false}
+              dataSource="props"
+              variant="me-social-module-profile-id-chat-id-thread-id-download-ai-chat"
+              data={props.data}
+              language={props.language}
+              project={documentProject}
+              thread={props.socialModuleThread}
+            />
+          )
+        }
         messages={
           <>
             <MessageTimelineSection
@@ -373,6 +451,9 @@ export function Component(props: IComponentPropsExtended) {
         composer={
           <Composer
             isCustomerWork={isCustomerWork}
+            isDocument={Boolean(documentProject)}
+            documentSource={documentSource}
+            onDiscussWholeDocument={discussWholeDocument}
             canSelectOpenRouterReasoning={
               openRouterModelControls.canSelectReasoning
             }
@@ -464,10 +545,11 @@ export function Component(props: IComponentPropsExtended) {
               selectedKnowledgeSource={profileSidebar.selectedKnowledgeSource}
               skills={profileSidebar.skills}
             />
-          ) : (
+          ) : showThreadContext ? (
             <ThreadContext
               key={props.socialModuleThreadId}
               isCustomerWork={isCustomerWork}
+              hideDocumentKnowledge={Boolean(documentProject)}
               language={props.language}
               socialModuleChatId={props.socialModuleChat.id}
               socialModuleProfileId={props.socialModuleProfile.id}
@@ -482,7 +564,7 @@ export function Component(props: IComponentPropsExtended) {
               }
               onVersionSelect={selectResultVersion}
             />
-          )
+          ) : undefined
         }
       />
     </div>

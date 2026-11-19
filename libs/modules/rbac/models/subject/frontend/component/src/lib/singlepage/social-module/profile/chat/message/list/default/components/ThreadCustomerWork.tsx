@@ -70,6 +70,16 @@ export function ThreadCustomerWork(props: IProps) {
     </Link>
   ) : null;
   const awaitingPayment = order?.state === "awaiting-payment";
+  const showResult =
+    orderResult.isPending ||
+    orderResult.isError ||
+    (order &&
+      (order.state !== "awaiting-result" ||
+        order.versions.length > 0 ||
+        order.result ||
+        order.receipt ||
+        order.trackingNumber ||
+        order.expertArchive));
 
   return (
     <>
@@ -78,7 +88,7 @@ export function ThreadCustomerWork(props: IProps) {
           <ClipboardList className="size-4 shrink-0" aria-hidden="true" />
           {ru ? "Задача" : "Task"}
         </h4>
-        <dl className="grid grid-cols-[auto_minmax(0,1fr)] gap-x-3 gap-y-2 rounded-xl border border-border bg-card p-3 text-sm">
+        <dl className="grid grid-cols-[auto_minmax(0,1fr)] gap-x-3 gap-y-2 text-sm">
           <dt className="text-muted-foreground">{ru ? "Статус" : "Status"}</dt>
           <dd>{status}</dd>
           {work.workflow && (
@@ -111,7 +121,7 @@ export function ThreadCustomerWork(props: IProps) {
         {!awaitingPayment && orderLink}
         <OrderActions subjectId={subjectId} work={work} language={language} />
       </section>
-      {work.orderId && (
+      {work.orderId && showResult && (
         <section
           ref={props.resultSectionRef}
           tabIndex={-1}

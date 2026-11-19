@@ -7,6 +7,10 @@ import { getAIChatDocument } from "@sps/rbac/models/subject/sdk/model";
 import { Component as Subject } from "@sps/rbac/models/subject/frontend/component";
 import { Component as SocialModuleThread } from "@sps/social/models/thread/frontend/component";
 import type { IClientComponentProps } from "./interface";
+import {
+  ThreadFiles,
+  useThreadHasFiles,
+} from "../../../../../../../../../social-module/profile/chat/message/list/default/components/ThreadFiles";
 export function Component(props: IClientComponentProps) {
   const language = props.language || internationalization.defaultLanguage.code;
   const ru = language === "ru";
@@ -18,9 +22,15 @@ export function Component(props: IClientComponentProps) {
   const closeProfile = useCallback(() => setProfileId(null), []);
   const [navigationOpen, setNavigationOpen] = useState(false);
   const onDiscuss = useCallback((id: string) => setTarget(id), []);
-  const thread = props.threads?.find(
-    (thread) => thread.id === (props.socialModuleThreadId || project.thread.id),
-  );
+  const threadId = props.socialModuleThreadId || project.thread.id;
+  const thread = props.threads?.find((thread) => thread.id === threadId);
+  const filesScope = {
+    subjectId: props.data.id,
+    socialModuleProfileId: project.requesterProfileId,
+    socialModuleChatId: project.chat.id,
+    socialModuleThreadId: threadId,
+  };
+  const hasFiles = useThreadHasFiles(filesScope, false, Boolean(thread));
   if (props.threadsLoading)
     return (
       props.loading ?? (
@@ -73,6 +83,11 @@ export function Component(props: IClientComponentProps) {
         dataSource="props"
         variant="id-ai-chat"
         isDocument={isDocument}
+        context={
+          hasFiles ? (
+            <ThreadFiles {...filesScope} language={language} />
+          ) : undefined
+        }
         navigation={
           <button
             type="button"

@@ -3,6 +3,7 @@
 import { IClientComponentProps } from "./interface";
 import { getLocalizedPlainText } from "../plain-text";
 import { cn } from "@sps/shared-frontend-client-utils";
+import { Component as FileStorageModuleFile } from "@sps/file-storage/models/file/frontend/component";
 import { Component as Profile } from "@sps/social/models/profile/frontend/component";
 import { Component as SocialModuleMessagesToFileStorageModuleFiles } from "@sps/social/relations/messages-to-file-storage-module-files/frontend/component";
 import { CollapsibleContent, CollapsibleTrigger } from "@sps/shared-ui-shadcn";
@@ -159,6 +160,7 @@ export function Component(props: IClientComponentProps) {
   const profileDisplayName = getProfileDisplayName(props);
   const createdAt = formatTimelineDate(props.language, props.message.createdAt);
   const interaction = props.message.interaction;
+  const attachments = props.message.attachments;
   const hasInteraction = interaction && Object.keys(interaction).length > 0;
   const audioTranscription = getAudioTranscriptionStatus(props.message);
   const canOpenProfile = Boolean(
@@ -331,7 +333,26 @@ export function Component(props: IClientComponentProps) {
                   : "Transcription failed"}
           </div>
         ) : null}
-        {props.message.variant !== "customer-work" && (
+        {props.message.variant !== "customer-work" && !!attachments?.length && (
+          <ul
+            aria-label={ru ? "Файлы сообщения" : "Message attachments"}
+            tabIndex={0}
+            className="mt-2 flex min-w-0 gap-2 overflow-x-auto pb-2 focus-visible:outline-2 focus-visible:outline-offset-2"
+          >
+            {attachments.map((file) => (
+              <li key={file.id} className="w-36 shrink-0 sm:w-40">
+                <FileStorageModuleFile
+                  isServer={false}
+                  variant="attachment-ai-chat"
+                  data={file}
+                  dataSource="props"
+                  language={props.language}
+                />
+              </li>
+            ))}
+          </ul>
+        )}
+        {props.message.variant !== "customer-work" && !attachments && (
           <SocialModuleMessagesToFileStorageModuleFiles
             variant="find"
             isServer={false}

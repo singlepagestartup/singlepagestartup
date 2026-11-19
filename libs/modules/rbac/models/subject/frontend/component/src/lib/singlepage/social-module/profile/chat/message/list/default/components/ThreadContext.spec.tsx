@@ -1,8 +1,9 @@
 /** @jest-environment jsdom */
 
-import { render, screen } from "@testing-library/react";
+import { render, renderHook, screen } from "@testing-library/react";
 import type { IModel as ISocialModuleThread } from "@sps/social/models/thread/sdk/model";
 import { ThreadContext } from "./ThreadContext";
+import { useThreadHasFiles } from "./ThreadFiles";
 
 const mockThreadMessages = jest.fn();
 const mockKnowledgeSources = jest.fn();
@@ -18,7 +19,9 @@ jest.mock("@sps/rbac/models/subject/sdk/client", () => ({
   },
 }));
 jest.mock("@sps/file-storage/models/file/frontend/component", () => ({
-  Component: ({ data }: { data: { id: string } }) => <p>{data.id}</p>,
+  Component: ({ data, layout }: { data: { id: string }; layout: string }) => (
+    <p data-layout={layout}>{data.id}</p>
+  ),
 }));
 jest.mock("./ThreadCustomerWork", () => ({
   ThreadCustomerWork: () => <p>Customer work controls</p>,
@@ -67,6 +70,9 @@ it("shows each scoped file once and only knowledge linked to the selected docume
   );
 
   expect(screen.getAllByText("Design input")).toHaveLength(1);
+  expect(screen.getByText("Design input").getAttribute("data-layout")).toBe(
+    "row",
+  );
   expect(screen.getByText("Design requirements")).toBeTruthy();
   expect(screen.queryByText("Unrelated knowledge")).toBeNull();
   expect(mockKnowledgeSources).toHaveBeenCalledWith({
@@ -75,6 +81,56 @@ it("shows each scoped file once and only knowledge linked to the selected docume
     socialModuleChatId: "chat",
     targetSocialModuleProfileId: "document-owner",
   });
+});
+
+it("omits the Files heading when the selected discussion has no attachments", () => {
+  mockThreadMessages.mockReturnValue({ data: [{ id: "message" }] });
+  const thread = { id: scope.socialModuleThreadId } as ISocialModuleThread;
+
+  render(
+    <ThreadContext
+      {...scope}
+      isCustomerWork={false}
+      socialModuleThread={thread}
+    />,
+  );
+
+  expect(screen.queryByRole("heading", { name: "Files" })).toBeNull();
+});
+
+it("opens file context only for attachments visible in that discussion", () => {
+  const workMessage = {
+    variant: "customer-work",
+    attachments: [{ id: "file" }],
+  };
+  const regularMessage = { variant: "default", attachments: [{ id: "file" }] };
+  const privateMessage = {
+    ...workMessage,
+    privateAttachments: [{ id: "private-file", name: "Brief.pdf" }],
+  };
+  let messages = [workMessage];
+  let isError = false;
+  mockThreadMessages.mockImplementation((_scope, _interval, options) => ({
+    data: options.select(messages),
+    isError,
+  }));
+  const { result, rerender } = renderHook(
+    ({ isCustomerWork }) => useThreadHasFiles(scope, isCustomerWork),
+    { initialProps: { isCustomerWork: false } },
+  );
+
+  expect(result.current).toBe(false);
+  messages = [regularMessage];
+  rerender({ isCustomerWork: false });
+  expect(result.current).toBe(true);
+  rerender({ isCustomerWork: true });
+  expect(result.current).toBe(false);
+  messages = [privateMessage];
+  rerender({ isCustomerWork: true });
+  expect(result.current).toBe(true);
+  isError = true;
+  rerender({ isCustomerWork: true });
+  expect(result.current).toBe(false);
 });
 
 it("keeps work attachments on the signed-in buyer's download path", () => {

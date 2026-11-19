@@ -9,6 +9,7 @@ export function ChatThreadPanel(props: IChatThreadPanelProps) {
   const pane = props.pane ?? localPane;
   const setPane = props.onPaneChange ?? setLocalPane;
   const ru = props.language === "ru";
+  const isProjectThread = props.isProjectThread ?? true;
   const hasSidePane = props.isDocument || Boolean(props.context);
   const sidePaneLabel = props.isDocument
     ? ru
@@ -29,9 +30,9 @@ export function ChatThreadPanel(props: IChatThreadPanelProps) {
                   ? "Обсуждение документа"
                   : "Document thread"
                 : ru
-                  ? props.context
-                    ? "Обсуждение"
-                    : "Обсуждение проекта"
+                  ? isProjectThread
+                    ? "Обсуждение проекта"
+                    : "Обсуждение"
                   : "Thread"}
             </p>
             <h2 className="mt-1 break-words text-base font-semibold">
@@ -74,9 +75,9 @@ export function ChatThreadPanel(props: IChatThreadPanelProps) {
           className={`${!hasSidePane || pane === "chat" ? "flex" : "hidden"} min-h-0 min-w-0 flex-col xl:flex`}
         >
           <div
-            data-ai-chat-messages={props.context ? undefined : true}
+            data-ai-chat-messages={props.messagesOwnScroll ? undefined : true}
             className={
-              props.context
+              props.messagesOwnScroll
                 ? "flex min-h-0 flex-1 flex-col overflow-hidden"
                 : "min-h-0 flex-1 overflow-y-auto"
             }
@@ -98,7 +99,10 @@ export function ChatThreadPanel(props: IChatThreadPanelProps) {
               </h3>
               {props.documentDownload}
             </div>
-            <div className="grid gap-4">{props.knowledge}</div>
+            <div className="grid gap-4">
+              {props.knowledge}
+              {props.context}
+            </div>
           </section>
         )}
         {!props.isDocument && props.context && (

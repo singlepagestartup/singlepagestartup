@@ -11,6 +11,8 @@ export interface IFilePreviewProps {
   /** A client reader for stored text; mounted only while the dialog is open. */
   textContent?: ReactNode;
   onDownload?: (signal?: AbortSignal) => Promise<Blob>;
+  layout?: "card" | "row";
+  availability?: "preview" | "download-only" | "unavailable";
   className?: string;
   thumbnailClassName?: string;
 }

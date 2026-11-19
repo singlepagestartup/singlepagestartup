@@ -18,16 +18,16 @@ import {
 import { STALE_TIME } from "@sps/shared-utils";
 import { useEffect } from "react";
 
-export type IProps =
+export type IProps<TData = IResult> =
   IParentProps["ISocialModuleProfileFindByIdChatFindByIdThreadFindByIdMessageFindProps"] & {
-    reactQueryOptions?: Partial<UseQueryOptions<any>>;
+    reactQueryOptions?: Partial<UseQueryOptions<IResult, Error, TData>>;
     mute?: boolean;
   };
 
 export type IResult =
   IParentResult["ISocialModuleProfileFindByIdChatFindByIdThreadFindByIdMessageFindResult"];
 
-export function action(props: IProps) {
+export function action<TData = IResult>(props: IProps<TData>) {
   const queryKey = `${route}/${props.id}/social-module/profiles/${props.socialModuleProfileId}/chats/${props.socialModuleChatId}/threads/${props.socialModuleThreadId}/messages`;
   const topics = [
     `social.chats.${props.socialModuleChatId}.threads.${props.socialModuleThreadId}.messages`,
@@ -45,7 +45,7 @@ export function action(props: IProps) {
     return unsubscribe;
   }, [queryKey]);
 
-  return useQuery<IResult>({
+  return useQuery<IResult, Error, TData>({
     queryKey: consistencyQueryKey(queryKey, props.params, clientHost),
     meta: {
       topics,
