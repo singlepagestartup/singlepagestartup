@@ -23,9 +23,6 @@ function DemoContent({ features, isServer, language }: IDemoContentProps) {
   const documents = features.filter(
     (feature) => feature.variant === "demo-document",
   );
-  const handoff = features.find(
-    (feature) => feature.variant === "demo-handoff",
-  );
   if (!project || !documents.length) return null;
   return (
     <FeaturesToFileStorageModuleFiles
@@ -69,17 +66,6 @@ function DemoContent({ features, isServer, language }: IDemoContentProps) {
                 data={project}
                 language={language}
               />
-            }
-            handoff={
-              handoff ? (
-                <Feature
-                  isServer={isServer}
-                  variant="demo-handoff"
-                  dataSource="props"
-                  data={handoff}
-                  language={language}
-                />
-              ) : undefined
             }
             documents={documents.map((doc) => {
               const text = getRichTextMarkdown(

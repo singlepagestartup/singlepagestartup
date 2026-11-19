@@ -123,7 +123,7 @@ The workflow receives a local demo built from linked `demo-project` and
 record. Each document uses its UUID as its local key, title as its filename,
 subtitle as its introduction and description as its rich document source, converted to Markdown for the local editor. Associated
 File Storage records supply previewable attachments. `demo-project` buttons
-supply sidebar links; `demo-handoff` supplies the editable continuation card.
+supply sidebar links.
 The demo does not create a live project or call an AI provider. Generic editor
 controls are interface translations; example business content is stored in the
 records. No source-side catalog supplies missing landing records.

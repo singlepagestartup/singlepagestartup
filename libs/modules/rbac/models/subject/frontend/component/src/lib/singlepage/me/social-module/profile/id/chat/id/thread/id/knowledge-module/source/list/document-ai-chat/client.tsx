@@ -24,9 +24,6 @@ export default function Client(props: IComponentProps) {
       {...props}
       sourcesRead={{
         data: sources.data,
-        isPending: sources.isPending,
-        isFetching: sources.isFetching,
-        isError: sources.isError,
         error: sources.error ? { message: sources.error.message } : undefined,
         refetch: () => {
           void sources.refetch();

@@ -160,7 +160,7 @@ export const Component = memo(function Component({
       data-variant="overview-ai-chat"
       data-ds-block="knowledge.source.overview-ai-chat"
       aria-label={data.title}
-      className="rounded-xl border border-[color:var(--workspace-brand-line)] bg-[color:var(--workspace-brand-surface)] p-3"
+      className="min-w-0"
     >
       <MarkdownField
         id={id}
@@ -171,7 +171,7 @@ export const Component = memo(function Component({
         onChange={edit}
       />
       {materials && (
-        <details className="mt-3 rounded-lg border border-[color:var(--workspace-brand-line)] p-3 text-xs">
+        <details className="mt-3 border-t border-[color:var(--workspace-brand-line)] pt-3 text-xs">
           <summary className={`min-h-9 cursor-pointer ${kit.focus}`}>
             Изученные материалы
           </summary>

@@ -48,19 +48,23 @@ export function Component(props: ISourceDocumentProps) {
   const { source } = useSource();
   const documentName = `${source.title}.md`;
   return (
-    <section
-      aria-label={`${documentName} editor`}
-      className="min-w-0 bg-[color:var(--workspace-brand-background)] p-4"
-    >
-      <div className="mb-4 flex items-center justify-between gap-2">
-        <h3 className="inline-flex items-center gap-2 text-sm font-semibold">
-          <Icon name="file-text" />
-          {documentName}
-        </h3>
-        <SourceDownload />
-      </div>
-      <SourceCard {...props} />
-    </section>
+    <div className="min-w-0 bg-[color:var(--workspace-brand-background)] p-4">
+      <section
+        aria-label={`${documentName} editor`}
+        className="min-w-0 rounded-xl border border-[color:var(--workspace-brand-line)] bg-[color:var(--workspace-brand-surface)]"
+      >
+        <header className="flex items-center justify-between gap-2 border-b border-[color:var(--workspace-brand-line)] px-3 py-2">
+          <h3 className="inline-flex min-w-0 items-center gap-2 break-words text-sm font-semibold">
+            <Icon name="file-text" />
+            <span className="min-w-0">{documentName}</span>
+          </h3>
+          <SourceDownload />
+        </header>
+        <div className="grid gap-4 p-3">
+          <SourceCard {...props} />
+        </div>
+      </section>
+    </div>
   );
 }
 const Button = forwardRefControl<

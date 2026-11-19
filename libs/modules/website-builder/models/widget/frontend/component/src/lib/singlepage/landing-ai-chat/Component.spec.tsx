@@ -130,6 +130,13 @@ const mockFeatures = [
     },
   },
   {
+    id: "handoff",
+    variant: "demo-handoff",
+    title: {
+      ru: "Используйте этот документ для создания продукта",
+    },
+  },
+  {
     id: "terms",
     variant: "landing-disclosure",
     title: {
@@ -262,6 +269,7 @@ it("uses the Russian workspace, isolates each visitor and retains edited knowled
     const first = within(demos[0] as HTMLElement),
       second = within(demos[1] as HTMLElement);
     expect(demos).toHaveLength(2);
+    expect(container.querySelector('[data-variant="demo-handoff"]')).toBeNull();
     expect(
       first.getByRole("heading", { name: "Мастерская керамики" }),
     ).toBeTruthy();

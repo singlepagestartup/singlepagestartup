@@ -61,8 +61,9 @@ The shared Phosphor adapter supplies `file-text` ▤, `check` ✓,
 focus styles and visible pending or result feedback.
 
 AI Chat landing layouts use `landing-introduction`, `landing-workflow`,
-`landing-followup` and `landing-disclosure`. `demo-project`, `demo-document` and
-`demo-handoff` are saved presentation records used by the local workflow demo.
+`landing-followup` and `landing-disclosure`. The local workflow demo reads saved
+`demo-project` and `demo-document` records. The `demo-handoff` variant remains
+available for existing saved records.
 Description and subtitle fields retain the admin editor's TipTap JSON format;
 the demo converts rich document content to Markdown while preserving headings
 and lists. The records carry no real customer account or live chat.

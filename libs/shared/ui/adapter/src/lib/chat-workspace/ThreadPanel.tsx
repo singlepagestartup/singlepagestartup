@@ -90,19 +90,19 @@ export function ChatThreadPanel(props: IChatThreadPanelProps) {
           <section
             data-thread-id={props.threadId}
             aria-label={`${props.title}${ru ? " — редактор" : " editor"}`}
-            className={`${pane === "document" ? "block" : "hidden"} min-h-0 min-w-0 overflow-y-auto border-border bg-muted p-4 xl:block xl:border-l`}
+            className={`${pane === "document" ? "block" : "hidden"} min-h-0 min-w-0 space-y-4 overflow-y-auto border-border bg-muted p-3 xl:block xl:border-l`}
           >
-            <div className="mb-4 flex items-center justify-between gap-2">
-              <h3 className="flex min-w-0 items-center gap-2 text-sm font-semibold">
-                <FileText className="size-4 shrink-0" />
-                {props.title}
-              </h3>
-              {props.documentDownload}
-            </div>
-            <div className="grid gap-4">
-              {props.knowledge}
-              {props.context}
-            </div>
+            <article className="min-w-0 rounded-xl border border-border bg-card text-card-foreground">
+              <header className="flex items-center justify-between gap-2 border-b border-border px-3 py-2">
+                <h3 className="flex min-w-0 items-center gap-2 text-sm font-semibold">
+                  <FileText className="size-4 shrink-0" aria-hidden="true" />
+                  <span className="break-words">{props.title}</span>
+                </h3>
+                {props.documentDownload}
+              </header>
+              <div className="grid min-w-0 gap-4 p-3">{props.knowledge}</div>
+            </article>
+            {props.context}
           </section>
         )}
         {!props.isDocument && props.context && (

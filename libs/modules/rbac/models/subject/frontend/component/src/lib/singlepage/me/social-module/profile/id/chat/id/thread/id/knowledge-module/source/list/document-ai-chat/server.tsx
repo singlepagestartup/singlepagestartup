@@ -17,19 +17,12 @@ export default async function Server(props: IComponentProps) {
       await subjectApi.socialModuleProfileFindByIdChatFindByIdProfileFindByIdKnowledgeSourceFind(
         scope,
       );
-    return (
-      <ChildComponent
-        {...props}
-        sourcesRead={{ data, isPending: false, isError: false }}
-      />
-    );
+    return <ChildComponent {...props} sourcesRead={{ data }} />;
   } catch (error) {
     return (
       <ChildComponent
         {...props}
         sourcesRead={{
-          isPending: false,
-          isError: true,
           error: {
             message:
               error instanceof Error

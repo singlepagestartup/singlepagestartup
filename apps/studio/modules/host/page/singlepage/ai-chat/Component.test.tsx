@@ -430,6 +430,7 @@ describe("Local AI Chat components", () => {
     expect(profile).toContain(
       'data-model="thread" data-variant="download-ai-chat"',
     );
+    expect(profile).not.toContain("От документов к разработке");
   });
 
   test("Subject selects Knowledge only for the identified Thread", () => {

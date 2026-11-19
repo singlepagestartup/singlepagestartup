@@ -216,7 +216,6 @@ export function Component({
   reply: preparedReply,
   documents: initialDocuments,
   settings,
-  handoff,
   language = internationalization.defaultLanguage.code,
   className,
 }: IChatPreviewProps) {
@@ -716,211 +715,206 @@ export function Component({
               </button>
             }
             knowledge={
-              <>
-                <article
-                  aria-label={
-                    ru
-                      ? `Знания документа ${selectedDocument.title}`
-                      : `Knowledge in ${selectedDocument.title}`
-                  }
-                  className="min-w-0 rounded-xl border border-border bg-card p-3"
-                >
-                  <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
-                    <input
-                      aria-label={
-                        ru
-                          ? "Название раздела знаний"
-                          : "Knowledge section title"
-                      }
-                      value={sectionTitle}
-                      maxLength={200}
+              <article
+                aria-label={
+                  ru
+                    ? `Знания документа ${selectedDocument.title}`
+                    : `Knowledge in ${selectedDocument.title}`
+                }
+                className="min-w-0 rounded-xl border border-border bg-card p-3"
+              >
+                <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+                  <input
+                    aria-label={
+                      ru ? "Название раздела знаний" : "Knowledge section title"
+                    }
+                    value={sectionTitle}
+                    maxLength={200}
+                    onChange={(event) => {
+                      const title = event.target.value;
+                      updateDocument((current) => ({
+                        ...current,
+                        sectionTitle: title,
+                        saveStatus: "",
+                      }));
+                    }}
+                    className={`min-h-10 min-w-0 flex-1 rounded-lg border border-border bg-card px-3 py-2 text-sm font-semibold ${focus}`}
+                  />
+                  <div
+                    role="group"
+                    aria-label={ru ? "Вид документа" : "Document view"}
+                    className="flex rounded-lg bg-muted p-1 text-xs font-semibold"
+                  >
+                    {[true, false].map((edit) => (
+                      <button
+                        key={String(edit)}
+                        type="button"
+                        aria-pressed={editing === edit}
+                        onClick={() =>
+                          updateDocument((current) => ({
+                            ...current,
+                            editing: edit,
+                          }))
+                        }
+                        className={`min-h-8 rounded-md px-2 ${editing === edit ? "bg-card" : "text-muted-foreground"} ${focus}`}
+                      >
+                        {edit
+                          ? ru
+                            ? "Редактор"
+                            : "Editor"
+                          : ru
+                            ? "Предпросмотр"
+                            : "Preview"}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                {editing ? (
+                  <>
+                    <label htmlFor={`${id}-editor`} className="sr-only">
+                      {ru ? "Текст документа" : "Document text"}
+                    </label>
+                    <textarea
+                      id={`${id}-editor`}
+                      value={document}
                       onChange={(event) => {
-                        const title = event.target.value;
+                        const text = event.target.value;
                         updateDocument((current) => ({
                           ...current,
-                          sectionTitle: title,
+                          text,
                           saveStatus: "",
                         }));
                       }}
-                      className={`min-h-10 min-w-0 flex-1 rounded-lg border border-border bg-card px-3 py-2 text-sm font-semibold ${focus}`}
+                      className={`min-h-44 w-full resize-y rounded-xl border border-border bg-card p-3 font-mono text-sm leading-6 text-muted-foreground ${focus}`}
                     />
-                    <div
-                      role="group"
-                      aria-label={ru ? "Вид документа" : "Document view"}
-                      className="flex rounded-lg bg-muted p-1 text-xs font-semibold"
+                  </>
+                ) : (
+                  <div className="prose prose-sm min-h-44 max-w-none break-words rounded-xl border border-border p-3 text-foreground">
+                    <Markdown
+                      options={{
+                        disableParsingRawHTML: true,
+                        overrides: {
+                          img: {
+                            component: () => (
+                              <span>{ru ? "[Изображение]" : "[Image]"}</span>
+                            ),
+                          },
+                          a: { component: "span" },
+                        },
+                      }}
                     >
-                      {[true, false].map((edit) => (
+                      {document}
+                    </Markdown>
+                  </div>
+                )}
+                <div className="mt-2 flex flex-wrap items-center justify-between gap-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSectionContext("section");
+                      setPane("chat");
+                      requestAnimationFrame(() =>
+                        window.document
+                          .getElementById(`${id}-message`)
+                          ?.focus(),
+                      );
+                    }}
+                    className={`flex min-h-10 items-center gap-2 text-xs font-semibold text-muted-foreground ${focus}`}
+                  >
+                    <Icon name="chat-circle" size={20} />
+                    {ru ? "Обсудить раздел" : "Discuss section"}
+                  </button>
+                  <button
+                    type="button"
+                    disabled={
+                      !document.trim() ||
+                      !sectionTitle.trim() ||
+                      (document === savedDocument &&
+                        sectionTitle === savedSectionTitle)
+                    }
+                    onClick={() => {
+                      updateDocument((current) => ({
+                        ...current,
+                        savedText: current.text,
+                        savedSectionTitle: current.sectionTitle,
+                        saveStatus: ru
+                          ? "Знания сохранены в этом примере."
+                          : "Knowledge saved in this example.",
+                      }));
+                    }}
+                    className={`${button} bg-primary text-primary-foreground text-xs disabled:opacity-50`}
+                  >
+                    {ru ? "Сохранить знания" : "Save knowledge"}
+                  </button>
+                </div>
+                {saveStatus && (
+                  <p
+                    role="status"
+                    className="mt-2 text-xs text-muted-foreground"
+                  >
+                    {saveStatus}
+                  </p>
+                )}
+                <div className="mt-4 border-t border-border pt-3">
+                  <p className="text-xs text-muted-foreground">
+                    {ru ? "Файлы" : "Files"} · {knowledgeFiles.length}
+                  </p>
+                  <div className="mt-3 grid grid-cols-2 gap-2">
+                    {knowledgeFiles.map((file) => (
+                      <div key={file.id} className="relative min-w-0">
+                        <DemoFile attachment={file} language={language} />
                         <button
-                          key={String(edit)}
                           type="button"
-                          aria-pressed={editing === edit}
+                          aria-label={
+                            ru
+                              ? `Удалить ${file.name} из знаний`
+                              : `Remove ${file.name} from knowledge`
+                          }
                           onClick={() =>
                             updateDocument((current) => ({
                               ...current,
-                              editing: edit,
+                              knowledgeFiles: current.knowledgeFiles.filter(
+                                (item) => item.id !== file.id,
+                              ),
                             }))
                           }
-                          className={`min-h-8 rounded-md px-2 ${editing === edit ? "bg-card" : "text-muted-foreground"} ${focus}`}
+                          className={`absolute right-1 top-1 grid size-7 place-items-center rounded-full bg-default text-default-foreground ${focus}`}
                         >
-                          {edit
-                            ? ru
-                              ? "Редактор"
-                              : "Editor"
-                            : ru
-                              ? "Предпросмотр"
-                              : "Preview"}
+                          <Icon name="x" size={20} />
                         </button>
-                      ))}
-                    </div>
+                      </div>
+                    ))}
                   </div>
-                  {editing ? (
-                    <>
-                      <label htmlFor={`${id}-editor`} className="sr-only">
-                        {ru ? "Текст документа" : "Document text"}
-                      </label>
-                      <textarea
-                        id={`${id}-editor`}
-                        value={document}
-                        onChange={(event) => {
-                          const text = event.target.value;
-                          updateDocument((current) => ({
-                            ...current,
-                            text,
-                            saveStatus: "",
-                          }));
-                        }}
-                        className={`min-h-44 w-full resize-y rounded-xl border border-border bg-card p-3 font-mono text-sm leading-6 text-muted-foreground ${focus}`}
-                      />
-                    </>
-                  ) : (
-                    <div className="prose prose-sm min-h-44 max-w-none break-words rounded-xl border border-border p-3 text-foreground">
-                      <Markdown
-                        options={{
-                          disableParsingRawHTML: true,
-                          overrides: {
-                            img: {
-                              component: () => (
-                                <span>{ru ? "[Изображение]" : "[Image]"}</span>
-                              ),
-                            },
-                            a: { component: "span" },
-                          },
-                        }}
-                      >
-                        {document}
-                      </Markdown>
-                    </div>
-                  )}
-                  <div className="mt-2 flex flex-wrap items-center justify-between gap-2">
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setSectionContext("section");
-                        setPane("chat");
-                        requestAnimationFrame(() =>
-                          window.document
-                            .getElementById(`${id}-message`)
-                            ?.focus(),
-                        );
-                      }}
-                      className={`flex min-h-10 items-center gap-2 text-xs font-semibold text-muted-foreground ${focus}`}
-                    >
-                      <Icon name="chat-circle" size={20} />
-                      {ru ? "Обсудить раздел" : "Discuss section"}
-                    </button>
-                    <button
-                      type="button"
-                      disabled={
-                        !document.trim() ||
-                        !sectionTitle.trim() ||
-                        (document === savedDocument &&
-                          sectionTitle === savedSectionTitle)
-                      }
-                      onClick={() => {
-                        updateDocument((current) => ({
-                          ...current,
-                          savedText: current.text,
-                          savedSectionTitle: current.sectionTitle,
-                          saveStatus: ru
-                            ? "Знания сохранены в этом примере."
-                            : "Knowledge saved in this example.",
-                        }));
-                      }}
-                      className={`${button} bg-primary text-primary-foreground text-xs disabled:opacity-50`}
-                    >
-                      {ru ? "Сохранить знания" : "Save knowledge"}
-                    </button>
-                  </div>
-                  {saveStatus && (
-                    <p
-                      role="status"
-                      className="mt-2 text-xs text-muted-foreground"
-                    >
-                      {saveStatus}
-                    </p>
-                  )}
-                  <div className="mt-4 border-t border-border pt-3">
-                    <p className="text-xs text-muted-foreground">
-                      {ru ? "Файлы" : "Files"} · {knowledgeFiles.length}
-                    </p>
-                    <div className="mt-3 grid grid-cols-2 gap-2">
-                      {knowledgeFiles.map((file) => (
-                        <div key={file.id} className="relative min-w-0">
-                          <DemoFile attachment={file} language={language} />
-                          <button
-                            type="button"
-                            aria-label={
-                              ru
-                                ? `Удалить ${file.name} из знаний`
-                                : `Remove ${file.name} from knowledge`
-                            }
-                            onClick={() =>
-                              updateDocument((current) => ({
-                                ...current,
-                                knowledgeFiles: current.knowledgeFiles.filter(
-                                  (item) => item.id !== file.id,
-                                ),
-                              }))
-                            }
-                            className={`absolute right-1 top-1 grid size-7 place-items-center rounded-full bg-default text-default-foreground ${focus}`}
-                          >
-                            <Icon name="x" size={20} />
-                          </button>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                  <label
-                    className={`mt-4 flex min-h-10 cursor-pointer items-center gap-2 border-t border-border pt-3 text-xs font-semibold text-muted-foreground ${focus}`}
-                  >
-                    <Upload className="size-4" />
-                    {ru ? "Загрузить файлы" : "Upload files"}
-                    <input
-                      type="file"
-                      multiple
-                      className="sr-only"
-                      onChange={(event) => {
-                        const selected = Array.from(
-                          event.target.files ?? [],
-                        ).filter((file) => file.size <= 10 * 1024 * 1024);
-                        updateDocument((current) => ({
-                          ...current,
-                          knowledgeFiles: [
-                            ...current.knowledgeFiles,
-                            ...selected.map((file) => ({
-                              id: `knowledge-${sequence.current++}`,
-                              name: file.name,
-                              file,
-                            })),
-                          ],
-                        }));
-                        event.target.value = "";
-                      }}
-                    />
-                  </label>
-                </article>
-                {handoff}
-              </>
+                </div>
+                <label
+                  className={`mt-4 flex min-h-10 cursor-pointer items-center gap-2 border-t border-border pt-3 text-xs font-semibold text-muted-foreground ${focus}`}
+                >
+                  <Upload className="size-4" />
+                  {ru ? "Загрузить файлы" : "Upload files"}
+                  <input
+                    type="file"
+                    multiple
+                    className="sr-only"
+                    onChange={(event) => {
+                      const selected = Array.from(
+                        event.target.files ?? [],
+                      ).filter((file) => file.size <= 10 * 1024 * 1024);
+                      updateDocument((current) => ({
+                        ...current,
+                        knowledgeFiles: [
+                          ...current.knowledgeFiles,
+                          ...selected.map((file) => ({
+                            id: `knowledge-${sequence.current++}`,
+                            name: file.name,
+                            file,
+                          })),
+                        ],
+                      }));
+                      event.target.value = "";
+                    }}
+                  />
+                </label>
+              </article>
             }
           />
         </div>
