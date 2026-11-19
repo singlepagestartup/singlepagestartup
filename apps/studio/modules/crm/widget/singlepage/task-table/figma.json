@@ -1,0 +1,21 @@
+{
+  "componentName": "crm.widget",
+  "pageName": "crm",
+  "variantName": "task-table",
+  "nodeId": null,
+  "variantNodeId": null,
+  "metadata": {
+    "singlepagestartup.studio.blockId": "crm.widget.task-table",
+    "singlepagestartup.studio.layer": "singlepage",
+    "singlepagestartup.studio.syncKey": "crm/widget/singlepage/task-table",
+    "sps.figma.component": "crm.widget",
+    "sps.figma.variant": "task-table",
+    "sps.source.module": "crm",
+    "sps.source.entityType": "model",
+    "sps.source.entity": "widget",
+    "sps.source.variant": "task-table",
+    "sps.contractVersion": "0.1.0",
+    "sps.code.component": "apps/studio/modules/crm/widget/singlepage/task-table/Component.tsx",
+    "sps.code.story": "apps/studio/modules/crm/widget/singlepage/task-table/Component.stories.tsx"
+  }
+}
