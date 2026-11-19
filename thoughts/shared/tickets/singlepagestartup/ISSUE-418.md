@@ -1,7 +1,7 @@
 ---
 repository: singlepagestartup
 issue_number: 418
-status: In Dev
+status: Code Review
 created: 2026-11-19
 ---
 
@@ -10,7 +10,7 @@ created: 2026-11-19
 ## Metadata
 
 **URL**: https://github.com/singlepagestartup/singlepagestartup/issues/418
-**Status**: In Dev
+**Status**: Code Review
 **Created**: 2026-11-19
 **Priority**: medium
 **Size**: large
