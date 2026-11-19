@@ -68,7 +68,7 @@ function CheckoutPrice(props: ICheckoutPriceProps) {
           language={props.language}
         />
         <span className="text-xs font-normal text-muted-foreground">
-          × {quantity || 1}
+          × {props.product.singleUnitPerOrder ? 1 : quantity || 1}
         </span>
       </div>
     </div>
@@ -122,7 +122,12 @@ export function Component(props: IComponentPropsExtended) {
     configuration.quote.version === configuration.expectedQuoteVersion &&
     Boolean(configuration.expectedQuoteVersion) &&
     Number.isSafeInteger(configuration.selection.quantity) &&
-    configuration.selection.quantity > 0,
+    configuration.selection.quantity > 0 &&
+    (!(
+      props.ecommerceModuleProduct.singleUnitPerOrder ||
+      configuration.quote.singleUnitPerOrder
+    ) ||
+      configuration.selection.quantity === 1),
   );
   const form = useForm<ICheckoutFields>({
     resolver: zodResolver(formSchema),
@@ -172,7 +177,12 @@ export function Component(props: IComponentPropsExtended) {
                 currency: { id: configuration.selection.currencyId },
               },
             }
-          : data,
+          : {
+              ...data,
+              quantity: props.ecommerceModuleProduct.singleUnitPerOrder
+                ? 1
+                : data.quantity,
+            },
       });
       if (!mounted.current) return;
       setPaymentCreated(true);
@@ -313,17 +323,27 @@ export function Component(props: IComponentPropsExtended) {
                       formFieldName="billingModule.currency.id"
                     />
                   </div>
-                  <FormField
-                    ui="shadcn"
-                    type="number"
-                    min={1}
-                    step={1}
-                    name="quantity"
-                    form={form}
-                    label={props.language === "ru" ? "Количество" : "Quantity"}
-                    className="max-w-28"
-                    inputClassName="rounded-xl"
-                  />
+                  {props.ecommerceModuleProduct.singleUnitPerOrder ? (
+                    <p className="text-sm">
+                      {props.language === "ru"
+                        ? "Количество — 1"
+                        : "Quantity · 1"}
+                    </p>
+                  ) : (
+                    <FormField
+                      ui="shadcn"
+                      type="number"
+                      min={1}
+                      step={1}
+                      name="quantity"
+                      form={form}
+                      label={
+                        props.language === "ru" ? "Количество" : "Quantity"
+                      }
+                      className="max-w-28"
+                      inputClassName="rounded-xl"
+                    />
+                  )}
                 </div>
                 <CheckoutPrice
                   form={form}

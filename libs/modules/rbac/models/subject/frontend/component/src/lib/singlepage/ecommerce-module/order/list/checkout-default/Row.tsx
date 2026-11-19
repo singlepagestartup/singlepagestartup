@@ -1,15 +1,16 @@
 "use client";
-import { REGISTRATION_GRANT_VARIANT } from "@sps/shared-utils";
 import { memo, useCallback, useId, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { api } from "@sps/rbac/models/subject/sdk/client";
 import { route } from "@sps/rbac/models/subject/sdk/model";
-import { Icon, Select } from "@sps/ui-adapter";
+import { Select } from "@sps/ui-adapter";
 import { Checkbox } from "@sps/shared-ui-shadcn";
 import { Component as EcommerceModuleOrder } from "@sps/ecommerce/models/order/frontend/component";
 import { Component as Subject } from "@sps/rbac/models/subject/frontend/component";
-import type { IRowProps, IQuantityProps, ICurrencyProps } from "./interface";
+import type { IRowProps, ICurrencyProps } from "./interface";
+import { Quantity } from "./Quantity";
 import { Selection } from "./Selection";
+import { hasDuplicateSingleUnitLines, hasSingleUnitLimit } from "./utils";
 
 function Currency(props: ICurrencyProps) {
   const update = api.ecommerceModuleOrderUpdate({});
@@ -94,106 +95,16 @@ function Currency(props: ICurrencyProps) {
   );
 }
 
-function Quantity(props: IQuantityProps) {
-  const ru = props.language === "ru";
-  const update = api.ecommerceModuleOrderUpdate({});
-  const queries = useQueryClient();
-  const [error, setError] = useState("");
-  const change = useCallback(
-    async (quantity: number) => {
-      if (
-        update.isPending ||
-        quantity < 1 ||
-        quantity > props.maxLineQuantity
-      ) {
-        return;
-      }
-      setError("");
-      try {
-        await update.mutateAsync({
-          id: props.subjectId,
-          orderId: props.orderId,
-          data: { ordersToProducts: [{ id: props.line.id, quantity }] },
-        });
-        await queries.invalidateQueries({
-          queryKey: [`${route}/${props.subjectId}/ecommerce-module/orders`],
-        });
-      } catch {
-        setError(
-          ru
-            ? "Не удалось изменить количество. Попробуйте ещё раз."
-            : "Could not change the quantity. Please try again.",
-        );
-      }
-    },
-    [
-      update.mutateAsync,
-      update.isPending,
-      queries,
-      props.subjectId,
-      props.orderId,
-      props.line.id,
-      props.maxLineQuantity,
-      ru,
-    ],
-  );
-  const decrease = useCallback(() => {
-    void change(Math.min(props.line.quantity - 1, props.maxLineQuantity));
-  }, [change, props.line.quantity, props.maxLineQuantity]);
-  const increase = useCallback(() => {
-    void change(props.line.quantity + 1);
-  }, [change, props.line.quantity]);
-  const locked = props.line.variant === REGISTRATION_GRANT_VARIANT;
-  return (
-    <div>
-      <div
-        role="group"
-        aria-label={`${ru ? "Количество" : "Quantity"}: ${props.line.product?.title?.[props.language] || props.line.product?.slug || ""}`}
-        className="inline-flex items-center gap-0.5 rounded-xl bg-muted p-1"
-      >
-        <button
-          type="button"
-          aria-label={ru ? "Уменьшить количество" : "Decrease quantity"}
-          disabled={locked || update.isPending || props.line.quantity <= 1}
-          onClick={decrease}
-          className="grid size-9 place-items-center rounded-lg bg-card text-foreground hover:bg-primary/20 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground disabled:bg-transparent disabled:opacity-40"
-        >
-          <Icon name="minus" />
-        </button>
-        <output
-          aria-live="polite"
-          className="min-w-5 text-center text-sm font-semibold tabular-nums"
-        >
-          {props.line.quantity}
-        </output>
-        <button
-          type="button"
-          aria-label={ru ? "Увеличить количество" : "Increase quantity"}
-          disabled={
-            locked ||
-            update.isPending ||
-            props.line.quantity >= props.maxLineQuantity
-          }
-          onClick={increase}
-          className="grid size-9 place-items-center rounded-lg bg-card text-foreground hover:bg-primary/20 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground disabled:bg-transparent disabled:opacity-40"
-        >
-          <Icon name="plus" />
-        </button>
-      </div>
-      {error && (
-        <p role="alert" className="mt-2 text-xs text-destructive">
-          {error}
-        </p>
-      )}
-    </div>
-  );
-}
 export const Component = memo(function Row(props: IRowProps) {
   const details = props.ecommerceModuleOrder.cartDetails;
   const ru = props.language === "ru";
   const lines = details?.lines.filter((line) => !line.parentLineId) ?? [];
   const onlyProduct = lines.length === 1 ? lines[0].product : null;
   const work = details?.work;
+  const duplicateLimitedItems = hasDuplicateSingleUnitLines(
+    details,
+    props.ecommerceModuleProduct,
+  );
   const selectionId = useId();
   const changeCartSelection = useCallback(
     (checked: boolean | "indeterminate") => {
@@ -292,19 +203,33 @@ export const Component = memo(function Row(props: IRowProps) {
             : undefined
         }
         quantitySlots={
-          details && !details.offers && !work
+          details
             ? Object.fromEntries(
-                lines.map((line) => [
-                  line.id,
-                  <Quantity
-                    key={line.id}
-                    subjectId={props.subject.id}
-                    orderId={props.ecommerceModuleOrder.id}
-                    line={line}
-                    maxLineQuantity={details.maxLineQuantity}
-                    language={props.language}
-                  />,
-                ]),
+                lines.map((line) => {
+                  const singleUnitPerOrder = hasSingleUnitLimit(
+                    details,
+                    line,
+                    props.ecommerceModuleProduct,
+                  );
+                  return [
+                    line.id,
+                    singleUnitPerOrder || (!details.offers && !work) ? (
+                      <Quantity
+                        key={line.id}
+                        subjectId={props.subject.id}
+                        orderId={props.ecommerceModuleOrder.id}
+                        line={line}
+                        maxLineQuantity={details.maxLineQuantity}
+                        language={props.language}
+                        singleUnitPerOrder={singleUnitPerOrder}
+                        attachedLines={details.lines}
+                        requiresNewResult={work?.state === "awaiting-payment"}
+                        repairUnavailable={duplicateLimitedItems}
+                        onPendingChange={onSelectionPendingChange}
+                      />
+                    ) : null,
+                  ];
+                }),
               )
             : undefined
         }
@@ -330,6 +255,7 @@ export const Component = memo(function Row(props: IRowProps) {
                     details={details}
                     subject={props.subject}
                     ecommerceModuleOrder={props.ecommerceModuleOrder}
+                    ecommerceModuleProduct={props.ecommerceModuleProduct}
                     language={props.language}
                     onSelectionStateChange={onSelectionStateChange}
                     onSelectionPendingChange={onSelectionPendingChange}
@@ -339,6 +265,13 @@ export const Component = memo(function Row(props: IRowProps) {
             : undefined
         }
       />
+      {duplicateLimitedItems && (
+        <p role="alert" className="text-sm text-destructive">
+          {ru
+            ? "В заказе несколько позиций одного товара с лимитом в одну единицу. Удалите этот заказ из корзины и добавьте товары заново."
+            : "This order contains multiple lines for an item limited to one unit. Remove the order from your cart and add the items again."}
+        </p>
+      )}
       {props.children}
     </li>
   );

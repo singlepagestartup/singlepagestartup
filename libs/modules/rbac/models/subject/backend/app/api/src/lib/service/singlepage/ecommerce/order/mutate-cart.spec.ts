@@ -69,6 +69,27 @@ it("deletes an empty-attempt cart through its owning service", async () => {
   });
 });
 
+it("accepts only an explicit correction to one on an older single-unit line", async () => {
+  const f = fixture();
+  const { order, product, ordersToProducts } = f.service.modules.ecommerce;
+  product.findById.mockResolvedValue({ singleUnitPerOrder: true });
+  ordersToProducts.find.mockResolvedValue([
+    { id: "line", productId: "product", quantity: 5 },
+  ]);
+  const invalidateCartResults = jest.fn();
+  Object.assign(order, { work: { invalidateCartResults } });
+  await expect(
+    f.operation.execute({ ...props, lines: [{ id: "line", quantity: 4 }] }),
+  ).rejects.toThrow("one unit at a time");
+  expect(ordersToProducts.update).not.toHaveBeenCalled();
+  await f.operation.execute({ ...props, lines: [{ id: "line", quantity: 1 }] });
+  expect(ordersToProducts.update).toHaveBeenCalledWith({
+    id: "line",
+    data: { quantity: 1, selectionUpdatedAt: expect.any(Date) },
+  });
+  expect(invalidateCartResults).toHaveBeenCalledWith("order");
+});
+
 it.each(["history", "paying", "shared", "payment"])(
   "refuses mutation after %s wins the cart race",
   async (change) => {

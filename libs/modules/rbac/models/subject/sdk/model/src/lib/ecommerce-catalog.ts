@@ -74,6 +74,7 @@ export const catalogCreateOfferSchema = z
         description: localized.optional(),
         kind: productInsertSchema.shape.kind.unwrap(),
         type: z.enum(["one_off", "subscription"]).default("one_off"),
+        singleUnitPerOrder: productInsertSchema.shape.singleUnitPerOrder,
         formula: z.string().min(1).max(2000),
         formulaVersion: z.string().min(1).max(100).default("1"),
       })

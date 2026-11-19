@@ -284,6 +284,32 @@ it("keeps a selected accepted result's checkout separate from prepaid products",
   expect(checkout).not.toHaveBeenCalled();
 });
 
+it("blocks checkout for invalid saved quantities and duplicate limited products until the cart is corrected", async () => {
+  const line = {
+    id: "line",
+    productId: "limited",
+    product: { singleUnitPerOrder: true },
+    quantity: 5,
+  };
+  linesByOrder = { order: [line] };
+  const { rerender } = render(<Component {...props} />);
+  const pay = screen.getByRole("button", {
+    name: "Перейти к оплате",
+  }) as HTMLButtonElement;
+  expect(pay.disabled).toBe(true);
+  expect(checkout).not.toHaveBeenCalled();
+
+  const corrected = { ...line, quantity: 1 };
+  linesByOrder = { order: [corrected, { ...corrected, id: "duplicate" }] };
+  rerender(<Component {...props} />);
+  fireEvent.click(screen.getByRole("checkbox", { name: "order" }));
+  expect(pay.disabled).toBe(true);
+
+  linesByOrder = { order: [corrected] };
+  rerender(<Component {...props} />);
+  expect(pay.disabled).toBe(false);
+});
+
 it("starts the discussion for the exact saved service order after an explicit click", async () => {
   orderIds = ["cover"];
   extraDetails.cover = {

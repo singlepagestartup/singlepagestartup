@@ -53,11 +53,14 @@ export function ResultReview({ subjectId, work, language }: IProps) {
   );
   const [downloadingId, setDownloadingId] = useState<string | null>(null);
   const decision = api.orderWork.decision();
+  const availableVersions = work.versions.filter(
+    (version) => !version.invalidatedByCartEdit,
+  );
   const version =
-    work.versions.find(
+    availableVersions.find(
       ({ id }) =>
         id === (work.paidVersionId ?? work.acceptedVersionId ?? selection),
-    ) ?? work.versions.at(-1);
+    ) ?? availableVersions.at(-1);
   const currencies = currencyApi.find({
     params: {
       filters: {
@@ -100,7 +103,7 @@ export function ResultReview({ subjectId, work, language }: IProps) {
   }
 
   async function choose(operation: "accept" | "decline") {
-    if (!version || decision.isPending) return;
+    if (!choosing || !version || decision.isPending) return;
     const signature = `${operation}:${version.id}:${reason.trim()}`;
     if (intent.current?.signature !== signature) {
       intent.current = { signature, key: crypto.randomUUID() };
@@ -148,7 +151,7 @@ export function ResultReview({ subjectId, work, language }: IProps) {
               onChange={(event) => setSelection(event.currentTarget.value)}
               className="min-h-11 rounded-lg border border-input bg-background px-3 text-sm"
             >
-              {work.versions.map(({ id, number }) => (
+              {availableVersions.map(({ id, number }) => (
                 <option key={id} value={id}>
                   {versionLabel(number)}
                 </option>

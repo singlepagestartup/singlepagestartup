@@ -76,6 +76,7 @@ export * from "./ai-context";
 export {
   PRODUCT_TECHNICAL_ATTRIBUTE_SLUGS,
   REGISTRATION_GRANT_VARIANT,
+  SINGLE_UNIT_PER_ORDER_MESSAGE,
 } from "./ecommerce";
 export { CUSTOMER_WORK_OFFER_CHOICE_REQUIRED } from "./ecommerce";
 

@@ -1,5 +1,6 @@
 import { Service as InitialGrantProducts } from "../../billing/initial-grant-products";
 import { ECOMMERCE_ORDER_LINE_QUANTITY_BOUNDS as quantityBounds } from "@sps/shared-utils";
+import { assertSingleUnitPerOrder } from "@sps/backend-utils";
 import type { Repository } from "../../../../repository";
 import type { SubjectServiceDependencies } from "../../index";
 import { Service as SelectionService } from "./selection";
@@ -188,6 +189,10 @@ export class Service {
             },
           },
         });
+        const updates = new Map(
+          props.lines.map((line) => [line.id, line.quantity]),
+        );
+        let correctedSingleUnit = false;
         for (const line of lines) {
           const product = await service.modules.ecommerce.product.findById({
             id: line.productId,
@@ -202,12 +207,30 @@ export class Service {
               "Permission error. Initial Free cannot be changed through a cart",
             );
           }
+          const quantity = updates.get(line.id);
+          if (!line.parentLineId && quantity !== undefined) {
+            const duplicate = lines.some(
+              (other) =>
+                other.id !== line.id &&
+                other.productId === line.productId &&
+                !other.parentLineId,
+            );
+            assertSingleUnitPerOrder(product, duplicate ? 2 : quantity);
+            if (product?.singleUnitPerOrder && line.quantity !== 1) {
+              correctedSingleUnit = true;
+            }
+          }
         }
         for (const line of props.lines) {
           await service.modules.ecommerce.ordersToProducts.update({
             id: line.id,
             data: { quantity: line.quantity, selectionUpdatedAt: new Date() },
           });
+        }
+        if (correctedSingleUnit) {
+          await service.modules.ecommerce.order.work?.invalidateCartResults?.(
+            props.orderId,
+          );
         }
       },
     );

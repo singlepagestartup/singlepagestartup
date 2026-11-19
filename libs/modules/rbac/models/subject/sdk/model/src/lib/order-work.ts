@@ -49,6 +49,7 @@ export interface IOrderVersionView {
   currencyId: string;
   preview: IOrderArtifact;
   previewMimeType?: string;
+  invalidatedByCartEdit?: true;
 }
 
 export interface IOrderWorkView {

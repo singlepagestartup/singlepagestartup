@@ -44,6 +44,11 @@ interface IDraft {
   transfer: IServiceIntent[] | null;
 }
 
+interface IQuantityPolicy {
+  productId: string;
+  singleUnitPerOrder: boolean;
+}
+
 const input =
   "min-h-11 w-full min-w-0 rounded-xl border border-border bg-card px-3 py-2 text-sm text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground disabled:opacity-50";
 const incompleteCodes = new Set(["address_required"]);
@@ -80,6 +85,16 @@ export function Component(props: IComponentPropsExtended) {
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [error, setError] = useState("");
   const [added, setAdded] = useState(false);
+  const [quotedQuantityPolicy, setQuotedQuantityPolicy] =
+    useState<IQuantityPolicy>();
+  const productId = props.ecommerceModuleProduct.id;
+  const quantityPolicy =
+    quotedQuantityPolicy?.productId === productId
+      ? quotedQuantityPolicy
+      : undefined;
+  const knownSingleUnit =
+    Boolean(props.ecommerceModuleProduct.singleUnitPerOrder) ||
+    quantityPolicy?.singleUnitPerOrder === true;
   const offersQuery = offerApi.find({
     params: {
       filters: {
@@ -214,7 +229,7 @@ export function Component(props: IComponentPropsExtended) {
     return {
       offerId: id,
       currencyId: value.currencyId,
-      quantity: Number(value.quantity),
+      quantity: knownSingleUnit ? 1 : Number(value.quantity),
       destination:
         value.method === "shipping"
           ? {
@@ -223,7 +238,7 @@ export function Component(props: IComponentPropsExtended) {
           : {},
       services: Object.entries(value.services).map(([offerId, quantity]) => ({
         offerId,
-        quantity: Number(quantity),
+        quantity: knownSingleUnit ? 1 : Number(quantity),
       })),
     };
   }
@@ -246,6 +261,7 @@ export function Component(props: IComponentPropsExtended) {
   const quote = offerApi.quote({
     data: requested,
     reactQueryOptions: {
+      refetchOnMount: "always",
       enabled:
         Boolean(requestedOffer) &&
         Number.isSafeInteger(requested.quantity) &&
@@ -258,8 +274,15 @@ export function Component(props: IComponentPropsExtended) {
         ),
     },
   });
+  const quotedSingleUnit =
+    quote.data?.productId === productId &&
+    quote.data.singleUnitPerOrder === true;
+  const singleUnitPerOrder = knownSingleUnit || quotedSingleUnit;
   const metadata =
     quote.data?.offerId === selected?.id ? quote.data : undefined;
+  const resolvedQuote = Boolean(
+    metadata && !quote.isFetching && !quote.isError,
+  );
   const previousOptions = knownOptions.current.get(selected?.id ?? "");
   const options = metadata?.serviceOptions ?? [
     ...(previousOptions?.values() ?? []),
@@ -332,6 +355,7 @@ export function Component(props: IComponentPropsExtended) {
     selected &&
     draft.currencyId &&
     validNumbers &&
+    (!singleUnitPerOrder || selection.quantity === 1) &&
     currencyIds.includes(draft.currencyId) &&
     !draft.transfer &&
     currentQuote?.version &&
@@ -364,6 +388,32 @@ export function Component(props: IComponentPropsExtended) {
     if (wait) timer.current = setTimeout(() => setRequestedDraft(next), 350);
     else setRequestedDraft(next);
   }
+  useEffect(() => {
+    if (quotedSingleUnit && quantityPolicy?.singleUnitPerOrder !== true) {
+      setQuotedQuantityPolicy({ productId, singleUnitPerOrder: true });
+    } else if (resolvedQuote && !quantityPolicy) {
+      setQuotedQuantityPolicy({ productId, singleUnitPerOrder: false });
+    }
+    if (
+      singleUnitPerOrder &&
+      (draftRef.current.quantity !== "1" ||
+        Object.values(draftRef.current.services).some((count) => count !== "1"))
+    ) {
+      edit((value) => ({
+        ...value,
+        quantity: "1",
+        services: Object.fromEntries(
+          Object.keys(value.services).map((id) => [id, "1"]),
+        ),
+      }));
+    }
+  }, [
+    productId,
+    quantityPolicy,
+    quotedSingleUnit,
+    resolvedQuote,
+    singleUnitPerOrder,
+  ]);
   useEffect(
     () => () => {
       if (timer.current) clearTimeout(timer.current);
@@ -428,12 +478,17 @@ export function Component(props: IComponentPropsExtended) {
           ),
       );
       if (exact) {
-        services[exact.offerId] = service.quantity;
+        services[exact.offerId] = singleUnitPerOrder ? "1" : service.quantity;
         if (exact.role === "delivery") method = exact.receiptMethod ?? "";
       }
     }
     edit((value) => ({ ...value, services, method, transfer: null }));
-  }, [draft.transfer, metadata?.offerId, JSON.stringify(options)]);
+  }, [
+    draft.transfer,
+    metadata?.offerId,
+    JSON.stringify(options),
+    singleUnitPerOrder,
+  ]);
 
   useEffect(() => {
     if (
@@ -647,19 +702,25 @@ export function Component(props: IComponentPropsExtended) {
         <div id={`${formId}-configuration`}>
           <form onSubmit={submit} className="@container space-y-3" noValidate>
             <div className="grid min-w-0 grid-cols-2 items-end gap-x-3 gap-y-2 @[420px]:grid-cols-[minmax(8rem,1fr)_minmax(5rem,1fr)_auto]">
-              <QuantityInput
-                id={`${formId}-quantity`}
-                label={ru ? "Количество" : "Quantity"}
-                contextLabel={productTitle}
-                decreaseLabel={`${ru ? "Уменьшить количество товара" : "Decrease product quantity"}: ${productTitle}`}
-                increaseLabel={`${ru ? "Увеличить количество товара" : "Increase product quantity"}: ${productTitle}`}
-                min={quantityBounds.min}
-                max={productQuantityMax}
-                value={draft.quantity}
-                onValueChange={(quantity) => {
-                  edit((value) => ({ ...value, quantity }), true);
-                }}
-              />
+              {singleUnitPerOrder ? (
+                <p className="text-sm">
+                  {ru ? "Количество — 1" : "Quantity · 1"}
+                </p>
+              ) : quantityPolicy || resolvedQuote ? (
+                <QuantityInput
+                  id={`${formId}-quantity`}
+                  label={ru ? "Количество" : "Quantity"}
+                  contextLabel={productTitle}
+                  decreaseLabel={`${ru ? "Уменьшить количество товара" : "Decrease product quantity"}: ${productTitle}`}
+                  increaseLabel={`${ru ? "Увеличить количество товара" : "Increase product quantity"}: ${productTitle}`}
+                  min={quantityBounds.min}
+                  max={productQuantityMax}
+                  value={draft.quantity}
+                  onValueChange={(quantity) => {
+                    edit((value) => ({ ...value, quantity }), true);
+                  }}
+                />
+              ) : null}
               <div className="grid min-w-0 gap-1 text-xs font-medium">
                 <label htmlFor={`${formId}-currency`}>
                   {ru ? "Валюта" : "Currency"}
@@ -864,7 +925,8 @@ export function Component(props: IComponentPropsExtended) {
                               onCheckedChange={changeService}
                             >
                               {option.receiptMethod === "shipping" ||
-                              option.role === "add-on" ? (
+                              (option.role === "add-on" &&
+                                !singleUnitPerOrder) ? (
                                 <div className="space-y-3 px-3 pb-3">
                                   {option.receiptMethod === "shipping" ? (
                                     <DeliveryAddress
@@ -886,7 +948,8 @@ export function Component(props: IComponentPropsExtended) {
                                       }
                                     />
                                   ) : null}
-                                  {option.role === "add-on" ? (
+                                  {option.role === "add-on" &&
+                                  !singleUnitPerOrder ? (
                                     <QuantityInput
                                       id={`${id}-quantity`}
                                       label={

@@ -18,6 +18,7 @@ import type { ICheckoutOrderSelection } from "@sps/rbac/models/subject/sdk/model
 import { api as broadcastModuleChannelApi } from "@sps/broadcast/models/channel/sdk/server";
 import {
   addMoney,
+  assertSingleUnitPerOrder,
   parseExactMonetaryAmount,
   moneyFromMinorUnits,
   moneyMinorUnits,
@@ -30,6 +31,7 @@ import type {
 } from "@sps/ecommerce/relations/stores-to-products/sdk/model";
 import type { IReservationLine } from "@sps/ecommerce/relations/orders-to-billing-module-payment-intents/backend/app/api/src/lib/service/singlepage/reservation";
 import type { IAcceptedOrderWorkCheckout } from "@sps/ecommerce/models/order-work/sdk/model";
+import type { IModel as IOrderLine } from "@sps/ecommerce/relations/orders-to-products/sdk/model";
 
 export const ACTIVE_SUBSCRIPTION_ORDER_STATUSES = [
   "paying",
@@ -222,6 +224,9 @@ export class Service {
         ...(guardedSelection ? { expectedLines: ordersToProducts } : {}),
       });
       if (existing.invoices) {
+        if (existing.preparedPaymentIntentIds?.length) {
+          await this.validateOrderProductQuantities(ordersToProducts);
+        }
         const trustedIntent =
           await this.modules.ecommerce.order.paymentIntent.findById({
             id: existingPaymentLinks[0].billingModulePaymentIntentId,
@@ -252,13 +257,18 @@ export class Service {
       }
     }
 
+    const ecommerceModuleProducts =
+      await this.validateOrderProductQuantities(ordersToProducts);
     const acceptedResults = new Map<string, IAcceptedOrderWorkCheckout>();
     for (const order of ecommerceModuleOrders) {
+      const lines = ordersToProducts.filter(
+        (line) => line.orderId === order.id,
+      );
       const accepted =
         await this.modules.ecommerce.order.work?.acceptedCheckout?.({
           orderId: order.id,
           customerId: props.id,
-          lines: ordersToProducts.filter((line) => line.orderId === order.id),
+          lines,
         });
       if (accepted) {
         acceptedResults.set(order.id, accepted);
@@ -278,26 +288,6 @@ export class Service {
       throw new Error(
         "Conflict error. Select and save a store offer in the cart before payment",
       );
-    }
-
-    const ecommerceModuleProducts = await this.modules.ecommerce.product.find({
-      params: {
-        filters: {
-          and: [
-            {
-              column: "id",
-              method: "inArray",
-              value: ordersToProducts.map(
-                (orderToProduct) => orderToProduct.productId,
-              ),
-            },
-          ],
-        },
-      },
-    });
-
-    if (!ecommerceModuleProducts?.length) {
-      throw new Error("Not Found error. No ecommerce module products found");
     }
 
     if (
@@ -634,6 +624,21 @@ export class Service {
           throw new Error(
             "Conflict error. An accepted result requires checkout for its one exact order",
           );
+        }
+        if (product.singleUnitPerOrder) {
+          const primaryCharges = accepted.purchaseQuote?.charges.filter(
+            (charge) => charge.role === "product",
+          );
+          if (
+            primaryCharges?.length !== 1 ||
+            primaryCharges[0].offerId !== primary[0].offerId ||
+            primaryCharges[0].productId !== product.id
+          ) {
+            throw new Error(
+              "Conflict error. Accept a result with a current order quote before checkout",
+            );
+          }
+          assertSingleUnitPerOrder(product, primaryCharges[0].quantity);
         }
         const { price, currencyId } = accepted.checkout;
         const currency = billingModuleCurrencies.find(
@@ -988,6 +993,13 @@ export class Service {
         });
         if (claim.invoices) {
           return claim;
+        }
+        if (
+          ordersToProducts.some(
+            (line) => !line.parentLineId && line.quantity !== 1,
+          )
+        ) {
+          await this.validateOrderProductQuantities(ordersToProducts);
         }
         if (orderQuotes.size) {
           await this.modules.ecommerce.order.ordersToBillingModulePaymentIntents.lockOffers(
@@ -1552,6 +1564,39 @@ export class Service {
       },
     };
   }
+  private async validateOrderProductQuantities(lines: IOrderLine[]) {
+    const products = await this.modules.ecommerce.product.find({
+      params: {
+        filters: {
+          and: [
+            {
+              column: "id",
+              method: "inArray",
+              value: [...new Set(lines.map((line) => line.productId))],
+            },
+          ],
+        },
+      },
+    });
+    if (!products?.length) {
+      throw new Error("Not Found error. No ecommerce module products found");
+    }
+    const productsById = new Map(
+      products.map((product) => [product.id, product]),
+    );
+    const seen = new Set<string>();
+    for (const line of lines) {
+      if (line.parentLineId) {
+        continue;
+      }
+      const key = `${line.orderId}/${line.productId}`;
+      const product = productsById.get(line.productId);
+      assertSingleUnitPerOrder(product, seen.has(key) ? 2 : line.quantity);
+      seen.add(key);
+    }
+    return products;
+  }
+
   private async resumePreparedCheckout(ids: string[]) {
     if (!RBAC_SECRET_KEY) {
       throw new Error("Configuration error. RBAC_SECRET_KEY is required");

@@ -104,6 +104,7 @@ export class Service {
         currencyId: version.currencyId,
         preview: descriptor(version.previewFileId),
         previewMimeType: version.previewMimeType,
+        ...(version.invalidatedByCartEdit && { invalidatedByCartEdit: true }),
       })),
       acceptedVersionId: work.acceptedVersionId,
       paidVersionId: work.paid?.resultVersionId ?? null,
@@ -374,6 +375,7 @@ export class Service {
             (entry) => entry.operationKey === request.operationKey,
           )
         ) {
+          await this.work.assertResultQuantitySnapshot(orderId, version);
           const crm = this.subject.modules.crm;
           const task = await crm.task.get(scope);
           if (

@@ -99,6 +99,7 @@ async function verifyCover(provider: "openai" | "openrouter") {
             product: {
               title: { en: "Commission a cover" },
               kind: "service",
+              singleUnitPerOrder: true,
               formula: "unit_price * quantity",
             },
             settings: { standalone: true, requiresResultAcceptance: true },
@@ -237,6 +238,43 @@ async function verifyCover(provider: "openai" | "openrouter") {
               operationKey: randomUUID(),
               selection,
             };
+        // One commissioned result has one order and one discussion, even if a
+        // client sends its own quantity instead of using the product form.
+        const oversizedKey = randomUUID();
+        await expect(
+          subject.customerWork.execute(stranger.id, {
+            ...offerScope,
+            operation: "add",
+            operationKey: oversizedKey,
+            selection: { ...selection, quantity: 5 },
+          }),
+        ).rejects.toThrow(/only one unit/);
+        const oversizedTasks = await crm.task.find({
+          params: {
+            filters: {
+              and: [
+                {
+                  column: "openingKey",
+                  method: "eq",
+                  value: `store-work:${stranger.id}:${oversizedKey}`,
+                },
+              ],
+            },
+          },
+        });
+        expect(oversizedTasks).toHaveLength(0);
+        const oversizedOrders = await rbac.subjectsToEcommerceModuleOrders.find(
+          {
+            params: {
+              filters: {
+                and: [
+                  { column: "subjectId", method: "eq", value: stranger.id },
+                ],
+              },
+            },
+          },
+        );
+        expect(oversizedOrders).toHaveLength(0);
         if (command.operation === "open-cart-discussion") {
           const cart = await subject.ecommerceModuleOrderCartDetails({
             subjectId: buyer.id,

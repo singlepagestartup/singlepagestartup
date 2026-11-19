@@ -59,6 +59,7 @@ export function Editor(props: IEditorProps) {
 function OfferEditor(props: IEditorProps & { offer: IOffer }) {
   const { offer, context } = props;
   const updateOffer = subjectApi.ecommerceModuleCatalogMutation();
+  const updateProduct = subjectApi.ecommerceModuleCatalogMutation();
   const setAttribute = subjectApi.ecommerceModuleCatalogAttributeSet();
   const deleteAttribute = subjectApi.ecommerceModuleCatalogMutation();
   const createLink = subjectApi.ecommerceModuleCatalogMutation();
@@ -77,6 +78,8 @@ function OfferEditor(props: IEditorProps & { offer: IOffer }) {
   );
   const [feedback, setFeedback] = useState("");
   const [error, setError] = useState("");
+  const [productFeedback, setProductFeedback] = useState("");
+  const [productError, setProductError] = useState("");
   const [removingId, setRemovingId] = useState<string | null>(null);
   const ownsProduct = context.ownedProductIds.includes(offer.productId);
   const [linkRole, setLinkRole] = useState(
@@ -169,6 +172,32 @@ function OfferEditor(props: IEditorProps & { offer: IOffer }) {
         failure instanceof Error
           ? failure.message
           : "Could not stop new sales.",
+      );
+    }
+  }
+
+  async function saveProductQuantityLimit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const values = new FormData(event.currentTarget);
+    setProductError("");
+    setProductFeedback("");
+    try {
+      await updateProduct.mutateAsync({
+        id: props.subjectId,
+        data: {
+          entity: "products",
+          method: "PATCH",
+          recordId: offer.productId,
+          data: { singleUnitPerOrder: values.has("singleUnitPerOrder") },
+        },
+      });
+      await props.onRefresh();
+      setProductFeedback("Product quantity limit saved.");
+    } catch (failure) {
+      setProductError(
+        failure instanceof Error
+          ? failure.message
+          : "Could not save the product quantity limit.",
       );
     }
   }
@@ -312,6 +341,30 @@ function OfferEditor(props: IEditorProps & { offer: IOffer }) {
 
   return (
     <div className="space-y-6">
+      {ownsProduct && product && (
+        <form onSubmit={saveProductQuantityLimit} className="space-y-2">
+          <fieldset disabled={updateProduct.isPending} className="space-y-2">
+            <legend className="font-semibold">Product quantity limit</legend>
+            <label className="flex min-h-11 items-center gap-2 text-sm">
+              <input
+                key={String(product.singleUnitPerOrder)}
+                name="singleUnitPerOrder"
+                type="checkbox"
+                defaultChecked={product.singleUnitPerOrder}
+              />
+              Limit to one unit per order
+            </label>
+            <p className="text-xs text-muted-foreground">
+              This setting applies to every store that offers this product.
+            </p>
+            <button type="submit" className={button}>
+              Save product quantity limit
+            </button>
+          </fieldset>
+          {productFeedback && <p role="status">{productFeedback}</p>}
+          {productError && <p role="alert">{productError}</p>}
+        </form>
+      )}
       <form onSubmit={save} className="space-y-4">
         <fieldset disabled={busy} className="space-y-4">
           <p className="break-all text-xs text-muted-foreground">

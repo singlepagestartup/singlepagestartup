@@ -1,6 +1,7 @@
 import type { IModel } from "@sps/rbac/models/subject/sdk/model";
 import type { IResult as ISubjectSdkResult } from "@sps/rbac/models/subject/sdk/server";
 import type { ICartDetails } from "@sps/ecommerce/models/order/sdk/model";
+import type { IModel as IEcommerceModuleProduct } from "@sps/ecommerce/models/product/sdk/model";
 import type { IOfferServiceOption } from "@sps/ecommerce/relations/stores-to-products/sdk/model";
 import type { ReactNode } from "react";
 import type {
@@ -30,6 +31,7 @@ export interface IComponentPropsExtended extends IParentComponentPropsExtended<
 export interface IRowProps {
   subject: IModel;
   ecommerceModuleOrder: ISubjectSdkResult["IEcommerceModuleOrderListResult"][number];
+  ecommerceModuleProduct?: IEcommerceModuleProduct;
   language: string;
   selected?: boolean;
   selectionDisabled?: boolean;
@@ -50,6 +52,7 @@ export interface IRowProps {
 export interface IDiscussionActionProps {
   subjectId: string;
   ecommerceModuleOrder: IRowProps["ecommerceModuleOrder"];
+  ecommerceModuleProduct?: IEcommerceModuleProduct;
   language: string;
   showTitle?: boolean;
   buttonVariant?: "primary" | "outline";
@@ -62,6 +65,11 @@ export interface IQuantityProps {
   maxLineQuantity: number;
   line: ICartDetails["lines"][number];
   language: string;
+  singleUnitPerOrder?: boolean;
+  attachedLines?: ICartDetails["lines"];
+  requiresNewResult?: boolean;
+  repairUnavailable?: boolean;
+  onPendingChange?: (lineId: string, pending: boolean) => void;
 }
 
 export interface ICurrencyProps extends Pick<

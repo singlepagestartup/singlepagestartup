@@ -64,7 +64,12 @@ export function CustomerWorkResult({
   });
   const version = order?.versions.find(({ id }) => id === versionId);
   if (!order || !version) return null;
-  if (order.acceptedVersionId && order.acceptedVersionId !== versionId) {
+  const invalidated = version.invalidatedByCartEdit;
+  if (
+    !invalidated &&
+    order.acceptedVersionId &&
+    order.acceptedVersionId !== versionId
+  ) {
     return (
       <span>
         {language === "ru" ? "Версия" : "Version"} {version.number}
@@ -86,19 +91,29 @@ export function CustomerWorkResult({
           }
         />
       )}
-      <ResultReview
-        subjectId={subjectId}
-        work={{ ...order, versions: [version] }}
-        language={language}
-      />
-      {order.state === "awaiting-payment" && task?.productSlug && (
-        <Link
-          className="underline"
-          href={`/${language}/ecommerce/products/${encodeURIComponent(task.productSlug)}#order-${order.orderId}`}
-        >
-          {language === "ru" ? "Перейти к заказу" : "View order"}
-        </Link>
+      {invalidated ? (
+        <span>
+          {language === "ru"
+            ? `Версия ${version.number} относится к заказу до изменения количества.`
+            : `Version ${version.number} is from before the quantity change.`}
+        </span>
+      ) : (
+        <ResultReview
+          subjectId={subjectId}
+          work={{ ...order, versions: [version] }}
+          language={language}
+        />
       )}
+      {!invalidated &&
+        order.state === "awaiting-payment" &&
+        task?.productSlug && (
+          <Link
+            className="underline"
+            href={`/${language}/ecommerce/products/${encodeURIComponent(task.productSlug)}#order-${order.orderId}`}
+          >
+            {language === "ru" ? "Перейти к заказу" : "View order"}
+          </Link>
+        )}
     </>
   );
 }

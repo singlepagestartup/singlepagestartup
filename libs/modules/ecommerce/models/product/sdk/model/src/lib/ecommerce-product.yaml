@@ -2,8 +2,14 @@ allOf:
   - $ref: "../../../../../../../../../libs/shared/backend/api/src/lib/repository/database/model.yaml"
   - $ref: "../../../../../../../../../libs/shared/backend/api/src/lib/repository/database/internationalisation.yaml"
   - type: object
+    required:
+      - singleUnitPerOrder
     properties:
       kind:
         type: string
         minLength: 1
         description: Product classification, such as physical, digital, service, tax or commission. Startup projects may define additional values.
+      singleUnitPerOrder:
+        type: boolean
+        default: false
+        description: Limits the product to one unit per order across store offers.

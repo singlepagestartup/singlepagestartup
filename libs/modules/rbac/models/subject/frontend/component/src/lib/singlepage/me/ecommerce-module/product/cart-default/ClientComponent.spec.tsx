@@ -1,6 +1,9 @@
 /** @jest-environment jsdom */
 import { fireEvent, render, screen } from "@testing-library/react";
 import { Component } from "./ClientComponent";
+import type { IOrderWorkView } from "@sps/rbac/models/subject/sdk/model";
+
+let mockWork: IOrderWorkView | undefined;
 
 const mockOrders = [
   {
@@ -34,11 +37,20 @@ jest.mock("@tanstack/react-query", () => ({
   useIsFetching: () => 0,
   useIsMutating: () => 0,
 }));
-jest.mock("@sps/shared-frontend-client-utils", () => ({ cn: () => "" }));
+jest.mock("@sps/shared-frontend-client-utils", () => ({
+  cn: () => "",
+  formatCurrencyAmount: (amount: string) => amount,
+}));
+jest.mock("@sps/billing/models/currency/sdk/client", () => ({
+  api: { find: () => ({ data: [{ id: "rub", symbol: "₽" }] }) },
+}));
 jest.mock("@sps/rbac/models/subject/sdk/client", () => ({
   api: {
     customerWorkForOrder: () => ({ data: null }),
-    orderWork: { read: () => ({ data: null }) },
+    orderWork: {
+      read: () => ({ data: mockWork }),
+      decision: () => ({ isPending: false }),
+    },
   },
 }));
 jest.mock("@sps/rbac/models/subject/sdk/model", () => ({ route: "/subjects" }));
@@ -113,6 +125,10 @@ function renderProduct(id: string, withOneStepCheckout = true) {
   );
 }
 
+beforeEach(() => {
+  mockWork = undefined;
+});
+
 it("edits the saved primary and blocks only its payment until its choices are saved", () => {
   renderProduct("chair");
   expect(screen.getByRole("heading", { name: "В корзине" })).toBeTruthy();
@@ -134,4 +150,41 @@ it("does not treat a child service as a saved primary on the service page", () =
   expect(screen.queryByRole("heading", { name: "В корзине" })).toBeNull();
   expect(screen.getByTestId("creation-form")).toBeTruthy();
   expect(screen.queryByText("Buy this configuration")).toBeNull();
+});
+
+it("omits result versions invalidated by a quantity correction from the buyer's choices", () => {
+  mockWork = {
+    orderId: "saved-chair",
+    storeId: "workshop",
+    taskId: "task",
+    state: "awaiting-result",
+    versions: [
+      {
+        id: "version-old",
+        number: 1,
+        createdAt: "2026-11-17T00:00:00.000Z",
+        price: "2000",
+        currencyId: "rub",
+        preview: { id: "preview-old", path: "/preview-old" },
+        invalidatedByCartEdit: true,
+      },
+      {
+        id: "version-new",
+        number: 2,
+        createdAt: "2026-11-18T00:00:00.000Z",
+        price: "1000",
+        currencyId: "rub",
+        preview: { id: "preview-new", path: "/preview-new" },
+      },
+    ],
+    acceptedVersionId: null,
+    paidVersionId: null,
+    result: null,
+    receipt: null,
+    deliveryStatus: "pending",
+    trackingNumber: null,
+  };
+  renderProduct("chair");
+  expect(screen.queryByRole("option", { name: "Версия 1" })).toBeNull();
+  expect(screen.getByRole("button", { name: "Принять версию 2" })).toBeTruthy();
 });

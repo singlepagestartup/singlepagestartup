@@ -92,6 +92,7 @@ export {
 export { resolveCorsOrigin } from "./cors-origin";
 
 export { compileTariffFormula, type ITariffFormula } from "./tariff-formula";
+export { assertSingleUnitPerOrder } from "./ecommerce-quantity";
 export {
   moneyMinorUnits,
   moneyFromMinorUnits,

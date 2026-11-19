@@ -1,6 +1,7 @@
 import { createHash } from "node:crypto";
 import Decimal from "decimal.js";
 import { compileTariffFormula } from "@sps/backend-utils";
+import { SINGLE_UNIT_PER_ORDER_MESSAGE } from "@sps/shared-utils";
 import { offerSettingsSchema } from "@sps/ecommerce/relations/stores-to-products/backend/repository/database";
 import type { IOfferAttribute, IOfferCatalog } from "../catalog";
 import type {
@@ -61,13 +62,13 @@ export class Service {
         coordinates: request.destination.coordinates,
       },
     };
-    const { catalog, held, precision, now } = this.deps;
+    const { catalog, held, precision } = this.deps;
     const main = catalog.offers.get(input.offerId);
+    const primaryProduct = main && catalog.products.get(main.productId);
     if (
       !main ||
       !this.retail(main) ||
-      (catalog.products.get(main.productId)?.kind === "service" &&
-        !main.settings.standalone)
+      (primaryProduct?.kind === "service" && !main.settings.standalone)
     ) {
       throw new Error("Not Found error. Retail offer is unavailable");
     }
@@ -82,6 +83,7 @@ export class Service {
       storeId: main.storeId,
       currencyId: input.currencyId,
       quantity: input.quantity,
+      ...(primaryProduct?.singleUnitPerOrder && { singleUnitPerOrder: true }),
       amount: null,
       availableQuantity: null,
       currencyIds: [],
@@ -95,6 +97,15 @@ export class Service {
       version: "",
       expiresAt: "",
     };
+    if (primaryProduct?.singleUnitPerOrder && input.quantity !== 1) {
+      result.issues.push({
+        code: "single_unit_per_order",
+        offerId: main.id,
+        message: SINGLE_UNIT_PER_ORDER_MESSAGE,
+      });
+      result.selectedServices = services;
+      return this.finalize(result, main.settings.quoteMinutes ?? 15);
+    }
     const retailLinks = catalog.links.filter((link) => {
       const source = catalog.offers.get(link.sourceOfferId);
       return source?.productId === main.productId;
@@ -614,14 +625,18 @@ export class Service {
         .reduce((total, item) => total.plus(item.amount), new Decimal(0))
         .toFixed(precision(currency));
     }
+    return this.finalize(result, expiryMinutes);
+  }
+
+  private finalize(result: IOfferQuote, expiryMinutes: number) {
     result.version = createHash("sha256")
       .update(
         JSON.stringify([
-          main.id,
-          input.currencyId,
-          input.quantity,
-          input.destination?.address ?? "",
-          input.destination?.region ?? "",
+          result.offerId,
+          result.currencyId,
+          result.quantity,
+          result.destination?.address ?? "",
+          result.destination?.region ?? "",
           "", // Preserve the retired pickup-point slot for accepted shipping quotes.
           result.charges
             .map(
@@ -636,14 +651,15 @@ export class Service {
             .sort((a, b) => a.offerId.localeCompare(b.offerId)),
           result.issues,
           result.currencyIds,
-          services
+          (result.selectedServices ?? [])
             .map(({ lineId, ...selection }) => selection)
             .sort((a, b) => a.offerId.localeCompare(b.offerId)),
         ]),
       )
       .digest("hex");
     result.expiresAt = new Date(
-      now.getTime() + Math.min(1440, Math.max(1, expiryMinutes)) * 60000,
+      this.deps.now.getTime() +
+        Math.min(1440, Math.max(1, expiryMinutes)) * 60000,
     ).toISOString();
     return result;
   }

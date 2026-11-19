@@ -1476,6 +1476,40 @@ it("validates every requested order before claiming any cart", async () => {
   ).toBe(true);
 });
 
+it.each([[2], [1, 1]])(
+  "rejects an invalid legacy single-unit order before preparing payment",
+  async (...quantities) => {
+    jest.clearAllMocks();
+    const { service, checkoutOrders } = createTestContext({
+      productType: "one_off",
+    });
+    const [{ id: orderId }] = checkoutOrders;
+    service.modules.ecommerce.product.find.mockResolvedValue([
+      { id: "product-target", type: "one_off", singleUnitPerOrder: true },
+    ]);
+    service.modules.ecommerce.ordersToProducts.find.mockResolvedValue(
+      quantities.map((quantity, index) => ({
+        id: `legacy-line-${index}`,
+        orderId,
+        productId: "product-target",
+        offerId: null,
+        quantity,
+      })),
+    );
+    await expect(
+      service.execute({
+        id: "subject-1",
+        provider: "stripe",
+        email: "owner@example.test",
+        ecommerceModule: { orders: [{ id: orderId }] },
+      }),
+    ).rejects.toThrow("one unit at a time");
+    expect(mockBillingModulePaymentIntentCreate).not.toHaveBeenCalled();
+    expect(mockBillingModulePaymentIntentProvider).not.toHaveBeenCalled();
+    expect(checkoutOrders[0]).toMatchObject({ type: "cart", status: "new" });
+  },
+);
+
 it.each([["first"], ["first", "child"], ["first", "foreign"]])(
   "rejects an incomplete or stale primary line selection %j before claiming the order",
   async (...lineIds) => {

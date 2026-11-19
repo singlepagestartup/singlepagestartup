@@ -23,6 +23,9 @@ properties:
   storeId: { type: string, format: uuid }
   currencyId: { type: string }
   quantity: { type: integer, minimum: 1 }
+  singleUnitPerOrder:
+    type: boolean
+    description: The primary product requires quantity one.
   amount:
     type: string
     nullable: true

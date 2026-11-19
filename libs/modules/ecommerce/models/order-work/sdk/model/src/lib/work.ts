@@ -92,6 +92,7 @@ export interface IOrderWorkVersion {
   price: string;
   priceBasis?: TOrderWorkPriceBasis;
   purchaseQuote?: IOrderWorkPurchaseQuote;
+  invalidatedByCartEdit?: true;
 }
 
 export interface IDecideOrderWorkResult extends IOrderWorkScope {

@@ -9,6 +9,7 @@ import {
 import type { ICatalogContext } from "@sps/rbac/models/subject/sdk/model";
 
 const updateOffer = jest.fn();
+const updateProduct = jest.fn();
 const setAttribute = jest.fn();
 const deleteAttribute = jest.fn();
 const createLink = jest.fn();
@@ -26,6 +27,9 @@ jest.mock("@sps/rbac/models/subject/sdk/client", () => ({
     ecommerceModuleCatalogMutation: () => ({
       isPending: false,
       mutateAsync: (props: any) => {
+        if (props.data.entity === "products") {
+          return updateProduct(props);
+        }
         const action =
           props.data.entity === "stores-to-products"
             ? updateOffer
@@ -49,7 +53,12 @@ import { Editor } from "./Editor";
 const context = {
   stores: [{ id: "store", title: { en: "Store" } }],
   products: [
-    { id: "product", title: { en: "Wardrobe" }, kind: "physical" },
+    {
+      id: "product",
+      title: { en: "Wardrobe" },
+      kind: "physical",
+      singleUnitPerOrder: false,
+    },
     {
       id: "delivery-product",
       title: { en: "Delivery" },
@@ -118,6 +127,7 @@ beforeEach(() => {
   jest.clearAllMocks();
   for (const action of [
     updateOffer,
+    updateProduct,
     setAttribute,
     deleteAttribute,
     createLink,
@@ -179,6 +189,9 @@ test.each([
 test("editing an offer sends its actual price, stock and packaging through the owning SDKs", async () => {
   openEditor();
   expect(
+    screen.queryByRole("checkbox", { name: "Limit to one unit per order" }),
+  ).toBeNull();
+  expect(
     screen.queryByRole("combobox", { name: /When the customer pays/ }),
   ).toBeNull();
   expect(screen.queryByLabelText(/Pickup point IDs/)).toBeNull();
@@ -232,6 +245,28 @@ test("editing an offer sends its actual price, stock and packaging through the o
       }),
     }),
   );
+});
+
+test("the product owner can save a product quantity limit from the seller catalogue", async () => {
+  const refresh = openEditor({ ...context, ownedProductIds: ["product"] });
+  fireEvent.click(
+    screen.getByRole("checkbox", { name: "Limit to one unit per order" }),
+  );
+  fireEvent.click(
+    screen.getByRole("button", { name: "Save product quantity limit" }),
+  );
+  await screen.findByText("Product quantity limit saved.");
+  expect(updateProduct).toHaveBeenCalledWith({
+    id: "owner",
+    data: {
+      entity: "products",
+      method: "PATCH",
+      recordId: "product",
+      data: { singleUnitPerOrder: true },
+    },
+  });
+  expect(updateOffer).not.toHaveBeenCalled();
+  expect(refresh).toHaveBeenCalled();
 });
 
 test("unlimited stock removes the stock attribute while archiving only changes availability", async () => {

@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { api } from "@sps/rbac/models/subject/sdk/client";
 import { Button } from "@sps/shared-ui-shadcn";
 import type { IDiscussionActionProps } from "./interface";
+import { hasInvalidSingleUnitQuantity } from "./utils";
 
 interface IOpenDiscussionProps {
   subjectId: string;
@@ -134,6 +135,14 @@ export const DiscussionAction = memo(function DiscussionAction(
             {title && <span className="sr-only"> {title}</span>}
           </Link>
         </Button>
+      ) : work?.state === "requires-discussion" &&
+        line &&
+        hasInvalidSingleUnitQuantity(details, props.ecommerceModuleProduct) ? (
+        <p role="status" className="text-sm text-muted-foreground">
+          {ru
+            ? "Установите количество 1, чтобы открыть обсуждение."
+            : "Set the quantity to 1 to open the discussion."}
+        </p>
       ) : work?.state === "requires-discussion" && line?.offerId ? (
         <OpenDiscussion
           subjectId={props.subjectId}

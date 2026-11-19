@@ -3,7 +3,10 @@ import type { SubjectServiceDependencies } from "../../index";
 import type { IEcommerceProductCheckoutInput } from "@sps/rbac/models/subject/sdk/model";
 import { ECOMMERCE_ORDER_LINE_QUANTITY_BOUNDS as quantityBounds } from "@sps/shared-utils";
 import { z } from "zod";
-import { providerMinorUnits } from "@sps/backend-utils";
+import {
+  assertSingleUnitPerOrder,
+  providerMinorUnits,
+} from "@sps/backend-utils";
 import { paymentProviderPrecision } from "@sps/billing/models/payment-intent/sdk/model";
 
 export interface IExecuteProps {
@@ -51,6 +54,7 @@ export class Service {
     if (!product) {
       throw new Error("Not Found error. Product not found");
     }
+    assertSingleUnitPerOrder(product, quantity);
     if (
       await new InitialGrantProducts(
         this.service.modules.ecommerce.storesToProducts,

@@ -13,6 +13,7 @@ import type { ICartDetails } from "@sps/ecommerce/models/order/sdk/model";
 import { ReceiptEmail } from "../../checkout-default/ReceiptEmail";
 import { CheckoutForm } from "../../checkout-default/CheckoutForm";
 import { Component as Row } from "./Row";
+import { hasInvalidSingleUnitQuantity } from "./utils";
 import { DiscussionAction } from "./DiscussionAction";
 import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
@@ -365,6 +366,9 @@ function Checkout(props: IComponentPropsExtended) {
             const hasUnpriced = paymentOrders.some(
               (order) => order.cartDetails?.unpriced?.length,
             );
+            const hasInvalidQuantity = paymentOrders.some((order) =>
+              hasInvalidSingleUnitQuantity(order.cartDetails),
+            );
             const hasInvalidCurrency = paymentOrders.some(
               (order) =>
                 !order.cartDetails?.billingModuleCurrencyId ||
@@ -376,6 +380,7 @@ function Checkout(props: IComponentPropsExtended) {
               paying ||
               ecommerceModuleOrderCheckout.isPending ||
               hasUnpriced ||
+              hasInvalidQuantity ||
               hasInvalidCurrency ||
               updatingCart ||
               changingSelection ||
@@ -468,6 +473,9 @@ function Checkout(props: IComponentPropsExtended) {
                             language={props.language}
                             selected={isOrderSelected(order)}
                             onCartItemSelectionChange={changeCartItemSelection}
+                            onOrderSelectionPendingChange={
+                              onOrderSelectionPendingChange
+                            }
                           />
                         ))}
                         {accepted.map((order) => {
@@ -487,6 +495,9 @@ function Checkout(props: IComponentPropsExtended) {
                               onCartItemSelectionChange={
                                 changeCartItemSelection
                               }
+                              onOrderSelectionPendingChange={
+                                onOrderSelectionPendingChange
+                              }
                             >
                               {product && (
                                 <div hidden={!selected}>
@@ -504,6 +515,7 @@ function Checkout(props: IComponentPropsExtended) {
                                       updatingCart ||
                                       changingSelection ||
                                       refreshingCart ||
+                                      hasInvalidSingleUnitQuantity(details) ||
                                       Boolean(details?.unpriced?.length) ||
                                       !details?.availableCurrencyIds?.includes(
                                         details.billingModuleCurrencyId ?? "",

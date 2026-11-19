@@ -60,7 +60,10 @@ afterAll(async () => {
   }
 });
 
-async function fixture(kind: "individual-service" | "physical-order") {
+async function fixture(
+  kind: "individual-service" | "physical-order",
+  quantity = 1,
+) {
   const assembly = createAppAssembly();
   const subjects = createSubject(assembly);
   const { ecommerce, crm, billing } = subjects.modules;
@@ -147,7 +150,7 @@ async function fixture(kind: "individual-service" | "physical-order") {
     productId: product.id,
     offerId: offer.id,
     billingModuleCurrencyId: currency.id,
-    quantity: 1,
+    quantity,
   });
   const { orderId } = selection;
   cleanup.push(async () => {
@@ -388,6 +391,7 @@ async function fixture(kind: "individual-service" | "physical-order") {
     scope,
     work,
     orderId,
+    lineId: selection.lineId,
     task,
     currency,
     route,
@@ -398,6 +402,98 @@ async function fixture(kind: "individual-service" | "physical-order") {
     accept,
   };
 }
+
+it("replaces an accepted result after correcting a legacy single-unit cart", async () => {
+  const f = await fixture("individual-service", 2);
+  const publish = async (quantity: number) => {
+    const quote = await f.ecommerce.storesToProducts.quote({
+      offerId: f.offer.id,
+      quantity,
+      currencyId: f.currency.id,
+      lineId: f.lineId,
+    });
+    return f.work.publishResult({
+      ...f.scope,
+      orderId: f.orderId,
+      customerId: f.buyer.id,
+      actorId: f.manager.id,
+      currencyId: f.currency.id,
+      price: quote.amount!,
+      purchaseQuote: {
+        version: quote.version,
+        destination: {},
+        charges: quote.charges,
+        lines: [
+          {
+            id: f.lineId,
+            offerId: f.offer.id,
+            quantity,
+            parentLineId: null,
+          },
+        ],
+      },
+      operationKey: randomUUID(),
+      original: {
+        name: "cover.png",
+        mimeType: "image/png",
+        bytes: Buffer.from(`original ${quantity}`),
+      },
+      preview: {
+        name: "preview.jpg",
+        mimeType: "image/jpeg",
+        bytes: Buffer.from(`preview ${quantity}`),
+      },
+    });
+  };
+  const old = await publish(2);
+  await f.ecommerce.product.update({
+    id: f.product.id,
+    data: { singleUnitPerOrder: true },
+  });
+  expect((await f.accept(old.id)).status).toBe(400);
+  expect((await f.crm.task.get(f.scope)).stageId).toBe("initial");
+
+  // Reproduce an acceptance recorded before the restriction was enabled.
+  await f.ecommerce.product.update({
+    id: f.product.id,
+    data: { singleUnitPerOrder: false },
+  });
+  expect((await f.accept(old.id)).status).toBe(200);
+  expect((await f.crm.task.get(f.scope)).stageId).toBe("payment");
+  await f.ecommerce.product.update({
+    id: f.product.id,
+    data: { singleUnitPerOrder: true },
+  });
+
+  await expect(f.checkout()).rejects.toThrow(/one unit at a time/i);
+  expect(
+    await f.ecommerce.order.ordersToBillingModulePaymentIntents.find(
+      by("orderId", f.orderId),
+    ),
+  ).toHaveLength(0);
+  await f.subjects.ecommerceModuleOrderMutateCart({
+    subjectId: f.buyer.id,
+    orderId: f.orderId,
+    lines: [{ id: f.lineId, quantity: 1 }],
+  });
+  expect(await f.getWork()).toMatchObject({
+    acceptedVersionId: null,
+    state: "awaiting-result",
+    versions: [
+      expect.objectContaining({ id: old.id, invalidatedByCartEdit: true }),
+    ],
+  });
+  expect(await f.work.resultPriceForOrder(f.orderId)).toBeNull();
+  expect((await f.accept(old.id)).status).toBe(409);
+  expect((await f.crm.task.get(f.scope)).stageId).toBe("payment");
+  await expect(f.checkout()).rejects.toThrow(/accept a result/i);
+
+  const corrected = await publish(1);
+  expect((await f.accept(corrected.id)).status).toBe(200);
+  expect((await f.crm.task.get(f.scope)).stageId).toBe("payment");
+  const [invoice] = (await f.checkout()).billingModule.invoices;
+  expect(Number(invoice.amount)).toBe(25);
+});
 
 it("keeps a converted result price in cart totals and the invoice after an offer price change", async () => {
   const f = await fixture("individual-service");

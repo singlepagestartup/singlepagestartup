@@ -1,6 +1,7 @@
 import { createHash, randomUUID } from "node:crypto";
 import { isDeepStrictEqual } from "node:util";
 import {
+  assertSingleUnitPerOrder,
   logger,
   moneyFromMinorUnits,
   moneyMinorUnits,
@@ -224,6 +225,68 @@ export class Service {
     return { currencyId, price };
   }
 
+  async invalidateCartResults(orderId: string) {
+    return this.withOrderLock(orderId, async () => {
+      const record = await this.records.byOrder(orderId);
+      if (
+        record?.kind !== "individual-service" ||
+        record.paid ||
+        !record.versions.length
+      ) {
+        return;
+      }
+      await this.records.revise(record.id, {
+        acceptedVersionId: null,
+        state: "awaiting-result",
+        versions: record.versions.map((version) => ({
+          ...version,
+          invalidatedByCartEdit: true,
+        })),
+      });
+    });
+  }
+
+  async assertResultQuantitySnapshot(
+    orderId: string,
+    version: IOrderWorkVersion,
+  ) {
+    if (version.invalidatedByCartEdit) {
+      throw new Error(
+        "Conflict error. The cart changed. A new result is required",
+      );
+    }
+    const primary = await this.order.module.ordersToProducts.find({
+      params: {
+        filters: {
+          and: [
+            { column: "orderId", method: "eq", value: orderId },
+            { column: "parentLineId", method: "isNull", value: null },
+          ],
+        },
+      },
+    });
+    for (const line of primary) {
+      const product = await this.order.module.product.findById({
+        id: line.productId,
+      });
+      if (!product?.singleUnitPerOrder) {
+        continue;
+      }
+      assertSingleUnitPerOrder(product, line.quantity);
+      const quoted = version.purchaseQuote?.lines.find(
+        (entry) => entry.id === line.id && !entry.parentLineId,
+      );
+      if (
+        quoted?.quantity !== line.quantity ||
+        quoted.offerId !== line.offerId
+      ) {
+        throw new Error(
+          "Conflict error. This result used different order quantities. A new result is required",
+        );
+      }
+    }
+  }
+
   async transferCustomer(input: IOrderWorkScope & { nextCustomerId: string }) {
     return this.order.repository.withLifecycleLock(input.orderId, async () => {
       const record = await this.require(input);
@@ -375,6 +438,7 @@ export class Service {
 
       let acceptedVersionId = record.acceptedVersionId;
       if (kind === "accepted") {
+        await this.assertResultQuantitySnapshot(input.orderId, version);
         acceptedVersionId = version.id;
       } else if (record.acceptedVersionId === version.id) {
         acceptedVersionId = null;

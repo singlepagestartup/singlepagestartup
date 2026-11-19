@@ -433,6 +433,15 @@ export class Service {
           primary: currentPrimary,
           previousLines: current,
         });
+        if (
+          currentQuotes[0].singleUnitPerOrder &&
+          currentPrimary.quantity !== 1 &&
+          selections[0].quantity === 1
+        ) {
+          await service.modules.ecommerce.order.work?.invalidateCartResults?.(
+            props.orderId,
+          );
+        }
         return {
           quotes,
           orderIds,

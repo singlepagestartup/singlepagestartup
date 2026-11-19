@@ -7,11 +7,12 @@ import {
 } from "@sps/crm/models/funnel/sdk/model";
 import { supportsNestedWork } from "@sps/shared-third-parties";
 import { CUSTOMER_WORK_OFFER_CHOICE_REQUIRED } from "@sps/shared-utils";
-import { getHttpErrorType } from "@sps/backend-utils";
+import { assertSingleUnitPerOrder, getHttpErrorType } from "@sps/backend-utils";
 import Decimal from "decimal.js";
 import type { IModel as SocialMessage } from "@sps/social/models/message/sdk/model";
 import type { IModel as SocialProfile } from "@sps/social/models/profile/sdk/model";
 import { selectRetailOffer } from "@sps/ecommerce/relations/stores-to-products/sdk/model";
+import type { IModel as IProduct } from "@sps/ecommerce/models/product/sdk/model";
 import type {
   ICartDiscussion,
   ICustomerWorkCartOffer,
@@ -701,6 +702,9 @@ export class Service {
           throw new Error("Not Found error. The selected offer is unavailable");
         }
         const { product, offer } = selection;
+        if (input.operation === "add") {
+          assertSingleUnitPerOrder(product, input.selection.quantity ?? 1);
+        }
         const adoption = input.operation === "open-cart-discussion";
         if (
           adoption &&
@@ -713,7 +717,7 @@ export class Service {
           );
         }
         if (adoption) {
-          await this.assertCartForDiscussion(customerId, input);
+          await this.assertCartForDiscussion(customerId, input, product);
         }
         const openingKey = `store-work:${customerId}:${input.operationKey}`;
         const [prior] = await this.crm.task.find(
@@ -806,6 +810,12 @@ export class Service {
             if (isCustomService) {
               const existing = await this.cartTaskForConsultation(consultation);
               if (existing) {
+                if (existing.orderId) {
+                  await this.assertExistingProductQuantity(
+                    existing.orderId,
+                    product,
+                  );
+                }
                 return this.view(customerId, {
                   storeId: existing.storeId,
                   taskId: existing.id,
@@ -817,6 +827,7 @@ export class Service {
             customerId,
             input,
             isCustomService,
+            product,
           );
           const existing = await this.crm.task.list({
             storeId: input.storeId,
@@ -874,6 +885,7 @@ export class Service {
   private async assertCartForDiscussion(
     customerId: string,
     input: TOpenCartDiscussion,
+    product: IProduct,
   ) {
     const { ecommerce } = this.subject.modules;
     const { orderId, offerId, productId, storeId } = input;
@@ -915,6 +927,7 @@ export class Service {
     ) {
       throw new Error("Conflict error. The saved store offer changed");
     }
+    assertSingleUnitPerOrder(product, primary[0].quantity);
     if (payments.length) {
       throw new Error(
         "Conflict error. This order already has a payment attempt",
@@ -1178,6 +1191,7 @@ export class Service {
     customerId: string,
     input: Extract<TOpenCustomerWork, { operation: "add" }>,
     separateService: boolean,
+    product: IProduct,
   ) {
     if (!separateService) {
       const existing =
@@ -1187,6 +1201,7 @@ export class Service {
           offerId: input.offerId,
         });
       if (existing) {
+        await this.assertExistingProductQuantity(existing, product);
         return existing;
       }
     }
@@ -1203,6 +1218,23 @@ export class Service {
       separateService,
     });
     return created.orderId;
+  }
+
+  private async assertExistingProductQuantity(
+    orderId: string,
+    product: IProduct,
+  ) {
+    if (!product.singleUnitPerOrder) {
+      return;
+    }
+    const lines = await this.subject.modules.ecommerce.ordersToProducts.find(
+      criteria({ orderId, productId: product.id }),
+    );
+    const primary = lines.filter((line) => !line.parentLineId);
+    assertSingleUnitPerOrder(
+      product,
+      primary.length === 1 ? primary[0].quantity : 0,
+    );
   }
 
   private async profileForSubject(subjectId: string) {

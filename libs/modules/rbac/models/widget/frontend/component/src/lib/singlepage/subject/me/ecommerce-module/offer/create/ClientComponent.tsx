@@ -108,6 +108,7 @@ export function Component(props: IComponentPropsExtended) {
               title: { en: value("title") },
               kind: value("kind"),
               type: value("type"),
+              singleUnitPerOrder: values.has("singleUnitPerOrder"),
               formula: value("formula"),
               formulaVersion: "1",
             }
@@ -247,6 +248,10 @@ export function Component(props: IComponentPropsExtended) {
                   <option value="one_off">One-off</option>
                   <option value="subscription">Subscription</option>
                 </select>
+              </label>
+              <label className="flex min-h-11 items-center gap-2 text-sm sm:col-span-2">
+                <input name="singleUnitPerOrder" type="checkbox" />
+                Limit to one unit per order
               </label>
               <label className={`${label} sm:col-span-2`}>
                 Product formula

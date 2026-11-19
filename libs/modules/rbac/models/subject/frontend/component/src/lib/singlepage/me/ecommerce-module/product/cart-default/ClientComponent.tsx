@@ -7,6 +7,7 @@ import { api } from "@sps/rbac/models/subject/sdk/client";
 import { route } from "@sps/rbac/models/subject/sdk/model";
 import { cn } from "@sps/shared-frontend-client-utils";
 import { Component as CartRow } from "../../../../ecommerce-module/order/list/checkout-default/Row";
+import { hasInvalidSingleUnitQuantity } from "../../../../ecommerce-module/order/list/checkout-default/utils";
 import { DiscussionAction } from "../../../../ecommerce-module/order/list/checkout-default/DiscussionAction";
 import { ResultReview } from "../../../../ecommerce-module/order/create-default/customer-work/ResultReview";
 import type { IComponentPropsExtended, ISavedOrderProps } from "./interface";
@@ -50,6 +51,7 @@ const SavedOrder = memo(function SavedOrder(props: ISavedOrderProps) {
     !blockedLines.size &&
     !updating &&
     !refreshing &&
+    !hasInvalidSingleUnitQuantity(details, props.ecommerceModuleProduct) &&
     !details?.unpriced?.length &&
     Boolean(
       details?.availableCurrencyIds?.includes(
@@ -62,6 +64,7 @@ const SavedOrder = memo(function SavedOrder(props: ISavedOrderProps) {
         <CartRow
           subject={subject}
           ecommerceModuleOrder={order}
+          ecommerceModuleProduct={props.ecommerceModuleProduct}
           language={language}
           onOrderSelectionStateChange={onSelectionStateChange}
         />
@@ -82,6 +85,7 @@ const SavedOrder = memo(function SavedOrder(props: ISavedOrderProps) {
         <DiscussionAction
           subjectId={subject.id}
           ecommerceModuleOrder={order}
+          ecommerceModuleProduct={props.ecommerceModuleProduct}
           language={language}
           buttonVariant={awaitingResult ? "primary" : "outline"}
         />
