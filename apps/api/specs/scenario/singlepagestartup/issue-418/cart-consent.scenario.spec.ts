@@ -433,7 +433,16 @@ it("checks out the buyer-approved 300 RUB selection and preserves only that purc
             id: buyer.id,
             provider: "dummy",
             billingModule: { currency: { id: rub.id } },
-            ecommerceModule: { orders: [{ id: orderId! }] },
+            ecommerceModule: {
+              orders: [
+                {
+                  id: orderId!,
+                  lineIds: cart.lines
+                    .filter((line) => !line.parentLineId)
+                    .map(({ id }) => id),
+                },
+              ],
+            },
           },
           { deferProviderCheckout: true },
         );

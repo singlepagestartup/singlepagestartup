@@ -105,6 +105,28 @@ async function verifyCover(provider: "openai" | "openrouter") {
             prices: [{ currencyId: credits.id, amount: "3" }],
           },
         });
+        const offerScope = {
+          storeId: store.id,
+          productId: product.id,
+          offerId: offer.id,
+        };
+        const selection = { billingModuleCurrencyId: credits.id };
+        let existingOrderId: string | undefined;
+        if (startsInIntake) {
+          const draft = await subject.ecommerceModuleOrderCreate({
+            ...offerScope,
+            ...selection,
+            subjectId: buyer.id,
+            quantity: 1,
+          });
+          existingOrderId = draft.orderId;
+          const cart = await subject.ecommerceModuleOrderCartDetails({
+            subjectId: buyer.id,
+            orderId: existingOrderId,
+          });
+          expect(cart.work?.state).toBe("discussion-unavailable");
+          expect(cart.discussion).toBeUndefined();
+        }
         const funnel = await crm.funnel.saveDraft({
           storeId: store.id,
           name: "Commissioned cover",
@@ -202,15 +224,51 @@ async function verifyCover(provider: "openai" | "openrouter") {
             },
           });
         }
-        const view = await subject.customerWork.execute(buyer.id, {
-          operation: "add",
-          storeId: store.id,
-          productId: product.id,
-          offerId: offer.id,
-          operationKey: randomUUID(),
-          selection: { billingModuleCurrencyId: credits.id },
-        });
+        const command = existingOrderId
+          ? {
+              ...offerScope,
+              operation: "open-cart-discussion" as const,
+              orderId: existingOrderId,
+              operationKey: randomUUID(),
+            }
+          : {
+              ...offerScope,
+              operation: "add" as const,
+              operationKey: randomUUID(),
+              selection,
+            };
+        if (command.operation === "open-cart-discussion") {
+          const cart = await subject.ecommerceModuleOrderCartDetails({
+            subjectId: buyer.id,
+            orderId: command.orderId,
+          });
+          expect(cart.work?.state).toBe("requires-discussion");
+          await expect(
+            subject.customerWork.execute(stranger.id, command),
+          ).rejects.toThrow("The selected cart order is unavailable");
+        }
+        const view = await subject.customerWork.execute(buyer.id, command);
         expect(view.orderId).toBeDefined();
+        if (command.operation === "open-cart-discussion") {
+          expect(view.orderId).toBe(command.orderId);
+          const retry = await subject.customerWork.execute(buyer.id, {
+            ...command,
+            operationKey: randomUUID(),
+          });
+          expect(retry.taskId).toBe(view.taskId);
+          expect(retry.threadId).toBe(view.threadId);
+        }
+        const cart = await subject.ecommerceModuleOrderCartDetails({
+          subjectId: buyer.id,
+          orderId: view.orderId!,
+        });
+        expect(cart.work?.state).toBe("awaiting-result");
+        expect(cart.discussion).toEqual({
+          storeId: store.id,
+          taskId: view.taskId,
+          threadId: view.threadId,
+          chatId: view.chatId,
+        });
         const [buyerProfile] = await rbac.subjectsToSocialModuleProfiles.find({
           params: {
             filters: {

@@ -8,6 +8,7 @@ export function Component(props: IComponentPropsExtended) {
       variant={props.variant}
       data={props.data}
       language={props.language}
+      onDiscussionOpen={props.onDiscussionOpen}
       onSelectionPendingChange={props.onSelectionPendingChange}
     />
   );

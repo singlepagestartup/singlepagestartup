@@ -1476,6 +1476,34 @@ it("validates every requested order before claiming any cart", async () => {
   ).toBe(true);
 });
 
+it.each([["first"], ["first", "child"], ["first", "foreign"]])(
+  "rejects an incomplete or stale primary line selection %j before claiming the order",
+  async (...lineIds) => {
+    jest.clearAllMocks();
+    const { service, checkoutOrders } = createTestContext({
+      productType: "one_off",
+    });
+    const [{ id: orderId }] = checkoutOrders;
+    (
+      service.modules.ecommerce.ordersToProducts.find as jest.Mock
+    ).mockResolvedValue([
+      { id: "first", orderId, parentLineId: null },
+      { id: "second", orderId, parentLineId: null },
+      { id: "child", orderId, parentLineId: "first" },
+    ]);
+    await expect(
+      service.execute({
+        id: "subject-1",
+        provider: "stripe",
+        email: "owner@example.test",
+        ecommerceModule: { orders: [{ id: orderId, lineIds }] },
+      }),
+    ).rejects.toThrow("The selected cart items changed");
+    expect(mockEcommerceOrderUpdate).not.toHaveBeenCalled();
+    expect(mockBillingModulePaymentIntentCreate).not.toHaveBeenCalled();
+  },
+);
+
 it("creates a separate recurring intent for each subscription order", async () => {
   jest.clearAllMocks();
   const { service, checkoutOrders, transactionActive } = createTestContext({

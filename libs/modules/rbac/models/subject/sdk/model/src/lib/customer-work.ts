@@ -29,6 +29,12 @@ export const customerWorkCommandSchema = z.discriminatedUnion("operation", [
   offerScopeSchema.extend({ operation: z.literal("ask") }).strict(),
   offerScopeSchema
     .extend({
+      operation: z.literal("open-cart-discussion"),
+      orderId: z.uuid(),
+    })
+    .strict(),
+  offerScopeSchema
+    .extend({
       operation: z.literal("add"),
       consultationTaskId: z.uuid().optional(),
       selection: ecommerceOrderCreateSchema

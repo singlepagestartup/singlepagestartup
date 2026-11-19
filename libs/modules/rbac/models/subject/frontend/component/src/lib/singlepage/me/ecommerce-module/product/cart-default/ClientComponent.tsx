@@ -4,28 +4,25 @@ import { memo, useCallback, useState } from "react";
 import { useIsFetching, useIsMutating } from "@tanstack/react-query";
 import { Component as Subject } from "@sps/rbac/models/subject/frontend/component";
 import { api } from "@sps/rbac/models/subject/sdk/client";
-import Link from "next/link";
 import { route } from "@sps/rbac/models/subject/sdk/model";
 import { cn } from "@sps/shared-frontend-client-utils";
 import { Component as CartRow } from "../../../../ecommerce-module/order/list/checkout-default/Row";
+import { DiscussionAction } from "../../../../ecommerce-module/order/list/checkout-default/DiscussionAction";
 import { ResultReview } from "../../../../ecommerce-module/order/create-default/customer-work/ResultReview";
 import type { IComponentPropsExtended, ISavedOrderProps } from "./interface";
 
 const SavedOrder = memo(function SavedOrder(props: ISavedOrderProps) {
   const { ecommerceModuleOrder: order, subject, language } = props;
   const details = order.cartDetails;
-  const storeId = details?.storeIds[0] ?? "";
-  const work = api.customerWorkForOrder({
-    id: subject.id,
-    storeId,
-    orderId: order.id,
-  });
+  const discussion = details?.discussion;
   const result = api.orderWork.read({
     id: subject.id,
-    storeId,
+    storeId: discussion?.storeId ?? "",
     orderId: order.id,
-    taskId: work.data?.taskId ?? "",
+    taskId: discussion?.taskId ?? "",
   });
+  const awaitingResult =
+    details?.work && details.work.state !== "awaiting-payment";
   const [blockedLines, setBlockedLines] = useState<Set<string>>(new Set());
   const onSelectionStateChange = useCallback(
     (_orderId: string, lineId: string, blocked: boolean) => {
@@ -69,28 +66,25 @@ const SavedOrder = memo(function SavedOrder(props: ISavedOrderProps) {
           onOrderSelectionStateChange={onSelectionStateChange}
         />
       </ul>
-      <Subject
-        isServer={false}
-        variant="ecommerce-module-order-checkout-default"
-        dataSource="props"
-        data={subject}
-        ecommerceModuleProduct={props.ecommerceModuleProduct}
-        ecommerceModuleOrder={order}
-        language={language}
-        disabled={
-          !canPay ||
-          Boolean(work.data && result.data?.state !== "awaiting-payment")
-        }
-      />
-      {work.data && (
-        <Link
-          className="inline-flex min-h-11 items-center justify-self-start underline"
-          href={`/${language}/social/chats/${work.data.chatId}/threads/${work.data.threadId}`}
-        >
-          {language === "ru"
-            ? "Открыть обсуждение заказа"
-            : "Open order discussion"}
-        </Link>
+      {!awaitingResult && (
+        <Subject
+          isServer={false}
+          variant="ecommerce-module-order-checkout-default"
+          dataSource="props"
+          data={subject}
+          ecommerceModuleProduct={props.ecommerceModuleProduct}
+          ecommerceModuleOrder={order}
+          language={language}
+          disabled={!canPay}
+        />
+      )}
+      {(discussion || awaitingResult) && (
+        <DiscussionAction
+          subjectId={subject.id}
+          ecommerceModuleOrder={order}
+          language={language}
+          buttonVariant={awaitingResult ? "primary" : "outline"}
+        />
       )}
       {result.data && (
         <ResultReview

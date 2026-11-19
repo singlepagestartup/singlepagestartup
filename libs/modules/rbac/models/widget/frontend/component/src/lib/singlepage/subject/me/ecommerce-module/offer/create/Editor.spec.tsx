@@ -50,7 +50,12 @@ const context = {
   stores: [{ id: "store", title: { en: "Store" } }],
   products: [
     { id: "product", title: { en: "Wardrobe" }, kind: "physical" },
-    { id: "delivery-product", title: { en: "Delivery" }, kind: "service" },
+    {
+      id: "delivery-product",
+      title: { en: "Delivery" },
+      kind: "service",
+      type: "one_off",
+    },
   ],
   currencies: [{ id: "rub", title: "RUB", minorUnitDigits: 2 }],
   offers: [
@@ -136,8 +141,46 @@ function openEditor(editorContext = context) {
   return refresh;
 }
 
+test.each([
+  [false, "after-acceptance", true],
+  [true, "in-cart", false],
+] as const)(
+  "updates a service offer's payment timing (initial acceptance setting %s)",
+  async (initial, timing, expected) => {
+    const offer = {
+      ...context.offers[0],
+      productId: "delivery-product",
+      settings: { requiresResultAcceptance: initial },
+    };
+    openEditor({ ...context, offers: [offer] });
+    const input = screen.getByRole("combobox", {
+      name: /When the customer pays/,
+    }) as HTMLSelectElement;
+    expect(input.value).toBe(initial ? "after-acceptance" : "in-cart");
+    fireEvent.change(input, { target: { value: timing } });
+    fireEvent.submit(input.form!);
+    await waitFor(() =>
+      expect(updateOffer).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({
+            recordId: offer.id,
+            data: expect.objectContaining({
+              settings: expect.objectContaining({
+                requiresResultAcceptance: expected,
+              }),
+            }),
+          }),
+        }),
+      ),
+    );
+  },
+);
+
 test("editing an offer sends its actual price, stock and packaging through the owning SDKs", async () => {
   openEditor();
+  expect(
+    screen.queryByRole("combobox", { name: /When the customer pays/ }),
+  ).toBeNull();
   expect(screen.queryByLabelText(/Pickup point IDs/)).toBeNull();
   fireEvent.change(screen.getByLabelText("RUB"), {
     target: { value: "6200.25" },

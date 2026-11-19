@@ -135,6 +135,7 @@ export function changeCustomerWork() {
       queryClient.setQueryData(threadKey(props.id, result.threadId), result);
       if (
         props.data.operation === "add" ||
+        props.data.operation === "open-cart-discussion" ||
         props.data.operation === "confirm-cart" ||
         result.cartProposal?.orderId
       ) {

@@ -597,6 +597,12 @@ it("keeps a converted result price in cart totals and the invoice after an offer
     fixedResultPrice: true,
     billingModuleCurrencyId: f.currency.id,
     totals: [{ total: 10.8 }],
+    work: {
+      paymentTiming: "after-acceptance",
+      state: "awaiting-payment",
+      orderId: f.orderId,
+      storeId: f.scope.storeId,
+    },
   });
   const [invoice] = (await f.checkout()).billingModule.invoices;
   expect(invoice.amount).toBe(10.8);

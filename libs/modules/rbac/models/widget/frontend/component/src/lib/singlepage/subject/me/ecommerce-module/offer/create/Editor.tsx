@@ -6,6 +6,7 @@ import { catalogCreateOfferSchema } from "@sps/rbac/models/subject/sdk/model";
 import type { IModel as IOffer } from "@sps/ecommerce/relations/stores-to-products/sdk/model";
 import type { IModel as ILink } from "@sps/ecommerce/relations/offers-to-offers/sdk/model";
 import type { IBoxDraft, IEditorProps } from "./interface";
+import { PaymentTiming } from "./PaymentTiming";
 
 const field =
   "min-h-11 w-full min-w-0 rounded-xl border border-input bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:bg-muted disabled:text-muted-foreground";
@@ -68,6 +69,12 @@ function OfferEditor(props: IEditorProps & { offer: IOffer }) {
   );
   const stock = attrs.find((attribute) => attribute.key === "stock_quantity");
   const [unlimited, setUnlimited] = useState(!stock);
+  const [afterAcceptance, setAfterAcceptance] = useState(
+    Boolean(offer.settings.requiresResultAcceptance),
+  );
+  const [standalone, setStandalone] = useState(
+    Boolean(offer.settings.standalone),
+  );
   const [feedback, setFeedback] = useState("");
   const [error, setError] = useState("");
   const [removingId, setRemovingId] = useState<string | null>(null);
@@ -75,9 +82,11 @@ function OfferEditor(props: IEditorProps & { offer: IOffer }) {
   const [linkRole, setLinkRole] = useState(
     ownsProduct ? "delivery" : "fulfilled-by",
   );
-  const serviceProduct =
-    context.products.find((product) => product.id === offer.productId)?.kind ===
-    "service";
+  const product = context.products.find(
+    (product) => product.id === offer.productId,
+  );
+  const serviceProduct = product?.kind === "service";
+  const commissionedService = serviceProduct && product.type === "one_off";
   const targets = context.offers.filter(
     (target) =>
       target.id !== offer.id &&
@@ -173,7 +182,13 @@ function OfferEditor(props: IEditorProps & { offer: IOffer }) {
     try {
       const settings = catalogCreateOfferSchema.shape.settings.parse({
         ...offer.settings,
-        standalone: values.has("standalone"),
+        ...(commissionedService && {
+          requiresResultAcceptance:
+            text("paymentTiming") === "after-acceptance",
+        }),
+        standalone:
+          values.has("standalone") ||
+          (commissionedService && text("paymentTiming") === "after-acceptance"),
         receiptMethod: text("receiptMethod"),
         regionIds: text("regions")
           .split(",")
@@ -436,10 +451,18 @@ function OfferEditor(props: IEditorProps & { offer: IOffer }) {
             <input
               name="standalone"
               type="checkbox"
-              defaultChecked={offer.settings.standalone}
+              checked={standalone || (commissionedService && afterAcceptance)}
+              disabled={commissionedService && afterAcceptance}
+              onChange={(event) => setStandalone(event.target.checked)}
             />
             Allow this service to be sold separately
           </label>
+          {commissionedService && (
+            <PaymentTiming
+              afterAcceptance={offer.settings.requiresResultAcceptance}
+              onChange={setAfterAcceptance}
+            />
+          )}
           <fieldset className="space-y-3">
             <legend className="mb-3 font-semibold">
               External packaging per product unit

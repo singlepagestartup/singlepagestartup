@@ -3,6 +3,10 @@ import type {
   IModel as IOffer,
   IOfferQuoteInput,
 } from "@sps/ecommerce/relations/stores-to-products/sdk/model";
+import type {
+  ICartWork,
+  ISubjectCartDetails,
+} from "@sps/rbac/models/subject/sdk/model";
 import type { SubjectServiceDependencies } from "../../index";
 
 export interface IExecuteProps {
@@ -11,16 +15,16 @@ export interface IExecuteProps {
 }
 export interface IConstructorProps {
   service: SubjectServiceDependencies<
-    "ecommerceModuleOrderAssertAccess" | "ecommerceModuleCartQuote"
+    | "ecommerceModuleOrderAssertAccess"
+    | "ecommerceModuleCartQuote"
+    | "customerWork"
   >;
 }
 
 export class Service {
   constructor(private readonly dependencies: IConstructorProps) {}
 
-  async execute(
-    props: IExecuteProps,
-  ): Promise<ICartDetails & { storeIds: string[] }> {
+  async execute(props: IExecuteProps): Promise<ISubjectCartDetails> {
     const { service } = this.dependencies;
     await service.ecommerceModuleOrderAssertAccess(props);
     const details = await service.modules.ecommerce.order.findByIdCartDetails({
@@ -36,8 +40,37 @@ export class Service {
     const storeIdsForOrder = storeLinks.map(
       (link: { storeId: string }) => link.storeId,
     );
+    const orderWork = await service.modules.ecommerce.order.work?.findByOrder(
+      props.orderId,
+    );
+    const customerWork =
+      orderWork?.customerId === props.subjectId ? orderWork : null;
+    const discussion = await service.customerWork.discussionForOrder({
+      customerId: props.subjectId,
+      orderId: props.orderId,
+      taskId: customerWork?.taskId,
+    });
+    let work: ICartWork | undefined;
+    if (customerWork?.kind === "individual-service") {
+      work = {
+        paymentTiming: "after-acceptance",
+        state: details.fixedResultPrice
+          ? "awaiting-payment"
+          : "awaiting-result",
+        orderId: props.orderId,
+        storeId: customerWork.storeId,
+      };
+    }
+    const conversation = {
+      ...(discussion ? { discussion } : {}),
+    };
     if (details.fixedResultPrice) {
-      return { ...details, storeIds: storeIdsForOrder };
+      return {
+        ...details,
+        storeIds: storeIdsForOrder,
+        ...(work ? { work } : {}),
+        ...conversation,
+      };
     }
     const fulfillment =
       await service.modules.ecommerce.order.fulfillmentQuoteOptions({
@@ -64,6 +97,26 @@ export class Service {
       }
       if (current) {
         offers.set(current.id, current);
+        if (!work && current.settings.requiresResultAcceptance === true) {
+          const canOpenDiscussion =
+            Boolean(discussion) ||
+            (primaries.length === 1 &&
+              storeIdsForOrder.length === 1 &&
+              storeIdsForOrder[0] === current.storeId &&
+              (await service.customerWork.canOpenCartDiscussion({
+                storeId: current.storeId,
+                productId: line.productId,
+                offerId: current.id,
+              })));
+          work = {
+            paymentTiming: "after-acceptance",
+            state: canOpenDiscussion
+              ? "requires-discussion"
+              : "discussion-unavailable",
+            orderId: props.orderId,
+            storeId: current.storeId,
+          };
+        }
       }
       if (
         current &&
@@ -166,6 +219,8 @@ export class Service {
           ) === index,
       ),
       storeIds: storeIdsForOrder,
+      ...(work ? { work } : {}),
+      ...conversation,
     };
   }
 }

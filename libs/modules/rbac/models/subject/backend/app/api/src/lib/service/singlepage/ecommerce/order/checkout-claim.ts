@@ -9,6 +9,7 @@ interface ILineSnapshot {
   id: string;
   orderId: string;
   productId: string;
+  parentLineId?: string | null;
   quantity: number;
   updatedAt?: Date | string;
 }
@@ -398,6 +399,7 @@ export class Service {
           row.id,
           row.orderId,
           row.productId,
+          row.parentLineId ?? "",
           row.quantity,
           String(row.updatedAt ?? ""),
         ].join("|"),

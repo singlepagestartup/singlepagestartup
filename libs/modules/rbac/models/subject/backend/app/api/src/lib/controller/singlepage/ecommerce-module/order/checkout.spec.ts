@@ -10,6 +10,8 @@ const firstOrderId = "00000000-0000-4000-8000-000000000001";
 const secondOrderId = "00000000-0000-4000-8000-000000000002";
 const deletedOrderId = "00000000-0000-4000-8000-000000000003";
 const foreignOrderId = "00000000-0000-4000-8000-000000000004";
+const firstLineId = "00000000-0000-4000-8000-000000000011";
+const secondLineId = "00000000-0000-4000-8000-000000000012";
 
 const orderFindMock = jest.fn();
 const orderUpdateMock = jest.fn();
@@ -214,6 +216,51 @@ describe("Given: ecommerce order checkout handler", () => {
         checkoutUrl: "https://example.test/pay",
       }),
     });
+  });
+
+  it("passes only the selected order and its primary lines to checkout", async () => {
+    const service = createService();
+    const orders = [{ id: firstOrderId, lineIds: [firstLineId] }];
+    const context = createContext(
+      { id: "subject-1" },
+      {
+        data: JSON.stringify({
+          provider: "dummy",
+          email: "owner@example.test",
+          ecommerceModule: { orders },
+        }),
+      },
+    );
+    await new Handler(service).execute(context, jest.fn());
+    expectOrderLookup([firstOrderId]);
+    expect(service.ecommerceOrderCheckout).toHaveBeenCalledWith(
+      expect.objectContaining({ ecommerceModule: { orders } }),
+    );
+  });
+
+  it("rejects the whole guarded checkout when a selected order is foreign", async () => {
+    const service = createService([firstOrderId]);
+    const context = createContext(
+      { id: "subject-1" },
+      {
+        data: JSON.stringify({
+          provider: "dummy",
+          email: "owner@example.test",
+          ecommerceModule: {
+            orders: [
+              { id: firstOrderId, lineIds: [firstLineId] },
+              { id: foreignOrderId, lineIds: [secondLineId] },
+            ],
+          },
+        }),
+      },
+    );
+    await expect(
+      new Handler(service).execute(context, jest.fn()),
+    ).rejects.toThrow("A selected cart order is unavailable");
+    expect(orderFindMock).not.toHaveBeenCalled();
+    expect(service.deanonymize).not.toHaveBeenCalled();
+    expect(service.ecommerceOrderCheckout).not.toHaveBeenCalled();
   });
 
   /**

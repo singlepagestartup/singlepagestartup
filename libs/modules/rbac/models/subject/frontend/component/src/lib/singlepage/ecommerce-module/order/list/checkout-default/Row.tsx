@@ -1,10 +1,11 @@
 "use client";
 import { REGISTRATION_GRANT_VARIANT } from "@sps/shared-utils";
-import { memo, useCallback, useState } from "react";
+import { memo, useCallback, useId, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { api } from "@sps/rbac/models/subject/sdk/client";
 import { route } from "@sps/rbac/models/subject/sdk/model";
 import { Icon, Select } from "@sps/ui-adapter";
+import { Checkbox } from "@sps/shared-ui-shadcn";
 import { Component as EcommerceModuleOrder } from "@sps/ecommerce/models/order/frontend/component";
 import { Component as Subject } from "@sps/rbac/models/subject/frontend/component";
 import type { IRowProps, IQuantityProps, ICurrencyProps } from "./interface";
@@ -192,6 +193,17 @@ export const Component = memo(function Row(props: IRowProps) {
   const ru = props.language === "ru";
   const lines = details?.lines.filter((line) => !line.parentLineId) ?? [];
   const onlyProduct = lines.length === 1 ? lines[0].product : null;
+  const work = details?.work;
+  const selectionId = useId();
+  const changeCartSelection = useCallback(
+    (checked: boolean | "indeterminate") => {
+      props.onCartItemSelectionChange?.(
+        props.ecommerceModuleOrder.id,
+        checked === true,
+      );
+    },
+    [props.onCartItemSelectionChange, props.ecommerceModuleOrder.id],
+  );
   const onSelectionStateChange = useCallback(
     (lineId: string, blocked: boolean) => {
       props.onOrderSelectionStateChange?.(
@@ -216,6 +228,14 @@ export const Component = memo(function Row(props: IRowProps) {
     onlyProduct?.title?.[props.language] ||
     onlyProduct?.title?.en ||
     onlyProduct?.slug;
+  const selectLabel =
+    lines.length > 1
+      ? ru
+        ? "Выбрать весь заказ"
+        : "Select the entire order"
+      : ru
+        ? "Выбрать позицию"
+        : "Select item";
   let removeLabel;
   if (productTitle) {
     removeLabel = ru
@@ -237,7 +257,7 @@ export const Component = memo(function Row(props: IRowProps) {
     />
   );
   return (
-    <li className="min-w-0">
+    <li className="grid min-w-0 gap-2">
       <EcommerceModuleOrder
         isServer={false}
         variant="cart-card-default"
@@ -245,8 +265,34 @@ export const Component = memo(function Row(props: IRowProps) {
         data={props.ecommerceModuleOrder}
         language={props.language}
         cartDetails={details}
+        headerSlot={
+          props.selected !== undefined && lines.length > 0 ? (
+            <div className="flex min-h-8 items-center gap-2 text-sm font-medium">
+              <Checkbox
+                id={selectionId}
+                checked={props.selected}
+                disabled={props.selectionDisabled}
+                onCheckedChange={changeCartSelection}
+                className="size-5 border-2 border-muted-foreground focus-visible:ring-foreground data-[state=checked]:border-primary"
+              />
+              <label htmlFor={selectionId} className="cursor-pointer py-1">
+                {selectLabel}
+                {productTitle && (
+                  <span className="sr-only"> {productTitle}</span>
+                )}
+              </label>
+            </div>
+          ) : undefined
+        }
+        priceLabel={
+          work && work.state !== "awaiting-payment"
+            ? ru
+              ? "Цена предложения"
+              : "Offer price"
+            : undefined
+        }
         quantitySlots={
-          details && !details.offers
+          details && !details.offers && !work
             ? Object.fromEntries(
                 lines.map((line) => [
                   line.id,
@@ -264,7 +310,8 @@ export const Component = memo(function Row(props: IRowProps) {
         }
         removeSlot={remove}
         currencySlot={
-          !details?.offers && (
+          !details?.offers &&
+          !work && (
             <Currency
               subject={props.subject}
               ecommerceModuleOrder={props.ecommerceModuleOrder}
@@ -273,24 +320,26 @@ export const Component = memo(function Row(props: IRowProps) {
           )
         }
         selectionSlots={
-          details?.offers &&
-          Object.fromEntries(
-            lines.map((line) => [
-              line.id,
-              <Selection
-                key={line.id}
-                line={line}
-                details={details}
-                subject={props.subject}
-                ecommerceModuleOrder={props.ecommerceModuleOrder}
-                language={props.language}
-                onSelectionStateChange={onSelectionStateChange}
-                onSelectionPendingChange={onSelectionPendingChange}
-              />,
-            ]),
-          )
+          !work && details?.offers
+            ? Object.fromEntries(
+                lines.map((line) => [
+                  line.id,
+                  <Selection
+                    key={line.id}
+                    line={line}
+                    details={details}
+                    subject={props.subject}
+                    ecommerceModuleOrder={props.ecommerceModuleOrder}
+                    language={props.language}
+                    onSelectionStateChange={onSelectionStateChange}
+                    onSelectionPendingChange={onSelectionPendingChange}
+                  />,
+                ]),
+              )
+            : undefined
         }
       />
+      {props.children}
     </li>
   );
 });

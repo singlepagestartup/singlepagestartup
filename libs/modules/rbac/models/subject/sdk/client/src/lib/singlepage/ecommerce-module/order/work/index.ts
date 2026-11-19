@@ -2,8 +2,15 @@
 
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { api } from "@sps/rbac/models/subject/sdk/server";
-import { clientHost, orderWorkPath } from "@sps/rbac/models/subject/sdk/model";
-import { queryClient } from "@sps/shared-frontend-client-api";
+import {
+  clientHost,
+  orderWorkPath,
+  route,
+} from "@sps/rbac/models/subject/sdk/model";
+import {
+  invalidateRouteQueries,
+  queryClient,
+} from "@sps/shared-frontend-client-api";
 import { saturateHeaders } from "@sps/shared-frontend-client-utils";
 
 type IReadProps = Parameters<typeof api.orderWork.read>[0];
@@ -42,11 +49,16 @@ function decision() {
   return useMutation({
     mutationFn: (props: IDecisionProps) =>
       api.orderWork.decision(clientRequest(props)),
-    onSuccess: (work, props) =>
+    onSuccess: async (work, props) => {
       queryClient.setQueryData(
         queryKey(props.id, work.orderId, work.taskId),
         work,
-      ),
+      );
+      await invalidateRouteQueries(
+        queryClient,
+        `${route}/${props.id}/ecommerce-module/orders`,
+      );
+    },
   });
 }
 

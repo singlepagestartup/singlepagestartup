@@ -14,6 +14,7 @@ import {
 } from "@sps/billing/models/payment-intent/sdk/model";
 import { api as subjectPaymentApi } from "@sps/rbac/models/subject/sdk/server";
 import { orderPaymentIntentsRoute } from "@sps/rbac/models/subject/sdk/model";
+import type { ICheckoutOrderSelection } from "@sps/rbac/models/subject/sdk/model";
 import { api as broadcastModuleChannelApi } from "@sps/broadcast/models/channel/sdk/server";
 import {
   addMoney,
@@ -52,9 +53,7 @@ export type IExecuteProps =
         };
       };
       ecommerceModule: {
-        orders: {
-          id: string;
-        }[];
+        orders: ICheckoutOrderSelection[];
       };
     }
   | {
@@ -68,9 +67,7 @@ export type IExecuteProps =
         };
       };
       ecommerceModule: {
-        orders: {
-          id: string;
-        }[];
+        orders: ICheckoutOrderSelection[];
       };
     };
 
@@ -117,6 +114,10 @@ export class Service {
       throw new Error("Not Found error. No entity found");
     }
 
+    const requestedOrders = props.ecommerceModule.orders;
+    const guardedSelection = requestedOrders.some(
+      (order) => order.lineIds !== undefined,
+    );
     const ecommerceModuleOrders = await this.modules.ecommerce.order.find({
       params: {
         filters: {
@@ -124,9 +125,7 @@ export class Service {
             {
               column: "id",
               method: "inArray",
-              value: props.ecommerceModule.orders.map(
-                (order: { id: string }) => order.id,
-              ),
+              value: requestedOrders.map((order) => order.id),
             },
           ],
         },
@@ -135,6 +134,16 @@ export class Service {
 
     if (!ecommerceModuleOrders?.length) {
       throw new Error("Not Found error. No ecommerce module orders found");
+    }
+    if (
+      guardedSelection &&
+      (requestedOrders.length !== ecommerceModuleOrders.length ||
+        requestedOrders.some(
+          (request) =>
+            !ecommerceModuleOrders.some((order) => order.id === request.id),
+        ))
+    ) {
+      throw new Error("Conflict error. The selected cart orders changed");
     }
 
     const ordersToProducts = await this.modules.ecommerce.ordersToProducts.find(
@@ -155,6 +164,21 @@ export class Service {
 
     if (!ordersToProducts?.length) {
       throw new Error("Not Found error. No orders to products found");
+    }
+    if (guardedSelection) {
+      for (const order of requestedOrders) {
+        const primaryIds = ordersToProducts
+          .filter((line) => line.orderId === order.id && !line.parentLineId)
+          .map((line) => line.id);
+        if (
+          !order.lineIds?.length ||
+          new Set(order.lineIds).size !== primaryIds.length ||
+          order.lineIds.length !== primaryIds.length ||
+          order.lineIds.some((lineId) => !primaryIds.includes(lineId))
+        ) {
+          throw new Error("Conflict error. The selected cart items changed");
+        }
+      }
     }
     if (
       ecommerceModuleOrders.some(
@@ -195,6 +219,7 @@ export class Service {
         orderIds: ecommerceModuleOrders.map((order) => order.id),
         resumeExisting: true,
         comment: props.comment,
+        ...(guardedSelection ? { expectedLines: ordersToProducts } : {}),
       });
       if (existing.invoices) {
         const trustedIntent =

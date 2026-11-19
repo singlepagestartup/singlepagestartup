@@ -7,11 +7,13 @@ import {
 } from "@sps/crm/models/funnel/sdk/model";
 import { supportsNestedWork } from "@sps/shared-third-parties";
 import { CUSTOMER_WORK_OFFER_CHOICE_REQUIRED } from "@sps/shared-utils";
+import { getHttpErrorType } from "@sps/backend-utils";
 import Decimal from "decimal.js";
 import type { IModel as SocialMessage } from "@sps/social/models/message/sdk/model";
 import type { IModel as SocialProfile } from "@sps/social/models/profile/sdk/model";
 import { selectRetailOffer } from "@sps/ecommerce/relations/stores-to-products/sdk/model";
 import type {
+  ICartDiscussion,
   ICustomerWorkCartOffer,
   ICustomerWorkMessage,
   ICustomerWorkOfferAvailability,
@@ -44,7 +46,11 @@ import { criteria } from "./utils";
 
 type TOpenCustomerWork = Extract<
   TCustomerWorkCommand,
-  { operation: "ask" | "add" }
+  { operation: "ask" | "add" | "open-cart-discussion" }
+>;
+type TOpenCartDiscussion = Extract<
+  TOpenCustomerWork,
+  { operation: "open-cart-discussion" }
 >;
 type TConversationCommand = Extract<
   TCustomerWorkCommand,
@@ -115,7 +121,11 @@ export class Service {
     customerId: string,
     command: TCustomerWorkCommand,
   ): Promise<ICustomerWorkView> {
-    if (command.operation === "ask" || command.operation === "add") {
+    if (
+      command.operation === "ask" ||
+      command.operation === "add" ||
+      command.operation === "open-cart-discussion"
+    ) {
       return this.open(customerId, command);
     }
     if (command.operation === "confirm-cart") {
@@ -176,6 +186,29 @@ export class Service {
     }
     const offer = selectRetailOffer({ ...scope, product, offers });
     return offer ? { offer, product } : null;
+  }
+
+  async canOpenCartDiscussion(scope: ICustomerWorkOfferScope) {
+    const selection = await this.selection(scope);
+    if (
+      selection?.product.kind !== "service" ||
+      selection.product.type !== "one_off" ||
+      selection.offer.settings.requiresResultAcceptance !== true
+    ) {
+      return false;
+    }
+    try {
+      const publication = await this.crm.funnel.resolve({
+        ...scope,
+        kind: "individual-service",
+      });
+      return Boolean(publication);
+    } catch (error) {
+      if (getHttpErrorType(error).status === 409) {
+        return false;
+      }
+      throw error;
+    }
   }
 
   async openFromForm(input: {
@@ -280,6 +313,38 @@ export class Service {
       return null;
     }
     return this.view(customerId, { storeId, taskId: task.id });
+  }
+
+  async discussionForOrder(input: {
+    customerId: string;
+    orderId: string;
+    taskId?: string;
+  }): Promise<ICartDiscussion | undefined> {
+    const { customerId, orderId, taskId } = input;
+    const tasks = await this.crm.task.find({
+      params: {
+        ...criteria({
+          customerId,
+          orderId,
+          ...(taskId ? { id: taskId } : {}),
+        }).params,
+        limit: 2,
+      },
+    });
+    if (tasks.length !== 1) {
+      return;
+    }
+    const [task] = tasks;
+    const channel = await this.findChannel(task.id);
+    if (!channel) {
+      return;
+    }
+    return {
+      storeId: task.storeId,
+      taskId: task.id,
+      threadId: channel.threadId,
+      chatId: channel.chatId,
+    };
   }
 
   async closeRemovedOrder(input: { customerId: string; orderId: string }) {
@@ -636,6 +701,20 @@ export class Service {
           throw new Error("Not Found error. The selected offer is unavailable");
         }
         const { product, offer } = selection;
+        const adoption = input.operation === "open-cart-discussion";
+        if (
+          adoption &&
+          (product.kind !== "service" ||
+            product.type !== "one_off" ||
+            offer.settings.requiresResultAcceptance !== true)
+        ) {
+          throw new Error(
+            "Conflict error. The selected offer does not use payment after acceptance",
+          );
+        }
+        if (adoption) {
+          await this.assertCartForDiscussion(customerId, input);
+        }
         const openingKey = `store-work:${customerId}:${input.operationKey}`;
         const [prior] = await this.crm.task.find(
           criteria({ storeId: input.storeId, openingKey }),
@@ -647,6 +726,7 @@ export class Service {
           });
           if (
             prior.offerId !== input.offerId ||
+            (adoption && prior.orderId !== input.orderId) ||
             (input.operation === "ask") !==
               (publication.kind === "consultation")
           ) {
@@ -658,6 +738,15 @@ export class Service {
             storeId: input.storeId,
             taskId: prior.id,
           });
+        }
+        if (adoption) {
+          const existing = await this.cartDiscussionTask(customerId, input);
+          if (existing) {
+            return this.view(customerId, {
+              storeId: existing.storeId,
+              taskId: existing.id,
+            });
+          }
         }
         const isCustomService = product.kind === "service";
         if (
@@ -682,18 +771,19 @@ export class Service {
           );
         }
 
-        let orderId: string | undefined;
+        let orderId = adoption ? input.orderId : undefined;
         let consultationTaskId: string | undefined;
+        if (
+          input.operation !== "ask" &&
+          (await this.subject.ecommerceModuleProductInitialGrantIncludes({
+            productId: input.productId,
+          }))
+        ) {
+          throw new Error(
+            "Permission error. Initial grants use authentication bootstrap",
+          );
+        }
         if (input.operation === "add") {
-          if (
-            await this.subject.ecommerceModuleProductInitialGrantIncludes({
-              productId: input.productId,
-            })
-          ) {
-            throw new Error(
-              "Permission error. Initial grants use authentication bootstrap",
-            );
-          }
           if (input.consultationTaskId) {
             const consultation = await this.taskForCustomer(customerId, {
               storeId: input.storeId,
@@ -779,6 +869,89 @@ export class Service {
         });
       },
     );
+  }
+
+  private async assertCartForDiscussion(
+    customerId: string,
+    input: TOpenCartDiscussion,
+  ) {
+    const { ecommerce } = this.subject.modules;
+    const { orderId, offerId, productId, storeId } = input;
+    await ecommerce.order.lockForLifecycle({ id: orderId });
+    const owners =
+      await this.subject.module.subjectsToEcommerceModuleOrders.find(
+        criteria({ ecommerceModuleOrderId: orderId }),
+      );
+    if (
+      !owners.length ||
+      owners.some((owner) => owner.subjectId !== customerId)
+    ) {
+      throw new Error(
+        "Not Found error. The selected cart order is unavailable",
+      );
+    }
+    const order = await ecommerce.order.findById({ id: orderId });
+    if (
+      order?.type !== "cart" ||
+      order.status !== "new" ||
+      order.subscriptionSourceOrderId
+    ) {
+      throw new Error("Conflict error. This order is no longer an open cart");
+    }
+    const [lines, stores, payments] = await Promise.all([
+      ecommerce.ordersToProducts.find(criteria({ orderId })),
+      ecommerce.storesToOrders.find(criteria({ orderId })),
+      ecommerce.order.ordersToBillingModulePaymentIntents.find(
+        criteria({ orderId }),
+      ),
+    ]);
+    const primary = lines.filter((line) => !line.parentLineId);
+    if (
+      primary.length !== 1 ||
+      primary[0].productId !== productId ||
+      primary[0].offerId !== offerId ||
+      stores.length !== 1 ||
+      stores[0].storeId !== storeId
+    ) {
+      throw new Error("Conflict error. The saved store offer changed");
+    }
+    if (payments.length) {
+      throw new Error(
+        "Conflict error. This order already has a payment attempt",
+      );
+    }
+  }
+
+  private async cartDiscussionTask(
+    customerId: string,
+    input: TOpenCartDiscussion,
+  ) {
+    const tasks = await this.crm.task.find(
+      criteria({ orderId: input.orderId }),
+    );
+    const work = await this.subject.modules.ecommerce.order.work.findByOrder(
+      input.orderId,
+    );
+    if (!tasks.length && !work) {
+      return null;
+    }
+    const [task] = tasks;
+    if (
+      tasks.length !== 1 ||
+      task.customerId !== customerId ||
+      task.storeId !== input.storeId ||
+      task.offerId !== input.offerId ||
+      task.productId !== input.productId ||
+      work?.taskId !== task.id ||
+      work.kind !== "individual-service" ||
+      work.customerId !== customerId ||
+      work.storeId !== input.storeId
+    ) {
+      throw new Error(
+        "Conflict error. This order already has an assigned workflow",
+      );
+    }
+    return task;
   }
 
   private async cartTaskForConsultation(consultation: CrmTask) {
@@ -1259,22 +1432,30 @@ export class Service {
   }
 
   private async channel(taskId: string) {
-    const [thread] = await this.social.threadsToCrmModuleTasks.find(
+    const channel = await this.findChannel(taskId);
+    if (!channel) {
+      throw new Error(
+        "Not Found error. No private conversation is linked to this task",
+      );
+    }
+    return channel;
+  }
+
+  private async findChannel(taskId: string) {
+    const threads = await this.social.threadsToCrmModuleTasks.find(
       criteria({ crmModuleTaskId: taskId }),
     );
-    if (!thread) {
-      throw new Error(
-        "Not Found error. No private thread is linked to this task",
-      );
+    if (threads.length !== 1) {
+      return null;
     }
-    const [chat] = await this.social.chatsToThreads.find(
+    const [thread] = threads;
+    const chats = await this.social.chatsToThreads.find(
       criteria({ threadId: thread.threadId }),
     );
-    if (!chat) {
-      throw new Error(
-        "Not Found error. No private chat is linked to this thread",
-      );
+    if (chats.length !== 1) {
+      return null;
     }
+    const [chat] = chats;
     return {
       id: thread.id,
       threadId: thread.threadId,

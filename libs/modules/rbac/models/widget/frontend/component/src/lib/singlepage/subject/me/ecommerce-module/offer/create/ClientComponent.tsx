@@ -4,6 +4,7 @@ import { api as subjectApi } from "@sps/rbac/models/subject/sdk/client";
 import { catalogCreateOfferSchema } from "@sps/rbac/models/subject/sdk/model";
 import type { IComponentPropsExtended } from "./interface";
 import { Editor } from "./Editor";
+import { PaymentTiming } from "./PaymentTiming";
 
 const field =
   "min-h-11 w-full min-w-0 rounded-xl border border-input bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:bg-muted disabled:text-muted-foreground";
@@ -17,6 +18,9 @@ export function Component(props: IComponentPropsExtended) {
   });
   const create = subjectApi.ecommerceModuleOfferCreate();
   const [mode, setMode] = useState<"new" | "existing">("new");
+  const [kind, setKind] = useState("physical");
+  const [type, setType] = useState("one_off");
+  const [productId, setProductId] = useState("");
   const [storeSelection, setStoreSelection] = useState("");
   const [unlimited, setUnlimited] = useState(false);
   const [message, setMessage] = useState("");
@@ -66,6 +70,11 @@ export function Component(props: IComponentPropsExtended) {
     );
   }
 
+  const selectedProduct =
+    mode === "new"
+      ? { kind, type }
+      : context.data.products.find((product) => product.id === productId);
+
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const values = new FormData(event.currentTarget);
@@ -106,7 +115,13 @@ export function Component(props: IComponentPropsExtended) {
       prices,
       stockQuantity: unlimited ? null : value("stock"),
       configurationKey: value("configurationKey"),
-      settings: { packages },
+      settings: {
+        packages,
+        ...(value("paymentTiming") === "after-acceptance" && {
+          standalone: true,
+          requiresResultAcceptance: true,
+        }),
+      },
     });
     setMessage("");
     setError("");
@@ -185,7 +200,13 @@ export function Component(props: IComponentPropsExtended) {
           {mode === "existing" ? (
             <label className={label}>
               Shared product
-              <select className={field} name="productId" required>
+              <select
+                className={field}
+                name="productId"
+                required
+                value={productId}
+                onChange={(event) => setProductId(event.target.value)}
+              >
                 <option value="">Choose a product</option>
                 {context.data.products.map((product) => (
                   <option key={product.id} value={product.id}>
@@ -209,14 +230,20 @@ export function Component(props: IComponentPropsExtended) {
                 <input
                   name="kind"
                   className={field}
-                  defaultValue="physical"
+                  value={kind}
+                  onChange={(event) => setKind(event.target.value)}
                   placeholder="physical, digital, service, tax, commission…"
                   required
                 />
               </label>
               <label className={label}>
                 Billing period
-                <select name="type" className={field}>
+                <select
+                  name="type"
+                  className={field}
+                  value={type}
+                  onChange={(event) => setType(event.target.value)}
+                >
                   <option value="one_off">One-off</option>
                   <option value="subscription">Subscription</option>
                 </select>
@@ -236,6 +263,10 @@ export function Component(props: IComponentPropsExtended) {
               </label>
             </div>
           )}
+          {selectedProduct?.kind === "service" &&
+            selectedProduct.type === "one_off" && (
+              <PaymentTiming key={mode === "new" ? "new" : productId} />
+            )}
           <label className={label}>
             Configuration key
             <input

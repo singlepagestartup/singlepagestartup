@@ -4,10 +4,8 @@ import { HTTPException } from "hono/http-exception";
 import { authorization, getHttpErrorType, verifyJwt } from "@sps/backend-utils";
 import { Service } from "../../../../service";
 import { withConsistencySnapshot } from "@sps/shared-backend-api";
-import type {
-  IModel as IEcommerceModuleOrder,
-  ICartDetails,
-} from "@sps/ecommerce/models/order/sdk/model";
+import type { IModel as IEcommerceModuleOrder } from "@sps/ecommerce/models/order/sdk/model";
+import type { ISubjectCartDetails } from "@sps/rbac/models/subject/sdk/model";
 
 export class Handler {
   service: Service;
@@ -102,7 +100,7 @@ export class Handler {
         );
         if (includeCartDetails) {
           const carts: (IEcommerceModuleOrder & {
-            cartDetails: ICartDetails & { storeIds: string[] };
+            cartDetails: ISubjectCartDetails;
           })[] = [];
           for (const order of ownedOrders) {
             // Defense against OR filters: private cart expansion never includes historical orders.

@@ -61,6 +61,8 @@ export function action(props: IProps) {
           ...(props.params?.includeCartDetails
             ? [
                 "ecommerce.orders-to-products",
+                "ecommerce.order-works",
+                "ecommerce.stores-to-products",
                 "rbac.subjects-to-ecommerce-module-orders",
                 "ecommerce.products",
                 "ecommerce.products-to-attributes",

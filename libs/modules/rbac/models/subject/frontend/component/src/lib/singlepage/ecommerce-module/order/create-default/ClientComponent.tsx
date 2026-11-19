@@ -1115,7 +1115,7 @@ export function Component(props: IComponentPropsExtended) {
           {error}
         </p>
       )}
-      {work && (
+      {work && !props.hideConfiguration && (
         <Link
           className="inline-flex min-h-11 items-center underline"
           href={`/${props.language}/social/chats/${work.chatId}/threads/${work.threadId}`}

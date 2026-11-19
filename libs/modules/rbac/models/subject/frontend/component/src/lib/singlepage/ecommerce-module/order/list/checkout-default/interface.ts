@@ -17,6 +17,7 @@ export interface IComponentProps extends IParentComponentProps<
   typeof variant
 > {
   language: string;
+  onDiscussionOpen?: () => void;
   onSelectionPendingChange?: (pending: boolean) => void;
 }
 
@@ -30,6 +31,10 @@ export interface IRowProps {
   subject: IModel;
   ecommerceModuleOrder: ISubjectSdkResult["IEcommerceModuleOrderListResult"][number];
   language: string;
+  selected?: boolean;
+  selectionDisabled?: boolean;
+  onCartItemSelectionChange?: (orderId: string, selected: boolean) => void;
+  children?: ReactNode;
   onOrderSelectionStateChange?: (
     orderId: string,
     lineId: string,
@@ -40,6 +45,15 @@ export interface IRowProps {
     lineId: string,
     pending: boolean,
   ) => void;
+}
+
+export interface IDiscussionActionProps {
+  subjectId: string;
+  ecommerceModuleOrder: IRowProps["ecommerceModuleOrder"];
+  language: string;
+  showTitle?: boolean;
+  buttonVariant?: "primary" | "outline";
+  onDiscussionOpen?: () => void;
 }
 
 export interface IQuantityProps {

@@ -1049,8 +1049,12 @@ paths:
               properties:
                 data:
                   type: string
-                  description: JSON string
-                  example: '{"email": "user@example.com", "provider": "stripe", "ecommerceModule": {"orders": [{"id": "24de3713-5ad4-45f3-82e2-bcc631b9cd93"}]}}'
+                  description: >-
+                    Serialized JSON with email, provider and ecommerceModule.orders.
+                    An order can include lineIds with all its primary line IDs.
+                    If any order specifies lineIds, every selected order must include them.
+                    The checkout includes each selected order's attached services.
+                  example: '{"email": "user@example.com", "provider": "stripe", "ecommerceModule": {"orders": [{"id": "24de3713-5ad4-45f3-82e2-bcc631b9cd93", "lineIds": ["24de3713-5ad4-45f3-82e2-bcc631b9cd94"]}]}}'
               required:
                 - data
       responses:
@@ -2260,6 +2264,7 @@ paths:
     post:
       tags: [rbac-subject]
       summary: Start a conversation, send a message or update task consent and customer memory
+      description: The open-cart-discussion operation attaches a task and thread to an existing order using orderId, productId, offerId, storeId and operationKey.
       responses:
         "200": { description: Updated task and thread }
         "409": { description: Operation key conflicts with an earlier request }
