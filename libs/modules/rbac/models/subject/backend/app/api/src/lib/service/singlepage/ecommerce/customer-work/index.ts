@@ -7,7 +7,11 @@ import {
 } from "@sps/crm/models/funnel/sdk/model";
 import { supportsNestedWork } from "@sps/shared-third-parties";
 import { CUSTOMER_WORK_OFFER_CHOICE_REQUIRED } from "@sps/shared-utils";
-import { assertSingleUnitPerOrder, getHttpErrorType } from "@sps/backend-utils";
+import {
+  assertSingleUnitPerOrder,
+  getHttpErrorType,
+  logger,
+} from "@sps/backend-utils";
 import Decimal from "decimal.js";
 import type { IModel as SocialMessage } from "@sps/social/models/message/sdk/model";
 import type { IModel as SocialProfile } from "@sps/social/models/profile/sdk/model";
@@ -43,6 +47,7 @@ import {
 } from "./media";
 import { Service as CustomerDelivery } from "./delivery";
 import { Service as CustomerCart, type IStoredProposal } from "./cart";
+import { Service as OrderSummary } from "./order-summary";
 import { criteria } from "./utils";
 
 type TOpenCustomerWork = Extract<
@@ -494,7 +499,28 @@ export class Service {
 
   async viewForThread(customerId: string, threadId: string) {
     const task = await this.taskForThread(customerId, threadId);
-    return this.view(customerId, { storeId: task.storeId, taskId: task.id });
+    const work = await this.view(customerId, {
+      storeId: task.storeId,
+      taskId: task.id,
+    });
+    if (!work.orderId) {
+      return work;
+    }
+    try {
+      const orderSummary = await new OrderSummary(this.subject).find({
+        subjectId: customerId,
+        orderId: work.orderId,
+        productId: task.productId,
+        offerId: work.offerId,
+      });
+      return { ...work, orderSummary };
+    } catch (error) {
+      logger.warn("Could not load the customer conversation order summary", {
+        orderId: work.orderId,
+        status: getHttpErrorType(error).status,
+      });
+      return work;
+    }
   }
 
   async attachment(input: {

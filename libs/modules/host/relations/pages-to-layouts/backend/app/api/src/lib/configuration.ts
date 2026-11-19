@@ -1,4 +1,7 @@
-import { Configuration as ParentConfiguration } from "@sps/shared-backend-api";
+import {
+  Configuration as ParentConfiguration,
+  type ISeedResult,
+} from "@sps/shared-backend-api";
 import {
   Table,
   insertSchema,
@@ -6,6 +9,21 @@ import {
   dataDirectory,
 } from "@sps/host/relations/pages-to-layouts/backend/repository/database";
 import { injectable } from "inversify";
+
+function resolveModelId(
+  seeds: ISeedResult[],
+  name: "page" | "layout",
+  snapshotId: string,
+): string {
+  const modelSeed = seeds.find(
+    (seed) =>
+      seed.name === name && seed.type === "model" && seed.module === "host",
+  );
+  return (
+    modelSeed?.seeds.find(({ dump }) => dump.id === snapshotId)?.new?.id ??
+    snapshotId
+  );
+}
 
 @injectable()
 export class Configuration extends ParentConfiguration {
@@ -28,76 +46,59 @@ export class Configuration extends ParentConfiguration {
           type: "relation",
           filters: [
             {
-              column: "pageId",
-              method: "eq",
-              value: (data) => {
-                const pageSeed = data.seeds.find(
-                  (seed) =>
-                    seed.name === "page" &&
-                    seed.type === "model" &&
-                    seed.module === "host",
+              column: "id",
+              method: "inArray",
+              value: ({ seeds, entity }) => {
+                const existing: (typeof Table)["$inferSelect"][] =
+                  entity.db ?? [];
+                const { id, pageId, layoutId, createdAt, variant, orderIndex } =
+                  entity.dump;
+                const targetPageId = resolveModelId(seeds, "page", pageId);
+                const pageLinks = existing.filter(
+                  (link) => link.pageId === targetPageId,
                 );
+                if (pageLinks.some((link) => link.id === id)) {
+                  return [id];
+                }
 
-                const pageEntity = pageSeed?.seeds.find(
-                  (seed) => seed.dump.id === data.entity.dump.pageId,
+                const targetLayoutId = resolveModelId(
+                  seeds,
+                  "layout",
+                  layoutId,
                 );
+                const matches = pageLinks
+                  .filter((link) => link.layoutId === targetLayoutId)
+                  .map((link) => link.id);
+                if (matches.length) {
+                  return matches;
+                }
 
-                return pageEntity?.new?.id || data.entity.dump.pageId;
-              },
-            },
-            {
-              column: "layoutId",
-              method: "eq",
-              value: (data) => {
-                const layoutSeed = data.seeds.find(
-                  (seed) =>
-                    seed.name === "layout" &&
-                    seed.type === "model" &&
-                    seed.module === "host",
+                // Seeded links retain their creation time and slot when their IDs are remapped.
+                const timestamp = new Date(createdAt).getTime();
+                const priorLinks = pageLinks.filter(
+                  (link) =>
+                    link.createdAt.getTime() === timestamp &&
+                    link.variant === variant &&
+                    link.orderIndex === orderIndex,
                 );
+                if (priorLinks.length === 1) {
+                  return [priorLinks[0].id];
+                }
 
-                const layoutEntity = layoutSeed?.seeds.find(
-                  (seed) => seed.dump.id === data.entity.dump.layoutId,
-                );
-
-                return layoutEntity?.new?.id || data.entity.dump.layoutId;
+                return [id];
               },
             },
           ],
           transformers: [
             {
               field: "pageId",
-              transform: (data) => {
-                const relationEntites = data.seeds
-                  .find(
-                    (seed) =>
-                      seed.name === "page" &&
-                      seed.type === "model" &&
-                      seed.module === "host",
-                  )
-                  ?.seeds?.filter(
-                    (seed) => seed.dump.id === data.entity.dump.pageId,
-                  );
-
-                return relationEntites?.[0].new.id;
-              },
+              transform: ({ seeds, entity }) =>
+                resolveModelId(seeds, "page", entity.dump.pageId),
             },
             {
               field: "layoutId",
-              transform: (data) => {
-                const relationEntites = data.seeds
-                  .find(
-                    (seed) =>
-                      seed.name === "layout" &&
-                      seed.type === "model" &&
-                      seed.module === "host",
-                  )
-                  ?.seeds?.filter(
-                    (seed) => seed.dump.id === data.entity.dump.layoutId,
-                  );
-
-                return relationEntites?.[0].new.id;
-              },
+              transform: ({ seeds, entity }) =>
+                resolveModelId(seeds, "layout", entity.dump.layoutId),
             },
           ],
         },

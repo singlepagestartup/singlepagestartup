@@ -20,7 +20,10 @@ export function ProfileSidebarSheet(props: ProfileSidebarSheetProps) {
   const ru = props.language === "ru";
   return (
     <Sheet open={props.isOpen} onOpenChange={props.onOpenChange}>
-      <SheetContent className="flex w-full flex-col p-0 sm:max-w-md">
+      <SheetContent
+        className="flex w-full flex-col p-0 sm:max-w-md"
+        closeLabel={ru ? "Закрыть профиль" : "Close profile"}
+      >
         <SheetHeader className="sr-only">
           <SheetTitle>{ru ? "Данные профиля" : "Profile details"}</SheetTitle>
           <SheetDescription>

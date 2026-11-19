@@ -8,7 +8,7 @@
  * Then: /learn, @knowledge, profile skills, and profile knowledge work when an AI profile is present.
  */
 
-import { fireEvent, screen, waitFor } from "@testing-library/react";
+import { fireEvent, screen, waitFor, within } from "@testing-library/react";
 import {
   mockChatComponentState,
   mockCustomerWork,
@@ -62,6 +62,40 @@ function aiReactionRequest(
 
 describe("Social thread context", () => {
   beforeEach(() => resetChatComponentMocks());
+
+  it.each([
+    {
+      variant: "default",
+      language: "en",
+      name: "Message",
+      hint: "Enter to send. Shift+Enter for a new line.",
+    },
+    {
+      variant: "customer-work",
+      language: "ru",
+      name: "Сообщение",
+      hint: "Enter — отправить. Shift+Enter — новая строка.",
+    },
+  ] as const)(
+    "puts the keyboard hints in the $variant composer placeholder",
+    async ({ variant, language, name, hint }) => {
+      renderComponent(variant, { language });
+
+      const textarea = screen.getByRole("textbox", { name, description: hint });
+      expect(textarea.getAttribute("placeholder")).toBe(hint);
+      expect(screen.getByText(hint).classList).toContain("sr-only");
+      fireEvent.change(textarea, { target: { value: "Hello" } });
+
+      expect(
+        fireEvent.keyDown(textarea, { key: "Enter", shiftKey: true }),
+      ).toBe(true);
+      expect(mockMessageCreateMutate).not.toHaveBeenCalled();
+      fireEvent.keyDown(textarea, { key: "Enter" });
+      await waitFor(() =>
+        expect(mockMessageCreateMutate).toHaveBeenCalledTimes(1),
+      );
+    },
+  );
 
   it("opens older document threads as conversations", () => {
     renderComponent("ai-chat", {
@@ -125,8 +159,8 @@ describe("Social thread context", () => {
     fireEvent.click(screen.getByRole("button", { name: "Show right sidebar" }));
     expect(
       screen.getByRole("link", { name: "Cover design" }).getAttribute("href"),
-    ).toBe("/en/ecommerce/products/cover?offer=offer-1");
-    expect(screen.getByRole("link", { name: "View order" })).toBeTruthy();
+    ).toBe("/en/ecommerce/products/cover?offer=offer-1#order-order-1");
+    expect(screen.queryByRole("link", { name: "View order" })).toBeNull();
     expect(screen.getByRole("heading", { name: "Manager" })).toBeTruthy();
     expect(screen.queryByRole("heading", { name: "Private notes" })).toBeNull();
   });
@@ -204,7 +238,7 @@ describe("Given: OpenRouter chat profile sidebar", () => {
   it("When: typing slash in a Knowledge chat Then: /learn can be selected", () => {
     renderComponent("knowledge");
 
-    const textarea = screen.getByPlaceholderText("Write a message...");
+    const textarea = screen.getByRole("textbox", { name: "Message" });
 
     fireEvent.change(textarea, {
       target: {
@@ -230,7 +264,7 @@ describe("Given: OpenRouter chat profile sidebar", () => {
   it("When: selecting a slash command with arrows and Tab Then: it fills the composer", () => {
     renderComponent("knowledge");
 
-    const textarea = screen.getByPlaceholderText("Write a message...");
+    const textarea = screen.getByRole("textbox", { name: "Message" });
 
     fireEvent.change(textarea, {
       target: {
@@ -272,7 +306,7 @@ describe("Given: OpenRouter chat profile sidebar", () => {
   it("When: typing slash after @knowledge Then: slash commands remain available", () => {
     renderComponent("knowledge");
 
-    const textarea = screen.getByPlaceholderText("Write a message...");
+    const textarea = screen.getByRole("textbox", { name: "Message" });
 
     fireEvent.change(textarea, {
       target: {
@@ -300,7 +334,7 @@ describe("Given: OpenRouter chat profile sidebar", () => {
   it("When: typing slash in a non-AI default chat Then: Knowledge commands are hidden", () => {
     renderComponent("default");
 
-    fireEvent.change(screen.getByPlaceholderText("Write a message..."), {
+    fireEvent.change(screen.getByRole("textbox", { name: "Message" }), {
       target: {
         value: "/",
       },
@@ -339,7 +373,7 @@ describe("Given: OpenRouter chat profile sidebar", () => {
       artificialIntelligenceOpponentProfile: aiOpponentProfile,
     });
 
-    const textarea = screen.getByPlaceholderText("Write a message...");
+    const textarea = screen.getByRole("textbox", { name: "Message" });
 
     fireEvent.change(textarea, {
       target: {
@@ -399,7 +433,7 @@ describe("Given: OpenRouter chat profile sidebar", () => {
    */
   it("When: submitting with an attachment Then: the existing message flow is preserved", async () => {
     const { container } = renderComponent("knowledge");
-    const textarea = screen.getByPlaceholderText("Write a message...");
+    const textarea = screen.getByRole("textbox", { name: "Message" });
     const submitButton = screen.getByLabelText("Send message");
     const fileInput = container.querySelector("input[type=file]");
     const file = new File(["Knowledge notes"], "notes.md", {
@@ -470,7 +504,7 @@ describe("Given: OpenRouter chat profile sidebar", () => {
    */
   it("When: adding same-named files separately Then: both attachments are retained", async () => {
     const { container } = renderComponent("knowledge");
-    const textarea = screen.getByPlaceholderText("Write a message...");
+    const textarea = screen.getByRole("textbox", { name: "Message" });
     const submitButton = screen.getByLabelText("Send message");
     const fileInput = container.querySelector("input[type=file]");
     const firstFile = new File(["First transcript"], "content.txt", {
@@ -557,7 +591,7 @@ describe("Given: OpenRouter chat profile sidebar", () => {
 
     try {
       const { container } = renderComponent("knowledge");
-      const textarea = screen.getByPlaceholderText("Write a message...");
+      const textarea = screen.getByRole("textbox", { name: "Message" });
       const submitButton = screen.getByLabelText("Send message");
       const fileInput = container.querySelector("input[type=file]");
       const file = new File(["Knowledge notes"], "notes.md", {
@@ -646,7 +680,7 @@ describe("Given: OpenRouter chat profile sidebar", () => {
   it("When: creating a @knowledge /learn message Then: it persists Knowledge learning intent", async () => {
     renderComponent("knowledge");
 
-    const textarea = screen.getByPlaceholderText("Write a message...");
+    const textarea = screen.getByRole("textbox", { name: "Message" });
     fireEvent.change(textarea, {
       target: {
         value: "@knowledge /learn Stored context",
@@ -683,7 +717,7 @@ describe("Given: OpenRouter chat profile sidebar", () => {
   it("When: an AI message is submitted Then: the frontend performs only create-message", async () => {
     renderComponent("knowledge");
 
-    const textarea = screen.getByPlaceholderText("Write a message...");
+    const textarea = screen.getByRole("textbox", { name: "Message" });
     fireEvent.change(textarea, {
       target: {
         value: "What should we answer?",
@@ -750,7 +784,7 @@ describe("Given: OpenRouter chat profile sidebar", () => {
     });
     fireEvent.click(await screen.findByText("High"));
 
-    const textarea = screen.getByPlaceholderText("Write a message...");
+    const textarea = screen.getByRole("textbox", { name: "Message" });
     fireEvent.change(textarea, {
       target: {
         value: "What should we answer?",
@@ -879,7 +913,7 @@ describe("Given: OpenRouter chat profile sidebar", () => {
       expect(screen.queryByLabelText("Select OpenRouter thinking")).toBeNull();
     });
 
-    const textarea = screen.getByPlaceholderText("Write a message...");
+    const textarea = screen.getByRole("textbox", { name: "Message" });
     fireEvent.change(textarea, {
       target: {
         value: "What should we answer?",
@@ -975,7 +1009,7 @@ describe("Given: OpenRouter chat profile sidebar", () => {
 
     renderComponent("knowledge");
 
-    const textarea = screen.getByPlaceholderText("Write a message...");
+    const textarea = screen.getByRole("textbox", { name: "Message" });
     fireEvent.change(textarea, {
       target: {
         value: "/br",
@@ -1047,7 +1081,7 @@ describe("Given: OpenRouter chat profile sidebar", () => {
 
     renderComponent("knowledge");
 
-    const textarea = screen.getByPlaceholderText("Write a message...");
+    const textarea = screen.getByRole("textbox", { name: "Message" });
     fireEvent.change(textarea, {
       target: {
         value: "/br",
@@ -1109,7 +1143,7 @@ describe("Given: OpenRouter chat profile sidebar", () => {
 
     renderComponent("knowledge");
 
-    const textarea = screen.getByPlaceholderText("Write a message...");
+    const textarea = screen.getByRole("textbox", { name: "Message" });
     fireEvent.change(textarea, {
       target: {
         value: "/",
@@ -1171,7 +1205,7 @@ describe("Given: OpenRouter chat profile sidebar", () => {
       artificialIntelligenceOpponentProfile: aiOpponentProfile,
     });
 
-    fireEvent.change(screen.getByPlaceholderText("Write a message..."), {
+    fireEvent.change(screen.getByRole("textbox", { name: "Message" }), {
       target: {
         value: "/",
       },
@@ -1196,7 +1230,7 @@ describe("Given: OpenRouter chat profile sidebar", () => {
 
     renderComponent("knowledge");
 
-    const textarea = screen.getByPlaceholderText("Write a message...");
+    const textarea = screen.getByRole("textbox", { name: "Message" });
     fireEvent.change(textarea, {
       target: {
         value: "@kn",
@@ -1266,7 +1300,7 @@ describe("Given: OpenRouter chat profile sidebar", () => {
 
     renderComponent("knowledge");
 
-    const textarea = screen.getByPlaceholderText("Write a message...");
+    const textarea = screen.getByRole("textbox", { name: "Message" });
     fireEvent.change(textarea, {
       target: {
         value: "@kn",
@@ -1436,7 +1470,7 @@ describe("Given: OpenRouter chat profile sidebar", () => {
 
     renderComponent("knowledge");
 
-    fireEvent.change(screen.getByPlaceholderText("Write a message..."), {
+    fireEvent.change(screen.getByRole("textbox", { name: "Message" }), {
       target: {
         value: "/br",
       },
@@ -1468,7 +1502,7 @@ describe("Given: OpenRouter chat profile sidebar", () => {
 
     renderComponent("default");
 
-    fireEvent.change(screen.getByPlaceholderText("Write a message..."), {
+    fireEvent.change(screen.getByRole("textbox", { name: "Message" }), {
       target: {
         value: "/learn Stored context",
       },
@@ -1505,7 +1539,7 @@ describe("Given: OpenRouter chat profile sidebar", () => {
       artificialIntelligenceOpponentProfile: aiOpponentProfile,
     });
 
-    fireEvent.change(screen.getByPlaceholderText("Write a message..."), {
+    fireEvent.change(screen.getByRole("textbox", { name: "Message" }), {
       target: {
         value: "@knowledge /learn Stored context",
       },
@@ -1633,6 +1667,57 @@ describe("Given: OpenRouter chat profile sidebar", () => {
     expect(screen.getByText("Chat GPT 1")).toBeTruthy();
     expect(screen.getByText("YouTube Description")).toBeTruthy();
     expect(screen.getAllByText("Policy").length).toBeGreaterThan(0);
+    expect(
+      screen.queryByRole("button", { name: "Close profile sidebar" }),
+    ).toBeNull();
+
+    fireEvent.click(screen.getByRole("button", { name: "Hide right sidebar" }));
+    fireEvent.click(screen.getByRole("button", { name: "Show right sidebar" }));
+    const context = screen.getByRole("complementary", { name: "Context" });
+    expect(within(context).getByRole("link", { name: "Cover" })).toBeTruthy();
+    expect(
+      within(context).queryByRole("heading", { name: "Chat GPT 1" }),
+    ).toBeNull();
+  });
+
+  it("keeps the profile sheet accessible on mobile", () => {
+    const matchMedia = window.matchMedia;
+    window.matchMedia = jest.fn((query) => ({
+      matches: query === "(width < 80rem)",
+    })) as typeof window.matchMedia;
+    try {
+      mockChatComponentState.profiles = [aiOpponentProfile];
+      renderComponent("knowledge", {
+        socialModuleMessagesAndActionsQuery: [
+          {
+            type: "message",
+            data: {
+              id: "message-1",
+              authorProfileIds: [aiOpponentProfile.id],
+              description: "Hello",
+              createdAt: new Date("2026-01-01T10:00:00.000Z"),
+            },
+          },
+        ],
+      });
+      fireEvent.click(
+        screen.getByRole("button", { name: aiOpponentProfile.slug }),
+      );
+      const sheet = screen.getByRole("dialog", { name: "Profile details" });
+      expect(
+        within(sheet).getByRole("heading", {
+          name: aiOpponentProfile.adminTitle,
+        }),
+      ).toBeTruthy();
+      fireEvent.click(
+        within(sheet).getByRole("button", { name: "Close profile" }),
+      );
+      expect(
+        screen.queryByRole("dialog", { name: "Profile details" }),
+      ).toBeNull();
+    } finally {
+      window.matchMedia = matchMedia;
+    }
   });
 
   /**

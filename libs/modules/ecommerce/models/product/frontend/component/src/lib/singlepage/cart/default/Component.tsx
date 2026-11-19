@@ -11,11 +11,13 @@ import { TipTap } from "@sps/shared-ui-shadcn";
 export const Component = memo(function Component(
   props: IComponentPropsExtended,
 ) {
-  const href = saveLanguageContext(
-    `/ecommerce/products/${props.data.slug}`,
-    props.language,
-    internationalization.languages,
-  );
+  const href =
+    props.productHref ??
+    saveLanguageContext(
+      `/ecommerce/products/${props.data.slug}`,
+      props.language,
+      internationalization.languages,
+    );
   return (
     <article
       data-module="ecommerce"

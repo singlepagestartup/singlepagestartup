@@ -51,6 +51,10 @@ jest.mock("@sps/social/models/skill/frontend/component", () => {
     },
   };
 });
+jest.mock("@sps/ecommerce/models/product/frontend/component", () => ({
+  Component: () => null,
+}));
+
 jest.mock("@sps/social/models/action/frontend/component", () => ({
   Component: jest.requireActual(
     "@sps/social/models/action/frontend/component/src/lib/singlepage/chat-action-row/Component",
@@ -133,6 +137,11 @@ jest.mock("@sps/social/models/profile/frontend/component", () => {
         return (
           <aside>
             <h2>{props.data.adminTitle || props.data.slug}</h2>
+            {props.onClose && (
+              <button type="button" onClick={props.onClose}>
+                Close profile sidebar
+              </button>
+            )}
             {props.onProfileEdit ? (
               <button
                 type="button"
@@ -642,6 +651,7 @@ jest.mock("@uiw/react-md-editor", () => {
 });
 
 interface RenderComponentOptions {
+  language?: string;
   artificialIntelligenceOpponentProfile?: any | null;
   knowledgeAssistantProfile?: any | null;
   socialModuleMessagesAndActionsQuery?: any[];
@@ -649,7 +659,7 @@ interface RenderComponentOptions {
 }
 
 export function renderComponent(
-  chatVariant: "default" | "knowledge" | "ai-chat",
+  chatVariant: "default" | "knowledge" | "ai-chat" | "customer-work",
   options: RenderComponentOptions = {},
 ) {
   // Timeline data now flows through the mocked SDK find queries consumed by
@@ -674,7 +684,7 @@ export function renderComponent(
     <Component
       isServer={false}
       variant="social-module-profile-chat-message-list-default"
-      language="en"
+      language={options.language ?? "en"}
       data={{ id: "subject-1" } as any}
       socialModuleProfile={
         {

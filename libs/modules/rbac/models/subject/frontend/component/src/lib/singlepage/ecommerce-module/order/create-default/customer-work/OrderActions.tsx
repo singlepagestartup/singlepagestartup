@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { type ReactNode, useRef, useState } from "react";
 import Link from "next/link";
 import { api } from "@sps/rbac/models/subject/sdk/client";
 import type {
@@ -13,6 +13,7 @@ interface IProps {
   work: ICustomerWorkView;
   language: string;
   productTitle?: string;
+  productSlot?: ReactNode;
   managerOnly?: boolean;
 }
 
@@ -21,6 +22,7 @@ export function OrderActions({
   work,
   language,
   productTitle,
+  productSlot,
   managerOnly,
 }: IProps) {
   const ru = language === "ru";
@@ -90,27 +92,30 @@ export function OrderActions({
   const query = new URLSearchParams();
   if (work.offerId) query.set("offer", work.offerId);
   if (!work.orderId) query.set("consultation", work.taskId);
+  const proposal = work.cartProposal;
+  const replacesConfirmedProposal =
+    productSlot && work.orderSummary && proposal?.orderId === work.orderId;
 
   return (
     <div className="grid min-w-0 gap-3 text-sm">
-      {work.productSlug && (
-        <Link
-          className="inline-flex min-h-11 items-center underline"
-          href={`/${language}/ecommerce/products/${encodeURIComponent(work.productSlug)}?${query}`}
-        >
-          {productTitle || (ru ? "Открыть предложение" : "View offer")}
-        </Link>
-      )}
-      {work.cartProposal && (
+      {productSlot ??
+        (work.productSlug && (
+          <Link
+            className="inline-flex min-h-11 items-center underline"
+            href={`/${language}/ecommerce/products/${encodeURIComponent(work.productSlug)}?${query}`}
+          >
+            {productTitle || (ru ? "Открыть предложение" : "View offer")}
+          </Link>
+        ))}
+      {proposal && !replacesConfirmedProposal && (
         <div className="rounded-lg border border-border bg-card p-3">
-          <p className="font-medium">{work.cartProposal.title}</p>
+          <p className="font-medium">{proposal.title}</p>
           <p className="mt-1 text-sm text-muted-foreground">
-            {ru ? "Количество" : "Quantity"} {work.cartProposal.quantity}
+            {ru ? "Количество" : "Quantity"} {proposal.quantity}
             {" · "}
-            {work.cartProposal.amount}{" "}
-            {work.cartProposal.currency.toUpperCase()}
+            {proposal.amount} {proposal.currency.toUpperCase()}
           </p>
-          {work.cartProposal.orderId ? (
+          {proposal.orderId ? (
             <p role="status" className="mt-2 text-sm">
               {ru ? "Предложение в корзине." : "Added to your cart."}
             </p>

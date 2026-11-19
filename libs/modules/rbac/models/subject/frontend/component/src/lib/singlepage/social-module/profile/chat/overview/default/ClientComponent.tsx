@@ -948,7 +948,7 @@ export function Component(props: IComponentPropsExtended) {
       )}
     >
       <ChatWorkspace
-        className="min-h-0 lg:min-h-[560px]"
+        siteLayout
         navigation={navigation}
         navigationId={mobileNavigationId}
         navigationClassName={cn(

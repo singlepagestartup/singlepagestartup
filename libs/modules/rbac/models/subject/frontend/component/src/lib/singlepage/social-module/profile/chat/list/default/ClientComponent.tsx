@@ -137,7 +137,7 @@ export function Component(props: IComponentPropsExtended) {
       )}
     >
       <ChatWorkspace
-        className="min-h-0 lg:min-h-[560px]"
+        siteLayout
         navigation={navigation}
         navigationClassName="flex w-full flex-col overflow-hidden bg-card p-0 text-card-foreground lg:flex lg:w-80 lg:border-r lg:border-border"
       >

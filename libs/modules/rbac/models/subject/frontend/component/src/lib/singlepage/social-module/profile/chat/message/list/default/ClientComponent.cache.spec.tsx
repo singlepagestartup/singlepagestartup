@@ -67,12 +67,11 @@ function seedThreadMessages(messages: CachedMessage[]) {
 
 function getCachedThreadMessages(): CachedMessage[] | undefined {
   return mockSharedApiQueryClient.getQueryData([threadMessagesUrl]) as
-    | CachedMessage[]
-    | undefined;
+    CachedMessage[] | undefined;
 }
 
 async function sendMessage(text: string) {
-  const textarea = screen.getByPlaceholderText("Write a message...");
+  const textarea = screen.getByRole("textbox", { name: "Message" });
   fireEvent.change(textarea, { target: { value: text } });
   fireEvent.click(screen.getByLabelText("Send message"));
 }

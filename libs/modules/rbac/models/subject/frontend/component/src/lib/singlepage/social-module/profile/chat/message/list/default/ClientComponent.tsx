@@ -121,6 +121,13 @@ export function Component(props: IComponentPropsExtended) {
     socialModuleChatId: props.socialModuleChat.id,
   });
   const { closeProfile, openProfile } = profileSidebar;
+  const changeContextOpen = useCallback(
+    (open: boolean) => {
+      if (!open) closeProfile();
+      setContextOpen(open);
+    },
+    [closeProfile],
+  );
   const openProfileContext = useCallback(
     (profile: SocialProfile) => {
       const openedInSheet = openProfile(profile);
@@ -265,7 +272,7 @@ export function Component(props: IComponentPropsExtended) {
         navigation={props.navigation}
         messagesOwnScroll
         contextOpen={contextOpen}
-        onContextOpenChange={setContextOpen}
+        onContextOpenChange={changeContextOpen}
         messages={
           <>
             <MessageTimelineSection
@@ -453,7 +460,6 @@ export function Component(props: IComponentPropsExtended) {
                 canEditProfile ? openSidebarSkillCreateDialog : undefined
               }
               onSkillEdit={canEditProfile ? openSkillEditDialog : undefined}
-              onClose={profileSidebar.closeProfile}
               profile={profileSidebar.selectedProfile}
               selectedKnowledgeSource={profileSidebar.selectedKnowledgeSource}
               skills={profileSidebar.skills}

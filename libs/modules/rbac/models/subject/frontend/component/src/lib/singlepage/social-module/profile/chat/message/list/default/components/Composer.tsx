@@ -30,6 +30,7 @@ import { Controller, useWatch } from "react-hook-form";
 import {
   useCallback,
   useEffect,
+  useId,
   useMemo,
   useRef,
   useState,
@@ -87,6 +88,10 @@ interface ComposerProps {
  */
 export function Composer(props: ComposerProps) {
   const ru = props.language === "ru";
+  const keyboardHintId = useId();
+  const keyboardHint = ru
+    ? "Enter — отправить. Shift+Enter — новая строка."
+    : "Enter to send. Shift+Enter for a new line.";
   const composer = useChatComposer({
     isCustomerWork: props.isCustomerWork,
     subjectId: props.subjectId,
@@ -558,6 +563,9 @@ export function Composer(props: ComposerProps) {
             onReorderFile={reorderSelectedFile}
             onRemoveSkill={removeSelectedSkill}
           />
+          <span id={keyboardHintId} className="sr-only">
+            {keyboardHint}
+          </span>
           <Controller
             name="description"
             control={composer.form.control}
@@ -569,7 +577,8 @@ export function Composer(props: ComposerProps) {
                   composer.textareaRef.current = element;
                 }}
                 aria-label={ru ? "Сообщение" : "Message"}
-                placeholder={ru ? "Напишите сообщение…" : "Write a message..."}
+                aria-describedby={keyboardHintId}
+                placeholder={keyboardHint}
                 rows={4}
                 className="h-32 min-h-24 max-h-[min(50dvh,480px)] w-full resize-y rounded-lg bg-transparent text-sm leading-6 outline-none placeholder:text-muted-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
                 onChange={(event) => {
@@ -609,11 +618,6 @@ export function Composer(props: ComposerProps) {
               </button>
             </div>
           </div>
-          <p className="mt-2 text-xs text-muted-foreground">
-            {ru
-              ? "Enter — отправить. Shift + Enter — новая строка."
-              : "Enter to send. Shift + Enter for a new line."}
-          </p>
         </div>
       </form>
     </Form>

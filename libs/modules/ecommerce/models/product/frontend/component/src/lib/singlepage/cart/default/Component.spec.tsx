@@ -2,6 +2,20 @@
 import { render, screen } from "@testing-library/react";
 import { TIPTAP_EMPTY_DOC } from "@sps/shared-utils";
 import { Component } from "./Component";
+import { Component as CartProduct } from "./index";
+
+const mockReader = jest.fn();
+jest.mock("@sps/ecommerce/models/product/sdk/client", () => ({
+  Provider: () => null,
+  api: {},
+}));
+jest.mock("@sps/ecommerce/models/product/sdk/server", () => ({ api: {} }));
+jest.mock("@sps/shared-frontend-components/singlepage/default", () => ({
+  Component: () => {
+    mockReader();
+    return null;
+  },
+}));
 
 jest.mock("@sps/shared-ui-shadcn", () => ({
   TipTap: ({ value, className }: any) => (
@@ -68,3 +82,27 @@ it.each([undefined, "", TIPTAP_EMPTY_DOC])(
     expect(screen.getByRole("heading", { name: "Chair" })).toBeTruthy();
   },
 );
+
+it("renders supplied display fields and the order link directly from the variant entry point", () => {
+  render(
+    <CartProduct
+      variant="cart-default"
+      dataSource="props"
+      isServer={false}
+      language="en"
+      data={{
+        id: "product",
+        slug: "chair",
+        title: { en: "Chair" },
+        shortDescription: {},
+        type: "one_off",
+      }}
+      productHref="/en/ecommerce/products/chair?offer=chosen#order-owned"
+    />,
+  );
+
+  expect(mockReader).not.toHaveBeenCalled();
+  expect(screen.getByRole("link", { name: "Chair" }).getAttribute("href")).toBe(
+    "/en/ecommerce/products/chair?offer=chosen#order-owned",
+  );
+});

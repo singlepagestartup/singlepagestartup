@@ -9,6 +9,7 @@ import {
   Package,
   UserRound,
 } from "lucide-react";
+import { Component as EcommerceModuleProduct } from "@sps/ecommerce/models/product/frontend/component";
 import { api } from "@sps/rbac/models/subject/sdk/client";
 import type { ICustomerWorkView } from "@sps/rbac/models/subject/sdk/model";
 import { OrderActions } from "../../../../../../../ecommerce-module/order/create-default/customer-work/OrderActions";
@@ -50,10 +51,52 @@ export function ThreadCustomerWork(props: IProps) {
     manager: ru ? "Менеджер" : "Manager",
     unassigned: ru ? "Не назначен" : "Unassigned",
   }[work.assignment];
+  const summary = work.orderSummary;
+  const productSlug = summary?.product.slug ?? work.productSlug;
+  const offerId = summary ? summary.offerId : work.offerId;
+  const offerSearch = offerId
+    ? `?${new URLSearchParams({ offer: offerId })}`
+    : "";
   const orderHref =
-    work.orderId && work.productSlug
-      ? `/${language}/ecommerce/products/${encodeURIComponent(work.productSlug)}#order-${encodeURIComponent(work.orderId)}`
+    work.orderId && productSlug
+      ? `/${language}/ecommerce/products/${encodeURIComponent(productSlug)}${offerSearch}#order-${encodeURIComponent(work.orderId)}`
       : undefined;
+  const orderProduct =
+    orderHref &&
+    (summary ? (
+      <EcommerceModuleProduct
+        isServer={false}
+        dataSource="props"
+        variant="cart-default"
+        data={summary.product}
+        language={language}
+        productHref={orderHref}
+        priceSlot={
+          summary.total && (
+            <span className="max-w-full wrap-anywhere font-semibold tabular-nums">
+              <span className="block text-xs font-medium text-muted-foreground">
+                {ru ? "Итого по заказу" : "Order total"}
+              </span>
+              {new Intl.NumberFormat(language, {
+                maximumFractionDigits: summary.total.precision,
+              }).format(summary.total.amount)}{" "}
+              {summary.total.symbol}
+            </span>
+          )
+        }
+      >
+        <span className="text-xs text-muted-foreground">
+          {ru ? "Количество" : "Quantity"} {summary.quantity}
+        </span>
+      </EcommerceModuleProduct>
+    ) : (
+      <Link
+        href={orderHref}
+        className="inline-flex min-h-11 items-center break-words underline underline-offset-4"
+      >
+        {props.productTitle || (ru ? "Открыть заказ" : "View order")}
+      </Link>
+    ));
   const showOrder = Boolean(
     work.orderId ||
     work.productSlug ||
@@ -109,16 +152,9 @@ export function ThreadCustomerWork(props: IProps) {
             subjectId={subjectId}
             work={work}
             productTitle={props.productTitle}
+            productSlot={orderProduct}
             language={language}
           />
-          {orderHref && (
-            <Link
-              href={orderHref}
-              className="min-h-9 content-center justify-self-start rounded-md text-sm underline underline-offset-4"
-            >
-              {ru ? "Открыть заказ" : "View order"}
-            </Link>
-          )}
         </ThreadContextCard>
       )}
       {order && showResult && (

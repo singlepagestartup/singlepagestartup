@@ -25,7 +25,9 @@ interface IProps extends IThreadMessagesScope {
 export const ThreadContext = memo(function ThreadContext(props: IProps) {
   const ru = props.language === "ru";
   const products = props.products?.filter(
-    ({ slug }) => slug !== props.work?.productSlug,
+    ({ slug }) =>
+      slug !== props.work?.productSlug &&
+      slug !== props.work?.orderSummary?.product.slug,
   );
   const workProduct = props.products?.find(
     ({ slug }) => slug === props.work?.productSlug,

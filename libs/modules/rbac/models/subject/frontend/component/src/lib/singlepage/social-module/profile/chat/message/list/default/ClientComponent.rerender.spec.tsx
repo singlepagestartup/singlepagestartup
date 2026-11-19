@@ -73,7 +73,7 @@ describe("Given: chat composer rerender isolation", () => {
     renderComponent("knowledge");
     await settle();
 
-    const textarea = screen.getByPlaceholderText("Write a message...");
+    const textarea = screen.getByRole("textbox", { name: "Message" });
     const baselineRenderCount = timelineRenderSpy.mock.calls.length;
 
     fireEvent.change(textarea, { target: { value: "h" } });
@@ -94,7 +94,7 @@ describe("Given: chat composer rerender isolation", () => {
     renderComponent("knowledge");
     await settle();
 
-    const textarea = screen.getByPlaceholderText("Write a message...");
+    const textarea = screen.getByRole("textbox", { name: "Message" });
     const baselineRenderCount = timelineRenderSpy.mock.calls.length;
 
     fireEvent.change(textarea, { target: { value: "/" } });
@@ -171,7 +171,7 @@ describe("Given: chat composer rerender isolation", () => {
     renderComponent("default");
     await settle();
 
-    const textarea = screen.getByPlaceholderText("Write a message...");
+    const textarea = screen.getByRole("textbox", { name: "Message" });
     fireEvent.change(textarea, { target: { value: "Hello" } });
     await settle();
 

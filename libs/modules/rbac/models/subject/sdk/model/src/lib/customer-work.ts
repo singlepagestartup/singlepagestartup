@@ -186,12 +186,23 @@ export interface ISocialModuleChatThread extends ISocialModuleThread {
   linkedProducts?: ILinkedChatProduct[];
 }
 
+export interface ICustomerWorkOrderSummary {
+  product: Pick<
+    IEcommerceModuleProduct,
+    "id" | "slug" | "title" | "shortDescription" | "type"
+  >;
+  quantity: number;
+  offerId?: string;
+  total?: { amount: number; symbol: string; precision: number };
+}
+
 export interface ICustomerWorkView {
   storeId: string;
   taskId: string;
   chatId: string;
   threadId: string;
   orderId?: string;
+  orderSummary?: ICustomerWorkOrderSummary;
   offerId?: string;
   productSlug?: string;
   productTitle?: IEcommerceModuleProduct["title"];

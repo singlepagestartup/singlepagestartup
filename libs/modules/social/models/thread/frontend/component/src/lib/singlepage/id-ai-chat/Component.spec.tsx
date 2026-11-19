@@ -17,6 +17,25 @@ it("fills the available width when a thread has no context", () => {
   expect(screen.getByText("Message form")).toBeTruthy();
 });
 
+it("stacks the thread title below its label in a fixed-height desktop header", () => {
+  render(
+    <Component
+      {...({
+        data: { id: "topic", title: "Заказ на обложку" },
+        language: "ru",
+        messages: null,
+        composer: null,
+      } as any)}
+    />,
+  );
+
+  const title = screen.getByRole("heading", { name: "Заказ на обложку" });
+  const label = screen.getByText("Обсуждение");
+  expect(title.previousElementSibling).toBe(label);
+  expect(title.parentElement?.classList).not.toContain("lg:flex");
+  expect(title.closest("header")?.classList).toContain("lg:h-16");
+});
+
 it("lets the desktop composer use the sidebar width when the sidebar is closed", () => {
   const matchMedia = window.matchMedia;
   window.matchMedia = jest.fn().mockReturnValue({ matches: true });

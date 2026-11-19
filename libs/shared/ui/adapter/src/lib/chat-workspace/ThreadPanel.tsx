@@ -55,14 +55,12 @@ export function ChatThreadPanel(props: IChatThreadPanelProps) {
   return (
     <div className="flex min-h-0 min-w-0 flex-1 flex-col">
       <header
-        className={`flex shrink-0 items-center justify-between gap-3 border-b border-border bg-card ${props.isProjectThread ? "flex-wrap p-4" : "px-4 py-3 lg:h-16"}`}
+        className={`flex shrink-0 items-center justify-between gap-3 border-b border-border bg-card ${props.isProjectThread ? "flex-wrap p-4" : "px-4 py-3 lg:h-16 lg:py-2"}`}
       >
         <div className="flex min-w-0 items-center gap-3">
           {props.navigation}
-          <div
-            className={`min-w-0 ${props.isProjectThread ? "" : "lg:flex lg:items-baseline lg:gap-2"}`}
-          >
-            <p className="shrink-0 text-xs text-muted-foreground">
+          <div className="min-w-0">
+            <p className="text-xs text-muted-foreground">
               {props.isDocument
                 ? ru
                   ? "Обсуждение документа"
@@ -74,7 +72,7 @@ export function ChatThreadPanel(props: IChatThreadPanelProps) {
                   : "Thread"}
             </p>
             <h2
-              className={`mt-1 min-w-0 break-words text-base font-semibold lg:truncate ${props.isProjectThread ? "" : "lg:mt-0"}`}
+              className="mt-1 min-w-0 break-words text-base font-semibold lg:truncate"
               title={props.title}
             >
               {props.title}

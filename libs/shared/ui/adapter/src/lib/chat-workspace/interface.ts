@@ -4,6 +4,7 @@ export interface IChatWorkspaceProps {
   navigation: ReactNode;
   navigationClassName?: string;
   navigationId?: string;
+  siteLayout?: boolean;
   children: ReactNode;
   className?: string;
 }

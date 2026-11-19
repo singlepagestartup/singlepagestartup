@@ -16,7 +16,6 @@ interface ProfileSidebarPanelProps {
   onProfileEdit?: (profile: ISocialModuleProfile) => void;
   onSkillCreate?: (profile: ISocialModuleProfile) => void;
   onSkillEdit?: (skill: SocialSkill) => void;
-  onClose?: () => void;
   profile: ISocialModuleProfile | null;
   selectedKnowledgeSource?: KnowledgeSource | null;
   skills: SocialSkill[];
@@ -46,7 +45,6 @@ export function ProfileSidebarPanel(props: ProfileSidebarPanelProps) {
       onProfileEdit={props.onProfileEdit}
       onSkillCreate={props.onSkillCreate}
       onSkillEdit={props.onSkillEdit}
-      onClose={props.onClose}
     />
   );
 }
