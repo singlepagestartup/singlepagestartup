@@ -31,6 +31,8 @@ import { serviceBootstrap as widgetsToCategoriesApp } from "@sps/ecommerce/relat
 import { serviceBootstrap as widgetsToProductsApp } from "@sps/ecommerce/relations/widgets-to-products/backend/app/api/src/lib/bootstrap";
 import { serviceBootstrap as widgetsToStoresApp } from "@sps/ecommerce/relations/widgets-to-stores/backend/app/api/src/lib/bootstrap";
 import { serviceBootstrap as attributesToBillingModuleCurrenciesApp } from "@sps/ecommerce/relations/attributes-to-billing-module-currencies/backend/app/api/src/lib/bootstrap";
+import { serviceBootstrap as OrderWorkApp } from "@sps/ecommerce/models/order-work/backend/app/api/src/lib/bootstrap";
+import { serviceBootstrap as OrdersToOrderWorksApp } from "@sps/ecommerce/relations/orders-to-order-works/backend/app/api/src/lib/bootstrap";
 
 export class Apps {
   apps: IModuleAppEntry[] = [];
@@ -192,6 +194,16 @@ export class Apps {
       type: "relation",
       route: "/offers-to-offers",
       app: createModuleChildApp(offersToOffersApp, this.assembly),
+    });
+    this.apps.push({
+      type: "model",
+      route: "/order-works",
+      app: createModuleChildApp(OrderWorkApp, this.assembly),
+    });
+    this.apps.push({
+      type: "relation",
+      route: "/orders-to-order-works",
+      app: createModuleChildApp(OrdersToOrderWorksApp, this.assembly),
     });
   }
 }

@@ -28,6 +28,7 @@ const stages: WorkflowStage[] = [
     ...newStage("production"),
     title: "В работе",
     instruction: "Собери первую версию иллюстрации и приложи превью к треду.",
+    output: "image",
     evidence: "К сообщению приложена именованная версия превью.",
     missingData: "Запроси недостающие материалы у клиента.",
     operations: ["reply", "handoff"],
@@ -114,6 +115,7 @@ const adviceRelease: WorkflowRelease = {
       ...stages[1],
       title: "Отвечаем",
       instruction: "Проверь сведения о товаре и ответь клиенту.",
+      output: "chat",
     },
   ],
 };

@@ -1,11 +1,18 @@
-import { Component as Icon } from "../../../../shared/icon";
+import { Component as SharedIcon } from "../../../../shared/icon";
 import type { IComponentProps } from "./interface";
 
 export function Component({ state, files, onDownload }: IComponentProps) {
   return (
-    <section className="min-w-0 rounded-2xl border border-border bg-card p-5 sm:p-6">
+    <section
+      data-ds-block="file-storage.file.order-delivery"
+      data-ds-layer="singlepage"
+      data-module="file-storage"
+      data-model="file"
+      data-variant="order-delivery"
+      className="min-w-0 rounded-2xl border border-border bg-card p-5 sm:p-6"
+    >
       <h2 className="flex items-center gap-2 text-lg font-semibold">
-        <Icon variant="phosphor" name="lock-key" size={20} /> Файлы заказа
+        <SharedIcon variant="phosphor" name="lock-key" size={20} /> Файлы заказа
       </h2>
       {state === "pending" && (
         <p role="status" className="mt-3 text-sm text-muted-foreground">
@@ -31,7 +38,7 @@ export function Component({ state, files, onDownload }: IComponentProps) {
                 }
                 className="group flex min-h-14 w-full items-center gap-3 rounded-xl border border-border bg-background px-3 py-2 text-left hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               >
-                <Icon
+                <SharedIcon
                   variant="phosphor"
                   name="file-text"
                   size={20}
@@ -47,7 +54,7 @@ export function Component({ state, files, onDownload }: IComponentProps) {
                     {file.filename}
                   </span>
                 </span>
-                <Icon
+                <SharedIcon
                   variant="phosphor"
                   name="arrow-down"
                   size={20}

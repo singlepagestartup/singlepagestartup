@@ -21,3 +21,9 @@ Creating an offer for another seller’s Product does not transfer Product
 ownership. The [Subject seller API](../../models/subject/README.md) checks the
 Store grant independently of the Product grant and writes the complete offer
 graph in one transaction.
+
+`crm-manager` grants access to the selected Store’s CRM workspace. A
+`crm-manager-finance` grant includes permission to read task costs. `owner`
+includes both permissions. Use `crm-worker` or `crm-agent` to make a Subject
+available for stage assignment. Those grants alone provide no CRM workspace
+access. The existing catalogue ownership controls still apply to relation writes.

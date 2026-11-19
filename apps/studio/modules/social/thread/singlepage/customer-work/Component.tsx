@@ -2,7 +2,7 @@
 
 import { useId, useState } from "react";
 import type { FormEvent } from "react";
-import { Component as Icon } from "../../../../shared/icon";
+import { Component as SharedIcon } from "../../../../shared/icon";
 import type { IComponentProps, IWorkResultVersion } from "./interface";
 
 const actionClass =
@@ -30,7 +30,14 @@ export function Component(props: IComponentProps) {
   }
 
   return (
-    <section className="grid min-w-0 items-start gap-5 lg:grid-cols-[minmax(0,1.45fr)_minmax(0,1fr)]">
+    <section
+      data-ds-block="social.thread.customer-work"
+      data-ds-layer="singlepage"
+      data-module="social"
+      data-model="thread"
+      data-variant="customer-work"
+      className="grid min-w-0 items-start gap-5 lg:grid-cols-[minmax(0,1.45fr)_minmax(0,1fr)]"
+    >
       <div className="min-w-0 rounded-2xl border border-border bg-card">
         <header className="flex flex-wrap justify-between gap-4 border-b border-border p-5 sm:p-6">
           <div className="min-w-0">
@@ -60,7 +67,7 @@ export function Component(props: IComponentProps) {
               onClick={props.onHandoff}
               className={`${actionClass} self-start`}
             >
-              <Icon variant="phosphor" name="users" size={20} /> Позвать
+              <SharedIcon variant="phosphor" name="users" size={20} /> Позвать
               менеджера
             </button>
           )}
@@ -118,7 +125,11 @@ export function Component(props: IComponentProps) {
               className={primaryClass}
               disabled={!message.trim()}
             >
-              <Icon variant="phosphor" name="paper-plane-tilt" size={20} />{" "}
+              <SharedIcon
+                variant="phosphor"
+                name="paper-plane-tilt"
+                size={20}
+              />{" "}
               Отправить
             </button>
           </div>
@@ -138,7 +149,7 @@ export function Component(props: IComponentProps) {
               className={`${actionClass} mt-4 w-full`}
               onClick={props.onAddToCart}
             >
-              <Icon variant="phosphor" name="shopping-cart" size={20} />{" "}
+              <SharedIcon variant="phosphor" name="shopping-cart" size={20} />{" "}
               Добавить в корзину
             </button>
           </aside>
@@ -238,7 +249,7 @@ function ResultReview(props: IComponentProps & { resultId: string }) {
             role="status"
             className="mt-4 flex items-center gap-2 text-sm font-medium"
           >
-            <Icon variant="phosphor" name="check-circle" size={20} />
+            <SharedIcon variant="phosphor" name="check-circle" size={20} />
             {status === "accepted"
               ? `Принята версия ${active.number}`
               : `Оплачена версия ${active.number}`}
@@ -262,8 +273,8 @@ function VersionPreview({ version }: { version: IWorkResultVersion }) {
   return (
     <article className="mt-4 rounded-xl border border-border bg-muted p-4 sm:p-5">
       <div className="flex flex-wrap items-center gap-2 text-xs font-medium text-muted-foreground">
-        <Icon variant="phosphor" name="file-text" size={20} /> Превью · версия{" "}
-        {version.number} · {version.pages} стр.
+        <SharedIcon variant="phosphor" name="file-text" size={20} /> Превью ·
+        версия {version.number} · {version.pages} стр.
       </div>
       <h3 className="mt-3 text-base font-semibold leading-snug">
         {version.title}

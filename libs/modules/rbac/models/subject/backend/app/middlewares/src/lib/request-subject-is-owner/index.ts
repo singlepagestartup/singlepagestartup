@@ -12,7 +12,10 @@ import {
 export interface IMiddlewareGeneric {}
 
 export class Middleware {
-  init(options?: { requireJwt?: boolean }): MiddlewareHandler<any, any, {}> {
+  init(options?: {
+    requireJwt?: boolean;
+    activeSubjectId?: (token: string) => Promise<string | undefined | null>;
+  }): MiddlewareHandler<any, any, {}> {
     return createMiddleware(async (c, next) => {
       try {
         if (!RBAC_JWT_SECRET) {
@@ -45,6 +48,14 @@ export class Middleware {
           if (decoded?.["subject"]?.["id"] !== id) {
             throw new Error(
               "Authorization error. Only profile owner can get access",
+            );
+          }
+          if (
+            options?.activeSubjectId &&
+            (await options.activeSubjectId(token)) !== id
+          ) {
+            throw new Error(
+              "Authentication error. The session is no longer valid",
             );
           }
         } else {

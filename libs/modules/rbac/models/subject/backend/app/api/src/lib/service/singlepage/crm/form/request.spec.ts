@@ -80,6 +80,7 @@ function fixture() {
     findById: jest.fn(async () => ({ id: subjectId })),
     modules: {
       crm: {
+        funnel: { resolveFormIntake: jest.fn().mockResolvedValue(undefined) },
         form: {
           findById: jest.fn(async () => form),
           submit: repository.submit,

@@ -1,6 +1,12 @@
-import type { IFunnelDefinition } from "@sps/crm/models/funnel/sdk/model";
+import type {
+  IFunnelDefinition,
+  TFunnelKind,
+} from "@sps/crm/models/funnel/sdk/model";
 
-export function validatePublication(definition: IFunnelDefinition) {
+export function validatePublication(
+  definition: IFunnelDefinition,
+  kind: TFunnelKind,
+) {
   const stageIds = new Set(definition.stages.map((stage) => stage.id));
   if (stageIds.size !== definition.stages.length) {
     throw new Error("Validation error. Funnel stage IDs must be unique");
@@ -19,6 +25,13 @@ export function validatePublication(definition: IFunnelDefinition) {
   for (const stage of definition.stages) {
     if (stage.archived) {
       continue;
+    }
+    if (stage.output && stage.output !== "chat") {
+      if (kind !== "individual-service" || !definition.workFunding) {
+        throw new Error(
+          "Validation error. File output requires a funded individual-service funnel",
+        );
+      }
     }
     const actionIds = new Set<string>();
     for (const action of stage.actions) {

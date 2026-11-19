@@ -30,6 +30,7 @@ export interface IPurchaseCharge extends IPurchaseSnapshot {
 
 /** Subject-scoped order history assembled from invoices, receipts and subscription orders. */
 export interface IPurchaseDetails {
+  storeWork?: { storeId: string; taskId: string };
   primaryProductSlug?: string;
   /** Whether the Subject may retry an unfinished payment by replacing the cart. */
   canRepeatPayment?: boolean;
@@ -49,6 +50,7 @@ export interface IPurchaseDetails {
   unpriced?: IUnpricedOrderToProduct[];
   totals: { total: number; billingModuleCurrency: IBillingModuleCurrency }[];
   receipts: IFileStorageModuleFile[];
+  protectedReceipts?: Array<{ id: string; path: string }>;
   charges?: IPurchaseCharge[];
   invoiceShares?: {
     invoiceId: string;

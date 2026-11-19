@@ -1,10 +1,8 @@
 import { Context } from "hono";
 import { HTTPException } from "hono/http-exception";
 import { Service } from "../../../service";
-import { deflate } from "pako";
 import { api } from "@sps/file-storage/models/file/sdk/server";
-import { HOST_SERVICE_URL, RBAC_SECRET_KEY } from "@sps/shared-utils";
-import QueryString from "qs";
+import { RBAC_SECRET_KEY } from "@sps/shared-utils";
 import { getHttpErrorType } from "@sps/backend-utils";
 
 export class Handler {
@@ -31,22 +29,21 @@ export class Handler {
       if (!data.generateData) {
         throw new Error("Validation error. 'data.generateData' is required");
       }
-
-      const deflatedData = deflate(JSON.stringify(data.generateData));
-
-      const queryData = Buffer.from(deflatedData).toString("base64");
-
-      const query = QueryString.stringify({
-        variant: data.generateData.variant,
-        width: data.generateData.width ?? 500,
-        height: data.generateData.height ?? 500,
-        data: queryData,
-      });
+      if (
+        data.generateData.variant?.startsWith(
+          "generate-template-ecommerce-order-receipt-",
+        )
+      ) {
+        throw new Error(
+          "Forbidden error. Receipts use protected order storage",
+        );
+      }
+      const url = this.service.imageGeneratorUrl(data.generateData);
 
       const entity = await api.createFromUrl({
         data: {
           ...data,
-          url: `${HOST_SERVICE_URL}/api/image-generator/image.png?${query}`,
+          url,
         },
         options: {
           headers: {

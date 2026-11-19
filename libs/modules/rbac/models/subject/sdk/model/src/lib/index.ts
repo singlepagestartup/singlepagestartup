@@ -87,3 +87,8 @@ export {
   type IAIChatProject,
 } from "./ai-chat-project";
 export * from "./token-revocation";
+export * from "./crm-workspace";
+
+export * from "./customer-work";
+
+export * from "./order-work";

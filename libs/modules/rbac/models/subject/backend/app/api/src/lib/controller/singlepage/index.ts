@@ -1,6 +1,8 @@
 import { Handler as OrderPaymentProvider } from "./ecommerce-module/order/payment-intent/provider";
 import { Handler as OrderPaymentCheck } from "./ecommerce-module/order/payment-intent/check";
 import { Handler as OrderPaymentWebhook } from "./ecommerce-module/order/payment-intent/provider-webhook";
+import { Handler as ProviderConnections } from "./provider-connections";
+import { Handler as CustomerWork } from "./ecommerce-module/customer-work";
 import { Handler as EcommerceCatalog } from "./ecommerce-module/catalog";
 import { Handler as BlogArticleCreate } from "./blog/article/create";
 import { Handler as FreezeSubscriptionPeriod } from "./ecommerce-module/order/freeze-subscription-period";
@@ -25,12 +27,14 @@ import {
   RBAC_RATE_LIMIT_SESSION_ATTEMPTS_PER_ADDRESS,
 } from "@sps/shared-utils";
 import {
+  RequestCustomerWorkChat,
   RequestProfileSubjectIdOwner,
   RequestRateLimit,
   RequestPasswordAttempts,
   RequestSocialModuleThreadBelongsToChat,
   RequestSubjectCanManageChatAgentProfile,
   RequestSubjectIdOwner,
+  RequestSignedInSubject,
   RequestSubjectReadAccess,
   RequestOperatorSecret,
   RequestAuthenticatedAdmin,
@@ -41,7 +45,6 @@ import {
 
 import { Handler as AuthenticationMe } from "./authentication/me";
 import { Handler as AuthenticationIsAuthorized } from "./authentication/is-authorized";
-import { Handler as AuthenticationBillRoute } from "./authentication/bill-route";
 import { Handler as AuthenticationLogout } from "./authentication/logout";
 import { Handler as AuthenticationEmailAndPasswordForgotPassword } from "./authentication/email-and-password/forgot-password";
 import { Handler as AuthenticationEmailAndPasswordResetPassword } from "./authentication/email-and-password/reset-password";
@@ -82,6 +85,8 @@ import { Handler as EcommerceModuleProductIdCheckout } from "./ecommerce-module/
 import { Handler as EcommerceModuleOrderCheckout } from "./ecommerce-module/order/checkout";
 
 import { Handler as CrmModuleFromRequestCreate } from "./crm-module/from/request/create";
+import { Handler as OrderWork } from "./ecommerce-module/order/id/work";
+import { Handler as CrmWorkspace } from "./crm-module/workspace";
 
 import { Handler as SocialModuleProfileFindByIdChatFind } from "./social-module/profile/find-by-id/chat/find";
 import { Handler as SocialModuleProfileFindByIdChatFindById } from "./social-module/profile/find-by-id/chat/find-by-id";
@@ -89,7 +94,6 @@ import { Handler as SocialModuleProfileFindByIdChatFindByIdMessageFind } from ".
 import { Handler as SocialModuleProfileFindByIdChatFindByIdMessageCreate } from "./social-module/profile/find-by-id/chat/find-by-id/message/create";
 import { Handler as SocialModuleProfileFindByIdChatFindByIdMessageUpdate } from "./social-module/profile/find-by-id/chat/find-by-id/message/update";
 import { Handler as SocialModuleProfileFindByIdChatFindByIdMessageDelete } from "./social-module/profile/find-by-id/chat/find-by-id/message/delete";
-import { Handler as SocialModuleProfileFindByIdChatFindByIdMessageReactByOpenrouter } from "./social-module/profile/find-by-id/chat/find-by-id/message/react-by-openrouter";
 import { Handler as SocialModuleProfileFindByIdChatFindByIdOpenrouterModelFind } from "./social-module/profile/find-by-id/chat/find-by-id/openrouter/models";
 import { Handler as SocialModuleProfileFindByIdChatFindByIdOpenrouterModelFavorites } from "./social-module/profile/find-by-id/chat/find-by-id/openrouter/model-favorites";
 import { Handler as SocialModuleProfileFindByIdKnowledgeSourceFind } from "./social-module/profile/find-by-id/knowledge/source/find";
@@ -146,7 +150,130 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
       authenticationMe: (props) => this.service.authenticationMe(props),
       isAdmin: (subjectId) => this.service.isAdmin(subjectId),
     });
-    this.bindHttpRoutes([
+    const crmSignedInSubject = new RequestSignedInSubject().init({
+      getSubjectId: (token) =>
+        this.service.isAuthorizedService.getSubjectId(token),
+      isAuthenticated: async (subjectId) =>
+        Boolean(
+          (await this.service.authenticationMe({ subjectId }))?.authenticated,
+        ),
+    });
+    const crmStores = {
+      method: "GET" as const,
+      path: "/:id/crm-module/workspace/stores",
+      handler: (c: Context) =>
+        new CrmWorkspace(this.service.crmWorkspace, "stores").execute(c),
+      middlewares: [crmSignedInSubject],
+    };
+    const crmOptions = {
+      method: "GET" as const,
+      path: "/:id/crm-module/workspace/options",
+      handler: (c: Context) =>
+        new CrmWorkspace(this.service.crmWorkspace, "options").execute(c),
+      middlewares: [crmSignedInSubject],
+    };
+    const crmFunnels = {
+      method: "GET" as const,
+      path: "/:id/crm-module/workspace/funnels",
+      handler: (c: Context) =>
+        new CrmWorkspace(this.service.crmWorkspace, "funnels").execute(c),
+      middlewares: [crmSignedInSubject],
+    };
+    const crmPublications = {
+      method: "GET" as const,
+      path: "/:id/crm-module/workspace/publications",
+      handler: (c: Context) =>
+        new CrmWorkspace(this.service.crmWorkspace, "publications").execute(c),
+      middlewares: [crmSignedInSubject],
+    };
+    const crmTasks = {
+      method: "GET" as const,
+      path: "/:id/crm-module/workspace/tasks",
+      handler: (c: Context) =>
+        new CrmWorkspace(this.service.crmWorkspace, "tasks").execute(c),
+      middlewares: [crmSignedInSubject],
+    };
+    const crmDetail = {
+      method: "GET" as const,
+      path: "/:id/crm-module/workspace/detail",
+      handler: (c: Context) =>
+        new CrmWorkspace(this.service.crmWorkspace, "detail").execute(c),
+      middlewares: [crmSignedInSubject],
+    };
+    const crmCommand = {
+      method: "POST" as const,
+      path: "/:id/crm-module/workspace/command",
+      handler: (c: Context) =>
+        new CrmWorkspace(this.service.crmWorkspace, "command").execute(c),
+      middlewares: [crmSignedInSubject],
+    };
+    const orderWorkRoutes = [
+      {
+        method: "GET" as const,
+        path: "/:id/ecommerce-module/orders/:orderId/work",
+      },
+      {
+        method: "POST" as const,
+        path: "/:id/ecommerce-module/orders/:orderId/work",
+      },
+      {
+        method: "GET" as const,
+        path: "/:id/ecommerce-module/orders/:orderId/work/artifacts/:artifactId",
+      },
+      {
+        method: "HEAD" as const,
+        path: "/:id/ecommerce-module/orders/:orderId/work/artifacts/:artifactId",
+      },
+      {
+        method: "POST" as const,
+        path: "/:id/ecommerce-module/orders/:orderId/work/fulfillment",
+      },
+    ].map(({ method, path }) => ({
+      method,
+      path,
+      handler: (c: Context) => new OrderWork(this.service.orderWork).execute(c),
+      middlewares: [crmSignedInSubject],
+    }));
+    const routes: Parameters<typeof this.bindHttpRoutes>[0] = [
+      ...orderWorkRoutes,
+      {
+        method: "GET",
+        path: "/:id/customer-work/threads/:threadId",
+        handler: (c: Context) => new CustomerWork(this.service).forThread(c),
+        middlewares: [
+          new RequestSubjectIdOwner().init({
+            requireJwt: true,
+            activeSubjectId: (token) =>
+              this.service.isAuthorizedService.getSubjectId(token),
+          }),
+        ],
+      },
+      ...(["GET", "POST"] as const).map((method) => ({
+        method,
+        path: "/:id/stores/:storeId/customer-work",
+        handler: (c: Context) => new CustomerWork(this.service).execute(c),
+        middlewares: [
+          new RequestSubjectIdOwner().init({
+            requireJwt: true,
+            activeSubjectId: (token) =>
+              this.service.isAuthorizedService.getSubjectId(token),
+          }),
+        ],
+      })),
+      crmStores,
+      crmOptions,
+      crmFunnels,
+      crmPublications,
+      crmTasks,
+      crmDetail,
+      crmCommand,
+      ...(["GET", "POST"] as const).map((method) => ({
+        method,
+        path: "/:id/stores/:storeId/provider-connections",
+        handler: (c: Context) =>
+          new ProviderConnections(this.service).execute(c),
+        middlewares: [new RequestSubjectIdOwner().init({ requireJwt: true })],
+      })),
       {
         method: "POST",
         path: "/ecommerce-module/orders/payment-intents/:provider/webhook",
@@ -294,11 +421,6 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
         method: "GET",
         path: "/authentication/is-authorized",
         handler: this.authenticationIsAuthorized,
-      },
-      {
-        method: "POST",
-        path: "/authentication/bill-route",
-        handler: this.authenticationBillRoute,
       },
       {
         method: "GET",
@@ -796,13 +918,6 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
         middlewares: [new RequestProfileSubjectIdOwner().init()],
       },
       {
-        method: "POST",
-        path: "/:id/social-module/profiles/:socialModuleProfileId/chats/:socialModuleChatId/messages/:socialModuleMessageId/react-by/openrouter",
-        handler:
-          this.socialModuleProfileFindByIdChatFindByIdMessageReactByOpenrouter,
-        middlewares: [new RequestProfileSubjectIdOwner().init()],
-      },
-      {
         method: "GET",
         path: "/:id/social-module/profiles/:socialModuleProfileId/chats/:socialModuleChatId/openrouter/models",
         handler:
@@ -997,7 +1112,25 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
         handler: this.socialModuleProfileFindByIdChatFindByIdDelete,
         middlewares: [new RequestProfileSubjectIdOwner().init()],
       },
-    ]);
+    ];
+    const customerChat = new RequestCustomerWorkChat(this.service.customerWork);
+    this.bindHttpRoutes(
+      routes.map((route) => {
+        if (!route.path.includes(":socialModuleChatId")) {
+          return route;
+        }
+        const read = route.method === "GET" || route.method === "HEAD";
+        const postMessage =
+          route.method === "POST" && route.path.endsWith("/messages");
+        return {
+          ...route,
+          middlewares: [
+            ...(route.middlewares ?? []),
+            customerChat.init(!read && !postMessage),
+          ],
+        };
+      }),
+    );
   }
 
   async authenticationMe(c: Context, next: any): Promise<Response> {
@@ -1378,15 +1511,6 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
     ).execute(c, next);
   }
 
-  async socialModuleProfileFindByIdChatFindByIdMessageReactByOpenrouter(
-    c: Context,
-    next: any,
-  ): Promise<Response> {
-    return new SocialModuleProfileFindByIdChatFindByIdMessageReactByOpenrouter(
-      this.service,
-    ).execute(c, next);
-  }
-
   async socialModuleProfileFindByIdChatFindByIdOpenrouterModelFind(
     c: Context,
     next: any,
@@ -1617,9 +1741,5 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
     return new SocialModuleProfileFindByIdChatFindByIdActionFind(
       this.service,
     ).execute(c, next);
-  }
-
-  async authenticationBillRoute(c: Context, next: any): Promise<Response> {
-    return new AuthenticationBillRoute(this.service).execute(c, next);
   }
 }

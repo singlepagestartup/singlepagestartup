@@ -13,6 +13,7 @@ export interface WorkflowStage {
   id: string;
   title: string;
   instruction: string;
+  output?: "chat" | "pdf" | "image";
   evidence: string;
   missingData: string;
   waitFor: WorkflowEvent;

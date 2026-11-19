@@ -16,7 +16,6 @@ import {
   ObserverMiddleware,
   RequestIdMiddleware,
   ActionLoggerMiddleware,
-  BillRouteMiddleware,
   OperatorSecretAttemptsMiddleware,
   ApiRateLimitMiddleware,
 } from "@sps/middlewares";
@@ -33,12 +32,14 @@ import { rbacHttpCacheExcludeRoutes } from "@sps/rbac/models/permission/backend/
 import { moduleBootstrap as startupApp } from "@sps/startup/backend/app/api/src/lib/bootstrap";
 import { moduleBootstrap as crmApp } from "@sps/crm/backend/app/api/src/lib/bootstrap";
 import { moduleBootstrap as ecommerceApp } from "@sps/ecommerce/backend/app/api/src/lib/bootstrap";
+import { createServices as createEcommerceServices } from "@sps/ecommerce/backend/app/api/src/lib/services";
 import { moduleBootstrap as billingApp } from "@sps/billing/backend/app/api/src/lib/bootstrap";
 import { moduleBootstrap as notificationApp } from "@sps/notification/backend/app/api/src/lib/bootstrap";
 import { moduleBootstrap as blogApp } from "@sps/blog/backend/app/api/src/lib/bootstrap";
 import { moduleBootstrap as websiteBuilderApp } from "@sps/website-builder/backend/app/api/src/lib/bootstrap";
 import { moduleBootstrap as broadcastApp } from "@sps/broadcast/backend/app/api/src/lib/bootstrap";
 import { moduleBootstrap as fileStorageApp } from "@sps/file-storage/backend/app/api/src/lib/bootstrap";
+import { createServices as createFileStorageServices } from "@sps/file-storage/backend/app/api/src/lib/services";
 import { moduleBootstrap as socialApp } from "@sps/social/backend/app/api/src/lib/bootstrap";
 import { moduleBootstrap as knowledgeApp } from "@sps/knowledge/backend/app/api/src/lib/bootstrap";
 
@@ -68,6 +69,12 @@ const mountedModules = await Promise.all(
   }),
 );
 const { app: rbac } = await rbacApp.bootstrap(defaultAppAssembly);
+const ecommerce = defaultAppAssembly.getOrCreate(createEcommerceServices);
+defaultAppAssembly
+  .getOrCreate(createFileStorageServices)
+  .file.configureCommerceReceiptGuard((id) =>
+    ecommerce.order.work.isProtectedLegacyReceipt({ id }),
+  );
 
 const revalidationMiddleware = new RevalidationMiddleware();
 const consistencyMiddleware = new ConsistencyMiddleware({
@@ -148,6 +155,11 @@ app.on(["GET", "HEAD"], "/public/*", async (c) => {
       continue;
     }
 
+    if (await ecommerce.order.work.isProtectedLegacyReceipt({ relativePath })) {
+      c.header("Cache-Control", "private, no-store");
+      return c.notFound();
+    }
+
     const headers = getFileContentHeaders(relativePath, file.type);
     if (file.type) {
       headers.set("Content-Type", file.type);
@@ -178,7 +190,6 @@ app.use(new ObserverMiddleware().init());
 app.use(revalidationMiddleware.init());
 app.use(new ActionLoggerMiddleware().init());
 app.use(new IsAuthorizedMiddleware().init());
-app.use(new BillRouteMiddleware().init());
 app.use(new ParseQueryMiddleware().init());
 
 if (MIDDLEWARE_HTTP_CACHE === "true") {

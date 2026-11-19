@@ -1,4 +1,4 @@
-import { Component as Icon } from "../../../../shared/icon";
+import { Component as SharedIcon } from "../../../../shared/icon";
 import type { IComponentProps } from "./interface";
 
 const labels = {
@@ -18,13 +18,20 @@ export function Component({
   onRemove,
 }: IComponentProps) {
   return (
-    <section className="min-w-0 rounded-2xl border border-border bg-card p-5 sm:p-7">
+    <section
+      data-ds-block="ecommerce.order.work-checkout"
+      data-ds-layer="singlepage"
+      data-module="ecommerce"
+      data-model="order"
+      data-variant="work-checkout"
+      className="min-w-0 rounded-2xl border border-border bg-card p-5 sm:p-7"
+    >
       <header>
         <div
           role="status"
           className="inline-flex items-center gap-2 rounded-full bg-muted px-3 py-1.5 text-xs font-semibold"
         >
-          <Icon
+          <SharedIcon
             variant="phosphor"
             name={
               state === "paid"

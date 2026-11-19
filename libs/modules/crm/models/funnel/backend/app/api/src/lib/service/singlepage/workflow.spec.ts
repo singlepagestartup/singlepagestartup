@@ -14,12 +14,16 @@ it("rejects unknown targets and stage IDs that cannot identify a single stage", 
     initialStageId: stage.id,
     stages: [stage],
   });
-  expect(() => validatePublication(definition)).toThrow("unknown stage");
+  expect(() => validatePublication(definition, "consultation")).toThrow(
+    "unknown stage",
+  );
   const duplicate = {
     ...definition,
     stages: [...definition.stages, ...definition.stages],
   };
-  expect(() => validatePublication(duplicate)).toThrow("must be unique");
+  expect(() => validatePublication(duplicate, "consultation")).toThrow(
+    "must be unique",
+  );
 });
 
 it("rejects buyer confirmation or payment evidence for an action attributed only to the manager", () => {
@@ -41,7 +45,35 @@ it("rejects buyer confirmation or payment evidence for an action attributed only
       },
     ],
   });
-  expect(() => validatePublication(definition)).toThrow(
+  expect(() => validatePublication(definition, "physical-order")).toThrow(
     "requires a system action",
   );
+});
+
+it("preserves old definitions and restricts file output to funded individual services", () => {
+  const stage = { id: "make", name: "Production", actions: [] };
+  const build = (output?: "pdf" | "image") =>
+    funnelDefinitionSchema.parse({
+      initialStageId: stage.id,
+      stages: [{ ...stage, output }],
+    });
+
+  expect(() => validatePublication(build(), "consultation")).not.toThrow();
+  expect(() =>
+    validatePublication(build("image"), "individual-service"),
+  ).toThrow("funded individual-service");
+
+  const funded = {
+    ...build("pdf"),
+    workFunding: {
+      payer: "store-owner" as const,
+      currencyId: "5bd2af60-e3f0-4494-a8b1-c645c2369129",
+      maxTaskAmount: "10",
+      maxRunAmount: "5",
+    },
+  };
+  expect(() => validatePublication(funded, "physical-order")).toThrow(
+    "individual-service",
+  );
+  expect(() => validatePublication(funded, "individual-service")).not.toThrow();
 });

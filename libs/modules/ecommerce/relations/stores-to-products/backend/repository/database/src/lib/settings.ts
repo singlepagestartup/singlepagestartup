@@ -6,6 +6,7 @@ const measurement = z
   .regex(/^(?:0|[1-9]\d*)(?:\.\d{1,8})?$/);
 export const offerSettingsSchema = z
   .object({
+    requiresResultAcceptance: z.boolean().optional(),
     initialGrant: z.boolean().optional(),
     initialGrantLegacyHistory: z.boolean().optional(),
     standalone: z.boolean().optional(),

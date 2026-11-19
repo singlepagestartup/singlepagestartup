@@ -8,6 +8,13 @@
       "when": 1795077306528,
       "tag": "0000_same_proteus",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1795078453690,
+      "tag": "0001_secret_shinko_yamashiro",
+      "breakpoints": true
     }
   ]
 }

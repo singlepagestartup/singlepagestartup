@@ -97,6 +97,14 @@ export const customerTaskActivitySchema = z.discriminatedUnion("kind", [
     messageId: z.uuid(),
   }),
   changeSchema.extend({ kind: z.literal("customer-handoff-requested") }),
+  changeSchema.extend({
+    kind: z.literal("customer-budget-approved"),
+    approvedMaximum: z
+      .string()
+      .regex(/^(?:0|[1-9][0-9]{0,17})(?:\.[0-9]{1,12})?$/)
+      .refine((value) => /[1-9]/.test(value)),
+    priceKey: z.string().regex(/^[a-f0-9]{64}$/),
+  }),
 ]);
 export const transferTaskCustomerSchema = changeSchema.extend({
   previousCustomerId: z.uuid(),

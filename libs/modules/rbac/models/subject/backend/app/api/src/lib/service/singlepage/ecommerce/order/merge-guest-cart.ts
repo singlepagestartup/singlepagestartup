@@ -18,6 +18,17 @@ interface ICart {
 export class Service {
   constructor(
     private readonly service: SubjectServiceDependencies<"repository">,
+    private readonly customerWork?: {
+      closeRemovedOrder(input: {
+        customerId: string;
+        orderId: string;
+      }): Promise<void>;
+      transferGuest(input: {
+        guestId: string;
+        customerId: string;
+        removedOrderIds: string[];
+      }): Promise<void>;
+    },
   ) {}
 
   async execute({
@@ -70,7 +81,12 @@ export class Service {
           return;
         }
         const carts = await this.readCarts(guestId, subjectId);
-        await this.merge(carts, subjectId);
+        const removedOrderIds = await this.merge(carts, subjectId);
+        await this.customerWork?.transferGuest({
+          guestId,
+          customerId: subjectId,
+          removedOrderIds,
+        });
       }),
     );
   }
@@ -206,7 +222,7 @@ export class Service {
         ),
     );
     if (!incoming.size) {
-      return;
+      return [];
     }
     const winners = new Map<string, { guest: boolean; timestamp: number }>();
     // A Product selection includes every split order and its child services.
@@ -227,6 +243,7 @@ export class Service {
         }
       }
     }
+    const removedOrderIds: string[] = [];
     for (const cart of editableCarts) {
       if (!cart.lines.length) {
         continue;
@@ -263,7 +280,12 @@ export class Service {
         await ecommerce.ordersToProducts.delete({ id: line.id });
       }
       if (!retained) {
+        await this.customerWork?.closeRemovedOrder({
+          customerId: cart.owner.subjectId,
+          orderId: cart.id,
+        });
         await ecommerce.order.delete({ id: cart.id });
+        removedOrderIds.push(cart.id);
       } else if (cart.guest) {
         const owner = await subjectsToEcommerceModuleOrders.update({
           id: cart.owner.id,
@@ -276,5 +298,6 @@ export class Service {
         }
       }
     }
+    return removedOrderIds;
   }
 }

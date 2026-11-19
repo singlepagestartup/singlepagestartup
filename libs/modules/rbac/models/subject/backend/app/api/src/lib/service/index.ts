@@ -11,7 +11,6 @@ export type {
   IAiExecutionActionReporter,
   IAiExecutionActionReporterProps,
   IOpenRouterBillingLedgerEntry,
-  IOpenRouterBillingSummary,
   IProfileMcpCatalogSession,
   ISocialProfileAiTool,
   ISocialProfileAiToolLoopProps,

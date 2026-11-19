@@ -1,17 +1,25 @@
 "use client";
 
-import { Component as Icon } from "../../../../shared/icon";
+import { Component as SharedIcon } from "../../../../shared/icon";
 import { ConnectionSettings } from "./ConnectionSettings";
 import { SpendOverview } from "./SpendOverview";
 import type { IComponentProps } from "./interface";
 
 export function Component(props: IComponentProps) {
   return (
-    <main lang="ru" className="min-h-screen bg-muted text-foreground">
+    <main
+      data-ds-block="rbac.widget.subject-me-store-provider-settings"
+      data-ds-layer="singlepage"
+      data-module="rbac"
+      data-model="widget"
+      data-variant="subject-me-store-provider-settings"
+      lang="ru"
+      className="min-h-screen bg-muted text-foreground"
+    >
       {props.access === "denied" ? (
         <div className="mx-auto max-w-6xl px-4 py-6 sm:px-8 sm:py-9">
           <section className="max-w-xl rounded-2xl border border-border bg-card p-5 sm:p-7">
-            <Icon variant="phosphor" name="lock-key" />
+            <SharedIcon variant="phosphor" name="lock-key" />
             <h1 className="mt-4 text-2xl font-semibold">
               Настройки недоступны
             </h1>
@@ -25,7 +33,7 @@ export function Component(props: IComponentProps) {
           <header className="border-b border-border bg-background">
             <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-2 px-4 py-4 sm:px-8">
               <p className="flex items-center gap-2 text-sm font-semibold">
-                <Icon variant="phosphor" name="package" size={20} />{" "}
+                <SharedIcon variant="phosphor" name="package" size={20} />{" "}
                 {props.store}
               </p>
               <p className="text-sm text-muted-foreground">
@@ -70,7 +78,7 @@ export function Component(props: IComponentProps) {
                     </p>
                   </div>
                   <p className="flex shrink-0 items-center gap-1 text-xs font-semibold tabular-nums">
-                    <Icon
+                    <SharedIcon
                       variant="phosphor"
                       name="wallet"
                       size={20}

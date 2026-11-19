@@ -210,6 +210,7 @@ function History(props: IComponentPropsExtended) {
             )
             .map((order) => (
               <Row
+                subjectId={props.data.id}
                 language={language}
                 key={order.id}
                 order={order}

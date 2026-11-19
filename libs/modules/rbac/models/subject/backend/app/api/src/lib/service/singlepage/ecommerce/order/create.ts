@@ -13,6 +13,7 @@ export interface IExecuteProps {
   services?: IEcommerceCartSelection["services"];
   comment?: string;
   expectedQuoteVersion?: string;
+  separateService?: boolean;
 }
 
 interface IConstructorProps {
@@ -95,14 +96,16 @@ export class Service {
     return repository.withSubjectLock(
       { subjectId: props.subjectId },
       async () => {
-        const existingOrderId =
-          await service.ecommerceModuleFindOpenCartOrderWithProduct({
-            subjectId: props.subjectId,
-            productId: props.productId,
-            offerId: offer.id,
-          });
-        if (existingOrderId) {
-          throw new Error("Conflict error. Product is already in the cart");
+        if (!props.separateService) {
+          const existingOrderId =
+            await service.ecommerceModuleFindOpenCartOrderWithProduct({
+              subjectId: props.subjectId,
+              productId: props.productId,
+              offerId: offer.id,
+            });
+          if (existingOrderId) {
+            throw new Error("Conflict error. Product is already in the cart");
+          }
         }
         await service.modules.ecommerce.order.ordersToBillingModulePaymentIntents.lockOffers(
           {

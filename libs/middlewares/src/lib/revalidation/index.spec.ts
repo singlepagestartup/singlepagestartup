@@ -229,64 +229,6 @@ describe("revalidation topic resolution", () => {
 
 describe("action / RPC endpoint topic rules (issue #195 F3)", () => {
   /**
-   * BDD Scenario: The AI-reaction RPC endpoint broadcasts message, action, and
-   * Knowledge topics, not a useless verb topic.
-   * Given: the `react-by/openrouter` POST path (creates the AI response
-   *        message and a chat action; the canonical deriver would emit
-   *        `social.openrouter`).
-   * When:  broadcast topics are resolved.
-   * Then:  the message, action, and learned-document reader topics are emitted
-   *        and the useless verb topic is not.
-   */
-  it("broadcasts message and action topics for the AI-reaction endpoint", () => {
-    const middleware = new Middleware();
-    const topics = middleware.resolveBroadcastTopics(
-      `/api/rbac/subjects/${SID}/social-module/profiles/${PID}/chats/${CID}/messages/${MID}/react-by/openrouter`,
-    );
-
-    expect(topics).toEqual(
-      expect.arrayContaining([
-        "social.messages",
-        `social.chats.${CID}.messages`,
-        "social.actions",
-        `social.chats.${CID}.actions`,
-        "social.profiles-to-knowledge-module-sources",
-        "knowledge.sources",
-      ]),
-    );
-    expect(topics).not.toContain("social.openrouter");
-  });
-
-  /**
-   * BDD Scenario: The AI-reaction broadcast reaches the chat readers.
-   * Given: the thread-timeline read (subscribes to `social.messages`), the
-   *        chat-scoped messages read, and the chat actions read.
-   * When:  the AI-reaction endpoint broadcasts.
-   * Then:  every reader's topic set intersects the broadcast — the new AI
-   *        message and action arrive without a reload.
-   */
-  it("reaches the thread, chat-messages and chat-actions readers", () => {
-    const middleware = new Middleware();
-    const broadcast = middleware.resolveBroadcastTopics(
-      `/api/rbac/subjects/${SID}/social-module/profiles/${PID}/chats/${CID}/messages/${MID}/react-by/openrouter`,
-    );
-
-    const threadTimelineRead = middleware.resolveBroadcastTopics(
-      `/api/rbac/subjects/${SID}/social-module/profiles/${PID}/chats/${CID}/threads/${TID}/messages`,
-    );
-    const chatMessagesRead = middleware.resolveBroadcastTopics(
-      `/api/rbac/subjects/${SID}/social-module/profiles/${PID}/chats/${CID}/messages`,
-    );
-    const chatActionsRead = middleware.resolveBroadcastTopics(
-      `/api/rbac/subjects/${SID}/social-module/profiles/${PID}/chats/${CID}/actions`,
-    );
-
-    expect(intersects(broadcast, threadTimelineRead)).toBe(true);
-    expect(intersects(broadcast, chatMessagesRead)).toBe(true);
-    expect(intersects(broadcast, chatActionsRead)).toBe(true);
-  });
-
-  /**
    * BDD Scenario: The ecommerce checkout RPC endpoint broadcasts order topics,
    * not a `ecommerce.checkout` verb topic.
    * Given: the `orders/checkout` POST path.

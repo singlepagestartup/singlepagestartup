@@ -31,6 +31,7 @@ import { Service as OrdersToBillingModulePaymentIntentsService } from "@sps/ecom
 import { Service as BillingPaymentIntentService } from "@sps/billing/models/payment-intent/backend/app/api/src/lib/service";
 import { Service as SubscriptionPeriodService } from "../startup/subscription-period";
 import { Service as LifecycleService } from "../startup/lifecycle";
+import { Service as OrderWork } from "./work";
 import type {
   IExecuteProps as ISubscriptionPeriodProps,
   IFreezeProps as ISubscriptionPeriodFreezeProps,
@@ -46,6 +47,10 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
 
   get module() {
     return this.appAssembly.getOrCreate(createModule);
+  }
+
+  get work() {
+    return new OrderWork(this);
   }
 
   declare repository: Repository;
@@ -269,10 +274,14 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
         ) {
           return undefined;
         }
-        return this.lifecycleService().writePaymentStatus({
+        const paid = await this.lifecycleService().writePaymentStatus({
           before: afterHook,
           status: "paid",
         });
+        if (paid) {
+          await this.work.confirmPayment(paid.id);
+        }
+        return paid;
       },
       "no key update",
     );

@@ -27,8 +27,3 @@ export interface IComponentPropsExtended extends IParentExtended<
   totalsPending?: boolean;
   totalsError?: boolean;
 }
-
-export interface IReceiptProps {
-  language: string;
-  file?: IPurchaseDetails["receipts"][number];
-}

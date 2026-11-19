@@ -7,11 +7,18 @@ import { Table } from "@sps/rbac/relations/subjects-to-wallet-operations/backend
 @injectable()
 @injectFromBase()
 export class Repository extends DatabaseRepository<typeof Table> {
-  pendingReconciliations(limit: number) {
+  pendingReconciliations(limit: number, storeId?: string) {
     return this.db
       .select()
       .from(Table)
-      .where(sql`${Table.providerWork} ->> 'reconcileRequested' = 'true'`)
+      .where(
+        and(
+          storeId ? eq(Table.storeId, storeId) : undefined,
+          sql`(${Table.providerWork} ->> 'reconcileRequested' = 'true'
+        OR ${Table.providerWork} ->> 'state' IN ('received','settled')
+        OR (${Table.providerWork} ->> 'state' = 'dispatching' AND ${Table.updatedAt} < now() - interval '3 minutes'))`,
+        ),
+      )
       .orderBy(Table.updatedAt, Table.id)
       .limit(limit);
   }

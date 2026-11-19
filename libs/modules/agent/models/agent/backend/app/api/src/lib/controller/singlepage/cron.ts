@@ -8,7 +8,13 @@ export class Handler {
 
   async execute(c: Context, next: any): Promise<Response> {
     try {
-      await this.service.cronQueue.tick();
+      await Promise.all([
+        this.service.cronQueue.tick(),
+        this.service.workAttempt.consumePayments(),
+        this.service.workAttempt.processTimers(),
+        this.service.workAttempt.reconcile(),
+        this.service.workAttempt.drain(),
+      ]);
       return c.body(null, 204);
     } catch (error: any) {
       const { status, message, details } = getHttpErrorType(error);

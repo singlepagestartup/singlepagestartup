@@ -24,11 +24,22 @@ export interface IProviderWork {
     | "failed";
   providerRequestId?: string;
   usd?: string;
-  basis?: "provider" | "rate-card";
+  basis?: "provider" | "rate-card" | "owner-statement";
   inputTokens?: number;
   outputTokens?: number;
   reconcileRequested?: boolean;
   checkedAt?: string;
+  uncoveredCostSps?: string;
+  resolution?: (
+    | { kind: "no-charge"; reference: string }
+    | {
+        kind: "charged";
+        reference: string;
+        usd: string;
+        inputTokens: number;
+        outputTokens: number;
+      }
+  ) & { actorId: string; recordedAt: string };
 }
 export interface ISettlementTerms {
   providerSubjectId: string;

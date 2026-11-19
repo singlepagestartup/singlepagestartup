@@ -18,6 +18,7 @@ import { cn } from "@sps/shared-frontend-client-utils";
 import { Component as SocialModuleSkill } from "@sps/social/models/skill/frontend/component";
 import { useCallback, useRef, useState } from "react";
 import type { IModel as SocialProfile } from "@sps/social/models/profile/sdk/model";
+import { CustomerWork } from "./components/CustomerWork";
 
 interface SkillDialogTarget {
   orderIndex: number;
@@ -34,6 +35,19 @@ interface SkillDialogTarget {
  * ThreadMessagesCache API.
  */
 export function Component(props: IComponentPropsExtended) {
+  if (props.socialModuleChat.variant === "customer-work") {
+    return (
+      <CustomerWork
+        subjectId={props.data.id}
+        threadId={props.socialModuleThreadId}
+        language={props.language}
+      />
+    );
+  }
+  return <Chat {...props} />;
+}
+
+function Chat(props: IComponentPropsExtended) {
   const [isSkillDialogOpen, setIsSkillDialogOpen] = useState(false);
   const [isMcpServersDialogOpen, setIsMcpServersDialogOpen] = useState(false);
   const [isProfileEditDialogOpen, setIsProfileEditDialogOpen] = useState(false);

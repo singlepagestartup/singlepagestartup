@@ -9,6 +9,10 @@ import {
   within,
 } from "@testing-library/react";
 const mockCreate = jest.fn();
+jest.mock("next/navigation", () => ({
+  useRouter: () => ({ push: jest.fn() }),
+  useSearchParams: () => new URLSearchParams(),
+}));
 const mockRefetch = jest.fn();
 const mockQuoteRead = jest.fn();
 const mockCardPriceRead = jest.fn();
@@ -27,6 +31,12 @@ let mockValidateStock = false;
 let mockRequireShippingAddress = false;
 jest.mock("@sps/rbac/models/subject/sdk/client", () => ({
   api: {
+    customerWork: () => ({ data: undefined }),
+    customerWorkAvailability: () => ({
+      data: { consultation: false, order: false, payAfterAcceptance: false },
+      isPending: false,
+    }),
+    changeCustomerWork: () => ({ isPending: false }),
     ecommerceModuleOrderCreate: () => ({
       mutateAsync: mockCreate,
       isPending: false,

@@ -38,3 +38,5 @@ export {
   type IMiddlewareRule as IRequestRateLimitMiddlewareRule,
 } from "./lib/request-rate-limit";
 export { Middleware as RequestPasswordAttempts } from "./lib/request-password-attempts";
+export { Middleware as RequestSignedInSubject } from "./lib/request-signed-in-subject";
+export { Middleware as RequestCustomerWorkChat } from "./lib/request-customer-work-chat";

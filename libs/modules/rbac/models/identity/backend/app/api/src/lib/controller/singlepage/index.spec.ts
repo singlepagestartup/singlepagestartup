@@ -16,6 +16,7 @@ const identity = {
   updatedAt: new Date("2026-05-10T00:46:04.443Z"),
   variant: "default",
   provider: "email_and_password",
+  usage: "inbound",
   account: null,
   email: "operator@example.com",
   password: "bcrypt-hash",
@@ -29,6 +30,7 @@ const publicIdentity = {
   updatedAt: identity.updatedAt,
   variant: identity.variant,
   provider: identity.provider,
+  usage: identity.usage,
   account: identity.account,
   email: identity.email,
 };

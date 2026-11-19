@@ -5,8 +5,9 @@ import { getOperators } from "drizzle-orm";
 import { injectable } from "inversify";
 // import { Config as DrizzleConfig } from "drizzle-kit";
 
-export interface QueryBuilderFilterMethods
-  extends ReturnType<typeof getOperators> {}
+export interface QueryBuilderFilterMethods extends ReturnType<
+  typeof getOperators
+> {}
 
 export interface ISeedResult {
   module: string;
@@ -67,12 +68,14 @@ export interface IRepositoryConfiguration {
     active: boolean;
     type: "json";
     directory: string;
+    include?: (entity: Record<string, any>) => boolean;
   };
   seed: {
     active: boolean;
     module: string;
     name: string;
     type: "model" | "relation";
+    include?: (entity: Record<string, any>) => boolean;
     transformers?: ITransform[];
     filters?: IFilter[];
   };

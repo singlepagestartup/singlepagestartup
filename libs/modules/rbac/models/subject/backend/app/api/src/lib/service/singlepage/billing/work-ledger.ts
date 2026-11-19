@@ -172,8 +172,8 @@ export class WorkLedger {
     );
   }
 
-  pendingReconciliations(limit: number) {
-    return this.records.pendingReconciliations(limit);
+  pendingReconciliations(limit: number, storeId?: string) {
+    return this.records.pendingReconciliations(limit, storeId);
   }
 
   changeProviderWork(

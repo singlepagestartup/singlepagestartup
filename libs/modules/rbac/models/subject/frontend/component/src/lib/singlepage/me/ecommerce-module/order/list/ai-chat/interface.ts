@@ -22,6 +22,7 @@ export interface IRepeatConfirmation {
 }
 
 export interface IOrderRowProps {
+  subjectId?: string;
   order: IResult["IEcommerceModuleOrderListResult"][number];
   language: string;
   confirming: boolean;

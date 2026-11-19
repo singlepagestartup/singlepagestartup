@@ -148,6 +148,29 @@ export class Handler {
         requestedThreadId: requestedThreadId || undefined,
       });
 
+      const incomingId = parsedBody.data?.sourceSystemId;
+      const workMessage = await this.service.customerWork.messageFromThread({
+        customerId: id,
+        chatId: socialModuleChatId,
+        threadId: socialModuleThreadId,
+        profileId: socialModuleProfileId,
+        text: parsedBody.data?.description,
+        sourceSystemId:
+          typeof incomingId === "string" ? incomingId.trim() : undefined,
+        hasAttachments: files.length > 0,
+        ...(files.length ? { attachments: files } : {}),
+      });
+      if (workMessage) {
+        c.header("X-SPS-SKIP-ACTION-LOGGER", "1");
+        return c.json({
+          data: {
+            ...workMessage,
+            authorProfileIds: [socialModuleProfileId],
+            attachments: [],
+          },
+        });
+      }
+
       const thread = await this.service.modules.social.thread.findById({
         id: socialModuleThreadId,
       });
@@ -379,8 +402,8 @@ export class Handler {
         data: {
           ...socialModuleMessage,
           authorProfileIds: [socialModuleProfileId],
-          attachments: (socialModuleMessagesToFileStorageModuleFiles || [])
-            .toSorted((a, b) => (a.orderIndex || 0) - (b.orderIndex || 0))
+          attachments: [...(socialModuleMessagesToFileStorageModuleFiles || [])]
+            .sort((a, b) => (a.orderIndex || 0) - (b.orderIndex || 0))
             .flatMap((link) => {
               const file = fileStorageModuleFiles?.find(
                 (file) => file.id === link.fileStorageModuleFileId,

@@ -47,6 +47,7 @@ export function Component(props: IExternalWidgetProps) {
                 ecommerceModuleStoreSlug={
                   routeParams?.["ecommerce.stores.slug"]
                 }
+                crmModuleTaskId={routeParams?.["crm.tasks.id"]}
                 variant={entity.variant as any}
               />
             ))

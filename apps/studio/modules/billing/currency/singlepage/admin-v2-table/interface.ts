@@ -1,10 +1,5 @@
 export type JsonValue =
-  | null
-  | string
-  | number
-  | boolean
-  | JsonValue[]
-  | { [key: string]: JsonValue };
+  null | string | number | boolean | JsonValue[] | { [key: string]: JsonValue };
 
 export interface IRecord {
   id: string;
@@ -12,6 +7,7 @@ export interface IRecord {
   updatedAt: string;
   variant: string;
   isDefault: boolean;
+  minorUnitDigits: number | null;
   symbol: string;
   title: string;
   adminTitle: string;

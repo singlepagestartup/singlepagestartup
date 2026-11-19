@@ -3,14 +3,31 @@
 import { memo, useCallback, useState } from "react";
 import { useIsFetching, useIsMutating } from "@tanstack/react-query";
 import { Component as Subject } from "@sps/rbac/models/subject/frontend/component";
+import { api } from "@sps/rbac/models/subject/sdk/client";
+import { Button } from "@sps/shared-ui-shadcn";
 import { route } from "@sps/rbac/models/subject/sdk/model";
 import { cn } from "@sps/shared-frontend-client-utils";
 import { Component as CartRow } from "../../../../ecommerce-module/order/list/checkout-default/Row";
+import { Discussion } from "../../../../ecommerce-module/order/create-default/customer-work/Discussion";
+import { ResultReview } from "../../../../ecommerce-module/order/create-default/customer-work/ResultReview";
 import type { IComponentPropsExtended, ISavedOrderProps } from "./interface";
 
 const SavedOrder = memo(function SavedOrder(props: ISavedOrderProps) {
   const { ecommerceModuleOrder: order, subject, language } = props;
   const details = order.cartDetails;
+  const storeId = details?.storeIds[0] ?? "";
+  const work = api.customerWorkForOrder({
+    id: subject.id,
+    storeId,
+    orderId: order.id,
+  });
+  const result = api.orderWork.read({
+    id: subject.id,
+    storeId,
+    orderId: order.id,
+    taskId: work.data?.taskId ?? "",
+  });
+  const [discussionOpen, setDiscussionOpen] = useState(false);
   const [blockedLines, setBlockedLines] = useState<Set<string>>(new Set());
   const onSelectionStateChange = useCallback(
     (_orderId: string, lineId: string, blocked: boolean) => {
@@ -62,8 +79,41 @@ const SavedOrder = memo(function SavedOrder(props: ISavedOrderProps) {
         ecommerceModuleProduct={props.ecommerceModuleProduct}
         ecommerceModuleOrder={order}
         language={language}
-        disabled={!canPay}
+        disabled={
+          !canPay ||
+          Boolean(work.data && result.data?.state !== "awaiting-payment")
+        }
       />
+      {work.data && !discussionOpen && (
+        <Button
+          type="button"
+          variant="outline"
+          className="min-h-11 justify-self-start"
+          onClick={() => setDiscussionOpen(true)}
+        >
+          {language === "ru"
+            ? "Открыть обсуждение заказа"
+            : "Open order discussion"}
+        </Button>
+      )}
+      {work.data && discussionOpen && (
+        <Discussion
+          key={work.data.taskId}
+          work={work.data}
+          subjectId={subject.id}
+          language={language}
+          onClose={() => setDiscussionOpen(false)}
+          footer={
+            result.data && (
+              <ResultReview
+                subjectId={subject.id}
+                work={result.data}
+                language={language}
+              />
+            )
+          }
+        />
+      )}
     </li>
   );
 });

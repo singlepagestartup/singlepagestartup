@@ -31,4 +31,8 @@ export const Table = pgTable(table, fields, (t) => [
     .index("cm_task_store_due")
     .on(t.storeId, t.nextActionAt, t.id)
     .where(sql`${t.status} = 'waiting'`),
+  pgCore
+    .index("cm_task_due")
+    .on(t.nextActionAt, t.id)
+    .where(sql`${t.status} = 'waiting'`),
 ]);

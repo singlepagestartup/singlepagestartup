@@ -38,10 +38,27 @@ const waitingSchema = z.object({
   silenceOutcome: outcomeSchema.optional(),
 });
 
+export const workOperationSchema = z.enum([
+  "request-routing",
+  "tool-selection",
+  "compression",
+  "knowledge-search",
+  "vision",
+  "transcription",
+]);
+
+export type TWorkOperation = z.infer<typeof workOperationSchema>;
+
 const stageSchema = z.object({
   id: stageIdSchema,
   name: z.string().trim().min(1).max(150),
   instruction: z.string().trim().max(4000).default(""),
+  output: z.enum(["chat", "pdf", "image"]).optional(),
+  operations: z
+    .array(workOperationSchema)
+    .max(6)
+    .refine((values) => new Set(values).size === values.length)
+    .optional(),
   archived: z.boolean().optional(),
   evidenceInstruction: z.string().trim().max(4000).optional(),
   missingDataInstruction: z.string().trim().max(4000).optional(),
@@ -54,7 +71,7 @@ const stageSchema = z.object({
 
 const positiveAmount = z
   .string()
-  .regex(/^(?:0|[1-9][0-9]{0,17})(?:\.[0-9]{1,18})?$/)
+  .regex(/^(?:0|[1-9][0-9]{0,17})(?:\.[0-9]{1,12})?$/)
   .refine((amount) => /[1-9]/.test(amount));
 
 const workFundingSchema = z.object({

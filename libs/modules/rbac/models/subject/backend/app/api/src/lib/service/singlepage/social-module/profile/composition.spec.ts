@@ -88,19 +88,6 @@ describe("Given: rbac.subject profile AI service composition", () => {
         secretKey: "secret",
       }),
     ).toBe(actionReporter);
-    expect(
-      service.billingOpenRouterSummarize({
-        calls: [],
-        selectedModelId: null,
-      }),
-    ).toEqual(
-      expect.objectContaining({
-        prechargeTokens: 1,
-        exactTokens: 0,
-        deltaTokens: -1,
-      }),
-    );
-
     expect(openMcpCatalog).toHaveBeenCalledTimes(1);
     expect(runToolLoop).toHaveBeenCalledTimes(1);
     expect(createActionReporter).toHaveBeenCalledTimes(1);

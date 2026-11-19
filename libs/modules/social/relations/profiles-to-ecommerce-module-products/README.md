@@ -4,6 +4,12 @@
 
 Links profiles to ecommerce products.
 
+The `store-expert` variant assigns an AI profile to customer work in one
+store. In Admin, choose the store and one offer, product, or category. An
+offer assignment takes precedence over a product assignment, which takes
+precedence over a category assignment. If two profiles match at the same
+priority, a manager receives the request in the CRM queue.
+
 ## Fields
 
 - `id`: unique identifier (UUID).
@@ -14,6 +20,7 @@ Links profiles to ecommerce products.
 - `className`: optional CSS class name.
 - `profileId`: linked profile ID.
 - `ecommerceModuleProductId`: linked product ID.
+- `storeId`, `offerId`, and `categoryId` identify the scope of an expert assignment.
 
 ## Variants
 

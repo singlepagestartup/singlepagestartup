@@ -246,7 +246,7 @@ export class Service extends CRUDService<typeof Table.$inferSelect> {
         }
       }
 
-      validatePublication(funnel.definition);
+      validatePublication(funnel.definition, funnel.kind);
       await this.validateBindings(funnel.storeId, funnel.bindings);
       const version = (funnel.publishedVersion ?? 0) + 1;
       const publication = await publications.append({
@@ -270,6 +270,16 @@ export class Service extends CRUDService<typeof Table.$inferSelect> {
       });
       return publication;
     });
+  }
+
+  async resolveFormIntake(formId: string) {
+    const matches = await this.owner().publishedForForm(formId);
+    if (matches.length > 1) {
+      throw new Error(
+        "Conflict error. Multiple stores or workflows accept this form",
+      );
+    }
+    return matches[0];
   }
 
   async resolve(input: IResolveFunnel) {

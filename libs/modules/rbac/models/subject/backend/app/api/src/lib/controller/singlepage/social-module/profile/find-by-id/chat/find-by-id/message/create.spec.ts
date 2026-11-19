@@ -158,6 +158,7 @@ function createContext(
 
 function createService() {
   return {
+    customerWork: { messageFromThread: jest.fn().mockResolvedValue(null) },
     socialModuleChatLifecycleAssertThreadBelongsToChat: jest
       .fn()
       .mockResolvedValue(undefined),
@@ -228,6 +229,36 @@ describe("Given: rbac social message create author relation", () => {
     mockFileStorageFileCreate.mockResolvedValue({});
     mockSocialModuleMessageUpdate.mockResolvedValue({});
     mockRbacSubjectNotify.mockResolvedValue({});
+  });
+
+  it("uses the linked customer's workflow before writing an ordinary Social message", async () => {
+    const service = createService();
+    service.customerWork.messageFromThread.mockResolvedValue({
+      id: "workflow-message",
+    });
+    const context = createContext([], {
+      description: "Hello",
+      sourceSystemId: "482",
+    });
+    const response = await new Handler(service).execute(context, jest.fn());
+
+    expect(service.customerWork.messageFromThread).toHaveBeenCalledWith({
+      customerId: "subject-1",
+      chatId: "chat-1",
+      threadId: "thread-1",
+      profileId: "profile-1",
+      text: "Hello",
+      sourceSystemId: "482",
+      hasAttachments: false,
+    });
+    expect(response).toEqual({
+      data: {
+        id: "workflow-message",
+        authorProfileIds: ["profile-1"],
+        attachments: [],
+      },
+    });
+    expect(mockSocialModuleMessageCreate).not.toHaveBeenCalled();
   });
 
   it("stores each attachment separately and links all of them in message order", async () => {

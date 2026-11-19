@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useId, useRef, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { api } from "@sps/rbac/models/subject/sdk/client";
 import { api as offerApi } from "@sps/ecommerce/relations/stores-to-products/sdk/client";
 import { api as storeApi } from "@sps/ecommerce/models/store/sdk/client";
@@ -9,7 +10,11 @@ import { Button } from "@sps/shared-ui-shadcn";
 import { Select } from "@sps/ui-adapter";
 import { cn, formatCurrencyAmount } from "@sps/shared-frontend-client-utils";
 import { ECOMMERCE_ORDER_LINE_QUANTITY_BOUNDS as quantityBounds } from "@sps/shared-utils";
-import type { IEcommerceCartSelection } from "@sps/rbac/models/subject/sdk/model";
+import { Discussion } from "./customer-work/Discussion";
+import type {
+  ICustomerWorkView,
+  IEcommerceCartSelection,
+} from "@sps/rbac/models/subject/sdk/model";
 import {
   getEligibleRetailOffers,
   type IOfferServiceOption,
@@ -45,11 +50,15 @@ const incompleteCodes = new Set(["address_required"]);
 
 export function Component(props: IComponentPropsExtended) {
   const ru = props.language === "ru";
+  const router = useRouter();
+  const search = useSearchParams();
+  const requestedOfferId = search.get("offer") ?? "";
+  const consultationTaskId = search.get("consultation") ?? "";
   const formId = useId();
   const createOrder = api.ecommerceModuleOrderCreate({});
   function initialDraft(): IDraft {
     return {
-      offerId: "",
+      offerId: requestedOfferId,
       currencyId: "",
       manualPriceSelection: false,
       quantity: "1",
@@ -105,6 +114,77 @@ export function Component(props: IComponentPropsExtended) {
       : offers[0];
   }
   const selected = offerForDraft(draft);
+  const consultation = api.customerWork({
+    id: props.data.id,
+    storeId: selected?.storeId ?? "",
+    taskId: consultationTaskId,
+    enabled: Boolean(consultationTaskId && selected?.id === requestedOfferId),
+  }).data;
+  const workQuery = api.customerWorkAvailability({
+    id: props.data.id,
+    storeId: selected?.storeId ?? "",
+    offerId: selected?.id ?? "",
+    productId: props.ecommerceModuleProduct.id,
+  });
+  const workMutation = api.changeCustomerWork();
+  const [selectionWork, setSelectionWork] = useState<{
+    identity: string;
+    offerId: string;
+    view: ICustomerWorkView;
+  }>();
+  const activeWork =
+    selectionWork?.identity === identity &&
+    selectionWork.offerId === selected?.id
+      ? selectionWork.view
+      : undefined;
+  const work = activeWork;
+  const [discussionOpen, setDiscussionOpen] = useState(false);
+  const workRequest = useRef<{ signature: string; key: string } | undefined>(
+    undefined,
+  );
+  const workPending =
+    workMutation.isPending || (Boolean(selected) && workQuery.isPending);
+  const pending = workPending || createOrder.isPending;
+  const discussionButton = useRef<HTMLButtonElement>(null);
+
+  function workKey(signature: string) {
+    if (workRequest.current?.signature !== signature) {
+      workRequest.current = { signature, key: crypto.randomUUID() };
+    }
+    return workRequest.current.key;
+  }
+
+  async function ask() {
+    if (!selected || workPending) return;
+    setError("");
+    try {
+      const result = await workMutation.mutateAsync({
+        id: props.data.id,
+        data: {
+          operation: "ask",
+          operationKey: workKey(`ask:${identity}:${selected.id}`),
+          storeId: selected.storeId,
+          offerId: selected.id,
+          productId: props.ecommerceModuleProduct.id,
+        },
+      });
+      workRequest.current = undefined;
+      if (currentIdentity.current === identity) {
+        router.push(
+          `/${props.language}/social/chats/${result.chatId}/threads/${result.threadId}`,
+        );
+      }
+    } catch (cause) {
+      setError(
+        cause instanceof Error
+          ? cause.message
+          : ru
+            ? "Не удалось открыть обсуждение."
+            : "Could not open the conversation.",
+      );
+    }
+  }
+
   const requestedOffer = offerForDraft(requestedDraft);
   const storeIds = [...new Set(offers.map((offer) => offer.storeId))];
   const stores = storeApi.find({
@@ -254,7 +334,9 @@ export function Component(props: IComponentPropsExtended) {
         }
       : undefined;
   const configuration =
-    paymentReady && !createOrder.isPending ? cartConfiguration : undefined;
+    paymentReady && !pending && !workQuery.data?.payAfterAcceptance
+      ? cartConfiguration
+      : undefined;
 
   function edit(update: (value: IDraft) => IDraft, wait = false) {
     if (timer.current) clearTimeout(timer.current);
@@ -278,6 +360,7 @@ export function Component(props: IComponentPropsExtended) {
     props.data.id,
     props.ecommerceModuleProduct.id,
     props.ecommerceModuleStore?.id,
+    requestedOfferId,
   ]);
   useEffect(() => {
     if (
@@ -285,7 +368,7 @@ export function Component(props: IComponentPropsExtended) {
       !offers.some((offer) => offer.id === draft.offerId) &&
       !offersQuery.isPending
     ) {
-      edit(() => initialDraft());
+      edit(() => ({ ...initialDraft(), offerId: "" }));
     }
   }, [props.excludedOfferIds, offersQuery.data]);
   useEffect(() => {
@@ -395,24 +478,54 @@ export function Component(props: IComponentPropsExtended) {
   async function submit(event: React.FormEvent) {
     event.preventDefault();
     const configuration = cartConfiguration;
-    if (!configuration || createOrder.isPending) return;
+    if (!configuration || pending) return;
     setError("");
     const submittedSignature = signature;
     const submittedIdentity = currentIdentity.current;
     try {
-      await createOrder.mutateAsync({
-        id: props.data.id,
-        data: {
-          productId: props.ecommerceModuleProduct.id,
-          offerId: configuration.selection.offerId,
-          storeId: configuration.storeId,
-          quantity: configuration.selection.quantity,
-          billingModuleCurrencyId: configuration.selection.currencyId,
-          destination: configuration.selection.destination,
-          services: configuration.selection.services,
-          expectedQuoteVersion: configuration.expectedQuoteVersion,
-        },
-      });
+      const selection = {
+        quantity: configuration.selection.quantity,
+        billingModuleCurrencyId: configuration.selection.currencyId,
+        destination: configuration.selection.destination,
+        services: configuration.selection.services,
+        expectedQuoteVersion: configuration.expectedQuoteVersion,
+      };
+      const offer = {
+        productId: props.ecommerceModuleProduct.id,
+        offerId: configuration.selection.offerId,
+        storeId: configuration.storeId,
+      };
+      if (workQuery.data?.order) {
+        const result = await workMutation.mutateAsync({
+          id: props.data.id,
+          data: {
+            ...offer,
+            selection,
+            operation: "add",
+            operationKey: workKey(
+              `add:${submittedIdentity}:${submittedSignature}`,
+            ),
+            consultationTaskId:
+              consultation?.storeId === offer.storeId &&
+              consultation.offerId === offer.offerId
+                ? consultation.taskId
+                : undefined,
+          },
+        });
+        workRequest.current = undefined;
+        if (submittedIdentity === currentIdentity.current) {
+          setSelectionWork({
+            identity: submittedIdentity,
+            offerId: offer.offerId,
+            view: result,
+          });
+        }
+      } else {
+        await createOrder.mutateAsync({
+          id: props.data.id,
+          data: { ...offer, ...selection },
+        });
+      }
       if (
         submittedIdentity === currentIdentity.current &&
         (!draftRef.current.offerId ||
@@ -930,10 +1043,10 @@ export function Component(props: IComponentPropsExtended) {
             <Button
               type="submit"
               variant="primary"
-              disabled={createOrder.isPending || !ready}
+              disabled={pending || !ready}
               className="min-h-11 w-full rounded-xl"
             >
-              {createOrder.isPending
+              {pending
                 ? ru
                   ? "Добавляем…"
                   : "Adding…"
@@ -941,6 +1054,24 @@ export function Component(props: IComponentPropsExtended) {
                   ? "Добавить в корзину"
                   : "Add to cart"}
             </Button>
+            {workQuery.data?.consultation && (
+              <Button
+                type="button"
+                variant="outline"
+                className="min-h-11 w-full rounded-xl"
+                disabled={pending}
+                onClick={() => void ask()}
+              >
+                {ru ? "Задать вопрос" : "Ask a question"}
+              </Button>
+            )}
+            {workQuery.data?.payAfterAcceptance && (
+              <p className="text-xs text-muted-foreground">
+                {ru
+                  ? "Оплата откроется после принятия версии в обсуждении заказа."
+                  : "Payment opens after you accept a version in the order discussion."}
+              </p>
+            )}
             {added ? (
               <p role="status" className="text-xs text-muted-foreground">
                 {ru ? "Товар в корзине." : "Added to your cart."}
@@ -949,10 +1080,36 @@ export function Component(props: IComponentPropsExtended) {
           </form>
         </div>
       ) : null}
-      {props.checkoutSlot?.(configuration, {
-        refreshQuote: () => quote.refetch(),
-        hideWhenIdle,
-      })}
+      {work && !discussionOpen && (
+        <Button
+          ref={discussionButton}
+          type="button"
+          variant="outline"
+          className="min-h-11"
+          onClick={() => setDiscussionOpen(true)}
+        >
+          {ru ? "Открыть обсуждение" : "Open discussion"}
+        </Button>
+      )}
+      {work && discussionOpen && (
+        <Discussion
+          key={work.taskId}
+          subjectId={props.data.id}
+          work={work}
+          language={props.language}
+          onClose={() => {
+            setDiscussionOpen(false);
+            window.requestAnimationFrame(() =>
+              discussionButton.current?.focus(),
+            );
+          }}
+        />
+      )}
+      {!workQuery.data?.payAfterAcceptance &&
+        props.checkoutSlot?.(configuration, {
+          refreshQuote: () => quote.refetch(),
+          hideWhenIdle,
+        })}
     </div>
   );
 }

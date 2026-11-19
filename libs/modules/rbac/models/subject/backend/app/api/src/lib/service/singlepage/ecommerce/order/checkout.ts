@@ -874,6 +874,7 @@ export class Service {
     };
     const billingModulePaymentIntents: {
       orderIds: string[];
+      managedWork?: boolean;
       billingModulePaymentIntent: IBillingModulePaymentIntent;
       billingModuleCurrencyId: string;
       checkoutAttributesByCurrency: {
@@ -973,6 +974,27 @@ export class Service {
           const { amount, type, interval } = checkoutAttributesByOrderId.get(
             order.id,
           )!;
+
+          const work = await this.modules.ecommerce.order.work?.checkout({
+            orderId: order.id,
+            customerId: props.id,
+            price: amount,
+            currencyId: billingModuleCurrencyId,
+          });
+          if (
+            work?.resultVersionId &&
+            (ecommerceModuleOrders.length !== 1 || type !== "one_off")
+          ) {
+            throw new Error(
+              "Conflict error. An accepted result requires checkout for its one exact order",
+            );
+          }
+          if (work) {
+            const prepared = metadata.ecommerceModule.orders.find(
+              (entry: { id: string }) => entry.id === order.id,
+            );
+            prepared.orderWork = work;
+          }
 
           if (type === "subscription") {
             const sourceOrderIds = new Set<string>();
@@ -1100,6 +1122,8 @@ export class Service {
           const existingBillingModulePaymentIntentWithSameBillingModuleCurrencyAndCheckoutAttributes =
             billingModulePaymentIntents.find(
               (billingModulePaymentIntent) =>
+                !work &&
+                !billingModulePaymentIntent.managedWork &&
                 type !== "subscription" &&
                 billingModulePaymentIntent.billingModuleCurrencyId ===
                   billingModuleCurrencyId &&
@@ -1174,6 +1198,7 @@ export class Service {
 
           billingModulePaymentIntents.push({
             orderIds: [order.id],
+            managedWork: Boolean(work),
             billingModulePaymentIntent,
             billingModuleCurrencyId,
             checkoutAttributesByCurrency: {

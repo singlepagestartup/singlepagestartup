@@ -1,3 +1,5 @@
+import { StoreCrmLink } from "./CrmLink";
+import { ProviderSettings } from "./ProviderSettings";
 import { Component as EcommerceModuleProduct } from "@sps/ecommerce/models/product/frontend/component";
 import { Component as EcommerceModuleStore } from "@sps/ecommerce/models/store/frontend/component";
 import { Component as EcommerceModuleStoresToProducts } from "@sps/ecommerce/relations/stores-to-products/frontend/component";
@@ -35,6 +37,15 @@ export function Component(props: IContentProps) {
               data={store}
               language={props.language}
             >
+              <StoreCrmLink
+                storeId={store.id}
+                storeSlug={store.slug}
+                language={props.language}
+              />
+              <ProviderSettings
+                ecommerceModuleStoreId={store.id}
+                language={props.language}
+              />
               <EcommerceModuleStoresToProducts
                 isServer={props.isServer}
                 variant="find"

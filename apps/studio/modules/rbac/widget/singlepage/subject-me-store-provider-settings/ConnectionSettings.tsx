@@ -2,7 +2,7 @@
 
 import { useEffect, useId, useRef, useState } from "react";
 import type { FormEvent } from "react";
-import { Component as Icon } from "../../../../shared/icon";
+import { Component as SharedIcon } from "../../../../shared/icon";
 import type {
   IAssignment,
   IComponentProps,
@@ -108,7 +108,8 @@ export function ConnectionSettings({
         id={headingId}
         className="flex items-center gap-2 text-xl font-semibold"
       >
-        <Icon variant="phosphor" name="link" size={20} /> Подключение агента
+        <SharedIcon variant="phosphor" name="link" size={20} /> Подключение
+        агента
       </h2>
       <form
         className="mt-5 grid gap-3 sm:grid-cols-2"
@@ -214,7 +215,8 @@ export function ConnectionSettings({
       >
         <div className="flex flex-wrap items-center justify-between gap-2">
           <h3 className="flex items-center gap-2 text-base font-semibold">
-            <Icon variant="phosphor" name="key" size={20} /> Ключ подключения
+            <SharedIcon variant="phosphor" name="key" size={20} /> Ключ
+            подключения
           </h3>
           <button
             ref={addButtonRef}

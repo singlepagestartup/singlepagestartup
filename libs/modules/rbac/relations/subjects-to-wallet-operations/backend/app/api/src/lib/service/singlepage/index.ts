@@ -11,8 +11,8 @@ export class Service extends CRUDService<IModel> {
     super(repository);
   }
 
-  pendingReconciliations(limit: number) {
-    return this.repository.pendingReconciliations(limit);
+  pendingReconciliations(limit: number, storeId?: string) {
+    return this.repository.pendingReconciliations(limit, storeId);
   }
 
   obligations(

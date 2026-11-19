@@ -92,37 +92,6 @@ export const topicRules: ITopicRule[] = [
     stop: true,
   },
   {
-    // AI-reaction RPC endpoint (issue #195 F3): a POST that creates the AI
-    // response MESSAGE in the chat thread, a chat ACTION, AND settles the
-    // requester's billing balance. The canonical
-    // deriver would treat the trailing verbs as collections and emit
-    // `social.openrouter` (+ scoped variants) — topics no reader subscribes
-    // to — so the new message/action never reach the open chat. Only `cid`/
-    // `mid` are in the URL (no `tid`), so thread-timeline readers are reached
-    // through the collection-wide `social.messages` topic that their own topic
-    // rule also emits.
-    //
-    // MUST precede the chat-messages rule below: rules are PREFIX-matched
-    // (path-to-regexp `end: false`), so `.../chats/[cid]/messages` would
-    // otherwise match this path's prefix and `stop` before this rule runs.
-    routeTemplate:
-      "/api/rbac/subjects/[rbac.subjects.id]/social-module/profiles/[social.profiles.id]/chats/[social.chats.id]/messages/[social.messages.id]/react-by/openrouter",
-    topics: [
-      "social.messages",
-      "social.chats.[social.chats.id].messages",
-      "social.actions",
-      "social.chats.[social.chats.id].actions",
-      "social.profiles-to-knowledge-module-sources",
-      "knowledge.sources",
-      "knowledge.chunks",
-      "knowledge.sources-to-chunks",
-      "knowledge.sources-to-file-storage-module-files",
-      "social.messages-to-knowledge-module-sources",
-      "rbac.subjects-to-billing-module-currencies",
-    ],
-    stop: true,
-  },
-  {
     // Profile Knowledge is a composite RBAC read over both the Social-owned
     // profile-Source relation and Knowledge Sources. Canonical derivation
     // sees only the trailing `sources` segment and therefore cannot identify

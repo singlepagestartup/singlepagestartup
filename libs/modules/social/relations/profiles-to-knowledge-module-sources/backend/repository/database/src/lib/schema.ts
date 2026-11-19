@@ -1,6 +1,8 @@
 import * as pgCore from "drizzle-orm/pg-core";
 import { Table as Profile } from "@sps/social/models/profile/backend/repository/database";
 import { Table as Source } from "@sps/knowledge/models/source/backend/repository/database";
+import { Table as Store } from "@sps/ecommerce/models/store/backend/repository/database";
+import { Table as Thread } from "@sps/social/models/thread/backend/repository/database";
 
 export const moduleName = "sl";
 export const table = "ps_to_ke_me_ss_gch";
@@ -16,6 +18,12 @@ export const Table = pgTable(
     variant: pgCore.text("variant").notNull().default("default"),
     orderIndex: pgCore.integer("order_index").notNull().default(0),
     className: pgCore.text("class_name"),
+    storeId: pgCore
+      .uuid("store_id")
+      .references(() => Store.id, { onDelete: "cascade" }),
+    projectId: pgCore
+      .uuid("project_id")
+      .references(() => Thread.id, { onDelete: "cascade" }),
     profileId: pgCore
       .uuid("pe_id")
       .notNull()
@@ -29,5 +37,8 @@ export const Table = pgTable(
     pairUnique: pgCore
       .unique("sl_profile_source_unique")
       .on(table.profileId, table.knowledgeModuleSourceId),
+    memoryScope: pgCore
+      .index("sl_profile_source_scope")
+      .on(table.profileId, table.storeId, table.projectId),
   }),
 );

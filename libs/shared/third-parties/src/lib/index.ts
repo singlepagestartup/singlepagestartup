@@ -32,3 +32,24 @@ export type {
   IOpenRouterSessionOptions,
   TOpenRouterReasoningEffort,
 } from "./open-router/interface";
+export {
+  sendWork,
+  readWorkUsage,
+  estimateWork,
+  ProviderRejected,
+  ProviderOutcomeUnknown,
+  type IWorkRequest,
+  type ICompletedWork,
+} from "./open-router/work-request";
+export {
+  estimateImageWork,
+  sendImageWork,
+  type IImageWorkRequest,
+} from "./open-router/image-work";
+export {
+  estimateNestedWork,
+  sendNestedWork,
+  supportsNestedWork,
+  type TNestedWorkRequest,
+  type INestedWorkResult,
+} from "./open-router/nested-work";

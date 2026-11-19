@@ -4,7 +4,7 @@
   "totals": {
     "modules": 15,
     "entities": 61,
-    "variants": 1084,
+    "variants": 1085,
     "coveredVariants": 255,
     "representedEntities": 61
   },
@@ -2789,6 +2789,12 @@
             },
             {
               "variant": "overview-default",
+              "scope": "singlepage",
+              "variantsFile": "libs/modules/ecommerce/models/store/frontend/component/src/lib/singlepage/variants.ts",
+              "coveredBy": []
+            },
+            {
+              "variant": "product-price-default",
               "scope": "singlepage",
               "variantsFile": "libs/modules/ecommerce/models/store/frontend/component/src/lib/singlepage/variants.ts",
               "coveredBy": []

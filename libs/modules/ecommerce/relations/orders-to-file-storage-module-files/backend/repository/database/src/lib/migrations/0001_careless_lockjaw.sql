@@ -1,0 +1,4 @@
+ALTER TABLE "sps_ee_os_to_fe_se_me_fs_b06" ADD COLUMN "private_receipt_file_id" uuid;--> statement-breakpoint
+ALTER TABLE "sps_ee_os_to_fe_se_me_fs_b06" ADD COLUMN "legacy_receipt_location" text;--> statement-breakpoint
+ALTER TABLE "sps_ee_os_to_fe_se_me_fs_b06" ADD COLUMN "legacy_receipt_revoked_at" timestamp (3);--> statement-breakpoint
+ALTER TABLE "sps_ee_os_to_fe_se_me_fs_b06" ADD CONSTRAINT "sps_ee_os_to_fe_se_me_fs_b06_private_receipt_file_id_sps_fs_private_file_id_fk" FOREIGN KEY ("private_receipt_file_id") REFERENCES "public"."sps_fs_private_file"("id") ON DELETE restrict ON UPDATE no action;

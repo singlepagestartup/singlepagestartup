@@ -27,6 +27,8 @@ import { createService as createWidgetService } from "@sps/ecommerce/models/widg
 import { createService as createWidgetsToCategoriesService } from "@sps/ecommerce/relations/widgets-to-categories/backend/app/api/src/lib/bootstrap";
 import { createService as createWidgetsToProductsService } from "@sps/ecommerce/relations/widgets-to-products/backend/app/api/src/lib/bootstrap";
 import { createService as createWidgetsToStoresService } from "@sps/ecommerce/relations/widgets-to-stores/backend/app/api/src/lib/bootstrap";
+import { createService as createOrderWorkService } from "@sps/ecommerce/models/order-work/backend/app/api/src/lib/bootstrap";
+import { createService as createOrdersToOrderWorksService } from "@sps/ecommerce/relations/orders-to-order-works/backend/app/api/src/lib/bootstrap";
 
 export function createServices(assembly: IAppAssembly) {
   return {
@@ -110,6 +112,12 @@ export function createServices(assembly: IAppAssembly) {
     },
     get widgetsToStores() {
       return createWidgetsToStoresService(assembly);
+    },
+    get orderWork() {
+      return createOrderWorkService(assembly);
+    },
+    get ordersToOrderWorks() {
+      return createOrdersToOrderWorksService(assembly);
     },
   };
 }

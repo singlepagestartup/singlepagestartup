@@ -1,0 +1,156 @@
+{
+  "id": "76d0fddf-e4d7-4a41-a7e7-84da3e1c82e1",
+  "prevId": "00000000-0000-0000-0000-000000000000",
+  "version": "7",
+  "dialect": "postgresql",
+  "tables": {
+    "public.sl_message_to_crm_task_event": {
+      "name": "sl_message_to_crm_task_event",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "variant": {
+          "name": "variant",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'default'"
+        },
+        "order_index": {
+          "name": "order_index",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
+        },
+        "class_name": {
+          "name": "class_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "message_id": {
+          "name": "message_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "crm_task_event_id": {
+          "name": "crm_task_event_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "pending": {
+          "name": "pending",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        }
+      },
+      "indexes": {
+        "sl_pending_crm_message": {
+          "name": "sl_pending_crm_message",
+          "columns": [
+            {
+              "expression": "pending",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "created_at",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "sl_message_to_crm_task_event_message_id_sl_message_id_fk": {
+          "name": "sl_message_to_crm_task_event_message_id_sl_message_id_fk",
+          "tableFrom": "sl_message_to_crm_task_event",
+          "tableTo": "sl_message",
+          "columnsFrom": [
+            "message_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "restrict",
+          "onUpdate": "no action"
+        },
+        "sl_message_to_crm_task_event_crm_task_event_id_sps_cm_task_event_id_fk": {
+          "name": "sl_message_to_crm_task_event_crm_task_event_id_sps_cm_task_event_id_fk",
+          "tableFrom": "sl_message_to_crm_task_event",
+          "tableTo": "sps_cm_task_event",
+          "columnsFrom": [
+            "crm_task_event_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "restrict",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "sl_message_to_crm_task_event_message_id_unique": {
+          "name": "sl_message_to_crm_task_event_message_id_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "message_id"
+          ]
+        },
+        "sl_message_to_crm_task_event_crm_task_event_id_unique": {
+          "name": "sl_message_to_crm_task_event_crm_task_event_id_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "crm_task_event_id"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    }
+  },
+  "enums": {},
+  "schemas": {},
+  "sequences": {},
+  "roles": {},
+  "policies": {},
+  "views": {},
+  "_meta": {
+    "columns": {},
+    "schemas": {},
+    "tables": {}
+  }
+}

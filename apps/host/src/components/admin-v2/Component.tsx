@@ -1,5 +1,5 @@
 import { Component as RbacAdminV2Overview } from "./rbac";
-import { cn } from "@sps/shared-frontend-client-utils";
+import { cn, getAdminRoutePath } from "@sps/shared-frontend-client-utils";
 import { AdminV2SidebarModuleItem as EcommerceAdminV2SidebarModuleItem } from "@sps/ecommerce/frontend/component";
 import { Component as EcommerceAdminV2Overview } from "./ecommerce";
 import {
@@ -137,7 +137,17 @@ export function Component(props: IComponentProps) {
         </PanelComponent>
         <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
           <header className="flex h-16 items-center border-b border-border bg-card px-6">
-            <div className="flex min-w-0 flex-1 items-center gap-4" />
+            <div className="flex min-w-0 flex-1 items-center gap-4">
+              {getAdminRoutePath(props.url) === "/crm" && (
+                <Button asChild variant="outline">
+                  <Link href={`/${props.language}/crm/workspace`}>
+                    {props.language === "ru"
+                      ? "Рабочее место CRM"
+                      : "CRM workspace"}
+                  </Link>
+                </Button>
+              )}
+            </div>
 
             <div className="flex items-center gap-2">
               <Button

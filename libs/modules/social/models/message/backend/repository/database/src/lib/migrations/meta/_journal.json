@@ -29,6 +29,13 @@
       "when": 1776114930776,
       "tag": "0003_chubby_blackheart",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1795078013372,
+      "tag": "0004_natural_johnny_blaze",
+      "breakpoints": true
     }
   ]
 }

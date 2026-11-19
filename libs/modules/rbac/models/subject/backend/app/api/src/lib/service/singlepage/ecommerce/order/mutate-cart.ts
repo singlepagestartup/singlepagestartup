@@ -12,6 +12,10 @@ export interface IExecuteProps {
 export interface IConstructorProps {
   repository: Pick<Repository, "withSubjectLock">;
   service: SubjectServiceDependencies<"ecommerceModuleOrderAssertAccess">;
+  closeRemovedWork?: (props: {
+    customerId: string;
+    orderId: string;
+  }) => Promise<void>;
 }
 
 export class Service {
@@ -157,6 +161,10 @@ export class Service {
           );
         }
         if (!props.lines) {
+          await this.dependencies.closeRemovedWork?.({
+            customerId: props.subjectId,
+            orderId: props.orderId,
+          });
           await service.modules.ecommerce.order.delete({ id: props.orderId });
           return;
         }

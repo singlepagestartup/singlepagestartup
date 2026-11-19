@@ -24,8 +24,23 @@ import { createService as createWidgetsToCrmModuleWidgetsService } from "@sps/rb
 import { createService as createWidgetsToEcommerceModuleWidgetsService } from "@sps/rbac/relations/widgets-to-ecommerce-module-widgets/backend/app/api/src/lib/bootstrap";
 import { createService as createWidgetsToWebsiteBuilderModuleWidgetsService } from "@sps/rbac/relations/widgets-to-website-builder-module-widgets/backend/app/api/src/lib/bootstrap";
 
+import { createService as createSubjectsToWalletOperationsService } from "@sps/rbac/relations/subjects-to-wallet-operations/backend/app/api/src/lib/bootstrap";
+
+import { createService as createSubjectsToProviderIdentitiesService } from "@sps/rbac/relations/subjects-to-provider-identities/backend/app/api/src/lib/bootstrap";
+
+import { createService as createSubjectsToProviderAgentsService } from "@sps/rbac/relations/subjects-to-provider-agents/backend/app/api/src/lib/bootstrap";
+
 export function createServices(assembly: IAppAssembly) {
   return {
+    get subjectsToProviderAgents() {
+      return createSubjectsToProviderAgentsService(assembly);
+    },
+    get subjectsToProviderIdentities() {
+      return createSubjectsToProviderIdentitiesService(assembly);
+    },
+    get subjectsToWalletOperations() {
+      return createSubjectsToWalletOperationsService(assembly);
+    },
     get action() {
       return createActionService(assembly);
     },

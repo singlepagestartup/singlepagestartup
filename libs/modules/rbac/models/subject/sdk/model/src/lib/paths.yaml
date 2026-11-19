@@ -2214,3 +2214,59 @@ paths:
             application/json:
               schema:
                 $ref: "../../../../../../../../../libs/modules/billing/models/payment-intent/sdk/model/src/lib/billing-payment-intent.yaml"
+  /rbac/subjects/{id}/stores/{storeId}/provider-connections:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+      - { name: storeId, in: path, required: true, schema: { type: string, format: uuid } }
+    get:
+      tags: [rbac-subject]
+      summary: Read a store owner's connections, assistants and wallet receipts
+      responses:
+        "200": { description: Private owner-scoped metadata and charges }
+        "403": { description: Store ownership required }
+    post:
+      tags: [rbac-subject]
+      summary: Configure a provider connection or resolve an unknown external charge
+      description: The authenticated store owner supplies the command in data. New credentials are write-only.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [data]
+              properties:
+                data:
+                  type: object
+                  required: [operation, storeId]
+                  properties:
+                    operation: { type: string, enum: [connect, rotate, revoke, assign, assign-default, fund, reconcile] }
+                    storeId: { type: string, format: uuid }
+                    secret: { type: string, writeOnly: true }
+      responses:
+        "200": { description: ID of the affected record }
+        "409": { description: Stale version or incompatible financial state }
+  /rbac/subjects/{id}/stores/{storeId}/customer-work:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+      - { name: storeId, in: path, required: true, schema: { type: string, format: uuid } }
+    get:
+      tags: [rbac-subject]
+      summary: Read the buyer's scoped task or available workflows for an offer
+      responses:
+        "200": { description: Customer work view or offer availability }
+    post:
+      tags: [rbac-subject]
+      summary: Start a conversation, send a message or update task consent and customer memory
+      responses:
+        "200": { description: Updated task and thread }
+        "409": { description: Operation key conflicts with an earlier request }
+  /rbac/subjects/{id}/customer-work/threads/{threadId}:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+      - { name: threadId, in: path, required: true, schema: { type: string, format: uuid } }
+    get:
+      tags: [rbac-subject]
+      summary: Read the task conversation available to the signed-in buyer
+      responses:
+        "200": { description: Task and current assignment }

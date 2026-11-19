@@ -41,6 +41,8 @@ import { Service as EcommerceOrderAccess } from "../startup/ecommerce/order/acce
 import type { IExecuteProps as IEcommerceOrderAccessProps } from "./ecommerce/order/access";
 import { Service as CrmFormRequestCreate } from "../startup/crm/form/request";
 import type { IExecuteProps as ICrmFormRequestCreateProps } from "./crm/form/request";
+import { Service as OrderWork } from "./ecommerce/order/work";
+import { Service as CrmWorkspace } from "./crm/workspace";
 import "reflect-metadata";
 import { inject, injectable } from "inversify";
 import { CRUDService, DI } from "@sps/shared-backend-api";
@@ -104,11 +106,6 @@ import type { IExecuteProps as IEcommerceOrdersToProductsListExecuteProps } from
 import { Service as ChatSubjectsWithSocialModuleProfiles } from "../startup/social-module/chat/subjects-with-profiles";
 import type { IExecuteProps as IChatSubjectsWithSocialModuleProfilesProps } from "./social-module/chat/subjects-with-profiles";
 import type {
-  Service as BillRoute,
-  IExecuteProps as IBillRouteProps,
-  ISettleProps as IBillRouteSettleProps,
-} from "./billing/route";
-import type {
   Service as EcommerceOrderProceed,
   IExecuteProps as IEcommerceOrderProceedProps,
 } from "./ecommerce/order/proceed";
@@ -146,11 +143,7 @@ import type {
   ISocialProfileAiToolLoopProps,
   ISocialProfileAiToolLoopResult,
 } from "./social-module/profile/ai/tool-loop";
-import {
-  summarizeOpenRouterBilling,
-  type IOpenRouterBillingSummary,
-  type IOpenRouterBillingSummaryProps,
-} from "./billing/open-router";
+
 import { IModel as ISocialModuleChat } from "@sps/social/models/chat/sdk/model";
 import { IModel as ISocialModuleThread } from "@sps/social/models/thread/sdk/model";
 import { setRbacAiThreadModelPreference } from "@sps/rbac/models/subject/sdk/model";
@@ -159,6 +152,9 @@ import type { IEnsureSocialProfileKnowledgeAccessProps } from "./social-module/p
 import { Service as SocialModuleProfileAvatarUpdate } from "../startup/social-module/profile/avatar";
 import type { IExecuteProps as ISocialModuleProfileAvatarUpdateProps } from "./social-module/profile/avatar";
 
+import { ProviderConnections } from "./provider-connections";
+import { Service as CustomerWork } from "./ecommerce/customer-work";
+import { WorkLedger } from "./billing/work-ledger";
 import { Service as PermissionDefaults } from "../startup/permission-defaults";
 
 export type SubjectServiceDependencies<Keys extends keyof Service = never> =
@@ -168,6 +164,26 @@ export type SubjectServiceDependencies<Keys extends keyof Service = never> =
 export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
   get modules() {
     return this.appAssembly.getOrCreate(createModules);
+  }
+
+  get orderWork() {
+    return new OrderWork(this);
+  }
+
+  get crmWorkspace() {
+    return new CrmWorkspace(this);
+  }
+
+  get providerConnections() {
+    return new ProviderConnections(this);
+  }
+
+  get customerWork() {
+    return new CustomerWork(this);
+  }
+
+  get workLedger() {
+    return new WorkLedger(this);
   }
 
   get module() {
@@ -181,8 +197,6 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     private readonly securityNotifications: SecurityNotifications,
     @inject(SubjectDI.IIsAuthorizedService)
     readonly isAuthorizedService: IsAuthorized,
-    @inject(SubjectDI.IBillRouteService)
-    private readonly billRouteService: BillRoute,
     @inject(SubjectDI.IEcommerceOrderProceedService)
     private readonly ecommerceOrderProceedService: EcommerceOrderProceed,
     @inject(SubjectDI.IEcommerceCatalogService)
@@ -216,6 +230,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     return new MutateCart({
       repository: this.repository,
       service: this,
+      closeRemovedWork: (input) => this.customerWork.closeRemovedOrder(input),
     }).execute(props);
   }
 
@@ -364,12 +379,6 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     props: IAiExecutionActionReporterProps,
   ): IAiExecutionActionReporter {
     return this.createSocialModuleProfileAiExecutionActionReporter(props);
-  }
-
-  billingOpenRouterSummarize(
-    props: IOpenRouterBillingSummaryProps,
-  ): IOpenRouterBillingSummary {
-    return summarizeOpenRouterBilling(props);
   }
 
   async socialModuleChatThreadOpenRouterModelUpdate(props: {
@@ -588,7 +597,10 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     await this.socialModuleProfileOwnershipEnsure({ subjectId });
     await this.freeSubscriptionEnsure({ subjectId });
     if (guestToken) {
-      await new MergeGuestCart(this).execute({ subjectId, guestToken });
+      await new MergeGuestCart(this, this.customerWork).execute({
+        subjectId,
+        guestToken,
+      });
     }
     return result;
   }
@@ -796,14 +808,6 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     return this.getChatLifecycleService().ensureDefaultThreadForChat(props);
   }
 
-  async billRoute(props: IBillRouteProps) {
-    return this.billRouteService.execute(props);
-  }
-
-  async billRouteSettle(props: IBillRouteSettleProps) {
-    return this.billRouteService.settle(props);
-  }
-
   async ecommerceOrderProceed(props: IEcommerceOrderProceedProps) {
     return this.ecommerceOrderProceedService.execute(props);
   }
@@ -927,7 +931,6 @@ export type {
   IAiExecutionActionReporter,
   IAiExecutionActionReporterProps,
   IOpenRouterBillingLedgerEntry,
-  IOpenRouterBillingSummary,
   IProfileMcpCatalogSession,
   ISocialProfileAiTool,
   ISocialProfileAiToolLoopProps,

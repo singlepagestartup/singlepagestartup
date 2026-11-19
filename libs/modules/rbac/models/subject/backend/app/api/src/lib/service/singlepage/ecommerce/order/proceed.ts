@@ -292,6 +292,11 @@ export class Service {
               subjectsToRoles: rbacSubjectsToRoles,
             });
           } else if (extendedOrder.status === "paid") {
+            if (
+              await this.modules.ecommerce.order.work?.findByOrder(order.id)
+            ) {
+              continue;
+            }
             await this.fromPaidStatus({
               order: extendedOrder,
               extendedOrder,
@@ -1473,7 +1478,10 @@ export class Service {
 
           props.extendedEcommerceModuleOrder.ordersToFileStorageModuleFiles.forEach(
             (orderToFileStorageModuleFile) => {
-              if (!orderToFileStorageModuleFile.fileStorageModuleFile) {
+              if (
+                orderToFileStorageModuleFile.variant === "receipt-default" ||
+                !orderToFileStorageModuleFile.fileStorageModuleFile
+              ) {
                 return;
               }
 
@@ -1654,7 +1662,10 @@ export class Service {
 
           props.extendedEcommerceModuleOrder.ordersToFileStorageModuleFiles.forEach(
             (orderToFileStorageModuleFile) => {
-              if (!orderToFileStorageModuleFile.fileStorageModuleFile) {
+              if (
+                orderToFileStorageModuleFile.variant === "receipt-default" ||
+                !orderToFileStorageModuleFile.fileStorageModuleFile
+              ) {
                 return;
               }
 

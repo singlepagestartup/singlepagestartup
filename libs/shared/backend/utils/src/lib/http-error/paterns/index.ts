@@ -2,6 +2,11 @@ import { ErrorPatternEntry } from "../type";
 
 export const httpErrorPatterns: ErrorPatternEntry[] = [
   {
+    status: 402,
+    category: "Payment error",
+    patterns: [/^payment required\./i],
+  },
+  {
     status: 401,
     category: "Authentication error",
     patterns: [

@@ -45,6 +45,23 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     return this.appAssembly.getOrCreate(createModules);
   }
 
+  createOutbound(provider: "openai" | "openrouter") {
+    return super.insert({ usage: "outbound_api", provider });
+  }
+
+  protected override insert(data: any) {
+    if (
+      data.usage === "outbound_api" ||
+      data.provider === "openai" ||
+      data.provider === "openrouter"
+    ) {
+      throw new Error(
+        "Permission error. Use the store's provider connection operation",
+      );
+    }
+    return super.insert(data);
+  }
+
   /**
    * Rejects a credential column the generic update path would otherwise write
    * verbatim (issue #270). The admin form posts the whole model back, so an
@@ -57,7 +74,22 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     id: string;
     data: (typeof Table)["$inferSelect"];
   }): Promise<(typeof Table)["$inferSelect"] | null> {
+    if (
+      props.data.usage === "outbound_api" ||
+      props.data.provider === "openai" ||
+      props.data.provider === "openrouter"
+    ) {
+      throw new Error(
+        "Permission error. Use the store's provider connection operation",
+      );
+    }
     assertCredentialColumnsAreHashed(props.data);
+    const existing = await this.findById({ id: props.id });
+    if (existing?.usage === "outbound_api") {
+      throw new Error(
+        "Permission error. Outbound identities are managed by their store owner",
+      );
+    }
 
     // A link sent to the previous address must not reset the new credentials.
     if (

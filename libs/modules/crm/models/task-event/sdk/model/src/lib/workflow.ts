@@ -8,6 +8,7 @@ export type TTaskEventKind =
   | "customer-message"
   | "customer-handoff-requested"
   | "customer-transferred"
+  | "customer-budget-approved"
   | "migrated"
   | "order-attached"
   | "closed"
@@ -27,7 +28,11 @@ export interface ITaskEventDetail {
   messageId?: string;
   customerId?: string;
   previousCustomerId?: string;
+  approvedMaximum?: string;
+  budgetCurrencyId?: string;
+  budgetPriceKey?: string;
   reason?: string;
   timerNumber?: number;
+  waitingRevision?: number;
   evidence?: TTaskEvidence;
 }

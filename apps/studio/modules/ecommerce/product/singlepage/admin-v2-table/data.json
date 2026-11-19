@@ -37,6 +37,13 @@
         "default": "default"
       },
       {
+        "key": "kind",
+        "label": "Kind",
+        "kind": "text",
+        "nullable": false,
+        "default": "physical"
+      },
+      {
         "key": "type",
         "label": "Type",
         "kind": "text",
@@ -85,6 +92,7 @@
       "createdAt": "2026-01-01T00:00:00.000Z",
       "updatedAt": "2026-01-01T00:00:00.000Z",
       "variant": "default",
+      "kind": "physical",
       "type": "one_off",
       "slug": "product-example-1",
       "title": {
@@ -104,6 +112,7 @@
       "createdAt": "2026-01-01T00:00:00.000Z",
       "updatedAt": "2026-01-01T00:00:00.000Z",
       "variant": "default",
+      "kind": "physical",
       "type": "one_off",
       "slug": "product-example-2",
       "title": {
@@ -123,6 +132,7 @@
       "createdAt": "2026-01-01T00:00:00.000Z",
       "updatedAt": "2026-01-01T00:00:00.000Z",
       "variant": "default",
+      "kind": "physical",
       "type": "one_off",
       "slug": "product-example-3",
       "title": {

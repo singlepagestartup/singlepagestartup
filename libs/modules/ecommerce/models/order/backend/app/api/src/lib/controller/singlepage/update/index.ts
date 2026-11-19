@@ -119,6 +119,9 @@ export class Handler {
       previousEntity &&
       ["paying", "canceling", "canceled"].includes(previousEntity.status)
     ) {
+      if (await this.service.work?.findByOrder(uuid)) {
+        return;
+      }
       const ordersToBillingModuleCurrencies =
         await this.service.module.ordersToBillingModuleCurrencies.find({
           params: {
@@ -223,63 +226,86 @@ export class Handler {
 
       if (fileStorageReceiptTemplateFiles?.length) {
         for (const fileStorageReceiptTemplateFile of fileStorageReceiptTemplateFiles) {
-          const receiptFile = await fileStorageFileApi.generate({
-            data: {
-              adminTitle: `Ecommerce Module | Order ${entity.id} | Receipt`,
-              generateData: {
-                variant: fileStorageReceiptTemplateFile.variant,
-                width: fileStorageReceiptTemplateFile.width,
-                height: fileStorageReceiptTemplateFile.height,
-                ecommerce: {
-                  order: {
-                    ...entity,
-                    checkoutAttributesByCurrency,
-                    ordersToProducts: ordersToProducts.map((orderToProduct) => {
-                      return {
-                        ...orderToProduct,
-                        product: products.find(
-                          (product) => product.id === orderToProduct.productId,
-                        ),
-                      };
-                    }),
-                    ordersToBillingModuleCurrencies:
-                      ordersToBillingModuleCurrencies.map(
-                        (orderToBillingModuleCurrency) => {
-                          return {
-                            ...orderToBillingModuleCurrency,
-                            billingModuleCurrency: billingCurrencies.find(
-                              (billingCurrency) =>
-                                billingCurrency.id ===
-                                orderToBillingModuleCurrency.billingModuleCurrencyId,
-                            ),
-                          };
-                        },
-                      ),
-                  },
+          const templateId = fileStorageReceiptTemplateFile.id;
+          await this.service.repository.withLifecycleLock(uuid, async () => {
+            const receipts = this.service.module.ordersToFileStorageModuleFiles;
+            const [existing] = await receipts.find({
+              params: {
+                filters: {
+                  and: [
+                    { column: "orderId", method: "eq", value: uuid },
+                    {
+                      column: "variant",
+                      method: "eq",
+                      value: "receipt-default",
+                    },
+                    {
+                      column: "fileStorageModuleFileId",
+                      method: "eq",
+                      value: templateId,
+                    },
+                  ],
                 },
-                fileStorage: {
-                  file: fileStorageReceiptTemplateFile,
-                },
+                limit: 1,
               },
-            },
-            options: {
-              headers: {
-                "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-              },
-            },
-          });
+            });
+            if (existing) {
+              return;
+            }
 
-          await ordersToFileStorageModuleFilesApi.create({
-            data: {
-              orderId: uuid,
-              fileStorageModuleFileId: receiptFile.id,
-              variant: "receipt-default",
-            },
-            options: {
-              headers: {
-                "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+            const generateData = {
+              variant: fileStorageReceiptTemplateFile.variant,
+              width: fileStorageReceiptTemplateFile.width ?? undefined,
+              height: fileStorageReceiptTemplateFile.height ?? undefined,
+              ecommerce: {
+                order: {
+                  ...entity,
+                  checkoutAttributesByCurrency,
+                  ordersToProducts: ordersToProducts.map((orderToProduct) => {
+                    return {
+                      ...orderToProduct,
+                      product: products.find(
+                        (product) => product.id === orderToProduct.productId,
+                      ),
+                    };
+                  }),
+                  ordersToBillingModuleCurrencies:
+                    ordersToBillingModuleCurrencies.map(
+                      (orderToBillingModuleCurrency) => {
+                        return {
+                          ...orderToBillingModuleCurrency,
+                          billingModuleCurrency: billingCurrencies.find(
+                            (billingCurrency) =>
+                              billingCurrency.id ===
+                              orderToBillingModuleCurrency.billingModuleCurrencyId,
+                          ),
+                        };
+                      },
+                    ),
+                },
               },
-            },
+              fileStorage: {
+                file: fileStorageReceiptTemplateFile,
+              },
+            };
+            const bytes =
+              await this.service.modules.fileStorage.file.renderOrderReceipt(
+                generateData,
+              );
+            const receipt =
+              await this.service.modules.fileStorage.privateFile.write({
+                name: `receipt-${uuid}.png`,
+                mimeType: "image/png",
+                bytes,
+              });
+            await receipts.create({
+              data: {
+                orderId: uuid,
+                fileStorageModuleFileId: templateId,
+                privateReceiptFileId: receipt.id,
+                variant: "receipt-default",
+              },
+            });
           });
         }
       }

@@ -5,7 +5,7 @@ import {
   trackRepositoryRead,
   withConsistencyDatabase,
 } from "@sps/shared-backend-api";
-import { and, desc, eq, lt, or } from "drizzle-orm";
+import { and, desc, eq, lt, or, sql } from "drizzle-orm";
 import { Table } from "@sps/crm/models/funnel/backend/repository/database";
 import { Table as Publication } from "@sps/crm/models/funnel-publication/backend/repository/database";
 import type {
@@ -86,6 +86,28 @@ export class Repository extends DatabaseRepository<typeof Table> {
         ),
       )
       .where(and(eq(Table.storeId, storeId), eq(Table.kind, kind)));
+  }
+
+  async publishedForForm(formId: string) {
+    await trackRepositoryRead(Table, this.db);
+    await trackRepositoryRead(Publication, this.db);
+    return this.db
+      .select({ publication: Publication, storeId: Table.storeId })
+      .from(Table)
+      .innerJoin(
+        Publication,
+        and(
+          eq(Table.id, Publication.funnelId),
+          eq(Table.publishedVersion, Publication.version),
+        ),
+      )
+      .where(
+        and(
+          eq(Table.kind, "consultation"),
+          sql`jsonb_exists(${Publication.bindings}->'formIds', ${formId})`,
+        ),
+      )
+      .limit(2);
   }
 
   async createDraft(data: typeof Table.$inferInsert) {

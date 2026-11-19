@@ -1,3 +1,5 @@
+import { serviceBootstrap as messagesToCrmModuleTaskEvents } from "@sps/social/relations/messages-to-crm-module-task-events/backend/app/api/src/lib/bootstrap";
+import { serviceBootstrap as threadsToCrmModuleTasks } from "@sps/social/relations/threads-to-crm-module-tasks/backend/app/api/src/lib/bootstrap";
 import { serviceBootstrap as widgetsToWebsiteBuilderModuleWidgets } from "@sps/social/relations/widgets-to-website-builder-module-widgets/backend/app/api/src/lib/bootstrap";
 import { serviceBootstrap as skillsToKnowledgeModuleSources } from "@sps/social/relations/skills-to-knowledge-module-sources/backend/app/api/src/lib/bootstrap";
 import { serviceBootstrap as messagesToKnowledgeModuleSources } from "@sps/social/relations/messages-to-knowledge-module-sources/backend/app/api/src/lib/bootstrap";
@@ -196,6 +198,16 @@ export class Apps {
         threadsToEcommerceModuleProducts,
         this.assembly,
       ),
+    });
+    this.apps.push({
+      type: "relation",
+      route: "/messages-to-crm-module-task-events",
+      app: createModuleChildApp(messagesToCrmModuleTaskEvents, this.assembly),
+    });
+    this.apps.push({
+      type: "relation",
+      route: "/threads-to-crm-module-tasks",
+      app: createModuleChildApp(threadsToCrmModuleTasks, this.assembly),
     });
     this.apps.push({
       type: "model",

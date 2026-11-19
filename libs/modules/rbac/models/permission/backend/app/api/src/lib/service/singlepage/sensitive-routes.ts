@@ -3,6 +3,46 @@ import { type IRouteRule, UUID_PATH_SUFFIX_REGEX } from "@sps/shared-utils";
 /** Routes whose controllers authenticate the caller and enforce resource access. */
 export const controllerGuardedRoutes: IRouteRule[] = [
   {
+    regexPath:
+      /^\/api\/rbac\/subjects\/[0-9a-f-]+\/stores\/[0-9a-f-]+\/customer-work\/?$/i,
+    methods: ["GET", "POST"],
+  },
+  {
+    regexPath:
+      /^\/api\/rbac\/subjects\/[0-9a-f-]+\/customer-work\/threads\/[0-9a-f-]+\/?$/i,
+    methods: ["GET"],
+  },
+  {
+    regexPath:
+      /^\/api\/rbac\/subjects\/[^/]+\/ecommerce-module\/orders\/[^/]+\/work\/?$/,
+    methods: ["GET", "POST"],
+  },
+  {
+    regexPath:
+      /^\/api\/rbac\/subjects\/[^/]+\/ecommerce-module\/orders\/[^/]+\/work\/artifacts\/[^/]+\/?$/,
+    methods: ["GET", "HEAD"],
+  },
+  {
+    regexPath:
+      /^\/api\/rbac\/subjects\/[^/]+\/ecommerce-module\/orders\/[^/]+\/work\/fulfillment\/?$/,
+    methods: ["POST"],
+  },
+  {
+    regexPath:
+      /^\/api\/rbac\/subjects\/[^/]+\/crm-module\/workspace\/(stores|options|funnels|publications|tasks|detail)\/?$/,
+    methods: ["GET"],
+  },
+  {
+    regexPath:
+      /^\/api\/rbac\/subjects\/[^/]+\/crm-module\/workspace\/command\/?$/,
+    methods: ["POST"],
+  },
+  {
+    regexPath:
+      /^\/api\/rbac\/subjects\/[^/]+\/stores\/[^/]+\/provider-connections\/?$/,
+    methods: ["GET", "POST"],
+  },
+  {
     regexPath: /^\/api\/rbac\/subjects\/host-cache\/revalidate\/?$/,
     methods: ["POST"],
   },
@@ -87,6 +127,14 @@ export const sensitiveRoutes: IRouteRule[] = [
   {
     regexPath: /^\/api\/social\/chats(?:\/.*)?$/i,
     methods: ["GET", "HEAD"],
+  },
+  {
+    regexPath:
+      /^\/api\/social\/(?:messages|threads|(?:chats|threads|profiles)-to-messages|profiles-to-chats|chats-to-threads|threads-to-(?:crm-module-tasks|ecommerce-module-products)|messages-to-crm-module-task-events|profiles-to-knowledge-module-sources|profiles-to-ecommerce-module-products)(?:\/.*)?$/i,
+  },
+  {
+    regexPath:
+      /^\/api\/knowledge\/(?:sources|chunks|sources-to-chunks|sources-to-file-storage-module-files)(?:\/.*)?$/i,
   },
   {
     regexPath:

@@ -137,6 +137,27 @@ describe("one-time password reset codes", () => {
     );
   });
 
+  it("rejects changes to an outgoing provider identity through generic CRUD", async () => {
+    const repository = {
+      findFirstByField: jest
+        .fn()
+        .mockResolvedValue({ id: "provider", usage: "outbound_api" }),
+      updateFirstByField: jest.fn(),
+    };
+    const service = new Service(
+      repository as unknown as ConstructorParameters<typeof Service>[0],
+    );
+    await expect(
+      service.update({
+        id: "provider",
+        data: { email: "test@example.com" } as Parameters<
+          Service["update"]
+        >[0]["data"],
+      }),
+    ).rejects.toThrow("Outbound identities");
+    expect(repository.updateFirstByField).not.toHaveBeenCalled();
+  });
+
   it("clears an outstanding link when updating the recovery address", async () => {
     const id = "identity-owner";
     const data = { email: "new@example.com" };
@@ -145,9 +166,10 @@ describe("one-time password reset codes", () => {
       ...data,
       code: null,
     });
-    const repository = { updateFirstByField } as ConstructorParameters<
-      typeof Service
-    >[0];
+    const repository = {
+      updateFirstByField,
+      findFirstByField: jest.fn().mockResolvedValue({ id, usage: "inbound" }),
+    } as unknown as ConstructorParameters<typeof Service>[0];
     const service = new Service(repository);
     await expect(
       service.update({

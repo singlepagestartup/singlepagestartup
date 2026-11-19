@@ -60,6 +60,12 @@
         "nullable": true
       },
       {
+        "key": "workReplyKey",
+        "label": "Work Reply Key",
+        "kind": "text",
+        "nullable": true
+      },
+      {
         "key": "interaction",
         "label": "Interaction",
         "kind": "jsonb",
@@ -86,6 +92,7 @@
       "subtitle": null,
       "description": null,
       "sourceSystemId": null,
+      "workReplyKey": null,
       "interaction": {},
       "metadata": {}
     },
@@ -99,6 +106,7 @@
       "subtitle": null,
       "description": null,
       "sourceSystemId": null,
+      "workReplyKey": null,
       "interaction": {},
       "metadata": {}
     },
@@ -112,6 +120,7 @@
       "subtitle": null,
       "description": null,
       "sourceSystemId": null,
+      "workReplyKey": null,
       "interaction": {},
       "metadata": {}
     }

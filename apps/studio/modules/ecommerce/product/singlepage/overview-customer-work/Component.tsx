@@ -1,4 +1,4 @@
-import { Component as Icon } from "../../../../shared/icon";
+import { Component as SharedIcon } from "../../../../shared/icon";
 import type { IComponentProps } from "./interface";
 
 export function Component({
@@ -19,10 +19,20 @@ export function Component({
   ];
 
   return (
-    <article className="grid min-w-0 gap-5 lg:grid-cols-[minmax(0,1.55fr)_minmax(0,1fr)]">
+    <article
+      data-ds-block="ecommerce.product.overview-customer-work"
+      data-ds-layer="singlepage"
+      data-module="ecommerce"
+      data-model="product"
+      data-variant="overview-customer-work"
+      className="grid min-w-0 gap-5 lg:grid-cols-[minmax(0,1.55fr)_minmax(0,1fr)]"
+    >
       <section className="rounded-2xl border border-border bg-card p-5 sm:p-8">
         <span className="inline-flex size-11 items-center justify-center rounded-xl bg-muted text-foreground">
-          <Icon variant="phosphor" name={service ? "file-text" : "package"} />
+          <SharedIcon
+            variant="phosphor"
+            name={service ? "file-text" : "package"}
+          />
         </span>
         <h1 className="mt-5 max-w-[16ch] text-3xl font-semibold tracking-tight sm:text-5xl">
           {offer.title}
@@ -36,7 +46,7 @@ export function Component({
         <ul className="mt-3 space-y-2.5 text-sm">
           {offer.deliverables.map((item) => (
             <li key={item} className="flex items-start gap-2">
-              <Icon
+              <SharedIcon
                 variant="phosphor"
                 name="check"
                 size={20}
@@ -70,7 +80,7 @@ export function Component({
             disabled={!!pendingAction}
             className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:opacity-60"
           >
-            <Icon name="shopping-cart" variant="phosphor" size={20} />
+            <SharedIcon name="shopping-cart" variant="phosphor" size={20} />
             {pendingAction === "add"
               ? "Добавляем…"
               : orderId
@@ -83,7 +93,7 @@ export function Component({
             disabled={!!pendingAction}
             className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-input bg-background px-4 py-2 text-sm font-semibold hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:opacity-60"
           >
-            <Icon name="chat-circle" variant="phosphor" size={20} />
+            <SharedIcon name="chat-circle" variant="phosphor" size={20} />
             {pendingAction === "ask"
               ? "Открываем обсуждение…"
               : "Задать вопрос"}

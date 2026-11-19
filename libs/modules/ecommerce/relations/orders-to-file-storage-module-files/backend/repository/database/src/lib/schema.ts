@@ -1,6 +1,7 @@
 import * as pgCore from "drizzle-orm/pg-core";
 import { Table as Order } from "@sps/ecommerce/models/order/backend/repository/database";
 import { Table as FileStorageModuleFile } from "@sps/file-storage/models/file/backend/repository/database";
+import { Table as PrivateFile } from "@sps/file-storage/models/private-file/backend/repository/database";
 
 export const moduleName = "sps_ee";
 export const table = "os_to_fe_se_me_fs_b06";
@@ -22,4 +23,11 @@ export const Table = pgTable(table, {
     .uuid("fe_se_me_fe_id")
     .notNull()
     .references(() => FileStorageModuleFile.id, { onDelete: "cascade" }),
+  privateReceiptFileId: pgCore
+    .uuid("private_receipt_file_id")
+    .references(() => PrivateFile.id, { onDelete: "restrict" }),
+  legacyReceiptLocation: pgCore.text("legacy_receipt_location"),
+  legacyReceiptRevokedAt: pgCore.timestamp("legacy_receipt_revoked_at", {
+    precision: 3,
+  }),
 });

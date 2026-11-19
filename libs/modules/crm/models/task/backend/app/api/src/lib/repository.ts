@@ -132,6 +132,16 @@ export class Repository extends DatabaseRepository<typeof Table> {
       .limit(limit);
   }
 
+  async dueForWorker(limit: number, now: Date) {
+    await trackRepositoryRead(Table, this.db);
+    return this.db
+      .select()
+      .from(Table)
+      .where(and(eq(Table.status, "waiting"), lte(Table.nextActionAt, now)))
+      .orderBy(asc(Table.nextActionAt), asc(Table.id))
+      .limit(limit);
+  }
+
   async open(data: typeof Table.$inferInsert) {
     const [task] = await this.db.insert(Table).values(data).returning();
     return task;

@@ -555,9 +555,9 @@ export class Database<
       return result;
     }
 
-    const entities = await this.find();
-
-    const directory = this.configuration.repository.dump.directory;
+    const { include, directory } = this.configuration.repository.dump;
+    const records = await this.find();
+    const entities = include ? records.filter(include) : records;
 
     await fs.mkdir(directory, { recursive: true });
     const seedFiles = await fs.readdir(directory);
@@ -613,6 +613,9 @@ export class Database<
     const insertedEntities: ISeedResult["seeds"] = [];
 
     for (const dumpEntity of dumpEntities) {
+      if (this.configuration.repository.seed.include?.(dumpEntity) === false) {
+        continue;
+      }
       const transformers = this.configuration.repository.seed.transformers;
 
       let transformedEntity: T["$inferInsert"] = { ...dumpEntity };

@@ -1,0 +1,191 @@
+{
+  "id": "3f009741-01fa-4fb1-83de-e6b52de7ccc7",
+  "prevId": "639c0206-56b9-4bd6-86dd-90eb311597af",
+  "version": "7",
+  "dialect": "postgresql",
+  "tables": {
+    "public.rc_ss_to_ee_me_ss_htr": {
+      "name": "rc_ss_to_ee_me_ss_htr",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "variant": {
+          "name": "variant",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'default'"
+        },
+        "order_index": {
+          "name": "order_index",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
+        },
+        "class_name": {
+          "name": "class_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "st_id": {
+          "name": "st_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "customer_subject_id": {
+          "name": "customer_subject_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "ee_me_se_id": {
+          "name": "ee_me_se_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {
+        "rc_store_owner_unique": {
+          "name": "rc_store_owner_unique",
+          "columns": [
+            {
+              "expression": "ee_me_se_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "where": "\"rc_ss_to_ee_me_ss_htr\".\"variant\" = 'owner'",
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "rc_store_customer_assistant": {
+          "name": "rc_store_customer_assistant",
+          "columns": [
+            {
+              "expression": "ee_me_se_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "customer_subject_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "where": "\"rc_ss_to_ee_me_ss_htr\".\"variant\" = 'assistant'",
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "rc_store_assistant_subject": {
+          "name": "rc_store_assistant_subject",
+          "columns": [
+            {
+              "expression": "st_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "where": "\"rc_ss_to_ee_me_ss_htr\".\"variant\" = 'assistant'",
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "rc_ss_to_ee_me_ss_htr_st_id_sps_rc_subject_id_fk": {
+          "name": "rc_ss_to_ee_me_ss_htr_st_id_sps_rc_subject_id_fk",
+          "tableFrom": "rc_ss_to_ee_me_ss_htr",
+          "tableTo": "sps_rc_subject",
+          "columnsFrom": [
+            "st_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "rc_ss_to_ee_me_ss_htr_customer_subject_id_sps_rc_subject_id_fk": {
+          "name": "rc_ss_to_ee_me_ss_htr_customer_subject_id_sps_rc_subject_id_fk",
+          "tableFrom": "rc_ss_to_ee_me_ss_htr",
+          "tableTo": "sps_rc_subject",
+          "columnsFrom": [
+            "customer_subject_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "rc_ss_to_ee_me_ss_htr_ee_me_se_id_sps_ee_store_id_fk": {
+          "name": "rc_ss_to_ee_me_ss_htr_ee_me_se_id_sps_ee_store_id_fk",
+          "tableFrom": "rc_ss_to_ee_me_ss_htr",
+          "tableTo": "sps_ee_store",
+          "columnsFrom": [
+            "ee_me_se_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {
+        "rc_store_assistant_customer": {
+          "name": "rc_store_assistant_customer",
+          "value": "(\"rc_ss_to_ee_me_ss_htr\".\"variant\" = 'assistant' AND \"rc_ss_to_ee_me_ss_htr\".\"customer_subject_id\" IS NOT NULL AND \"rc_ss_to_ee_me_ss_htr\".\"customer_subject_id\" <> \"rc_ss_to_ee_me_ss_htr\".\"st_id\") OR (\"rc_ss_to_ee_me_ss_htr\".\"variant\" <> 'assistant' AND \"rc_ss_to_ee_me_ss_htr\".\"customer_subject_id\" IS NULL)"
+        }
+      },
+      "isRLSEnabled": false
+    }
+  },
+  "enums": {},
+  "schemas": {},
+  "sequences": {},
+  "roles": {},
+  "policies": {},
+  "views": {},
+  "_meta": {
+    "columns": {},
+    "schemas": {},
+    "tables": {}
+  }
+}

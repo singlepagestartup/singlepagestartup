@@ -921,41 +921,7 @@ chat creation. Document message creation resolves the linked profession on the
 server and stores its actual command and ID. Ordinary threads activate a
 profession only when explicitly requested.
 
-`react-by/openrouter` selects from the local catalogue in
-`libs/shared/utils/src/lib/constants/open-router-models.ts`. Its only answering
-model is `openai/gpt-6.1-sol`, with `high` reasoning for text, coding, and
-image/file analysis. The same policy restricts manual selection and the
-composer's model list. A single candidate needs no model-selection API call.
-The selection flow supports Jev Decisions when multiple candidates are enabled.
-GPT 6.1 Sol returns text through OpenRouter; automatic image-generation requests
-receive an unavailable notice without a generation call.
-
-Task and Knowledge intent detection, passage reranking, tool-group selection,
-and linked Skill selection use `typesafe/jev-1.13` through OpenRouter's
-`/api/alpha/decisions` endpoint and the same OpenRouter API key. Passage relevance
-selects up to twelve useful chunks from the profile-scoped retrieval results.
-Candidate passages are evaluated in byte-bounded batches to fit JEV context
-limits without truncating the source passages.
-Failed reranking retains retrieval order; failed capability selection retains
-the allowed catalog. Decisions usage and the actual answering model's cost are
-recorded in the existing billing ledger.
-
-Natural-language requests can read, create, or supplement profile Knowledge
-without a control mention. `/learn`, `@knowledge`, and explicit Skills remain
-available. The native create tool supports the first Source and imports the
-current message's attached files. Editing reads the Source first, preserves
-other user notes, and checks its `contentHash` before saving. Source and file
-analysis continue through Knowledge services and framework relations.
-
-Knowledge create and edit tools can wait up to four minutes for analysis and
-indexing, within the tool loop's five-minute total deadline. Other tools retain
-the default thirty-second limit. New imports receive the current attachment
-names and instructions to base titles and notes on the current user input.
-An expired wait does not cancel an operation; check saved state before retrying.
-
-JEV chooses among available capabilities. Backend profile scope, allowed MCP
-servers, and tool argument validation continue to determine access. A routing
-decision does not execute a mutation.
+The store owner configures OpenRouter or OpenAI on a technical Subject. The chat reads the model bindings for its active CRM task. The worker reserves the published maximum, records the provider and model on an attempt, and stores metered usage. The OpenAI text adapter calculates USD using the rates saved with the attempt. OpenRouter reports a generation cost. Customer memory and expertise are selected using the task's store, product, customer and project.
 
 ### Thread context and exact working drafts
 

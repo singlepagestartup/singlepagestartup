@@ -1,3 +1,4 @@
+import { createService as createWorkAttempt } from "@sps/agent/models/work-attempt/backend/app/api/src/lib/bootstrap";
 import "reflect-metadata";
 import { inject, injectable } from "inversify";
 import {
@@ -154,6 +155,10 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
   telegramConversationRuntime: ITelegramConversationRuntime;
   agentRun: AgentRun;
   cronQueue: CronQueue;
+
+  get workAttempt() {
+    return createWorkAttempt(this.appAssembly);
+  }
 
   get modules() {
     return this.appAssembly.getOrCreate(createModules);
@@ -2294,23 +2299,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
       const messageFromRbacModuleSubject =
         await this.getMessageFromRbacModuleSubject(props);
 
-      const rbacModuleRolesToEcommerceModuleProducts =
-        await this.modules.rbac.rolesToEcommerceModuleProducts.find({});
-
       const rbacModuleRoles = await this.modules.rbac.role.find({});
-
-      if (!rbacModuleRoles?.length) {
-        throw new Error("Not found error. 'rbacModuleRoles' is empty.");
-      }
-
-      const rbacModulePayableRoles = rbacModuleRoles.filter((role) => {
-        return rbacModuleRolesToEcommerceModuleProducts
-          ?.map((roleToProduct) => {
-            return roleToProduct.roleId;
-          })
-          .includes(role.id);
-      });
-
       const rbacSubjectsToRoles = await this.modules.rbac.subjectsToRoles.find({
         params: {
           filters: {
@@ -2324,16 +2313,6 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
           },
         },
       });
-
-      const rbacModuleSubjectToPayableRoles = rbacSubjectsToRoles?.filter(
-        (rbacModuleSubjectToRole) => {
-          return rbacModulePayableRoles
-            .map((role) => {
-              return role.id;
-            })
-            .includes(rbacModuleSubjectToRole.roleId);
-        },
-      );
 
       const requiredTelegramChannelSubscriptionRbacModuleRole =
         rbacModuleRoles?.find((role) => {
@@ -2387,86 +2366,22 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
         );
       }
 
-      if (
-        props.socialModuleChat.variant !== "ai-chat" &&
-        !rbacModuleSubjectToPayableRoles?.length
-      ) {
-        return await rbacModuleSubjectApi.socialModuleProfileFindByIdChatFindByIdThreadFindByIdMessageCreate(
-          {
-            id: props.rbacModuleSubject.id,
-            socialModuleProfileId: props.shouldReplySocialModuleProfile.id,
-            socialModuleChatId: props.socialModuleChat.id,
-            socialModuleThreadId,
-            data: this.withSystemMessageMetadata({
-              source: "agent.openrouter.status",
-              data: {
-                description:
-                  this.statusMessages.openRouterNotFoundSubscription.ru,
-                interaction: {
-                  inline_keyboard: [
-                    [
-                      {
-                        text: "Premium",
-                        callback_data: "command_premium",
-                      },
-                    ],
-                  ],
-                },
-              },
-            }),
-            options: {
-              headers: {
-                Authorization: "Bearer " + props.jwtToken,
-              },
-            },
-          },
-        );
+      const pending =
+        await this.modules.rbac.subject.customerWork.pendingForMessage({
+          threadId: socialModuleThreadId,
+          messageId: props.socialModuleMessage.id,
+        });
+      if (!pending) return;
+      const result = await this.workAttempt.dispatch(pending);
+      if (["delivered", "stale", "failed"].includes(result.state)) {
+        await this.modules.rbac.subject.customerWork.ack({
+          eventId: pending.eventId,
+        });
       }
-
-      if (!props.messageFromSocialModuleProfile?.id) {
-        throw new Error(
-          "Not found error. 'messageFromSocialModuleProfile.id' not found",
-        );
-      }
-
-      if (!RBAC_JWT_SECRET) {
-        throw new Error("Configuration error. 'RBAC_JWT_SECRET' not setted.");
-      }
-
-      const messageFromRbacModuleSubjectJwt = await signJwt(
-        {
-          subjectId: messageFromRbacModuleSubject.id,
-          type: "access",
-          lifetimeInSeconds: RBAC_JWT_TOKEN_LIFETIME_IN_SECONDS,
-        },
-        RBAC_JWT_SECRET,
-      );
-
-      return await rbacModuleSubjectApi.socialModuleProfileFindByIdChatFindByIdMessageFindByIdReactByOpenrouter(
-        {
-          id: messageFromRbacModuleSubject.id,
-          socialModuleChatId: props.socialModuleChat.id,
-          socialModuleMessageId: props.socialModuleMessage.id,
-          socialModuleProfileId: props.messageFromSocialModuleProfile.id,
-          data: {
-            shouldReplySocialModuleProfile:
-              props.shouldReplySocialModuleProfile,
-          },
-          options: {
-            headers: {
-              Authorization: "Bearer " + messageFromRbacModuleSubjectJwt,
-            },
-          },
-        },
-      );
+      return;
     } catch (error) {
       if (error instanceof Error) {
-        if (
-          error.message.includes("do not have enough balance for that route") ||
-          error.message.includes(
-            "Validation error. You do not have access to this resource because you have not 'subjectsToBillingModuleCurrencies' for pay that route",
-          )
-        ) {
+        if (error.message.startsWith("Payment required.")) {
           let reply: ISocialModuleMessage;
           if (socialModuleThreadId) {
             reply =

@@ -179,6 +179,13 @@ export class Service extends CRUDService<TTask> {
     return this.owner().due(storeId, limit, new Date());
   }
 
+  async listDueForWorker(input: { limit?: number } = {}) {
+    const { limit = 50 } = listDueTasksSchema
+      .omit({ storeId: true })
+      .parse(input);
+    return this.owner().dueForWorker(limit, new Date());
+  }
+
   private async validateOrder(
     storeId: string,
     orderId: string,
@@ -573,6 +580,26 @@ export class Service extends CRUDService<TTask> {
         throw new Error("Conflict error. The task deadline has passed");
       }
 
+      if (data.kind === "customer-budget-approved") {
+        const published = await this.publication(current);
+        const funding = published.definition.workFunding;
+        if (funding?.payer !== "customer") {
+          throw new Error(
+            "Forbidden error. The customer does not fund this task",
+          );
+        }
+        return {
+          patch: {},
+          detail: {
+            publicationId: published.id,
+            customerId: current.customerId,
+            budgetCurrencyId: funding.currencyId,
+            budgetPriceKey: data.priceKey,
+            approvedMaximum: data.approvedMaximum,
+          },
+          actorKind: "human",
+        };
+      }
       if (data.kind === "customer-handoff-requested") {
         const assignmentRevision = current.assignmentRevision + 1;
         const patch: TTaskPatch = {
@@ -743,7 +770,10 @@ export class Service extends CRUDService<TTask> {
     }));
   }
 
-  async applyTimer(input: IApplyTimer) {
+  async applyTimer(
+    input: IApplyTimer,
+    onReminder?: (event: { id: string }) => Promise<unknown>,
+  ) {
     const data = applyTimerSchema.parse(input);
     const owner = this.owner();
     return owner.transaction(async () => {
@@ -789,7 +819,13 @@ export class Service extends CRUDService<TTask> {
           now,
         );
         kind = "reminder-due";
-        detail = { ...detail, timerNumber: task.timer.number };
+        detail = {
+          ...detail,
+          timerNumber: task.timer.number,
+          waitingRevision: task.waitingRevision,
+          customerId: task.customerId,
+          publicationId: task.publicationId,
+        };
       } else {
         const completionEvidence = stage.waiting?.completionEvidence ?? [];
         let result: Awaited<
@@ -828,6 +864,9 @@ export class Service extends CRUDService<TTask> {
         detail,
       );
       const { operationDigest: eventDigest, ...event } = eventRecord;
+      if (kind === "reminder-due" && onReminder) {
+        await onReminder(event);
+      }
       return { task: updated, event, applied: true };
     });
   }

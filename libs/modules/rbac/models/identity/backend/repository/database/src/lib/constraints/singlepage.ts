@@ -2,6 +2,10 @@ import { sql } from "drizzle-orm";
 import * as pgCore from "drizzle-orm/pg-core";
 
 export interface IConstraintColumns {
+  usage: pgCore.PgColumn;
+  password: pgCore.PgColumn;
+  salt: pgCore.PgColumn;
+  code: pgCore.PgColumn;
   account: pgCore.PgColumn;
   email: pgCore.PgColumn;
   provider: pgCore.PgColumn;
@@ -11,6 +15,15 @@ export function constraints(
   table: IConstraintColumns,
 ): pgCore.PgTableExtraConfigValue[] {
   return [
+    pgCore.check(
+      "sps_rc_identity_provider_purpose",
+      sql`
+      (${table.usage} = 'inbound' AND ${table.provider} NOT IN ('openai','openrouter'))
+      OR (${table.usage} = 'outbound_api' AND ${table.provider} IN ('openai','openrouter')
+      AND ${table.password} IS NULL AND ${table.salt} IS NULL AND ${table.code} IS NULL
+      AND ${table.email} IS NULL AND ${table.account} IS NULL)`,
+    ),
+
     pgCore
       .uniqueIndex("sps_rc_identity_telegram_account_unique")
       .on(table.account)

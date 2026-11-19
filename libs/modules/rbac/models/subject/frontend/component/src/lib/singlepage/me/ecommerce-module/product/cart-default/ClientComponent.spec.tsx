@@ -30,10 +30,17 @@ const mockOrders = [
 ];
 
 jest.mock("@tanstack/react-query", () => ({
+  ...jest.requireActual("@tanstack/react-query"),
   useIsFetching: () => 0,
   useIsMutating: () => 0,
 }));
 jest.mock("@sps/shared-frontend-client-utils", () => ({ cn: () => "" }));
+jest.mock("@sps/rbac/models/subject/sdk/client", () => ({
+  api: {
+    customerWorkForOrder: () => ({ data: null }),
+    orderWork: { read: () => ({ data: null }) },
+  },
+}));
 jest.mock("@sps/rbac/models/subject/sdk/model", () => ({ route: "/subjects" }));
 jest.mock(
   "../../../../ecommerce-module/order/list/checkout-default/Row",

@@ -2,7 +2,7 @@
 
 import { useId, useState } from "react";
 import type { FormEvent } from "react";
-import { Component as Icon } from "../../../../shared/icon";
+import { Component as SharedIcon } from "../../../../shared/icon";
 import type { IComponentProps, IProviderAttempt } from "./interface";
 
 const budgetStatuses = {
@@ -75,7 +75,8 @@ export function SpendOverview({
               id={headingId}
               className="flex items-center gap-2 text-xl font-semibold"
             >
-              <Icon variant="phosphor" name="wallet" size={20} /> Бюджет задачи
+              <SharedIcon variant="phosphor" name="wallet" size={20} /> Бюджет
+              задачи
             </h2>
             <p className="mt-2 text-sm text-muted-foreground">
               {budget.payer} · на кошельке {budget.wallet} SPS
@@ -85,7 +86,7 @@ export function SpendOverview({
             role="status"
             className="inline-flex items-center gap-1.5 rounded-full bg-muted px-3 py-1.5 text-xs font-semibold"
           >
-            <Icon
+            <SharedIcon
               variant="phosphor"
               name={
                 budget.status === "ready"
@@ -158,7 +159,8 @@ export function SpendOverview({
             disabled={budget.status === "waiting-provider" || attemptOpen}
             className={`${primary} mt-3`}
           >
-            <Icon variant="phosphor" name="play" size={20} /> Запустить попытку
+            <SharedIcon variant="phosphor" name="play" size={20} /> Запустить
+            попытку
           </button>
         </div>
       </section>
@@ -182,7 +184,7 @@ export function SpendOverview({
               <details className="group">
                 <summary className="flex min-h-14 cursor-pointer flex-wrap items-center justify-between gap-x-3 gap-y-1 rounded-xl px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
                   <span className="flex min-w-0 items-center gap-2 font-semibold">
-                    <Icon
+                    <SharedIcon
                       variant="phosphor"
                       name="caret-down"
                       size={20}
@@ -210,7 +212,11 @@ export function SpendOverview({
                     onClick={() => onReconcile(attempt.id)}
                     className={secondary}
                   >
-                    <Icon variant="phosphor" name="arrow-right" size={20} />{" "}
+                    <SharedIcon
+                      variant="phosphor"
+                      name="arrow-right"
+                      size={20}
+                    />{" "}
                     Сверить вызов
                   </button>
                 </div>

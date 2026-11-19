@@ -2,7 +2,7 @@
 
 import { memo, useCallback, useEffect, useRef, useState } from "react";
 import * as Dialog from "@radix-ui/react-dialog";
-import { Component as Icon } from "../../../../shared/icon";
+import { Component as SharedIcon } from "../../../../shared/icon";
 import {
   cartPurchaseScenarios,
   formatPurchaseMoney,
@@ -105,7 +105,7 @@ const PurchaseLine = memo(function PurchaseLine({
           className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-muted text-muted-foreground"
           aria-hidden="true"
         >
-          <Icon variant="phosphor" name="package" className="h-6 w-6" />
+          <SharedIcon variant="phosphor" name="package" className="h-6 w-6" />
         </span>
         <div className="min-w-0 flex-1">
           <p className="text-xs text-muted-foreground">
@@ -343,7 +343,11 @@ const PurchaseLine = memo(function PurchaseLine({
             }
             onClick={() => onCompare(line.id)}
           >
-            <Icon variant="phosphor" name="shopping-cart" className="h-4 w-4" />
+            <SharedIcon
+              variant="phosphor"
+              name="shopping-cart"
+              className="h-4 w-4"
+            />
             Сравнить магазины
           </button>
           {line.error === "quote" ? (
@@ -528,7 +532,7 @@ export function ClientComponent({
               className={`${button} h-11 w-11 shrink-0 px-0`}
               aria-label="Закрыть корзину"
             >
-              <Icon variant="phosphor" name="x" className="h-5 w-5" />
+              <SharedIcon variant="phosphor" name="x" className="h-5 w-5" />
             </Dialog.Close>
           </header>
           <div className="min-h-0 flex-1 space-y-4 overflow-y-auto overscroll-contain p-4 sm:p-6">

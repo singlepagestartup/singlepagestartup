@@ -1,5 +1,20 @@
 "use client";
 import {
+  customerWork,
+  customerWorkAvailability,
+  customerWorkForOrder,
+  customerWorkForThread,
+  changeCustomerWork,
+} from "./ecommerce-module/customer-work";
+import { orderWork } from "./ecommerce-module/order/work";
+import { crmWorkspace } from "./crm-module/workspace";
+import {
+  providerConnections,
+  changeProviderConnection,
+  type IProps as IProviderConnectionsProps,
+  type IChangeProps as IChangeProviderConnectionProps,
+} from "./provider-connections";
+import {
   mutation as ecommerceModuleCatalogMutation,
   type IMutationProps as IEcommerceModuleCatalogMutationProps,
   context as ecommerceModuleCatalogContext,
@@ -464,6 +479,8 @@ import {
 } from "./host-cache/revalidate";
 
 export type IProps = {
+  IProviderConnectionsProps: IProviderConnectionsProps;
+  IChangeProviderConnectionProps: IChangeProviderConnectionProps;
   IEcommerceModuleCatalogMutationProps: IEcommerceModuleCatalogMutationProps;
   IEcommerceModuleCatalogContextProps: IEcommerceModuleCatalogContextProps;
   IEcommerceModuleOfferCreateProps: IEcommerceModuleOfferCreateProps;
@@ -652,6 +669,15 @@ export type IResult = {
 };
 
 export const api = {
+  customerWork,
+  customerWorkAvailability,
+  customerWorkForOrder,
+  customerWorkForThread,
+  changeCustomerWork,
+  orderWork,
+  crmWorkspace,
+  providerConnections,
+  changeProviderConnection,
   ecommerceModuleCatalogMutation,
   ecommerceModuleCatalogContext,
   ecommerceModuleOfferCreate,

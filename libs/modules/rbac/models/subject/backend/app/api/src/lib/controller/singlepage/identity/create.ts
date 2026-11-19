@@ -94,6 +94,11 @@ export class Handler {
             filters: {
               and: [
                 {
+                  column: "provider",
+                  method: "eq",
+                  value: "ethereum_virtual_machine",
+                },
+                {
                   column: "account",
                   method: "eq",
                   value: address.toLowerCase(),

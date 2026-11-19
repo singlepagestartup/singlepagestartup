@@ -83,6 +83,21 @@ export function StageFields({
       </Field>
       <section className="grid gap-3.5 border-t border-border pt-5">
         <h4 className="text-sm font-semibold">Что делает исполнитель</h4>
+        <Field label="Формат результата">
+          <select
+            className={fieldClass}
+            value={stage.output ?? "chat"}
+            onChange={(event) =>
+              onChange({
+                output: event.currentTarget.value as WorkflowStage["output"],
+              })
+            }
+          >
+            <option value="chat">Ответ в чате</option>
+            <option value="pdf">PDF</option>
+            <option value="image">Изображение</option>
+          </select>
+        </Field>
         <Field label="Инструкция">
           <textarea
             className={`${fieldClass} min-h-24 leading-6`}

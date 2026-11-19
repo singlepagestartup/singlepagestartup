@@ -20,6 +20,7 @@ npx nx run @sps/blog:repository-migrate
 npx nx run @sps/startup:repository-migrate
 npx nx run @sps/social:repository-migrate
 npx nx run @sps/rbac:repository-migrate
+bun --env-file=apps/api/.env libs/modules/rbac/backend/repository/database/src/lib/retire-chat-tariff.ts
 npx nx run @sps/host:repository-migrate
 npx nx run @sps/agent:repository-migrate
 npx nx run @sps/analytic:repository-migrate

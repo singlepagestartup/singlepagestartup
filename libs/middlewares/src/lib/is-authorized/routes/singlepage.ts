@@ -42,7 +42,7 @@ export const allowedRoutes: IRouteRule[] = [
   },
   {
     regexPath:
-      /^\/api\/rbac\/subjects\/authentication\/(bill-route|refresh|logout|ethereum-virtual-machine)$/,
+      /^\/api\/rbac\/subjects\/authentication\/(refresh|logout|ethereum-virtual-machine)$/,
     methods: ["POST"],
   },
   {
