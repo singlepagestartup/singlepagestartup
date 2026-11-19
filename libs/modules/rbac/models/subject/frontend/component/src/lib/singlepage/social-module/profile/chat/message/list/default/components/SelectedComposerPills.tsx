@@ -45,7 +45,7 @@ export function SelectedComposerPills(props: SelectedComposerPillsProps) {
               onClick={() => {
                 props.onOpenFile(file.id);
               }}
-              aria-label={`Open attached file ${file.name}`}
+              aria-label={`Download attached file ${file.name}`}
             >
               <Eye className="h-3 w-3" />
             </button>

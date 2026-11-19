@@ -4,7 +4,7 @@
   "updatedAt": "2026-04-26T20:39:06.082Z",
   "variant": "default",
   "orderIndex": 0,
-  "className": "w-full lg:h-[calc(100vh-4rem)] lg:min-h-0 lg:w-1/4 lg:flex-none lg:overflow-hidden",
+  "className": "hidden lg:flex w-full lg:h-[calc(100vh-4rem)] lg:min-h-0 lg:w-1/4 lg:flex-none lg:overflow-hidden",
   "pageId": "42e4f5a8-7612-4d28-ad3e-4027835a6d37",
   "widgetId": "88510a3e-313e-4024-8a36-5aa245fa5cd9"
 }

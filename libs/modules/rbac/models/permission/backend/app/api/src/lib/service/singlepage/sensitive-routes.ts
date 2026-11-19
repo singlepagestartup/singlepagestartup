@@ -18,6 +18,11 @@ export const controllerGuardedRoutes: IRouteRule[] = [
   },
   {
     regexPath:
+      /^\/api\/rbac\/subjects\/[0-9a-f-]+\/customer-work\/threads\/[0-9a-f-]+\/messages\/[0-9a-f-]+\/attachments\/[0-9a-f-]+\/?$/i,
+    methods: ["GET", "HEAD"],
+  },
+  {
+    regexPath:
       /^\/api\/rbac\/subjects\/[^/]+\/ecommerce-module\/orders\/[^/]+\/work\/?$/,
     methods: ["GET", "POST"],
   },
@@ -134,7 +139,6 @@ export const sensitiveRoutes: IRouteRule[] = [
   ...privateCommerceRoutes,
   {
     regexPath: /^\/api\/social\/chats(?:\/.*)?$/i,
-    methods: ["GET", "HEAD"],
   },
   {
     regexPath:

@@ -1,6 +1,7 @@
 import {
   route,
   serverHost,
+  customerWorkAttachmentPath,
   type ICustomerWorkScope,
   type ICustomerWorkView,
   type TCustomerWorkCommand,
@@ -23,6 +24,10 @@ export interface IOrderProps extends IRequest {
 }
 export interface IThreadProps extends IRequest {
   threadId: string;
+}
+export interface IAttachmentProps extends IThreadProps {
+  messageId: string;
+  attachmentId: string;
 }
 export interface ICommandProps extends IRequest {
   data: TCustomerWorkCommand;
@@ -87,6 +92,33 @@ export async function customerWorkForThread({
     throw new Error("Customer work returned no data");
   }
   return json.data;
+}
+
+export async function customerWorkAttachment({
+  id,
+  threadId,
+  messageId,
+  attachmentId,
+  host = serverHost,
+  options,
+}: IAttachmentProps) {
+  const path = customerWorkAttachmentPath(
+    id,
+    threadId,
+    messageId,
+    attachmentId,
+  );
+  const res = await fetch(`${host}${path}`, {
+    credentials: "include",
+    ...options,
+    cache: "no-store",
+    method: "GET",
+  });
+  if (!res.ok) {
+    await responsePipe({ res });
+    throw new Error("Message attachment is unavailable");
+  }
+  return res.blob();
 }
 
 export async function changeCustomerWork({

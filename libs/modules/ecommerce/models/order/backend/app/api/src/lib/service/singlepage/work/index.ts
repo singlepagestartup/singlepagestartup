@@ -330,6 +330,7 @@ export class Service {
         createdAt: new Date().toISOString(),
         originalFileId: original.id,
         previewFileId: preview.id,
+        previewMimeType: input.preview.mimeType,
         currencyId: input.currencyId,
         price,
         priceBasis: input.priceBasis,

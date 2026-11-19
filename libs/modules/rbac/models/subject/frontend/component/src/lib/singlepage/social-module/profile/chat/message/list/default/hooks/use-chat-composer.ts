@@ -12,6 +12,7 @@ import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 
 interface UseChatComposerProps {
+  isCustomerWork: boolean;
   clearSelectedSkills: () => void;
   markShouldScrollToBottom: () => void;
   openRouterModelId: string;
@@ -29,6 +30,15 @@ interface UseChatComposerProps {
 export function useChatComposer(props: UseChatComposerProps) {
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
+  const lastSend = useRef<
+    | {
+        threadId: string;
+        text: string;
+        files: ChatMessageFormValues["files"];
+        id: string;
+      }
+    | undefined
+  >(undefined);
   const form = useForm<ChatMessageFormValues>({
     resolver: zodResolver(chatMessageFormSchema),
     defaultValues: {
@@ -99,6 +109,24 @@ export function useChatComposer(props: UseChatComposerProps) {
     };
     const hasMessageMetadata = Object.keys(messageMetadata).length > 0;
 
+    if (createMessage.isPending) return;
+    if (
+      props.isCustomerWork &&
+      (lastSend.current?.threadId !== props.socialModuleThreadId ||
+        lastSend.current.text !== data.description ||
+        lastSend.current.files?.length !== data.files?.length ||
+        data.files?.some(
+          (file, index) => file !== lastSend.current?.files?.[index],
+        ))
+    ) {
+      lastSend.current = {
+        threadId: props.socialModuleThreadId,
+        text: data.description,
+        files: data.files,
+        id: crypto.randomUUID(),
+      };
+    }
+
     createMessage.mutate(
       {
         id: props.subjectId,
@@ -107,6 +135,9 @@ export function useChatComposer(props: UseChatComposerProps) {
         socialModuleThreadId: props.socialModuleThreadId,
         data: {
           description: data.description,
+          ...(props.isCustomerWork && lastSend.current
+            ? { sourceSystemId: lastSend.current.id }
+            : {}),
           files: data.files,
           ...(hasMessageMetadata
             ? {
@@ -126,6 +157,7 @@ export function useChatComposer(props: UseChatComposerProps) {
           } else {
             props.threadMessagesCache.refetch();
           }
+          lastSend.current = undefined;
           resetComposer();
         },
       },

@@ -128,6 +128,12 @@ journal and request body. OpenRouter usage includes the returned USD charge.
 Direct OpenAI usage is priced from the terms saved on the attempt and marked as
 a rate-card estimate.
 
+### Marketplace cover
+
+For a commissioned cover, publish an image stage with `imageBrief: "marketplace-cover"`. The preceding chat stages collect the buyer’s palette, font, product photo, composition, caption and dimensions. A style reference is optional. The agent summarizes the materials in the order’s Social thread and waits for the buyer to confirm that version of the brief. A corrected brief requires a new confirmation.
+
+The image provider generates the background. The worker places the original product photo and the caption rendered in the supplied font on the requested canvas. It publishes a private original and preview. The agent’s reply links the version to its order. The buyer can accept it in the same thread and download the original after payment.
+
 ### Maintain a store knowledge index
 
 In a separate, store-owner-funded consultation funnel, set the maintenance

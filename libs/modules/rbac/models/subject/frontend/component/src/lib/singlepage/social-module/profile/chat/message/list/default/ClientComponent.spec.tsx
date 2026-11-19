@@ -304,6 +304,23 @@ describe("Given: OpenRouter chat profile sidebar", () => {
     });
   });
 
+  it("sends a font as a message with no caption", async () => {
+    const { container } = renderComponent("default");
+    const font = new File(["sample"], "brand.ttf", { type: "font/ttf" });
+    fireEvent.change(container.querySelector("input[type=file]")!, {
+      target: { files: [font] },
+    });
+    fireEvent.click(screen.getByLabelText("Send message"));
+    await waitFor(() =>
+      expect(mockMessageCreateMutate).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({ files: [font], description: "" }),
+        }),
+        expect.any(Object),
+      ),
+    );
+  });
+
   /**
    * BDD Scenario
    * Given: two different files have the same name and are selected in separate picker operations.
@@ -366,12 +383,15 @@ describe("Given: OpenRouter chat profile sidebar", () => {
    * BDD Scenario
    * Given: the user selected a local file in the chat composer.
    * When: the user opens and removes the attached file before submit.
-   * Then: the composer previews the local file and omits the removed file from the payload.
+   * Then: the composer downloads the local file and omits the removed file from the payload.
    */
-  it("When: managing a selected attachment Then: it can be opened and removed before submit", async () => {
+  it("When: managing a selected attachment Then: it can be downloaded and removed before submit", async () => {
     const originalCreateObjectURL = URL.createObjectURL;
     const originalRevokeObjectURL = URL.revokeObjectURL;
     const originalOpen = window.open;
+    const download = jest
+      .spyOn(HTMLAnchorElement.prototype, "click")
+      .mockImplementation(() => {});
     const createObjectURL = jest.fn(() => {
       return "blob:notes-preview";
     });
@@ -411,14 +431,14 @@ describe("Given: OpenRouter chat profile sidebar", () => {
         },
       });
 
-      fireEvent.click(screen.getByLabelText("Open attached file notes.md"));
+      fireEvent.click(screen.getByLabelText("Download attached file notes.md"));
 
       expect(createObjectURL).toHaveBeenCalledWith(file);
-      expect(open).toHaveBeenCalledWith(
-        "blob:notes-preview",
-        "_blank",
-        "noopener,noreferrer",
-      );
+      expect(open).not.toHaveBeenCalled();
+      expect(download.mock.instances[0]).toMatchObject({
+        href: "blob:notes-preview",
+        download: "notes.md",
+      });
       jest.runOnlyPendingTimers();
       expect(revokeObjectURL).toHaveBeenCalledWith("blob:notes-preview");
       jest.useRealTimers();
@@ -466,6 +486,7 @@ describe("Given: OpenRouter chat profile sidebar", () => {
         configurable: true,
         value: originalRevokeObjectURL,
       });
+      download.mockRestore();
       Object.defineProperty(window, "open", {
         configurable: true,
         value: originalOpen,

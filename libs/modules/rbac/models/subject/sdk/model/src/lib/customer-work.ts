@@ -209,9 +209,28 @@ export interface ICustomerWorkSourceVersion {
   version: string;
 }
 
+export interface ICustomerWorkRunAttachment {
+  messageId: string;
+  id: string;
+  name: string;
+  digest: string;
+  mimeType: string;
+}
+
+export function customerWorkAttachmentPath(
+  subjectId: string,
+  threadId: string,
+  messageId: string,
+  attachmentId: string,
+) {
+  return `/api/rbac/subjects/${encodeURIComponent(subjectId)}/customer-work/threads/${encodeURIComponent(threadId)}/messages/${encodeURIComponent(messageId)}/attachments/${encodeURIComponent(attachmentId)}`;
+}
+
 export interface ICustomerWorkReply extends ICustomerWorkRun {
+  resultVersionId?: string;
   attemptId: string;
   text: string;
   sourceVersions?: ICustomerWorkSourceVersion[];
   cartSelection?: ICustomerWorkCartSelection;
+  imageDraftDigest?: string | null;
 }

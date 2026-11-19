@@ -167,10 +167,10 @@ function Preview({ scenario }: IPreviewProps) {
     setScreen("discussion");
   }
 
-  function sendMessage(body: string) {
+  function sendMessage(body: string, attachments: IWorkMessage["attachments"]) {
     if (!activeConversation) return;
     const { id, handoff } = activeConversation;
-    appendMessage(id, { author: "Вы", kind: "customer", body });
+    appendMessage(id, { author: "Вы", kind: "customer", body, attachments });
     if (orderConversation?.stage === "preparing" && service) {
       const next = orderConversation.resultCount + 1;
       setDraft({ ...orderConversation, stage: "review", resultCount: next });
@@ -327,6 +327,19 @@ function Preview({ scenario }: IPreviewProps) {
         ? "closed"
         : "cart";
 
+  const delivery =
+    draft?.payment === "paid" && (screen === "order" || orderConversation) ? (
+      <FileStorageModuleFile
+        variant="order-delivery"
+        state={draft.delivered ? "available" : "pending"}
+        files={files}
+        onDownload={(id) => {
+          const file = files.find((entry) => entry.id === id);
+          if (file) downloadOrderFixture(file);
+        }}
+      />
+    ) : undefined;
+
   return (
     <Widget
       variant="subject-me-store-customer-work"
@@ -369,6 +382,7 @@ function Preview({ scenario }: IPreviewProps) {
             }
             acceptedVersionId={orderConversation?.acceptedVersionId}
             price={offer.price}
+            delivery={orderConversation ? delivery : undefined}
             onSend={sendMessage}
             onHandoff={handoff}
             onAddToCart={
@@ -416,20 +430,7 @@ function Preview({ scenario }: IPreviewProps) {
           />
         )
       }
-      delivery={
-        draft?.payment === "paid" &&
-        (screen === "order" || orderConversation) ? (
-          <FileStorageModuleFile
-            variant="order-delivery"
-            state={draft.delivered ? "available" : "pending"}
-            files={files}
-            onDownload={(id) => {
-              const file = files.find((entry) => entry.id === id);
-              if (file) downloadOrderFixture(file);
-            }}
-          />
-        ) : undefined
-      }
+      delivery={delivery}
     />
   );
 }

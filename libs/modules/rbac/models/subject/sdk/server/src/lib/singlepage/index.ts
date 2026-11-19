@@ -3,6 +3,7 @@ import {
   customerWorkAvailability,
   customerWorkForOrder,
   customerWorkForThread,
+  customerWorkAttachment,
   changeCustomerWork,
 } from "./ecommerce-module/customer-work";
 import { orderWork } from "./ecommerce-module/order/work";
@@ -765,6 +766,7 @@ export const api = {
   customerWorkAvailability,
   customerWorkForOrder,
   customerWorkForThread,
+  customerWorkAttachment,
   changeCustomerWork,
   orderWork,
   crmWorkspace,

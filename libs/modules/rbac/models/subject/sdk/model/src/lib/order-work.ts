@@ -48,6 +48,7 @@ export interface IOrderVersionView {
   price: string;
   currencyId: string;
   preview: IOrderArtifact;
+  previewMimeType?: string;
 }
 
 export interface IOrderWorkView {

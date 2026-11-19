@@ -103,6 +103,7 @@ export class Service {
         price: version.price,
         currencyId: version.currencyId,
         preview: descriptor(version.previewFileId),
+        previewMimeType: version.previewMimeType,
       })),
       acceptedVersionId: work.acceptedVersionId,
       paidVersionId: work.paid?.resultVersionId ?? null,

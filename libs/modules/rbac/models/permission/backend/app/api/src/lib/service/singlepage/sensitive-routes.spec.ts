@@ -246,6 +246,14 @@ describe("public Social reads", () => {
       );
     },
   );
+  it.each(["POST", "PATCH", "DELETE"])(
+    "requires permission for raw chat writes with %s",
+    async (method) => {
+      await expect(service.isSensitiveRoute(demo, method, demo)).resolves.toBe(
+        true,
+      );
+    },
+  );
   it.each(["", "/count", "/" + demoId])(
     "preserves public author projections%s",
     async (suffix) => {

@@ -1,7 +1,7 @@
 "use client";
 
 import { useId, useState } from "react";
-import type { FormEvent } from "react";
+import { Component as SocialChat } from "../../../widget/singlepage/chat-overview-default";
 import { Component as SharedIcon } from "../../../../shared/icon";
 import type { IComponentProps, IWorkResultVersion } from "./interface";
 
@@ -11,151 +11,71 @@ const primaryClass =
   "inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:opacity-60";
 
 export function Component(props: IComponentProps) {
-  const [message, setMessage] = useState("");
-  const messageId = useId();
   const resultId = useId();
-  const senderLabel = {
-    assistant: "Личный ассистент",
-    pending: "Ожидаем менеджера",
-    manager: "Менеджер магазина",
-  }[props.handoff];
-
-  function handleSend(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    const text = message.trim();
-    if (text) {
-      props.onSend(text);
-      setMessage("");
-    }
-  }
+  const participant =
+    props.handoff === "pending" ? "Ожидаем менеджера" : props.operator;
+  const reference = props.orderId
+    ? `Заказ ${props.orderId}`
+    : `Консультация ${props.reference}`;
 
   return (
-    <section
-      data-ds-block="social.thread.customer-work"
-      data-ds-layer="singlepage"
-      data-module="social"
-      data-model="thread"
-      data-variant="customer-work"
-      className="grid min-w-0 items-start gap-5 lg:grid-cols-[minmax(0,1.45fr)_minmax(0,1fr)]"
-    >
-      <div className="min-w-0 rounded-2xl border border-border bg-card">
-        <header className="flex flex-wrap justify-between gap-4 border-b border-border p-5 sm:p-6">
-          <div className="min-w-0">
-            <p className="text-sm text-muted-foreground">
-              {props.orderId
-                ? `Заказ ${props.orderId}`
-                : `Консультация ${props.reference}`}
-            </p>
-            <h1 className="mt-1 text-2xl font-semibold tracking-tight sm:text-3xl">
-              {props.title}
-            </h1>
-            <p role="status" className="mt-2 text-sm text-muted-foreground">
-              {props.operator} · {senderLabel}
-            </p>
-            {props.resultStatus && (
-              <a
-                href={`#${resultId}`}
-                className="mt-1 inline-flex min-h-11 items-center text-sm font-medium underline underline-offset-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring lg:hidden"
-              >
-                К результату
-              </a>
-            )}
-          </div>
-          {props.handoff === "assistant" && (
+    <SocialChat
+      key={props.reference}
+      chat={{
+        id: props.reference,
+        name: props.title,
+        description: reference,
+        icon: "general",
+        unread: 0,
+        memberIds: ["customer", "operator"],
+      }}
+      conversation={{
+        thread: {
+          id: props.reference,
+          title: props.title,
+          description: `${reference} · ${participant}`,
+          excerpt: "",
+          date: "",
+          unread: 0,
+        },
+        messages: props.messages.map((message) => ({
+          id: message.id,
+          author: message.author || "Магазин",
+          role: "",
+          time: "",
+          side: message.kind === "customer" ? "outgoing" : "incoming",
+          body: message.body,
+          attachments: message.attachments,
+          reactions: [],
+        })),
+        onSend: props.onSend,
+        actions: props.handoff === "assistant" && (
+          <button
+            type="button"
+            className={actionClass}
+            onClick={props.onHandoff}
+          >
+            Позвать менеджера
+          </button>
+        ),
+        timelineFooter: props.resultStatus ? (
+          <>
+            <ResultReview {...props} resultId={resultId} />
+            {props.delivery}
+          </>
+        ) : (
+          props.onAddToCart && (
             <button
               type="button"
-              onClick={props.onHandoff}
-              className={`${actionClass} self-start`}
-            >
-              <SharedIcon variant="phosphor" name="users" size={20} /> Позвать
-              менеджера
-            </button>
-          )}
-        </header>
-        <div
-          role="log"
-          aria-label="Переписка"
-          className="min-h-48 space-y-4 p-5 sm:p-6"
-        >
-          {props.messages.length === 0 && (
-            <p className="text-sm text-muted-foreground">
-              Напишите, что хотите узнать о предложении.
-            </p>
-          )}
-          {props.messages.map((entry) =>
-            entry.kind === "event" ? (
-              <p
-                key={entry.id}
-                className="break-words text-center text-xs font-medium text-muted-foreground"
-              >
-                {entry.body}
-              </p>
-            ) : (
-              <article
-                key={entry.id}
-                className={`max-w-[95%] rounded-2xl px-4 py-3 sm:max-w-[85%] ${entry.kind === "customer" ? "ml-auto border border-border bg-background" : "bg-muted"}`}
-              >
-                <p className="text-xs font-semibold">{entry.author}</p>
-                <p className="mt-1 whitespace-pre-wrap break-words text-sm leading-relaxed">
-                  {entry.body}
-                </p>
-              </article>
-            ),
-          )}
-        </div>
-        <form
-          onSubmit={handleSend}
-          className="border-t border-border p-4 sm:p-5"
-        >
-          <label htmlFor={messageId} className="text-sm font-medium">
-            Сообщение
-          </label>
-          <div className="mt-2 grid gap-2 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-end">
-            <textarea
-              id={messageId}
-              value={message}
-              onChange={(event) => setMessage(event.currentTarget.value)}
-              placeholder="Напишите в чат"
-              rows={2}
-              maxLength={2000}
-              className="w-full min-w-0 resize-y rounded-xl border border-input bg-background p-3 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-            />
-            <button
-              type="submit"
-              className={primaryClass}
-              disabled={!message.trim()}
-            >
-              <SharedIcon
-                variant="phosphor"
-                name="paper-plane-tilt"
-                size={20}
-              />{" "}
-              Отправить
-            </button>
-          </div>
-        </form>
-      </div>
-      {props.resultStatus ? (
-        <ResultReview {...props} resultId={resultId} />
-      ) : (
-        props.onAddToCart && (
-          <aside className="rounded-2xl border border-border bg-card p-5 sm:p-6">
-            <h2 className="text-lg font-semibold">Предложение</h2>
-            <p className="mt-2 text-sm text-muted-foreground">
-              {props.price.toLocaleString("ru-RU")} ₽
-            </p>
-            <button
-              type="button"
-              className={`${actionClass} mt-4 w-full`}
+              className={actionClass}
               onClick={props.onAddToCart}
             >
-              <SharedIcon variant="phosphor" name="shopping-cart" size={20} />{" "}
-              Добавить в корзину
+              Добавить в корзину · {props.price.toLocaleString("ru-RU")} ₽
             </button>
-          </aside>
-        )
-      )}
-    </section>
+          )
+        ),
+      }}
+    />
   );
 }
 

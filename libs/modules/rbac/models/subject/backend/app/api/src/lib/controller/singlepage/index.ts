@@ -236,6 +236,18 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
     }));
     const routes: Parameters<typeof this.bindHttpRoutes>[0] = [
       ...orderWorkRoutes,
+      ...(["GET", "HEAD"] as const).map((method) => ({
+        method,
+        path: "/:id/customer-work/threads/:threadId/messages/:messageId/attachments/:attachmentId",
+        handler: (c: Context) => new CustomerWork(this.service).attachment(c),
+        middlewares: [
+          new RequestSubjectIdOwner().init({
+            requireJwt: true,
+            activeSubjectId: (token) =>
+              this.service.isAuthorizedService.getSubjectId(token),
+          }),
+        ],
+      })),
       {
         method: "GET",
         path: "/:id/customer-work/threads/:threadId",

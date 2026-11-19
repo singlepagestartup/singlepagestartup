@@ -1,4 +1,7 @@
-import { funnelDefinitionSchema } from "@sps/crm/models/funnel/sdk/model";
+import {
+  funnelDefinitionSchema,
+  stageWorkCapabilities,
+} from "@sps/crm/models/funnel/sdk/model";
 import { validatePublication } from "./utils";
 
 it("rejects unknown targets and stage IDs that cannot identify a single stage", () => {
@@ -76,4 +79,33 @@ it("preserves old definitions and restricts file output to funded individual ser
     "individual-service",
   );
   expect(() => validatePublication(funded, "individual-service")).not.toThrow();
+});
+
+it("keeps the marketplace cover brief on image stages only", () => {
+  const stage = {
+    id: "cover",
+    name: "Marketplace cover",
+    actions: [],
+    operations: ["vision"],
+    imageBrief: "marketplace-cover",
+  };
+  const parse = (output?: string) =>
+    funnelDefinitionSchema.parse({
+      initialStageId: stage.id,
+      stages: [{ ...stage, output }],
+    });
+
+  const [image] = parse("image").stages;
+  expect(image.imageBrief).toBe("marketplace-cover");
+  expect(stageWorkCapabilities(image)).toEqual(["image"]);
+  expect(stageWorkCapabilities({ ...image, imageBrief: undefined })).toEqual([
+    "image",
+    "vision",
+  ]);
+  expect(() => parse()).toThrow(
+    "Marketplace cover brief requires image output",
+  );
+  expect(() => parse("pdf")).toThrow(
+    "Marketplace cover brief requires image output",
+  );
 });

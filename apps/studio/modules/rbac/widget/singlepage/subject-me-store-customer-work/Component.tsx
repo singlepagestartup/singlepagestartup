@@ -56,14 +56,7 @@ export function Component({
         className="mx-auto max-w-6xl px-4 py-5 focus:outline-none sm:px-8 sm:py-9"
       >
         {screen === "offer" && offer}
-        {screen === "discussion" && (
-          <div className="grid gap-4">
-            {discussion}
-            {delivery && (
-              <div className="lg:w-[41%] lg:justify-self-end">{delivery}</div>
-            )}
-          </div>
-        )}
+        {screen === "discussion" && discussion}
         {screen === "order" && (
           <div className="grid items-start gap-5 lg:grid-cols-[minmax(0,1.45fr)_minmax(0,1fr)]">
             {order}

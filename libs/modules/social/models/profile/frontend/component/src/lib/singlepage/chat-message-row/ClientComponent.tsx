@@ -249,7 +249,8 @@ export function Component(props: IClientComponentProps) {
               {profileDisplayName}
             </span>
           )}
-          {props.message.sourceSystemId ? (
+          {props.message.variant !== "customer-work" &&
+          props.message.sourceSystemId ? (
             <span className="truncate text-xs text-slate-400">
               source {props.message.sourceSystemId}
             </span>
@@ -263,6 +264,7 @@ export function Component(props: IClientComponentProps) {
             {normalizeChatMessageMarkdown(props.message.description)}
           </Markdown>
         </div>
+        {props.messageContentSlot}
         {audioTranscription?.status &&
         audioTranscription.status !== "completed" ? (
           <div className="mt-2 rounded-md border border-slate-200 bg-slate-50 px-3 py-2 text-xs text-slate-500">
@@ -273,51 +275,53 @@ export function Component(props: IClientComponentProps) {
                 : "Transcription failed"}
           </div>
         ) : null}
-        <SocialModuleMessagesToFileStorageModuleFiles
-          variant="find"
-          isServer={false}
-          apiProps={{
-            params: {
-              filters: {
-                and: [
-                  {
-                    column: "messageId",
-                    method: "eq",
-                    value: props.message.id,
-                  },
-                ],
+        {props.message.variant !== "customer-work" && (
+          <SocialModuleMessagesToFileStorageModuleFiles
+            variant="find"
+            isServer={false}
+            apiProps={{
+              params: {
+                filters: {
+                  and: [
+                    {
+                      column: "messageId",
+                      method: "eq",
+                      value: props.message.id,
+                    },
+                  ],
+                },
               },
-            },
-          }}
-        >
-          {({ data: socialModuleMessagesToFileStorageModuleFiles }) => {
-            if (!socialModuleMessagesToFileStorageModuleFiles?.length) {
-              return null;
-            }
+            }}
+          >
+            {({ data: socialModuleMessagesToFileStorageModuleFiles }) => {
+              if (!socialModuleMessagesToFileStorageModuleFiles?.length) {
+                return null;
+              }
 
-            return (
-              <div className="mt-2 grid grid-cols-1 gap-2 sm:grid-cols-2">
-                {socialModuleMessagesToFileStorageModuleFiles.map(
-                  (socialModuleMessageToFileStorageModuleFile) => {
-                    return (
-                      <div
-                        key={socialModuleMessageToFileStorageModuleFile.id}
-                        className="overflow-hidden rounded-lg border border-slate-100 bg-slate-50 p-2"
-                      >
-                        <SocialModuleMessagesToFileStorageModuleFiles
-                          variant="default"
-                          isServer={false}
-                          data={socialModuleMessageToFileStorageModuleFile}
-                          language={props.language}
-                        />
-                      </div>
-                    );
-                  },
-                )}
-              </div>
-            );
-          }}
-        </SocialModuleMessagesToFileStorageModuleFiles>
+              return (
+                <div className="mt-2 grid grid-cols-1 gap-2 sm:grid-cols-2">
+                  {socialModuleMessagesToFileStorageModuleFiles.map(
+                    (socialModuleMessageToFileStorageModuleFile) => {
+                      return (
+                        <div
+                          key={socialModuleMessageToFileStorageModuleFile.id}
+                          className="overflow-hidden rounded-lg border border-slate-100 bg-slate-50 p-2"
+                        >
+                          <SocialModuleMessagesToFileStorageModuleFiles
+                            variant="default"
+                            isServer={false}
+                            data={socialModuleMessageToFileStorageModuleFile}
+                            language={props.language}
+                          />
+                        </div>
+                      );
+                    },
+                  )}
+                </div>
+              );
+            }}
+          </SocialModuleMessagesToFileStorageModuleFiles>
+        )}
         {hasInteraction ? (
           <Collapsible className="mt-2">
             <CollapsibleTrigger className="inline-flex items-center gap-1 rounded-full border border-slate-200 px-2.5 py-1 text-xs text-slate-500 transition hover:bg-slate-50">
@@ -348,27 +352,31 @@ export function Component(props: IClientComponentProps) {
               <Copy className="h-3.5 w-3.5" />
             )}
           </button>
-          <button
-            type="button"
-            className="inline-flex h-7 w-7 items-center justify-center rounded text-slate-500 transition hover:bg-slate-100 hover:text-slate-900"
-            onClick={() => {
-              props.onEdit?.(props.message);
-            }}
-            aria-label="Edit message"
-          >
-            <Pencil className="h-3.5 w-3.5" />
-          </button>
-          <button
-            type="button"
-            className="inline-flex h-7 w-7 items-center justify-center rounded text-slate-500 transition hover:bg-red-50 hover:text-red-600"
-            onClick={() => {
-              props.onDelete?.(props.message);
-            }}
-            disabled={props.isDeleting}
-            aria-label="Delete message"
-          >
-            <Trash2 className="h-3.5 w-3.5" />
-          </button>
+          {props.onEdit && (
+            <button
+              type="button"
+              className="inline-flex h-7 w-7 items-center justify-center rounded text-slate-500 transition hover:bg-slate-100 hover:text-slate-900"
+              onClick={() => {
+                props.onEdit?.(props.message);
+              }}
+              aria-label="Edit message"
+            >
+              <Pencil className="h-3.5 w-3.5" />
+            </button>
+          )}
+          {props.onDelete && (
+            <button
+              type="button"
+              className="inline-flex h-7 w-7 items-center justify-center rounded text-slate-500 transition hover:bg-red-50 hover:text-red-600"
+              onClick={() => {
+                props.onDelete?.(props.message);
+              }}
+              disabled={props.isDeleting}
+              aria-label="Delete message"
+            >
+              <Trash2 className="h-3.5 w-3.5" />
+            </button>
+          )}
         </div>
       </div>
     </div>

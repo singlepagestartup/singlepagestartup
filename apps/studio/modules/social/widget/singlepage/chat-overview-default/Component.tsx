@@ -21,11 +21,12 @@ import {
   type SocialMessageBubbleDefaultProps,
 } from "../../../message/index";
 import {
-  Component as Thread,
+  SocialThreadListDefault as ThreadList,
   defaultSocialThreadListDefaultProps,
   defaultSocialProfiles,
-  type SocialThreadListDefaultProps,
-} from "../../../thread/index";
+} from "../../../thread/singlepage/list-default/Component";
+import type { SocialThreadListDefaultProps } from "../../../thread/singlepage/list-default/interface";
+import { Component as ThreadSettings } from "../../../thread/singlepage/chat-settings";
 import * as Dialog from "@radix-ui/react-dialog";
 import {
   createPreviewAttachmentStore,
@@ -80,7 +81,11 @@ export function SocialWidgetChatOverviewDefault(props: IComponentProps = {}) {
   const chat = props.chat ?? localChat;
   const [threadsByChat, setThreadsByChat] = useState<
     Record<string, SocialThreadListDefaultProps["threads"]>
-  >({ general: defaultSocialThreadListDefaultProps.threads });
+  >(() =>
+    props.conversation
+      ? { [chat.id]: [props.conversation.thread] }
+      : { general: defaultSocialThreadListDefaultProps.threads },
+  );
   const [selectedByChat, setSelectedByChat] = useState<Record<string, string>>({
     general: "q1-goals",
   });
@@ -161,10 +166,13 @@ export function SocialWidgetChatOverviewDefault(props: IComponentProps = {}) {
   function sendMessage() {
     if (!thread || (!draft.trim() && !attachments.length)) return;
     const body = draft.trim();
-    setSent((current) => [
-      ...current,
-      { id: crypto.randomUUID(), threadId: thread.id, body, attachments },
-    ]);
+    if (props.conversation?.thread.id === thread.id) {
+      props.conversation.onSend(body, attachments);
+    } else
+      setSent((current) => [
+        ...current,
+        { id: crypto.randomUUID(), threadId: thread.id, body, attachments },
+      ]);
     changeThreads(
       threads.map((t) =>
         t.id === thread.id
@@ -187,14 +195,18 @@ export function SocialWidgetChatOverviewDefault(props: IComponentProps = {}) {
         .toLowerCase()
         .includes(query.toLowerCase()),
   );
-  const initialConversation = thread?.id === "q1-goals";
-  const visibleInitial = initialConversation
-    ? initialMessages.filter((message) =>
-        `${message.author} ${message.body}`
-          .toLowerCase()
-          .includes(query.toLowerCase()),
-      )
-    : [];
+  const conversation =
+    props.conversation?.thread.id === thread?.id
+      ? props.conversation
+      : undefined;
+  const messages =
+    conversation?.messages ??
+    (thread?.id === "q1-goals" ? initialMessages : []);
+  const visibleInitial = messages.filter((message) =>
+    `${message.author} ${message.body}`
+      .toLowerCase()
+      .includes(query.toLowerCase()),
+  );
   return (
     <section
       className="w-full bg-muted p-4 sm:p-6"
@@ -206,7 +218,7 @@ export function SocialWidgetChatOverviewDefault(props: IComponentProps = {}) {
       data-variant={props.variant ?? "chat-overview-default"}
     >
       <div className="grid w-full overflow-hidden rounded-3xl border border-border bg-card md:h-[calc(100vh-10rem)] md:min-h-[760px] md:grid-cols-[300px_minmax(0,1fr)]">
-        <Thread
+        <ThreadList
           variant="list-default"
           chatImage={chatImage}
           title={chat.name}
@@ -229,6 +241,7 @@ export function SocialWidgetChatOverviewDefault(props: IComponentProps = {}) {
               </p>
             </div>
             <div className="flex items-center gap-2">
+              {conversation?.actions}
               {[
                 { Icon: Search, label: "Search messages" },
                 { Icon: Users, label: "Thread members" },
@@ -274,10 +287,11 @@ export function SocialWidgetChatOverviewDefault(props: IComponentProps = {}) {
           <div className="max-h-[640px] min-h-0 flex-1 space-y-6 overflow-y-auto bg-card px-4 py-6 sm:px-7 md:max-h-none">
             {visibleInitial.map((message, index) => (
               <Message
-                key={`initial-${index}`}
+                key={"id" in message ? String(message.id) : `initial-${index}`}
                 {...message}
                 variant="bubble-default"
                 display="timeline"
+                onPreviewAttachment={openPreview}
               />
             ))}
             {!thread && <p className={kit.muted}>No thread selected.</p>}
@@ -302,6 +316,7 @@ export function SocialWidgetChatOverviewDefault(props: IComponentProps = {}) {
                 reactions={[]}
               />
             ))}
+            {conversation?.timelineFooter}
           </div>
           <footer className="border-t border-border bg-card px-5 py-4">
             <input
@@ -391,7 +406,7 @@ export function SocialWidgetChatOverviewDefault(props: IComponentProps = {}) {
         </div>
       </div>
       {settings && (
-        <Thread
+        <ThreadSettings
           variant="chat-settings"
           profiles={defaultSocialProfiles}
           open

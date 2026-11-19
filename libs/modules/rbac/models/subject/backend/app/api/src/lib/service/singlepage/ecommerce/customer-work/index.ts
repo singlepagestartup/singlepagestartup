@@ -1,4 +1,5 @@
 import { createHash, randomUUID } from "node:crypto";
+import { z } from "zod";
 import type { IModel as CrmTask } from "@sps/crm/models/task/sdk/model";
 import {
   stageWorkCapabilities,
@@ -18,6 +19,7 @@ import type {
   ICustomerWorkPrice,
   ICustomerWorkReply,
   ICustomerWorkRun,
+  ICustomerWorkRunAttachment,
   ICustomerWorkScope,
   ICustomerWorkSourceVersion,
   ICustomerWorkView,
@@ -27,10 +29,14 @@ import type {
 import type { Service as SubjectService } from "../../index";
 import { Service as CustomerKnowledge } from "./knowledge";
 import {
-  prepareCustomerWorkMedia,
-  storeCustomerWorkMedia,
-  customerWorkMediaDigest,
-  type TPreparedMedia,
+  customerWorkAttachments,
+  customerWorkAttachmentDigest,
+  describeCustomerWorkAttachments,
+  permittedCustomerWorkMedia,
+  prepareCustomerWorkAttachments,
+  storeCustomerWorkAttachment,
+  type IPreparedAttachment,
+  type IStoredAttachment,
 } from "./media";
 import { Service as CustomerDelivery } from "./delivery";
 import { Service as CustomerCart, type IStoredProposal } from "./cart";
@@ -53,7 +59,15 @@ interface IMessageEntry {
   message: SocialMessage;
   profileId: string;
   profile: SocialProfile | null;
+  linkedAt: Date;
 }
+
+const replyEventSchema = z.object({
+  id: z.uuid(),
+  taskId: z.uuid(),
+  revision: z.number().int().positive(),
+});
+interface IReplyEvent extends z.infer<typeof replyEventSchema> {}
 
 interface IThreadMessage {
   customerId: string;
@@ -397,7 +411,7 @@ export class Service {
     }
   }
 
-  async viewForThread(customerId: string, threadId: string) {
+  private async taskForThread(customerId: string, threadId: string) {
     const [link] = await this.social.threadsToCrmModuleTasks.find(
       criteria({ threadId }),
     );
@@ -409,7 +423,41 @@ export class Service {
         "Not Found error. The customer conversation could not be found",
       );
     }
+    return task;
+  }
+
+  async viewForThread(customerId: string, threadId: string) {
+    const task = await this.taskForThread(customerId, threadId);
     return this.view(customerId, { storeId: task.storeId, taskId: task.id });
+  }
+
+  async attachment(input: {
+    customerId: string;
+    threadId: string;
+    messageId: string;
+    attachmentId: string;
+  }) {
+    await this.taskForThread(input.customerId, input.threadId);
+    const [link] = await this.social.threadsToMessages.find(
+      criteria({ threadId: input.threadId, messageId: input.messageId }),
+    );
+    const message = link
+      ? await this.social.message.findById({ id: input.messageId })
+      : null;
+    const attachment =
+      message &&
+      customerWorkAttachments(message).find(
+        ({ id }) => id === input.attachmentId,
+      );
+    if (attachment) {
+      const file = await this.subject.modules.fileStorage.privateFile.findById({
+        id: attachment.id,
+      });
+      if (file && file.digest === attachment.digest) {
+        return { ...file, name: attachment.name };
+      }
+    }
+    throw new Error("Not Found error. The message attachment is unavailable");
   }
 
   async assertChatAccess({
@@ -426,19 +474,30 @@ export class Service {
       return;
     }
     const threads = await this.social.chatsToThreads.find(criteria({ chatId }));
-    const [thread] = threads;
-    const [link] =
-      thread && threads.length === 1
-        ? await this.social.threadsToCrmModuleTasks.find(
-            criteria({ threadId: thread.threadId }),
-          )
-        : [];
+    const links = threads.length
+      ? await this.social.threadsToCrmModuleTasks.find({
+          params: {
+            limit: 2,
+            filters: {
+              and: [
+                {
+                  column: "threadId",
+                  method: "inArray",
+                  value: threads.map(({ threadId }) => threadId),
+                },
+              ],
+            },
+          },
+        })
+      : [];
+    const [link] = links;
     if (!link && chat.variant !== "customer-work") {
       return;
     }
-    const task = link
-      ? await this.crm.task.findById({ id: link.crmModuleTaskId })
-      : null;
+    const task =
+      link && threads.length === 1 && links.length === 1
+        ? await this.crm.task.findById({ id: link.crmModuleTaskId })
+        : null;
     if (!task || task.customerId !== subjectId) {
       throw new Error(
         "Not Found error. The customer conversation could not be found",
@@ -1256,7 +1315,12 @@ export class Service {
       const profile = await this.social.profile.findById({
         id: profileLink.profileId,
       });
-      entries.push({ message, profileId: profileLink.profileId, profile });
+      entries.push({
+        message,
+        profileId: profileLink.profileId,
+        profile,
+        linkedAt: link.createdAt,
+      });
     }
     return entries;
   }
@@ -1268,32 +1332,52 @@ export class Service {
     text: string;
     sourceSystemId?: string;
     sourceVersions?: ICustomerWorkSourceVersion[];
-    media?: TPreparedMedia;
+    resultVersionId?: string;
+    replyEvent?: IReplyEvent;
+    attachments?: IPreparedAttachment[];
     cartProposal?: IStoredProposal;
+    imageDraft?: {
+      stageId: string;
+      assignmentRevision: number;
+      assigneeId: string;
+      digest: string | null;
+    };
   }) {
     let metadata: Record<string, unknown> | undefined;
     if (props.sourceVersions) {
       metadata = { customerWorkSourceVersions: props.sourceVersions };
     }
-    if (props.media) {
+    if (props.resultVersionId) {
       metadata = {
         ...metadata,
-        customerWorkMedia: await storeCustomerWorkMedia(
-          this.subject,
-          props.media,
-        ),
+        customerWorkResultVersionId: props.resultVersionId,
       };
+    }
+    if (props.replyEvent) {
+      metadata = { ...metadata, customerWorkReplyEvent: props.replyEvent };
+    }
+    if (props.attachments?.length) {
+      const attachments: IStoredAttachment[] = [];
+      for (const attachment of props.attachments) {
+        attachments.push(
+          await storeCustomerWorkAttachment(this.subject, attachment),
+        );
+      }
+      metadata = {
+        ...metadata,
+        customerWorkAttachments: attachments,
+      };
+    }
+    if (props.imageDraft) {
+      metadata = { ...metadata, customerWorkImageDraft: props.imageDraft };
     }
     if (props.cartProposal) {
       metadata = { ...metadata, customerWorkCartProposal: props.cartProposal };
     }
-    const message = await this.social.message.create({
-      data: {
-        variant: "customer-work",
-        description: props.text,
-        metadata,
-        sourceSystemId: props.sourceSystemId,
-      },
+    const message = await this.social.message.createWorkMessage({
+      description: props.text,
+      metadata,
+      sourceSystemId: props.sourceSystemId,
     });
     await this.social.profilesToMessages.create({
       data: { profileId: props.profileId, messageId: message.id },
@@ -1312,8 +1396,9 @@ export class Service {
       criteria({ threadId: input.threadId }),
     );
     const text = typeof input.text === "string" ? input.text.trim() : "";
+    const files = input.attachments ?? [];
     const selection =
-      !link && !input.hasAttachments && text && !text.startsWith("/")
+      !link && (files.length || text) && !text.startsWith("/")
         ? await this.threadSelection(input)
         : null;
     if (!link && !selection) {
@@ -1361,28 +1446,15 @@ export class Service {
           );
         }
         if (
-          !text ||
+          (!text && !files.length) ||
           text.length > 8000 ||
-          (input.hasAttachments && input.attachments?.length !== 1)
+          (input.hasAttachments && !files.length)
         ) {
           throw new Error(
-            "Validation error. Send a text message of up to 8000 characters with at most one attachment",
+            "Validation error. Send a file or a message of up to 8000 characters",
           );
         }
-        let media: TPreparedMedia | undefined;
-        if (input.attachments?.[0]) {
-          const publication = await this.crm.task.getPublication({
-            storeId: task.storeId,
-            taskId: task.id,
-          });
-          const stage = publication.definition.stages.find(
-            (candidate) => candidate.id === task.stageId,
-          );
-          media = await prepareCustomerWorkMedia(
-            input.attachments[0],
-            stage?.operations ?? [],
-          );
-        }
+        const attachments = await prepareCustomerWorkAttachments(files);
         const command = {
           operation: "message" as const,
           storeId: task.storeId,
@@ -1395,7 +1467,7 @@ export class Service {
         const result = await this.recordActivity(input.customerId, command, {
           profileId: input.profileId,
           sourceSystemId: input.sourceSystemId,
-          media,
+          attachments,
         });
         const key = this.activityKey(input.customerId, command.operationKey);
         const event = await this.crm.taskEvent.byOperation(result.taskId, key);
@@ -1542,7 +1614,7 @@ export class Service {
     author?: {
       profileId: string;
       sourceSystemId?: string;
-      media?: TPreparedMedia;
+      attachments?: IPreparedAttachment[];
     },
   ) {
     return this.subject.repository.withSubjectLock(
@@ -1570,13 +1642,16 @@ export class Service {
             const previous = await this.social.message.findById({
               id: event.detail.messageId,
             });
-            const metadata = previous?.metadata as
-              { customerWorkMedia?: { digest?: string } } | undefined;
-            const digest =
-              author?.media && customerWorkMediaDigest(author.media);
+            const stored = previous ? customerWorkAttachments(previous) : [];
+            const supplied = author?.attachments ?? [];
             if (
               previous?.description !== command.text ||
-              metadata?.customerWorkMedia?.digest !== digest
+              stored.length !== supplied.length ||
+              stored.some(
+                ({ digest, name, size }, index) =>
+                  digest !== customerWorkAttachmentDigest(supplied[index]) ||
+                  (size !== undefined && name !== supplied[index].name),
+              )
             ) {
               throw new Error(
                 "Conflict error. This request key belongs to another message",
@@ -1663,7 +1738,7 @@ export class Service {
           text: command.text,
           profileId,
           sourceSystemId: author?.sourceSystemId,
-          media: author?.media,
+          attachments: author?.attachments,
         });
         const recorded = await this.crm.task.activity({
           ...activity,
@@ -1671,7 +1746,7 @@ export class Service {
           messageId: message.id,
         });
         const isConfirmation =
-          !author?.media &&
+          !author?.attachments?.length &&
           /^(?:add (?:this choice )?to my cart|добавить (?:предложение )?в корзину)[.!]?$/iu.test(
             command.text,
           );
@@ -1839,6 +1914,13 @@ export class Service {
     sourceVersions: ICustomerWorkSourceVersion[];
     knowledgeSourceIds?: string[];
     media?: { id: string; digest: string; mimeType: string };
+    attachments: ICustomerWorkRunAttachment[];
+    imageBrief?: {
+      replies: { id: string; text: string }[];
+      triggerMessageId: string;
+      draftDigest?: string;
+      draftReplyAnchorId?: string;
+    };
     cartOffers?: ICustomerWorkCartOffer[];
   }> {
     const { task, stage, funding } = await this.crm.task.getWork({
@@ -1858,13 +1940,17 @@ export class Service {
       role: "system" | "user" | "assistant";
       content: string;
     }[] = [];
-    const trigger = entries.find(
+    const triggerIndex = entries.findIndex(
       ({ message }) => message.id === event.detail.messageId,
     );
+    const trigger = entries[triggerIndex];
+    const triggerFiles = trigger
+      ? customerWorkAttachments(trigger.message)
+      : [];
     if (
       !trigger ||
       !customerProfiles.has(trigger.profileId) ||
-      !trigger.message.description
+      (!trigger.message.description && !triggerFiles.length)
     ) {
       throw new Error(
         "Conflict error. The triggering message is outside the active conversation",
@@ -1884,22 +1970,67 @@ export class Service {
             projectId: channel.memoryProjectId,
           }
         : undefined,
-      trigger.message.description,
+      trigger.message.description ?? "",
     );
     if (references.content) {
       messages.push({ role: "system", content: references.content });
     }
-    for (const { message, profileId } of entries) {
-      if (!message.description || message.workReplyKey) {
+    const attachments: ICustomerWorkRunAttachment[] = [];
+    const replies: { id: string; text: string }[] = [];
+    let draftDigest: string | undefined;
+    let draftReplyAnchorId: string | undefined;
+    const agent =
+      stage.imageBrief === "marketplace-cover"
+        ? await this.profileForSubject(input.assigneeId)
+        : undefined;
+    for (const entry of entries.slice(0, triggerIndex + 1)) {
+      const { message, profileId } = entry;
+      const customer = customerProfiles.has(profileId);
+      if (message.workReplyKey) {
+        if (customer || !this.isPriorWorkReply(entry, trigger, event)) {
+          continue;
+        }
+        if (agent?.id === profileId && message.metadata) {
+          const draft = this.parseImageDraft(
+            message.metadata.customerWorkImageDraft,
+          );
+          if (
+            draft?.assigneeId === input.assigneeId &&
+            draft.assignmentRevision === input.assignmentRevision &&
+            draft.stageId === stage.id
+          ) {
+            draftDigest = draft.digest ?? undefined;
+            draftReplyAnchorId = draft.digest ? replies.at(-1)?.id : undefined;
+          }
+        }
+        if (message.description) {
+          messages.push({
+            role: "assistant",
+            content: message.description.slice(0, 2000),
+          });
+        }
+        continue;
+      }
+      const files = customer ? customerWorkAttachments(message) : [];
+      for (const { id, name, digest, mimeType } of files) {
+        attachments.push({ messageId: message.id, id, name, digest, mimeType });
+      }
+      if (customer && message.description) {
+        replies.push({ id: message.id, text: message.description });
+      }
+      const content = [
+        message.description,
+        files.length ? describeCustomerWorkAttachments(files) : "",
+      ]
+        .filter(Boolean)
+        .join("\n\n");
+      if (!content) {
         continue;
       }
       messages.push({
-        role: customerProfiles.has(profileId) ? "user" : "assistant",
-        content: message.description,
+        role: customer ? "user" : "assistant",
+        content,
       });
-      if (message.id === event.detail.messageId) {
-        break;
-      }
     }
     const customerPays = funding?.payer === "customer";
     const price = customerPays ? await this.price(task, funding) : undefined;
@@ -1912,17 +2043,10 @@ export class Service {
         "Forbidden error. The customer must approve a spending limit before work",
       );
     }
-    const media = (
-      trigger.message.metadata as
-        | {
-            customerWorkMedia?: {
-              id: string;
-              digest: string;
-              mimeType: string;
-            };
-          }
-        | undefined
-    )?.customerWorkMedia;
+    const media = permittedCustomerWorkMedia(
+      triggerFiles,
+      stage.operations ?? [],
+    );
     const cartOffers = stage.cartOfferIds?.length
       ? await this.cart.offers(task, stage)
       : undefined;
@@ -1932,8 +2056,58 @@ export class Service {
       sourceVersions: references.sourceVersions,
       knowledgeSourceIds: references.knowledgeSourceIds,
       media,
+      attachments: attachments.slice(-24),
+      imageBrief: agent
+        ? {
+            replies,
+            triggerMessageId: trigger.message.id,
+            draftDigest,
+            draftReplyAnchorId,
+          }
+        : undefined,
       cartOffers,
     };
+  }
+
+  private isPriorWorkReply(
+    entry: IMessageEntry,
+    trigger: IMessageEntry,
+    event: IReplyEvent,
+  ) {
+    const key = entry.message.workReplyKey;
+    if (
+      !key ||
+      key === `attempt:${event.id}` ||
+      !(key.startsWith("attempt:") || key.startsWith("reminder:"))
+    ) {
+      return false;
+    }
+    const raw = entry.message.metadata?.customerWorkReplyEvent;
+    if (raw === undefined) {
+      // Legacy replies have no event link. Use only strictly earlier placements.
+      return entry.linkedAt.getTime() < trigger.linkedAt.getTime();
+    }
+    const origin = replyEventSchema.safeParse(raw);
+    return (
+      origin.success &&
+      origin.data.taskId === event.taskId &&
+      origin.data.id !== event.id &&
+      origin.data.revision < event.revision
+    );
+  }
+
+  private parseImageDraft(value: unknown) {
+    return z
+      .object({
+        stageId: z.string(),
+        assignmentRevision: z.number().int().nonnegative(),
+        assigneeId: z.uuid(),
+        digest: z
+          .string()
+          .regex(/^[a-f0-9]{64}$/)
+          .nullable(),
+      })
+      .safeParse(value).data;
   }
 
   private async requireInputEvent(input: ICustomerWorkRun) {
@@ -1958,7 +2132,7 @@ export class Service {
     return service.withWork(
       { ...input, expectedAssignmentRevision: input.assignmentRevision },
       async ({ task, stage }) => {
-        await this.requireInputEvent(input);
+        const event = await this.requireInputEvent(input);
         const [previous] = await this.social.message.find(
           criteria({ workReplyKey: key }),
         );
@@ -1977,6 +2151,23 @@ export class Service {
           );
         }
         const channel = await this.channel(task.id);
+        const imageDraft =
+          input.imageDraftDigest === undefined
+            ? undefined
+            : this.parseImageDraft({
+                stageId: stage.id,
+                assignmentRevision: input.assignmentRevision,
+                assigneeId: input.assigneeId,
+                digest: input.imageDraftDigest,
+              });
+        if (
+          input.imageDraftDigest !== undefined &&
+          (!imageDraft || stage.imageBrief !== "marketplace-cover")
+        ) {
+          throw new Error(
+            "Validation error. The current stage does not accept an image brief",
+          );
+        }
         const cartProposal = input.cartSelection
           ? await this.cart.propose(
               {
@@ -1999,7 +2190,14 @@ export class Service {
           profileId: profile.id,
           text,
           sourceVersions: input.sourceVersions,
+          resultVersionId: input.resultVersionId,
+          replyEvent: {
+            id: event.id,
+            taskId: event.taskId,
+            revision: event.revision,
+          },
           cartProposal,
+          imageDraft,
         });
         await this.social.message.bindWorkReply(message.id, key);
         await new CustomerDelivery(this.subject).queue({

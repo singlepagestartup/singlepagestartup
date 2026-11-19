@@ -1,4 +1,4 @@
-import { getHttpErrorType } from "@sps/backend-utils";
+import { getFileContentHeaders, getHttpErrorType } from "@sps/backend-utils";
 import {
   customerWorkCommandSchema,
   customerWorkOfferScopeSchema,
@@ -11,6 +11,52 @@ import type { Service } from "../../../../service";
 
 export class Handler {
   constructor(private readonly subject: Service) {}
+
+  async attachment(c: Context) {
+    try {
+      const scope = z
+        .object({
+          id: z.uuid(),
+          threadId: z.uuid(),
+          messageId: z.uuid(),
+          attachmentId: z.uuid(),
+        })
+        .safeParse(c.req.param());
+      if (!scope.success) {
+        throw new Error("Validation error. Select a message attachment");
+      }
+      const { id: customerId, threadId, messageId, attachmentId } = scope.data;
+      const file = await this.subject.customerWork.attachment({
+        customerId,
+        threadId,
+        messageId,
+        attachmentId,
+      });
+      const headers = getFileContentHeaders(
+        file.name,
+        "application/octet-stream",
+      );
+      headers.set("Content-Type", "application/octet-stream");
+      headers.set("Content-Length", String(file.size));
+      headers.set("X-Content-Type-Options", "nosniff");
+      headers.set("Content-Security-Policy", "sandbox; default-src 'none'");
+      headers.set("Cache-Control", "private, no-store");
+      headers.set("Vary", "Authorization, Cookie");
+      const filename = encodeURIComponent(file.name).replace(
+        /['()*]/g,
+        (letter) => `%${letter.charCodeAt(0).toString(16).toUpperCase()}`,
+      );
+      headers.set(
+        "Content-Disposition",
+        `attachment; filename*=UTF-8''${filename}`,
+      );
+      const body = c.req.method === "HEAD" ? null : Uint8Array.from(file.bytes);
+      return new Response(body, { headers });
+    } catch (error) {
+      const { status, message, details } = getHttpErrorType(error);
+      throw new HTTPException(status, { message, cause: details });
+    }
+  }
 
   async forThread(c: Context) {
     try {

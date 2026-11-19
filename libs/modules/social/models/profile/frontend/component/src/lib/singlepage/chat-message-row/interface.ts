@@ -4,16 +4,20 @@ import {
 } from "@sps/social/models/profile/sdk/model";
 import { IModel as ISocialModuleMessage } from "@sps/social/models/message/sdk/model";
 import { ISpsComponentBase } from "@sps/ui-adapter";
+import type { ReactNode } from "react";
 
 export const variant = "chat-message-row" as const;
 
-export interface IClientComponentProps
-  extends Pick<ISpsComponentBase, "className" | "isServer"> {
+export interface IClientComponentProps extends Pick<
+  ISpsComponentBase,
+  "className" | "isServer"
+> {
   language: string;
   data: Pick<IModel, "id" | "title" | "subtitle">;
   profile?: IModel;
   avatar?: IProfileAvatar | null;
   message: ISocialModuleMessage;
+  messageContentSlot?: ReactNode;
   isDeleting?: boolean;
   onProfileOpen?: (profile: IModel) => void;
   onEdit?: (message: ISocialModuleMessage) => void;
@@ -21,8 +25,7 @@ export interface IClientComponentProps
 }
 
 export interface IComponentProps
-  extends ISpsComponentBase,
-    IClientComponentProps {
+  extends ISpsComponentBase, IClientComponentProps {
   variant: typeof variant;
 }
 

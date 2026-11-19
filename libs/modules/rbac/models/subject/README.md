@@ -32,6 +32,26 @@ passes its live Subject through this mode. Cart reads and mutations still use
 the client Subject SDK and the API's JWT/ownership checks. Guest sessions are
 supported; a supplied Subject does not establish API authorization.
 
+### Attachments in customer conversations
+
+The standard Social thread composer accepts files with or without a message.
+The API accepts any extension or declared media type and keeps the bytes in
+private storage. The default limits are 50 MiB per file and 128 MiB per
+multipart request. Set `FILE_STORAGE_MAX_UPLOAD_BYTES` and
+`API_MAX_REQUEST_BODY_BYTES` to change them.
+
+The message shows each filename with a download button. The download requires
+an active buyer session and checks the task, thread, message and file together.
+After guest transfer, the registered buyer can still download files from
+the transferred conversation. The response is an attachment with an opaque
+media type and private cache headers. Vision and transcription retain their
+own stage, signature and size checks for files they process.
+
+The workflow owns conversation membership and history. The standard Social
+composer can add a message to a customer thread. The workflow controls
+participant changes and thread settings. Saved work messages stay in the task
+history.
+
 Product views and actions live in their owning `me` variant directories. The
 former `ecommerce-module-product-cart-default` and
 `ecommerce-module-product-checkout-default` registrations are removed; owned

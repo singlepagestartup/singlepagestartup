@@ -31,6 +31,7 @@ export interface WorkflowStage {
   title: string;
   instruction: string;
   output?: "chat" | "pdf" | "image";
+  imageBrief?: "marketplace-cover";
   evidence: string;
   missingData: string;
   waitFor: WorkflowEvent;

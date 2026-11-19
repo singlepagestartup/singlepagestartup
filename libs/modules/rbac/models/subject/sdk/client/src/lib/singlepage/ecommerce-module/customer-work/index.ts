@@ -4,6 +4,7 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 import { api } from "@sps/rbac/models/subject/sdk/server";
 import type {
   IAvailabilityProps,
+  IAttachmentProps,
   ICommandProps,
   IOrderProps,
   IReadProps,
@@ -100,6 +101,17 @@ export function customerWorkForThread(props: IThreadProps) {
           headers: saturateHeaders(props.options?.headers),
         },
       }),
+  });
+}
+
+export function customerWorkAttachment(props: IAttachmentProps) {
+  return api.customerWorkAttachment({
+    ...props,
+    host: props.host ?? clientHost,
+    options: {
+      ...props.options,
+      headers: saturateHeaders(props.options?.headers),
+    },
   });
 }
 

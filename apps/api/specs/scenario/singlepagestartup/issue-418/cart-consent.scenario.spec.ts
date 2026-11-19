@@ -3,6 +3,8 @@ import { mkdtemp, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { eq } from "drizzle-orm";
+import { Hono } from "hono";
+import { signJwt } from "@sps/backend-utils";
 import {
   createAppAssembly,
   withConsistencyDatabase,
@@ -15,9 +17,19 @@ import {
 import { createService } from "@sps/agent/models/work-attempt/backend/app/api/src/lib/bootstrap";
 import { Table as Wallet } from "@sps/rbac/relations/subjects-to-billing-module-currencies/backend/repository/database";
 import { Table as PaymentIntent } from "@sps/billing/models/payment-intent/backend/repository/database";
+import { Table as SocialMessage } from "@sps/social/models/message/backend/repository/database";
 import { api as subjectApi } from "@sps/rbac/models/subject/sdk/server";
+import { Handler as AttachmentHandler } from "@sps/rbac/models/subject/backend/app/api/src/lib/controller/singlepage/ecommerce-module/customer-work";
+import { Handler as MessageHandler } from "@sps/rbac/models/subject/backend/app/api/src/lib/controller/singlepage/social-module/profile/find-by-id/chat/find-by-id/message/create";
+import { Handler as MessageUpdateHandler } from "@sps/rbac/models/subject/backend/app/api/src/lib/controller/singlepage/social-module/profile/find-by-id/chat/find-by-id/message/update";
+import { customerWorkAttachmentPath } from "@sps/rbac/models/subject/sdk/model";
+import type { IChatMessage } from "@sps/social/models/message/sdk/model";
+import {
+  RequestCustomerWorkChat,
+  RequestSubjectIdOwner,
+} from "@sps/rbac/models/subject/backend/app/middlewares";
 import { Provider as KvProvider } from "@sps/providers-kv";
-import { KV_PROVIDER } from "@sps/shared-utils";
+import { KV_PROVIDER, RBAC_JWT_SECRET } from "@sps/shared-utils";
 
 const rollback = new Error("Remove cart consent fixtures");
 const previousEnv = {
@@ -523,15 +535,15 @@ it("checks out the buyer-approved 300 RUB selection and preserves only that purc
           ...message?.metadata?.customerWorkCartProposal,
           expiresAt: new Date(Date.now() - 1000).toISOString(),
         };
-        await social.message.update({
-          id: delivered.messageId,
-          data: {
+        await tx
+          .update(SocialMessage)
+          .set({
             metadata: {
               ...message?.metadata,
               customerWorkCartProposal: expiredProposal,
             },
-          },
-        });
+          })
+          .where(eq(SocialMessage.id, delivered.messageId));
         await expect(
           subject.customerWork.execute(buyer.id, {
             ...command,
@@ -647,6 +659,214 @@ it("checks out the buyer-approved 300 RUB selection and preserves only that purc
           storeId: store.id,
           offerId: topUp.offer.id,
           chatId: telegramChat.id,
+        });
+        const browserThread = await ask();
+        const [buyerProfile] = await rbac.subjectsToSocialModuleProfiles.find({
+          params: {
+            filters: {
+              and: [
+                { column: "subjectId", method: "eq", value: buyer.id },
+                { column: "variant", method: "eq", value: "default" },
+              ],
+            },
+          },
+        });
+        expect(buyerProfile).toBeDefined();
+        const router = new Hono();
+        const ownerGuard = new RequestSubjectIdOwner().init({
+          requireJwt: true,
+          activeSubjectId: (token) =>
+            subject.isAuthorizedService.getSubjectId(token),
+        });
+        const authorization = async (subjectId: string) => ({
+          Authorization: `Bearer ${await signJwt(
+            { subjectId, type: "access", lifetimeInSeconds: 600 },
+            RBAC_JWT_SECRET!,
+          )}`,
+        });
+        const buyerHeaders = await authorization(buyer.id);
+        const strangerHeaders = await authorization(stranger.id);
+        const workChatGuard = new RequestCustomerWorkChat(
+          subject.customerWork,
+        ).init(true);
+        router.post(
+          "/api/rbac/subjects/:id/social-module/chats/:socialModuleChatId/profiles",
+          ownerGuard,
+          workChatGuard,
+          (context) => context.body(null, 204),
+        );
+        router.patch(
+          "/api/rbac/subjects/:id/social-module/chats/:socialModuleChatId",
+          ownerGuard,
+          workChatGuard,
+          (context) => context.body(null, 204),
+        );
+        router.patch(
+          "/api/rbac/subjects/:id/social-module/profiles/:socialModuleProfileId/chats/:socialModuleChatId/messages/:socialModuleMessageId",
+          ownerGuard,
+          workChatGuard,
+          (context, next) =>
+            new MessageUpdateHandler(subject).execute(context, next),
+        );
+        router.post(
+          "/api/rbac/subjects/:id/social-module/profiles/:socialModuleProfileId/chats/:socialModuleChatId/threads/:socialModuleThreadId/messages",
+          ownerGuard,
+          (context, next) => new MessageHandler(subject).execute(context, next),
+        );
+        router.on(
+          ["GET", "HEAD"],
+          "/api/rbac/subjects/:id/customer-work/threads/:threadId/messages/:messageId/attachments/:attachmentId",
+          ownerGuard,
+          (context) => new AttachmentHandler(subject).attachment(context),
+        );
+        const sourceSystemId = randomUUID();
+        const script = "const fixture = 42;\n";
+        const postMessage = async (source: string) => {
+          const form = new FormData();
+          form.set("data", JSON.stringify({ sourceSystemId }));
+          form.append(
+            "files",
+            new File([source], "пример.js", { type: "text/javascript" }),
+          );
+          form.append("files", new File([], "empty.unknown"));
+          return router.request(
+            `/api/rbac/subjects/${buyer.id}/social-module/profiles/${buyerProfile.socialModuleProfileId}/chats/${browserThread.chatId}/threads/${browserThread.threadId}/messages`,
+            { method: "POST", body: form, headers: buyerHeaders },
+          );
+        };
+        const firstSend = await postMessage(script);
+        expect(firstSend.status).toBe(200);
+        const { data: chatMessage }: { data: IChatMessage } =
+          await firstSend.json();
+        expect(chatMessage.description).toBe("");
+        expect(chatMessage.metadata).not.toHaveProperty(
+          "customerWorkAttachments",
+        );
+        expect(chatMessage.privateAttachments?.map(({ name }) => name)).toEqual(
+          ["пример.js", "empty.unknown"],
+        );
+        const repeated = await postMessage(script);
+        const { data: replay }: { data: IChatMessage } = await repeated.json();
+        expect(replay).toMatchObject({
+          id: chatMessage.id,
+          privateAttachments: chatMessage.privateAttachments,
+        });
+        expect((await postMessage("const fixture = 7;")).status).toBe(409);
+        const [scriptFile] = chatMessage.privateAttachments!;
+        const downloadPath = customerWorkAttachmentPath(
+          buyer.id,
+          browserThread.threadId,
+          chatMessage.id,
+          scriptFile.id,
+        );
+        const downloaded = await router.request(downloadPath, {
+          headers: buyerHeaders,
+        });
+        expect(downloaded.status).toBe(200);
+        expect(downloaded.headers.get("Content-Type")).toBe(
+          "application/octet-stream",
+        );
+        expect(downloaded.headers.get("Content-Disposition")).toContain(
+          "attachment;",
+        );
+        expect(downloaded.headers.get("X-Content-Type-Options")).toBe(
+          "nosniff",
+        );
+        expect(await downloaded.text()).toBe(script);
+        const head = await router.request(downloadPath, {
+          method: "HEAD",
+          headers: buyerHeaders,
+        });
+        expect(head.status).toBe(200);
+        expect(await head.text()).toBe("");
+        const other = customerWorkAttachmentPath(
+          stranger.id,
+          browserThread.threadId,
+          chatMessage.id,
+          scriptFile.id,
+        );
+        expect(
+          (await router.request(other, { headers: strangerHeaders })).status,
+        ).toBe(404);
+        expect(
+          (await router.request(downloadPath, { headers: strangerHeaders })).ok,
+        ).toBe(false);
+        expect((await router.request(downloadPath)).ok).toBe(false);
+        const misplaced = customerWorkAttachmentPath(
+          buyer.id,
+          consultation.threadId,
+          chatMessage.id,
+          scriptFile.id,
+        );
+        expect(
+          (await router.request(misplaced, { headers: buyerHeaders })).status,
+        ).toBe(404);
+        const fileEvent = await subject.customerWork.pendingForMessage({
+          threadId: browserThread.threadId,
+          messageId: chatMessage.id,
+        });
+        expect(fileEvent).toBeDefined();
+        const fileContext = await subject.customerWork.contextForRun(
+          fileEvent!,
+        );
+        expect(fileContext.media).toBeUndefined();
+        expect(
+          fileContext.attachments.map(({ id, name, mimeType }) => ({
+            id,
+            name,
+            mimeType,
+          })),
+        ).toContainEqual({
+          ...scriptFile,
+          mimeType: "application/octet-stream",
+        });
+        const workedChat = `/api/rbac/subjects/${buyer.id}/social-module/chats/${browserThread.chatId}`;
+        expect(
+          (
+            await router.request(workedChat + "/profiles", {
+              method: "POST",
+              headers: buyerHeaders,
+            })
+          ).status,
+        ).toBe(403);
+        expect(
+          (
+            await router.request(workedChat, {
+              method: "PATCH",
+              headers: buyerHeaders,
+            })
+          ).status,
+        ).toBe(403);
+        const ordinaryChat = await social.chat.create({ data: {} });
+        await social.profilesToChats.create({
+          data: {
+            chatId: ordinaryChat.id,
+            profileId: buyerProfile.socialModuleProfileId,
+          },
+        });
+        const misplacedEdit = `/api/rbac/subjects/${buyer.id}/social-module/profiles/${buyerProfile.socialModuleProfileId}/chats/${ordinaryChat.id}/messages/${chatMessage.id}`;
+        expect(
+          (
+            await router.request(misplacedEdit, {
+              method: "PATCH",
+              headers: buyerHeaders,
+            })
+          ).status,
+        ).toBe(404);
+        await expect(
+          social.message.update({
+            id: chatMessage.id,
+            data: { description: "changed" },
+          }),
+        ).rejects.toThrow(/assigned workflow/);
+        await expect(
+          social.message.delete({ id: chatMessage.id }),
+        ).rejects.toThrow(/assigned workflow/);
+        expect(
+          await social.message.findById({ id: chatMessage.id }),
+        ).toMatchObject({
+          description: "",
+          variant: "customer-work",
         });
         expect(telegramWork.messages).toHaveLength(1);
         throw rollback;

@@ -87,6 +87,7 @@ export interface IOrderWorkVersion {
   createdAt: string;
   originalFileId: string;
   previewFileId: string;
+  previewMimeType?: string;
   currencyId: string;
   price: string;
   priceBasis?: TOrderWorkPriceBasis;

@@ -32,6 +32,7 @@ import {
 } from "@sps/rbac/models/subject/sdk/model";
 import { getDrizzle } from "@sps/shared-backend-database-config";
 import { withConsistencyDatabase } from "@sps/shared-backend-api";
+import { projectCustomerWorkAttachments } from "../../../../../../../../service/singlepage/ecommerce/customer-work/media";
 
 export class Handler {
   service: Service;
@@ -164,7 +165,7 @@ export class Handler {
         c.header("X-SPS-SKIP-ACTION-LOGGER", "1");
         return c.json({
           data: {
-            ...workMessage,
+            ...projectCustomerWorkAttachments(workMessage),
             authorProfileIds: [socialModuleProfileId],
             attachments: [],
           },

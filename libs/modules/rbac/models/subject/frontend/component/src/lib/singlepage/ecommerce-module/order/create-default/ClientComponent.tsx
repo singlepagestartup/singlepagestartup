@@ -10,7 +10,7 @@ import { Button } from "@sps/shared-ui-shadcn";
 import { Select } from "@sps/ui-adapter";
 import { cn, formatCurrencyAmount } from "@sps/shared-frontend-client-utils";
 import { ECOMMERCE_ORDER_LINE_QUANTITY_BOUNDS as quantityBounds } from "@sps/shared-utils";
-import { Discussion } from "./customer-work/Discussion";
+import Link from "next/link";
 import type {
   ICustomerWorkView,
   IEcommerceCartSelection,
@@ -155,7 +155,6 @@ export function Component(props: IComponentPropsExtended) {
     identity: string;
     href: string;
   }>();
-  const [discussionOpen, setDiscussionOpen] = useState(false);
   const workRequest = useRef<{ signature: string; key: string } | undefined>(
     undefined,
   );
@@ -163,7 +162,6 @@ export function Component(props: IComponentPropsExtended) {
     workMutation.isPending ||
     (Boolean(consultationOffer) && workQuery.isPending);
   const pending = workPending || createOrder.isPending;
-  const discussionButton = useRef<HTMLButtonElement>(null);
 
   function workKey(signature: string) {
     if (workRequest.current?.signature !== signature) {
@@ -1117,30 +1115,13 @@ export function Component(props: IComponentPropsExtended) {
           {error}
         </p>
       )}
-      {work && !discussionOpen && (
-        <Button
-          ref={discussionButton}
-          type="button"
-          variant="outline"
-          className="min-h-11"
-          onClick={() => setDiscussionOpen(true)}
+      {work && (
+        <Link
+          className="inline-flex min-h-11 items-center underline"
+          href={`/${props.language}/social/chats/${work.chatId}/threads/${work.threadId}`}
         >
           {ru ? "Открыть обсуждение" : "Open discussion"}
-        </Button>
-      )}
-      {work && discussionOpen && (
-        <Discussion
-          key={work.taskId}
-          subjectId={props.data.id}
-          work={work}
-          language={props.language}
-          onClose={() => {
-            setDiscussionOpen(false);
-            window.requestAnimationFrame(() =>
-              discussionButton.current?.focus(),
-            );
-          }}
-        />
+        </Link>
       )}
       {!workQuery.data?.payAfterAcceptance &&
         props.checkoutSlot?.(configuration, {

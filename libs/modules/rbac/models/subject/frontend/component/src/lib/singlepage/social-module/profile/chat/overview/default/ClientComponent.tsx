@@ -35,6 +35,7 @@ import {
 import { useEffect, useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { toast } from "sonner";
 
 type MobilePanel = "threads" | "messages";
@@ -829,6 +830,15 @@ export function Component(props: IComponentPropsExtended) {
             mobilePanel === "threads" ? "flex flex-col" : "hidden",
           )}
         >
+          {props.socialModuleThreadId && (
+            <Link
+              href={`/${props.language}/social/chats`}
+              className="inline-flex min-h-11 items-center gap-1 px-4 text-sm lg:hidden"
+            >
+              <ChevronLeft className="size-4" aria-hidden="true" />
+              {props.language === "ru" ? "К чатам" : "All chats"}
+            </Link>
+          )}
           <div className="flex shrink-0 items-center justify-between gap-3 border-b border-slate-200 px-4 py-3">
             <div className="min-w-0">
               <h2 className="truncate text-sm font-medium text-slate-950">
@@ -842,18 +852,20 @@ export function Component(props: IComponentPropsExtended) {
                     }`}
               </p>
             </div>
-            <button
-              type="button"
-              onClick={() => {
-                setSettingsTab("general");
-                setShowSettings(true);
-              }}
-              title="Chat settings"
-              className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md border border-slate-200 bg-white text-slate-400 transition hover:bg-slate-50 hover:text-slate-600"
-            >
-              <Settings className="h-4 w-4" />
-              <span className="sr-only">Chat settings</span>
-            </button>
+            {props.socialModuleChat.variant !== "customer-work" && (
+              <button
+                type="button"
+                onClick={() => {
+                  setSettingsTab("general");
+                  setShowSettings(true);
+                }}
+                title="Chat settings"
+                className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md border border-slate-200 bg-white text-slate-400 transition hover:bg-slate-50 hover:text-slate-600"
+              >
+                <Settings className="h-4 w-4" />
+                <span className="sr-only">Chat settings</span>
+              </button>
+            )}
           </div>
           <div className="border-b border-slate-100 px-3 py-3">
             <label
@@ -924,7 +936,7 @@ export function Component(props: IComponentPropsExtended) {
             )}
           </div>
         </aside>
-        {showSettings ? (
+        {showSettings && props.socialModuleChat.variant !== "customer-work" ? (
           <div
             className="fixed inset-0 z-50 flex items-center justify-center bg-black/40"
             onClick={() => {

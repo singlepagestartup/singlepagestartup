@@ -4,6 +4,8 @@ import { ActionProfileLoader } from "./ActionProfileLoader";
 import { AiExecutionActionRow } from "./AiExecutionActionRow";
 import { areActionRowPropsEqual } from "./action-row-memo";
 import { MessageProfileLoader } from "./MessageProfileLoader";
+import { PrivateMessageAttachments } from "./PrivateMessageAttachments";
+import { CustomerWorkResult } from "./CustomerWorkResult";
 import { Component as SocialModuleAction } from "@sps/social/models/action/frontend/component";
 import { Component as SocialModuleProfile } from "@sps/social/models/profile/frontend/component";
 import type { ISocialModuleMessagesAndActionsQuery } from "../interface";
@@ -21,20 +23,24 @@ interface MessageTimelineProps {
   items: ISocialModuleMessagesAndActionsQuery | undefined;
   participants?: ISocialModuleProfile[];
   language: string;
+  subjectId: string;
+  threadId: string;
   messagesContentRef: RefObject<HTMLDivElement | null>;
   onMessageDelete: (message: ISocialModuleMessage) => void;
   onMessageEdit: (message: ISocialModuleMessage) => void;
-  onProfileOpen: (profile: ISocialModuleProfile) => void;
+  onProfileOpen?: (profile: ISocialModuleProfile) => void;
 }
 
 interface MessageRowProps {
   isDeleting: boolean;
   language: string;
   message: TimelineMessage;
+  subjectId: string;
+  threadId: string;
   participants?: ISocialModuleProfile[];
   onMessageDelete: (message: ISocialModuleMessage) => void;
   onMessageEdit: (message: ISocialModuleMessage) => void;
-  onProfileOpen: (profile: ISocialModuleProfile) => void;
+  onProfileOpen?: (profile: ISocialModuleProfile) => void;
 }
 
 /**
@@ -45,6 +51,11 @@ interface MessageRowProps {
 const MemoizedMessageRow = memo(function MemoizedMessageRow(
   props: MessageRowProps,
 ) {
+  const privateAttachments = props.message.privateAttachments;
+  const resultVersionId =
+    props.message.variant === "customer-work"
+      ? props.message.metadata?.customerWorkResultVersionId
+      : undefined;
   return (
     <MessageProfileLoader
       message={props.message}
@@ -60,10 +71,39 @@ const MemoizedMessageRow = memo(function MemoizedMessageRow(
             profile={profile}
             language={props.language}
             message={props.message}
+            messageContentSlot={
+              <>
+                {privateAttachments?.length ? (
+                  <PrivateMessageAttachments
+                    subjectId={props.subjectId}
+                    threadId={props.threadId}
+                    messageId={props.message.id}
+                    language={props.language}
+                    attachments={privateAttachments}
+                  />
+                ) : null}
+                {typeof resultVersionId === "string" && (
+                  <CustomerWorkResult
+                    subjectId={props.subjectId}
+                    threadId={props.threadId}
+                    versionId={resultVersionId}
+                    language={props.language}
+                  />
+                )}
+              </>
+            }
             isDeleting={props.isDeleting}
             onProfileOpen={props.onProfileOpen}
-            onEdit={props.onMessageEdit}
-            onDelete={props.onMessageDelete}
+            onEdit={
+              props.message.variant === "customer-work"
+                ? undefined
+                : props.onMessageEdit
+            }
+            onDelete={
+              props.message.variant === "customer-work"
+                ? undefined
+                : props.onMessageDelete
+            }
           />
         );
       }}
@@ -134,6 +174,8 @@ export function MessageTimeline(props: MessageTimelineProps) {
               isDeleting={props.deletingMessageId === message.id}
               language={props.language}
               message={message}
+              subjectId={props.subjectId}
+              threadId={props.threadId}
               participants={props.participants}
               onMessageDelete={props.onMessageDelete}
               onMessageEdit={props.onMessageEdit}

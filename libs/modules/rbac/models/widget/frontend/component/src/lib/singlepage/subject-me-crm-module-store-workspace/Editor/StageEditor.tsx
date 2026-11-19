@@ -108,11 +108,14 @@ export function StageEditor({
           <select
             className={fieldClass}
             value={stage.output ?? "chat"}
-            onChange={(event) =>
+            onChange={(event) => {
+              const output = event.currentTarget
+                .value as IFunnelStage["output"];
               onChange({
-                output: event.currentTarget.value as IFunnelStage["output"],
-              })
-            }
+                output,
+                imageBrief: output === "image" ? stage.imageBrief : undefined,
+              });
+            }}
           >
             <option value="chat">Ответ в чате</option>
             <option value="pdf" disabled={kind !== "individual-service"}>
@@ -123,6 +126,22 @@ export function StageEditor({
             </option>
           </select>
         </Field>
+        {stage.output === "image" && (
+          <label className="flex items-center gap-2 text-sm font-medium">
+            <input
+              type="checkbox"
+              checked={stage.imageBrief === "marketplace-cover"}
+              onChange={(event) =>
+                onChange({
+                  imageBrief: event.currentTarget.checked
+                    ? "marketplace-cover"
+                    : undefined,
+                })
+              }
+            />
+            Обложка товара по брифу
+          </label>
+        )}
         <TextField
           label="Инструкция"
           value={stage.instruction}
@@ -134,27 +153,29 @@ export function StageEditor({
           initialValue={stage.cartOfferIds ?? []}
           onChange={(cartOfferIds) => onChange({ cartOfferIds })}
         />
-        <fieldset className="grid gap-2 text-sm">
-          <legend className="font-medium">Платные шаги исполнителя</legend>
-          {optionalWork.map(({ operation, label }) => (
-            <label key={operation} className="flex items-center gap-2">
-              <input
-                type="checkbox"
-                checked={stage.operations?.includes(operation) ?? false}
-                onChange={(event) => {
-                  const selected = new Set(stage.operations);
-                  if (event.currentTarget.checked) {
-                    selected.add(operation);
-                  } else {
-                    selected.delete(operation);
-                  }
-                  onChange({ operations: [...selected] });
-                }}
-              />
-              {label}
-            </label>
-          ))}
-        </fieldset>
+        {stage.imageBrief !== "marketplace-cover" && (
+          <fieldset className="grid gap-2 text-sm">
+            <legend className="font-medium">Платные шаги исполнителя</legend>
+            {optionalWork.map(({ operation, label }) => (
+              <label key={operation} className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  checked={stage.operations?.includes(operation) ?? false}
+                  onChange={(event) => {
+                    const selected = new Set(stage.operations);
+                    if (event.currentTarget.checked) {
+                      selected.add(operation);
+                    } else {
+                      selected.delete(operation);
+                    }
+                    onChange({ operations: [...selected] });
+                  }}
+                />
+                {label}
+              </label>
+            ))}
+          </fieldset>
+        )}
         <div className="grid gap-3 sm:grid-cols-2">
           <TextField
             label="Достаточное доказательство"

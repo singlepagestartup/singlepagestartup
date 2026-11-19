@@ -61,17 +61,36 @@ export function StageFields({
           <select
             className={fieldClass}
             value={stage.output ?? "chat"}
-            onChange={(event) =>
+            onChange={(event) => {
+              const output = event.currentTarget
+                .value as WorkflowStage["output"];
               onChange({
-                output: event.currentTarget.value as WorkflowStage["output"],
-              })
-            }
+                output,
+                imageBrief: output === "image" ? stage.imageBrief : undefined,
+              });
+            }}
           >
             <option value="chat">Ответ в чате</option>
             <option value="pdf">PDF</option>
             <option value="image">Изображение</option>
           </select>
         </Field>
+        {stage.output === "image" && (
+          <label className="flex items-center gap-2 text-sm font-medium">
+            <input
+              type="checkbox"
+              checked={stage.imageBrief === "marketplace-cover"}
+              onChange={(event) =>
+                onChange({
+                  imageBrief: event.currentTarget.checked
+                    ? "marketplace-cover"
+                    : undefined,
+                })
+              }
+            />
+            Обложка товара по брифу
+          </label>
+        )}
         <Field label="Инструкция">
           <textarea
             className={`${fieldClass} min-h-24 leading-6`}

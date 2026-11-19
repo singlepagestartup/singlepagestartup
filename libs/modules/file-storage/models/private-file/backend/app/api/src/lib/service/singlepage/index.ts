@@ -12,12 +12,12 @@ interface IWritePrivateFile {
   legacyOriginId?: string;
 }
 
+type TOpaquePrivateFile = Pick<IWritePrivateFile, "name" | "bytes">;
+
 @injectable()
 @injectFromBase()
 export class Service extends CRUDService<typeof Table.$inferSelect> {
   async write(props: IWritePrivateFile) {
-    const name = props.name.trim();
-    const bytes = Buffer.from(props.bytes);
     const supported = [
       "application/pdf",
       "image/png",
@@ -25,13 +25,26 @@ export class Service extends CRUDService<typeof Table.$inferSelect> {
       "image/webp",
       "audio/wav",
     ];
-    if (!name || name.length > 180 || /[\x00-\x1f\x7f/\\]/.test(name)) {
-      throw new Error("Validation error. Invalid private file name");
-    }
     if (!supported.includes(props.mimeType)) {
       throw new Error("Validation error. Unsupported private file type");
     }
-    if (!bytes.length || bytes.length > FILE_STORAGE_MAX_UPLOAD_BYTES) {
+    return this.store(props);
+  }
+
+  async writeOpaque(props: TOpaquePrivateFile) {
+    return this.store({ ...props, mimeType: "application/octet-stream" }, true);
+  }
+
+  private async store(props: IWritePrivateFile, allowEmpty = false) {
+    const name = props.name.trim();
+    const bytes = Buffer.from(props.bytes);
+    if (!name || name.length > 180 || /[\x00-\x1f\x7f/\\]/.test(name)) {
+      throw new Error("Validation error. Invalid private file name");
+    }
+    if (
+      (!bytes.length && !allowEmpty) ||
+      bytes.length > FILE_STORAGE_MAX_UPLOAD_BYTES
+    ) {
       throw new Error("Validation error. Private file size is out of range");
     }
 

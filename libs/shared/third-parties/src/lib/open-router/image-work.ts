@@ -63,6 +63,7 @@ export interface IImageWorkRequest {
   provider: keyof typeof routes;
   model: string;
   messages: IWorkMessage[];
+  coverBackground?: { width: number; height: number; description: string };
   maxOutputTokens: number;
   inputUsdPerMillion: string;
   outputUsdPerMillion: string;
@@ -73,8 +74,17 @@ interface ICompletedImageWork {
   bytes?: Uint8Array;
 }
 
-function promptOf(messages: IWorkMessage[]) {
-  return messages
+function promptOf(request: IImageWorkRequest) {
+  const background = request.coverBackground;
+  if (background) {
+    const { width, height, description } = background;
+    return [
+      `Create only the background for a marketplace cover whose final canvas is ${width}×${height} pixels.`,
+      `The buyer's background direction is: ${description}`,
+      "Use a cohesive background with space in the center and near the bottom. Keep the design suitable for a center crop. The original product photo and caption will be added separately. Leave out products, people, typography, logos, watermarks and frames.",
+    ].join("\n");
+  }
+  return request.messages
     .map(({ role, content }) => `${role}: ${content}`)
     .join("\n\n");
 }
@@ -99,7 +109,24 @@ export function estimateImageWork(request: IImageWorkRequest) {
     );
   }
 
-  const prompt = promptOf(request.messages);
+  const background = request.coverBackground;
+  if (
+    background &&
+    (!Number.isSafeInteger(background.width) ||
+      !Number.isSafeInteger(background.height) ||
+      background.width < 320 ||
+      background.height < 320 ||
+      background.width > 4096 ||
+      background.height > 4096 ||
+      !background.description.trim() ||
+      background.description.length > 800)
+  ) {
+    throw new Error(
+      "Validation error. The cover background dimensions or description are unsupported",
+    );
+  }
+
+  const prompt = promptOf(request);
   if (!prompt.trim() || Buffer.byteLength(prompt, "utf8") > 32_000) {
     throw new Error(
       "Permission error. The image prompt exceeds the supported input",
@@ -211,7 +238,7 @@ export async function sendImageWork(
   const router = request.provider === "openrouter";
   const body = {
     model: route.model,
-    prompt: promptOf(request.messages),
+    prompt: promptOf(request),
     n: 1,
     size: `${imageSize}x${imageSize}`,
     quality: "low",

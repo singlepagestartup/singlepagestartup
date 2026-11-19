@@ -38,12 +38,6 @@ jest.mock("../../../../../authentication/me-default/client", () => ({
     }) => React.ReactNode;
   }) => children({ data: { id: "verified-guest" }, authenticated: false }),
 }));
-jest.mock(
-  "../../../../../social-module/profile/chat/message/list/default/components/CustomerWork",
-  () => ({
-    CustomerWorkView: () => <span>Private customer conversation</span>,
-  }),
-);
 import { Component } from "./Component";
 import Client from "./client";
 beforeEach(() => {
@@ -68,13 +62,13 @@ it("opens the exact verified guest thread and declines mismatched chat ids", () 
       />,
     );
   }
-  expect(thread("own-chat")).toContain("Private customer conversation");
+  expect(thread("own-chat")).toContain("Authorized chat");
   expect(mockPrivateThread).toHaveBeenCalledWith({
     id: "verified-guest",
     threadId: "own-thread",
   });
-  expect(thread("another-chat")).not.toContain("Private customer conversation");
-  expect(mockOverview).not.toHaveBeenCalled();
+  expect(thread("another-chat")).not.toContain("Authorized chat");
+  expect(mockOverview).toHaveBeenCalledTimes(1);
 });
 it("uses the Subject profile reader scoped to this chat and renders one preferred identity", () => {
   const html = renderToStaticMarkup(

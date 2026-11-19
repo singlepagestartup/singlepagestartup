@@ -2,7 +2,6 @@
 import "client-only";
 import AuthenticationMe from "../../../../../authentication/me-default/client";
 import { api } from "@sps/rbac/models/subject/sdk/client";
-import { CustomerWorkView } from "../../../../../social-module/profile/chat/message/list/default/components/CustomerWork";
 import { Component as ChildComponent } from "./Component";
 import type { IComponentProps, IComponentPropsExtended } from "./interface";
 
@@ -15,13 +14,7 @@ function SessionChat(
   });
   const ru = props.language === "ru";
   if (result.data?.chatId === props.socialModuleChatId) {
-    return (
-      <CustomerWorkView
-        subjectId={props.data.id}
-        work={result.data}
-        language={props.language}
-      />
-    );
+    return <ChildComponent {...props} />;
   }
   if (props.socialModuleThreadId && result.isPending) {
     return (

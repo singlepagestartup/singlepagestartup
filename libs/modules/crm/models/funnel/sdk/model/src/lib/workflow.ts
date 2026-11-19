@@ -86,32 +86,38 @@ const resultPricingSchema = z.discriminatedUnion("kind", [
   }),
 ]);
 
-const stageSchema = z.object({
-  id: stageIdSchema,
-  name: z.string().trim().min(1).max(150),
-  instruction: z.string().trim().max(4000).default(""),
-  output: z.enum(["chat", "pdf", "image"]).optional(),
-  operations: z
-    .array(workOperationSchema)
-    .max(6)
-    .refine((values) => new Set(values).size === values.length)
-    .optional(),
-  cartOfferIds: z
-    .array(z.uuid())
-    .max(12)
-    .refine((ids) => new Set(ids).size === ids.length)
-    .optional(),
-  archived: z.boolean().optional(),
-  evidenceInstruction: z.string().trim().max(4000).optional(),
-  missingDataInstruction: z.string().trim().max(4000).optional(),
-  payerSubjectId: z.uuid().optional(),
-  defaultAssigneeSubjectId: z.uuid().optional(),
-  settlementEvent: z.string().trim().max(150).optional(),
-  settlementInstruction: z.string().trim().max(4000).optional(),
-  resultPricing: resultPricingSchema.optional(),
-  actions: z.array(actionSchema).max(100),
-  waiting: waitingSchema.optional(),
-});
+const stageSchema = z
+  .object({
+    id: stageIdSchema,
+    name: z.string().trim().min(1).max(150),
+    instruction: z.string().trim().max(4000).default(""),
+    output: z.enum(["chat", "pdf", "image"]).optional(),
+    imageBrief: z.literal("marketplace-cover").optional(),
+    operations: z
+      .array(workOperationSchema)
+      .max(6)
+      .refine((values) => new Set(values).size === values.length)
+      .optional(),
+    cartOfferIds: z
+      .array(z.uuid())
+      .max(12)
+      .refine((ids) => new Set(ids).size === ids.length)
+      .optional(),
+    archived: z.boolean().optional(),
+    evidenceInstruction: z.string().trim().max(4000).optional(),
+    missingDataInstruction: z.string().trim().max(4000).optional(),
+    payerSubjectId: z.uuid().optional(),
+    defaultAssigneeSubjectId: z.uuid().optional(),
+    settlementEvent: z.string().trim().max(150).optional(),
+    settlementInstruction: z.string().trim().max(4000).optional(),
+    resultPricing: resultPricingSchema.optional(),
+    actions: z.array(actionSchema).max(100),
+    waiting: waitingSchema.optional(),
+  })
+  .refine((stage) => !stage.imageBrief || stage.output === "image", {
+    path: ["imageBrief"],
+    message: "Marketplace cover brief requires image output",
+  });
 
 const workFundingSchema = z.object({
   payer: z.enum(["store-owner", "customer"]),
@@ -151,8 +157,9 @@ export type TStageWorkCapability =
   "text" | "image" | (typeof paidOperationCapabilities)[TWorkOperation];
 
 export function stageWorkCapabilities(
-  stage: Pick<IFunnelStage, "output" | "operations">,
+  stage: Pick<IFunnelStage, "output" | "imageBrief" | "operations">,
 ): TStageWorkCapability[] {
+  if (stage.imageBrief === "marketplace-cover") return ["image"];
   const main = stage.output === "image" ? "image" : "text";
   return [
     ...new Set<TStageWorkCapability>([

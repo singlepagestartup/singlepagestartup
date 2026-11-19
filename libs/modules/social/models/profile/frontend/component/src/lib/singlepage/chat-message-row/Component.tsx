@@ -11,6 +11,7 @@ export function Component(props: IComponentPropsExtended) {
       avatar={props.avatar}
       language={props.language}
       message={props.message}
+      messageContentSlot={props.messageContentSlot}
       isDeleting={props.isDeleting}
       onProfileOpen={props.onProfileOpen}
       onEdit={props.onEdit}

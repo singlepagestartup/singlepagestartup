@@ -1,5 +1,6 @@
 "use client";
 
+import { OrderActions } from "../../../../../../ecommerce-module/order/create-default/customer-work/OrderActions";
 import { Composer } from "./components/Composer";
 import { KnowledgeSourceDialog } from "./components/KnowledgeSourceDialog";
 import { McpServersDialog } from "./components/McpServersDialog";
@@ -18,7 +19,6 @@ import { cn } from "@sps/shared-frontend-client-utils";
 import { Component as SocialModuleSkill } from "@sps/social/models/skill/frontend/component";
 import { useCallback, useRef, useState } from "react";
 import type { IModel as SocialProfile } from "@sps/social/models/profile/sdk/model";
-import { CustomerWork } from "./components/CustomerWork";
 
 interface SkillDialogTarget {
   orderIndex: number;
@@ -35,19 +35,6 @@ interface SkillDialogTarget {
  * ThreadMessagesCache API.
  */
 export function Component(props: IComponentPropsExtended) {
-  if (props.socialModuleChat.variant === "customer-work") {
-    return (
-      <CustomerWork
-        subjectId={props.data.id}
-        threadId={props.socialModuleThreadId}
-        language={props.language}
-      />
-    );
-  }
-  return <Chat {...props} />;
-}
-
-function Chat(props: IComponentPropsExtended) {
   const [isSkillDialogOpen, setIsSkillDialogOpen] = useState(false);
   const [isMcpServersDialogOpen, setIsMcpServersDialogOpen] = useState(false);
   const [isProfileEditDialogOpen, setIsProfileEditDialogOpen] = useState(false);
@@ -70,10 +57,12 @@ function Chat(props: IComponentPropsExtended) {
     socialModuleChatId: props.socialModuleChat.id,
     socialModuleThreadId: props.socialModuleThreadId,
   });
-  const assistantProfile =
-    props.knowledgeAssistantProfile ||
-    props.artificialIntelligenceOpponentProfile ||
-    null;
+  const isCustomerWork = props.socialModuleChat.variant === "customer-work";
+  const assistantProfile = isCustomerWork
+    ? null
+    : props.knowledgeAssistantProfile ||
+      props.artificialIntelligenceOpponentProfile ||
+      null;
   // Single source of truth: OpenRouter controls, knowledge access, and the
   // AI-opponent layout all gate on the same condition (issue #195 cleanup).
   const isArtificialIntelligenceAssistant =
@@ -218,11 +207,21 @@ function Chat(props: IComponentPropsExtended) {
       </ProfileSidebarSheet>
       <div className="flex min-h-0 flex-1">
         <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
+          {isCustomerWork && (
+            <OrderActions
+              subjectId={props.data.id}
+              threadId={props.socialModuleThreadId}
+              language={props.language}
+            />
+          )}
           <MessageTimelineSection
+            isCustomerWork={isCustomerWork}
             participants={props.socialModuleChat.participants}
             language={props.language}
             markShouldScrollToBottomRef={markShouldScrollToBottomRef}
-            onProfileOpen={profileSidebar.openProfile}
+            onProfileOpen={
+              isCustomerWork ? undefined : profileSidebar.openProfile
+            }
             socialModuleChatId={props.socialModuleChat.id}
             socialModuleProfileId={props.socialModuleProfile.id}
             socialModuleThreadId={props.socialModuleThreadId}
@@ -320,6 +319,7 @@ function Chat(props: IComponentPropsExtended) {
             profile={profileSidebar.selectedProfile}
           />
           <Composer
+            isCustomerWork={isCustomerWork}
             canSelectOpenRouterReasoning={
               openRouterModelControls.canSelectReasoning
             }

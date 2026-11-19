@@ -2272,6 +2272,28 @@ paths:
       summary: Read the task conversation available to the signed-in buyer
       responses:
         "200": { description: Task and current assignment }
+  /rbac/subjects/{id}/customer-work/threads/{threadId}/messages/{messageId}/attachments/{attachmentId}:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+      - { name: threadId, in: path, required: true, schema: { type: string, format: uuid } }
+      - { name: messageId, in: path, required: true, schema: { type: string, format: uuid } }
+      - { name: attachmentId, in: path, required: true, schema: { type: string, format: uuid } }
+    get:
+      tags: [rbac-subject]
+      summary: Download a private attachment from the buyer's thread
+      responses:
+        "200":
+          description: Opaque attachment
+          content:
+            application/octet-stream:
+              schema: { type: string, format: binary }
+        "404": { description: Attachment is outside the requested buyer or message scope }
+    head:
+      tags: [rbac-subject]
+      summary: Read the private attachment download headers
+      responses:
+        "200": { description: Attachment headers }
+        "404": { description: Attachment is outside the requested buyer or message scope }
   /rbac/subjects/{id}/crm-module/workspace/stores:
     parameters:
       - { name: id, in: path, required: true, schema: { type: string, format: uuid } }

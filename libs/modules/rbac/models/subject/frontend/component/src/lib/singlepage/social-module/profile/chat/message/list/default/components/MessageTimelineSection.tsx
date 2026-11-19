@@ -12,6 +12,7 @@ import type { IModel as ISocialModuleProfile } from "@sps/social/models/profile/
 import { memo, useEffect, useMemo, type MutableRefObject } from "react";
 
 interface MessageTimelineSectionProps {
+  isCustomerWork: boolean;
   language: string;
   participants?: ISocialModuleProfile[];
   /**
@@ -20,7 +21,7 @@ interface MessageTimelineSectionProps {
    * timeline communication free of message-array props.
    */
   markShouldScrollToBottomRef: MutableRefObject<() => void>;
-  onProfileOpen: (profile: ISocialModuleProfile) => void;
+  onProfileOpen?: (profile: ISocialModuleProfile) => void;
   socialModuleChatId: string;
   socialModuleProfileId: string;
   socialModuleThreadId: string;
@@ -56,6 +57,7 @@ export const MessageTimelineSection = memo(function MessageTimelineSection(
     socialModuleProfileId: props.socialModuleProfileId,
     socialModuleChatId: props.socialModuleChatId,
     socialModuleThreadId: props.socialModuleThreadId,
+    reactQueryOptions: { refetchInterval: props.isCustomerWork ? 3000 : false },
     params: {
       orderBy: {
         and: [
@@ -161,6 +163,8 @@ export const MessageTimelineSection = memo(function MessageTimelineSection(
         <MessageTimeline
           deletingMessageId={messageActions.deletingMessageId}
           items={socialModuleMessagesAndActionsQuery}
+          subjectId={props.subjectId}
+          threadId={props.socialModuleThreadId}
           participants={props.participants}
           language={props.language}
           messagesContentRef={messageThreadScroll.messagesContentRef}

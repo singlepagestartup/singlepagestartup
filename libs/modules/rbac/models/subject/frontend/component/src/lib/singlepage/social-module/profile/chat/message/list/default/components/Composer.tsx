@@ -38,6 +38,7 @@ import {
 import { toast } from "sonner";
 
 interface ComposerProps {
+  isCustomerWork: boolean;
   canSelectOpenRouterReasoning: boolean;
   canUseKnowledge: boolean;
   clearSelectedSkills: () => void;
@@ -87,6 +88,7 @@ interface ComposerProps {
  */
 export function Composer(props: ComposerProps) {
   const composer = useChatComposer({
+    isCustomerWork: props.isCustomerWork,
     subjectId: props.subjectId,
     socialModuleProfileId: props.socialModuleProfileId,
     socialModuleChatId: props.socialModuleChatId,
@@ -171,7 +173,8 @@ export function Composer(props: ComposerProps) {
     });
   }, [selectedFiles]);
   const canSubmit =
-    Boolean(description?.trim()) && !composer.createMessage.isPending;
+    (Boolean(description?.trim()) || selectedFileItems.length > 0) &&
+    !composer.createMessage.isPending;
 
   const knowledgeCommandMatch = getKnowledgeCommandMatch(description);
   const commandQuery = knowledgeCommandMatch?.query || "";
@@ -326,15 +329,11 @@ export function Composer(props: ComposerProps) {
     }
 
     const fileUrl = URL.createObjectURL(file);
-    const previewWindow = window.open(fileUrl, "_blank", "noopener,noreferrer");
-
-    window.setTimeout(() => {
-      URL.revokeObjectURL(fileUrl);
-    }, 30_000);
-
-    if (!previewWindow) {
-      toast.error("Browser blocked the file preview window");
-    }
+    const download = document.createElement("a");
+    download.href = fileUrl;
+    download.download = file.name;
+    download.click();
+    window.setTimeout(() => URL.revokeObjectURL(fileUrl), 1000);
   }
 
   function removeSelectedFile(fileId: string) {
@@ -475,6 +474,7 @@ export function Composer(props: ComposerProps) {
     }
 
     event.preventDefault();
+    if (!canSubmit) return;
     void composer.form.handleSubmit(composer.onSubmit)();
     if (composer.textareaRef.current) {
       composer.textareaRef.current.style.height = "auto";

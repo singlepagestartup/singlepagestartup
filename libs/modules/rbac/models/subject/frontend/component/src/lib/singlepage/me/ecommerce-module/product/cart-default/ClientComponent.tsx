@@ -4,11 +4,10 @@ import { memo, useCallback, useState } from "react";
 import { useIsFetching, useIsMutating } from "@tanstack/react-query";
 import { Component as Subject } from "@sps/rbac/models/subject/frontend/component";
 import { api } from "@sps/rbac/models/subject/sdk/client";
-import { Button } from "@sps/shared-ui-shadcn";
+import Link from "next/link";
 import { route } from "@sps/rbac/models/subject/sdk/model";
 import { cn } from "@sps/shared-frontend-client-utils";
 import { Component as CartRow } from "../../../../ecommerce-module/order/list/checkout-default/Row";
-import { Discussion } from "../../../../ecommerce-module/order/create-default/customer-work/Discussion";
 import { ResultReview } from "../../../../ecommerce-module/order/create-default/customer-work/ResultReview";
 import type { IComponentPropsExtended, ISavedOrderProps } from "./interface";
 
@@ -27,7 +26,6 @@ const SavedOrder = memo(function SavedOrder(props: ISavedOrderProps) {
     orderId: order.id,
     taskId: work.data?.taskId ?? "",
   });
-  const [discussionOpen, setDiscussionOpen] = useState(false);
   const [blockedLines, setBlockedLines] = useState<Set<string>>(new Set());
   const onSelectionStateChange = useCallback(
     (_orderId: string, lineId: string, blocked: boolean) => {
@@ -62,7 +60,7 @@ const SavedOrder = memo(function SavedOrder(props: ISavedOrderProps) {
       ),
     );
   return (
-    <li className="grid min-w-0 gap-2">
+    <li id={`order-${order.id}`} className="grid min-w-0 gap-2">
       <ul>
         <CartRow
           subject={subject}
@@ -84,34 +82,21 @@ const SavedOrder = memo(function SavedOrder(props: ISavedOrderProps) {
           Boolean(work.data && result.data?.state !== "awaiting-payment")
         }
       />
-      {work.data && !discussionOpen && (
-        <Button
-          type="button"
-          variant="outline"
-          className="min-h-11 justify-self-start"
-          onClick={() => setDiscussionOpen(true)}
+      {work.data && (
+        <Link
+          className="inline-flex min-h-11 items-center justify-self-start underline"
+          href={`/${language}/social/chats/${work.data.chatId}/threads/${work.data.threadId}`}
         >
           {language === "ru"
             ? "Открыть обсуждение заказа"
             : "Open order discussion"}
-        </Button>
+        </Link>
       )}
-      {work.data && discussionOpen && (
-        <Discussion
-          key={work.data.taskId}
-          work={work.data}
+      {result.data && (
+        <ResultReview
           subjectId={subject.id}
+          work={result.data}
           language={language}
-          onClose={() => setDiscussionOpen(false)}
-          footer={
-            result.data && (
-              <ResultReview
-                subjectId={subject.id}
-                work={result.data}
-                language={language}
-              />
-            )
-          }
         />
       )}
     </li>
