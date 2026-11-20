@@ -1,10 +1,9 @@
 export { type IModel } from "@sps/rbac/models/subject/sdk/model";
 import { IModel } from "@sps/rbac/models/subject/sdk/model";
 import { IModel as ISocialModuleProfile } from "@sps/social/models/profile/sdk/model";
-import { IModel as ISocialModuleChat } from "@sps/social/models/chat/sdk/model";
-import { IModel as ISocialModuleThread } from "@sps/social/models/thread/sdk/model";
 import { ISpsComponentBase } from "@sps/ui-adapter";
 import { type IResult } from "@sps/rbac/models/subject/sdk/server";
+import type { ReactNode } from "react";
 
 export const variant =
   "social-module-profile-chat-message-list-default" as const;
@@ -16,8 +15,9 @@ export interface IComponentProps extends ISpsComponentBase {
   artificialIntelligenceOpponentProfile?: ISocialModuleProfile | null;
   knowledgeAssistantProfile?: ISocialModuleProfile | null;
   socialModuleChat: IResult["ISocialModuleProfileFindByIdChatFindByIdResult"];
-  socialModuleThread: ISocialModuleThread;
+  socialModuleThread: IResult["ISocialModuleChatFindByIdThreadFindResult"][number];
   socialModuleThreadId: string;
+  navigation?: ReactNode;
   variant: typeof variant;
   className?: string;
 }

@@ -23,6 +23,7 @@ jest.mock("./Skeleton", () => ({
 }));
 
 const mockQueryClient = { invalidateQueries: jest.fn() };
+let mockInitFailed = false;
 const mockRouter = { replace: jest.fn() };
 let mockAuthenticated = true;
 let mockSessionPending = false;
@@ -31,12 +32,14 @@ let mockSessionError: Error | undefined;
 jest.mock("next/navigation", () => ({ useRouter: () => mockRouter }));
 jest.mock("@tanstack/react-query", () => ({
   useQueryClient: () => mockQueryClient,
+  useMutationState: () => [],
 }));
 jest.mock("@sps/rbac/models/subject/sdk/model", () => ({
   route: "/api/rbac/subjects",
 }));
 jest.mock("@sps/rbac/models/subject/sdk/client", () => ({
   api: {
+    authenticationInit: () => ({ isError: mockInitFailed, isFetching: false }),
     authenticationMe: (props: any) => ({
       data: props.subjectId
         ? {
@@ -59,6 +62,7 @@ describe("Given: authentication me-default client", () => {
     document.cookie = "rbac.subject.jwt=; Max-Age=0; path=/";
     useJwtMock.mockReset();
     mockAuthenticated = true;
+    mockInitFailed = false;
     mockSessionPending = false;
     mockSessionFetching = false;
     mockSessionError = undefined;
@@ -326,5 +330,57 @@ describe("Given: authentication me-default client", () => {
       expect(mockRouter.replace).not.toHaveBeenCalled();
       expect(screen.getByText("Private workspace")).toBeTruthy();
     });
+  });
+
+  it("shows the chat skeleton through cookie restoration, decoding and session lookup, then shows the verified guest state", () => {
+    const chat = (
+      <Client
+        isServer={false}
+        variant="authentication-me-default"
+        waitForAuthenticationInit
+        skeleton={<span>Chat skeleton</span>}
+        fallback={<span>Session error</span>}
+      >
+        {({ authenticated }) => (
+          <span>{authenticated ? "Account" : "Guest"}</span>
+        )}
+      </Client>
+    );
+    useJwtMock.mockReturnValue({ decodedToken: null, isExpired: true });
+    const view = render(chat);
+    expect(screen.getByText("Chat skeleton")).toBeTruthy();
+    act(() => {
+      document.cookie = "rbac.subject.jwt=valid-token; path=/";
+      window.dispatchEvent(new Event("sps-rbac-auth-storage-change"));
+    });
+    expect(screen.getByText("Chat skeleton")).toBeTruthy();
+    useJwtMock.mockReturnValue({
+      decodedToken: { subject: { id: "visitor" } },
+      isExpired: false,
+    });
+    mockSessionPending = true;
+    view.rerender(<Client {...chat.props} />);
+    expect(screen.getByText("Chat skeleton")).toBeTruthy();
+    mockSessionPending = false;
+    mockAuthenticated = false;
+    view.rerender(<Client {...chat.props} />);
+    expect(screen.getByText("Guest")).toBeTruthy();
+    expect(screen.queryByText("Session error")).toBeNull();
+  });
+  it("ends the chat skeleton when session initialization fails", () => {
+    document.cookie = "rbac.subject.jwt=; Max-Age=0; path=/";
+    useJwtMock.mockReturnValue({ decodedToken: null, isExpired: true });
+    mockInitFailed = true;
+    render(
+      <Client
+        isServer={false}
+        variant="authentication-me-default"
+        waitForAuthenticationInit
+        skeleton={<span>Chat skeleton</span>}
+        fallback={<span>Session error</span>}
+      />,
+    );
+    expect(screen.getByText("Session error")).toBeTruthy();
+    expect(screen.queryByText("Chat skeleton")).toBeNull();
   });
 });

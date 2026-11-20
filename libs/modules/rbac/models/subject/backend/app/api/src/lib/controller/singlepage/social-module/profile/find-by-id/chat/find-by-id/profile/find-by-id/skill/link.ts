@@ -24,13 +24,13 @@ export class Handler {
       if (!skill?.id) {
         throw new Error("Not found error. Requested skill not found");
       }
-      const professionProfileId = getPrivateAIChatSkillProfileId(skill.slug);
+      const privateSkillProfileId = getPrivateAIChatSkillProfileId(skill.slug);
       if (
-        professionProfileId &&
-        professionProfileId !== targetSocialModuleProfileId
+        privateSkillProfileId &&
+        privateSkillProfileId !== targetSocialModuleProfileId
       )
         throw new Error(
-          "Authorization error. This document skill belongs to another profile.",
+          "Authorization error. This private skill belongs to another profile.",
         );
 
       const relations = await this.service.modules.social.profilesToSkills.find(

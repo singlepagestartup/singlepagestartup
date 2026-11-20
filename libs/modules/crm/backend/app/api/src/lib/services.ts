@@ -13,6 +13,17 @@ import { createService as createStepsToInputsService } from "@sps/crm/relations/
 import { createService as createWidgetService } from "@sps/crm/models/widget/backend/app/api/src/lib/bootstrap";
 import { createService as createWidgetsToFormsService } from "@sps/crm/relations/widgets-to-forms/backend/app/api/src/lib/bootstrap";
 import { createService as createWidgetsToWebsiteBuilderModuleWidgetsService } from "@sps/crm/relations/widgets-to-website-builder-module-widgets/backend/app/api/src/lib/bootstrap";
+import { createService as createFunnelService } from "@sps/crm/models/funnel/backend/app/api/src/lib/bootstrap";
+import { createService as createFunnelPublicationService } from "@sps/crm/models/funnel-publication/backend/app/api/src/lib/bootstrap";
+import { createService as createTaskService } from "@sps/crm/models/task/backend/app/api/src/lib/bootstrap";
+import { createService as createTaskEventService } from "@sps/crm/models/task-event/backend/app/api/src/lib/bootstrap";
+import { createService as createFunnelsToEcommerceModuleStoresService } from "@sps/crm/relations/funnels-to-ecommerce-module-stores/backend/app/api/src/lib/bootstrap";
+import { createService as createFunnelsToFunnelPublicationsService } from "@sps/crm/relations/funnels-to-funnel-publications/backend/app/api/src/lib/bootstrap";
+import { createService as createTasksToFunnelPublicationsService } from "@sps/crm/relations/tasks-to-funnel-publications/backend/app/api/src/lib/bootstrap";
+import { createService as createTasksToTaskEventsService } from "@sps/crm/relations/tasks-to-task-events/backend/app/api/src/lib/bootstrap";
+import { createService as createTasksToEcommerceModuleProductsService } from "@sps/crm/relations/tasks-to-ecommerce-module-products/backend/app/api/src/lib/bootstrap";
+import { createService as createTasksToEcommerceModuleStoresToProductsService } from "@sps/crm/relations/tasks-to-ecommerce-module-stores-to-products/backend/app/api/src/lib/bootstrap";
+import { createService as createTasksToEcommerceModuleOrdersService } from "@sps/crm/relations/tasks-to-ecommerce-module-orders/backend/app/api/src/lib/bootstrap";
 
 export function createServices(assembly: IAppAssembly) {
   return {
@@ -54,6 +65,39 @@ export function createServices(assembly: IAppAssembly) {
     },
     get widgetsToWebsiteBuilderModuleWidgets() {
       return createWidgetsToWebsiteBuilderModuleWidgetsService(assembly);
+    },
+    get funnel() {
+      return createFunnelService(assembly);
+    },
+    get funnelPublication() {
+      return createFunnelPublicationService(assembly);
+    },
+    get task() {
+      return createTaskService(assembly);
+    },
+    get taskEvent() {
+      return createTaskEventService(assembly);
+    },
+    get funnelsToEcommerceModuleStores() {
+      return createFunnelsToEcommerceModuleStoresService(assembly);
+    },
+    get funnelsToFunnelPublications() {
+      return createFunnelsToFunnelPublicationsService(assembly);
+    },
+    get tasksToFunnelPublications() {
+      return createTasksToFunnelPublicationsService(assembly);
+    },
+    get tasksToTaskEvents() {
+      return createTasksToTaskEventsService(assembly);
+    },
+    get tasksToEcommerceModuleProducts() {
+      return createTasksToEcommerceModuleProductsService(assembly);
+    },
+    get tasksToEcommerceModuleStoresToProducts() {
+      return createTasksToEcommerceModuleStoresToProductsService(assembly);
+    },
+    get tasksToEcommerceModuleOrders() {
+      return createTasksToEcommerceModuleOrdersService(assembly);
     },
   };
 }

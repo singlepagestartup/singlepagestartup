@@ -3,6 +3,7 @@ import type { IAppAssembly } from "@sps/shared-backend-api";
 import { createService as createFileService } from "@sps/file-storage/models/file/backend/app/api/src/lib/bootstrap";
 import { createService as createWidgetService } from "@sps/file-storage/models/widget/backend/app/api/src/lib/bootstrap";
 import { createService as createWidgetsToFilesService } from "@sps/file-storage/relations/widgets-to-files/backend/app/api/src/lib/bootstrap";
+import { createService as createPrivateFileService } from "@sps/file-storage/models/private-file/backend/app/api/src/lib/bootstrap";
 
 export function createServices(assembly: IAppAssembly) {
   return {
@@ -14,6 +15,9 @@ export function createServices(assembly: IAppAssembly) {
     },
     get widgetsToFiles() {
       return createWidgetsToFilesService(assembly);
+    },
+    get privateFile() {
+      return createPrivateFileService(assembly);
     },
   };
 }

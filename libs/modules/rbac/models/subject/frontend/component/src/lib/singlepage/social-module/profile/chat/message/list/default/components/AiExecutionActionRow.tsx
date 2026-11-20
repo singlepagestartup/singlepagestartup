@@ -114,7 +114,7 @@ export function AiExecutionActionRow(props: AiExecutionActionRowProps) {
         data-model="subject"
         data-variant={AI_EXECUTION_ACTION_VARIANT}
         data-status="unavailable"
-        className="mx-3 my-2 rounded-lg border border-amber-200 bg-amber-50/70 px-3 py-2 text-xs text-amber-800"
+        className="rounded-xl border border-border bg-muted/50 px-3 py-2 text-xs text-muted-foreground"
       >
         {isRussian
           ? "Статус выполнения инструмента недоступен."
@@ -159,8 +159,8 @@ export function AiExecutionActionRow(props: AiExecutionActionRowProps) {
       data-variant={AI_EXECUTION_ACTION_VARIANT}
       data-status={payload.status}
       className={cn(
-        "mx-3 my-2 rounded-xl border bg-white shadow-sm",
-        isRunning ? "border-blue-200 bg-blue-50/40" : "border-slate-200",
+        "rounded-xl border border-border bg-card",
+        isRunning && "bg-muted/50",
       )}
     >
       <CollapsibleTrigger className="group flex w-full items-center gap-3 px-3 py-2.5 text-left">
@@ -168,7 +168,7 @@ export function AiExecutionActionRow(props: AiExecutionActionRowProps) {
           className={cn(
             "flex size-8 shrink-0 items-center justify-center rounded-full",
             isRunning
-              ? "bg-blue-100 text-blue-600"
+              ? "bg-primary/10 text-primary"
               : payload.status === "completed"
                 ? "bg-emerald-100 text-emerald-600"
                 : "bg-rose-100 text-rose-600",
@@ -184,33 +184,33 @@ export function AiExecutionActionRow(props: AiExecutionActionRowProps) {
         </span>
         <span className="min-w-0 flex-1">
           <span
-            className="block truncate text-xs font-medium text-slate-700"
+            className="block truncate text-xs font-medium text-foreground"
             aria-live="polite"
           >
             {title}
           </span>
-          <span className="mt-0.5 block truncate text-[11px] text-slate-400">
+          <span className="mt-0.5 block truncate text-[11px] text-muted-foreground">
             {props.profile.slug}
             {createdAt ? ` · ${createdAt}` : ""}
           </span>
         </span>
-        <ChevronDown className="size-4 shrink-0 text-slate-400 transition-transform group-data-[state=open]:rotate-180" />
+        <ChevronDown className="size-4 shrink-0 text-muted-foreground transition-transform group-data-[state=open]:rotate-180" />
       </CollapsibleTrigger>
       <CollapsibleContent>
-        <div className="space-y-1 border-t border-slate-100 px-3 py-2.5">
+        <div className="space-y-1 border-t border-border px-3 py-2.5">
           {payload.steps.map((step) => {
             return (
               <div
                 key={step.id}
-                className="flex items-start gap-2 rounded-lg px-1 py-1.5 text-xs text-slate-600"
+                className="flex items-start gap-2 rounded-lg px-1 py-1.5 text-xs text-muted-foreground"
               >
                 <StepIcon step={step} />
                 <span className="min-w-0 flex-1">
-                  <span className="flex items-center gap-1.5 font-medium text-slate-700">
+                  <span className="flex items-center gap-1.5 font-medium text-foreground">
                     <SourceIcon kind={step.kind} />
                     <span className="truncate">{step.label}</span>
                   </span>
-                  <span className="mt-0.5 block truncate font-mono text-[10px] text-slate-400">
+                  <span className="mt-0.5 block truncate font-mono text-[10px] text-muted-foreground">
                     {step.kind === "mcp" && step.serverId
                       ? `${serverLabel(step.serverId)} · `
                       : ""}

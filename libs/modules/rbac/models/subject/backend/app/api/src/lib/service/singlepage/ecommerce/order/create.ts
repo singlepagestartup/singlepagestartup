@@ -1,6 +1,7 @@
 import type { Repository } from "../../../../repository";
 import type { SubjectServiceDependencies } from "../../index";
 import type { IEcommerceCartSelection } from "@sps/rbac/models/subject/sdk/model";
+import { STORE_TEST_ORDER_VARIANT } from "@sps/ecommerce/models/order/sdk/model";
 
 export interface IExecuteProps {
   subjectId: string;
@@ -13,6 +14,8 @@ export interface IExecuteProps {
   services?: IEcommerceCartSelection["services"];
   comment?: string;
   expectedQuoteVersion?: string;
+  separateService?: boolean;
+  storeTest?: boolean;
 }
 
 interface IConstructorProps {
@@ -61,6 +64,12 @@ export class Service {
     };
     let prepared =
       await service.modules.ecommerce.storesToProducts.quote(selection);
+    const quantityIssue = prepared.issues.find(
+      (issue) => issue.code === "single_unit_per_order",
+    );
+    if (quantityIssue) {
+      throw new Error(`Validation error. ${quantityIssue.message}`);
+    }
     if (!selection.currencyId) {
       const currencies = await service.modules.billing.currency.find({
         params: {
@@ -95,14 +104,16 @@ export class Service {
     return repository.withSubjectLock(
       { subjectId: props.subjectId },
       async () => {
-        const existingOrderId =
-          await service.ecommerceModuleFindOpenCartOrderWithProduct({
-            subjectId: props.subjectId,
-            productId: props.productId,
-            offerId: offer.id,
-          });
-        if (existingOrderId) {
-          throw new Error("Conflict error. Product is already in the cart");
+        if (!props.separateService) {
+          const existingOrderId =
+            await service.ecommerceModuleFindOpenCartOrderWithProduct({
+              subjectId: props.subjectId,
+              productId: props.productId,
+              offerId: offer.id,
+            });
+          if (existingOrderId) {
+            throw new Error("Conflict error. Product is already in the cart");
+          }
         }
         await service.modules.ecommerce.order.ordersToBillingModulePaymentIntents.lockOffers(
           {
@@ -187,7 +198,10 @@ export class Service {
           );
         }
         const order = await service.modules.ecommerce.order.create({
-          data: { comment: props.comment },
+          data: {
+            comment: props.comment,
+            variant: props.storeTest ? STORE_TEST_ORDER_VARIANT : undefined,
+          },
         });
         if (!order) {
           throw new Error("Not Found error. No order found");

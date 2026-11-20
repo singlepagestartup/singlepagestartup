@@ -8,6 +8,13 @@
       "when": 1794872186707,
       "tag": "0000_new_venus",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1795077863216,
+      "tag": "0001_bent_ego",
+      "breakpoints": true
     }
   ]
 }

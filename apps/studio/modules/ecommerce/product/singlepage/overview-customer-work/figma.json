@@ -1,0 +1,21 @@
+{
+  "componentName": "ecommerce.product",
+  "pageName": "ecommerce",
+  "variantName": "overview-customer-work",
+  "nodeId": null,
+  "variantNodeId": null,
+  "metadata": {
+    "singlepagestartup.studio.blockId": "ecommerce.product.overview-customer-work",
+    "singlepagestartup.studio.layer": "singlepage",
+    "singlepagestartup.studio.syncKey": "ecommerce/product/singlepage/overview-customer-work",
+    "sps.figma.component": "ecommerce.product",
+    "sps.figma.variant": "overview-customer-work",
+    "sps.source.module": "ecommerce",
+    "sps.source.entityType": "model",
+    "sps.source.entity": "product",
+    "sps.source.variant": "overview-customer-work",
+    "sps.contractVersion": "0.1.0",
+    "sps.code.component": "apps/studio/modules/ecommerce/product/singlepage/overview-customer-work/Component.tsx",
+    "sps.code.story": "apps/studio/modules/ecommerce/product/singlepage/overview-customer-work/Component.stories.tsx"
+  }
+}

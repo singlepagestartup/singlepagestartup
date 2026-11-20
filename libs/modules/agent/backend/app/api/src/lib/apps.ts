@@ -1,3 +1,4 @@
+import { serviceBootstrap as workAttemptApp } from "@sps/agent/models/work-attempt/backend/app/api/src/lib/bootstrap";
 import {
   createModuleChildApp,
   defaultAppAssembly,
@@ -15,6 +16,11 @@ export class Apps {
   }
 
   bindApps() {
+    this.apps.push({
+      type: "model",
+      route: "/work-attempts",
+      app: createModuleChildApp(workAttemptApp, this.assembly),
+    });
     this.apps.push({
       type: "model",
       route: "/widgets",

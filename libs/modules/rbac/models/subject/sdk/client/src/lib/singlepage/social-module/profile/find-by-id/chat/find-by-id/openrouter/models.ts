@@ -17,6 +17,7 @@ import { useEffect } from "react";
 export type IProps =
   IParentProps["ISocialModuleProfileFindByIdChatFindByIdOpenrouterModelFindProps"] & {
     reactQueryOptions?: Partial<UseQueryOptions<any>>;
+    catalogRevision?: string;
     mute?: boolean;
   };
 
@@ -25,6 +26,9 @@ export type IResult =
 
 export function action(props: IProps) {
   const queryKey = `${route}/${props.id}/social-module/profiles/${props.socialModuleProfileId}/chats/${props.socialModuleChatId}/openrouter/models`;
+  const scope = props.socialModuleThreadId
+    ? [props.socialModuleThreadId, props.catalogRevision]
+    : [];
 
   useEffect(() => {
     const unsubscribe = subscription(queryKey, queryClient);
@@ -32,7 +36,7 @@ export function action(props: IProps) {
   }, [queryKey]);
 
   return useQuery<IResult>({
-    queryKey: [queryKey],
+    queryKey: [queryKey, ...scope],
     queryFn: async () => {
       const result =
         await api.socialModuleProfileFindByIdChatFindByIdOpenrouterModelFind({

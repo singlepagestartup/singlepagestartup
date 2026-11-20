@@ -41,6 +41,11 @@ const submitPayload = {
 
 const checkoutPage = window.location.href;
 
+jest.mock("next/navigation", () => ({
+  useRouter: () => ({ push: jest.fn() }),
+  useSearchParams: () => new URLSearchParams(),
+}));
+
 jest.mock("next/link", () => ({
   __esModule: true,
   default: ({ children, href, target }: any) => (
@@ -52,6 +57,12 @@ jest.mock("next/link", () => ({
 
 jest.mock("@sps/rbac/models/subject/sdk/client", () => ({
   api: {
+    customerWork: () => ({ data: undefined }),
+    customerWorkAvailability: () => ({
+      data: { consultation: false, order: false, payAfterAcceptance: false },
+      isPending: false,
+    }),
+    changeCustomerWork: () => ({ isPending: false }),
     identityFind: () => ({ data: [] }),
     ecommerceModuleOrderUpdate: () => ({
       mutateAsync: jest.fn(),

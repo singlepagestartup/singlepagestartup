@@ -18,7 +18,6 @@ import { Service as EcommerceCatalog } from "./service/startup/ecommerce/catalog
 import type { IConstructorProps as ICatalogDependencies } from "./service/singlepage/ecommerce/catalog";
 import { Service as SecurityNotifications } from "./service/startup/security-notifications";
 import { Service as IsAuthorizedService } from "./service/startup/is-authorized";
-import { Service as BillRouteService } from "./service/startup/billing/route";
 import { Service as EcommerceOrderProceedService } from "./service/startup/ecommerce/order/proceed";
 
 const bindings = new ContainerModule(({ bind }) => {
@@ -74,18 +73,6 @@ const bindings = new ContainerModule(({ bind }) => {
           return module.subjectsToRoles;
         },
       });
-    })
-    .inSingletonScope();
-  bind<BillRouteService>(SubjectDI.IBillRouteService)
-    .toDynamicValue(({ get }) => {
-      const module = get<IAppAssembly>(DI.IAppAssembly).getOrCreate(
-        createModule,
-      );
-      return new BillRouteService(
-        get<Repository>(DI.IRepository),
-        () => module.subjectsToBillingModuleCurrencies,
-        get<IsAuthorizedService>(SubjectDI.IIsAuthorizedService),
-      );
     })
     .inSingletonScope();
   bind<EcommerceOrderProceedService>(SubjectDI.IEcommerceOrderProceedService)

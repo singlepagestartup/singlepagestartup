@@ -1,7 +1,7 @@
 "use client";
 import Link from "next/link";
 import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
-import { ChevronDown, LogOut, Settings } from "lucide-react";
+import { ChevronDown, LogOut, Settings, Store } from "lucide-react";
 import { api as subjectApi } from "@sps/rbac/models/subject/sdk/client";
 import { Component as SocialModuleProfile } from "@sps/social/models/profile/frontend/component";
 import type {
@@ -163,6 +163,15 @@ function AccountMenu({
               >
                 <Settings className="size-5" />
                 {language === "ru" ? "Настройки" : "Settings"}
+              </Link>
+            </DropdownMenu.Item>
+            <DropdownMenu.Item asChild>
+              <Link
+                href={`${localeBase}/crm/workspace`}
+                className={menuItemClassName}
+              >
+                <Store aria-hidden="true" className="size-5" />
+                {language === "ru" ? "Мои магазины" : "My stores"}
               </Link>
             </DropdownMenu.Item>
             <DropdownMenu.Separator className="my-1 h-px bg-border" />

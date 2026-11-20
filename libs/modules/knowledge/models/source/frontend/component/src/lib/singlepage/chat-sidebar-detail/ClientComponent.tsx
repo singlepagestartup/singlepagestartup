@@ -23,18 +23,13 @@ import {
 } from "@sps/shared-ui-shadcn";
 import { RefreshCw, Save, Trash2 } from "lucide-react";
 
-function formatKnowledgeDate(value?: string | Date | null) {
-  if (!value) {
-    return "Not indexed";
+function formatKnowledgeDate(language: string, value?: string | Date | null) {
+  const date = value ? new Date(value) : undefined;
+  if (!date || Number.isNaN(date.getTime())) {
+    return language === "ru" ? "Индекс ещё не создан" : "Not indexed";
   }
 
-  const date = new Date(value);
-
-  if (Number.isNaN(date.getTime())) {
-    return "Not indexed";
-  }
-
-  return date.toLocaleString([], {
+  return date.toLocaleString(language === "ru" ? "ru-RU" : [], {
     month: "short",
     day: "numeric",
     hour: "2-digit",
@@ -43,6 +38,7 @@ function formatKnowledgeDate(value?: string | Date | null) {
 }
 
 export function Component(props: IClientComponentProps) {
+  const ru = props.language === "ru";
   const isCreating = props.mode === "create";
   const isBusy = Boolean(
     props.isSaving || props.isReindexing || props.isDeleting,
@@ -61,9 +57,11 @@ export function Component(props: IClientComponentProps) {
     >
       <div className="space-y-3 p-4">
         <div className="space-y-1.5">
-          <label className="text-xs font-medium text-slate-600">Title</label>
+          <label className="text-xs font-medium text-slate-600">
+            {ru ? "Название" : "Title"}
+          </label>
           <input
-            aria-label="Knowledge title"
+            aria-label={ru ? "Название источника" : "Knowledge title"}
             value={props.draft.title}
             onChange={(event) => {
               props.onDraftChange({
@@ -76,10 +74,10 @@ export function Component(props: IClientComponentProps) {
         </div>
         <div className="space-y-1.5">
           <label className="text-xs font-medium text-slate-600">
-            Your context and notes
+            {ru ? "Контекст и заметки" : "Your context and notes"}
           </label>
           <Textarea
-            aria-label="Knowledge content"
+            aria-label={ru ? "Контекст и заметки" : "Knowledge content"}
             value={readKnowledgeUserContext(props.draft.content)}
             onChange={(event) => {
               props.onDraftChange({
@@ -96,7 +94,7 @@ export function Component(props: IClientComponentProps) {
         </div>
         {readKnowledgeMaterials(props.draft.content) ? (
           <details className="rounded-md border p-3 text-sm">
-            <summary>Analyzed materials</summary>
+            <summary>{ru ? "Разбор материалов" : "Analyzed materials"}</summary>
             <pre className="mt-2 max-h-64 overflow-auto whitespace-pre-wrap text-xs">
               {readKnowledgeMaterials(props.draft.content)}
             </pre>
@@ -104,23 +102,34 @@ export function Component(props: IClientComponentProps) {
         ) : null}
         <dl className="grid grid-cols-1 gap-2 rounded-lg border border-slate-200 bg-slate-50 p-3 text-xs">
           <div className="min-w-0">
-            <dt className="text-slate-400">Status</dt>
+            <dt className="text-slate-400">{ru ? "Статус" : "Status"}</dt>
             <dd className="mt-0.5 truncate text-slate-600">
               {props.data.contentHash === props.data.indexedContentHash
-                ? "Indexed"
-                : "Needs indexing"}
+                ? ru
+                  ? "Проиндексировано"
+                  : "Indexed"
+                : ru
+                  ? "Нужна индексация"
+                  : "Needs indexing"}
             </dd>
           </div>
           {!isCreating ? (
             <>
               <div className="min-w-0">
-                <dt className="text-slate-400">Last indexed</dt>
+                <dt className="text-slate-400">
+                  {ru ? "Последняя индексация" : "Last indexed"}
+                </dt>
                 <dd className="mt-0.5 truncate text-slate-600">
-                  {formatKnowledgeDate(props.data.lastIndexedAt)}
+                  {formatKnowledgeDate(
+                    props.language,
+                    props.data.lastIndexedAt,
+                  )}
                 </dd>
               </div>
               <div className="min-w-0">
-                <dt className="text-slate-400">Slug</dt>
+                <dt className="text-slate-400">
+                  {ru ? "Идентификатор" : "Slug"}
+                </dt>
                 <dd className="mt-0.5 truncate text-slate-600">
                   {props.data.slug}
                 </dd>
@@ -130,7 +139,9 @@ export function Component(props: IClientComponentProps) {
         </dl>
         {props.needsReindex && !isCreating ? (
           <p className="rounded-lg bg-amber-50 px-3 py-2 text-xs text-amber-700">
-            Saved changes are not indexed yet.
+            {ru
+              ? "Индекс ещё не включает сохранённые изменения."
+              : "Saved changes are not indexed yet."}
           </p>
         ) : null}
         <div className="flex flex-wrap gap-2">
@@ -139,14 +150,32 @@ export function Component(props: IClientComponentProps) {
             variant="primary"
             size="sm"
             className="w-auto"
-            aria-label={isCreating ? "Create knowledge" : "Save knowledge"}
+            aria-label={
+              isCreating
+                ? ru
+                  ? "Создать источник знаний"
+                  : "Create knowledge"
+                : ru
+                  ? "Сохранить источник знаний"
+                  : "Save knowledge"
+            }
             onClick={() => {
               props.onSave(props.data);
             }}
             disabled={!canSave}
           >
             <Save className="mr-2 h-4 w-4" />
-            {props.isSaving ? "Saving" : isCreating ? "Create" : "Save"}
+            {props.isSaving
+              ? ru
+                ? "Сохраняем…"
+                : "Saving"
+              : isCreating
+                ? ru
+                  ? "Создать"
+                  : "Create"
+                : ru
+                  ? "Сохранить"
+                  : "Save"}
           </Button>
           {!isCreating ? (
             <Button
@@ -154,7 +183,9 @@ export function Component(props: IClientComponentProps) {
               variant="outline"
               size="sm"
               className="w-auto"
-              aria-label="Reindex knowledge"
+              aria-label={
+                ru ? "Обновить индекс источника" : "Reindex knowledge"
+              }
               onClick={() => {
                 void props.onReindex(props.data);
               }}
@@ -166,7 +197,13 @@ export function Component(props: IClientComponentProps) {
                   props.isReindexing && "animate-spin",
                 )}
               />
-              {props.isReindexing ? "Reindexing" : "Reindex"}
+              {props.isReindexing
+                ? ru
+                  ? "Индексируем…"
+                  : "Reindexing"
+                : ru
+                  ? "Обновить индекс"
+                  : "Reindex"}
             </Button>
           ) : null}
           {!isCreating && props.onUnlink ? (
@@ -180,7 +217,7 @@ export function Component(props: IClientComponentProps) {
                 void props.onUnlink?.(props.data);
               }}
             >
-              Unlink from profile
+              {ru ? "Убрать из профиля" : "Unlink from profile"}
             </Button>
           ) : null}
           {!isCreating && props.onDelete ? (
@@ -191,25 +228,35 @@ export function Component(props: IClientComponentProps) {
                   variant="destructive"
                   size="sm"
                   className="w-auto"
-                  aria-label="Delete knowledge"
+                  aria-label={
+                    ru ? "Удалить источник знаний" : "Delete knowledge"
+                  }
                   disabled={isBusy}
                 >
                   <Trash2 className="mr-2 h-4 w-4" />
-                  {props.isDeleting ? "Deleting" : "Delete"}
+                  {props.isDeleting
+                    ? ru
+                      ? "Удаляем…"
+                      : "Deleting"
+                    : ru
+                      ? "Удалить"
+                      : "Delete"}
                 </Button>
               </AlertDialogTrigger>
               <AlertDialogContent>
                 <AlertDialogHeader>
-                  <AlertDialogTitle>Delete Knowledge</AlertDialogTitle>
+                  <AlertDialogTitle>
+                    {ru ? "Удалить источник знаний?" : "Delete Knowledge"}
+                  </AlertDialogTitle>
                   <AlertDialogDescription>
-                    Delete this knowledge source and its indexed vectors? This
-                    removes the source from every linked profile and cannot be
-                    undone.
+                    {ru
+                      ? "Источник и его индекс будут удалены. Материал исчезнет из всех связанных профилей."
+                      : "Delete this knowledge source and its indexed vectors? This removes the source from every linked profile and cannot be undone."}
                   </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
                   <AlertDialogCancel disabled={props.isDeleting}>
-                    Cancel
+                    {ru ? "Отмена" : "Cancel"}
                   </AlertDialogCancel>
                   <AlertDialogAction
                     disabled={props.isDeleting}
@@ -218,7 +265,13 @@ export function Component(props: IClientComponentProps) {
                       void props.onDelete?.(props.data);
                     }}
                   >
-                    {props.isDeleting ? "Deleting" : "Delete Knowledge"}
+                    {props.isDeleting
+                      ? ru
+                        ? "Удаляем…"
+                        : "Deleting"
+                      : ru
+                        ? "Удалить источник"
+                        : "Delete Knowledge"}
                   </AlertDialogAction>
                 </AlertDialogFooter>
               </AlertDialogContent>

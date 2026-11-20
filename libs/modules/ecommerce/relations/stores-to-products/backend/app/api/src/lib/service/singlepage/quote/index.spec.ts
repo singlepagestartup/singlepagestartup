@@ -156,6 +156,44 @@ function fixture(digits = 2, fulfillmentAlreadySatisfied = false) {
   return { service, catalog, held, routing, attr, formula, addOption };
 }
 describe("per-offer quote", () => {
+  it("limits a standalone service to one unit without limiting its add-on quantities", async () => {
+    const { catalog, service } = fixture();
+    catalog.products.get("assembly")!.singleUnitPerOrder = true;
+    catalog.offers.get("assembly")!.settings.standalone = true;
+    const standalone = { offerId: "assembly", currencyId: "rub" };
+    expect(await service.execute({ ...standalone, quantity: 2 })).toMatchObject(
+      {
+        singleUnitPerOrder: true,
+        amount: null,
+        charges: [],
+        issues: [
+          expect.objectContaining({
+            code: "single_unit_per_order",
+            offerId: "assembly",
+          }),
+        ],
+      },
+    );
+    expect(await service.execute({ ...standalone, quantity: 1 })).toMatchObject(
+      {
+        singleUnitPerOrder: true,
+        amount: "2000.00",
+      },
+    );
+    const main = await service.execute({
+      ...input,
+      quantity: 2,
+      services: [
+        { offerId: "courier", quantity: 1 },
+        { offerId: "assembly", quantity: 2 },
+      ],
+    });
+    expect(main.issues).toEqual([]);
+    expect(main.charges).toContainEqual(
+      expect.objectContaining({ offerId: "assembly", quantity: 2 }),
+    );
+  });
+
   it("excludes registration grants from retail quotes while keeping ordinary digital offers", async () => {
     const { catalog, service } = fixture();
     const digital = catalog.products.get("wardrobe")!;

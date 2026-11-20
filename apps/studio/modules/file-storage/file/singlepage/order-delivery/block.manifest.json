@@ -1,0 +1,27 @@
+{
+  "id": "file-storage.file.order-delivery",
+  "title": "Файлы заказа",
+  "description": "Private order result and receipt states.",
+  "layer": "singlepage",
+  "state": "draft",
+  "source": {
+    "module": "file-storage",
+    "entityType": "model",
+    "entity": "file",
+    "variant": "order-delivery"
+  },
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "contentSlots": [],
+  "figma": {
+    "componentName": "file-storage.file",
+    "pageName": "file-storage",
+    "variantName": "order-delivery",
+    "nodeId": null,
+    "variantNodeId": null,
+    "syncStatus": "not-created",
+    "metadataFile": "figma.json"
+  }
+}

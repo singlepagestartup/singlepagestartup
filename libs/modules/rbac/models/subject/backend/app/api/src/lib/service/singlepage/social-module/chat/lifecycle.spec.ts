@@ -37,6 +37,62 @@ jest.mock("@sps/social/relations/profiles-to-chats/sdk/server", () => ({
 }));
 
 import { Service as ChatLifecycleService } from "./lifecycle";
+import { api as threadApi } from "@sps/social/models/thread/sdk/server";
+
+it.each([
+  { variant: "store-employee" },
+  { slug: "store-employee-training-reserved" },
+])(
+  "reserves employee training chat identities from ordinary create",
+  async (data) => {
+    const lifecycle = new ChatLifecycleService({} as never);
+    await expect(
+      lifecycle.createChatWithDefaultThread({
+        subjectId: "subject",
+        autoBootstrapProfile: true,
+        data,
+      }),
+    ).rejects.toThrow("Forbidden error");
+  },
+);
+
+it("creates one default thread without document metadata for a new AI Chat", async () => {
+  const thread = { id: "default-thread", variant: "default", metadata: {} };
+  mockSocialModuleThreadCreate.mockResolvedValueOnce(thread);
+  jest.mocked(threadApi.findById).mockResolvedValueOnce(thread as never);
+  const lifecycle = new ChatLifecycleService({
+    modules: {
+      social: {
+        chat: {
+          findById: jest
+            .fn()
+            .mockResolvedValue({ id: "chat-1", variant: "ai-chat" }),
+        },
+        chatsToThreads: { find: jest.fn().mockResolvedValue([]) },
+      },
+    },
+  } as never);
+
+  const result = await lifecycle.ensureDefaultThreadForChat({
+    socialModuleChatId: "chat-1",
+  });
+
+  expect(result).toEqual(thread);
+  expect(mockSocialModuleThreadCreate).toHaveBeenCalledTimes(1);
+  expect(mockSocialModuleThreadCreate).toHaveBeenCalledWith(
+    expect.objectContaining({ data: { variant: "default" } }),
+  );
+  expect(mockSocialModuleChatsToThreadsCreate).toHaveBeenCalledTimes(1);
+  expect(mockSocialModuleChatsToThreadsCreate).toHaveBeenCalledWith(
+    expect.objectContaining({
+      data: {
+        chatId: "chat-1",
+        threadId: "default-thread",
+        variant: "default",
+      },
+    }),
+  );
+});
 
 describe("Given: a web chat has several default-variant threads", () => {
   beforeEach(() => {

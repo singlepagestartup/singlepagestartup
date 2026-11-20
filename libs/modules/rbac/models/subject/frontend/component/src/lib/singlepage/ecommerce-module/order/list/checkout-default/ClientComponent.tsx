@@ -13,6 +13,8 @@ import type { ICartDetails } from "@sps/ecommerce/models/order/sdk/model";
 import { ReceiptEmail } from "../../checkout-default/ReceiptEmail";
 import { CheckoutForm } from "../../checkout-default/CheckoutForm";
 import { Component as Row } from "./Row";
+import { hasInvalidSingleUnitQuantity } from "./utils";
+import { DiscussionAction } from "./DiscussionAction";
 import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
@@ -37,6 +39,7 @@ export function Component(props: IComponentPropsExtended) {
       language={props.language}
       variant={props.variant}
       isServer={false}
+      onDiscussionOpen={props.onDiscussionOpen}
       onSelectionPendingChange={props.onSelectionPendingChange}
     />
   );
@@ -52,6 +55,11 @@ function Checkout(props: IComponentPropsExtended) {
             "Не удалось получить ссылку на оплату. Попробуйте ещё раз.",
           checkoutError: "Не удалось оформить заказ. Попробуйте ещё раз.",
           emptyCart: "В корзине пока нет товаров.",
+          prepayment: "Предоплата",
+          postpayment: "Постоплата",
+          postpaymentTerms: "Оплата после принятия результата.",
+          selectItems: "Выберите товары или услуги.",
+          selectedTotal: "К оплате сейчас",
           total: "Итого",
           savedTotal: "Сохранённая сумма",
           pricedItems: "Товары с ценой",
@@ -69,6 +77,11 @@ function Checkout(props: IComponentPropsExtended) {
           paymentLinkError: "Could not get a payment link. Please try again.",
           checkoutError: "Could not place your order. Please try again.",
           emptyCart: "Your cart is empty.",
+          prepayment: "Payment upfront",
+          postpayment: "Payment after acceptance",
+          postpaymentTerms: undefined,
+          selectItems: "Select items to continue.",
+          selectedTotal: "Due now",
           total: "Total",
           savedTotal: "Saved total",
           pricedItems: "Priced items",
@@ -100,6 +113,18 @@ function Checkout(props: IComponentPropsExtended) {
 
   const [paymentUrls, setPaymentUrls] = useState<string[]>([]);
   const [error, setError] = useState("");
+  const [selection, setSelection] = useState(() => new Map<string, boolean>());
+  const changeCartItemSelection = useCallback(
+    (orderId: string, selected: boolean) => {
+      setSelection((previous) => new Map(previous).set(orderId, selected));
+      setError("");
+    },
+    [],
+  );
+  const isOrderSelected = (order: IRowProps["ecommerceModuleOrder"]) =>
+    selection.get(order.id) ??
+    (order.cartDetails?.lines.filter((line) => !line.parentLineId).length ??
+      0) <= 1;
   const blockedSelections = useRef(new Map<string, Set<string>>());
   const pendingSelections = useRef(new Map<string, Set<string>>());
   const reportedPending = useRef(false);
@@ -107,11 +132,12 @@ function Checkout(props: IComponentPropsExtended) {
   selectionPendingListener.current = props.onSelectionPendingChange;
   const [, setSelectionRevision] = useState(0);
   const checkoutSnapshot = useRef<{
-    orders: IRowProps["ecommerceModuleOrder"][];
+    cartOrders: IRowProps["ecommerceModuleOrder"][];
+    paymentOrders: IRowProps["ecommerceModuleOrder"][];
     blocked: boolean;
   } | null>(null);
   const publishSelectionPending = useCallback(() => {
-    const pending = (checkoutSnapshot.current?.orders ?? []).some((order) =>
+    const pending = (checkoutSnapshot.current?.cartOrders ?? []).some((order) =>
       order.cartDetails?.lines.some(
         (line) =>
           !line.parentLineId &&
@@ -179,6 +205,13 @@ function Checkout(props: IComponentPropsExtended) {
   }, []);
 
   const ecommerceModuleOrderCheckout = api.ecommerceModuleOrderCheckout({});
+  const paying =
+    useIsMutating({
+      mutationKey: [`${route}/:id/ecommerce-module/orders/checkout`],
+      predicate: (mutation) =>
+        (mutation.state.variables as { id?: string } | undefined)?.id ===
+        props.data.id,
+    }) > 0;
   const updatingCart =
     useIsMutating({
       mutationKey: [`${route}/:id/ecommerce-module/orders/:orderId`],
@@ -213,9 +246,9 @@ function Checkout(props: IComponentPropsExtended) {
     const snapshot = checkoutSnapshot.current;
     if (
       !currentLifecycle ||
-      !snapshot?.orders.length ||
+      !snapshot?.paymentOrders.length ||
       snapshot.blocked ||
-      hasBlockedSelections(snapshot.orders)
+      hasBlockedSelections(snapshot.paymentOrders)
     )
       return;
     setError("");
@@ -227,7 +260,12 @@ function Checkout(props: IComponentPropsExtended) {
           email: data.email,
           ...(data.comment ? { comment: data.comment } : {}),
           ecommerceModule: {
-            orders: snapshot.orders.map(({ id }) => ({ id })),
+            orders: snapshot.paymentOrders.map(({ id, cartDetails }) => {
+              const lineIds = cartDetails?.lines
+                .filter((line) => !line.parentLineId)
+                .map((line) => line.id);
+              return lineIds?.length ? { id, lineIds } : { id };
+            }),
           },
         },
       });
@@ -291,7 +329,7 @@ function Checkout(props: IComponentPropsExtended) {
         >
           {({ data: orders }) => {
             if (!orders.length) {
-              checkoutSnapshot.current = { orders, blocked: true };
+              checkoutSnapshot.current = null;
               return (
                 <div className="flex flex-1 flex-col items-center justify-center gap-5 px-6 py-8 text-center">
                   <Image
@@ -307,11 +345,31 @@ function Checkout(props: IComponentPropsExtended) {
                 </div>
               );
             }
-            // Combine server-calculated amounts from the same authorized snapshot as the rows.
-            const hasUnpriced = orders.some(
+            const prepayment = orders.filter(
+              (order) => !order.cartDetails?.work,
+            );
+            const postpayment = orders.filter(
+              (order) =>
+                order.cartDetails?.work &&
+                order.cartDetails.work.state !== "awaiting-payment",
+            );
+            const accepted = orders.filter(
+              (order) => order.cartDetails?.work?.state === "awaiting-payment",
+            );
+            const paymentOrders = prepayment.filter(isOrderSelected);
+            const discussionOrders = postpayment.filter(isOrderSelected);
+            const hasAcceptedSelection = accepted.some(isOrderSelected);
+            const shouldSelectItems =
+              !paymentOrders.length &&
+              !discussionOrders.length &&
+              !hasAcceptedSelection;
+            const hasUnpriced = paymentOrders.some(
               (order) => order.cartDetails?.unpriced?.length,
             );
-            const hasInvalidCurrency = orders.some(
+            const hasInvalidQuantity = paymentOrders.some((order) =>
+              hasInvalidSingleUnitQuantity(order.cartDetails),
+            );
+            const hasInvalidCurrency = paymentOrders.some(
               (order) =>
                 !order.cartDetails?.billingModuleCurrencyId ||
                 !order.cartDetails.availableCurrencyIds?.includes(
@@ -319,24 +377,38 @@ function Checkout(props: IComponentPropsExtended) {
                 ),
             );
             const checkoutBlocked =
+              paying ||
               ecommerceModuleOrderCheckout.isPending ||
               hasUnpriced ||
+              hasInvalidQuantity ||
               hasInvalidCurrency ||
               updatingCart ||
               changingSelection ||
               refreshingCart;
             checkoutSnapshot.current = {
-              orders,
+              cartOrders: orders,
+              paymentOrders,
               blocked: checkoutBlocked,
             };
-            const hasUnappliedSelection = hasBlockedSelections(orders);
+            const hasUnappliedSelection = hasBlockedSelections(paymentOrders);
             const showingSavedTotal =
               hasUnappliedSelection ||
               updatingCart ||
               changingSelection ||
               refreshingCart;
+            const partialCheckout =
+              paymentOrders.length !== prepayment.length ||
+              postpayment.length > 0 ||
+              accepted.length > 0;
+            const totalHeading = showingSavedTotal
+              ? text.savedTotal
+              : hasUnpriced
+                ? text.pricedItems
+                : partialCheckout
+                  ? text.selectedTotal
+                  : text.total;
             const totals = new Map<string, ICartDetails["totals"][number]>();
-            for (const order of orders) {
+            for (const order of paymentOrders) {
               for (const total of order.cartDetails?.totals ?? []) {
                 if (
                   total.billingModuleCurrency.id !==
@@ -355,103 +427,226 @@ function Checkout(props: IComponentPropsExtended) {
             }
             return (
               <>
-                <div className="shrink-0 px-4 py-5 sm:flex-1 sm:px-6 [@media(min-width:640px)_and_(min-height:740px)]:min-h-36 [@media(min-width:640px)_and_(min-height:740px)]:overflow-y-auto">
-                  <ul className="space-y-3">
-                    {orders.map((order) => (
-                      <Row
+                <div className="shrink-0 space-y-5 px-4 py-5 sm:flex-1 sm:px-6 [@media(min-width:640px)_and_(min-height:740px)]:min-h-36 [@media(min-width:640px)_and_(min-height:740px)]:overflow-y-auto">
+                  {prepayment.length > 0 && (
+                    <section className="space-y-2">
+                      <h2 className="text-sm font-semibold">
+                        {text.prepayment}
+                      </h2>
+                      <ul className="space-y-3">
+                        {prepayment.map((order) => (
+                          <Row
+                            key={order.id}
+                            subject={props.data}
+                            ecommerceModuleOrder={order}
+                            language={props.language}
+                            selected={isOrderSelected(order)}
+                            selectionDisabled={paying}
+                            onCartItemSelectionChange={changeCartItemSelection}
+                            onOrderSelectionStateChange={
+                              onOrderSelectionStateChange
+                            }
+                            onOrderSelectionPendingChange={
+                              onOrderSelectionPendingChange
+                            }
+                          />
+                        ))}
+                      </ul>
+                    </section>
+                  )}
+                  {(postpayment.length > 0 || accepted.length > 0) && (
+                    <section className="space-y-2">
+                      <h2 className="text-sm font-semibold">
+                        {text.postpayment}
+                      </h2>
+                      {postpayment.length > 0 && text.postpaymentTerms && (
+                        <p className="text-sm text-muted-foreground">
+                          {text.postpaymentTerms}
+                        </p>
+                      )}
+                      <ul className="space-y-3">
+                        {postpayment.map((order) => (
+                          <Row
+                            key={order.id}
+                            subject={props.data}
+                            ecommerceModuleOrder={order}
+                            language={props.language}
+                            selected={isOrderSelected(order)}
+                            onCartItemSelectionChange={changeCartItemSelection}
+                            onOrderSelectionPendingChange={
+                              onOrderSelectionPendingChange
+                            }
+                          />
+                        ))}
+                        {accepted.map((order) => {
+                          const details = order.cartDetails;
+                          const product = details?.lines.find(
+                            (line) => !line.parentLineId,
+                          )?.product;
+                          const selected = isOrderSelected(order);
+                          return (
+                            <Row
+                              key={order.id}
+                              subject={props.data}
+                              ecommerceModuleOrder={order}
+                              language={props.language}
+                              selected={selected}
+                              selectionDisabled={paying}
+                              onCartItemSelectionChange={
+                                changeCartItemSelection
+                              }
+                              onOrderSelectionPendingChange={
+                                onOrderSelectionPendingChange
+                              }
+                            >
+                              {product && (
+                                <div hidden={!selected}>
+                                  <Subject
+                                    isServer={false}
+                                    variant="ecommerce-module-order-checkout-default"
+                                    dataSource="props"
+                                    data={props.data}
+                                    ecommerceModuleProduct={product}
+                                    ecommerceModuleOrder={order}
+                                    language={props.language}
+                                    disabled={
+                                      paying ||
+                                      !selected ||
+                                      updatingCart ||
+                                      changingSelection ||
+                                      refreshingCart ||
+                                      hasInvalidSingleUnitQuantity(details) ||
+                                      Boolean(details?.unpriced?.length) ||
+                                      !details?.availableCurrencyIds?.includes(
+                                        details.billingModuleCurrencyId ?? "",
+                                      )
+                                    }
+                                  />
+                                </div>
+                              )}
+                            </Row>
+                          );
+                        })}
+                      </ul>
+                    </section>
+                  )}
+                </div>
+                {(prepayment.length > 0 ||
+                  postpayment.length > 0 ||
+                  shouldSelectItems) && (
+                  <div className="shrink-0 space-y-4 border-t border-border bg-card px-4 py-4 sm:px-6 sm:py-5">
+                    {discussionOrders.map((order) => (
+                      <DiscussionAction
                         key={order.id}
-                        subject={props.data}
+                        subjectId={props.data.id}
                         ecommerceModuleOrder={order}
                         language={props.language}
-                        onOrderSelectionStateChange={
-                          onOrderSelectionStateChange
+                        showTitle={discussionOrders.length > 1}
+                        buttonVariant={
+                          paymentOrders.length ? "outline" : "primary"
                         }
-                        onOrderSelectionPendingChange={
-                          onOrderSelectionPendingChange
-                        }
+                        onDiscussionOpen={props.onDiscussionOpen}
                       />
                     ))}
-                  </ul>
-                </div>
-                <div className="shrink-0 space-y-4 border-t border-border bg-card px-4 py-4 sm:px-6 sm:py-5">
-                  <CheckoutForm
-                    className="space-y-3"
-                    noValidate
-                    form={form}
-                    onSubmit={form.handleSubmit(onSubmit, () => setError(""))}
-                  >
-                    {hasUnpriced && (
-                      <p role="alert" className="text-sm text-destructive">
-                        {text.unpriced}
+                    {shouldSelectItems && (
+                      <p
+                        role="status"
+                        className="text-sm text-muted-foreground"
+                      >
+                        {text.selectItems}
                       </p>
                     )}
-                    {!hasUnpriced && hasInvalidCurrency && (
-                      <p role="alert" className="text-sm text-destructive">
-                        {text.invalidCurrency}
-                      </p>
-                    )}
-                    <FormField
-                      ui="shadcn"
-                      type="select"
-                      name="provider"
-                      form={form}
-                      label={text.provider}
-                      placeholder={text.providerPlaceholder}
-                      options={providers.map((provider) => [
-                        provider,
-                        provider,
-                      ])}
-                    />
-                    <ReceiptEmail
-                      subject={props.data}
-                      form={form}
-                      label={text.email}
-                      placeholder="name@example.com"
-                    />
-                    <OrderComment form={form} language={props.language} />
-                    <div
-                      aria-live="polite"
-                      aria-busy={showingSavedTotal}
-                      className="flex flex-wrap items-baseline justify-between gap-2 border-t border-border pt-3"
-                    >
-                      <h3 className="text-base font-semibold">
-                        {showingSavedTotal
-                          ? text.savedTotal
-                          : hasUnpriced
-                            ? text.pricedItems
-                            : text.total}
-                      </h3>
-                      <div className="text-right tabular-nums">
-                        {[...totals.values()].map((total) => (
-                          <p
-                            key={total.billingModuleCurrency.id}
-                            className="text-2xl font-semibold"
+                    {prepayment.length > 0 && (
+                      <div hidden={!paymentOrders.length}>
+                        <CheckoutForm
+                          className="space-y-3"
+                          noValidate
+                          form={form}
+                          onSubmit={form.handleSubmit(onSubmit, () =>
+                            setError(""),
+                          )}
+                        >
+                          {hasUnpriced && (
+                            <p
+                              role="alert"
+                              className="text-sm text-destructive"
+                            >
+                              {text.unpriced}
+                            </p>
+                          )}
+                          {!hasUnpriced && hasInvalidCurrency && (
+                            <p
+                              role="alert"
+                              className="text-sm text-destructive"
+                            >
+                              {text.invalidCurrency}
+                            </p>
+                          )}
+                          <FormField
+                            ui="shadcn"
+                            type="select"
+                            name="provider"
+                            form={form}
+                            label={text.provider}
+                            placeholder={text.providerPlaceholder}
+                            options={providers.map((provider) => [
+                              provider,
+                              provider,
+                            ])}
+                          />
+                          <ReceiptEmail
+                            subject={props.data}
+                            form={form}
+                            label={text.email}
+                            placeholder="name@example.com"
+                          />
+                          <OrderComment form={form} language={props.language} />
+                          <div
+                            aria-live="polite"
+                            aria-busy={showingSavedTotal}
+                            className="flex flex-wrap items-baseline justify-between gap-2 border-t border-border pt-3"
                           >
-                            {new Intl.NumberFormat(
-                              props.language === "ru" ? "ru-RU" : "en-US",
-                              {
-                                maximumFractionDigits: currencyPrecision(
-                                  total.billingModuleCurrency,
-                                ),
-                              },
-                            ).format(total.total)}{" "}
-                            {total.billingModuleCurrency.symbol}
-                          </p>
-                        ))}
+                            <h3 className="text-base font-semibold">
+                              {totalHeading}
+                            </h3>
+                            <div className="text-right tabular-nums">
+                              {[...totals.values()].map((total) => (
+                                <p
+                                  key={total.billingModuleCurrency.id}
+                                  className="text-2xl font-semibold"
+                                >
+                                  {new Intl.NumberFormat(
+                                    props.language === "ru" ? "ru-RU" : "en-US",
+                                    {
+                                      maximumFractionDigits: currencyPrecision(
+                                        total.billingModuleCurrency,
+                                      ),
+                                    },
+                                  ).format(total.total)}{" "}
+                                  {total.billingModuleCurrency.symbol}
+                                </p>
+                              ))}
+                            </div>
+                          </div>
+                          <Button
+                            type="submit"
+                            variant="primary"
+                            className="flex min-h-11 w-full shrink-0 rounded-xl"
+                            disabled={
+                              !paymentOrders.length ||
+                              checkoutBlocked ||
+                              hasUnappliedSelection
+                            }
+                          >
+                            {ecommerceModuleOrderCheckout.isPending
+                              ? text.checkingOut
+                              : text.checkout}
+                          </Button>
+                        </CheckoutForm>
                       </div>
-                    </div>
-                    <Button
-                      type="submit"
-                      variant="primary"
-                      className="flex min-h-11 w-full shrink-0 rounded-xl"
-                      disabled={checkoutBlocked || hasUnappliedSelection}
-                    >
-                      {ecommerceModuleOrderCheckout.isPending
-                        ? text.checkingOut
-                        : text.checkout}
-                    </Button>
-                  </CheckoutForm>
-                </div>
+                    )}
+                  </div>
+                )}
               </>
             );
           }}

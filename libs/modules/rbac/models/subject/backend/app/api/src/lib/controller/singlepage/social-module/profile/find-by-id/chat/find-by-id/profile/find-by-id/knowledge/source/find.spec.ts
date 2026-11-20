@@ -30,6 +30,7 @@ describe("Knowledge Source find", () => {
         query: () => undefined,
       },
       json: jest.fn((value) => value),
+      get: jest.fn(),
     } as any;
     await new Handler(service).execute(c, undefined);
     expect(
@@ -84,6 +85,7 @@ describe("Knowledge Source find", () => {
         query: (name: string) => ({ limit: "3", offset: "6" })[name],
       },
       json: jest.fn((value) => value),
+      get: jest.fn(),
     } as any;
 
     await new Handler(service).execute(c, undefined);

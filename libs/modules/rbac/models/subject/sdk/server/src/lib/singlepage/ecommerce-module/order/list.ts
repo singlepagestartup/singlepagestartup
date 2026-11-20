@@ -1,4 +1,8 @@
-import { serverHost, route } from "@sps/rbac/models/subject/sdk/model";
+import {
+  serverHost,
+  route,
+  type ISubjectCartDetails,
+} from "@sps/rbac/models/subject/sdk/model";
 import {
   NextRequestOptions,
   responsePipe,
@@ -8,7 +12,6 @@ import QueryString from "qs";
 import {
   IModel as IEcommerceModuleOrder,
   type IPurchaseDetails,
-  type ICartDetails,
 } from "@sps/ecommerce/models/order/sdk/model";
 
 export interface IProps {
@@ -26,7 +29,7 @@ export interface IProps {
 
 export type IResult = (IEcommerceModuleOrder & {
   purchaseDetails?: IPurchaseDetails;
-  cartDetails?: ICartDetails & { storeIds: string[] };
+  cartDetails?: ISubjectCartDetails;
 })[];
 
 export async function action(props: IProps): Promise<IResult> {

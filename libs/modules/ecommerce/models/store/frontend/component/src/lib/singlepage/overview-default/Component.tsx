@@ -8,6 +8,11 @@ import {
 } from "@sps/shared-ui-shadcn";
 
 export function Component(props: IComponentPropsExtended) {
+  const title =
+    props.data.title?.[props.language]?.trim() ||
+    Object.values(props.data.title ?? {}).find((value) => value?.trim()) ||
+    props.data.adminTitle?.trim() ||
+    props.data.slug;
   return (
     <Card
       data-module="ecommerce"
@@ -17,7 +22,7 @@ export function Component(props: IComponentPropsExtended) {
       className={cn("w-full flex flex-col", props.className)}
     >
       <CardHeader>
-        <CardTitle>{props.data.title?.[props.language]}</CardTitle>
+        <CardTitle>{title}</CardTitle>
       </CardHeader>
       <CardContent>{props.children}</CardContent>
     </Card>

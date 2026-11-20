@@ -1,0 +1,5 @@
+ALTER TABLE "rc_ss_to_ee_me_ss_htr" ADD COLUMN "customer_subject_id" uuid;--> statement-breakpoint
+ALTER TABLE "rc_ss_to_ee_me_ss_htr" ADD CONSTRAINT "rc_ss_to_ee_me_ss_htr_customer_subject_id_sps_rc_subject_id_fk" FOREIGN KEY ("customer_subject_id") REFERENCES "public"."sps_rc_subject"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+CREATE UNIQUE INDEX "rc_store_customer_assistant" ON "rc_ss_to_ee_me_ss_htr" USING btree ("ee_me_se_id","customer_subject_id") WHERE "rc_ss_to_ee_me_ss_htr"."variant" = 'assistant';--> statement-breakpoint
+CREATE UNIQUE INDEX "rc_store_assistant_subject" ON "rc_ss_to_ee_me_ss_htr" USING btree ("st_id") WHERE "rc_ss_to_ee_me_ss_htr"."variant" = 'assistant';--> statement-breakpoint
+ALTER TABLE "rc_ss_to_ee_me_ss_htr" ADD CONSTRAINT "rc_store_assistant_customer" CHECK (("rc_ss_to_ee_me_ss_htr"."variant" = 'assistant' AND "rc_ss_to_ee_me_ss_htr"."customer_subject_id" IS NOT NULL AND "rc_ss_to_ee_me_ss_htr"."customer_subject_id" <> "rc_ss_to_ee_me_ss_htr"."st_id") OR ("rc_ss_to_ee_me_ss_htr"."variant" <> 'assistant' AND "rc_ss_to_ee_me_ss_htr"."customer_subject_id" IS NULL));

@@ -16,8 +16,8 @@ interface ProfileSidebarPanelProps {
   onProfileEdit?: (profile: ISocialModuleProfile) => void;
   onSkillCreate?: (profile: ISocialModuleProfile) => void;
   onSkillEdit?: (skill: SocialSkill) => void;
-  onClose?: () => void;
   profile: ISocialModuleProfile | null;
+  profileCaption?: string;
   selectedKnowledgeSource?: KnowledgeSource | null;
   skills: SocialSkill[];
 }
@@ -33,6 +33,7 @@ export function ProfileSidebarPanel(props: ProfileSidebarPanelProps) {
       variant="chat-profile-sidebar"
       dataSource="props"
       data={props.profile}
+      profileCaption={props.profileCaption}
       language={props.language}
       skills={props.skills}
       knowledgeSources={props.knowledgeSources}
@@ -46,7 +47,6 @@ export function ProfileSidebarPanel(props: ProfileSidebarPanelProps) {
       onProfileEdit={props.onProfileEdit}
       onSkillCreate={props.onSkillCreate}
       onSkillEdit={props.onSkillEdit}
-      onClose={props.onClose}
     />
   );
 }

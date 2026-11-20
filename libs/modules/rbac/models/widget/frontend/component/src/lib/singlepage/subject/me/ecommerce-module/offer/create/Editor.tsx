@@ -6,6 +6,7 @@ import { catalogCreateOfferSchema } from "@sps/rbac/models/subject/sdk/model";
 import type { IModel as IOffer } from "@sps/ecommerce/relations/stores-to-products/sdk/model";
 import type { IModel as ILink } from "@sps/ecommerce/relations/offers-to-offers/sdk/model";
 import type { IBoxDraft, IEditorProps } from "./interface";
+import { PaymentTiming } from "./PaymentTiming";
 
 const field =
   "min-h-11 w-full min-w-0 rounded-xl border border-input bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:bg-muted disabled:text-muted-foreground";
@@ -58,6 +59,7 @@ export function Editor(props: IEditorProps) {
 function OfferEditor(props: IEditorProps & { offer: IOffer }) {
   const { offer, context } = props;
   const updateOffer = subjectApi.ecommerceModuleCatalogMutation();
+  const updateProduct = subjectApi.ecommerceModuleCatalogMutation();
   const setAttribute = subjectApi.ecommerceModuleCatalogAttributeSet();
   const deleteAttribute = subjectApi.ecommerceModuleCatalogMutation();
   const createLink = subjectApi.ecommerceModuleCatalogMutation();
@@ -68,16 +70,26 @@ function OfferEditor(props: IEditorProps & { offer: IOffer }) {
   );
   const stock = attrs.find((attribute) => attribute.key === "stock_quantity");
   const [unlimited, setUnlimited] = useState(!stock);
+  const [afterAcceptance, setAfterAcceptance] = useState(
+    Boolean(offer.settings.requiresResultAcceptance),
+  );
+  const [standalone, setStandalone] = useState(
+    Boolean(offer.settings.standalone),
+  );
   const [feedback, setFeedback] = useState("");
   const [error, setError] = useState("");
+  const [productFeedback, setProductFeedback] = useState("");
+  const [productError, setProductError] = useState("");
   const [removingId, setRemovingId] = useState<string | null>(null);
   const ownsProduct = context.ownedProductIds.includes(offer.productId);
   const [linkRole, setLinkRole] = useState(
     ownsProduct ? "delivery" : "fulfilled-by",
   );
-  const serviceProduct =
-    context.products.find((product) => product.id === offer.productId)?.kind ===
-    "service";
+  const product = context.products.find(
+    (product) => product.id === offer.productId,
+  );
+  const serviceProduct = product?.kind === "service";
+  const commissionedService = serviceProduct && product.type === "one_off";
   const targets = context.offers.filter(
     (target) =>
       target.id !== offer.id &&
@@ -164,6 +176,32 @@ function OfferEditor(props: IEditorProps & { offer: IOffer }) {
     }
   }
 
+  async function saveProductQuantityLimit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const values = new FormData(event.currentTarget);
+    setProductError("");
+    setProductFeedback("");
+    try {
+      await updateProduct.mutateAsync({
+        id: props.subjectId,
+        data: {
+          entity: "products",
+          method: "PATCH",
+          recordId: offer.productId,
+          data: { singleUnitPerOrder: values.has("singleUnitPerOrder") },
+        },
+      });
+      await props.onRefresh();
+      setProductFeedback("Product quantity limit saved.");
+    } catch (failure) {
+      setProductError(
+        failure instanceof Error
+          ? failure.message
+          : "Could not save the product quantity limit.",
+      );
+    }
+  }
+
   async function save(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const values = new FormData(event.currentTarget);
@@ -173,7 +211,13 @@ function OfferEditor(props: IEditorProps & { offer: IOffer }) {
     try {
       const settings = catalogCreateOfferSchema.shape.settings.parse({
         ...offer.settings,
-        standalone: values.has("standalone"),
+        ...(commissionedService && {
+          requiresResultAcceptance:
+            text("paymentTiming") === "after-acceptance",
+        }),
+        standalone:
+          values.has("standalone") ||
+          (commissionedService && text("paymentTiming") === "after-acceptance"),
         receiptMethod: text("receiptMethod"),
         regionIds: text("regions")
           .split(",")
@@ -297,6 +341,30 @@ function OfferEditor(props: IEditorProps & { offer: IOffer }) {
 
   return (
     <div className="space-y-6">
+      {ownsProduct && product && (
+        <form onSubmit={saveProductQuantityLimit} className="space-y-2">
+          <fieldset disabled={updateProduct.isPending} className="space-y-2">
+            <legend className="font-semibold">Product quantity limit</legend>
+            <label className="flex min-h-11 items-center gap-2 text-sm">
+              <input
+                key={String(product.singleUnitPerOrder)}
+                name="singleUnitPerOrder"
+                type="checkbox"
+                defaultChecked={product.singleUnitPerOrder}
+              />
+              Limit to one unit per order
+            </label>
+            <p className="text-xs text-muted-foreground">
+              This setting applies to every store that offers this product.
+            </p>
+            <button type="submit" className={button}>
+              Save product quantity limit
+            </button>
+          </fieldset>
+          {productFeedback && <p role="status">{productFeedback}</p>}
+          {productError && <p role="alert">{productError}</p>}
+        </form>
+      )}
       <form onSubmit={save} className="space-y-4">
         <fieldset disabled={busy} className="space-y-4">
           <p className="break-all text-xs text-muted-foreground">
@@ -436,10 +504,18 @@ function OfferEditor(props: IEditorProps & { offer: IOffer }) {
             <input
               name="standalone"
               type="checkbox"
-              defaultChecked={offer.settings.standalone}
+              checked={standalone || (commissionedService && afterAcceptance)}
+              disabled={commissionedService && afterAcceptance}
+              onChange={(event) => setStandalone(event.target.checked)}
             />
             Allow this service to be sold separately
           </label>
+          {commissionedService && (
+            <PaymentTiming
+              afterAcceptance={offer.settings.requiresResultAcceptance}
+              onChange={setAfterAcceptance}
+            />
+          )}
           <fieldset className="space-y-3">
             <legend className="mb-3 font-semibold">
               External packaging per product unit

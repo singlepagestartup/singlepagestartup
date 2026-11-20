@@ -3,15 +3,19 @@
 import { MessageEditDialog } from "./MessageEditDialog";
 import { MessageTimeline } from "./MessageTimeline";
 import { useMessageActions } from "../hooks/use-message-actions";
+import { useMarkThreadRead } from "../hooks/use-mark-thread-read";
 import { useMessageThreadScroll } from "../hooks/use-message-thread-scroll";
+import { useThreadMessages } from "../hooks/use-thread-messages";
 import type { ThreadMessagesCache } from "../hooks/use-thread-messages-refetch";
 import { createSocialModuleMessagesAndActionsQuery } from "../timeline";
-import { getTimelineSignature } from "../utils";
+import { getTimelineSignature, isChatAccessError } from "../utils";
 import { api } from "@sps/rbac/models/subject/sdk/client";
 import type { IModel as ISocialModuleProfile } from "@sps/social/models/profile/sdk/model";
 import { memo, useEffect, useMemo, type MutableRefObject } from "react";
 
 interface MessageTimelineSectionProps {
+  isCustomerWork: boolean;
+  isEmployeeChat?: boolean;
   language: string;
   participants?: ISocialModuleProfile[];
   /**
@@ -20,7 +24,8 @@ interface MessageTimelineSectionProps {
    * timeline communication free of message-array props.
    */
   markShouldScrollToBottomRef: MutableRefObject<() => void>;
-  onProfileOpen: (profile: ISocialModuleProfile) => void;
+  onProfileOpen?: (profile: ISocialModuleProfile) => void;
+  onResultReview?: (versionId: string) => void;
   socialModuleChatId: string;
   socialModuleProfileId: string;
   socialModuleThreadId: string;
@@ -49,14 +54,23 @@ export const MessageTimelineSection = memo(function MessageTimelineSection(
   props: MessageTimelineSectionProps,
 ) {
   const {
-    data: socialModuleMessages,
+    data: loadedMessages,
+    error: messagesError,
     isLoading: socialModuleMessagesIsLoading,
-  } = api.socialModuleProfileFindByIdChatFindByIdThreadFindByIdMessageFind({
+  } = useThreadMessages(
+    props,
+    props.isCustomerWork || props.isEmployeeChat ? 3000 : false,
+  );
+  const {
+    data: loadedActions,
+    error: actionsError,
+    isLoading: socialModuleActionsIsLoading,
+  } = api.socialModuleProfileFindByIdChatFindByIdActionFind({
     id: props.subjectId,
     socialModuleProfileId: props.socialModuleProfileId,
     socialModuleChatId: props.socialModuleChatId,
-    socialModuleThreadId: props.socialModuleThreadId,
     params: {
+      socialModuleThreadId: props.socialModuleThreadId,
       orderBy: {
         and: [
           {
@@ -72,29 +86,13 @@ export const MessageTimelineSection = memo(function MessageTimelineSection(
       },
     },
   });
-  const { data: socialModuleActions, isLoading: socialModuleActionsIsLoading } =
-    api.socialModuleProfileFindByIdChatFindByIdActionFind({
-      id: props.subjectId,
-      socialModuleProfileId: props.socialModuleProfileId,
-      socialModuleChatId: props.socialModuleChatId,
-      params: {
-        socialModuleThreadId: props.socialModuleThreadId,
-        orderBy: {
-          and: [
-            {
-              column: "createdAt",
-              method: "asc",
-            },
-          ],
-        },
-      },
-      options: {
-        headers: {
-          "Cache-Control": "no-store",
-        },
-      },
-    });
 
+  const socialModuleMessages = isChatAccessError(messagesError)
+    ? undefined
+    : loadedMessages;
+  const socialModuleActions = isChatAccessError(actionsError)
+    ? undefined
+    : loadedActions;
   const socialModuleMessagesAndActionsQuery = useMemo(() => {
     return createSocialModuleMessagesAndActionsQuery({
       socialModuleMessages,
@@ -121,6 +119,16 @@ export const MessageTimelineSection = memo(function MessageTimelineSection(
     timelineItemCount,
     timelineSignature,
   });
+  const latestMessage = socialModuleMessagesAndActionsQuery.findLast(
+    (item) => item.type === "message",
+  );
+  useMarkThreadRead({
+    subjectId: props.subjectId,
+    socialModuleChatId: props.socialModuleChatId,
+    socialModuleThreadId: props.socialModuleThreadId,
+    messageId: latestMessage?.data.id,
+    viewportRef: messageThreadScroll.messagesViewportRef,
+  });
 
   useEffect(() => {
     props.markShouldScrollToBottomRef.current =
@@ -136,13 +144,16 @@ export const MessageTimelineSection = memo(function MessageTimelineSection(
 
   if (socialModuleMessagesIsLoading || socialModuleActionsIsLoading) {
     return (
-      <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 py-4">
-        <div className="mx-auto flex w-full max-w-4xl flex-col gap-3">
+      <div
+        className="min-h-0 flex-1 overflow-y-auto overscroll-contain p-4"
+        aria-busy="true"
+      >
+        <div className="flex min-w-0 flex-col gap-3" aria-hidden="true">
           {[0, 1, 2].map((placeholderIndex) => {
             return (
               <div
                 key={placeholderIndex}
-                className="h-16 animate-pulse rounded-xl bg-slate-100"
+                className="h-16 w-3/4 motion-safe:animate-pulse rounded-2xl bg-muted even:ml-auto even:w-1/2"
               />
             );
           })}
@@ -156,17 +167,21 @@ export const MessageTimelineSection = memo(function MessageTimelineSection(
       <div
         ref={messageThreadScroll.messagesViewportRef}
         onScroll={messageThreadScroll.updateIsAtBottom}
-        className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 py-4"
+        className="min-h-0 flex-1 overflow-y-auto overscroll-contain p-4"
       >
         <MessageTimeline
           deletingMessageId={messageActions.deletingMessageId}
           items={socialModuleMessagesAndActionsQuery}
+          subjectId={props.subjectId}
+          socialModuleProfileId={props.socialModuleProfileId}
+          threadId={props.socialModuleThreadId}
           participants={props.participants}
           language={props.language}
           messagesContentRef={messageThreadScroll.messagesContentRef}
           onMessageDelete={messageActions.onMessageRowDelete}
           onMessageEdit={messageActions.onMessageRowEdit}
           onProfileOpen={props.onProfileOpen}
+          onResultReview={props.onResultReview}
         />
         <div
           ref={messageThreadScroll.messagesEndRef}
@@ -178,6 +193,7 @@ export const MessageTimelineSection = memo(function MessageTimelineSection(
         form={messageActions.messageEditForm}
         isOpen={messageActions.isEditOpen}
         isUpdating={messageActions.updateMessage.isPending}
+        language={props.language}
         onOpenChange={(open) => {
           messageActions.setIsEditOpen(open);
 

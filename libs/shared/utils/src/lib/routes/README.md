@@ -64,7 +64,6 @@ callers pass extra rules through the middleware constructor.
 | ---------------- | --------------------------- | ------------------------------------ |
 | `is-authorized`  | allow without auth          | `createAllowedRoutesMatcher`         |
 | `actions-logger` | log this mutation           | `createLoggingRoutesMatcher`         |
-| `bill-route`     | require billing             | `createBillingRoutesMatcher`         |
 | `observer`       | skip observer pipeline      | `createSkippedRoutesMatcher`         |
 | `revalidation`   | skip revalidation broadcast | `createNotRevalidatingRoutesMatcher` |
 

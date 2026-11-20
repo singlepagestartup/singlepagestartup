@@ -5,6 +5,7 @@ export const fields = {
   salt: pgCore.text("salt"),
   account: pgCore.text("account"),
   email: pgCore.text("email"),
+  usage: pgCore.text("usage").notNull().default("inbound"),
   provider: pgCore.text("provider").notNull().default("email"),
   id: pgCore.uuid("id").primaryKey().defaultRandom(),
   createdAt: pgCore.timestamp("created_at").notNull().defaultNow(),

@@ -51,16 +51,25 @@ export class Handler {
           socialModuleProfileId: targetSocialModuleProfileId,
         });
 
+      const storeId = c.get("storeEmployeeTrainingStoreId");
+      const page = parsePagination(c);
       const sourceIds = await findProfileKnowledgeSourceIds({
         service: this.service,
         targetSocialModuleProfileId,
-        ...parsePagination(c),
+        storeId,
+        ...page,
       });
       const documents = await this.knowledgeService.listSources({
         sourceIds,
       });
 
-      return c.json({ data: documents });
+      const offset = page.offset ?? 0;
+      const data = storeId
+        ? documents
+            .filter(({ variant }) => variant === "default")
+            .slice(offset, page.limit ? offset + page.limit : undefined)
+        : documents;
+      return c.json({ data });
     } catch (error: unknown) {
       const { status, message, details } = getHttpErrorType(error);
       throw new HTTPException(status, { message, cause: details });

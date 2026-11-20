@@ -14,8 +14,12 @@ import { Component as SubjectMeSocialModuleProfileIdSettingsAiChat } from "./sub
 import { Component as SubjectMeSocialModuleProfileListAiChat } from "./subject-me-social-module-profile-list-ai-chat/index";
 import { Component as SubjectMeSocialModuleProfileChatListDefault } from "./subject/me/social-module/profile/chat/list-default/index";
 import { Component as SubjectMeSocialModuleProfileChatOverviewDefault } from "./subject/me/social-module/profile/chat/overview-default/index";
+import { Component as SubjectMeStoreCustomerWork } from "./subject-me-store-customer-work";
+import { Component as SubjectMeStoreProviderSettings } from "./subject-me-store-provider-settings";
 
 export const variants = {
+  "subject-me-store-provider-settings": SubjectMeStoreProviderSettings,
+  "subject-me-store-customer-work": SubjectMeStoreCustomerWork,
   "subject-me-blog-module-article-create": SubjectMeBlogModuleArticleCreate,
   "subject-me-ecommerce-module-product-list-default":
     SubjectMeEcommerceModuleProductListDefault,

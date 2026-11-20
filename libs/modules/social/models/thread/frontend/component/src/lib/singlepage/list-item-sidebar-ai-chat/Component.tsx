@@ -12,6 +12,8 @@ export function Component(props: IComponentPropsExtended) {
       href={props.href}
       selected={props.selected}
       topic={props.topic}
+      title={props.title}
+      onNavigate={props.onNavigate}
     />
   );
 }

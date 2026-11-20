@@ -17,6 +17,7 @@ import type {
   IOpenRouterUsage,
   IOpenRouterSessionOptions,
 } from "./interface";
+import { getOpenRouterModels, OPEN_ROUTER_BASE_URL } from "./models";
 
 export type IOpenRouterMessageContent =
   | { type: "text"; text: string }
@@ -65,14 +66,7 @@ export type IOpenRouterReasoning =
       exclude?: boolean;
     };
 
-const MODEL_CACHE_TTL_MS = 5 * 60 * 1000;
 const OBJECT_COERCION_TEXT_PATTERN = /^\[object [^\]]+\]$/;
-let cachedModels:
-  | {
-      expiresAt: number;
-      models: IOpenRouterModel[];
-    }
-  | undefined;
 
 export class Service {
   baseURL: string;
@@ -83,7 +77,7 @@ export class Service {
       throw new Error("Configuration error. OPEN_ROUTER_API_KEY is not set");
     }
 
-    this.baseURL = "https://openrouter.ai/api/v1";
+    this.baseURL = OPEN_ROUTER_BASE_URL;
     this.apiKey = OPEN_ROUTER_API_KEY;
   }
 
@@ -954,54 +948,6 @@ export class Service {
   }
 
   async getModels(): Promise<IOpenRouterModel[]> {
-    if (cachedModels && cachedModels.expiresAt > Date.now()) {
-      return cachedModels.models;
-    }
-
-    let models: IOpenRouterModel[] = [];
-
-    try {
-      const response = await fetch(`${this.baseURL}/models`, {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${this.apiKey}`,
-        },
-        signal: AbortSignal.timeout(30_000),
-      });
-
-      if (!response.ok) {
-        throw new Error(
-          `OpenRouter models request failed (HTTP ${response.status}).`,
-        );
-      }
-
-      const data = (await response.json()) as { data?: IOpenRouterModel[] };
-      if (
-        !Array.isArray(data.data) ||
-        !data.data.length ||
-        !data.data.every(
-          (model) =>
-            model && typeof model.id === "string" && model.id.trim().length,
-        )
-      ) {
-        throw new Error("OpenRouter returned an invalid model catalog.");
-      }
-      models = data.data;
-    } catch (error) {
-      console.warn("OpenRouter models fetch failed", {
-        error: this.stringifyError(error),
-      });
-
-      if (cachedModels) return cachedModels.models;
-      throw error;
-    }
-
-    cachedModels = {
-      expiresAt: Date.now() + MODEL_CACHE_TTL_MS,
-      models,
-    };
-
-    return models;
+    return getOpenRouterModels(this.baseURL, this.apiKey);
   }
 }

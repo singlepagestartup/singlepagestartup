@@ -4,6 +4,15 @@ import { internationalization } from "@sps/shared-configuration";
 import { saveLanguageContext } from "@sps/shared-utils";
 import type { IModel as ISocialModuleProfile } from "@sps/social/models/profile/sdk/model";
 
+export function isChatAccessError(error: unknown) {
+  return (
+    typeof error === "object" &&
+    error !== null &&
+    "status" in error &&
+    (error.status === 401 || error.status === 403 || error.status === 404)
+  );
+}
+
 export const scrollBottomThreshold = 120;
 
 export const knowledgeChatCommands = [

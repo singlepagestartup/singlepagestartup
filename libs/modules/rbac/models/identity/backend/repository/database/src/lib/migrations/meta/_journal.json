@@ -22,6 +22,13 @@
       "when": 1784978717475,
       "tag": "0002_late_power_man",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1795077138327,
+      "tag": "0003_magical_molly_hayes",
+      "breakpoints": true
     }
   ]
 }

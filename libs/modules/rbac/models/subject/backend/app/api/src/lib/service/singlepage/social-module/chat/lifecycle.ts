@@ -9,12 +9,10 @@ import {
 } from "@sps/social/models/thread/sdk/model";
 import { api as socialModuleChatsToThreadsApi } from "@sps/social/relations/chats-to-threads/sdk/server";
 import { api as socialModuleProfilesToChatsApi } from "@sps/social/relations/profiles-to-chats/sdk/server";
-import {
-  AI_CHAT_DOCUMENTS,
-  type AIChatDocumentKey,
-  RBAC_SECRET_KEY,
-} from "@sps/shared-utils";
+import { RBAC_SECRET_KEY } from "@sps/shared-utils";
+import { STORE_EMPLOYEE_CHAT_VARIANT } from "@sps/rbac/models/subject/sdk/model/src/lib/crm-workspace";
 import type { Service as SubjectService } from "../../index";
+import { storeEmployeeChatSlugPrefix } from "../../crm/workspace/employees";
 
 export class Service {
   protected service: SubjectService;
@@ -33,6 +31,15 @@ export class Service {
     socialModuleProfileId: string;
     socialModuleDefaultThread: ISocialModuleThread;
   }> {
+    if (
+      props.data?.variant === STORE_EMPLOYEE_CHAT_VARIANT ||
+      (typeof props.data?.slug === "string" &&
+        props.data.slug.startsWith(storeEmployeeChatSlugPrefix))
+    ) {
+      throw new Error(
+        "Forbidden error. Store employee conversations are managed by the store workspace",
+      );
+    }
     if (!RBAC_SECRET_KEY) {
       throw new Error("Configuration error. RBAC_SECRET_KEY not set");
     }
@@ -72,80 +79,6 @@ export class Service {
       socialModuleChat,
       socialModuleProfileId,
       socialModuleDefaultThread,
-    };
-  }
-
-  async validateDocument(props: {
-    socialModuleChatId: string;
-    document: unknown;
-  }) {
-    const document = props.document as {
-      key: AIChatDocumentKey;
-      profileId: string;
-      sourceIds: string[];
-    };
-    if (
-      !document ||
-      !AI_CHAT_DOCUMENTS.some(
-        (definition) => definition.key === document.key,
-      ) ||
-      typeof document.profileId !== "string" ||
-      !Array.isArray(document.sourceIds) ||
-      document.sourceIds.length > 100 ||
-      !document.sourceIds.every((id: unknown) => typeof id === "string")
-    ) {
-      throw new Error("Validation error. Invalid Thread document");
-    }
-    const profile = await this.service.modules.social.profile.findById({
-      id: document.profileId,
-    });
-    const links = await this.service.modules.social.profilesToChats.find({
-      params: {
-        filters: {
-          and: [
-            {
-              column: "profileId",
-              method: "eq",
-              value: document.profileId,
-            },
-            { column: "chatId", method: "eq", value: props.socialModuleChatId },
-          ],
-        },
-      },
-    });
-    if (
-      !profile ||
-      profile.variant !== "artificial-intelligence" ||
-      !links?.length
-    )
-      throw new Error(
-        "Authorization error. Document profile does not belong to this Chat",
-      );
-    const sourceLinks =
-      await this.service.modules.social.profilesToKnowledgeModuleSources.find({
-        params: {
-          filters: {
-            and: [
-              {
-                column: "profileId",
-                method: "eq",
-                value: document.profileId,
-              },
-            ],
-          },
-        },
-      });
-    const allowedSourceIds = new Set(
-      (sourceLinks || []).map((link) => link.knowledgeModuleSourceId),
-    );
-    if (!document.sourceIds.every((id: string) => allowedSourceIds.has(id)))
-      throw new Error(
-        "Authorization error. Document Source does not belong to this Profile",
-      );
-    return {
-      key: document.key,
-      profileId: document.profileId,
-      sourceIds: [...new Set(document.sourceIds)],
     };
   }
 

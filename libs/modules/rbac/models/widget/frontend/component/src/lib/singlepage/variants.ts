@@ -1,3 +1,4 @@
+import { Component as SubjectMeCrmModuleStoreWorkspace } from "./subject-me-crm-module-store-workspace";
 import { Component as SubjectMeEcommerceModuleOfferCreate } from "./subject/me/ecommerce-module/offer/create";
 import { Component as Hidden } from "@sps/shared-frontend-components/singlepage/hidden";
 import { Component as SubjectMeBlogModuleArticleCreate } from "./subject/me/blog-module/article/create";
@@ -46,6 +47,7 @@ import { Component as SubjectOverviewDefault } from "./subject/overview/default"
 import { Component as SubjectListDefault } from "./subject/list/default";
 
 export const variants = {
+  "subject-me-crm-module-store-workspace": SubjectMeCrmModuleStoreWorkspace,
   "subject-me-ecommerce-module-offer-create":
     SubjectMeEcommerceModuleOfferCreate,
   hidden: Hidden,

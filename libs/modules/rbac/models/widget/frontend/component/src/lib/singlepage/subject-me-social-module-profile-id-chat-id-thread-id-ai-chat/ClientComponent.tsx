@@ -1,8 +1,8 @@
 "use client";
 import { internationalization } from "@sps/shared-configuration";
-import { Component as Profile } from "@sps/social/models/profile/frontend/component";
-import { Component as Chat } from "@sps/social/models/chat/frontend/component";
 import { Component as Subject } from "@sps/rbac/models/subject/frontend/component";
+import { redirect } from "next/navigation";
+import { projectHref } from "@sps/rbac/models/subject/sdk/model";
 import type { IClientComponentProps } from "./interface";
 import { Component as WorkspaceSkeleton } from "./Skeleton";
 import { Component as WorkspaceNotice } from "./Error";
@@ -72,59 +72,8 @@ export function Component(props: IClientComponentProps) {
                       projectsHref={`/${language}/ai-chat/projects`}
                     />
                   );
-                const navigation = (
-                  <Subject
-                    isServer={props.isServer}
-                    variant="me-social-module-profile-id-navigation-ai-chat"
-                    language={language}
-                    data={data}
-                    project={project}
-                    socialModuleThreadId={props.socialModuleThreadId}
-                  />
-                );
-                return (
-                  <main className="mx-auto w-full max-w-6xl px-4 py-6 sm:px-6">
-                    <Profile
-                      isServer={props.isServer}
-                      variant="id-ai-chat-project"
-                      dataSource="props"
-                      data={project.profile}
-                      navigation={navigation}
-                    >
-                      <Chat
-                        isServer={props.isServer}
-                        variant="id-ai-chat"
-                        data={project.chat}
-                        dataSource="props"
-                      >
-                        <Subject
-                          language={language}
-                          isServer={props.isServer}
-                          variant="me-social-module-profile-id-chat-id-thread-id-ai-chat"
-                          data={data}
-                          project={project}
-                          navigation={navigation}
-                          socialModuleThreadId={props.socialModuleThreadId}
-                          renderLoadError={({ retry, unavailable }) => (
-                            <WorkspaceNotice
-                              language={language}
-                              state={unavailable ? "access-denied" : "error"}
-                              embedded
-                              onRetry={retry}
-                              projectsHref={`/${language}/ai-chat/projects`}
-                            />
-                          )}
-                          loading={
-                            <WorkspaceSkeleton
-                              language={language}
-                              stage="loading-chat"
-                              embedded
-                            />
-                          }
-                        />
-                      </Chat>
-                    </Profile>
-                  </main>
+                redirect(
+                  `/${language}${projectHref(project, props.socialModuleThreadId)}`,
                 );
               }}
             />

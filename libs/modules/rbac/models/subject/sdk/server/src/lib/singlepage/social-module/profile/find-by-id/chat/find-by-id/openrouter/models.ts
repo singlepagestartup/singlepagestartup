@@ -1,58 +1,28 @@
 import { serverHost, route } from "@sps/rbac/models/subject/sdk/model";
+import type {
+  IProviderChatModelGroup,
+  IProviderChatModelOption,
+  IProviderChatModelsResult,
+} from "@sps/rbac/models/subject/sdk/model/src/lib/provider-connections";
 import {
   NextRequestOptions,
   responsePipe,
   transformResponseItem,
+  type IProviderModelReasoning,
+  type TProviderReasoningEffort,
 } from "@sps/shared-utils";
 
-export type TOpenRouterReasoningEffort =
-  | "max"
-  | "xhigh"
-  | "high"
-  | "medium"
-  | "low"
-  | "minimal"
-  | "none";
-
-export interface IOpenRouterChatModelReasoning {
-  defaultEffort: TOpenRouterReasoningEffort | null;
-  defaultEnabled: boolean | null;
-  mandatory: boolean;
-  supportedEfforts: TOpenRouterReasoningEffort[];
-  supportsMaxTokens: boolean;
-}
-
-export interface IOpenRouterChatModelOption {
-  id: string;
-  name: string;
-  description: string;
-  contextLength: number;
-  inputModalities: string[];
-  outputModalities: string[];
-  supportedParameters: string[];
-  supportsReasoning: boolean;
-  reasoning: IOpenRouterChatModelReasoning | null;
-}
-
-export interface IOpenRouterChatModelGroup {
-  id: "text" | "vision_file" | "image" | "audio";
-  title: string;
-  models: IOpenRouterChatModelOption[];
-}
-
-export interface IOpenRouterChatModelsResult {
-  auto: {
-    id: "auto";
-    name: string;
-    description: string;
-  };
-  groups: IOpenRouterChatModelGroup[];
-}
+export type TOpenRouterReasoningEffort = TProviderReasoningEffort;
+export type IOpenRouterChatModelReasoning = IProviderModelReasoning;
+export type IOpenRouterChatModelOption = IProviderChatModelOption;
+export type IOpenRouterChatModelGroup = IProviderChatModelGroup;
+export type IOpenRouterChatModelsResult = IProviderChatModelsResult;
 
 export interface IProps {
   id: string;
   socialModuleProfileId: string;
   socialModuleChatId: string;
+  socialModuleThreadId?: string;
   host?: string;
   tag?: string;
   revalidate?: number;
@@ -66,6 +36,7 @@ export async function action(props: IProps): Promise<IResult> {
     id,
     socialModuleProfileId,
     socialModuleChatId,
+    socialModuleThreadId,
     options,
     host = serverHost,
   } = props;
@@ -77,10 +48,13 @@ export async function action(props: IProps): Promise<IResult> {
       ...options?.next,
     },
   };
-  const res = await fetch(
+  const url = new URL(
     `${host}${route}/${id}/social-module/profiles/${socialModuleProfileId}/chats/${socialModuleChatId}/openrouter/models`,
-    requestOptions,
   );
+  if (socialModuleThreadId) {
+    url.searchParams.set("threadId", socialModuleThreadId);
+  }
+  const res = await fetch(url.toString(), requestOptions);
   const json = await responsePipe<{ data: IResult }>({
     res,
   });

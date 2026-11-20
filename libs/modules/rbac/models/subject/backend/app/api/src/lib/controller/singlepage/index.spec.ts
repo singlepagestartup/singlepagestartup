@@ -8,7 +8,7 @@
 
 import { OPEN_ROUTER_ASSISTANT_MODEL } from "@sps/shared-utils";
 
-const mockOpenRouterGetModels = jest.fn();
+const mockChatModels = jest.fn();
 const mockSubjectsToSocialModuleProfilesFind = jest.fn();
 const mockSocialModuleProfileFindById = jest.fn();
 
@@ -24,19 +24,6 @@ jest.mock("@sps/shared-utils", () => {
     ...actual,
     RBAC_JWT_SECRET: "test-jwt-secret",
     RBAC_SECRET_KEY: "test-rbac-secret-key",
-  };
-});
-
-jest.mock("@sps/shared-third-parties", () => {
-  const actual = jest.requireActual("@sps/shared-third-parties");
-
-  return {
-    ...actual,
-    OpenRouter: jest.fn(() => {
-      return {
-        getModels: mockOpenRouterGetModels,
-      };
-    }),
   };
 });
 
@@ -59,6 +46,7 @@ jest.mock("@sps/social/models/profile/sdk/server", () => ({
 import { signJwt } from "@sps/backend-utils";
 import { DefaultApp } from "@sps/shared-backend-api";
 import { Controller } from ".";
+import { Handler as ModelFavorites } from "./social-module/profile/find-by-id/chat/find-by-id/openrouter/model-favorites";
 
 const catalogPath =
   "/subject-owner/social-module/profiles/profile-owned/chats/chat-1/openrouter/models";
@@ -91,7 +79,10 @@ async function createHeaders(subjectId?: string) {
 }
 
 async function requestCatalog(subjectId?: string) {
-  return createApp().request(catalogPath, {
+  return createApp({
+    providerConnections: { chatModels: mockChatModels },
+    customerWork: { assertChatAccess: jest.fn().mockResolvedValue(undefined) },
+  }).request(catalogPath, {
     headers: await createHeaders(subjectId),
   });
 }
@@ -99,21 +90,42 @@ async function requestCatalog(subjectId?: string) {
 describe("Given: the OpenRouter model catalog route of a chat", () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    mockOpenRouterGetModels.mockResolvedValue([
-      {
-        id: OPEN_ROUTER_ASSISTANT_MODEL.id,
-        name: "GPT Basic",
-        description: "",
-        architecture: {
-          input_modalities: ["text"],
-          output_modalities: ["text"],
-        },
-      },
-    ]);
+    mockChatModels.mockResolvedValue({
+      groups: [
+        { id: "text", models: [{ id: OPEN_ROUTER_ASSISTANT_MODEL.id }] },
+      ],
+    });
     mockSubjectsToSocialModuleProfilesFind.mockResolvedValue([
       { id: "subject-owner-profile", subjectId: "subject-owner" },
     ]);
     mockSocialModuleProfileFindById.mockResolvedValue({ id: "profile-owned" });
+  });
+
+  it("allows a customer to update their favorites with read access to the order chat", async () => {
+    const assertChatAccess = jest.fn().mockResolvedValue(undefined);
+    const save = jest
+      .spyOn(ModelFavorites.prototype, "execute")
+      .mockImplementation(async (context) =>
+        context.json({ data: { favoriteModelIds: [] } }),
+      );
+
+    try {
+      const response = await createApp({
+        customerWork: { assertChatAccess },
+      }).request(catalogPath.replace("/models", "/model-favorites"), {
+        method: "PATCH",
+        headers: await createHeaders("subject-owner"),
+      });
+      expect(response.status).toBe(200);
+      expect(assertChatAccess).toHaveBeenCalledWith({
+        subjectId: "subject-owner",
+        chatId: "chat-1",
+        edit: false,
+      });
+      expect(save).toHaveBeenCalledTimes(1);
+    } finally {
+      save.mockRestore();
+    }
   });
 
   /**
@@ -126,7 +138,7 @@ describe("Given: the OpenRouter model catalog route of a chat", () => {
     const response = await requestCatalog();
 
     expect(response.status).toBe(400);
-    expect(mockOpenRouterGetModels).not.toHaveBeenCalled();
+    expect(mockChatModels).not.toHaveBeenCalled();
   });
 
   /**
@@ -139,7 +151,7 @@ describe("Given: the OpenRouter model catalog route of a chat", () => {
     const response = await requestCatalog("subject-other");
 
     expect(response.status).toBe(401);
-    expect(mockOpenRouterGetModels).not.toHaveBeenCalled();
+    expect(mockChatModels).not.toHaveBeenCalled();
   });
 
   /**
@@ -154,7 +166,7 @@ describe("Given: the OpenRouter model catalog route of a chat", () => {
     const response = await requestCatalog("subject-owner");
 
     expect(response.status).toBe(404);
-    expect(mockOpenRouterGetModels).not.toHaveBeenCalled();
+    expect(mockChatModels).not.toHaveBeenCalled();
   });
 
   /**
@@ -165,10 +177,16 @@ describe("Given: the OpenRouter model catalog route of a chat", () => {
    */
   it("When: the owner asks through an owned profile Then: returns the catalog", async () => {
     const response = await requestCatalog("subject-owner");
+    if (!response.ok)
+      throw new Error(
+        `Catalog returned ${response.status} ${await response.text()}`,
+      );
     const body = await response.json();
-
-    expect(response.status).toBe(200);
-    expect(mockOpenRouterGetModels).toHaveBeenCalledTimes(1);
+    expect(mockChatModels).toHaveBeenCalledWith(
+      "subject-owner",
+      "profile-owned",
+      "chat-1",
+    );
     expect(body.data.groups[0].models).toEqual([
       expect.objectContaining({ id: OPEN_ROUTER_ASSISTANT_MODEL.id }),
     ]);

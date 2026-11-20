@@ -77,6 +77,19 @@ export function action(props: IProps) {
         appendToListQueries(queryClient, messagesRoute, data);
       else await queryClient.invalidateQueries({ queryKey: [messagesRoute] });
 
+      if (data?.variant === "customer-work") {
+        const threadsRoute = `${route}/${props.id}/social-module/chats/${props.socialModuleChatId}/threads`;
+        queryClient.setQueriesData<
+          IParentResult["ISocialModuleChatFindByIdThreadFindResult"]
+        >({ queryKey: [threadsRoute] }, (threads) =>
+          threads?.map((thread) =>
+            thread.id === props.socialModuleThreadId && !thread.hasCustomerWork
+              ? { ...thread, hasCustomerWork: true }
+              : thread,
+          ),
+        );
+      }
+
       globalActionsStore.getState().addAction({
         type: "mutation",
         name: `${route}/${props.id}/social-module/profiles/${props.socialModuleProfileId}/chats/${props.socialModuleChatId}/threads/${props.socialModuleThreadId}/messages`,

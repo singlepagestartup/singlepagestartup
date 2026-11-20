@@ -118,7 +118,7 @@ describe("Given: OpenRouter model favorites", () => {
             favoriteModelIds: [
               "openai/gpt-5.2",
               "auto",
-              "openai/gpt-5.2",
+              "gpt-5.2",
               "",
               null,
               "anthropic/claude-sonnet-4.6",
@@ -155,7 +155,7 @@ describe("Given: OpenRouter model favorites", () => {
     const handler = new Handler(service as any, createKvProvider());
     mockKvGet.mockResolvedValue(
       JSON.stringify({
-        favoriteModelIds: ["openai/gpt-5.2"],
+        favoriteModelIds: ["gpt-5.2"],
       }),
     );
 

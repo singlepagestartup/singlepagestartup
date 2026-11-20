@@ -33,11 +33,6 @@ import { Component as MeIdentityChangeEmail } from "./me/identity/change-email";
 import { Component as MeSocialModuleProfileIdAvatarUpdateAiChat } from "./me/social-module/profile/id/avatar-update-ai-chat";
 import { Component as MeSocialModuleProfileIdUpdateAiChat } from "./me/social-module/profile/id/update-ai-chat";
 import { Component as MeSocialModuleProfileIdNavigationAiChat } from "./me/social-module/profile/id/navigation-ai-chat";
-import { Component as MeSocialModuleProfileIdChatIdThreadIdDownloadAiChat } from "./me/social-module/profile/id/chat/id/thread/id/download-ai-chat";
-import { Component as MeSocialModuleProfileIdChatIdThreadIdKnowledgeModuleSourceListDocumentAiChat } from "./me/social-module/profile/id/chat/id/thread/id/knowledge-module/source/list/document-ai-chat";
-import { Component as MeSocialModuleProfileIdChatIdThreadIdKnowledgeModuleSourceIdUpdateAiChat } from "./me/social-module/profile/id/chat/id/thread/id/knowledge-module/source/id/update-ai-chat";
-import { Component as MeSocialModuleProfileIdChatIdThreadIdMessageCreateAiChat } from "./me/social-module/profile/id/chat/id/thread/id/message-create-ai-chat";
-import { Component as MeSocialModuleProfileIdChatIdThreadIdMessageListAiChat } from "./me/social-module/profile/id/chat/id/thread/id/message-list-ai-chat";
 import { Component as MeSocialModuleProfileListAiChat } from "./me/social-module/profile/list/ai-chat";
 import { Component as MeCrmModuleFormSupportAiChat } from "./me/crm-module/form/support-ai-chat";
 import { Component as MeEcommerceModuleOrderListAiChat } from "./me/ecommerce-module/order/list/ai-chat";
@@ -45,7 +40,6 @@ import { Component as MeAccountAiChat } from "./me/account-ai-chat";
 import { Component as MeProfileSettingsAiChat } from "./me/profile/settings-ai-chat";
 import { Component as MeSocialModuleProfileIdChatIdThreadCreateAiChat } from "./me/social-module/profile/id/chat/id/thread/create-ai-chat";
 import { Component as MeSocialModuleProfileIdSettingsAiChat } from "./me/social-module/profile/id/settings-ai-chat";
-import { Component as MeSocialModuleProfileIdChatIdThreadIdAiChat } from "./me/social-module/profile/id/chat/id/thread/id/ai-chat";
 import { Component as MeSocialModuleProfileCreateAiChat } from "./me/social-module/profile/create-ai-chat";
 import { Component as EcommerceModuleOrderCheckoutDefault } from "./ecommerce-module/order/checkout-default";
 import { Component as EcommerceModuleOrderListCheckoutDefault } from "./ecommerce-module/order/list/checkout-default";
@@ -151,16 +145,6 @@ export const variants = {
     MeSocialModuleProfileIdUpdateAiChat,
   "me-social-module-profile-id-navigation-ai-chat":
     MeSocialModuleProfileIdNavigationAiChat,
-  "me-social-module-profile-id-chat-id-thread-id-download-ai-chat":
-    MeSocialModuleProfileIdChatIdThreadIdDownloadAiChat,
-  "me-social-module-profile-id-chat-id-thread-id-knowledge-module-source-list-document-ai-chat":
-    MeSocialModuleProfileIdChatIdThreadIdKnowledgeModuleSourceListDocumentAiChat,
-  "me-social-module-profile-id-chat-id-thread-id-knowledge-module-source-id-update-ai-chat":
-    MeSocialModuleProfileIdChatIdThreadIdKnowledgeModuleSourceIdUpdateAiChat,
-  "me-social-module-profile-id-chat-id-thread-id-message-create-ai-chat":
-    MeSocialModuleProfileIdChatIdThreadIdMessageCreateAiChat,
-  "me-social-module-profile-id-chat-id-thread-id-message-list-ai-chat":
-    MeSocialModuleProfileIdChatIdThreadIdMessageListAiChat,
   "me-social-module-profile-list-ai-chat": MeSocialModuleProfileListAiChat,
   "me-crm-module-form-support-ai-chat": MeCrmModuleFormSupportAiChat,
   "me-ecommerce-module-order-list-ai-chat": MeEcommerceModuleOrderListAiChat,
@@ -170,8 +154,6 @@ export const variants = {
     MeSocialModuleProfileIdChatIdThreadCreateAiChat,
   "me-social-module-profile-id-settings-ai-chat":
     MeSocialModuleProfileIdSettingsAiChat,
-  "me-social-module-profile-id-chat-id-thread-id-ai-chat":
-    MeSocialModuleProfileIdChatIdThreadIdAiChat,
   "me-social-module-profile-create-ai-chat": MeSocialModuleProfileCreateAiChat,
   "ecommerce-module-order-checkout-default":
     EcommerceModuleOrderCheckoutDefault,

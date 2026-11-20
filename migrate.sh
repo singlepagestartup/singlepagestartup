@@ -11,15 +11,16 @@ npx nx run @sps/file-storage:repository-migrate
 npx nx run @sps/broadcast:repository-migrate
 npx nx run @sps/website-builder:repository-migrate
 npx nx run @sps/notification:repository-migrate
-npx nx run @sps/crm:repository-migrate
 npx nx run @sps/billing:repository-migrate
 npx nx run @sps/ecommerce:repository-migrate
+npx nx run @sps/crm:repository-migrate
 npx nx run @sps/knowledge:repository-migrate
 npx nx run @sps/rbac:repository-natural-key-repair-apply
 npx nx run @sps/blog:repository-migrate
 npx nx run @sps/startup:repository-migrate
 npx nx run @sps/social:repository-migrate
 npx nx run @sps/rbac:repository-migrate
+bun --env-file=apps/api/.env libs/modules/rbac/backend/repository/database/src/lib/retire-chat-tariff.ts
 npx nx run @sps/host:repository-migrate
 npx nx run @sps/agent:repository-migrate
 npx nx run @sps/analytic:repository-migrate

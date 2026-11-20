@@ -9,13 +9,8 @@
     "jest:test": {},
     "jest:integration": {
       "executor": "nx:run-commands",
-      "outputs": [
-        "{projectRoot}/coverage"
-      ],
-      "inputs": [
-        "{projectRoot}/**/*",
-        "^default"
-      ],
+      "outputs": ["{projectRoot}/coverage"],
+      "inputs": ["{projectRoot}/**/*", "^default"],
       "options": {
         "command": "node --experimental-vm-modules node_modules/jest/bin/jest.js --config ./libs/modules/file-storage/jest.integration.config.ts --passWithNoTests",
         "cwd": ".",
@@ -66,6 +61,9 @@
           },
           {
             "command": "nx run @sps/file-storage:models:widget:repository-generate"
+          },
+          {
+            "command": "nx run @sps/file-storage:models:private-file:repository-generate"
           }
         ]
       }
@@ -93,6 +91,9 @@
           },
           {
             "command": "nx run @sps/file-storage:models:widget:repository-migrate"
+          },
+          {
+            "command": "nx run @sps/file-storage:models:private-file:repository-migrate"
           }
         ]
       }
@@ -192,6 +193,36 @@
         "parallel": false,
         "envFile": "apps/api/.env",
         "cwd": "libs/modules/file-storage/relations/widgets-to-files/backend/repository/database",
+        "commands": [
+          {
+            "command": "bun run ./src/lib/migrate.ts"
+          }
+        ]
+      }
+    },
+    "models:private-file:repository-generate": {
+      "executor": "nx:run-commands",
+      "cache": false,
+      "options": {
+        "parallel": false,
+        "cwd": "libs/modules/file-storage/models/private-file/backend/repository/database",
+        "commands": [
+          {
+            "command": "drizzle-kit up --config=./src/lib/config.ts"
+          },
+          {
+            "command": "drizzle-kit generate --config=./src/lib/config.ts"
+          }
+        ]
+      }
+    },
+    "models:private-file:repository-migrate": {
+      "executor": "nx:run-commands",
+      "cache": false,
+      "options": {
+        "parallel": false,
+        "envFile": "apps/api/.env",
+        "cwd": "libs/modules/file-storage/models/private-file/backend/repository/database",
         "commands": [
           {
             "command": "bun run ./src/lib/migrate.ts"

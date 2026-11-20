@@ -89,21 +89,21 @@ function ThreadId({
           {messageCreate}
         </div>
         <div
-          className={`${pane === "document" ? "block" : "hidden"} min-h-0 min-w-0 overflow-y-auto border-border @[800px]/chat:block @[800px]/chat:border-l`}
+          className={`${pane === "document" ? "block" : "hidden"} min-h-0 min-w-0 overflow-y-auto border-border bg-muted p-4 @[800px]/chat:block @[800px]/chat:border-l`}
         >
           <section
             aria-label={`${thread.title} — редактор`}
             data-thread-id={thread.id}
-            className="min-w-0 bg-muted p-4"
+            className="min-w-0 rounded-xl border border-border bg-card"
           >
-            <div className="mb-4 flex items-center justify-between gap-2">
-              <h3 className="inline-flex items-center gap-2 text-sm font-semibold">
+            <header className="flex items-center justify-between gap-2 border-b border-border px-3 py-2">
+              <h3 className="inline-flex min-w-0 items-center gap-2 break-words text-sm font-semibold">
                 <SharedIcon variant="phosphor" name="file-text" />
-                {thread.title}
+                <span className="min-w-0">{thread.title}</span>
               </h3>
               {documentDownload}
-            </div>
-            <div className="grid gap-4">{knowledge}</div>
+            </header>
+            <div className="grid gap-4 p-3">{knowledge}</div>
           </section>
         </div>
       </div>

@@ -136,16 +136,21 @@ export class Service extends CRUDService<Source> {
       },
     });
   }
+  specificationSnapshots(ids: string[]) {
+    return this.owner().specificationSnapshots(ids);
+  }
   listSourcesForIndex(props?: { sourceId?: string; limit?: number }) {
     return this.find({
       params: {
-        ...(props?.sourceId
-          ? {
-              filters: {
-                and: [{ column: "id", method: "eq", value: props.sourceId }],
-              },
-            }
-          : { limit: props?.limit }),
+        filters: {
+          and: [
+            { column: "variant", method: "ne", value: "customer-memory" },
+            ...(props?.sourceId
+              ? [{ column: "id", method: "eq" as const, value: props.sourceId }]
+              : []),
+          ],
+        },
+        limit: props?.limit,
       },
     });
   }
@@ -623,12 +628,37 @@ export class Service extends CRUDService<Source> {
   freshHeaders(ids: string[]) {
     return this.owner().freshHeaders(ids);
   }
+  async hasEmbeddingIndex(sourceIds: string[], embeddingIndex: string) {
+    if (!sourceIds.length) {
+      return false;
+    }
+    const headers = await this.freshHeaders(sourceIds);
+    const links = await this.module.sourcesToChunks.forSources(
+      headers.map((source) => source.id),
+    );
+    return this.module.chunk.hasEmbeddingIndex(
+      links.map((link) => link.chunkId),
+      embeddingIndex,
+    );
+  }
+
   async searchChunks(props: {
     embedding: number[];
     topK: number;
     minSimilarity?: number;
     sourceIds?: string[];
+    embeddingIndex?: string;
   }): Promise<KnowledgeSearchResult[]> {
+    if (
+      props.embeddingIndex &&
+      (!props.sourceIds ||
+        props.embedding.length !== 768 ||
+        props.embedding.some((value) => !Number.isFinite(value)))
+    ) {
+      throw new Error(
+        "Validation error. A scoped query requires the index dimensions and source IDs",
+      );
+    }
     if (props.sourceIds && !props.sourceIds.length) {
       return [];
     }

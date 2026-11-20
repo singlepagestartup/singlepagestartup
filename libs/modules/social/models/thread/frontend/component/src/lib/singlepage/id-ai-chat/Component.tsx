@@ -12,9 +12,7 @@ export function Component(props: IComponentPropsExtended) {
       children={props.children}
       messages={props.messages}
       composer={props.composer}
-      isDocument={props.isDocument}
-      knowledge={props.knowledge}
-      documentDownload={props.documentDownload}
+      context={props.context}
       navigation={props.navigation}
     />
   );

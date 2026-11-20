@@ -1049,8 +1049,12 @@ paths:
               properties:
                 data:
                   type: string
-                  description: JSON string
-                  example: '{"email": "user@example.com", "provider": "stripe", "ecommerceModule": {"orders": [{"id": "24de3713-5ad4-45f3-82e2-bcc631b9cd93"}]}}'
+                  description: >-
+                    Serialized JSON with email, provider and ecommerceModule.orders.
+                    An order can include lineIds with all its primary line IDs.
+                    If any order specifies lineIds, every selected order must include them.
+                    The checkout includes each selected order's attached services.
+                  example: '{"email": "user@example.com", "provider": "stripe", "ecommerceModule": {"orders": [{"id": "24de3713-5ad4-45f3-82e2-bcc631b9cd93", "lineIds": ["24de3713-5ad4-45f3-82e2-bcc631b9cd94"]}]}}'
               required:
                 - data
       responses:
@@ -1508,6 +1512,65 @@ paths:
             application/json:
               schema:
                 $ref: "../../../../../../../../../libs/modules/social/models/thread/sdk/model/src/lib/social-thread.yaml"
+
+  /rbac/subjects/{id}/social-module/chats/{socialModuleChatId}/threads/{socialModuleThreadId}/read:
+    post:
+      tags:
+        - "rbac-subject"
+      summary: Mark thread messages read
+      description: Advance the acting Subject's read position through the supplied message
+      parameters:
+        - $ref: "../../../../../../../../../libs/shared/backend/api/src/lib/query-builder/id.yaml"
+        - name: socialModuleChatId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: socialModuleThreadId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                data:
+                  type: string
+                  description: JSON object containing messageId
+              required:
+                - data
+      responses:
+        "200":
+          description: Remaining unread counts for the thread and chat
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      threadId:
+                        type: string
+                        format: uuid
+                      unreadCount:
+                        type: integer
+                        minimum: 0
+                      chatUnreadCount:
+                        type: integer
+                        minimum: 0
+                    required:
+                      - threadId
+                      - unreadCount
+                      - chatUnreadCount
+                required:
+                  - data
 
   /rbac/subjects/{id}/social-module/chats:
     post:
@@ -2214,3 +2277,255 @@ paths:
             application/json:
               schema:
                 $ref: "../../../../../../../../../libs/modules/billing/models/payment-intent/sdk/model/src/lib/billing-payment-intent.yaml"
+  /rbac/subjects/{id}/stores/{storeId}/provider-connections:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+      - { name: storeId, in: path, required: true, schema: { type: string, format: uuid } }
+    get:
+      tags: [rbac-subject]
+      summary: Read a store owner's connections, assistants and wallet receipts
+      parameters:
+        - { name: before, in: query, required: false, schema: { type: string, format: uuid }, description: Return receipts older than the last ID on the previous page }
+      responses:
+        "200": { description: Private owner-scoped metadata and charges }
+        "403": { description: Store ownership required }
+    post:
+      tags: [rbac-subject]
+      summary: Configure a provider connection or resolve an unknown external charge
+      description: The authenticated store owner supplies the command in data. New credentials are write-only.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [data]
+              properties:
+                data:
+                  type: object
+                  required: [operation, storeId]
+                  properties:
+                    operation: { type: string, enum: [connect, rotate, revoke, assign, assign-default, fund, reconcile] }
+                    storeId: { type: string, format: uuid }
+                    secret: { type: string, writeOnly: true }
+      responses:
+        "200": { description: ID of the affected record }
+        "409": { description: Stale version or incompatible financial state }
+  /rbac/subjects/{id}/stores/{storeId}/customer-work:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+      - { name: storeId, in: path, required: true, schema: { type: string, format: uuid } }
+    get:
+      tags: [rbac-subject]
+      summary: Read the buyer's scoped task or available workflows for an offer
+      responses:
+        "200": { description: Customer work view or offer availability }
+    post:
+      tags: [rbac-subject]
+      summary: Start a conversation, send a message or update task consent and customer memory
+      description: The open-cart-discussion operation attaches a task and thread to an existing order using orderId, productId, offerId, storeId and operationKey.
+      responses:
+        "200": { description: Updated task and thread }
+        "409": { description: Operation key conflicts with an earlier request }
+  /rbac/subjects/{id}/customer-work/threads/{threadId}:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+      - { name: threadId, in: path, required: true, schema: { type: string, format: uuid } }
+    get:
+      tags: [rbac-subject]
+      summary: Read the task conversation available to the signed-in buyer
+      responses:
+        "200": { description: "Task, published funnel and current stage names, and current assignment" }
+  /rbac/subjects/{id}/customer-work/threads/{threadId}/messages/{messageId}/attachments/{attachmentId}:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+      - { name: threadId, in: path, required: true, schema: { type: string, format: uuid } }
+      - { name: messageId, in: path, required: true, schema: { type: string, format: uuid } }
+      - { name: attachmentId, in: path, required: true, schema: { type: string, format: uuid } }
+    get:
+      tags: [rbac-subject]
+      summary: Download a private attachment from the buyer's thread
+      responses:
+        "200":
+          description: Opaque attachment
+          content:
+            application/octet-stream:
+              schema: { type: string, format: binary }
+        "404": { description: Attachment is outside the requested buyer or message scope }
+    head:
+      tags: [rbac-subject]
+      summary: Read the private attachment download headers
+      responses:
+        "200": { description: Attachment headers }
+        "404": { description: Attachment is outside the requested buyer or message scope }
+  /rbac/subjects/{id}/crm-module/workspace/stores:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+    get:
+      tags: [rbac-subject]
+      summary: List stores managed by the signed-in subject
+      responses:
+        "200": { description: Scoped result }
+        "401": { description: A signed-in subject is required }
+  /rbac/subjects/{id}/crm-module/workspace/options:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+      - { name: storeId, in: query, required: true, schema: { type: string, format: uuid } }
+    get:
+      tags: [rbac-subject]
+      summary: List participants and currencies for the store
+      responses:
+        "200": { description: Scoped result }
+        "401": { description: A signed-in subject is required }
+  /rbac/subjects/{id}/crm-module/workspace/funnels:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+      - { name: storeId, in: query, required: true, schema: { type: string, format: uuid } }
+      - { name: limit, in: query, required: false, schema: { type: integer, minimum: 1, maximum: 100 } }
+      - { name: cursor, in: query, required: false, schema: { type: string } }
+    get:
+      tags: [rbac-subject]
+      summary: List store funnels
+      responses:
+        "200": { description: Scoped result }
+        "401": { description: A signed-in subject is required }
+  /rbac/subjects/{id}/crm-module/workspace/publications:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+      - { name: storeId, in: query, required: true, schema: { type: string, format: uuid } }
+      - { name: funnelId, in: query, required: true, schema: { type: string, format: uuid } }
+      - { name: limit, in: query, required: false, schema: { type: integer, minimum: 1, maximum: 100 } }
+      - { name: cursor, in: query, required: false, schema: { type: string } }
+    get:
+      tags: [rbac-subject]
+      summary: Read published versions of a funnel
+      responses:
+        "200": { description: Scoped result }
+        "401": { description: A signed-in subject is required }
+  /rbac/subjects/{id}/crm-module/workspace/tasks:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+      - { name: storeId, in: query, required: true, schema: { type: string, format: uuid } }
+      - { name: limit, in: query, required: false, schema: { type: integer, minimum: 1, maximum: 100 } }
+      - { name: cursor, in: query, required: false, schema: { type: string } }
+      - { name: status, in: query, required: false, schema: { type: string, enum: [active, waiting, closed] } }
+      - { name: stageId, in: query, required: false, schema: { type: string } }
+      - { name: search, in: query, required: false, schema: { type: string } }
+    get:
+      tags: [rbac-subject]
+      summary: Filter the task list used by the board and table
+      responses:
+        "200": { description: Scoped result }
+        "401": { description: A signed-in subject is required }
+  /rbac/subjects/{id}/crm-module/workspace/detail:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+      - { name: storeId, in: query, required: true, schema: { type: string, format: uuid } }
+      - { name: taskId, in: query, required: true, schema: { type: string, format: uuid } }
+      - { name: limit, in: query, required: false, schema: { type: integer, minimum: 1, maximum: 100 } }
+      - { name: cursor, in: query, required: false, schema: { type: string } }
+    get:
+      tags: [rbac-subject]
+      summary: Read the task and its event history
+      responses:
+        "200": { description: Scoped result }
+        "401": { description: A signed-in subject is required }
+  /rbac/subjects/{id}/crm-module/workspace/command:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+    post:
+      tags: [rbac-subject]
+      summary: Publish a funnel or update a task as its authorized manager
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [data]
+              properties:
+                data:
+                  type: object
+                  required: [kind]
+                  properties:
+                    kind: { type: string, enum: [save, publish, transition, assign, fulfill] }
+      responses:
+        "200": { description: Scoped result }
+        "401": { description: A signed-in subject is required }
+        "409": { description: The resource changed or the requested action conflicts with its current state }
+  /rbac/subjects/{id}/ecommerce-module/orders/{orderId}/work:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+      - { name: orderId, in: path, required: true, schema: { type: string, format: uuid } }
+    get:
+      tags: [rbac-subject]
+      summary: Read the buyer's order task and available artifacts
+      parameters:
+        - { name: storeId, in: query, required: true, schema: { type: string, format: uuid } }
+        - { name: taskId, in: query, required: true, schema: { type: string, format: uuid } }
+      responses:
+        "200": { description: Scoped result }
+        "401": { description: A signed-in subject is required }
+    post:
+      tags: [rbac-subject]
+      summary: Accept a result version or request a revision
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [operation, storeId, taskId, resultVersionId, operationKey]
+              properties:
+                storeId: { type: string, format: uuid }
+                taskId: { type: string, format: uuid }
+                operationKey: { type: string }
+                operation: { type: string, enum: [accept, decline] }
+                resultVersionId: { type: string, format: uuid }
+                reason: { type: string, description: Required when declining a version }
+      responses:
+        "200": { description: Scoped result }
+        "401": { description: A signed-in subject is required }
+        "409": { description: The resource changed or the requested action conflicts with its current state }
+  /rbac/subjects/{id}/ecommerce-module/orders/{orderId}/work/fulfillment:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+      - { name: orderId, in: path, required: true, schema: { type: string, format: uuid } }
+    post:
+      tags: [rbac-subject]
+      summary: Record preparation or shipping evidence for the assigned physical order
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [storeId, taskId, operationKey, stage]
+              properties:
+                storeId: { type: string, format: uuid }
+                taskId: { type: string, format: uuid }
+                operationKey: { type: string }
+                stage: { type: string, enum: [preparing, in-transit, delivered] }
+                trackingNumber: { type: string }
+                carrierEvidenceId: { type: string }
+      responses:
+        "200": { description: Scoped result }
+        "401": { description: A signed-in subject is required }
+        "409": { description: The resource changed or the requested action conflicts with its current state }
+  /rbac/subjects/{id}/ecommerce-module/orders/{orderId}/work/artifacts/{artifactId}:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+      - { name: orderId, in: path, required: true, schema: { type: string, format: uuid } }
+      - { name: artifactId, in: path, required: true, schema: { type: string, format: uuid } }
+    get:
+      tags: [rbac-subject]
+      summary: Download an authorized preview, original or receipt
+      responses:
+        "200": { description: Private file bytes with no-store caching }
+        "401": { description: A signed-in subject is required }
+    head:
+      tags: [rbac-subject]
+      summary: Read metadata for an authorized order artifact
+      responses:
+        "200": { description: File headers with private no-store caching }
+        "401": { description: A signed-in subject is required }

@@ -12,6 +12,10 @@ import { eq } from "drizzle-orm";
 @injectable()
 @injectFromBase()
 export class Repository extends DatabaseRepository<typeof Table> {
+  withArchiveSavepoint<T>(operation: () => Promise<T>): Promise<T> {
+    return this.db.transaction((tx) => withConsistencyDatabase(tx, operation));
+  }
+
   withLifecycleLock<T>(
     id: string,
     operation: () => Promise<T>,

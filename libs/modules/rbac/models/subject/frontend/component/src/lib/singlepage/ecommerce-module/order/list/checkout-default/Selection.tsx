@@ -25,6 +25,8 @@ import type { ISelectionProps } from "./interface";
 import { DeliveryAddress } from "./DeliveryAddress";
 import { ServiceCard, ServiceOptions } from "./ServiceCard";
 import { QuantityInput } from "./QuantityInput";
+import { Quantity } from "./Quantity";
+import { hasSingleUnitLimit } from "./utils";
 
 interface ITransferredService {
   offerId: string;
@@ -139,6 +141,13 @@ export function Selection(props: ISelectionProps) {
   const selectionMutation = api.ecommerceModuleOrderSelection({});
   const previewMutation = api.ecommerceModuleOrderSelection({});
   const [previewRetry, setPreviewRetry] = useState(0);
+  const [quotedSingleUnit, setQuotedSingleUnit] = useState(false);
+  const knownSingleUnit = hasSingleUnitLimit(
+    props.details,
+    props.line,
+    props.ecommerceModuleProduct,
+  );
+  const restrictedQuantity = knownSingleUnit || quotedSingleUnit;
   const queries = useQueryClient();
   const choices = (props.details.offers ?? []).filter(
     (offer) =>
@@ -148,7 +157,7 @@ export function Selection(props: ISelectionProps) {
       (props.line.product?.kind !== "service" ||
         offer.settings?.standalone === true),
   );
-  const quantity = Number(draft.quantity);
+  const quantity = restrictedQuantity ? 1 : Number(draft.quantity);
   const validDiscoveryQuantity =
     Number.isSafeInteger(quantity) &&
     quantity > 0 &&
@@ -163,7 +172,7 @@ export function Selection(props: ISelectionProps) {
   );
   const discoverySelection: IEcommerceCartSelection = {
     offerId: draft.offerId,
-    quantity: discoveryQuantity,
+    quantity: restrictedQuantity ? 1 : discoveryQuantity,
     currencyId: draft.currencyId,
     destination: discoveryShipping
       ? {
@@ -188,7 +197,10 @@ export function Selection(props: ISelectionProps) {
   const discoverySignature = JSON.stringify(discoverySelection);
   const publicDiscovery = offerApi.quote({
     data: discoverySelection,
-    reactQueryOptions: { enabled: discoveryEnabled && !renewal },
+    reactQueryOptions: {
+      enabled: discoveryEnabled && !renewal,
+      refetchOnMount: "always",
+    },
   });
   useEffect(() => {
     if (!renewal || !discoveryEnabled) return;
@@ -227,6 +239,15 @@ export function Selection(props: ISelectionProps) {
         refetch: () => setPreviewRetry((value) => value + 1),
       }
     : publicDiscovery;
+  const newlyQuotedSingleUnit =
+    discovery.data?.productId === props.line.productId &&
+    discovery.data?.singleUnitPerOrder === true;
+  const singleUnitPerOrder = restrictedQuantity || newlyQuotedSingleUnit;
+  const needsQuantityRepair = singleUnitPerOrder && props.line.quantity !== 1;
+  useLayoutEffect(() => {
+    if (newlyQuotedSingleUnit) setQuotedSingleUnit(true);
+    if (needsQuantityRepair) reportBlocked(true);
+  }, [newlyQuotedSingleUnit, needsQuantityRepair]);
   const available =
     discovery.data?.offerId === draft.offerId
       ? discovery.data
@@ -288,8 +309,9 @@ export function Selection(props: ISelectionProps) {
   }
 
   function canPersist(next: IDraft) {
-    const count = Number(next.quantity);
+    const count = singleUnitPerOrder ? 1 : Number(next.quantity);
     if (
+      needsQuantityRepair ||
       !next.offerId ||
       !next.currencyId ||
       !Number.isSafeInteger(count) ||
@@ -361,7 +383,8 @@ export function Selection(props: ISelectionProps) {
             selected.serviceKey && option.serviceKey === selected.serviceKey,
           ),
       );
-      if (exact) matched[exact.offerId] = selected.quantity;
+      if (exact)
+        matched[exact.offerId] = singleUnitPerOrder ? "1" : selected.quantity;
     }
     setDraft((current) =>
       current.transfer === draft.transfer
@@ -566,6 +589,8 @@ export function Selection(props: ISelectionProps) {
     );
   const validInput =
     Boolean(draft.offerId && draft.currencyId && available) &&
+    !needsQuantityRepair &&
+    (!singleUnitPerOrder || quantity === 1) &&
     validQuantities &&
     !draft.transfer &&
     Object.keys(draft.services).every((id) =>
@@ -842,6 +867,7 @@ export function Selection(props: ISelectionProps) {
     receipt?.applied,
   ]);
   const receiptReady =
+    !needsQuantityRepair &&
     !unsaved &&
     !awaitingRefresh &&
     !priceStale &&
@@ -886,22 +912,43 @@ export function Selection(props: ISelectionProps) {
     [options, available],
   );
 
+  const fixedQuantity =
+    singleUnitPerOrder && !knownSingleUnit ? (
+      <Quantity
+        key={props.line.id}
+        subjectId={props.subject.id}
+        orderId={props.ecommerceModuleOrder.id}
+        line={props.line}
+        maxLineQuantity={props.details.maxLineQuantity}
+        language={props.language}
+        singleUnitPerOrder
+        attachedLines={props.details.lines}
+        onPendingChange={props.onSelectionPendingChange}
+      />
+    ) : null;
+
+  if (needsQuantityRepair) return fixedQuantity;
+
   return (
     <fieldset className="@container min-w-0 space-y-3">
       <div className="grid min-w-0 grid-cols-2 items-end gap-x-3 gap-y-2 @[420px]:grid-cols-[minmax(8rem,1fr)_minmax(5rem,1fr)_auto]">
-        <QuantityInput
-          id={`${controlId}-quantity`}
-          label={ru ? "Количество" : "Quantity"}
-          contextLabel={productTitle}
-          decreaseLabel={`${ru ? "Уменьшить количество товара" : "Decrease product quantity"}: ${productTitle}`}
-          increaseLabel={`${ru ? "Увеличить количество товара" : "Increase product quantity"}: ${productTitle}`}
-          min={quantityBounds.min}
-          max={productQuantityMax}
-          value={draft.quantity}
-          onValueChange={(quantity) => {
-            edit((current) => ({ ...current, quantity }), true);
-          }}
-        />
+        {singleUnitPerOrder ? (
+          fixedQuantity
+        ) : (
+          <QuantityInput
+            id={`${controlId}-quantity`}
+            label={ru ? "Количество" : "Quantity"}
+            contextLabel={productTitle}
+            decreaseLabel={`${ru ? "Уменьшить количество товара" : "Decrease product quantity"}: ${productTitle}`}
+            increaseLabel={`${ru ? "Увеличить количество товара" : "Increase product quantity"}: ${productTitle}`}
+            min={quantityBounds.min}
+            max={productQuantityMax}
+            value={draft.quantity}
+            onValueChange={(quantity) => {
+              edit((current) => ({ ...current, quantity }), true);
+            }}
+          />
+        )}
         <div className="grid min-w-0 gap-1 text-xs font-medium">
           <label htmlFor={`${controlId}-currency`}>
             {ru ? "Валюта" : "Currency"}
@@ -1066,7 +1113,7 @@ export function Selection(props: ISelectionProps) {
                         onCheckedChange={changeService}
                       >
                         {option.receiptMethod === "shipping" ||
-                        option.role === "add-on" ? (
+                        (option.role === "add-on" && !singleUnitPerOrder) ? (
                           <div className="space-y-3 px-3 pb-3">
                             {option.receiptMethod === "shipping" ? (
                               <DeliveryAddress
@@ -1086,7 +1133,7 @@ export function Selection(props: ISelectionProps) {
                                 }
                               />
                             ) : null}
-                            {option.role === "add-on" ? (
+                            {option.role === "add-on" && !singleUnitPerOrder ? (
                               <QuantityInput
                                 id={`${serviceId}-quantity`}
                                 label={

@@ -1,4 +1,20 @@
 import {
+  customerWork,
+  customerWorkAvailability,
+  customerWorkForOrder,
+  customerWorkForThread,
+  customerWorkAttachment,
+  changeCustomerWork,
+} from "./ecommerce-module/customer-work";
+import { orderWork } from "./ecommerce-module/order/work";
+import { crmWorkspace } from "./crm-module/workspace";
+import {
+  providerConnections,
+  changeProviderConnection,
+  type IProps as IProviderConnectionsProps,
+  type IChangeProps as IChangeProviderConnectionProps,
+} from "./provider-connections";
+import {
   action as ecommerceModuleOrderPaymentProvider,
   type IProps as IOrderPaymentProviderProps,
   type IResult as IOrderPaymentProviderResult,
@@ -233,11 +249,6 @@ import {
   type IResult as IAuthenticationIsAuthorizedResult,
 } from "./authentication/is-authorized";
 import {
-  action as authenticationBillRoute,
-  type IProps as IAuthenticationBillRouteProps,
-  type IResult as IAuthenticationBillRouteResult,
-} from "./authentication/bill-route";
-import {
   action as authenticationEmailAndPasswordForgotPassword,
   type IProps as IAuthenticationEmailAndPasswordForgotPasswordProps,
   type IResult as IAuthenticationEmailAndPasswordForgotPasswordResult,
@@ -334,11 +345,6 @@ import {
   type IProps as ISocialModuleProfileFindByIdChatFindByIdMessageUpdateProps,
   type IResult as ISocialModuleProfileFindByIdChatFindByIdMessageUpdateResult,
 } from "./social-module/profile/find-by-id/chat/find-by-id/message/update";
-import {
-  action as socialModuleProfileFindByIdChatFindByIdMessageFindByIdReactByOpenrouter,
-  type IProps as ISocialModuleProfileFindByIdChatFindByIdMessageFindByIdReactByOpenrouterProps,
-  type IResult as ISocialModuleProfileFindByIdChatFindByIdMessageFindByIdReactByOpenrouterResult,
-} from "./social-module/profile/find-by-id/chat/find-by-id/message/react-by-openrouter";
 import {
   action as socialModuleProfileFindByIdChatFindByIdOpenrouterModelFind,
   type IProps as ISocialModuleProfileFindByIdChatFindByIdOpenrouterModelFindProps,
@@ -493,6 +499,11 @@ import {
   type IResult as ISocialModuleChatFindByIdThreadUpdateResult,
 } from "./social-module/chat/find-by-id/thread/update";
 import {
+  action as socialModuleChatFindByIdThreadMarkRead,
+  type IProps as ISocialModuleChatFindByIdThreadMarkReadProps,
+  type IResult as ISocialModuleChatFindByIdThreadMarkReadResult,
+} from "./social-module/chat/find-by-id/thread/mark-read";
+import {
   action as socialModuleChatFindByIdThreadDelete,
   type IProps as ISocialModuleChatFindByIdThreadDeleteProps,
   type IResult as ISocialModuleChatFindByIdThreadDeleteResult,
@@ -530,6 +541,8 @@ import {
 } from "./host-cache/revalidate";
 
 export type IProps = {
+  IProviderConnectionsProps: IProviderConnectionsProps;
+  IChangeProviderConnectionProps: IChangeProviderConnectionProps;
   IOrderPaymentProviderProps: IOrderPaymentProviderProps;
   IOrderPaymentCheckProps: IOrderPaymentCheckProps;
   IOrderPaymentWebhookProps: IOrderPaymentWebhookProps;
@@ -587,7 +600,6 @@ export type IProps = {
   IAuthenticationLogoutProps: IAuthenticationLogoutProps;
   IAuthenticationRefreshProps: IAuthenticationRefreshProps;
   IAuthenticationIsAuthorizedProps: IAuthenticationIsAuthorizedProps;
-  IAuthenticationBillRouteProps: IAuthenticationBillRouteProps;
   IAuthenticationOAuthStartProps: IAuthenticationOAuthStartProps;
   IAuthenticationOAuthCallbackProps: IAuthenticationOAuthCallbackProps;
   IAuthenticationOAuthExchangeProps: IAuthenticationOAuthExchangeProps;
@@ -603,7 +615,6 @@ export type IProps = {
   ISocialModuleProfileFindByIdChatFindByIdThreadFindByIdMessageCreateProps: ISocialModuleProfileFindByIdChatFindByIdThreadFindByIdMessageCreateProps;
   ISocialModuleProfileFindByIdChatFindByIdMessageDeleteProps: ISocialModuleProfileFindByIdChatFindByIdMessageDeleteProps;
   ISocialModuleProfileFindByIdChatFindByIdMessageUpdateProps: ISocialModuleProfileFindByIdChatFindByIdMessageUpdateProps;
-  ISocialModuleProfileFindByIdChatFindByIdMessageFindByIdReactByOpenrouterProps: ISocialModuleProfileFindByIdChatFindByIdMessageFindByIdReactByOpenrouterProps;
   ISocialModuleProfileFindByIdChatFindByIdOpenrouterModelFindProps: ISocialModuleProfileFindByIdChatFindByIdOpenrouterModelFindProps;
   ISocialModuleProfileFindByIdChatFindByIdOpenrouterModelFavoriteFindProps: ISocialModuleProfileFindByIdChatFindByIdOpenrouterModelFavoriteFindProps;
   ISocialModuleProfileFindByIdChatFindByIdOpenrouterModelFavoriteUpdateProps: ISocialModuleProfileFindByIdChatFindByIdOpenrouterModelFavoriteUpdateProps;
@@ -636,6 +647,7 @@ export type IProps = {
   ISocialModuleChatFindByIdThreadCreateProps: ISocialModuleChatFindByIdThreadCreateProps;
   ISocialModuleChatFindByIdThreadUpdateProps: ISocialModuleChatFindByIdThreadUpdateProps;
   ISocialModuleChatFindByIdThreadDeleteProps: ISocialModuleChatFindByIdThreadDeleteProps;
+  ISocialModuleChatFindByIdThreadMarkReadProps: ISocialModuleChatFindByIdThreadMarkReadProps;
   ISocialModuleChatFindByIdProfileCreateProps: ISocialModuleChatFindByIdProfileCreateProps;
   ISocialModuleChatFindByIdProfileSearchProps: ISocialModuleChatFindByIdProfileSearchProps;
   ISocialModuleChatFindByIdAgentSubjectSearchProps: ISocialModuleChatFindByIdAgentSubjectSearchProps;
@@ -643,6 +655,8 @@ export type IProps = {
 };
 
 export type IResult = {
+  IProviderConnectionsResult: import("./provider-connections").IResult;
+  IChangeProviderConnectionResult: import("./provider-connections").IChangeResult;
   IOrderPaymentProviderResult: IOrderPaymentProviderResult;
   IOrderPaymentCheckResult: IOrderPaymentCheckResult;
   IOrderPaymentWebhookResult: IOrderPaymentWebhookResult;
@@ -700,7 +714,6 @@ export type IResult = {
   IAuthenticationLogoutResult: IAuthenticationLogoutResult;
   IAuthenticationRefreshResult: IAuthenticationRefreshResult;
   IAuthenticationIsAuthorizedResult: IAuthenticationIsAuthorizedResult;
-  IAuthenticationBillRouteResult: IAuthenticationBillRouteResult;
   IAuthenticationOAuthStartResult: IAuthenticationOAuthStartResult;
   IAuthenticationOAuthCallbackResult: IAuthenticationOAuthCallbackResult;
   IAuthenticationOAuthExchangeResult: IAuthenticationOAuthExchangeResult;
@@ -716,7 +729,6 @@ export type IResult = {
   ISocialModuleProfileFindByIdChatFindByIdThreadFindByIdMessageCreateResult: ISocialModuleProfileFindByIdChatFindByIdThreadFindByIdMessageCreateResult;
   ISocialModuleProfileFindByIdChatFindByIdMessageDeleteResult: ISocialModuleProfileFindByIdChatFindByIdMessageDeleteResult;
   ISocialModuleProfileFindByIdChatFindByIdMessageUpdateResult: ISocialModuleProfileFindByIdChatFindByIdMessageUpdateResult;
-  ISocialModuleProfileFindByIdChatFindByIdMessageFindByIdReactByOpenrouterResult: ISocialModuleProfileFindByIdChatFindByIdMessageFindByIdReactByOpenrouterResult;
   ISocialModuleProfileFindByIdChatFindByIdOpenrouterModelFindResult: ISocialModuleProfileFindByIdChatFindByIdOpenrouterModelFindResult;
   ISocialModuleProfileFindByIdChatFindByIdOpenrouterModelFavoriteFindResult: ISocialModuleProfileFindByIdChatFindByIdOpenrouterModelFavoriteFindResult;
   ISocialModuleProfileFindByIdChatFindByIdOpenrouterModelFavoriteUpdateResult: ISocialModuleProfileFindByIdChatFindByIdOpenrouterModelFavoriteUpdateResult;
@@ -749,6 +761,7 @@ export type IResult = {
   ISocialModuleChatFindByIdThreadCreateResult: ISocialModuleChatFindByIdThreadCreateResult;
   ISocialModuleChatFindByIdThreadUpdateResult: ISocialModuleChatFindByIdThreadUpdateResult;
   ISocialModuleChatFindByIdThreadDeleteResult: ISocialModuleChatFindByIdThreadDeleteResult;
+  ISocialModuleChatFindByIdThreadMarkReadResult: ISocialModuleChatFindByIdThreadMarkReadResult;
   ISocialModuleChatFindByIdProfileCreateResult: ISocialModuleChatFindByIdProfileCreateResult;
   ISocialModuleChatFindByIdProfileSearchResult: ISocialModuleChatFindByIdProfileSearchResult;
   ISocialModuleChatFindByIdAgentSubjectSearchResult: ISocialModuleChatFindByIdAgentSubjectSearchResult;
@@ -756,6 +769,16 @@ export type IResult = {
 };
 
 export const api = {
+  customerWork,
+  customerWorkAvailability,
+  customerWorkForOrder,
+  customerWorkForThread,
+  customerWorkAttachment,
+  changeCustomerWork,
+  orderWork,
+  crmWorkspace,
+  providerConnections,
+  changeProviderConnection,
   ecommerceModuleOrderPaymentProvider,
   ecommerceModuleOrderPaymentCheck,
   ecommerceModuleOrderPaymentWebhook,
@@ -811,7 +834,6 @@ export const api = {
   authenticationLogout,
   authenticationRefresh,
   authenticationIsAuthorized,
-  authenticationBillRoute,
   authenticationOAuthStart,
   authenticationOAuthCallback,
   authenticationOAuthExchange,
@@ -827,7 +849,6 @@ export const api = {
   socialModuleProfileFindByIdChatFindByIdThreadFindByIdMessageCreate,
   socialModuleProfileFindByIdChatFindByIdMessageDelete,
   socialModuleProfileFindByIdChatFindByIdMessageUpdate,
-  socialModuleProfileFindByIdChatFindByIdMessageFindByIdReactByOpenrouter,
   socialModuleProfileFindByIdChatFindByIdOpenrouterModelFind,
   socialModuleProfileFindByIdChatFindByIdOpenrouterModelFavoriteFind,
   socialModuleProfileFindByIdChatFindByIdOpenrouterModelFavoriteUpdate,
@@ -869,6 +890,7 @@ export const api = {
   socialModuleChatFindByIdThreadCreate,
   socialModuleChatFindByIdThreadUpdate,
   socialModuleChatFindByIdThreadDelete,
+  socialModuleChatFindByIdThreadMarkRead,
   socialModuleChatFindByIdProfileCreate,
   socialModuleChatFindByIdProfileSearch,
   socialModuleChatFindByIdAgentSubjectSearch,

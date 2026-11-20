@@ -19,6 +19,7 @@ import { saturateHeaders } from "@sps/shared-frontend-client-utils";
 export type IProps = {
   reactQueryOptions?: Partial<UseMutationOptions<any, DefaultError, any>>;
   id: string;
+  mute?: boolean;
 };
 
 export type IResult = IParentResult["ISocialModuleChatCreateResult"];
@@ -45,7 +46,9 @@ export function action(props: IProps) {
 
         return result;
       } catch (error: any) {
-        toast.error(error.message);
+        if (!props.mute) {
+          toast.error(error.message);
+        }
 
         throw error;
       }

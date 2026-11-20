@@ -1,8 +1,10 @@
 import { createModules } from "@sps/rbac/backend/app/api/src/lib/modules";
 import "reflect-metadata";
-import { injectFromBase, injectable } from "inversify";
-import { CRUDService } from "@sps/shared-backend-api";
+import { inject, injectable } from "inversify";
+import { CRUDService, DI } from "@sps/shared-backend-api";
 import { Table } from "@sps/rbac/relations/subjects-to-billing-module-currencies/backend/repository/database";
+
+import { Repository } from "../../repository";
 
 export interface IUpdateAmountIfUnchangedProps {
   id: string;
@@ -11,10 +13,23 @@ export interface IUpdateAmountIfUnchangedProps {
 }
 
 @injectable()
-@injectFromBase()
 export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
+  declare repository: Repository;
+
+  constructor(@inject(DI.IRepository) repository: Repository) {
+    super(repository);
+  }
+
   get modules() {
     return this.appAssembly.getOrCreate(createModules);
+  }
+
+  total(subjectId: string, currencyId: string) {
+    return this.repository.total(subjectId, currencyId);
+  }
+
+  applyDelta(subjectId: string, currencyId: string, delta: string) {
+    return this.repository.applyDelta(subjectId, currencyId, delta);
   }
 
   async updateAmountIfUnchanged(

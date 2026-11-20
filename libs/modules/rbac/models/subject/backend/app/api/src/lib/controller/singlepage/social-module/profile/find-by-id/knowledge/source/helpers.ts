@@ -24,6 +24,7 @@ export async function findProfileKnowledgeSourceRelations(props: {
             method: "eq",
             value: props.socialModuleProfileId,
           },
+          { column: "variant", method: "ne", value: "customer-memory" },
         ],
       },
       orderBy: {
@@ -164,6 +165,7 @@ export async function assertProfileKnowledgeSourceAccess(props: {
               method: "eq",
               value: props.knowledgeModuleSourceId,
             },
+            { column: "variant", method: "ne", value: "customer-memory" },
           ],
         },
         limit: 1,

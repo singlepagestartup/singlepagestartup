@@ -145,34 +145,6 @@ describe("defaultCompiledTopicRules — framework action endpoints", () => {
   });
 
   /**
-   * BDD Scenario: The AI-reaction RPC endpoint resolves to the message, action,
-   * Knowledge, and billing topics, so the assistant reply, action row, learned
-   * profile document, and requester balance reconcile.
-   */
-  it("maps the AI-reaction endpoint onto message, action, Knowledge, and billing topics", () => {
-    const topics = resolveTopicsForPath(
-      "/api/rbac/subjects/sub-1/social-module/profiles/p-1/chats/c-1/messages/m-1/react-by/openrouter",
-      defaultCompiledTopicRules,
-    );
-
-    expect(topics).toContain("social.messages");
-    expect(topics).toContain("social.actions");
-    expect(topics).toContain("social.chats.c-1.actions");
-    expect(topics).toContain("social.profiles-to-knowledge-module-sources");
-    expect(topics).toContain("knowledge.sources");
-    expect(topics).toEqual(
-      expect.arrayContaining([
-        "knowledge.chunks",
-        "knowledge.sources-to-chunks",
-        "knowledge.sources-to-file-storage-module-files",
-        "social.messages-to-knowledge-module-sources",
-      ]),
-    );
-    expect(topics).toContain("rbac.subjects-to-billing-module-currencies");
-    expect(topics).not.toContain("social.openrouter");
-  });
-
-  /**
    * BDD Scenario: Profile Knowledge reads resolve to the collections they join.
    * Given: the chat-sidebar and profile-scoped Knowledge document endpoints.
    * When: their realtime topics are resolved through the framework rules.

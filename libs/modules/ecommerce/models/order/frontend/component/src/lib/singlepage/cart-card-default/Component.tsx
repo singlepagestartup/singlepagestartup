@@ -32,6 +32,11 @@ export const Component = memo(function CartCard(
     );
   const amount = totals.length ? (
     <span className="max-w-full wrap-anywhere text-right text-lg font-semibold leading-tight tracking-tight text-foreground tabular-nums">
+      {props.priceLabel && (
+        <span className="block text-xs font-medium text-muted-foreground">
+          {props.priceLabel}
+        </span>
+      )}
       {new Intl.NumberFormat(props.language, {
         maximumFractionDigits: currencyPrecision(
           totals[0].billingModuleCurrency,
@@ -53,6 +58,11 @@ export const Component = memo(function CartCard(
         props.className,
       )}
     >
+      {props.headerSlot ? (
+        <div className="border-b border-border px-3.5 py-2 sm:px-4">
+          {props.headerSlot}
+        </div>
+      ) : null}
       <ul className="divide-y divide-border px-3.5 sm:px-4">
         {lines.map((line, index) => (
           <li key={line.id} className="space-y-3 py-3.5 sm:py-4">
@@ -97,13 +107,15 @@ export const Component = memo(function CartCard(
           {props.currencySlot}
           {showSubtotal && (
             <span className="flex flex-wrap items-baseline gap-2 text-xs text-muted-foreground">
-              {hasUnpriced
-                ? ru
-                  ? "Товары с ценой"
-                  : "Priced items"
-                : ru
-                  ? "Сумма заказа"
-                  : "Order subtotal"}{" "}
+              {props.priceLabel
+                ? null
+                : hasUnpriced
+                  ? ru
+                    ? "Товары с ценой"
+                    : "Priced items"
+                  : ru
+                    ? "Сумма заказа"
+                    : "Order subtotal"}{" "}
               {amount}
             </span>
           )}

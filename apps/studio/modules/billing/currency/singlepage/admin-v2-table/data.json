@@ -37,6 +37,12 @@
         "default": false
       },
       {
+        "key": "minorUnitDigits",
+        "label": "Minor Unit Digits",
+        "kind": "integer",
+        "nullable": true
+      },
+      {
         "key": "symbol",
         "label": "Symbol",
         "kind": "text",
@@ -69,6 +75,7 @@
       "updatedAt": "2026-01-01T00:00:00.000Z",
       "variant": "default",
       "isDefault": false,
+      "minorUnitDigits": null,
       "symbol": "Symbol example 1",
       "title": "currency example 1",
       "adminTitle": "currency example 1",
@@ -80,6 +87,7 @@
       "updatedAt": "2026-01-01T00:00:00.000Z",
       "variant": "default",
       "isDefault": false,
+      "minorUnitDigits": null,
       "symbol": "Symbol example 2",
       "title": "currency example 2",
       "adminTitle": "currency example 2",
@@ -91,6 +99,7 @@
       "updatedAt": "2026-01-01T00:00:00.000Z",
       "variant": "default",
       "isDefault": false,
+      "minorUnitDigits": null,
       "symbol": "Symbol example 3",
       "title": "currency example 3",
       "adminTitle": "currency example 3",

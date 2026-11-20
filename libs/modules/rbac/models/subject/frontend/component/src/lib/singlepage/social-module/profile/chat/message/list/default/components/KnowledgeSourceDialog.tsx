@@ -2,6 +2,7 @@
 
 import { KnowledgeSource, KnowledgeSourceDraft } from "../types";
 import { Component as KnowledgeModuleSource } from "@sps/knowledge/models/source/frontend/component";
+import { readKnowledgeDocumentContent } from "@sps/shared-utils";
 import {
   Dialog,
   DialogContent,
@@ -24,6 +25,7 @@ interface KnowledgeSourceDialogProps {
   isReindexing: boolean;
   isSaving: boolean;
   language: string;
+  readOnly?: boolean;
   mode: "create" | "edit";
   needsReindex: boolean;
   onUnlink?: (source: KnowledgeSource) => Promise<void> | void;
@@ -35,17 +37,54 @@ interface KnowledgeSourceDialogProps {
 }
 
 export function KnowledgeSourceDialog(props: KnowledgeSourceDialogProps) {
+  const ru = props.language === "ru";
+  const isCreating = props.mode === "create";
+  const closeLabel = ru ? "Закрыть" : "Close";
+  if (props.readOnly) {
+    return (
+      <Dialog open={props.isOpen} onOpenChange={props.onOpenChange}>
+        <DialogContent
+          className="max-h-[90vh] max-w-3xl overflow-y-auto"
+          closeLabel={closeLabel}
+        >
+          <DialogHeader>
+            <DialogTitle>{props.document?.title}</DialogTitle>
+            <DialogDescription>
+              {ru ? "Источник знаний профиля" : "Profile knowledge source"}
+            </DialogDescription>
+          </DialogHeader>
+          <p className="whitespace-pre-wrap break-words text-sm">
+            {readKnowledgeDocumentContent(props.document?.content ?? "")}
+          </p>
+        </DialogContent>
+      </Dialog>
+    );
+  }
+
   return (
     <Dialog open={props.isOpen} onOpenChange={props.onOpenChange}>
-      <DialogContent className="max-h-[90vh] max-w-3xl overflow-hidden p-0">
+      <DialogContent
+        className="max-h-[90vh] max-w-3xl overflow-y-auto p-0"
+        closeLabel={closeLabel}
+      >
         <DialogHeader className="border-b border-slate-200 px-6 py-4">
           <DialogTitle>
-            {props.mode === "create" ? "Create Knowledge" : "Edit Knowledge"}
+            {isCreating
+              ? ru
+                ? "Новый источник знаний"
+                : "Create Knowledge"
+              : ru
+                ? "Редактировать источник знаний"
+                : "Edit Knowledge"}
           </DialogTitle>
           <DialogDescription>
-            {props.mode === "create"
-              ? "Create a knowledge source for this profile."
-              : "Update and reindex this profile knowledge source."}
+            {isCreating
+              ? ru
+                ? "Добавьте сведения, которыми сотрудник будет пользоваться в работе."
+                : "Create a knowledge source for this profile."
+              : ru
+                ? "Здесь можно изменить текст, прикрепить материалы и обновить поисковый индекс."
+                : "Update and reindex this profile knowledge source."}
           </DialogDescription>
         </DialogHeader>
         {props.document ? (
@@ -67,12 +106,12 @@ export function KnowledgeSourceDialog(props: KnowledgeSourceDialogProps) {
             onDraftChange={props.onDraftChange}
             onSave={props.onSave}
             onReindex={props.onReindex}
-            className="max-h-[calc(90vh-96px)]"
           />
         ) : null}
         {props.mode === "edit" && props.fileScope && props.onFilesUpdated ? (
           <KnowledgeSourceFiles
             scope={props.fileScope}
+            language={props.language}
             disabled={props.isDirty || props.isSaving}
             onUpdated={props.onFilesUpdated}
           />

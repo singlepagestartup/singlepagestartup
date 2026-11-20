@@ -1,6 +1,7 @@
 "use client";
 
 import { KnowledgeSource, KnowledgeSourceDraft, SocialSkill } from "../types";
+import { isChatAccessError } from "../utils";
 import { api as rbacSubjectApi } from "@sps/rbac/models/subject/sdk/client";
 import { route as rbacSubjectRoute } from "@sps/rbac/models/subject/sdk/model";
 import { queryClient } from "@sps/shared-frontend-client-api";
@@ -12,6 +13,8 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 
 interface UseProfileSidebarProps {
+  defaultProfile?: ISocialModuleProfile | null;
+  language?: string;
   socialModuleChatId: string;
   socialModuleProfileId: string;
   subjectId: string;
@@ -47,7 +50,8 @@ function createDraftKnowledgeSource(): KnowledgeSource {
 }
 
 export function useProfileSidebar(props: UseProfileSidebarProps) {
-  const [selectedProfile, setSelectedProfile] =
+  const ru = props.language === "ru";
+  const [openedProfile, setSelectedProfile] =
     useState<ISocialModuleProfile | null>(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isMobileSheetOpen, setIsMobileSheetOpen] = useState(false);
@@ -65,6 +69,7 @@ export function useProfileSidebar(props: UseProfileSidebarProps) {
     useState<Record<string, boolean>>({});
   const [reindexingKnowledgeSourceId, setReindexingKnowledgeSourceId] =
     useState<string | null>(null);
+  const selectedProfile = openedProfile ?? props.defaultProfile ?? null;
   const selectedProfileId = selectedProfile?.id;
   const canManageSelectedProfile = Boolean(
     selectedProfileId && selectedProfile?.variant === "artificial-intelligence",
@@ -90,7 +95,8 @@ export function useProfileSidebar(props: UseProfileSidebarProps) {
     );
 
   const {
-    data: skillsQuery,
+    data: loadedSkills,
+    error: skillsError,
     isLoading: isSkillsLoading,
     refetch: refetchSkills,
   } = rbacSubjectApi.socialModuleProfileFindByIdChatFindByIdProfileFindByIdSkillFind(
@@ -110,6 +116,7 @@ export function useProfileSidebar(props: UseProfileSidebarProps) {
     },
   );
 
+  const skillsQuery = isChatAccessError(skillsError) ? undefined : loadedSkills;
   const skills = useMemo(() => {
     return (skillsQuery || []) as SocialSkill[];
   }, [skillsQuery]);
@@ -121,7 +128,8 @@ export function useProfileSidebar(props: UseProfileSidebarProps) {
   }, [skills]);
 
   const {
-    data: knowledgeSourcesQuery,
+    data: loadedKnowledgeSources,
+    error: knowledgeSourcesError,
     isError: hasKnowledgeSourcesError,
     isLoading: isKnowledgeSourcesLoading,
     refetch: refetchKnowledgeSources,
@@ -142,7 +150,12 @@ export function useProfileSidebar(props: UseProfileSidebarProps) {
     },
   );
 
+  const hideKnowledgeSources = isChatAccessError(knowledgeSourcesError);
+  const knowledgeSourcesQuery = hideKnowledgeSources
+    ? undefined
+    : loadedKnowledgeSources;
   const knowledgeSources = useMemo(() => {
+    if (hideKnowledgeSources) return [];
     const documents = (knowledgeSourcesQuery || []) as KnowledgeSource[];
 
     if (
@@ -153,11 +166,12 @@ export function useProfileSidebar(props: UseProfileSidebarProps) {
     }
 
     return documents;
-  }, [createdKnowledgeSource, knowledgeSourcesQuery]);
+  }, [createdKnowledgeSource, knowledgeSourcesQuery, hideKnowledgeSources]);
 
   const isCreatingKnowledgeSource =
     selectedKnowledgeSourceId === newKnowledgeSourceId;
   const selectedKnowledgeSource = useMemo(() => {
+    if (hideKnowledgeSources) return undefined;
     if (isCreatingKnowledgeSource) {
       return createDraftKnowledgeSource();
     }
@@ -165,16 +179,21 @@ export function useProfileSidebar(props: UseProfileSidebarProps) {
     return knowledgeSources.find((document) => {
       return document.id === selectedKnowledgeSourceId;
     });
-  }, [isCreatingKnowledgeSource, knowledgeSources, selectedKnowledgeSourceId]);
+  }, [
+    hideKnowledgeSources,
+    isCreatingKnowledgeSource,
+    knowledgeSources,
+    selectedKnowledgeSourceId,
+  ]);
   const isKnowledgeSourceDirty = Boolean(
     selectedKnowledgeSource &&
-      (knowledgeSourceDraft.title !== selectedKnowledgeSource.title ||
-        knowledgeSourceDraft.content !== selectedKnowledgeSource.content),
+    (knowledgeSourceDraft.title !== selectedKnowledgeSource.title ||
+      knowledgeSourceDraft.content !== selectedKnowledgeSource.content),
   );
   const selectedKnowledgeSourceNeedsReindex = Boolean(
     selectedKnowledgeSource &&
-      selectedKnowledgeSource.contentHash !==
-        selectedKnowledgeSource.indexedContentHash,
+    selectedKnowledgeSource.contentHash !==
+      selectedKnowledgeSource.indexedContentHash,
   );
 
   const knowledgeSourceUpdate =
@@ -293,17 +312,19 @@ export function useProfileSidebar(props: UseProfileSidebarProps) {
     const shouldUseSheet =
       typeof window !== "undefined" &&
       typeof window.matchMedia === "function" &&
-      window.matchMedia("(max-width: 1535px)").matches;
+      window.matchMedia("(width < 80rem)").matches;
 
     setIsMobileSheetOpen(shouldUseSheet);
+    return shouldUseSheet;
   }, []);
 
-  function closeProfile() {
+  const closeProfile = useCallback(() => {
+    setSelectedProfile(null);
     setIsSidebarOpen(false);
     setIsMobileSheetOpen(false);
     setSelectedKnowledgeSourceId(null);
     setCreatedKnowledgeSource(null);
-  }
+  }, []);
 
   function selectKnowledgeSource(document: KnowledgeSource) {
     setCreatedKnowledgeSource(null);
@@ -363,7 +384,7 @@ export function useProfileSidebar(props: UseProfileSidebarProps) {
         refetchProfileAvatarQueries();
       }
 
-      toast.success("Profile saved");
+      toast.success(ru ? "Профиль сохранён" : "Profile saved");
     } catch {
       // The SDK already displayed the mutation error.
       return;
@@ -381,7 +402,11 @@ export function useProfileSidebar(props: UseProfileSidebarProps) {
       const content = knowledgeSourceDraft.content.trim();
 
       if (!title || !content) {
-        toast.error("Knowledge title and content are required");
+        toast.error(
+          ru
+            ? "Заполните название и текст источника."
+            : "Knowledge title and content are required",
+        );
         return;
       }
 
@@ -399,7 +424,9 @@ export function useProfileSidebar(props: UseProfileSidebarProps) {
         },
         {
           onSuccess(createdDocument) {
-            toast.success("Knowledge Source created");
+            toast.success(
+              ru ? "Источник знаний создан" : "Knowledge Source created",
+            );
             setCreatedKnowledgeSource(createdDocument);
             setSelectedKnowledgeSourceId(createdDocument.id);
             setKnowledgeSourceDraft({
@@ -428,7 +455,9 @@ export function useProfileSidebar(props: UseProfileSidebarProps) {
       },
       {
         onSuccess(updatedDocument) {
-          toast.success("Knowledge Source saved");
+          toast.success(
+            ru ? "Источник знаний сохранён" : "Knowledge Source saved",
+          );
           setSelectedKnowledgeSourceId(updatedDocument.id);
           setKnowledgeSourcesNeedingReindex((current) => {
             return {
@@ -463,7 +492,9 @@ export function useProfileSidebar(props: UseProfileSidebarProps) {
         targetSocialModuleProfileId: selectedProfileId,
         knowledgeModuleSourceId: document.id,
       });
-      toast.success("Knowledge Source reindexed");
+      toast.success(
+        ru ? "Индекс источника обновлён" : "Knowledge Source reindexed",
+      );
       setKnowledgeSourcesNeedingReindex((current) => {
         const next = { ...current };
         delete next[document.id];
@@ -499,7 +530,15 @@ export function useProfileSidebar(props: UseProfileSidebarProps) {
         knowledgeModuleSourceId: document.id,
         ...(unlink ? { unlink: true } : {}),
       });
-      toast.success(unlink ? "Source unlinked from profile" : "Source deleted");
+      toast.success(
+        unlink
+          ? ru
+            ? "Источник убран из профиля"
+            : "Source unlinked from profile"
+          : ru
+            ? "Источник удалён"
+            : "Source deleted",
+      );
       setSelectedKnowledgeSourceId(null);
       setCreatedKnowledgeSource(null);
       setKnowledgeSourcesNeedingReindex((current) => {
@@ -566,7 +605,7 @@ export function useProfileSidebar(props: UseProfileSidebarProps) {
     isDeletingKnowledgeSource: knowledgeSourceDelete.isPending,
     isReindexingKnowledgeSource: Boolean(
       selectedKnowledgeSource &&
-        reindexingKnowledgeSourceId === selectedKnowledgeSource.id,
+      reindexingKnowledgeSourceId === selectedKnowledgeSource.id,
     ),
     isSavingProfile: profileUpdate.isPending || profileAvatarUpdate.isPending,
     isSkillsLoading: canManageSelectedProfile && isSkillsLoading,

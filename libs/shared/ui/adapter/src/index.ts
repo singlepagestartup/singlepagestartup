@@ -17,8 +17,21 @@ export type {
 export { Toaster, ToastIcon, toast } from "./lib/toast";
 export type { IToasterProps, IToastIconProps } from "./lib/toast";
 
-export { ChatWorkspace, ChatThreadPanel } from "./lib/chat-workspace";
+export {
+  ChatWorkspace,
+  ChatThreadPanel,
+  ChatWorkspaceNavigation,
+  ChatListActivity,
+} from "./lib/chat-workspace";
 export type {
   IChatWorkspaceProps,
   IChatThreadPanelProps,
 } from "./lib/chat-workspace";
+
+export {
+  ChatWorkspaceSkeleton,
+  ChatNavigationSkeleton,
+  ChatThreadSkeleton,
+} from "./lib/chat-workspace/Skeleton";
+
+export { ModelPicker, type IModelPickerProps } from "./lib/model-picker";

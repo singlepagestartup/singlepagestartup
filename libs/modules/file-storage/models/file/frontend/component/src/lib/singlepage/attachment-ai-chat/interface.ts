@@ -10,17 +10,23 @@ import type {
 export const variant = "attachment-ai-chat" as const;
 export interface IComponentProps extends IParent<IModel, typeof variant> {
   language?: string;
+  layout?: IFilePreviewProps["layout"];
   apiProps?: IParent<IModel, typeof variant>["apiProps"] & {
     reactQueryOptions?: Partial<UseQueryOptions<IModel | undefined>>;
   };
 }
-export interface IComponentPropsExtended
-  extends IParentExtended<IModel, typeof variant, IComponentProps> {
+export interface IComponentPropsExtended extends IParentExtended<
+  IModel,
+  typeof variant,
+  IComponentProps
+> {
   textContent: ReactNode;
 }
 
-export interface IClientProps
-  extends Pick<IComponentProps, "data" | "variant" | "language"> {}
+export interface IClientProps extends Pick<
+  IComponentProps,
+  "data" | "variant" | "language" | "layout"
+> {}
 
 export interface IClientComponentProps extends IFilePreviewProps {
   fileId: string;

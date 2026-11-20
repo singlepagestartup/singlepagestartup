@@ -1,3 +1,5 @@
+import { useId } from "react";
+import { ChevronUp } from "lucide-react";
 import { TipTap } from "@sps/shared-ui-shadcn";
 import { cn } from "@sps/shared-frontend-client-utils";
 import { Component as WidgetsToLogotypes } from "@sps/website-builder/relations/widgets-to-logotypes/frontend/component";
@@ -46,6 +48,7 @@ function ButtonGroups(props: IButtonGroupsProps) {
   );
 }
 export function Component(props: IComponentPropsExtended) {
+  const linksId = useId();
   const description = props.data.description?.[props.language],
     copyright = props.data.subtitle?.[props.language];
   return (
@@ -55,13 +58,42 @@ export function Component(props: IComponentPropsExtended) {
       data-id={props.data.id}
       data-variant={props.variant}
       className={cn(
-        "w-full border-t border-border bg-card text-foreground",
+        "w-full border-t border-border bg-card text-foreground group-[&]/social-chat-layout:relative group-[&]/social-chat-layout:pb-[env(safe-area-inset-bottom)]",
         props.data.className,
         props.className,
       )}
     >
-      <div className="mx-auto w-full max-w-7xl px-4 py-12 sm:px-6 sm:py-16 lg:px-8">
-        <div className="grid gap-x-8 gap-y-12 sm:grid-cols-2 lg:grid-cols-[repeat(auto-fit,minmax(10rem,1fr))]">
+      <div className="peer/footer-links mx-auto hidden w-full max-w-7xl items-center gap-3 pr-[5.5rem] pl-4 group-[&]/social-chat-layout:flex sm:px-6 lg:px-8">
+        {copyright ? (
+          <p className="min-w-0 text-xs leading-5 text-muted-foreground">
+            {copyright}
+          </p>
+        ) : null}
+        <details className="group/footer-details shrink-0">
+          <summary
+            aria-controls={linksId}
+            className="flex min-h-11 cursor-pointer list-none items-center gap-1 rounded text-xs font-medium hover:text-muted-foreground focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring [&::-webkit-details-marker]:hidden"
+          >
+            {props.language === "ru" ? "Разделы сайта" : "Site links"}
+            <ChevronUp
+              aria-hidden="true"
+              className="size-4 group-open/footer-details:rotate-180"
+            />
+          </summary>
+        </details>
+      </div>
+      {/* The disclosure controls the same link groups used on full-page layouts. */}
+      <div
+        id={linksId}
+        className={cn(
+          "mx-auto w-full max-w-7xl px-4 py-12 sm:px-6 sm:py-16 lg:px-8",
+          "group-[&]/social-chat-layout:hidden peer-has-[details[open]]/footer-links:block",
+          "group-[&]/social-chat-layout:absolute group-[&]/social-chat-layout:inset-x-4 group-[&]/social-chat-layout:bottom-[calc(100%+0.5rem)] group-[&]/social-chat-layout:z-40 group-[&]/social-chat-layout:w-auto group-[&]/social-chat-layout:p-4",
+          "group-[&]/social-chat-layout:max-h-[min(24rem,60dvh)] group-[&]/social-chat-layout:max-w-[calc(var(--container-7xl)-4rem)] group-[&]/social-chat-layout:overflow-y-auto group-[&]/social-chat-layout:overscroll-contain group-[&]/social-chat-layout:rounded-xl group-[&]/social-chat-layout:border group-[&]/social-chat-layout:border-border group-[&]/social-chat-layout:bg-card group-[&]/social-chat-layout:shadow-lg",
+          "sm:group-[&]/social-chat-layout:inset-x-6 sm:group-[&]/social-chat-layout:p-6 lg:group-[&]/social-chat-layout:inset-x-8",
+        )}
+      >
+        <div className="grid gap-x-8 gap-y-12 group-[&]/social-chat-layout:gap-y-6 sm:grid-cols-2 lg:grid-cols-[repeat(auto-fit,minmax(10rem,1fr))]">
           <div className="min-w-0 sm:col-span-2 lg:col-span-1">
             <WidgetsToLogotypes
               isServer={props.isServer}
@@ -119,9 +151,9 @@ export function Component(props: IComponentPropsExtended) {
             group="default"
           />
         </div>
-        <div className="mt-12 flex flex-col items-start justify-between gap-4 border-t border-border pt-6 sm:flex-row sm:items-center">
+        <div className="mt-12 flex flex-col items-start justify-between gap-4 border-t border-border pt-6 group-[&]/social-chat-layout:mt-6 group-[&]/social-chat-layout:pt-2 sm:flex-row sm:items-center">
           {copyright ? (
-            <p className="text-xs leading-5 text-muted-foreground">
+            <p className="text-xs leading-5 text-muted-foreground group-[&]/social-chat-layout:hidden">
               {copyright}
             </p>
           ) : null}

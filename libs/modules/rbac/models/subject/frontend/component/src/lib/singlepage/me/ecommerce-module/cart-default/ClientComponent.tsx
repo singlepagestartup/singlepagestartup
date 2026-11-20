@@ -15,6 +15,7 @@ import {
 import { cn } from "@sps/shared-frontend-client-utils";
 import { internationalization } from "@sps/shared-configuration";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { usePathname } from "next/navigation";
 
 export function Component(props: IComponentPropsExtended) {
   return (
@@ -32,6 +33,8 @@ export function Component(props: IComponentPropsExtended) {
 function Cart(props: IComponentPropsExtended) {
   const language = props.language || internationalization.defaultLanguage.code;
   const ru = language === "ru";
+  const pathname = usePathname();
+  const previousPathname = useRef(pathname);
   const [open, setOpen] = useState(false);
   const [waitingToClose, setWaitingToClose] = useState(false);
   const pending = useRef(false);
@@ -53,6 +56,12 @@ function Cart(props: IComponentPropsExtended) {
     setWaitingToClose(false);
     setOpen(next);
   }, []);
+  const close = useCallback(() => onOpenChange(false), [onOpenChange]);
+  useEffect(() => {
+    if (previousPathname.current === pathname) return;
+    previousPathname.current = pathname;
+    close();
+  }, [close, pathname]);
   const onSelectionPendingChange = useCallback((next: boolean) => {
     if (!mounted.current) return;
     pending.current = next;
@@ -128,6 +137,7 @@ function Cart(props: IComponentPropsExtended) {
           data={props.data}
           language={language}
           className="min-h-0 flex-1"
+          onDiscussionOpen={close}
           onSelectionPendingChange={onSelectionPendingChange}
         />
       </SheetContent>

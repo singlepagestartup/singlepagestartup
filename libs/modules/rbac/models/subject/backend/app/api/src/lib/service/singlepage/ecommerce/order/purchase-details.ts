@@ -13,7 +13,9 @@ export interface IExecuteProps {
 }
 
 interface IConstructorProps {
-  service: SubjectServiceDependencies<"ecommerceModuleOrderPurchasePayments">;
+  service: SubjectServiceDependencies<
+    "ecommerceModuleOrderPurchasePayments" | "orderWork"
+  >;
 }
 
 export class Service {
@@ -145,74 +147,30 @@ export class Service {
         }
       }
     }
-    const receiptOrderIds = orders
-      .filter((order) => !retryableIds.has(order.id))
-      .map((order) => order.id);
-    let receiptLinks: {
-      orderId: string;
-      fileStorageModuleFileId: string;
-    }[] = [];
-    if (receiptOrderIds.length) {
-      receiptLinks =
-        await service.modules.ecommerce.ordersToFileStorageModuleFiles.find({
-          params: {
-            filters: {
-              and: [
-                {
-                  column: "orderId",
-                  method: "inArray",
-                  value: receiptOrderIds,
-                },
-                {
-                  column: "variant",
-                  method: "eq",
-                  value: "receipt-default",
-                },
-              ],
-            },
-          },
-        });
-    }
-    const linksByOrder = new Map<string, typeof receiptLinks>();
-    for (const link of receiptLinks) {
-      const existing = linksByOrder.get(link.orderId) ?? [];
-      existing.push(link);
-      linksByOrder.set(link.orderId, existing);
-    }
-    const receiptIds = [
-      ...new Set(receiptLinks.map((link) => link.fileStorageModuleFileId)),
-    ];
-    const filesById = new Map<string, IPurchaseDetails["receipts"][number]>();
-    if (receiptIds.length) {
-      const files: IPurchaseDetails["receipts"] =
-        await service.modules.fileStorage.file.find({
-          params: {
-            filters: {
-              and: [{ column: "id", method: "inArray", value: receiptIds }],
-            },
-          },
-        });
-      for (const file of files) {
-        if (file.file?.trim()) {
-          filesById.set(file.id, file);
-        }
-      }
-    }
     const purchases: (IEcommerceModuleOrder & {
       purchaseDetails: IPurchaseDetails;
     })[] = [];
     for (const order of orders) {
       const payment = saved.get(order.id);
+      const work = await service.modules.ecommerce.order.work?.findByOrder(
+        order.id,
+      );
+      const storeWork =
+        work?.customerId === subjectId && work.taskId && work.storeId
+          ? { taskId: work.taskId, storeId: work.storeId }
+          : undefined;
       const productId = productIdByOrder.get(order.id);
       const totals = payment
         ? { totals: payment.totals, unpriced: [] }
         : await service.modules.ecommerce.order.findByIdTotal({ id: order.id });
-      const receipts = (linksByOrder.get(order.id) ?? []).flatMap(
-        (link) => filesById.get(link.fileStorageModuleFileId) ?? [],
-      );
+      const protectedReceipts =
+        !retryableIds.has(order.id) && !work
+          ? await service.orderWork?.publishedReceipts(subjectId, order.id)
+          : undefined;
       purchases.push({
         ...order,
         purchaseDetails: {
+          ...(storeWork ? { storeWork } : {}),
           primaryProductSlug: productId
             ? slugByProduct.get(productId)
             : undefined,
@@ -234,7 +192,8 @@ export class Service {
             : {}),
           paymentUrl: paymentUrls.get(order.id),
           totals: totals.totals,
-          receipts,
+          receipts: [],
+          ...(protectedReceipts?.length ? { protectedReceipts } : {}),
           ...(payment
             ? { charges: payment.charges, invoiceShares: payment.invoiceShares }
             : {}),

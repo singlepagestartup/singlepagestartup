@@ -1,10 +1,5 @@
 export type JsonValue =
-  | null
-  | string
-  | number
-  | boolean
-  | JsonValue[]
-  | { [key: string]: JsonValue };
+  null | string | number | boolean | JsonValue[] | { [key: string]: JsonValue };
 
 export interface IRecord {
   id: string;
@@ -19,6 +14,13 @@ export interface IRecord {
   subscriptionPeriodEndsAt: string | null;
   subscriptionPeriodInvoiceId: string | null;
   subscriptionRevokedAt: string | null;
+  paymentFailureCanceledAt: string | null;
+  subscriptionSourceOrderId: string | null;
+  subscriptionSourceInvoiceId: string | null;
+  subscriptionSourceInterval: string | null;
+  subscriptionScheduledStartsAt: string | null;
+  subscriptionScheduledEndsAt: string | null;
+  subscriptionProviderInvoiceId: string | null;
 }
 
 export const variant = "admin-v2-table";

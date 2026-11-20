@@ -20,7 +20,9 @@ export interface IProps {
   data: Partial<ISocialModuleChat>;
 }
 
-export type IResult = ISocialModuleChat;
+export interface IResult {
+  socialModuleChat: ISocialModuleChat;
+}
 
 export async function action(props: IProps): Promise<IResult> {
   const { id, params, options, host = serverHost, data } = props;

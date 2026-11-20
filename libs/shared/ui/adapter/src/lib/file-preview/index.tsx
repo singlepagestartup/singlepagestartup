@@ -8,6 +8,8 @@ import {
   File,
   Download,
   ExternalLink,
+  Eye,
+  ImageIcon,
   Minus,
   Plus,
 } from "lucide-react";
@@ -181,38 +183,161 @@ export function FilePreview(props: IFilePreviewProps) {
   const [failed, setFailed] = useState(false);
   const [downloading, setDownloading] = useState(false);
   const [downloadError, setDownloadError] = useState("");
+  const ru = props.language === "ru";
+  const row = props.layout === "row";
+  const availability = props.availability ?? "preview";
   const kind = getFilePreviewKind({
     name: props.name,
     mimeType: props.mimeType,
     extension: props.extension,
   });
   useEffect(() => {
-    if (!props.localFile || kind !== "image") {
+    if (!props.localFile || kind !== "image" || availability !== "preview") {
       return;
     }
     const url = URL.createObjectURL(props.localFile);
     setLocalUrl(url);
     return () => URL.revokeObjectURL(url);
-  }, [props.localFile, kind]);
+  }, [props.localFile, kind, availability]);
   const src = getFilePreviewUrl(
     props.localFile ? localUrl || "" : props.src || "",
   );
-  const extension = (props.extension || props.name.split(".").pop() || "FILE")
-    .replace(/^\./, "")
-    .toUpperCase();
+  const extension =
+    (props.extension || props.name.match(/\.([^./]+)$/)?.[1])
+      ?.replace(/^\./, "")
+      .toUpperCase() || (ru ? "Файл" : "File");
   const text = kind === "text" || kind === "markdown" || kind === "html";
   let Glyph = File;
   if (kind === "pdf") {
     Glyph = FileType2;
+  } else if (kind === "image" || extension === "SVG" || extension === "SVGZ") {
+    Glyph = ImageIcon;
   } else if (text) {
     Glyph = FileText;
   }
-  let downloadLabel = props.language === "ru" ? "Скачать" : "Download";
-  if (downloading) {
-    downloadLabel = props.language === "ru" ? "Скачивание…" : "Downloading…";
-  }
+  const downloadLabel = ru ? "Скачать" : "Download";
   const openOriginal =
     src && !props.localFile && !src.startsWith("blob:") && kind !== "html";
+
+  async function download() {
+    setDownloading(true);
+    setDownloadError("");
+    try {
+      const blob = props.localFile || (await props.onDownload?.());
+      if (!blob) return;
+      const url = URL.createObjectURL(
+        blob.slice(0, blob.size, "application/octet-stream"),
+      );
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = props.name;
+      link.click();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+    } catch {
+      setDownloadError(
+        ru ? "Не удалось скачать файл." : "The file could not be downloaded.",
+      );
+    } finally {
+      setDownloading(false);
+    }
+  }
+
+  const triggerClassName = cn(
+    "w-full min-w-0 overflow-hidden rounded-xl border border-border bg-card text-left text-foreground",
+    row ? "flex min-h-12 items-center gap-2.5 px-2.5 py-1.5" : "block",
+    availability !== "unavailable" &&
+      "transition hover:border-foreground/40 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground disabled:opacity-60",
+    props.className,
+  );
+  const label = (
+    <>
+      <span
+        aria-hidden="true"
+        className={cn(
+          "flex items-center justify-center overflow-hidden bg-muted",
+          row ? "size-8 shrink-0 rounded-md" : "h-24",
+          props.thumbnailClassName,
+        )}
+      >
+        {availability === "preview" && kind === "image" && src ? (
+          <img
+            src={src}
+            alt=""
+            loading="lazy"
+            draggable={false}
+            className="h-full w-full object-contain"
+          />
+        ) : (
+          <span className="flex flex-col items-center gap-1">
+            <Glyph className={row ? "size-4" : "size-7"} />
+            {!row && (
+              <span className="text-[10px] font-bold tracking-wider">
+                {extension}
+              </span>
+            )}
+          </span>
+        )}
+      </span>
+      <span className={row ? "min-w-0 flex-1" : "block px-3 py-2"}>
+        <span
+          title={props.name}
+          className={cn(
+            "block truncate font-medium",
+            row ? "text-sm" : "text-xs",
+          )}
+        >
+          {props.name}
+        </span>
+        {(row || availability === "unavailable") && (
+          <span className="block truncate text-xs text-muted-foreground">
+            {availability === "unavailable"
+              ? ru
+                ? "Файл недоступен"
+                : "File unavailable"
+              : extension}
+          </span>
+        )}
+      </span>
+      {row && availability === "preview" && (
+        <Eye
+          aria-hidden="true"
+          className="size-4 shrink-0 text-muted-foreground"
+        />
+      )}
+      {row && availability === "download-only" && (
+        <Download
+          aria-hidden="true"
+          className="size-4 shrink-0 text-muted-foreground"
+        />
+      )}
+    </>
+  );
+
+  if (availability === "unavailable") {
+    return <div className={triggerClassName}>{label}</div>;
+  }
+  if (availability === "download-only") {
+    return (
+      <div className="min-w-0">
+        <button
+          type="button"
+          aria-label={`${downloadLabel} ${props.name}`}
+          className={triggerClassName}
+          disabled={downloading}
+          aria-busy={downloading}
+          onClick={download}
+        >
+          {label}
+        </button>
+        {downloadError && (
+          <p role="alert" className="mt-1 text-xs text-destructive">
+            {downloadError}
+          </p>
+        )}
+      </div>
+    );
+  }
+
   function renderPreview() {
     if ((!props.localFile && !src) || failed) {
       return (
@@ -313,40 +438,9 @@ export function FilePreview(props: IFilePreviewProps) {
         <button
           type="button"
           aria-label={`${props.language === "ru" ? "Открыть" : "Preview"} ${props.name}`}
-          className={cn(
-            "block w-full min-w-0 overflow-hidden rounded-xl border border-border bg-card text-left text-foreground transition hover:border-foreground/40 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground",
-            props.className,
-          )}
+          className={triggerClassName}
         >
-          <span
-            className={cn(
-              "flex h-24 items-center justify-center overflow-hidden bg-muted",
-              props.thumbnailClassName,
-            )}
-          >
-            {kind === "image" && src ? (
-              <img
-                src={src}
-                alt=""
-                loading="lazy"
-                draggable={false}
-                className="h-full w-full object-contain"
-              />
-            ) : (
-              <span className="flex flex-col items-center gap-1 text-foreground">
-                <Glyph aria-hidden="true" className="size-7" />
-                <span className="text-[10px] font-bold tracking-wider">
-                  {extension}
-                </span>
-              </span>
-            )}
-          </span>
-          <span
-            title={props.name}
-            className="block truncate px-3 py-2 text-xs font-medium"
-          >
-            {props.name}
-          </span>
+          {label}
         </button>
       </DialogTrigger>
       <DialogContent
@@ -393,34 +487,15 @@ export function FilePreview(props: IFilePreviewProps) {
                 <button
                   type="button"
                   disabled={downloading}
-                  onClick={async () => {
-                    setDownloading(true);
-                    setDownloadError("");
-                    try {
-                      const blob =
-                        props.localFile || (await props.onDownload!());
-                      const url = URL.createObjectURL(
-                        blob.slice(0, blob.size, "application/octet-stream"),
-                      );
-                      const link = document.createElement("a");
-                      link.href = url;
-                      link.download = props.name;
-                      link.click();
-                      setTimeout(() => URL.revokeObjectURL(url), 1000);
-                    } catch {
-                      setDownloadError(
-                        props.language === "ru"
-                          ? "Не удалось скачать файл. Повторите попытку."
-                          : "Download failed. Try again.",
-                      );
-                    } finally {
-                      setDownloading(false);
-                    }
-                  }}
+                  onClick={download}
                   className="inline-flex min-h-10 items-center gap-2 rounded-lg bg-primary px-3 text-xs font-semibold text-primary-foreground"
                 >
                   <Download className="size-4" />
-                  {downloadLabel}
+                  {downloading
+                    ? ru
+                      ? "Скачивание…"
+                      : "Downloading…"
+                    : downloadLabel}
                 </button>
               )}
             </>

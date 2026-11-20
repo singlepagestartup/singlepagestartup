@@ -43,15 +43,16 @@ effective Offer service when `find` is called.
 
 ## 2. Models
 
-| Model                                             | Purpose                                    |
-| ------------------------------------------------- | ------------------------------------------ |
-| [attribute](./models/attribute/README.md)         | Typed attribute values for products/stores |
-| [attribute-key](./models/attribute-key/README.md) | Attribute definitions and display metadata |
-| [category](./models/category/README.md)           | Product categories with localized content  |
-| [order](./models/order/README.md)                 | Orders and cart state                      |
-| [product](./models/product/README.md)             | Products with attributes and media         |
-| [store](./models/store/README.md)                 | Stores and their catalogs                  |
-| [widget](./models/widget/README.md)               | Ecommerce list/overview widgets            |
+| Model                                             | Purpose                                                          |
+| ------------------------------------------------- | ---------------------------------------------------------------- |
+| [attribute](./models/attribute/README.md)         | Typed attribute values for products/stores                       |
+| [attribute-key](./models/attribute-key/README.md) | Attribute definitions and display metadata                       |
+| [category](./models/category/README.md)           | Product categories with localized content                        |
+| [order](./models/order/README.md)                 | Orders and cart state                                            |
+| [order-work](./models/order-work/README.md)       | Accepted result, payment evidence and delivery for a store order |
+| [product](./models/product/README.md)             | Products with attributes and media                               |
+| [store](./models/store/README.md)                 | Stores and their catalogs                                        |
+| [widget](./models/widget/README.md)               | Ecommerce list/overview widgets                                  |
 
 ---
 
@@ -80,4 +81,20 @@ effective Offer service when `find` is called.
 | [widgets-to-products](./relations/widgets-to-products/README.md)                                                   | Curate products inside widgets         |
 | [widgets-to-stores](./relations/widgets-to-stores/README.md)                                                       | Curate stores inside widgets           |
 
----
+## Legacy order receipts
+
+Before deploying over an installation that generated public receipts, back up
+its database and public storage. From `apps/api`, run
+`bun src/db/order-receipts.ts --list` to inventory receipt file IDs. Run
+`bun src/db/order-receipts.ts <file-id>` to check ownership, size, and SHA-256
+without writing. With the old receipt generator disabled, add `--apply` to
+save the verified private copy, withdraw the old file, and publish the private
+receipt for the confirmed buyer. Retrying a linked receipt uses the same copy.
+
+Review results marked `quarantined` before granting any buyer access. The
+command can withdraw local files and old direct URLs from the configured S3
+bucket. Retire objects from other providers and purge any external CDN copies
+using that deployment's storage and CDN controls. After cutover, check that the
+exact prior URL returns 403, 404, or 410 through every configured public origin
+and CDN. Verify the buyer can open the protected receipt and a different
+account cannot read its GET or HEAD endpoint.

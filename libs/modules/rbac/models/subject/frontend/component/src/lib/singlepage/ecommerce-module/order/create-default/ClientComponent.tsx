@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useId, useRef, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { api } from "@sps/rbac/models/subject/sdk/client";
 import { api as offerApi } from "@sps/ecommerce/relations/stores-to-products/sdk/client";
 import { api as storeApi } from "@sps/ecommerce/models/store/sdk/client";
@@ -9,7 +10,11 @@ import { Button } from "@sps/shared-ui-shadcn";
 import { Select } from "@sps/ui-adapter";
 import { cn, formatCurrencyAmount } from "@sps/shared-frontend-client-utils";
 import { ECOMMERCE_ORDER_LINE_QUANTITY_BOUNDS as quantityBounds } from "@sps/shared-utils";
-import type { IEcommerceCartSelection } from "@sps/rbac/models/subject/sdk/model";
+import Link from "next/link";
+import type {
+  ICustomerWorkView,
+  IEcommerceCartSelection,
+} from "@sps/rbac/models/subject/sdk/model";
 import {
   getEligibleRetailOffers,
   type IOfferServiceOption,
@@ -39,17 +44,26 @@ interface IDraft {
   transfer: IServiceIntent[] | null;
 }
 
+interface IQuantityPolicy {
+  productId: string;
+  singleUnitPerOrder: boolean;
+}
+
 const input =
   "min-h-11 w-full min-w-0 rounded-xl border border-border bg-card px-3 py-2 text-sm text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground disabled:opacity-50";
 const incompleteCodes = new Set(["address_required"]);
 
 export function Component(props: IComponentPropsExtended) {
   const ru = props.language === "ru";
+  const router = useRouter();
+  const search = useSearchParams();
+  const requestedOfferId = search.get("offer") ?? "";
+  const consultationTaskId = search.get("consultation") ?? "";
   const formId = useId();
   const createOrder = api.ecommerceModuleOrderCreate({});
   function initialDraft(): IDraft {
     return {
-      offerId: "",
+      offerId: requestedOfferId,
       currencyId: "",
       manualPriceSelection: false,
       quantity: "1",
@@ -71,6 +85,16 @@ export function Component(props: IComponentPropsExtended) {
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [error, setError] = useState("");
   const [added, setAdded] = useState(false);
+  const [quotedQuantityPolicy, setQuotedQuantityPolicy] =
+    useState<IQuantityPolicy>();
+  const productId = props.ecommerceModuleProduct.id;
+  const quantityPolicy =
+    quotedQuantityPolicy?.productId === productId
+      ? quotedQuantityPolicy
+      : undefined;
+  const knownSingleUnit =
+    Boolean(props.ecommerceModuleProduct.singleUnitPerOrder) ||
+    quantityPolicy?.singleUnitPerOrder === true;
   const offersQuery = offerApi.find({
     params: {
       filters: {
@@ -94,17 +118,104 @@ export function Component(props: IComponentPropsExtended) {
       },
     },
   });
-  const offers = getEligibleRetailOffers({
+  const retailOffers = getEligibleRetailOffers({
     offers: offersQuery.data ?? [],
     product: props.ecommerceModuleProduct,
     storeId: props.ecommerceModuleStore?.id,
-  }).filter((offer) => !props.excludedOfferIds?.includes(offer.id));
+  });
+  const returnOffer = retailOffers.find(({ id }) => id === requestedOfferId);
+  const consultationQuery = api.customerWork({
+    id: props.data.id,
+    storeId: returnOffer?.storeId ?? "",
+    taskId: consultationTaskId,
+    enabled: Boolean(consultationTaskId && returnOffer),
+  });
+  const consultation = consultationQuery.data;
+  const newServiceOrder =
+    props.ecommerceModuleProduct.kind === "service" &&
+    returnOffer?.settings.requiresResultAcceptance &&
+    consultation?.offerId === returnOffer.id &&
+    !consultation.orderId;
+  const offers = retailOffers.filter(
+    (offer) =>
+      (newServiceOrder && offer.id === returnOffer?.id) ||
+      !props.excludedOfferIds?.includes(offer.id),
+  );
   function offerForDraft(value: IDraft) {
     return value.offerId
       ? offers.find((offer) => offer.id === value.offerId)
       : offers[0];
   }
   const selected = offerForDraft(draft);
+  const consultationOffer = selected ?? returnOffer ?? retailOffers[0];
+  const workQuery = api.customerWorkAvailability({
+    id: props.data.id,
+    storeId: consultationOffer?.storeId ?? "",
+    offerId: consultationOffer?.id ?? "",
+    productId: props.ecommerceModuleProduct.id,
+  });
+  const workMutation = api.changeCustomerWork();
+  const [selectionWork, setSelectionWork] = useState<{
+    identity: string;
+    offerId: string;
+    view: ICustomerWorkView;
+  }>();
+  const activeWork =
+    selectionWork?.identity === identity &&
+    selectionWork.offerId === selected?.id
+      ? selectionWork.view
+      : undefined;
+  const work = activeWork;
+  const [openedQuestion, setOpenedQuestion] = useState<{
+    identity: string;
+    href: string;
+  }>();
+  const workRequest = useRef<{ signature: string; key: string } | undefined>(
+    undefined,
+  );
+  const workPending =
+    workMutation.isPending ||
+    (Boolean(consultationOffer) && workQuery.isPending);
+  const pending = workPending || createOrder.isPending;
+
+  function workKey(signature: string) {
+    if (workRequest.current?.signature !== signature) {
+      workRequest.current = { signature, key: crypto.randomUUID() };
+    }
+    return workRequest.current.key;
+  }
+
+  async function ask() {
+    if (!consultationOffer || workPending) return;
+    setError("");
+    try {
+      const result = await workMutation.mutateAsync({
+        id: props.data.id,
+        data: {
+          operation: "ask",
+          operationKey: workKey(`ask:${identity}:${consultationOffer.id}`),
+          storeId: consultationOffer.storeId,
+          offerId: consultationOffer.id,
+          productId: props.ecommerceModuleProduct.id,
+        },
+      });
+      workRequest.current = undefined;
+      if (currentIdentity.current === identity) {
+        const href = `/${props.language}/social/chats/${result.chatId}/threads/${result.threadId}`;
+        setOpenedQuestion({ identity, href });
+        router.push(href);
+      }
+    } catch (cause) {
+      setError(
+        cause instanceof Error
+          ? cause.message
+          : ru
+            ? "Не удалось открыть обсуждение."
+            : "Could not open the conversation.",
+      );
+    }
+  }
+
   const requestedOffer = offerForDraft(requestedDraft);
   const storeIds = [...new Set(offers.map((offer) => offer.storeId))];
   const stores = storeApi.find({
@@ -118,7 +229,7 @@ export function Component(props: IComponentPropsExtended) {
     return {
       offerId: id,
       currencyId: value.currencyId,
-      quantity: Number(value.quantity),
+      quantity: knownSingleUnit ? 1 : Number(value.quantity),
       destination:
         value.method === "shipping"
           ? {
@@ -127,7 +238,7 @@ export function Component(props: IComponentPropsExtended) {
           : {},
       services: Object.entries(value.services).map(([offerId, quantity]) => ({
         offerId,
-        quantity: Number(quantity),
+        quantity: knownSingleUnit ? 1 : Number(quantity),
       })),
     };
   }
@@ -150,6 +261,7 @@ export function Component(props: IComponentPropsExtended) {
   const quote = offerApi.quote({
     data: requested,
     reactQueryOptions: {
+      refetchOnMount: "always",
       enabled:
         Boolean(requestedOffer) &&
         Number.isSafeInteger(requested.quantity) &&
@@ -162,8 +274,15 @@ export function Component(props: IComponentPropsExtended) {
         ),
     },
   });
+  const quotedSingleUnit =
+    quote.data?.productId === productId &&
+    quote.data.singleUnitPerOrder === true;
+  const singleUnitPerOrder = knownSingleUnit || quotedSingleUnit;
   const metadata =
     quote.data?.offerId === selected?.id ? quote.data : undefined;
+  const resolvedQuote = Boolean(
+    metadata && !quote.isFetching && !quote.isError,
+  );
   const previousOptions = knownOptions.current.get(selected?.id ?? "");
   const options = metadata?.serviceOptions ?? [
     ...(previousOptions?.values() ?? []),
@@ -236,6 +355,7 @@ export function Component(props: IComponentPropsExtended) {
     selected &&
     draft.currencyId &&
     validNumbers &&
+    (!singleUnitPerOrder || selection.quantity === 1) &&
     currencyIds.includes(draft.currencyId) &&
     !draft.transfer &&
     currentQuote?.version &&
@@ -254,7 +374,9 @@ export function Component(props: IComponentPropsExtended) {
         }
       : undefined;
   const configuration =
-    paymentReady && !createOrder.isPending ? cartConfiguration : undefined;
+    paymentReady && !pending && !workQuery.data?.payAfterAcceptance
+      ? cartConfiguration
+      : undefined;
 
   function edit(update: (value: IDraft) => IDraft, wait = false) {
     if (timer.current) clearTimeout(timer.current);
@@ -266,6 +388,32 @@ export function Component(props: IComponentPropsExtended) {
     if (wait) timer.current = setTimeout(() => setRequestedDraft(next), 350);
     else setRequestedDraft(next);
   }
+  useEffect(() => {
+    if (quotedSingleUnit && quantityPolicy?.singleUnitPerOrder !== true) {
+      setQuotedQuantityPolicy({ productId, singleUnitPerOrder: true });
+    } else if (resolvedQuote && !quantityPolicy) {
+      setQuotedQuantityPolicy({ productId, singleUnitPerOrder: false });
+    }
+    if (
+      singleUnitPerOrder &&
+      (draftRef.current.quantity !== "1" ||
+        Object.values(draftRef.current.services).some((count) => count !== "1"))
+    ) {
+      edit((value) => ({
+        ...value,
+        quantity: "1",
+        services: Object.fromEntries(
+          Object.keys(value.services).map((id) => [id, "1"]),
+        ),
+      }));
+    }
+  }, [
+    productId,
+    quantityPolicy,
+    quotedSingleUnit,
+    resolvedQuote,
+    singleUnitPerOrder,
+  ]);
   useEffect(
     () => () => {
       if (timer.current) clearTimeout(timer.current);
@@ -278,16 +426,27 @@ export function Component(props: IComponentPropsExtended) {
     props.data.id,
     props.ecommerceModuleProduct.id,
     props.ecommerceModuleStore?.id,
+    requestedOfferId,
   ]);
   useEffect(() => {
     if (
       draft.offerId &&
       !offers.some((offer) => offer.id === draft.offerId) &&
+      !(
+        draft.offerId === requestedOfferId &&
+        consultationTaskId &&
+        consultationQuery.isPending
+      ) &&
       !offersQuery.isPending
     ) {
-      edit(() => initialDraft());
+      edit(() => ({ ...initialDraft(), offerId: "" }));
     }
-  }, [props.excludedOfferIds, offersQuery.data]);
+  }, [
+    props.excludedOfferIds,
+    offersQuery.data,
+    consultationQuery.isPending,
+    newServiceOrder,
+  ]);
   useEffect(() => {
     if (metadata && !draft.currencyId && currencyIds.length) {
       const preferred = props.billingModule?.currency?.id;
@@ -319,12 +478,17 @@ export function Component(props: IComponentPropsExtended) {
           ),
       );
       if (exact) {
-        services[exact.offerId] = service.quantity;
+        services[exact.offerId] = singleUnitPerOrder ? "1" : service.quantity;
         if (exact.role === "delivery") method = exact.receiptMethod ?? "";
       }
     }
     edit((value) => ({ ...value, services, method, transfer: null }));
-  }, [draft.transfer, metadata?.offerId, JSON.stringify(options)]);
+  }, [
+    draft.transfer,
+    metadata?.offerId,
+    JSON.stringify(options),
+    singleUnitPerOrder,
+  ]);
 
   useEffect(() => {
     if (
@@ -395,24 +559,54 @@ export function Component(props: IComponentPropsExtended) {
   async function submit(event: React.FormEvent) {
     event.preventDefault();
     const configuration = cartConfiguration;
-    if (!configuration || createOrder.isPending) return;
+    if (!configuration || pending) return;
     setError("");
     const submittedSignature = signature;
     const submittedIdentity = currentIdentity.current;
     try {
-      await createOrder.mutateAsync({
-        id: props.data.id,
-        data: {
-          productId: props.ecommerceModuleProduct.id,
-          offerId: configuration.selection.offerId,
-          storeId: configuration.storeId,
-          quantity: configuration.selection.quantity,
-          billingModuleCurrencyId: configuration.selection.currencyId,
-          destination: configuration.selection.destination,
-          services: configuration.selection.services,
-          expectedQuoteVersion: configuration.expectedQuoteVersion,
-        },
-      });
+      const selection = {
+        quantity: configuration.selection.quantity,
+        billingModuleCurrencyId: configuration.selection.currencyId,
+        destination: configuration.selection.destination,
+        services: configuration.selection.services,
+        expectedQuoteVersion: configuration.expectedQuoteVersion,
+      };
+      const offer = {
+        productId: props.ecommerceModuleProduct.id,
+        offerId: configuration.selection.offerId,
+        storeId: configuration.storeId,
+      };
+      if (workQuery.data?.order) {
+        const result = await workMutation.mutateAsync({
+          id: props.data.id,
+          data: {
+            ...offer,
+            selection,
+            operation: "add",
+            operationKey: workKey(
+              `add:${submittedIdentity}:${submittedSignature}`,
+            ),
+            consultationTaskId:
+              consultation?.storeId === offer.storeId &&
+              consultation.offerId === offer.offerId
+                ? consultation.taskId
+                : undefined,
+          },
+        });
+        workRequest.current = undefined;
+        if (submittedIdentity === currentIdentity.current) {
+          setSelectionWork({
+            identity: submittedIdentity,
+            offerId: offer.offerId,
+            view: result,
+          });
+        }
+      } else {
+        await createOrder.mutateAsync({
+          id: props.data.id,
+          data: { ...offer, ...selection },
+        });
+      }
       if (
         submittedIdentity === currentIdentity.current &&
         (!draftRef.current.offerId ||
@@ -483,7 +677,8 @@ export function Component(props: IComponentPropsExtended) {
   const allOffersExcluded = Boolean(
     props.excludedOfferIds?.length && !offersQuery.isPending && !offers.length,
   );
-  const hideWhenIdle = Boolean(props.hideConfiguration || allOffersExcluded);
+  const hideWhenIdle =
+    !newServiceOrder && Boolean(props.hideConfiguration || allOffersExcluded);
   useOfferPriceSelection(
     draft.manualPriceSelection && !hideWhenIdle && selected && draft.currencyId
       ? {
@@ -507,19 +702,25 @@ export function Component(props: IComponentPropsExtended) {
         <div id={`${formId}-configuration`}>
           <form onSubmit={submit} className="@container space-y-3" noValidate>
             <div className="grid min-w-0 grid-cols-2 items-end gap-x-3 gap-y-2 @[420px]:grid-cols-[minmax(8rem,1fr)_minmax(5rem,1fr)_auto]">
-              <QuantityInput
-                id={`${formId}-quantity`}
-                label={ru ? "Количество" : "Quantity"}
-                contextLabel={productTitle}
-                decreaseLabel={`${ru ? "Уменьшить количество товара" : "Decrease product quantity"}: ${productTitle}`}
-                increaseLabel={`${ru ? "Увеличить количество товара" : "Increase product quantity"}: ${productTitle}`}
-                min={quantityBounds.min}
-                max={productQuantityMax}
-                value={draft.quantity}
-                onValueChange={(quantity) => {
-                  edit((value) => ({ ...value, quantity }), true);
-                }}
-              />
+              {singleUnitPerOrder ? (
+                <p className="text-sm">
+                  {ru ? "Количество — 1" : "Quantity · 1"}
+                </p>
+              ) : quantityPolicy || resolvedQuote ? (
+                <QuantityInput
+                  id={`${formId}-quantity`}
+                  label={ru ? "Количество" : "Quantity"}
+                  contextLabel={productTitle}
+                  decreaseLabel={`${ru ? "Уменьшить количество товара" : "Decrease product quantity"}: ${productTitle}`}
+                  increaseLabel={`${ru ? "Увеличить количество товара" : "Increase product quantity"}: ${productTitle}`}
+                  min={quantityBounds.min}
+                  max={productQuantityMax}
+                  value={draft.quantity}
+                  onValueChange={(quantity) => {
+                    edit((value) => ({ ...value, quantity }), true);
+                  }}
+                />
+              ) : null}
               <div className="grid min-w-0 gap-1 text-xs font-medium">
                 <label htmlFor={`${formId}-currency`}>
                   {ru ? "Валюта" : "Currency"}
@@ -724,7 +925,8 @@ export function Component(props: IComponentPropsExtended) {
                               onCheckedChange={changeService}
                             >
                               {option.receiptMethod === "shipping" ||
-                              option.role === "add-on" ? (
+                              (option.role === "add-on" &&
+                                !singleUnitPerOrder) ? (
                                 <div className="space-y-3 px-3 pb-3">
                                   {option.receiptMethod === "shipping" ? (
                                     <DeliveryAddress
@@ -746,7 +948,8 @@ export function Component(props: IComponentPropsExtended) {
                                       }
                                     />
                                   ) : null}
-                                  {option.role === "add-on" ? (
+                                  {option.role === "add-on" &&
+                                  !singleUnitPerOrder ? (
                                     <QuantityInput
                                       id={`${id}-quantity`}
                                       label={
@@ -912,11 +1115,6 @@ export function Component(props: IComponentPropsExtended) {
                 </div>
               </dl>
             </section>
-            {error ? (
-              <p role="alert" className="text-sm text-destructive">
-                {error}
-              </p>
-            ) : null}
             {ready &&
             currentQuote?.issues.some((issue) =>
               incompleteCodes.has(issue.code),
@@ -930,10 +1128,10 @@ export function Component(props: IComponentPropsExtended) {
             <Button
               type="submit"
               variant="primary"
-              disabled={createOrder.isPending || !ready}
+              disabled={pending || !ready}
               className="min-h-11 w-full rounded-xl"
             >
-              {createOrder.isPending
+              {pending
                 ? ru
                   ? "Добавляем…"
                   : "Adding…"
@@ -941,6 +1139,13 @@ export function Component(props: IComponentPropsExtended) {
                   ? "Добавить в корзину"
                   : "Add to cart"}
             </Button>
+            {workQuery.data?.payAfterAcceptance && (
+              <p className="text-xs text-muted-foreground">
+                {ru
+                  ? "Оплата откроется после принятия версии в обсуждении заказа."
+                  : "Payment opens after you accept a version in the order discussion."}
+              </p>
+            )}
             {added ? (
               <p role="status" className="text-xs text-muted-foreground">
                 {ru ? "Товар в корзине." : "Added to your cart."}
@@ -949,10 +1154,43 @@ export function Component(props: IComponentPropsExtended) {
           </form>
         </div>
       ) : null}
-      {props.checkoutSlot?.(configuration, {
-        refreshQuote: () => quote.refetch(),
-        hideWhenIdle,
-      })}
+      {workQuery.data?.consultation && (
+        <Button
+          type="button"
+          variant="outline"
+          className="min-h-11 w-full rounded-xl"
+          disabled={pending}
+          onClick={() => void ask()}
+        >
+          {ru ? "Задать вопрос" : "Ask a question"}
+        </Button>
+      )}
+      {openedQuestion?.identity === identity && (
+        <a
+          href={openedQuestion.href}
+          className="inline-flex min-h-11 items-center text-sm underline underline-offset-4"
+        >
+          {ru ? "Открыть консультацию" : "Open the question"}
+        </a>
+      )}
+      {error && (
+        <p role="alert" className="text-sm text-destructive">
+          {error}
+        </p>
+      )}
+      {work && !props.hideConfiguration && (
+        <Link
+          className="inline-flex min-h-11 items-center underline"
+          href={`/${props.language}/social/chats/${work.chatId}/threads/${work.threadId}`}
+        >
+          {ru ? "Открыть обсуждение" : "Open discussion"}
+        </Link>
+      )}
+      {!workQuery.data?.payAfterAcceptance &&
+        props.checkoutSlot?.(configuration, {
+          refreshQuote: () => quote.refetch(),
+          hideWhenIdle,
+        })}
     </div>
   );
 }

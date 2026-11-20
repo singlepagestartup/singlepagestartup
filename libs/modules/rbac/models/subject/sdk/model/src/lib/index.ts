@@ -76,14 +76,16 @@ export * from "./ai-reaction-request";
 export * from "./ai-execution-action";
 export * from "./ai-thread-preferences";
 export * from "./ai-thread-context";
-export * from "./ai-chat-document-proposal";
 export * from "./telegram-personal-ai-agent";
 
 export {
-  getAIChatDocument,
   projectHref,
   projectBaseHref,
-  type IAIChatDocument,
   type IAIChatProject,
 } from "./ai-chat-project";
 export * from "./token-revocation";
+export * from "./crm-workspace";
+
+export * from "./customer-work";
+
+export * from "./order-work";

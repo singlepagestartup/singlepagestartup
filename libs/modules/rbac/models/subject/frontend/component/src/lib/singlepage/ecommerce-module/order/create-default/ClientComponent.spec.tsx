@@ -9,6 +9,13 @@ import {
   within,
 } from "@testing-library/react";
 const mockCreate = jest.fn();
+const mockChangeWork = jest.fn();
+const mockNavigate = jest.fn();
+let mockConsultationAvailable = false;
+jest.mock("next/navigation", () => ({
+  useRouter: () => ({ push: mockNavigate }),
+  useSearchParams: () => new URLSearchParams(),
+}));
 const mockRefetch = jest.fn();
 const mockQuoteRead = jest.fn();
 const mockCardPriceRead = jest.fn();
@@ -25,8 +32,22 @@ let mockSelectedServices: ((data: any) => any[]) | undefined;
 let mockQuotedCurrency: string | undefined;
 let mockValidateStock = false;
 let mockRequireShippingAddress = false;
+let mockSingleUnitOffers: string[] = [];
 jest.mock("@sps/rbac/models/subject/sdk/client", () => ({
   api: {
+    customerWork: () => ({ data: undefined }),
+    customerWorkAvailability: () => ({
+      data: {
+        consultation: mockConsultationAvailable,
+        order: false,
+        payAfterAcceptance: false,
+      },
+      isPending: false,
+    }),
+    changeCustomerWork: () => ({
+      isPending: false,
+      mutateAsync: mockChangeWork,
+    }),
     ecommerceModuleOrderCreate: () => ({
       mutateAsync: mockCreate,
       isPending: false,
@@ -48,6 +69,8 @@ jest.mock("@sps/ecommerce/relations/stores-to-products/sdk/client", () => ({
         data: data.offerId
           ? {
               ...data,
+              productId: "product",
+              singleUnitPerOrder: mockSingleUnitOffers.includes(data.offerId),
               currencyId: mockQuotedCurrency ?? data.currencyId,
               amount,
               currencyIds: mockCurrencyIds,
@@ -198,6 +221,38 @@ jest.mock("../list/checkout-default/DeliveryAddress", () => ({
 }));
 import { Component } from "./ClientComponent";
 import { OfferPrice, OfferPriceProvider } from "./OfferPrice";
+
+it("opens a new thread for the exact offer while the saved cart hides configuration", async () => {
+  mockConsultationAvailable = true;
+  mockChangeWork.mockResolvedValue({
+    chatId: "private-chat",
+    threadId: "private-thread",
+  });
+  render(
+    <Component {...props} hideConfiguration excludedOfferIds={["offer-a"]} />,
+  );
+
+  expect(
+    screen.queryByRole("button", { name: "Добавить в корзину" }),
+  ).toBeNull();
+  fireEvent.click(screen.getByRole("button", { name: "Задать вопрос" }));
+  await waitFor(() =>
+    expect(mockNavigate).toHaveBeenCalledWith(
+      "/ru/social/chats/private-chat/threads/private-thread",
+    ),
+  );
+  expect(mockChangeWork).toHaveBeenCalledWith({
+    id: "subject",
+    data: {
+      operation: "ask",
+      operationKey: expect.any(String),
+      storeId: "store-a",
+      productId: "product",
+      offerId: "offer-a",
+    },
+  });
+});
+
 const props: any = {
   data: { id: "subject" },
   language: "ru",
@@ -212,6 +267,9 @@ beforeAll(() => {
   } as unknown as typeof ResizeObserver;
 });
 beforeEach(() => {
+  mockConsultationAvailable = false;
+  mockChangeWork.mockReset();
+  mockNavigate.mockReset();
   mockCreate.mockReset().mockResolvedValue({});
   mockRefetch.mockReset().mockResolvedValue({});
   mockQuoteRead.mockClear();
@@ -238,6 +296,7 @@ beforeEach(() => {
   mockQuotedCurrency = undefined;
   mockValidateStock = false;
   mockRequireShippingAddress = false;
+  mockSingleUnitOffers = [];
 });
 it("submits the exact unique retail offer with a supported currency", async () => {
   render(<Component {...props} />);
@@ -259,6 +318,39 @@ it("submits the exact unique retail offer with a supported currency", async () =
     ),
   );
   expect(await screen.findByText("Товар в корзине.")).toBeTruthy();
+});
+it("keeps quantity fixed after a live quote corrects stale product data", async () => {
+  mockOffers.push({
+    ...mockOffers[0],
+    id: "offer-b",
+    storeId: "store-b",
+    createdAt: "2024-06-03T00:00:00.000Z",
+  });
+  const { rerender } = render(<Component {...props} />);
+  fireEvent.change(screen.getByRole("spinbutton", { name: "Количество" }), {
+    target: { value: "3" },
+  });
+  await waitFor(() =>
+    expect(mockQuoteRead.mock.lastCall?.[0].quantity).toBe(3),
+  );
+
+  mockSingleUnitOffers = ["offer-a"];
+  rerender(<Component {...props} />);
+  expect(screen.queryByRole("spinbutton", { name: "Количество" })).toBeNull();
+  expect(screen.getByText("Количество — 1")).toBeTruthy();
+
+  fireEvent.change(screen.getByLabelText("Магазин"), {
+    target: { value: "offer-b" },
+  });
+  expect(screen.queryByRole("spinbutton", { name: "Количество" })).toBeNull();
+  const add = screen.getByRole("button", { name: "Добавить в корзину" });
+  await waitFor(() => expect(add.hasAttribute("disabled")).toBe(false));
+  fireEvent.click(add);
+  expect(mockCreate).toHaveBeenCalledWith(
+    expect.objectContaining({
+      data: expect.objectContaining({ offerId: "offer-b", quantity: 1 }),
+    }),
+  );
 });
 it("selects the earliest retail store and its server price when several stores sell the Product", async () => {
   mockOffers.push({

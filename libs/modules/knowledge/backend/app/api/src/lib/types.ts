@@ -5,6 +5,7 @@ export interface KnowledgeSourceInput {
   title: string;
   content: string;
   description?: string | null;
+  variant?: string;
 }
 
 export interface KnowledgeMissingFilesError extends Error {

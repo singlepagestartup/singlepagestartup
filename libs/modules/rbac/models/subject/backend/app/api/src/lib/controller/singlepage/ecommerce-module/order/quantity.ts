@@ -1,3 +1,4 @@
+import { STORE_TEST_ORDER_VARIANT } from "@sps/ecommerce/models/order/sdk/model";
 import { RBAC_JWT_SECRET, RBAC_SECRET_KEY } from "@sps/shared-utils";
 import { Context } from "hono";
 import { HTTPException } from "hono/http-exception";
@@ -84,6 +85,11 @@ export class Handler {
                   column: "status",
                   method: "eq",
                   value: "new",
+                },
+                {
+                  column: "variant",
+                  method: "ne",
+                  value: STORE_TEST_ORDER_VARIANT,
                 },
               ],
             },

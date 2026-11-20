@@ -1,0 +1,1 @@
+ALTER TABLE "sps_agent_work_attempt" ADD COLUMN "source_versions" jsonb DEFAULT '[]'::jsonb NOT NULL;

@@ -1,6 +1,7 @@
 import type { Service as SubjectService } from "../../index";
 import { Service as Participants } from "../../../startup/social-module/chat/participants";
 import { Service as Presentations } from "../../../startup/social-module/chat/presentations";
+import { Service as ChatActivity } from "./activity";
 
 export interface IFindProps {
   subjectId: string;
@@ -62,7 +63,7 @@ export class Service {
       chatIds = [...new Set<string>((links || []).map((link) => link.chatId))];
       if (!chatIds.length) return [];
     }
-    const chats = await this.service.modules.social.chat.find({
+    const candidates = await this.service.modules.social.chat.find({
       params: {
         ...props.params,
         ...(!admin
@@ -74,7 +75,18 @@ export class Service {
           : {}),
       },
     });
-    if (!props.includeParticipants || !chats?.length) return chats || [];
+    const access = await this.service.customerWork.chatAccess(
+      props.subjectId,
+      candidates ?? [],
+    );
+    const allowedChats = (candidates ?? []).filter(({ id }) => access.has(id));
+    const chats = await new ChatActivity(this.service).forChats(
+      props.subjectId,
+      allowedChats,
+    );
+    if (!props.includeParticipants || !chats.length) {
+      return chats;
+    }
     const participants = await new Participants(this.service).findForChats(
       chats.map((chat) => chat.id),
     );

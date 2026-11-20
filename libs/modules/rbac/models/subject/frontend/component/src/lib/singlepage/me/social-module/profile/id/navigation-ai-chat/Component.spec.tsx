@@ -43,10 +43,10 @@ jest.mock("@sps/social/models/profile/frontend/component", () => ({
     ),
 }));
 jest.mock("@sps/social/models/thread/frontend/component", () => ({
-  Component: (props: any) => <a>{props.data.title}</a>,
+  Component: (props: any) => <a href={props.href}>{props.data.title}</a>,
 }));
 import Component from "./client";
-it("orders the five project documents separately from topics and excludes another Profile's documents", () => {
+it("lists accessible threads in their supplied order regardless of document metadata", () => {
   render(
     <Component
       {...({
@@ -59,9 +59,8 @@ it("orders the five project documents separately from topics and excludes anothe
       } as any)}
     />,
   );
-  expect(screen.getByTestId("documents").textContent).toBe(
-    "brief.mdstrategy.mdbrand.mddesign.mdproducts.md",
+  expect(screen.queryByTestId("documents")).toBeNull();
+  expect(screen.getAllByRole("link").map((row) => row.textContent)).toEqual(
+    records.map((thread) => thread.title),
   );
-  expect(screen.getByTestId("topics").textContent).toBe("Bookings discussion");
-  expect(screen.queryByText("Other project's brief")).toBeNull();
 });

@@ -1,0 +1,27 @@
+{
+  "id": "rbac.widget.subject-me-store-customer-work",
+  "title": "Путь покупателя",
+  "description": "Store offer, consultation, result review, payment and delivery.",
+  "layer": "singlepage",
+  "state": "draft",
+  "source": {
+    "module": "rbac",
+    "entityType": "model",
+    "entity": "widget",
+    "variant": "subject-me-store-customer-work"
+  },
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "contentSlots": [],
+  "figma": {
+    "componentName": "rbac.widget",
+    "pageName": "rbac",
+    "variantName": "subject-me-store-customer-work",
+    "nodeId": null,
+    "variantNodeId": null,
+    "syncStatus": "not-created",
+    "metadataFile": "figma.json"
+  }
+}

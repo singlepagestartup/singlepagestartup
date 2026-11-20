@@ -142,6 +142,55 @@ it("shows an update failure without replacing the saved quantity or totals", asy
   expect(mockInvalidate).not.toHaveBeenCalled();
 });
 
+it("repairs a commissioned cart line only after the buyer confirms the quantity change", async () => {
+  const { cartDetails } = props.ecommerceModuleOrder;
+  const order = {
+    ...props.ecommerceModuleOrder,
+    cartDetails: {
+      ...cartDetails,
+      offers: [],
+      work: { state: "awaiting-result" },
+      lines: [
+        {
+          ...cartDetails.lines[0],
+          quantity: 5,
+          product: {
+            ...cartDetails.lines[0].product,
+            singleUnitPerOrder: true,
+          },
+        },
+        { id: "service", parentLineId: "line", quantity: 3 },
+      ],
+    },
+  };
+  render(<Component {...props} ecommerceModuleOrder={order} />);
+  expect(
+    screen.queryByRole("button", { name: "Увеличить количество" }),
+  ).toBeNull();
+  expect(screen.getByRole("alert").textContent).toMatch(/В корзине — 5/);
+  expect(screen.getByText(/Количество связанных услуг/)).toBeTruthy();
+  expect(mockUpdate).not.toHaveBeenCalled();
+
+  fireEvent.click(
+    screen.getByRole("button", { name: "Установить количество 1" }),
+  );
+  await waitFor(() =>
+    expect(mockInvalidate).toHaveBeenCalledWith({
+      queryKey: ["/api/rbac/subjects/owner/ecommerce-module/orders"],
+    }),
+  );
+  expect(mockUpdate).toHaveBeenCalledWith({
+    id: "owner",
+    orderId: "order",
+    data: {
+      ordersToProducts: [
+        { id: "line", quantity: 1 },
+        { id: "service", quantity: 1 },
+      ],
+    },
+  });
+});
+
 it("changes only the selected order currency and waits for the authorized cart refresh", async () => {
   const currencyProps = {
     ...props,

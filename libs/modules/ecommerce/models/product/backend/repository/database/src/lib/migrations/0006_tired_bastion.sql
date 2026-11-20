@@ -1,0 +1,1 @@
+ALTER TABLE "sps_ee_product" ADD COLUMN "single_unit_per_order" boolean DEFAULT false NOT NULL;

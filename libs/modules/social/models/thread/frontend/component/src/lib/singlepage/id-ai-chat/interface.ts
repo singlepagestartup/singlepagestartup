@@ -13,10 +13,11 @@ export interface IComponentProps extends IParent<IModel, typeof variant> {
   };
   messages: React.ReactNode;
   composer: React.ReactNode;
-  isDocument?: boolean;
-  knowledge?: React.ReactNode;
-  documentDownload?: React.ReactNode;
+  context?: React.ReactNode;
   navigation?: React.ReactNode;
 }
-export interface IComponentPropsExtended
-  extends IParentExtended<IModel, typeof variant, IComponentProps> {}
+export interface IComponentPropsExtended extends IParentExtended<
+  IModel,
+  typeof variant,
+  IComponentProps
+> {}

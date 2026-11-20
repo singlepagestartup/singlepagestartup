@@ -38,6 +38,7 @@ test("offer apply delegates to the same Subject operation with caller credential
         id: productId,
         kind: "physical",
         type: "one_off",
+        singleUnitPerOrder: false,
         slug: "test-product",
         adminTitle: "Test product",
         title: {},

@@ -21,6 +21,9 @@ export const Table = pgTable(
       .uuid("st_id")
       .notNull()
       .references(() => Subject.id, { onDelete: "cascade" }),
+    customerSubjectId: pgCore
+      .uuid("customer_subject_id")
+      .references(() => Subject.id, { onDelete: "cascade" }),
     ecommerceModuleStoreId: pgCore
       .uuid("ee_me_se_id")
       .notNull()
@@ -31,5 +34,17 @@ export const Table = pgTable(
       .uniqueIndex("rc_store_owner_unique")
       .on(table.ecommerceModuleStoreId)
       .where(sql`${table.variant} = 'owner'`),
+    pgCore
+      .uniqueIndex("rc_store_customer_assistant")
+      .on(table.ecommerceModuleStoreId, table.customerSubjectId)
+      .where(sql`${table.variant} = 'assistant'`),
+    pgCore
+      .uniqueIndex("rc_store_assistant_subject")
+      .on(table.subjectId)
+      .where(sql`${table.variant} = 'assistant'`),
+    pgCore.check(
+      "rc_store_assistant_customer",
+      sql`(${table.variant} = 'assistant' AND ${table.customerSubjectId} IS NOT NULL AND ${table.customerSubjectId} <> ${table.subjectId}) OR (${table.variant} <> 'assistant' AND ${table.customerSubjectId} IS NULL)`,
+    ),
   ],
 );

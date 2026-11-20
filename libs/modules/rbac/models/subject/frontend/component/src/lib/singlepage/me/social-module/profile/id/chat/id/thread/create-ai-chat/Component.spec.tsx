@@ -81,7 +81,7 @@ it("rejects blank names and guards a double submit before the mutation hook rere
   await act(async () => resolve({ id: "created-thread" }));
   await waitFor(() =>
     expect(mockPush).toHaveBeenCalledWith(
-      "/ru/ai-chat/social/profiles/profile/chats/chat/threads/created-thread",
+      "/ru/social/chats/chat/threads/created-thread",
     ),
   );
 });

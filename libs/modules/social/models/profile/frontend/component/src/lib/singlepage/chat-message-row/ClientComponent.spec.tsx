@@ -14,12 +14,18 @@ import { act } from "react";
 import { createRoot, Root } from "react-dom/client";
 import { Component, normalizeChatMessageMarkdown } from "./ClientComponent";
 
+const mockRelationComponent = jest.fn(() => null);
 jest.mock(
   "@sps/social/relations/messages-to-file-storage-module-files/frontend/component",
   () => ({
-    Component: () => null,
+    Component: () => mockRelationComponent(),
   }),
 );
+jest.mock("@sps/file-storage/models/file/frontend/component", () => ({
+  Component: ({ data }: { data: { id: string } }) => (
+    <span data-file-id={data.id}>{data.id}</span>
+  ),
+}));
 
 jest.mock("@sps/social/models/profile/frontend/component", () => ({
   Component: (props: {
@@ -65,6 +71,7 @@ describe("GIVEN: social profile chat message markdown rendering", () => {
   });
 
   beforeEach(() => {
+    mockRelationComponent.mockClear();
     writeText = jest.fn().mockResolvedValue(undefined);
     Object.defineProperty(navigator, "clipboard", {
       configurable: true,
@@ -83,6 +90,31 @@ describe("GIVEN: social profile chat message markdown rendering", () => {
       root.unmount();
     });
     container.remove();
+  });
+
+  it("renders ordered scoped files and skips the relation when the list was loaded", () => {
+    const view = (ids: string[]) => (
+      <Component
+        isServer={false}
+        language="en"
+        data={{ id: "profile", title: {}, subtitle: {} }}
+        message={
+          {
+            id: "message",
+            attachments: ids.map((id) => ({ id })),
+          } as any
+        }
+      />
+    );
+    act(() => root.render(view(["first", "second"])));
+    expect(
+      Array.from(container.querySelectorAll("[data-file-id]"), (file) =>
+        file.getAttribute("data-file-id"),
+      ),
+    ).toEqual(["first", "second"]);
+    act(() => root.render(view([])));
+    expect(container.querySelector("ul")).toBeNull();
+    expect(mockRelationComponent).not.toHaveBeenCalled();
   });
 
   /**
@@ -198,7 +230,7 @@ describe("GIVEN: social profile chat message markdown rendering", () => {
     });
 
     const avatarButton = container.querySelector(
-      "button[aria-label='Open Chat GPT 1 profile']",
+      "button[aria-label='Открыть профиль «Chat GPT 1»']",
     );
 
     expect(avatarButton?.className).toContain("sticky");
@@ -254,6 +286,7 @@ describe("GIVEN: social profile chat message markdown rendering", () => {
         <Component
           isServer={false}
           language="ru"
+          isOwnMessage
           data={
             {
               id: "profile-1",
@@ -279,8 +312,9 @@ describe("GIVEN: social profile chat message markdown rendering", () => {
     });
 
     const copyButton = container.querySelector(
-      "button[aria-label='Copy message']",
+      "button[aria-label='Скопировать сообщение']",
     );
+    expect(container.querySelector("article")?.classList).toContain("ml-auto");
 
     await act(async () => {
       copyButton?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
@@ -289,7 +323,7 @@ describe("GIVEN: social profile chat message markdown rendering", () => {
 
     expect(writeText).toHaveBeenCalledWith(description);
     expect(
-      container.querySelector("button[aria-label='Message copied']"),
+      container.querySelector("button[aria-label='Сообщение скопировано']"),
     ).not.toBeNull();
   });
 });

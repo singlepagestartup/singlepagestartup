@@ -88,7 +88,9 @@ const product: IProduct = {
   description: {},
   shortDescription: {},
   metadata: {},
+  kind: "physical",
   type: "one_off",
+  singleUnitPerOrder: false,
 };
 const store: IStore = {
   ...recordFields,

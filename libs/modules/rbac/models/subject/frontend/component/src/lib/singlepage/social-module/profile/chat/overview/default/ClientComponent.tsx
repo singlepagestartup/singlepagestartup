@@ -4,6 +4,7 @@ import { IComponentPropsExtended } from "./interface";
 import { cn } from "@sps/shared-frontend-client-utils";
 import { Component as Subject } from "@sps/rbac/models/subject/frontend/component";
 import { Component as SocialModuleProfile } from "@sps/social/models/profile/frontend/component";
+import { Component as SocialModuleThread } from "@sps/social/models/thread/frontend/component";
 import {
   emptyLocalizedTextFields,
   getLocalizedText,
@@ -14,30 +15,36 @@ import {
 import { api, queryClient } from "@sps/rbac/models/subject/sdk/client";
 import {
   route,
+  STORE_EMPLOYEE_CHAT_VARIANT,
   type IModel as IRbacSubject,
 } from "@sps/rbac/models/subject/sdk/model";
-import { FormField } from "@sps/ui-adapter";
+import {
+  ChatListActivity,
+  ChatWorkspace,
+  ChatWorkspaceNavigation,
+  ChatThreadSkeleton,
+  FormField,
+  Icon,
+} from "@sps/ui-adapter";
 import type { IModel as ISocialModuleProfile } from "@sps/social/models/profile/sdk/model";
 import { internationalization } from "@sps/shared-configuration";
-import { Form } from "@sps/shared-ui-shadcn";
+import { Button, Form } from "@sps/shared-ui-shadcn";
 import {
-  ChevronLeft,
+  ArrowLeft,
   Edit3,
   LogOut,
   Plus,
   Search,
-  Settings,
   Trash2,
   UserMinus,
   UserPlus,
   X,
 } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useId, useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 
-type MobilePanel = "threads" | "messages";
 type SettingsTab = "general" | "threads" | "members";
 
 type ProfileListItem = {
@@ -211,7 +218,20 @@ function normalizeChatDescription(value: unknown) {
 
 export function Component(props: IComponentPropsExtended) {
   const router = useRouter();
-  const [mobilePanel, setMobilePanel] = useState<MobilePanel>("messages");
+  const ru = props.language === "ru";
+  const chatHref = `/${props.language}/social/chats/${props.socialModuleChat.id}`;
+  const mobileNavigationId = useId();
+  const navigationHref = props.socialModuleThreadId
+    ? `${chatHref}/threads/${props.socialModuleThreadId}`
+    : chatHref;
+  const [mobileNavigation, setMobileNavigation] = useState<{
+    href: string;
+    open: boolean;
+  } | null>(null);
+  const [chatListChatId, setChatListChatId] = useState<string | null>(null);
+  const closeNavigation = useCallback(() => {
+    setMobileNavigation({ href: navigationHref, open: false });
+  }, [navigationHref]);
   const [threadSearch, setThreadSearch] = useState("");
   const [showSettings, setShowSettings] = useState(false);
   const [settingsTab, setSettingsTab] = useState<SettingsTab>("general");
@@ -278,6 +298,7 @@ export function Component(props: IComponentPropsExtended) {
   const {
     data: socialModuleThreads,
     isLoading: socialModuleThreadsIsLoading,
+    isError: socialModuleThreadsIsError,
     refetch: refetchSocialModuleThreads,
   } = api.socialModuleChatFindByIdThreadFind({
     id: props.data.id,
@@ -298,21 +319,24 @@ export function Component(props: IComponentPropsExtended) {
       },
     },
   });
-  const activeSocialModuleThreadId = useMemo(() => {
-    if (!socialModuleThreads?.length) {
-      return;
-    }
-
-    const requestedThread = socialModuleThreads.find((socialModuleThread) => {
-      return socialModuleThread.id === props.socialModuleThreadId;
-    });
-
-    if (requestedThread?.id) {
-      return requestedThread.id;
-    }
-
-    return socialModuleThreads[0]?.id;
-  }, [props.socialModuleThreadId, socialModuleThreads]);
+  const activeSocialModuleThread = props.socialModuleThreadId
+    ? socialModuleThreads?.find(
+        (thread) => thread.id === props.socialModuleThreadId,
+      )
+    : socialModuleThreads?.[0];
+  const activeSocialModuleThreadId = activeSocialModuleThread?.id;
+  const hasMultipleThreads = (socialModuleThreads?.length ?? 0) > 1;
+  const showThreads =
+    hasMultipleThreads && chatListChatId !== props.socialModuleChat.id;
+  const navigationOpen =
+    mobileNavigation?.href === navigationHref
+      ? mobileNavigation.open
+      : !props.socialModuleThreadId && hasMultipleThreads;
+  const selectCurrentChat = useCallback(() => {
+    setChatListChatId(null);
+    setThreadSearch("");
+    setMobileNavigation({ href: navigationHref, open: hasMultipleThreads });
+  }, [hasMultipleThreads, navigationHref]);
   const chatListQueryKey = useMemo(() => {
     return `${route}/${props.data.id}/social-module/profiles/${props.socialModuleProfile.id}/chats`;
   }, [props.data.id, props.socialModuleProfile.id]);
@@ -321,21 +345,19 @@ export function Component(props: IComponentPropsExtended) {
   }, [chatListQueryKey, props.socialModuleChat.id]);
 
   useEffect(() => {
-    if (!activeSocialModuleThreadId) {
+    if (
+      !activeSocialModuleThreadId ||
+      props.socialModuleThreadId ||
+      hasMultipleThreads
+    ) {
       return;
     }
 
-    if (props.socialModuleThreadId === activeSocialModuleThreadId) {
-      return;
-    }
-
-    router.replace(
-      `/${props.language}/social/chats/${props.socialModuleChat.id}/threads/${activeSocialModuleThreadId}`,
-    );
+    router.replace(`${chatHref}/threads/${activeSocialModuleThreadId}`);
   }, [
     activeSocialModuleThreadId,
-    props.language,
-    props.socialModuleChat.id,
+    chatHref,
+    hasMultipleThreads,
     props.socialModuleThreadId,
     router,
   ]);
@@ -374,37 +396,22 @@ export function Component(props: IComponentPropsExtended) {
     props.socialModuleChat.title,
   ]);
 
-  const activeThreadIndex = useMemo(() => {
-    if (!activeSocialModuleThreadId || !socialModuleThreads?.length) {
-      return -1;
-    }
-
-    return socialModuleThreads.findIndex((socialModuleThread) => {
-      return socialModuleThread.id === activeSocialModuleThreadId;
-    });
-  }, [activeSocialModuleThreadId, socialModuleThreads]);
-
   const threadItems = useMemo(() => {
     return (socialModuleThreads || []).map((socialModuleThread, index) => {
-      const title = socialModuleThread.title?.trim() || `Thread ${index + 1}`;
+      const title =
+        socialModuleThread.title?.trim() ||
+        `${ru ? "Обсуждение" : "Thread"} ${index + 1}`;
 
       return {
         data: socialModuleThread,
         title,
-        createdAt: new Date(socialModuleThread.createdAt).toLocaleDateString(),
-        preview: "Conversation thread",
-        shortId: socialModuleThread.id.slice(0, 8),
+        createdAt: new Date(socialModuleThread.createdAt).toLocaleDateString(
+          props.language,
+        ),
       };
     });
-  }, [socialModuleThreads]);
-  const activeThreadTitle =
-    activeThreadIndex >= 0
-      ? threadItems[activeThreadIndex]?.title || "Select a thread"
-      : "Select a thread";
-  const activeSocialModuleThread =
-    activeThreadIndex >= 0
-      ? socialModuleThreads?.[activeThreadIndex] || null
-      : null;
+  }, [props.language, ru, socialModuleThreads]);
+  const socialModuleMemberProfiles = props.socialModuleChat.participants;
   const filteredThreadItems = useMemo(() => {
     const normalizedSearch = threadSearch.trim().toLowerCase();
 
@@ -412,19 +419,10 @@ export function Component(props: IComponentPropsExtended) {
       return threadItems;
     }
 
-    return threadItems.filter((threadItem) => {
-      return [
-        threadItem.title,
-        threadItem.preview,
-        threadItem.shortId,
-        threadItem.data.id,
-      ]
-        .join(" ")
-        .toLowerCase()
-        .includes(normalizedSearch);
-    });
+    return threadItems.filter(({ title, data }) =>
+      `${title} ${data.id}`.toLowerCase().includes(normalizedSearch),
+    );
   }, [threadItems, threadSearch]);
-  const socialModuleMemberProfiles = props.socialModuleChat.participants;
   const memberProfileIds = useMemo(
     () =>
       new Set((socialModuleMemberProfiles || []).map((profile) => profile.id)),
@@ -554,7 +552,7 @@ export function Component(props: IComponentPropsExtended) {
   const chatDisplayTitle = getLocalizedText(
     chatTitleValues,
     props.language,
-    "Untitled chat",
+    ru ? "Чат без названия" : "Untitled chat",
   );
   const canSaveChatSettings =
     hasLocalizedText(chatTitleValues) &&
@@ -603,7 +601,7 @@ export function Component(props: IComponentPropsExtended) {
             description: normalizeChatDescription(data.description),
           });
           refetchChatQueries();
-          toast.success("Chat settings saved successfully");
+          toast.success(ru ? "Настройки сохранены" : "Chat settings saved");
         },
       },
     );
@@ -699,7 +697,7 @@ export function Component(props: IComponentPropsExtended) {
           setIsChatDeleteConfirmOpen(false);
           setShowSettings(false);
           refetchChatQueries();
-          toast.success("Chat deleted");
+          toast.success(ru ? "Чат удалён" : "Chat deleted");
           router.push(`/${props.language}/social/chats`);
         },
       },
@@ -725,9 +723,9 @@ export function Component(props: IComponentPropsExtended) {
         onSuccess(data) {
           setNewThreadTitle("");
           setShowSettings(false);
-          setMobilePanel("messages");
+          closeNavigation();
           void refetchSocialModuleThreads();
-          toast.success("Thread created successfully");
+          toast.success(ru ? "Обсуждение создано" : "Thread created");
 
           if (data?.id) {
             router.push(
@@ -764,7 +762,7 @@ export function Component(props: IComponentPropsExtended) {
           setEditingThreadId(null);
           setEditThreadTitle("");
           void refetchSocialModuleThreads();
-          toast.success("Thread renamed successfully");
+          toast.success(ru ? "Название обсуждения изменено" : "Thread renamed");
         },
       },
     );
@@ -792,7 +790,7 @@ export function Component(props: IComponentPropsExtended) {
           setEditingThreadId(null);
           setEditThreadTitle("");
           void refetchSocialModuleThreads();
-          toast.success("Thread deleted successfully");
+          toast.success(ru ? "Обсуждение удалено" : "Thread deleted");
 
           if (activeSocialModuleThreadId === deletedThreadId) {
             const nextThread = remainingThreadItems[0];
@@ -812,357 +810,572 @@ export function Component(props: IComponentPropsExtended) {
     );
   };
 
+  const canManageChat =
+    props.socialModuleChat.variant !== "customer-work" &&
+    props.socialModuleChat.variant !== STORE_EMPLOYEE_CHAT_VARIANT;
+  const backToChats = ru ? "К списку чатов" : "Back to chats";
+  const threadListLabel = ru ? "Обсуждения" : "Threads";
+  const threadSearchLabel = ru ? "Поиск обсуждений" : "Search threads";
+  const settingsLabel = ru ? "Настройки чата" : "Chat settings";
+  const navigationLabel = showThreads
+    ? ru
+      ? "К списку обсуждений"
+      : "Back to threads"
+    : backToChats;
+  const navigationButtonClassName =
+    "grid size-10 shrink-0 place-items-center rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-2";
+  const openSettings = (tab: SettingsTab) => {
+    setSettingsTab(tab);
+    setShowSettings(true);
+  };
+  const settingsButton = canManageChat && (
+    <button
+      type="button"
+      aria-label={settingsLabel}
+      title={settingsLabel}
+      onClick={() => openSettings("general")}
+      className={navigationButtonClassName}
+    >
+      <Icon name="gear-six" className="size-5" />
+    </button>
+  );
+  const navigation = showThreads ? (
+    <ChatWorkspaceNavigation
+      label={threadListLabel}
+      title={chatDisplayTitle}
+      search={{
+        label: threadSearchLabel,
+        value: threadSearch,
+        onChange: setThreadSearch,
+      }}
+      leading={
+        <button
+          type="button"
+          aria-label={backToChats}
+          title={backToChats}
+          onClick={() => {
+            setChatListChatId(props.socialModuleChat.id);
+            setThreadSearch("");
+          }}
+          className={navigationButtonClassName}
+        >
+          <ArrowLeft className="size-5" aria-hidden="true" />
+        </button>
+      }
+      actions={settingsButton}
+      footer={
+        canManageChat && (
+          <div className="shrink-0 border-t border-border p-3">
+            <button
+              type="button"
+              onClick={() => openSettings("threads")}
+              className="flex min-h-10 w-full items-center gap-2 rounded-lg border border-border px-3 py-2 text-left text-sm hover:bg-muted focus-visible:outline-2 focus-visible:outline-offset-2"
+            >
+              <Plus className="size-4 shrink-0" aria-hidden="true" />
+              {ru ? "Новое обсуждение" : "New thread"}
+            </button>
+          </div>
+        )
+      }
+    >
+      {filteredThreadItems.length ? (
+        <ul className="grid min-w-0 grid-cols-[minmax(0,1fr)] gap-1">
+          {filteredThreadItems.map(({ data, title }) => (
+            <li key={data.id} className="min-w-0">
+              <SocialModuleThread
+                isServer={false}
+                variant="list-item-sidebar-ai-chat"
+                language={props.language}
+                data={data}
+                dataSource="props"
+                topic
+                href={`${chatHref}/threads/${data.id}`}
+                title={title}
+                selected={data.id === activeSocialModuleThreadId}
+                onNavigate={closeNavigation}
+                className={cn(
+                  "text-muted-foreground hover:bg-muted hover:text-foreground focus-visible:outline-foreground [&_svg]:text-muted-foreground",
+                  data.id === activeSocialModuleThreadId &&
+                    "bg-muted text-foreground",
+                )}
+              >
+                <ChatListActivity
+                  language={props.language}
+                  timestamp={data.lastMessageAt ?? data.createdAt}
+                  unreadCount={data.unreadCount}
+                />
+              </SocialModuleThread>
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <p role="status" className="px-3 py-4 text-sm text-muted-foreground">
+          {ru ? "Обсуждения не найдены" : "No matching threads"}
+        </p>
+      )}
+    </ChatWorkspaceNavigation>
+  ) : (
+    <Subject
+      isServer={false}
+      variant="social-module-profile-chat-list-default"
+      data={props.data}
+      language={props.language}
+      socialModuleProfile={props.socialModuleProfile}
+      includeSubjectProfiles
+      currentSocialModuleChatId={props.socialModuleChat.id}
+      compact
+      currentChatActions={!hasMultipleThreads && settingsButton}
+      onSelectCurrentChat={selectCurrentChat}
+    />
+  );
+  const navigationTrigger = (
+    <button
+      type="button"
+      aria-label={navigationLabel}
+      aria-controls={mobileNavigationId}
+      aria-expanded={navigationOpen}
+      onClick={() => setMobileNavigation({ href: navigationHref, open: true })}
+      className={cn(navigationButtonClassName, "lg:hidden")}
+    >
+      <ArrowLeft className="size-5" aria-hidden="true" />
+    </button>
+  );
+
   return (
     <div
       data-module="rbac"
       data-model="subject"
       data-variant={props.variant}
-      className={cn(
-        "flex h-[calc(100vh-4rem)] min-h-0 w-full flex-col overflow-hidden bg-white",
-        props.className,
-      )}
+      className={cn("w-full min-w-0", props.className)}
     >
-      <div className="flex min-h-0 flex-1 flex-col md:flex-row">
-        <aside
+      <ChatWorkspace
+        siteLayout
+        navigation={navigation}
+        navigationId={mobileNavigationId}
+        navigationClassName={cn(
+          "w-full flex-col overflow-hidden bg-card p-0 text-card-foreground lg:flex lg:w-80 lg:border-r lg:border-border",
+          navigationOpen && "flex",
+        )}
+      >
+        <div
           className={cn(
-            "min-h-0 border-r border-slate-200 bg-white md:flex md:w-1/3 md:flex-none md:flex-col",
-            mobilePanel === "threads" ? "flex flex-col" : "hidden",
+            "min-h-0 min-w-0 flex-1 flex-col lg:flex",
+            navigationOpen ? "hidden" : "flex",
           )}
         >
-          <div className="flex shrink-0 items-center justify-between gap-3 border-b border-slate-200 px-4 py-3">
-            <div className="min-w-0">
-              <h2 className="truncate text-sm font-medium text-slate-950">
-                {chatDisplayTitle}
-              </h2>
-              <p className="truncate text-xs text-slate-500">
-                {socialModuleThreadsIsLoading
-                  ? "Loading threads"
-                  : `${socialModuleThreads?.length || 0} thread${
-                      socialModuleThreads?.length === 1 ? "" : "s"
-                    }`}
-              </p>
-            </div>
-            <button
-              type="button"
-              onClick={() => {
-                setSettingsTab("general");
-                setShowSettings(true);
-              }}
-              title="Chat settings"
-              className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md border border-slate-200 bg-white text-slate-400 transition hover:bg-slate-50 hover:text-slate-600"
-            >
-              <Settings className="h-4 w-4" />
-              <span className="sr-only">Chat settings</span>
-            </button>
-          </div>
-          <div className="border-b border-slate-100 px-3 py-3">
-            <label
-              htmlFor={`thread-search-${props.socialModuleChat.id}`}
-              className="sr-only"
-            >
-              Search threads
-            </label>
-            <div className="relative">
-              <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
-              <input
-                id={`thread-search-${props.socialModuleChat.id}`}
-                value={threadSearch}
-                onChange={(event) => {
-                  setThreadSearch(event.target.value);
-                }}
-                placeholder="Search threads"
-                className="h-9 w-full rounded-lg border border-slate-200 bg-slate-50 pl-9 pr-3 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-slate-300 focus:bg-white"
-              />
-            </div>
-          </div>
-          <div className="min-h-0 flex-1 overflow-y-auto">
-            {socialModuleThreadsIsLoading ? (
-              <div className="p-4 text-sm text-slate-500">
-                Loading threads...
+          {activeSocialModuleThreadId && activeSocialModuleThread ? (
+            <Subject
+              isServer={false}
+              data={props.data}
+              language={props.language}
+              socialModuleChat={props.socialModuleChat}
+              socialModuleProfile={props.socialModuleProfile}
+              artificialIntelligenceOpponentProfile={
+                artificialIntelligenceOpponentProfile
+              }
+              knowledgeAssistantProfile={knowledgeAssistantProfile}
+              socialModuleThread={activeSocialModuleThread}
+              socialModuleThreadId={activeSocialModuleThreadId}
+              variant="social-module-profile-chat-message-list-default"
+              navigation={navigationTrigger}
+            />
+          ) : socialModuleThreadsIsLoading ? (
+            <ChatThreadSkeleton />
+          ) : (
+            <section className="flex min-h-0 min-w-0 flex-1 flex-col">
+              <header className="flex shrink-0 items-center gap-2 border-b border-border px-3 py-2 lg:hidden">
+                {navigationTrigger}
+                <h2 className="truncate text-sm font-semibold">
+                  {chatDisplayTitle}
+                </h2>
+              </header>
+              <div className="grid min-h-0 flex-1 place-items-center overflow-y-auto p-6 text-center">
+                <div>
+                  <p role="status" className="text-sm text-muted-foreground">
+                    {socialModuleThreadsIsError
+                      ? ru
+                        ? "Не удалось загрузить обсуждения."
+                        : "Could not load threads."
+                      : props.socialModuleThreadId
+                        ? ru
+                          ? "Обсуждение недоступно."
+                          : "This thread is unavailable."
+                        : ru
+                          ? "В этом чате пока нет обсуждений."
+                          : "This chat has no threads yet."}
+                  </p>
+                  {socialModuleThreadsIsError && (
+                    <button
+                      type="button"
+                      onClick={() => void refetchSocialModuleThreads()}
+                      className="mt-3 rounded-lg border border-border px-3 py-2 text-sm"
+                    >
+                      {ru ? "Повторить попытку" : "Try again"}
+                    </button>
+                  )}
+                </div>
               </div>
-            ) : filteredThreadItems.length ? (
-              filteredThreadItems.map((threadItem) => {
-                const socialModuleThread = threadItem.data;
-                const isActive =
-                  socialModuleThread.id === activeSocialModuleThreadId;
-
-                return (
-                  <button
-                    key={socialModuleThread.id}
-                    type="button"
-                    onClick={() => {
-                      setMobilePanel("messages");
-                      router.push(
-                        `/${props.language}/social/chats/${props.socialModuleChat.id}/threads/${socialModuleThread.id}`,
-                      );
-                    }}
-                    className={cn(
-                      "w-full border-b border-slate-100 px-4 py-3 text-left transition",
-                      isActive ? "bg-slate-50" : "hover:bg-slate-50/70",
-                    )}
-                  >
-                    <div className="flex items-center justify-between gap-2">
-                      <span className="truncate text-sm font-medium text-slate-900">
-                        {threadItem.title}
-                      </span>
-                      <span className="shrink-0 text-[11px] text-slate-400">
-                        {threadItem.createdAt}
-                      </span>
-                    </div>
-                    <div className="mt-2 flex items-center justify-between gap-3">
-                      <p className="min-w-0 truncate text-xs text-slate-500">
-                        {threadItem.preview}
-                      </p>
-                    </div>
-                  </button>
-                );
-              })
-            ) : (
-              <div className="p-4 text-sm text-slate-500">
-                {threadSearch ? "No matching threads." : "No thread found."}
-              </div>
-            )}
-          </div>
-        </aside>
-        {showSettings ? (
+            </section>
+          )}
+        </div>
+      </ChatWorkspace>
+      {showSettings && canManageChat ? (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/40"
+          onClick={() => {
+            setShowSettings(false);
+          }}
+        >
           <div
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/40"
-            onClick={() => {
-              setShowSettings(false);
+            className="mx-4 flex max-h-[86vh] w-full max-w-3xl flex-col overflow-hidden rounded-xl bg-white shadow-xl"
+            onClick={(event) => {
+              event.stopPropagation();
             }}
           >
-            <div
-              className="mx-4 flex max-h-[86vh] w-full max-w-3xl flex-col overflow-hidden rounded-xl bg-white shadow-xl"
-              onClick={(event) => {
-                event.stopPropagation();
-              }}
-            >
-              <div className="flex shrink-0 items-center justify-between border-b border-slate-200 px-5 py-4">
-                <div className="min-w-0">
-                  <h3 className="truncate text-sm font-medium text-slate-900">
-                    {chatDisplayTitle}
-                  </h3>
-                  <p className="truncate text-xs text-slate-400">
-                    {membersCount} member{membersCount === 1 ? "" : "s"} ·{" "}
-                    {threadItems.length} thread
-                    {threadItems.length === 1 ? "" : "s"}
-                  </p>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setShowSettings(false);
-                  }}
-                  className="flex h-7 w-7 items-center justify-center rounded-md text-slate-400 transition hover:bg-slate-100 hover:text-slate-600"
-                >
-                  <X className="h-4 w-4" />
-                  <span className="sr-only">Close settings</span>
-                </button>
+            <div className="flex shrink-0 items-center justify-between border-b border-slate-200 px-5 py-4">
+              <div className="min-w-0">
+                <h3 className="truncate text-sm font-medium text-slate-900">
+                  {chatDisplayTitle}
+                </h3>
+                <p className="truncate text-xs text-slate-400">
+                  {ru
+                    ? `Участники (${membersCount}) · Обсуждения (${threadItems.length})`
+                    : `${membersCount} member${membersCount === 1 ? "" : "s"} · ${threadItems.length} thread${threadItems.length === 1 ? "" : "s"}`}
+                </p>
               </div>
-              <div className="flex shrink-0 border-b border-slate-200">
-                {[
-                  { key: "general" as const, label: "General" },
-                  {
-                    key: "threads" as const,
-                    label: `Threads (${threadItems.length})`,
-                  },
-                  {
-                    key: "members" as const,
-                    label: `Members (${membersCount})`,
-                  },
-                ].map((tab) => {
-                  return (
-                    <button
-                      key={tab.key}
-                      type="button"
-                      onClick={() => {
-                        setSettingsTab(tab.key);
-                      }}
-                      className={cn(
-                        "flex-1 px-3 py-2.5 text-xs transition",
-                        settingsTab === tab.key
-                          ? "border-b-2 border-slate-900 text-slate-900"
-                          : "text-slate-400 hover:text-slate-600",
-                      )}
-                    >
-                      {tab.label}
-                    </button>
-                  );
-                })}
-              </div>
-              <div className="min-h-0 flex-1 overflow-y-auto overflow-x-hidden px-5 py-4">
-                {settingsTab === "general" ? (
-                  <Form {...chatSettingsForm}>
-                    <div className="space-y-5">
-                      <div>
-                        <label className="mb-1 block text-[11px] text-slate-500">
-                          Name
-                        </label>
-                        <div className="grid gap-3 sm:grid-cols-2">
-                          {internationalization.languages.map((language) => {
-                            return (
-                              <FormField
-                                key={language.code}
-                                ui="shadcn"
-                                type="text"
-                                name={`title.${language.code}`}
-                                label={language.title}
-                                form={chatSettingsForm}
-                                placeholder="Type chat title"
-                                labelClassName="mb-1 text-[11px] font-normal text-slate-400"
-                                inputClassName="border-slate-200 bg-slate-50 text-sm text-slate-700"
-                              />
-                            );
-                          })}
-                        </div>
-                      </div>
-                      <div>
-                        <label className="mb-1 block text-[11px] text-slate-500">
-                          Description
-                        </label>
-                        <div className="space-y-3">
-                          {internationalization.languages.map((language) => {
-                            return (
-                              <FormField
-                                key={language.code}
-                                ui="shadcn"
-                                type="tiptap"
-                                name={`description.${language.code}`}
-                                label={language.title}
-                                form={chatSettingsForm}
-                                placeholder="Type description"
-                                labelClassName="mb-1 text-[11px] font-normal text-slate-400"
-                                inputClassName="min-h-28 border-slate-200 bg-slate-50 text-sm text-slate-700"
-                              />
-                            );
-                          })}
-                        </div>
+              <button
+                type="button"
+                onClick={() => {
+                  setShowSettings(false);
+                }}
+                className="flex h-7 w-7 items-center justify-center rounded-md text-slate-400 transition hover:bg-slate-100 hover:text-slate-600"
+              >
+                <X className="h-4 w-4" />
+                <span className="sr-only">
+                  {ru ? "Закрыть настройки" : "Close settings"}
+                </span>
+              </button>
+            </div>
+            <div className="flex shrink-0 border-b border-slate-200">
+              {[
+                { key: "general" as const, label: ru ? "Основное" : "General" },
+                {
+                  key: "threads" as const,
+                  label: `${ru ? "Обсуждения" : "Threads"} (${threadItems.length})`,
+                },
+                {
+                  key: "members" as const,
+                  label: `${ru ? "Участники" : "Members"} (${membersCount})`,
+                },
+              ].map((tab) => {
+                return (
+                  <button
+                    key={tab.key}
+                    type="button"
+                    aria-pressed={settingsTab === tab.key}
+                    onClick={() => {
+                      setSettingsTab(tab.key);
+                    }}
+                    className={cn(
+                      "flex-1 px-3 py-2.5 text-xs transition",
+                      settingsTab === tab.key
+                        ? "border-b-2 border-slate-900 text-slate-900"
+                        : "text-slate-400 hover:text-slate-600",
+                    )}
+                  >
+                    {tab.label}
+                  </button>
+                );
+              })}
+            </div>
+            <div className="min-h-0 flex-1 overflow-y-auto overflow-x-hidden px-5 py-4">
+              {settingsTab === "general" ? (
+                <Form {...chatSettingsForm}>
+                  <div className="space-y-5">
+                    <div>
+                      <label className="mb-1 block text-[11px] text-slate-500">
+                        {ru ? "Название" : "Name"}
+                      </label>
+                      <div className="grid gap-3 sm:grid-cols-2">
+                        {internationalization.languages.map((language) => {
+                          return (
+                            <FormField
+                              key={language.code}
+                              ui="shadcn"
+                              type="text"
+                              name={`title.${language.code}`}
+                              label={language.title}
+                              form={chatSettingsForm}
+                              labelClassName="mb-1 text-[11px] font-normal text-slate-400"
+                              inputClassName="border-slate-200 bg-slate-50 text-sm text-slate-700"
+                            />
+                          );
+                        })}
                       </div>
                     </div>
-                  </Form>
-                ) : null}
-                {settingsTab === "threads" ? (
-                  <div className="space-y-3">
-                    <div className="flex items-center gap-2">
-                      <input
-                        type="text"
-                        value={newThreadTitle}
-                        onChange={(event) => {
-                          setNewThreadTitle(event.target.value);
-                        }}
-                        onKeyDown={(event) => {
-                          if (event.key === "Enter") {
-                            handleCreateThread();
-                          }
-                        }}
-                        placeholder="New thread name..."
-                        className="min-w-0 flex-1 rounded-md border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs text-slate-700 outline-none placeholder:text-slate-400 focus:border-slate-300 focus:ring-1 focus:ring-slate-200"
-                      />
+                    <div>
+                      <label className="mb-1 block text-[11px] text-slate-500">
+                        {ru ? "Описание" : "Description"}
+                      </label>
+                      <div className="space-y-3">
+                        {internationalization.languages.map((language) => {
+                          return (
+                            <FormField
+                              key={language.code}
+                              ui="shadcn"
+                              type="tiptap"
+                              name={`description.${language.code}`}
+                              label={language.title}
+                              form={chatSettingsForm}
+                              labelClassName="mb-1 text-[11px] font-normal text-slate-400"
+                              inputClassName="min-h-28 border-slate-200 bg-slate-50 text-sm text-slate-700"
+                            />
+                          );
+                        })}
+                      </div>
+                    </div>
+                  </div>
+                </Form>
+              ) : null}
+              {settingsTab === "threads" ? (
+                <div className="space-y-3">
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="text"
+                      value={newThreadTitle}
+                      onChange={(event) => {
+                        setNewThreadTitle(event.target.value);
+                      }}
+                      onKeyDown={(event) => {
+                        if (event.key === "Enter") {
+                          handleCreateThread();
+                        }
+                      }}
+                      aria-label={ru ? "Название обсуждения" : "Thread title"}
+                      placeholder={ru ? "Название обсуждения" : "Thread title"}
+                      className="min-w-0 flex-1 rounded-md border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs text-slate-700 outline-none placeholder:text-slate-400 focus:border-slate-300 focus:ring-1 focus:ring-slate-200"
+                    />
+                    <button
+                      type="button"
+                      onClick={handleCreateThread}
+                      disabled={
+                        !newThreadTitle.trim() ||
+                        socialModuleChatFindByIdThreadCreate.isPending
+                      }
+                      className="flex h-7 shrink-0 items-center gap-1 rounded-md bg-slate-900 px-2.5 text-[11px] text-white transition hover:bg-slate-800 disabled:opacity-40 disabled:hover:bg-slate-900"
+                    >
+                      <Plus className="h-3 w-3" />
+                      {ru ? "Создать" : "Create"}
+                    </button>
+                  </div>
+                  <div className="space-y-1">
+                    {threadItems.length ? (
+                      threadItems.map((threadItem) => {
+                        const renameLabel = ru
+                          ? `Переименовать обсуждение «${threadItem.title}»`
+                          : `Rename thread ${threadItem.title}`;
+                        const deleteLabel = ru
+                          ? `Удалить обсуждение «${threadItem.title}»`
+                          : `Delete thread ${threadItem.title}`;
+                        const isDeletingThread =
+                          threadDeletionIntent?.id === threadItem.data.id &&
+                          socialModuleChatFindByIdThreadDelete.isPending;
+                        return (
+                          <div
+                            key={threadItem.data.id}
+                            className="flex items-center gap-2 rounded-md px-2 py-2 hover:bg-slate-50"
+                          >
+                            <div className="min-w-0 flex-1">
+                              <p className="truncate text-xs text-slate-700">
+                                {threadItem.title}
+                              </p>
+                              <p className="mt-0.5 truncate text-[10px] text-slate-400">
+                                {threadItem.createdAt}
+                              </p>
+                            </div>
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => {
+                                setEditThreadTitle(threadItem.title);
+                                setEditingThreadId(threadItem.data.id);
+                              }}
+                              aria-label={renameLabel}
+                              title={renameLabel}
+                              className="size-10 shrink-0 rounded-xl text-muted-foreground active:bg-accent/80 active:text-accent-foreground"
+                            >
+                              <Edit3 className="size-4" aria-hidden="true" />
+                            </Button>
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => {
+                                if (
+                                  socialModuleChatFindByIdThreadDelete.isPending
+                                ) {
+                                  return;
+                                }
+                                setThreadDeletionIntent({
+                                  id: threadItem.data.id,
+                                  title: threadItem.title,
+                                });
+                              }}
+                              aria-label={deleteLabel}
+                              title={deleteLabel}
+                              disabled={isDeletingThread}
+                              aria-busy={isDeletingThread}
+                              className="size-10 shrink-0 rounded-xl text-muted-foreground hover:bg-destructive/10 hover:text-destructive active:bg-destructive/20 active:text-destructive"
+                            >
+                              <Trash2 className="size-4" aria-hidden="true" />
+                            </Button>
+                          </div>
+                        );
+                      })
+                    ) : (
+                      <p className="py-6 text-center text-xs text-slate-400">
+                        {ru ? "Обсуждений пока нет" : "No threads yet"}
+                      </p>
+                    )}
+                  </div>
+                </div>
+              ) : null}
+              {settingsTab === "members" ? (
+                <div className="space-y-3">
+                  <div className="relative">
+                    <Search className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-slate-400" />
+                    <input
+                      type="text"
+                      value={memberSearch}
+                      onChange={(event) => {
+                        setMemberSearch(event.target.value);
+                      }}
+                      placeholder="Search users..."
+                      className="w-full rounded-md border border-slate-200 bg-slate-50 py-1.5 pl-8 pr-8 text-xs text-slate-700 outline-none placeholder:text-slate-400 focus:border-slate-300 focus:ring-1 focus:ring-slate-200"
+                    />
+                    {memberSearch ? (
                       <button
                         type="button"
-                        onClick={handleCreateThread}
-                        disabled={
-                          !newThreadTitle.trim() ||
-                          socialModuleChatFindByIdThreadCreate.isPending
-                        }
-                        className="flex h-7 shrink-0 items-center gap-1 rounded-md bg-slate-900 px-2.5 text-[11px] text-white transition hover:bg-slate-800 disabled:opacity-40 disabled:hover:bg-slate-900"
+                        onClick={() => {
+                          setMemberSearch("");
+                        }}
+                        className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 transition hover:text-slate-600"
                       >
-                        <Plus className="h-3 w-3" />
-                        Add
+                        <X className="h-3 w-3" />
+                        <span className="sr-only">Clear member search</span>
                       </button>
-                    </div>
+                    ) : null}
+                  </div>
+                  <div>
+                    <h4 className="mb-1.5 text-[11px] text-slate-400">
+                      Members ({membersCount})
+                    </h4>
                     <div className="space-y-1">
-                      {threadItems.length ? (
-                        threadItems.map((threadItem) => {
+                      {filteredMemberItems.length ? (
+                        filteredMemberItems.map((profileItem) => {
+                          const isCurrentProfile =
+                            profileItem.profile.id ===
+                            props.socialModuleProfile.id;
+
                           return (
                             <div
-                              key={threadItem.data.id}
-                              className="flex items-center gap-2 rounded-md px-2 py-2 hover:bg-slate-50"
+                              key={profileItem.profile.id}
+                              className="flex items-center gap-2 rounded-md px-2 py-2 transition hover:bg-slate-50"
                             >
+                              <SocialModuleProfile
+                                isServer={false}
+                                variant="chat-profile-avatar"
+                                data={profileItem.profile}
+                                language={props.language}
+                                className="h-7 w-7 text-[11px]"
+                              />
                               <div className="min-w-0 flex-1">
                                 <p className="truncate text-xs text-slate-700">
-                                  {threadItem.title}
+                                  {profileItem.title}
                                 </p>
-                                <p className="mt-0.5 truncate text-[10px] text-slate-400">
-                                  Created {threadItem.createdAt}
+                                <p className="truncate text-[10px] text-slate-400">
+                                  {profileItem.subtitle}
                                 </p>
                               </div>
-                              <button
-                                type="button"
-                                onClick={() => {
-                                  setEditThreadTitle(threadItem.title);
-                                  setEditingThreadId(threadItem.data.id);
-                                }}
-                                title="Edit thread"
-                                className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md text-slate-300 transition hover:bg-slate-100 hover:text-slate-500"
-                              >
-                                <Edit3 className="h-3 w-3" />
-                                <span className="sr-only">Edit thread</span>
-                              </button>
-                              <button
-                                type="button"
-                                onClick={() => {
-                                  setThreadDeletionIntent({
-                                    id: threadItem.data.id,
-                                    title: threadItem.title,
-                                  });
-                                }}
-                                title="Delete thread"
-                                disabled={
-                                  socialModuleChatFindByIdThreadDelete.isPending
-                                }
-                                className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md text-slate-300 transition hover:bg-red-50 hover:text-red-500 disabled:cursor-not-allowed disabled:opacity-40"
-                              >
-                                <Trash2 className="h-3 w-3" />
-                                <span className="sr-only">Delete thread</span>
-                              </button>
+                              {isCurrentProfile ? (
+                                <div className="flex shrink-0 items-center gap-1.5">
+                                  <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[10px] text-slate-500">
+                                    You
+                                  </span>
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      setProfileRemovalIntent({
+                                        item: profileItem,
+                                        mode: "leave",
+                                      });
+                                    }}
+                                    title={
+                                      membersCount > 1
+                                        ? "Leave chat"
+                                        : "Cannot leave the last member chat"
+                                    }
+                                    disabled={
+                                      membersCount <= 1 ||
+                                      socialModuleChatFindByIdProfileDelete.isPending
+                                    }
+                                    className="flex h-6 w-6 items-center justify-center rounded-md text-slate-300 transition hover:bg-red-50 hover:text-red-500 disabled:cursor-not-allowed disabled:opacity-40"
+                                  >
+                                    <LogOut className="h-3.5 w-3.5" />
+                                    <span className="sr-only">Leave chat</span>
+                                  </button>
+                                </div>
+                              ) : membersCount > 1 ? (
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    setProfileRemovalIntent({
+                                      item: profileItem,
+                                      mode: "remove",
+                                    });
+                                  }}
+                                  title="Remove member"
+                                  disabled={
+                                    socialModuleChatFindByIdProfileDelete.isPending
+                                  }
+                                  className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md text-slate-300 transition hover:bg-red-50 hover:text-red-500 disabled:cursor-not-allowed disabled:opacity-40"
+                                >
+                                  <UserMinus className="h-3.5 w-3.5" />
+                                  <span className="sr-only">Remove member</span>
+                                </button>
+                              ) : null}
                             </div>
                           );
                         })
                       ) : (
-                        <p className="py-6 text-center text-xs text-slate-400">
-                          No threads yet
+                        <p className="py-4 text-center text-xs text-slate-400">
+                          {memberSearch
+                            ? "No matching members"
+                            : "No members found"}
                         </p>
                       )}
                     </div>
                   </div>
-                ) : null}
-                {settingsTab === "members" ? (
-                  <div className="space-y-3">
-                    <div className="relative">
-                      <Search className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-slate-400" />
-                      <input
-                        type="text"
-                        value={memberSearch}
-                        onChange={(event) => {
-                          setMemberSearch(event.target.value);
-                        }}
-                        placeholder="Search users..."
-                        className="w-full rounded-md border border-slate-200 bg-slate-50 py-1.5 pl-8 pr-8 text-xs text-slate-700 outline-none placeholder:text-slate-400 focus:border-slate-300 focus:ring-1 focus:ring-slate-200"
-                      />
-                      {memberSearch ? (
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setMemberSearch("");
-                          }}
-                          className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 transition hover:text-slate-600"
-                        >
-                          <X className="h-3 w-3" />
-                          <span className="sr-only">Clear member search</span>
-                        </button>
-                      ) : null}
-                    </div>
-                    <div>
+                  {memberSearch.trim() ? (
+                    <div className="border-t border-slate-200 pt-3">
                       <h4 className="mb-1.5 text-[11px] text-slate-400">
-                        Members ({membersCount})
+                        User profiles
                       </h4>
-                      <div className="space-y-1">
-                        {filteredMemberItems.length ? (
-                          filteredMemberItems.map((profileItem) => {
-                            const isCurrentProfile =
-                              profileItem.profile.id ===
-                              props.socialModuleProfile.id;
+                      {!canSearchProfiles ? (
+                        <p className="py-4 text-center text-xs text-slate-400">
+                          Type at least 2 characters to search users.
+                        </p>
+                      ) : searchedSocialModuleProfilesIsLoading ||
+                        searchedSocialModuleProfilesIsFetching ? (
+                        <p className="py-4 text-center text-xs text-slate-400">
+                          Searching users...
+                        </p>
+                      ) : searchedProfileItems.length ? (
+                        <div className="space-y-1">
+                          {searchedProfileItems.map((profileItem) => {
+                            const isAdding =
+                              pendingAddProfileId === profileItem.profile.id;
 
                             return (
                               <div
@@ -1174,589 +1387,419 @@ export function Component(props: IComponentPropsExtended) {
                                   variant="chat-profile-avatar"
                                   data={profileItem.profile}
                                   language={props.language}
-                                  className="h-7 w-7 text-[11px]"
+                                  className="h-7 w-7 text-[11px] opacity-70"
                                 />
                                 <div className="min-w-0 flex-1">
-                                  <p className="truncate text-xs text-slate-700">
+                                  <p className="truncate text-xs text-slate-500">
                                     {profileItem.title}
                                   </p>
                                   <p className="truncate text-[10px] text-slate-400">
                                     {profileItem.subtitle}
                                   </p>
                                 </div>
-                                {isCurrentProfile ? (
-                                  <div className="flex shrink-0 items-center gap-1.5">
-                                    <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[10px] text-slate-500">
-                                      You
-                                    </span>
-                                    <button
-                                      type="button"
-                                      onClick={() => {
-                                        setProfileRemovalIntent({
-                                          item: profileItem,
-                                          mode: "leave",
-                                        });
-                                      }}
-                                      title={
-                                        membersCount > 1
-                                          ? "Leave chat"
-                                          : "Cannot leave the last member chat"
-                                      }
-                                      disabled={
-                                        membersCount <= 1 ||
-                                        socialModuleChatFindByIdProfileDelete.isPending
-                                      }
-                                      className="flex h-6 w-6 items-center justify-center rounded-md text-slate-300 transition hover:bg-red-50 hover:text-red-500 disabled:cursor-not-allowed disabled:opacity-40"
-                                    >
-                                      <LogOut className="h-3.5 w-3.5" />
-                                      <span className="sr-only">
-                                        Leave chat
-                                      </span>
-                                    </button>
-                                  </div>
-                                ) : membersCount > 1 ? (
-                                  <button
-                                    type="button"
-                                    onClick={() => {
-                                      setProfileRemovalIntent({
-                                        item: profileItem,
-                                        mode: "remove",
-                                      });
-                                    }}
-                                    title="Remove member"
-                                    disabled={
-                                      socialModuleChatFindByIdProfileDelete.isPending
-                                    }
-                                    className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md text-slate-300 transition hover:bg-red-50 hover:text-red-500 disabled:cursor-not-allowed disabled:opacity-40"
-                                  >
-                                    <UserMinus className="h-3.5 w-3.5" />
-                                    <span className="sr-only">
-                                      Remove member
-                                    </span>
-                                  </button>
-                                ) : null}
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    handleAddProfile(profileItem);
+                                  }}
+                                  title="Add member"
+                                  disabled={
+                                    isAdding ||
+                                    socialModuleChatFindByIdProfileCreate.isPending
+                                  }
+                                  className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md text-slate-300 transition hover:bg-green-50 hover:text-green-600 disabled:cursor-not-allowed disabled:opacity-40"
+                                >
+                                  <UserPlus className="h-3.5 w-3.5" />
+                                  <span className="sr-only">Add member</span>
+                                </button>
                               </div>
                             );
-                          })
-                        ) : (
-                          <p className="py-4 text-center text-xs text-slate-400">
-                            {memberSearch
-                              ? "No matching members"
-                              : "No members found"}
-                          </p>
-                        )}
-                      </div>
-                    </div>
-                    {memberSearch.trim() ? (
-                      <div className="border-t border-slate-200 pt-3">
-                        <h4 className="mb-1.5 text-[11px] text-slate-400">
-                          User profiles
-                        </h4>
-                        {!canSearchProfiles ? (
-                          <p className="py-4 text-center text-xs text-slate-400">
-                            Type at least 2 characters to search users.
-                          </p>
-                        ) : searchedSocialModuleProfilesIsLoading ||
-                          searchedSocialModuleProfilesIsFetching ? (
-                          <p className="py-4 text-center text-xs text-slate-400">
-                            Searching users...
-                          </p>
-                        ) : searchedProfileItems.length ? (
-                          <div className="space-y-1">
-                            {searchedProfileItems.map((profileItem) => {
-                              const isAdding =
-                                pendingAddProfileId === profileItem.profile.id;
+                          })}
+                        </div>
+                      ) : (
+                        <p className="py-4 text-center text-xs text-slate-400">
+                          No users found
+                        </p>
+                      )}
+                      <h4 className="mb-1.5 mt-3 text-[11px] text-slate-400">
+                        Agents
+                      </h4>
+                      {!canSearchProfiles ? (
+                        <p className="py-4 text-center text-xs text-slate-400">
+                          Type at least 2 characters to search agents.
+                        </p>
+                      ) : searchedAgentSubjectsIsLoading ||
+                        searchedAgentSubjectsIsFetching ? (
+                        <p className="py-4 text-center text-xs text-slate-400">
+                          Searching agents...
+                        </p>
+                      ) : searchedAgentSubjectItems.length ? (
+                        <div className="space-y-1">
+                          {searchedAgentSubjectItems.map((agentSubjectItem) => {
+                            const isAdding =
+                              pendingAddAgentSubjectId ===
+                              agentSubjectItem.subject.id;
 
-                              return (
-                                <div
-                                  key={profileItem.profile.id}
-                                  className="flex items-center gap-2 rounded-md px-2 py-2 transition hover:bg-slate-50"
-                                >
-                                  <SocialModuleProfile
-                                    isServer={false}
-                                    variant="chat-profile-avatar"
-                                    data={profileItem.profile}
-                                    language={props.language}
-                                    className="h-7 w-7 text-[11px] opacity-70"
-                                  />
-                                  <div className="min-w-0 flex-1">
-                                    <p className="truncate text-xs text-slate-500">
-                                      {profileItem.title}
-                                    </p>
-                                    <p className="truncate text-[10px] text-slate-400">
-                                      {profileItem.subtitle}
-                                    </p>
-                                  </div>
-                                  <button
-                                    type="button"
-                                    onClick={() => {
-                                      handleAddProfile(profileItem);
-                                    }}
-                                    title="Add member"
-                                    disabled={
-                                      isAdding ||
-                                      socialModuleChatFindByIdProfileCreate.isPending
-                                    }
-                                    className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md text-slate-300 transition hover:bg-green-50 hover:text-green-600 disabled:cursor-not-allowed disabled:opacity-40"
-                                  >
-                                    <UserPlus className="h-3.5 w-3.5" />
-                                    <span className="sr-only">Add member</span>
-                                  </button>
+                            return (
+                              <div
+                                key={agentSubjectItem.subject.id}
+                                className="flex items-center gap-2 rounded-md px-2 py-2 transition hover:bg-slate-50"
+                              >
+                                <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-slate-100 text-[11px] font-medium text-slate-500 opacity-70">
+                                  {agentSubjectItem.initial}
                                 </div>
-                              );
-                            })}
-                          </div>
-                        ) : (
-                          <p className="py-4 text-center text-xs text-slate-400">
-                            No users found
-                          </p>
-                        )}
-                        <h4 className="mb-1.5 mt-3 text-[11px] text-slate-400">
-                          Agents
-                        </h4>
-                        {!canSearchProfiles ? (
-                          <p className="py-4 text-center text-xs text-slate-400">
-                            Type at least 2 characters to search agents.
-                          </p>
-                        ) : searchedAgentSubjectsIsLoading ||
-                          searchedAgentSubjectsIsFetching ? (
-                          <p className="py-4 text-center text-xs text-slate-400">
-                            Searching agents...
-                          </p>
-                        ) : searchedAgentSubjectItems.length ? (
-                          <div className="space-y-1">
-                            {searchedAgentSubjectItems.map(
-                              (agentSubjectItem) => {
-                                const isAdding =
-                                  pendingAddAgentSubjectId ===
-                                  agentSubjectItem.subject.id;
-
-                                return (
-                                  <div
-                                    key={agentSubjectItem.subject.id}
-                                    className="flex items-center gap-2 rounded-md px-2 py-2 transition hover:bg-slate-50"
-                                  >
-                                    <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-slate-100 text-[11px] font-medium text-slate-500 opacity-70">
-                                      {agentSubjectItem.initial}
-                                    </div>
-                                    <div className="min-w-0 flex-1">
-                                      <p className="truncate text-xs text-slate-500">
-                                        {agentSubjectItem.title}
-                                      </p>
-                                      <p className="truncate text-[10px] text-slate-400">
-                                        Agent subject
-                                      </p>
-                                    </div>
-                                    <button
-                                      type="button"
-                                      onClick={() => {
-                                        handleAddAgentSubject(agentSubjectItem);
-                                      }}
-                                      title="Add agent"
-                                      disabled={
-                                        isAdding ||
-                                        socialModuleChatFindByIdProfileCreate.isPending
-                                      }
-                                      className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md text-slate-300 transition hover:bg-green-50 hover:text-green-600 disabled:cursor-not-allowed disabled:opacity-40"
-                                    >
-                                      <UserPlus className="h-3.5 w-3.5" />
-                                      <span className="sr-only">Add agent</span>
-                                    </button>
-                                  </div>
-                                );
-                              },
-                            )}
-                          </div>
-                        ) : (
-                          <p className="py-4 text-center text-xs text-slate-400">
-                            No agents found
-                          </p>
-                        )}
-                      </div>
-                    ) : null}
-                  </div>
-                ) : null}
-              </div>
-              {settingsTab === "general" ? (
-                <div className="flex shrink-0 items-center justify-between gap-3 border-t border-slate-200 px-5 py-3">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setIsChatDeleteConfirmOpen(true);
-                    }}
-                    disabled={
-                      socialModuleProfileFindByIdChatFindByIdDelete.isPending
-                    }
-                    className="inline-flex h-9 items-center gap-2 rounded-md px-3 text-xs text-red-600 transition hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-40"
-                  >
-                    <Trash2 className="h-3.5 w-3.5" />
-                    Delete chat
-                  </button>
-                  <button
-                    type="button"
-                    onClick={handleSaveChatSettings}
-                    disabled={!canSaveChatSettings}
-                    className="h-9 rounded-md bg-slate-900 px-4 text-xs text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-slate-900"
-                  >
-                    {socialModuleChatFindByIdUpdate.isPending
-                      ? "Saving..."
-                      : "Save"}
-                  </button>
+                                <div className="min-w-0 flex-1">
+                                  <p className="truncate text-xs text-slate-500">
+                                    {agentSubjectItem.title}
+                                  </p>
+                                  <p className="truncate text-[10px] text-slate-400">
+                                    Agent subject
+                                  </p>
+                                </div>
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    handleAddAgentSubject(agentSubjectItem);
+                                  }}
+                                  title="Add agent"
+                                  disabled={
+                                    isAdding ||
+                                    socialModuleChatFindByIdProfileCreate.isPending
+                                  }
+                                  className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md text-slate-300 transition hover:bg-green-50 hover:text-green-600 disabled:cursor-not-allowed disabled:opacity-40"
+                                >
+                                  <UserPlus className="h-3.5 w-3.5" />
+                                  <span className="sr-only">Add agent</span>
+                                </button>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      ) : (
+                        <p className="py-4 text-center text-xs text-slate-400">
+                          No agents found
+                        </p>
+                      )}
+                    </div>
+                  ) : null}
                 </div>
               ) : null}
             </div>
-          </div>
-        ) : null}
-        {isChatDeleteConfirmOpen ? (
-          <div
-            className="fixed inset-0 z-[60] flex items-center justify-center bg-black/40"
-            onClick={() => {
-              if (!socialModuleProfileFindByIdChatFindByIdDelete.isPending) {
-                setIsChatDeleteConfirmOpen(false);
-              }
-            }}
-          >
-            <div
-              className="mx-4 w-full max-w-sm rounded-xl bg-white p-5 shadow-xl"
-              onClick={(event) => {
-                event.stopPropagation();
-              }}
-            >
-              <div className="mb-4 flex items-center justify-between">
-                <h3 className="text-sm font-medium text-slate-900">
-                  Delete chat
-                </h3>
+            {settingsTab === "general" ? (
+              <div className="flex shrink-0 items-center justify-between gap-3 border-t border-slate-200 px-5 py-3">
                 <button
                   type="button"
                   onClick={() => {
-                    setIsChatDeleteConfirmOpen(false);
+                    setIsChatDeleteConfirmOpen(true);
                   }}
                   disabled={
                     socialModuleProfileFindByIdChatFindByIdDelete.isPending
                   }
-                  className="text-slate-400 transition hover:text-slate-600 disabled:cursor-not-allowed disabled:opacity-40"
+                  className="inline-flex h-9 items-center gap-2 rounded-md px-3 text-xs text-red-600 transition hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-40"
                 >
-                  <X className="h-4 w-4" />
-                  <span className="sr-only">Close confirmation</span>
+                  <Trash2 className="h-3.5 w-3.5" />
+                  Delete chat
+                </button>
+                <button
+                  type="button"
+                  onClick={handleSaveChatSettings}
+                  disabled={!canSaveChatSettings}
+                  className="h-9 rounded-md bg-slate-900 px-4 text-xs text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-slate-900"
+                >
+                  {socialModuleChatFindByIdUpdate.isPending
+                    ? "Saving..."
+                    : "Save"}
                 </button>
               </div>
+            ) : null}
+          </div>
+        </div>
+      ) : null}
+      {isChatDeleteConfirmOpen ? (
+        <div
+          className="fixed inset-0 z-[60] flex items-center justify-center bg-black/40"
+          onClick={() => {
+            if (!socialModuleProfileFindByIdChatFindByIdDelete.isPending) {
+              setIsChatDeleteConfirmOpen(false);
+            }
+          }}
+        >
+          <div
+            className="mx-4 w-full max-w-sm rounded-xl bg-white p-5 shadow-xl"
+            onClick={(event) => {
+              event.stopPropagation();
+            }}
+          >
+            <div className="mb-4 flex items-center justify-between">
+              <h3 className="text-sm font-medium text-slate-900">
+                Delete chat
+              </h3>
+              <button
+                type="button"
+                onClick={() => {
+                  setIsChatDeleteConfirmOpen(false);
+                }}
+                disabled={
+                  socialModuleProfileFindByIdChatFindByIdDelete.isPending
+                }
+                className="text-slate-400 transition hover:text-slate-600 disabled:cursor-not-allowed disabled:opacity-40"
+              >
+                <X className="h-4 w-4" />
+                <span className="sr-only">Close confirmation</span>
+              </button>
+            </div>
+            <p className="text-sm leading-6 text-slate-600">
+              Delete{" "}
+              <span className="font-medium text-slate-900">
+                {chatDisplayTitle}
+              </span>
+              ? This chat will be deleted for all members, including its
+              threads, messages, and actions.
+            </p>
+            <div className="mt-4 flex justify-end gap-2">
+              <button
+                type="button"
+                onClick={() => {
+                  setIsChatDeleteConfirmOpen(false);
+                }}
+                disabled={
+                  socialModuleProfileFindByIdChatFindByIdDelete.isPending
+                }
+                className="rounded-md px-3 py-1.5 text-xs text-slate-500 transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-40"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={handleConfirmDeleteChat}
+                disabled={
+                  socialModuleProfileFindByIdChatFindByIdDelete.isPending
+                }
+                className="rounded-md bg-red-600 px-3 py-1.5 text-xs text-white transition hover:bg-red-500 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-red-600"
+              >
+                {socialModuleProfileFindByIdChatFindByIdDelete.isPending
+                  ? "Deleting..."
+                  : "Delete chat"}
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
+      {profileRemovalIntent ? (
+        <div
+          className="fixed inset-0 z-[60] flex items-center justify-center bg-black/40"
+          onClick={() => {
+            if (!socialModuleChatFindByIdProfileDelete.isPending) {
+              setProfileRemovalIntent(null);
+            }
+          }}
+        >
+          <div
+            className="mx-4 w-full max-w-sm rounded-xl bg-white p-5 shadow-xl"
+            onClick={(event) => {
+              event.stopPropagation();
+            }}
+          >
+            <div className="mb-4 flex items-center justify-between">
+              <h3 className="text-sm font-medium text-slate-900">
+                {profileRemovalIntent.mode === "leave"
+                  ? "Leave chat"
+                  : "Remove member"}
+              </h3>
+              <button
+                type="button"
+                onClick={() => {
+                  setProfileRemovalIntent(null);
+                }}
+                disabled={socialModuleChatFindByIdProfileDelete.isPending}
+                className="text-slate-400 transition hover:text-slate-600 disabled:cursor-not-allowed disabled:opacity-40"
+              >
+                <X className="h-4 w-4" />
+                <span className="sr-only">Close confirmation</span>
+              </button>
+            </div>
+            {profileRemovalIntent.mode === "leave" ? (
               <p className="text-sm leading-6 text-slate-600">
-                Delete{" "}
+                Leave{" "}
                 <span className="font-medium text-slate-900">
                   {chatDisplayTitle}
                 </span>
-                ? This chat will be deleted for all members, including its
-                threads, messages, and actions.
+                ? You will no longer see this chat in your chat list.
               </p>
-              <div className="mt-4 flex justify-end gap-2">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setIsChatDeleteConfirmOpen(false);
-                  }}
-                  disabled={
-                    socialModuleProfileFindByIdChatFindByIdDelete.isPending
-                  }
-                  className="rounded-md px-3 py-1.5 text-xs text-slate-500 transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-40"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="button"
-                  onClick={handleConfirmDeleteChat}
-                  disabled={
-                    socialModuleProfileFindByIdChatFindByIdDelete.isPending
-                  }
-                  className="rounded-md bg-red-600 px-3 py-1.5 text-xs text-white transition hover:bg-red-500 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-red-600"
-                >
-                  {socialModuleProfileFindByIdChatFindByIdDelete.isPending
-                    ? "Deleting..."
-                    : "Delete chat"}
-                </button>
-              </div>
-            </div>
-          </div>
-        ) : null}
-        {profileRemovalIntent ? (
-          <div
-            className="fixed inset-0 z-[60] flex items-center justify-center bg-black/40"
-            onClick={() => {
-              if (!socialModuleChatFindByIdProfileDelete.isPending) {
-                setProfileRemovalIntent(null);
-              }
-            }}
-          >
-            <div
-              className="mx-4 w-full max-w-sm rounded-xl bg-white p-5 shadow-xl"
-              onClick={(event) => {
-                event.stopPropagation();
-              }}
-            >
-              <div className="mb-4 flex items-center justify-between">
-                <h3 className="text-sm font-medium text-slate-900">
-                  {profileRemovalIntent.mode === "leave"
-                    ? "Leave chat"
-                    : "Remove member"}
-                </h3>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setProfileRemovalIntent(null);
-                  }}
-                  disabled={socialModuleChatFindByIdProfileDelete.isPending}
-                  className="text-slate-400 transition hover:text-slate-600 disabled:cursor-not-allowed disabled:opacity-40"
-                >
-                  <X className="h-4 w-4" />
-                  <span className="sr-only">Close confirmation</span>
-                </button>
-              </div>
-              {profileRemovalIntent.mode === "leave" ? (
-                <p className="text-sm leading-6 text-slate-600">
-                  Leave{" "}
-                  <span className="font-medium text-slate-900">
-                    {chatDisplayTitle}
-                  </span>
-                  ? You will no longer see this chat in your chat list.
-                </p>
-              ) : (
-                <p className="text-sm leading-6 text-slate-600">
-                  Remove{" "}
-                  <span className="font-medium text-slate-900">
-                    {profileRemovalIntent.item.title}
-                  </span>{" "}
-                  from this chat?
-                </p>
-              )}
-              <div className="mt-4 flex justify-end gap-2">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setProfileRemovalIntent(null);
-                  }}
-                  disabled={socialModuleChatFindByIdProfileDelete.isPending}
-                  className="rounded-md px-3 py-1.5 text-xs text-slate-500 transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-40"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="button"
-                  onClick={handleConfirmRemoveProfile}
-                  disabled={socialModuleChatFindByIdProfileDelete.isPending}
-                  className="rounded-md bg-red-600 px-3 py-1.5 text-xs text-white transition hover:bg-red-500 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-red-600"
-                >
-                  {socialModuleChatFindByIdProfileDelete.isPending
-                    ? profileRemovalIntent.mode === "leave"
-                      ? "Leaving..."
-                      : "Removing..."
-                    : profileRemovalIntent.mode === "leave"
-                      ? "Leave chat"
-                      : "Remove"}
-                </button>
-              </div>
-            </div>
-          </div>
-        ) : null}
-        {threadDeletionIntent ? (
-          <div
-            className="fixed inset-0 z-[60] flex items-center justify-center bg-black/40"
-            onClick={() => {
-              if (!socialModuleChatFindByIdThreadDelete.isPending) {
-                setThreadDeletionIntent(null);
-              }
-            }}
-          >
-            <div
-              className="mx-4 w-full max-w-sm rounded-xl bg-white p-5 shadow-xl"
-              onClick={(event) => {
-                event.stopPropagation();
-              }}
-            >
-              <div className="mb-4 flex items-center justify-between">
-                <h3 className="text-sm font-medium text-slate-900">
-                  Delete thread
-                </h3>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setThreadDeletionIntent(null);
-                  }}
-                  disabled={socialModuleChatFindByIdThreadDelete.isPending}
-                  className="text-slate-400 transition hover:text-slate-600 disabled:cursor-not-allowed disabled:opacity-40"
-                >
-                  <X className="h-4 w-4" />
-                  <span className="sr-only">Close confirmation</span>
-                </button>
-              </div>
-              <p className="text-sm leading-6 text-slate-600">
-                Delete{" "}
-                <span className="font-medium text-slate-900">
-                  {threadDeletionIntent.title}
-                </span>
-                ? Messages in this thread will be removed from this chat. If it
-                is linked to a Telegram topic, the topic will also be deleted.
-              </p>
-              <div className="mt-4 flex justify-end gap-2">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setThreadDeletionIntent(null);
-                  }}
-                  disabled={socialModuleChatFindByIdThreadDelete.isPending}
-                  className="rounded-md px-3 py-1.5 text-xs text-slate-500 transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-40"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="button"
-                  onClick={handleConfirmDeleteThread}
-                  disabled={socialModuleChatFindByIdThreadDelete.isPending}
-                  className="rounded-md bg-red-600 px-3 py-1.5 text-xs text-white transition hover:bg-red-500 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-red-600"
-                >
-                  {socialModuleChatFindByIdThreadDelete.isPending
-                    ? "Deleting..."
-                    : "Delete thread"}
-                </button>
-              </div>
-            </div>
-          </div>
-        ) : null}
-        {editingThreadId ? (
-          <div
-            className="fixed inset-0 z-[60] flex items-center justify-center bg-black/40"
-            onClick={() => {
-              setEditingThreadId(null);
-            }}
-          >
-            <div
-              className="mx-4 w-full max-w-sm rounded-xl bg-white p-5 shadow-xl"
-              onClick={(event) => {
-                event.stopPropagation();
-              }}
-            >
-              <div className="mb-4 flex items-center justify-between">
-                <h3 className="text-sm font-medium text-slate-900">
-                  Edit Thread
-                </h3>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setEditingThreadId(null);
-                  }}
-                  className="text-slate-400 hover:text-slate-600"
-                >
-                  <X className="h-4 w-4" />
-                  <span className="sr-only">Close editor</span>
-                </button>
-              </div>
-              <div>
-                <label className="mb-1 block text-[11px] text-slate-500">
-                  Title
-                </label>
-                <input
-                  type="text"
-                  value={editThreadTitle}
-                  onChange={(event) => {
-                    setEditThreadTitle(event.target.value);
-                  }}
-                  onKeyDown={(event) => {
-                    if (event.key === "Enter") {
-                      handleSaveThread();
-                    }
-                  }}
-                  autoFocus
-                  className="w-full rounded-md border border-slate-200 bg-slate-50 px-3 py-1.5 text-sm text-slate-700 outline-none placeholder:text-slate-400 focus:border-slate-300 focus:ring-1 focus:ring-slate-200"
-                />
-              </div>
-              <div className="mt-4 flex justify-end gap-2">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setEditingThreadId(null);
-                  }}
-                  className="rounded-md px-3 py-1.5 text-xs text-slate-500 transition hover:bg-slate-100"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="button"
-                  onClick={handleSaveThread}
-                  disabled={
-                    !editThreadTitle.trim() ||
-                    socialModuleChatFindByIdThreadUpdate.isPending
-                  }
-                  className="rounded-md bg-slate-900 px-3 py-1.5 text-xs text-white transition hover:bg-slate-800 disabled:opacity-40 disabled:hover:bg-slate-900"
-                >
-                  Save
-                </button>
-              </div>
-            </div>
-          </div>
-        ) : null}
-        <section
-          className={cn(
-            "min-h-0 bg-white md:w-2/3 md:min-w-0 md:flex-none md:flex-col",
-            mobilePanel === "messages" ? "flex flex-col" : "hidden",
-          )}
-        >
-          <div className="flex shrink-0 items-center gap-2 border-b border-slate-200 px-4 py-3">
-            <button
-              type="button"
-              onClick={() => {
-                setMobilePanel("threads");
-              }}
-              className="inline-flex h-8 w-8 items-center justify-center rounded-md text-slate-500 hover:bg-slate-100 md:hidden"
-              aria-label="Back to threads"
-            >
-              <ChevronLeft className="h-4 w-4" />
-            </button>
-            <div className="min-w-0 flex-1">
-              <h2 className="truncate text-sm font-medium text-slate-950">
-                {activeThreadTitle}
-              </h2>
-              <p className="truncate text-xs text-slate-500">
-                {activeSocialModuleThreadId
-                  ? `Thread ${activeSocialModuleThreadId.slice(0, 8)}`
-                  : "Waiting for a thread"}
-              </p>
-            </div>
-          </div>
-          <div className="min-h-0 flex-1 overflow-hidden">
-            {!activeSocialModuleThreadId ? (
-              <div className="flex h-full flex-col items-center justify-center bg-white px-6 text-center">
-                <h3 className="text-sm font-medium text-slate-700">
-                  {socialModuleThreadsIsLoading
-                    ? "Loading threads"
-                    : "No thread selected"}
-                </h3>
-                <p className="mt-1 max-w-sm text-xs text-slate-400">
-                  {socialModuleThreadsIsLoading
-                    ? "Messages will appear after the active thread is resolved."
-                    : "Create or select a thread to open the message timeline."}
-                </p>
-              </div>
-            ) : activeSocialModuleThread ? (
-              <Subject
-                isServer={false}
-                data={props.data}
-                language={props.language}
-                socialModuleChat={props.socialModuleChat}
-                socialModuleProfile={props.socialModuleProfile}
-                artificialIntelligenceOpponentProfile={
-                  artificialIntelligenceOpponentProfile
-                }
-                knowledgeAssistantProfile={knowledgeAssistantProfile}
-                socialModuleThread={activeSocialModuleThread}
-                socialModuleThreadId={activeSocialModuleThreadId}
-                variant="social-module-profile-chat-message-list-default"
-              />
             ) : (
-              <div className="flex h-full items-center justify-center bg-white px-6 text-center text-sm text-slate-500">
-                Loading thread settings
-              </div>
+              <p className="text-sm leading-6 text-slate-600">
+                Remove{" "}
+                <span className="font-medium text-slate-900">
+                  {profileRemovalIntent.item.title}
+                </span>{" "}
+                from this chat?
+              </p>
             )}
+            <div className="mt-4 flex justify-end gap-2">
+              <button
+                type="button"
+                onClick={() => {
+                  setProfileRemovalIntent(null);
+                }}
+                disabled={socialModuleChatFindByIdProfileDelete.isPending}
+                className="rounded-md px-3 py-1.5 text-xs text-slate-500 transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-40"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={handleConfirmRemoveProfile}
+                disabled={socialModuleChatFindByIdProfileDelete.isPending}
+                className="rounded-md bg-red-600 px-3 py-1.5 text-xs text-white transition hover:bg-red-500 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-red-600"
+              >
+                {socialModuleChatFindByIdProfileDelete.isPending
+                  ? profileRemovalIntent.mode === "leave"
+                    ? "Leaving..."
+                    : "Removing..."
+                  : profileRemovalIntent.mode === "leave"
+                    ? "Leave chat"
+                    : "Remove"}
+              </button>
+            </div>
           </div>
-        </section>
-      </div>
+        </div>
+      ) : null}
+      {threadDeletionIntent ? (
+        <div
+          className="fixed inset-0 z-[60] flex items-center justify-center bg-black/40"
+          onClick={() => {
+            if (!socialModuleChatFindByIdThreadDelete.isPending) {
+              setThreadDeletionIntent(null);
+            }
+          }}
+        >
+          <div
+            className="mx-4 w-full max-w-sm rounded-xl bg-white p-5 shadow-xl"
+            onClick={(event) => {
+              event.stopPropagation();
+            }}
+          >
+            <div className="mb-4 flex items-center justify-between">
+              <h3 className="text-sm font-medium text-slate-900">
+                Delete thread
+              </h3>
+              <button
+                type="button"
+                onClick={() => {
+                  setThreadDeletionIntent(null);
+                }}
+                disabled={socialModuleChatFindByIdThreadDelete.isPending}
+                className="text-slate-400 transition hover:text-slate-600 disabled:cursor-not-allowed disabled:opacity-40"
+              >
+                <X className="h-4 w-4" />
+                <span className="sr-only">Close confirmation</span>
+              </button>
+            </div>
+            <p className="text-sm leading-6 text-slate-600">
+              Delete{" "}
+              <span className="font-medium text-slate-900">
+                {threadDeletionIntent.title}
+              </span>
+              ? Messages in this thread will be removed from this chat. If it is
+              linked to a Telegram topic, the topic will also be deleted.
+            </p>
+            <div className="mt-4 flex justify-end gap-2">
+              <button
+                type="button"
+                onClick={() => {
+                  setThreadDeletionIntent(null);
+                }}
+                disabled={socialModuleChatFindByIdThreadDelete.isPending}
+                className="rounded-md px-3 py-1.5 text-xs text-slate-500 transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-40"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={handleConfirmDeleteThread}
+                disabled={socialModuleChatFindByIdThreadDelete.isPending}
+                className="rounded-md bg-red-600 px-3 py-1.5 text-xs text-white transition hover:bg-red-500 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-red-600"
+              >
+                {socialModuleChatFindByIdThreadDelete.isPending
+                  ? "Deleting..."
+                  : "Delete thread"}
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
+      {editingThreadId ? (
+        <div
+          className="fixed inset-0 z-[60] flex items-center justify-center bg-black/40"
+          onClick={() => {
+            setEditingThreadId(null);
+          }}
+        >
+          <div
+            className="mx-4 w-full max-w-sm rounded-xl bg-white p-5 shadow-xl"
+            onClick={(event) => {
+              event.stopPropagation();
+            }}
+          >
+            <div className="mb-4 flex items-center justify-between">
+              <h3 className="text-sm font-medium text-slate-900">
+                Edit Thread
+              </h3>
+              <button
+                type="button"
+                onClick={() => {
+                  setEditingThreadId(null);
+                }}
+                className="text-slate-400 hover:text-slate-600"
+              >
+                <X className="h-4 w-4" />
+                <span className="sr-only">Close editor</span>
+              </button>
+            </div>
+            <div>
+              <label className="mb-1 block text-[11px] text-slate-500">
+                Title
+              </label>
+              <input
+                type="text"
+                value={editThreadTitle}
+                onChange={(event) => {
+                  setEditThreadTitle(event.target.value);
+                }}
+                onKeyDown={(event) => {
+                  if (event.key === "Enter") {
+                    handleSaveThread();
+                  }
+                }}
+                autoFocus
+                className="w-full rounded-md border border-slate-200 bg-slate-50 px-3 py-1.5 text-sm text-slate-700 outline-none placeholder:text-slate-400 focus:border-slate-300 focus:ring-1 focus:ring-slate-200"
+              />
+            </div>
+            <div className="mt-4 flex justify-end gap-2">
+              <button
+                type="button"
+                onClick={() => {
+                  setEditingThreadId(null);
+                }}
+                className="rounded-md px-3 py-1.5 text-xs text-slate-500 transition hover:bg-slate-100"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={handleSaveThread}
+                disabled={
+                  !editThreadTitle.trim() ||
+                  socialModuleChatFindByIdThreadUpdate.isPending
+                }
+                className="rounded-md bg-slate-900 px-3 py-1.5 text-xs text-white transition hover:bg-slate-800 disabled:opacity-40 disabled:hover:bg-slate-900"
+              >
+                Save
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }

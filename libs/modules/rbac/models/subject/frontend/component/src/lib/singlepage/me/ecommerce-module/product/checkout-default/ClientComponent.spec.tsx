@@ -11,6 +11,10 @@ const mockCheckout = jest.fn();
 const mockCart = jest.fn();
 const mockInvalidate = jest.fn();
 const mockQueries = { invalidateQueries: mockInvalidate };
+jest.mock("next/navigation", () => ({
+  useRouter: () => ({ push: jest.fn() }),
+  useSearchParams: () => new URLSearchParams(),
+}));
 jest.mock("@tanstack/react-query", () => ({
   ...jest.requireActual("@tanstack/react-query"),
   useQueryClient: () => mockQueries,
@@ -22,6 +26,11 @@ jest.mock("./client", () => ({ __esModule: true, default: () => null }));
 jest.mock("./server", () => ({ __esModule: true, default: () => null }));
 jest.mock("@sps/rbac/models/subject/sdk/client", () => ({
   api: {
+    customerWork: () => ({ data: undefined }),
+    customerWorkAvailability: () => ({
+      data: { consultation: false, order: false, payAfterAcceptance: false },
+    }),
+    changeCustomerWork: () => ({ isPending: false, mutateAsync: jest.fn() }),
     identityFind: () => ({ data: [] }),
     ecommerceModuleProductCheckout: () => ({
       mutateAsync: mockCheckout,

@@ -11,6 +11,7 @@ export type IExecuteProps = {
 
 export type IExecuteResult = {
   availableCurrencyIds: string[];
+  fixedCurrencyId?: string;
   totals: {
     total: number;
     billingModuleCurrency: IBillingModuleCurrency;

@@ -95,6 +95,12 @@ export class Handler {
         throw new Error("Validation error. Invalid thread payload");
       }
 
+      if (data.document !== undefined) {
+        throw new Error(
+          "Validation error. Thread documents are no longer supported",
+        );
+      }
+
       const title =
         typeof data.title === "string" ? data.title.trim() : undefined;
 
@@ -114,31 +120,19 @@ export class Handler {
           });
       }
 
-      let document;
-      if (data.document === undefined) {
-        document = undefined;
-      } else {
-        document = await this.service.socialModuleChatLifecycleValidateDocument(
-          {
-            socialModuleChatId,
-            document: data.document,
-          },
-        );
-      }
-
-      if (!title && preferenceUpdatedThread && document === undefined) {
+      if (!title && preferenceUpdatedThread) {
         return c.json({
           data: preferenceUpdatedThread,
         });
       }
 
-      if (!title && document === undefined) {
+      if (!title) {
         throw new Error("Validation error. Thread title is required");
       }
 
       let sourceSystemId = existingSocialModuleThread.sourceSystemId;
 
-      if (title && canMirrorTelegramTopic({ socialModuleChat })) {
+      if (canMirrorTelegramTopic({ socialModuleChat })) {
         if (sourceSystemId) {
           await editTelegramForumTopic({
             socialModuleChat,
@@ -154,42 +148,20 @@ export class Handler {
         }
       }
 
-      let socialModuleThread =
-        preferenceUpdatedThread || existingSocialModuleThread;
-      if (document !== undefined) {
-        const updated = await socialModuleThreadApi.updateMetadataNamespace({
-          id: socialModuleThreadId,
-          namespace: "aiChatDocument",
-          expectedValue: socialModuleThread.metadata?.aiChatDocument ?? null,
-          value: document,
-          options: {
-            headers: {
-              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-              "Cache-Control": "no-store",
-            },
+      const socialModuleThread = await socialModuleThreadApi.update({
+        id: socialModuleThreadId,
+        data: {
+          title,
+          ...(sourceSystemId !== existingSocialModuleThread.sourceSystemId
+            ? { sourceSystemId }
+            : {}),
+        },
+        options: {
+          headers: {
+            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
           },
-        });
-        if (!updated)
-          throw new Error(
-            "Conflict error. Thread document changed concurrently. Retry with the current thread.",
-          );
-        socialModuleThread = updated;
-      }
-      if (title || sourceSystemId !== existingSocialModuleThread.sourceSystemId)
-        socialModuleThread = await socialModuleThreadApi.update({
-          id: socialModuleThreadId,
-          data: {
-            ...(title ? { title } : {}),
-            ...(sourceSystemId !== existingSocialModuleThread.sourceSystemId
-              ? { sourceSystemId }
-              : {}),
-          },
-          options: {
-            headers: {
-              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-            },
-          },
-        });
+        },
+      });
 
       return c.json({
         data: socialModuleThread,

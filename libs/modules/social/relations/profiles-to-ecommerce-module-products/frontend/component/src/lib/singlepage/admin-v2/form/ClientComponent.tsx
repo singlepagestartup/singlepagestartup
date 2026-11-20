@@ -2,7 +2,7 @@
 
 import { IComponentPropsExtended, variant, IModel } from "./interface";
 import { api } from "@sps/social/relations/profiles-to-ecommerce-module-products/sdk/client";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
@@ -14,6 +14,34 @@ import { Component as ParentAdminForm } from "@sps/shared-frontend-components/si
 import { useGetAdminFormState } from "@sps/shared-frontend-client-hooks";
 import { Component as Profile } from "@sps/social/models/profile/frontend/component";
 import { Component as EcommerceModuleProduct } from "@sps/ecommerce/models/product/frontend/component";
+import { Component as Store } from "@sps/ecommerce/models/store/frontend/component";
+import { Component as Offer } from "@sps/ecommerce/relations/stores-to-products/frontend/component";
+import { Component as Category } from "@sps/ecommerce/models/category/frontend/component";
+
+const assignmentSchema = insertSchema.superRefine((data, context) => {
+  if (data.variant !== "store-expert") {
+    return;
+  }
+  if (!data.storeId) {
+    context.addIssue({
+      code: "custom",
+      path: ["storeId"],
+      message: "Select a store.",
+    });
+  }
+  const choices = [
+    data.offerId,
+    data.ecommerceModuleProductId,
+    data.categoryId,
+  ].filter(Boolean);
+  if (choices.length !== 1) {
+    context.addIssue({
+      code: "custom",
+      path: ["ecommerceModuleProductId"],
+      message: "Choose one offer, product, or category.",
+    });
+  }
+});
 
 export function Component(props: IComponentPropsExtended) {
   const updateEntity = api.update();
@@ -25,17 +53,23 @@ export function Component(props: IComponentPropsExtended) {
   });
 
   const form = useForm<z.infer<typeof insertSchema>>({
-    resolver: zodResolver(insertSchema),
+    resolver: zodResolver(assignmentSchema),
     defaultValues: {
       variant: props.data?.variant || "default",
       className: props.data?.className || "",
       orderIndex: props.data?.orderIndex || 0,
       profileId: props.data?.profileId || "",
-      ecommerceModuleProductId: props.data?.ecommerceModuleProductId || "",
+      ecommerceModuleProductId: props.data?.ecommerceModuleProductId ?? null,
+      storeId: props.data?.storeId ?? null,
+      offerId: props.data?.offerId ?? null,
+      categoryId: props.data?.categoryId ?? null,
     },
   });
 
   async function onSubmit(data: z.infer<typeof insertSchema>) {
+    if (data.variant !== "store-expert") {
+      data = { ...data, storeId: null, offerId: null, categoryId: null };
+    }
     if (props.data?.id) {
       updateEntity.mutate({ id: props.data?.id, data });
       return;
@@ -94,13 +128,57 @@ export function Component(props: IComponentPropsExtended) {
           form={form}
         />
 
-        <EcommerceModuleProduct
-          isServer={false}
-          variant="admin-v2-select-input"
-          formFieldName="ecommerceModuleProductId"
-          form={form}
-        />
+        <AssignmentFields form={form} />
       </div>
     </ParentAdminForm>
+  );
+}
+
+function AssignmentFields({
+  form,
+}: {
+  form: ReturnType<typeof useForm<z.infer<typeof insertSchema>>>;
+}) {
+  const expert =
+    useWatch({ control: form.control, name: "variant" }) === "store-expert";
+  const issue = form.formState.errors.ecommerceModuleProductId?.message;
+  return (
+    <>
+      {expert && (
+        <Store
+          isServer={false}
+          variant="admin-v2-select-input"
+          formFieldName="storeId"
+          form={form}
+        />
+      )}
+      <EcommerceModuleProduct
+        isServer={false}
+        variant="admin-v2-select-input"
+        formFieldName="ecommerceModuleProductId"
+        form={form}
+      />
+      {expert && (
+        <>
+          <Offer
+            isServer={false}
+            variant="admin-v2-select-input"
+            formFieldName="offerId"
+            form={form}
+          />
+          <Category
+            isServer={false}
+            variant="admin-v2-select-input"
+            formFieldName="categoryId"
+            form={form}
+          />
+          {issue && (
+            <p role="alert" className="text-sm text-destructive">
+              {issue}
+            </p>
+          )}
+        </>
+      )}
+    </>
   );
 }

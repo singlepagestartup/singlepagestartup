@@ -52,8 +52,8 @@ export function Component({
           </h1>
           <p className="mt-3 max-w-xl text-sm leading-6 text-muted-foreground">
             {ru
-              ? "Выберите проект, чтобы продолжить работу с его документами и обсуждениями."
-              : "Choose a project to continue with its documents and conversations."}
+              ? "Выберите проект, чтобы открыть его чат."
+              : "Choose a project to open its chat."}
           </p>
         </div>
         <button
@@ -140,8 +140,8 @@ export function Component({
             </h2>
             <p className="mt-3 text-sm leading-6 text-muted-foreground">
               {ru
-                ? "Создайте первый проект, чтобы хранить его файлы, документы и обсуждения вместе."
-                : "Create your first project to keep its files, documents and conversations together."}
+                ? "Создайте первый проект, чтобы хранить его файлы и обсуждения вместе."
+                : "Create your first project to keep its files and conversations together."}
             </p>
           </div>
         </section>
@@ -173,9 +173,7 @@ const ProjectCard = memo(function ProjectCard({
         </span>
         <h2 className="break-words text-lg font-semibold">{project.name}</h2>
         <p className="mt-2 text-sm leading-6 text-muted-foreground">
-          {ru
-            ? "Документы, файлы и обсуждения проекта."
-            : "Your documents, files and conversations."}
+          {ru ? "Файлы и обсуждения проекта." : "Your files and conversations."}
         </p>
         <span className="mt-6 flex items-center gap-2 text-sm font-semibold">
           {ru ? "Открыть проект" : "Open project"} <Glyph name="arrow-right" />

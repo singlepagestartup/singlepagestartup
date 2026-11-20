@@ -1,0 +1,2 @@
+ALTER TABLE "sps_rc_subject_provider_agent" ALTER COLUMN "subject_id" DROP NOT NULL;--> statement-breakpoint
+CREATE UNIQUE INDEX "sps_rc_store_default_provider_capability" ON "sps_rc_subject_provider_agent" USING btree ("store_id","capability") WHERE "sps_rc_subject_provider_agent"."subject_id" IS NULL;

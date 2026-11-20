@@ -1,3 +1,4 @@
+import { STORE_TEST_ORDER_VARIANT } from "@sps/ecommerce/models/order/sdk/model";
 import { Service as InitialGrantProducts } from "../../billing/initial-grant-products";
 import { ECOMMERCE_ORDER_LINE_QUANTITY_BOUNDS as quantityBounds } from "@sps/shared-utils";
 import type {
@@ -433,6 +434,15 @@ export class Service {
           primary: currentPrimary,
           previousLines: current,
         });
+        if (
+          currentQuotes[0].singleUnitPerOrder &&
+          currentPrimary.quantity !== 1 &&
+          selections[0].quantity === 1
+        ) {
+          await service.modules.ecommerce.order.work?.invalidateCartResults?.(
+            props.orderId,
+          );
+        }
         return {
           quotes,
           orderIds,
@@ -538,6 +548,11 @@ export class Service {
             { column: "id", method: "inArray", value: orderIds },
             { column: "type", method: "eq", value: "cart" },
             { column: "status", method: "eq", value: "new" },
+            {
+              column: "variant",
+              method: "ne",
+              value: STORE_TEST_ORDER_VARIANT,
+            },
           ],
         },
       },

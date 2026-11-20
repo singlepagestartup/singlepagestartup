@@ -74,6 +74,11 @@ export class Service {
         filters: {
           and: [
             {
+              column: "provider",
+              method: "eq",
+              value: "ethereum_virtual_machine",
+            },
+            {
               column: "account",
               method: "eq",
               value: address.toLowerCase(),
@@ -179,6 +184,11 @@ export class Service {
       params: {
         filters: {
           and: [
+            {
+              column: "provider",
+              method: "eq",
+              value: "ethereum_virtual_machine",
+            },
             {
               column: "account",
               method: "eq",

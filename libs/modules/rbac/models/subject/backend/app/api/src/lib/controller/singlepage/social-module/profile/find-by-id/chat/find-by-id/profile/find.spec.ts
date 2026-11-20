@@ -24,6 +24,9 @@ describe("Manageable AI profile discovery", () => {
         .mockResolvedValue([{ id: "agent-subject", variant: "agent" }]),
       modules: {
         social: {
+          chat: {
+            findById: jest.fn().mockResolvedValue({ variant: "default" }),
+          },
           profilesToChats: {
             find: jest
               .fn()
@@ -41,6 +44,9 @@ describe("Manageable AI profile discovery", () => {
         },
       },
       module: {
+        subjectsToEcommerceModuleStores: {
+          find: jest.fn().mockResolvedValue([]),
+        },
         subjectsToSocialModuleProfiles: {
           find: jest.fn().mockResolvedValue([
             { subjectId: "agent-subject", socialModuleProfileId: "profile-2" },

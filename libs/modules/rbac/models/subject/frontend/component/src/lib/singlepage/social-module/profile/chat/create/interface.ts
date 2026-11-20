@@ -9,6 +9,7 @@ export interface IComponentProps extends ISpsComponentBase {
   language: string;
   data: IModel;
   socialModuleProfile: ISocialModuleProfile;
+  onCreate?: () => void;
   variant: typeof variant;
   className?: string;
 }

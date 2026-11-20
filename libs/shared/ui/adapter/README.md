@@ -67,16 +67,14 @@ use shared UI components directly rather than a Website Builder Feature variant.
 
 `ChatWorkspace` and `ChatThreadPanel` are presentation components shared by the
 production Social Profile/Thread views and the Website Builder landing demo.
-The workspace supplies the dark project navigation and fixed-height frame;
-the Thread panel supplies its header, scroll areas and responsive Chat/Document
-switch. Desktop navigation starts at `lg`; the 360px document column appears
-at `xl`. Below those breakpoints, the owner supplies mobile navigation and the
-panel switch selects the visible content.
+The workspace supplies the navigation and fixed-height frame. The Thread panel
+supplies the header, message scroll area and optional context sidebar. Desktop
+navigation starts at `lg`. The header button toggles the 360px sidebar at `xl` and switches between the conversation and its details on smaller screens. The Website Builder landing demo uses
+the same layout with its own document editing and download controls.
 
-Pass navigation, messages, composer, knowledge and download controls as rendered
-nodes. The panel owns only its display tab, with optional controlled `pane` and
-`onPaneChange` props. Labels support `language="ru"`; domain readers, permissions,
-requests and mutations remain in the owning module. The adapter imports no SDK.
+Pass navigation, messages, composer and context as rendered nodes. The panel
+owns its display tab, with optional controlled `pane` and `onPaneChange` props.
+Labels support `language="ru"`. Domain readers and actions stay in the caller.
 
 ### File preview
 

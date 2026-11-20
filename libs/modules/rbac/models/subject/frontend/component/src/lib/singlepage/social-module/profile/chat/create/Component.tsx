@@ -10,6 +10,7 @@ export function Component(props: IComponentPropsExtended) {
       language={props.language}
       socialModuleProfile={props.socialModuleProfile}
       className={props.className}
+      onCreate={props.onCreate}
     />
   );
 }

@@ -74,7 +74,7 @@ export class Service {
           },
         ]
       : [];
-    const [articleLinks, productLinks] = await Promise.all([
+    const [articleLinks, productRelations] = await Promise.all([
       this.dependencies.profilesToArticles.find({
         params: { filters: { and: filters } },
       }),
@@ -82,6 +82,14 @@ export class Service {
         params: { filters: { and: filters } },
       }),
     ]);
+    const productLinks = productRelations.flatMap((link) => {
+      if (!link.ecommerceModuleProductId || link.variant === "store-expert") {
+        return [];
+      }
+      return [
+        { ...link, ecommerceModuleProductId: link.ecommerceModuleProductId },
+      ];
+    });
     const articleIds = [
       ...new Set(articleLinks.map((link) => link.blogModuleArticleId)),
     ];

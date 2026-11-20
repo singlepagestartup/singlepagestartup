@@ -8,13 +8,8 @@
     "jest:test": {},
     "jest:integration": {
       "executor": "nx:run-commands",
-      "outputs": [
-        "{projectRoot}/coverage"
-      ],
-      "inputs": [
-        "{projectRoot}/**/*",
-        "^default"
-      ],
+      "outputs": ["{projectRoot}/coverage"],
+      "inputs": ["{projectRoot}/**/*", "^default"],
       "options": {
         "command": "node --experimental-vm-modules node_modules/jest/bin/jest.js --config ./libs/modules/ecommerce/jest.integration.config.ts --passWithNoTests",
         "cwd": ".",
@@ -81,6 +76,9 @@
           },
           {
             "command": "nx run @sps/ecommerce:models:widget:repository-migrate"
+          },
+          {
+            "command": "nx run @sps/ecommerce:models:order-work:repository-migrate"
           }
         ]
       }
@@ -150,6 +148,9 @@
           },
           {
             "command": "nx run @sps/ecommerce:relations:categories-to-website-builder-module-widgets:repository-migrate"
+          },
+          {
+            "command": "nx run @sps/ecommerce:relations:orders-to-order-works:repository-migrate"
           }
         ]
       }
@@ -180,6 +181,9 @@
           },
           {
             "command": "nx run @sps/ecommerce:models:widget:repository-generate"
+          },
+          {
+            "command": "nx run @sps/ecommerce:models:order-work:repository-generate"
           }
         ]
       }
@@ -249,6 +253,9 @@
           },
           {
             "command": "nx run @sps/ecommerce:relations:categories-to-website-builder-module-widgets:repository-generate"
+          },
+          {
+            "command": "nx run @sps/ecommerce:relations:orders-to-order-works:repository-generate"
           }
         ]
       }
@@ -1056,6 +1063,66 @@
         "parallel": false,
         "envFile": "apps/api/.env",
         "cwd": "libs/modules/ecommerce/relations/categories-to-website-builder-module-widgets/backend/repository/database",
+        "commands": [
+          {
+            "command": "bun run ./src/lib/migrate.ts"
+          }
+        ]
+      }
+    },
+    "models:order-work:repository-generate": {
+      "executor": "nx:run-commands",
+      "cache": false,
+      "options": {
+        "parallel": false,
+        "cwd": "libs/modules/ecommerce/models/order-work/backend/repository/database",
+        "commands": [
+          {
+            "command": "drizzle-kit up --config=./src/lib/config.ts"
+          },
+          {
+            "command": "drizzle-kit generate --config=./src/lib/config.ts"
+          }
+        ]
+      }
+    },
+    "models:order-work:repository-migrate": {
+      "executor": "nx:run-commands",
+      "cache": false,
+      "options": {
+        "parallel": false,
+        "envFile": "apps/api/.env",
+        "cwd": "libs/modules/ecommerce/models/order-work/backend/repository/database",
+        "commands": [
+          {
+            "command": "bun run ./src/lib/migrate.ts"
+          }
+        ]
+      }
+    },
+    "relations:orders-to-order-works:repository-generate": {
+      "executor": "nx:run-commands",
+      "cache": false,
+      "options": {
+        "parallel": false,
+        "cwd": "libs/modules/ecommerce/relations/orders-to-order-works/backend/repository/database",
+        "commands": [
+          {
+            "command": "drizzle-kit up --config=./src/lib/config.ts"
+          },
+          {
+            "command": "drizzle-kit generate --config=./src/lib/config.ts"
+          }
+        ]
+      }
+    },
+    "relations:orders-to-order-works:repository-migrate": {
+      "executor": "nx:run-commands",
+      "cache": false,
+      "options": {
+        "parallel": false,
+        "envFile": "apps/api/.env",
+        "cwd": "libs/modules/ecommerce/relations/orders-to-order-works/backend/repository/database",
         "commands": [
           {
             "command": "bun run ./src/lib/migrate.ts"

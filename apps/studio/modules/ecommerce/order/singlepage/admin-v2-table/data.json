@@ -79,6 +79,48 @@
         "label": "Subscription Revoked At",
         "kind": "timestamp",
         "nullable": true
+      },
+      {
+        "key": "paymentFailureCanceledAt",
+        "label": "Payment Failure Canceled At",
+        "kind": "timestamp",
+        "nullable": true
+      },
+      {
+        "key": "subscriptionSourceOrderId",
+        "label": "Subscription Source Order Id",
+        "kind": "uuid",
+        "nullable": true
+      },
+      {
+        "key": "subscriptionSourceInvoiceId",
+        "label": "Subscription Source Invoice Id",
+        "kind": "uuid",
+        "nullable": true
+      },
+      {
+        "key": "subscriptionSourceInterval",
+        "label": "Subscription Source Interval",
+        "kind": "text",
+        "nullable": true
+      },
+      {
+        "key": "subscriptionScheduledStartsAt",
+        "label": "Subscription Scheduled Starts At",
+        "kind": "timestamp",
+        "nullable": true
+      },
+      {
+        "key": "subscriptionScheduledEndsAt",
+        "label": "Subscription Scheduled Ends At",
+        "kind": "timestamp",
+        "nullable": true
+      },
+      {
+        "key": "subscriptionProviderInvoiceId",
+        "label": "Subscription Provider Invoice Id",
+        "kind": "text",
+        "nullable": true
       }
     ]
   },
@@ -95,7 +137,14 @@
       "subscriptionPeriodStartsAt": null,
       "subscriptionPeriodEndsAt": null,
       "subscriptionPeriodInvoiceId": null,
-      "subscriptionRevokedAt": null
+      "subscriptionRevokedAt": null,
+      "paymentFailureCanceledAt": null,
+      "subscriptionSourceOrderId": null,
+      "subscriptionSourceInvoiceId": null,
+      "subscriptionSourceInterval": null,
+      "subscriptionScheduledStartsAt": null,
+      "subscriptionScheduledEndsAt": null,
+      "subscriptionProviderInvoiceId": null
     },
     {
       "id": "89214e48-c443-45ed-aa81-6789e1c7fd62",
@@ -109,7 +158,14 @@
       "subscriptionPeriodStartsAt": null,
       "subscriptionPeriodEndsAt": null,
       "subscriptionPeriodInvoiceId": null,
-      "subscriptionRevokedAt": null
+      "subscriptionRevokedAt": null,
+      "paymentFailureCanceledAt": null,
+      "subscriptionSourceOrderId": null,
+      "subscriptionSourceInvoiceId": null,
+      "subscriptionSourceInterval": null,
+      "subscriptionScheduledStartsAt": null,
+      "subscriptionScheduledEndsAt": null,
+      "subscriptionProviderInvoiceId": null
     },
     {
       "id": "c994228f-441e-48d4-a884-671cbdaf392b",
@@ -123,7 +179,14 @@
       "subscriptionPeriodStartsAt": null,
       "subscriptionPeriodEndsAt": null,
       "subscriptionPeriodInvoiceId": null,
-      "subscriptionRevokedAt": null
+      "subscriptionRevokedAt": null,
+      "paymentFailureCanceledAt": null,
+      "subscriptionSourceOrderId": null,
+      "subscriptionSourceInvoiceId": null,
+      "subscriptionSourceInterval": null,
+      "subscriptionScheduledStartsAt": null,
+      "subscriptionScheduledEndsAt": null,
+      "subscriptionProviderInvoiceId": null
     }
   ]
 }

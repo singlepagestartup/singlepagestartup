@@ -1,3 +1,4 @@
+import { STORE_TEST_ORDER_VARIANT } from "@sps/ecommerce/models/order/sdk/model";
 import type { SubjectServiceDependencies } from "../../index";
 import { Service as InitialGrantProducts } from "../../billing/initial-grant-products";
 import { Service as CheckoutClaim } from "../../../startup/ecommerce/order/checkout-claim";
@@ -14,9 +15,11 @@ import {
 } from "@sps/billing/models/payment-intent/sdk/model";
 import { api as subjectPaymentApi } from "@sps/rbac/models/subject/sdk/server";
 import { orderPaymentIntentsRoute } from "@sps/rbac/models/subject/sdk/model";
+import type { ICheckoutOrderSelection } from "@sps/rbac/models/subject/sdk/model";
 import { api as broadcastModuleChannelApi } from "@sps/broadcast/models/channel/sdk/server";
 import {
   addMoney,
+  assertSingleUnitPerOrder,
   parseExactMonetaryAmount,
   moneyFromMinorUnits,
   moneyMinorUnits,
@@ -28,6 +31,8 @@ import type {
   IOfferQuoteInput,
 } from "@sps/ecommerce/relations/stores-to-products/sdk/model";
 import type { IReservationLine } from "@sps/ecommerce/relations/orders-to-billing-module-payment-intents/backend/app/api/src/lib/service/singlepage/reservation";
+import type { IAcceptedOrderWorkCheckout } from "@sps/ecommerce/models/order-work/sdk/model";
+import type { IModel as IOrderLine } from "@sps/ecommerce/relations/orders-to-products/sdk/model";
 
 export const ACTIVE_SUBSCRIPTION_ORDER_STATUSES = [
   "paying",
@@ -51,9 +56,7 @@ export type IExecuteProps =
         };
       };
       ecommerceModule: {
-        orders: {
-          id: string;
-        }[];
+        orders: ICheckoutOrderSelection[];
       };
     }
   | {
@@ -67,9 +70,7 @@ export type IExecuteProps =
         };
       };
       ecommerceModule: {
-        orders: {
-          id: string;
-        }[];
+        orders: ICheckoutOrderSelection[];
       };
     };
 
@@ -116,6 +117,10 @@ export class Service {
       throw new Error("Not Found error. No entity found");
     }
 
+    const requestedOrders = props.ecommerceModule.orders;
+    const guardedSelection = requestedOrders.some(
+      (order) => order.lineIds !== undefined,
+    );
     const ecommerceModuleOrders = await this.modules.ecommerce.order.find({
       params: {
         filters: {
@@ -123,9 +128,7 @@ export class Service {
             {
               column: "id",
               method: "inArray",
-              value: props.ecommerceModule.orders.map(
-                (order: { id: string }) => order.id,
-              ),
+              value: requestedOrders.map((order) => order.id),
             },
           ],
         },
@@ -134,6 +137,23 @@ export class Service {
 
     if (!ecommerceModuleOrders?.length) {
       throw new Error("Not Found error. No ecommerce module orders found");
+    }
+    if (
+      ecommerceModuleOrders.some(
+        (order) => order.variant === STORE_TEST_ORDER_VARIANT,
+      )
+    ) {
+      throw new Error("Validation error. Store tests cannot be paid as orders");
+    }
+    if (
+      guardedSelection &&
+      (requestedOrders.length !== ecommerceModuleOrders.length ||
+        requestedOrders.some(
+          (request) =>
+            !ecommerceModuleOrders.some((order) => order.id === request.id),
+        ))
+    ) {
+      throw new Error("Conflict error. The selected cart orders changed");
     }
 
     const ordersToProducts = await this.modules.ecommerce.ordersToProducts.find(
@@ -154,6 +174,21 @@ export class Service {
 
     if (!ordersToProducts?.length) {
       throw new Error("Not Found error. No orders to products found");
+    }
+    if (guardedSelection) {
+      for (const order of requestedOrders) {
+        const primaryIds = ordersToProducts
+          .filter((line) => line.orderId === order.id && !line.parentLineId)
+          .map((line) => line.id);
+        if (
+          !order.lineIds?.length ||
+          new Set(order.lineIds).size !== primaryIds.length ||
+          order.lineIds.length !== primaryIds.length ||
+          order.lineIds.some((lineId) => !primaryIds.includes(lineId))
+        ) {
+          throw new Error("Conflict error. The selected cart items changed");
+        }
+      }
     }
     if (
       ecommerceModuleOrders.some(
@@ -194,8 +229,12 @@ export class Service {
         orderIds: ecommerceModuleOrders.map((order) => order.id),
         resumeExisting: true,
         comment: props.comment,
+        ...(guardedSelection ? { expectedLines: ordersToProducts } : {}),
       });
       if (existing.invoices) {
+        if (existing.preparedPaymentIntentIds?.length) {
+          await this.validateOrderProductQuantities(ordersToProducts);
+        }
         const trustedIntent =
           await this.modules.ecommerce.order.paymentIntent.findById({
             id: existingPaymentLinks[0].billingModulePaymentIntentId,
@@ -226,8 +265,26 @@ export class Service {
       }
     }
 
+    const ecommerceModuleProducts =
+      await this.validateOrderProductQuantities(ordersToProducts);
+    const acceptedResults = new Map<string, IAcceptedOrderWorkCheckout>();
+    for (const order of ecommerceModuleOrders) {
+      const lines = ordersToProducts.filter(
+        (line) => line.orderId === order.id,
+      );
+      const accepted =
+        await this.modules.ecommerce.order.work?.acceptedCheckout?.({
+          orderId: order.id,
+          customerId: props.id,
+          lines,
+        });
+      if (accepted) {
+        acceptedResults.set(order.id, accepted);
+      }
+    }
     const hasUnselectedOffer = ecommerceModuleOrders.some(
       (order) =>
+        !acceptedResults.has(order.id) &&
         order.type === "cart" &&
         order.status === "new" &&
         !order.subscriptionSourceOrderId &&
@@ -239,26 +296,6 @@ export class Service {
       throw new Error(
         "Conflict error. Select and save a store offer in the cart before payment",
       );
-    }
-
-    const ecommerceModuleProducts = await this.modules.ecommerce.product.find({
-      params: {
-        filters: {
-          and: [
-            {
-              column: "id",
-              method: "inArray",
-              value: ordersToProducts.map(
-                (orderToProduct) => orderToProduct.productId,
-              ),
-            },
-          ],
-        },
-      },
-    });
-
-    if (!ecommerceModuleProducts?.length) {
-      throw new Error("Not Found error. No ecommerce module products found");
     }
 
     if (
@@ -288,7 +325,9 @@ export class Service {
         },
       });
 
-    const offerBacked = ordersToProducts.every((line) => line.offerId);
+    const offerBacked = ordersToProducts.every(
+      (line) => line.offerId || acceptedResults.has(line.orderId),
+    );
     if (!ecommerceModuleProductsToAttributes?.length && !offerBacked) {
       throw new Error(
         "Not Found error. No ecommerce module products to attributes found",
@@ -579,6 +618,55 @@ export class Service {
         );
       }
       const primary = lines.filter((line) => !line.parentLineId);
+      const accepted = acceptedResults.get(order.id);
+      if (accepted) {
+        const product = ecommerceModuleProducts.find(
+          (entry) => entry.id === primary[0]?.productId,
+        );
+        if (
+          ecommerceModuleOrders.length !== 1 ||
+          primary.length !== 1 ||
+          product?.type !== "one_off" ||
+          order.subscriptionSourceOrderId
+        ) {
+          throw new Error(
+            "Conflict error. An accepted result requires checkout for its one exact order",
+          );
+        }
+        if (product.singleUnitPerOrder) {
+          const primaryCharges = accepted.purchaseQuote?.charges.filter(
+            (charge) => charge.role === "product",
+          );
+          if (
+            primaryCharges?.length !== 1 ||
+            primaryCharges[0].offerId !== primary[0].offerId ||
+            primaryCharges[0].productId !== product.id
+          ) {
+            throw new Error(
+              "Conflict error. Accept a result with a current order quote before checkout",
+            );
+          }
+          assertSingleUnitPerOrder(product, primaryCharges[0].quantity);
+        }
+        const { price, currencyId } = accepted.checkout;
+        const currency = billingModuleCurrencies.find(
+          (entry) => entry.id === currencyId,
+        );
+        if (!currency) {
+          throw new Error(
+            "Not Found error. The accepted result currency is unavailable",
+          );
+        }
+        providerMinorUnits(
+          price,
+          paymentProviderPrecision(props.provider, currency),
+        );
+        checkoutAttributesByOrderId.set(order.id, {
+          amount: parseExactMonetaryAmount(price),
+          type: "one_off",
+        });
+        continue;
+      }
       if (!primary.some((line) => line.offerId)) {
         const attributes =
           await this.modules.ecommerce.order.findByIdCheckoutAttributesByCurrency(
@@ -767,7 +855,12 @@ export class Service {
     const pendingReservations = new Map<string, IReservationLine[]>();
     const checkoutStoreIds = [
       ...new Set(
-        [...orderQuotes.values()].flatMap(({ quote }) =>
+        [
+          ...[...orderQuotes.values()].map(({ quote }) => quote),
+          ...[...acceptedResults.values()].flatMap(({ purchaseQuote }) =>
+            purchaseQuote ? [purchaseQuote] : [],
+          ),
+        ].flatMap((quote) =>
           quote.charges.flatMap((charge) => [
             charge.storeId,
             charge.providerStoreId,
@@ -795,7 +888,9 @@ export class Service {
       paymentIntentId: string,
     ) => {
       const selected = orderQuotes.get(orderId);
-      if (!selected) {
+      const accepted = acceptedResults.get(orderId);
+      const quote = accepted?.purchaseQuote ?? selected?.quote;
+      if (!quote) {
         await this.modules.ecommerce.order.ordersToBillingModulePaymentIntents.create(
           {
             data: { orderId, billingModulePaymentIntentId: paymentIntentId },
@@ -804,58 +899,63 @@ export class Service {
         return;
       }
       const lines = ordersToProducts.filter((line) => line.orderId === orderId);
-      const reservations: IReservationLine[] = selected.quote.charges.map(
-        (charge) => {
-          const line =
-            lines.find((entry) => entry.id === charge.lineId) ??
-            lines.find(
-              (entry) =>
-                entry.offerId === charge.offerId &&
-                (charge.role === "product"
-                  ? !entry.parentLineId
-                  : Boolean(entry.parentLineId)),
-            );
-          if (!line) {
-            throw new Error(
-              "Validation error. Quoted charge has no selected order line",
-            );
-          }
-          const product = ecommerceModuleProducts.find(
-            (entry) => entry.id === charge.productId,
+      const currencyId =
+        accepted?.checkout.currencyId ?? selected!.input.currencyId;
+      const orderAmount = accepted?.checkout.price ?? selected!.quote.amount!;
+      const quoteExpiresAt = accepted
+        ? new Date(Date.now() + 5 * 60_000).toISOString()
+        : selected!.quote.expiresAt;
+      const reservations: IReservationLine[] = quote.charges.map((charge) => {
+        const line =
+          lines.find((entry) => entry.id === charge.lineId) ??
+          lines.find(
+            (entry) =>
+              entry.offerId === charge.offerId &&
+              (charge.role === "product"
+                ? !entry.parentLineId
+                : Boolean(entry.parentLineId)),
           );
-          const title =
-            product?.title?.en ??
-            product?.title?.ru ??
-            product?.adminTitle ??
-            charge.productId;
-          return {
-            orderId,
-            orderLineId: line.id,
-            offerId: charge.offerId,
-            quantity: charge.quantity,
-            snapshot: {
-              version: 1,
-              currencyId: selected.input.currencyId,
-              amount: charge.amount,
-              orderAmount: selected.quote.amount!,
-              purchaseType: checkoutAttributesByOrderId.get(orderId)!.type as
-                "one_off" | "subscription",
-              interval: checkoutAttributesByOrderId.get(orderId)!.interval,
-              parentLineId: line.parentLineId ?? null,
-              quoteVersion: selected.quote.version,
-              quoteExpiresAt: selected.quote.expiresAt,
-              charge: {
-                ...charge,
-                title,
-                storeTitle: storeTitle(charge.storeId),
-                providerStoreTitle: storeTitle(charge.providerStoreId),
-              },
-              destination:
-                selected.quote.destination ?? selected.input.destination ?? {},
+        if (!line) {
+          throw new Error(
+            "Validation error. Quoted charge has no selected order line",
+          );
+        }
+        const product = ecommerceModuleProducts.find(
+          (entry) => entry.id === charge.productId,
+        );
+        const title =
+          product?.title?.en ??
+          product?.title?.ru ??
+          product?.adminTitle ??
+          charge.productId;
+        return {
+          orderId,
+          orderLineId: line.id,
+          offerId: charge.offerId,
+          quantity: charge.quantity,
+          snapshot: {
+            version: 1,
+            currencyId,
+            amount: charge.amount,
+            orderAmount,
+            purchaseType: checkoutAttributesByOrderId.get(orderId)!.type as
+              "one_off" | "subscription",
+            interval: checkoutAttributesByOrderId.get(orderId)!.interval,
+            parentLineId: line.parentLineId ?? null,
+            quoteVersion: accepted
+              ? `result:${accepted.checkout.resultVersionId}`
+              : quote.version,
+            quoteExpiresAt,
+            charge: {
+              ...charge,
+              title,
+              storeTitle: storeTitle(charge.storeId),
+              providerStoreTitle: storeTitle(charge.providerStoreId),
             },
-          };
-        },
-      );
+            destination: quote.destination ?? selected?.input.destination ?? {},
+          },
+        };
+      });
       pendingReservations.set(paymentIntentId, [
         ...(pendingReservations.get(paymentIntentId) ?? []),
         ...reservations,
@@ -874,6 +974,7 @@ export class Service {
     };
     const billingModulePaymentIntents: {
       orderIds: string[];
+      managedWork?: boolean;
       billingModulePaymentIntent: IBillingModulePaymentIntent;
       billingModuleCurrencyId: string;
       checkoutAttributesByCurrency: {
@@ -900,6 +1001,13 @@ export class Service {
         });
         if (claim.invoices) {
           return claim;
+        }
+        if (
+          ordersToProducts.some(
+            (line) => !line.parentLineId && line.quantity !== 1,
+          )
+        ) {
+          await this.validateOrderProductQuantities(ordersToProducts);
         }
         if (orderQuotes.size) {
           await this.modules.ecommerce.order.ordersToBillingModulePaymentIntents.lockOffers(
@@ -958,10 +1066,30 @@ export class Service {
             );
           }
 
-          const billingModuleCurrencyId = ordersToBillingModuleCurrencies.find(
+          const initialResult = acceptedResults.get(order.id);
+          const currentResult =
+            await this.modules.ecommerce.order.work?.acceptedCheckout?.({
+              orderId: order.id,
+              customerId: props.id,
+              lines: ordersToProducts.filter(
+                (line) => line.orderId === order.id,
+              ),
+            });
+          if (
+            initialResult?.checkout.resultVersionId !==
+            currentResult?.checkout.resultVersionId
+          ) {
+            throw new Error(
+              "Conflict error. The accepted result changed before checkout",
+            );
+          }
+          const currencyLink = ordersToBillingModuleCurrencies.find(
             (orderToBillingModuleCurrency) =>
               orderToBillingModuleCurrency.orderId === order["id"],
-          )?.billingModuleCurrencyId;
+          );
+          const billingModuleCurrencyId =
+            currentResult?.checkout.currencyId ??
+            currencyLink?.billingModuleCurrencyId;
 
           if (!billingModuleCurrencyId) {
             throw new Error(
@@ -973,6 +1101,40 @@ export class Service {
           const { amount, type, interval } = checkoutAttributesByOrderId.get(
             order.id,
           )!;
+
+          const work =
+            currentResult?.checkout ??
+            (await this.modules.ecommerce.order.work?.checkout({
+              orderId: order.id,
+              customerId: props.id,
+              price: amount,
+              currencyId: billingModuleCurrencyId,
+            }));
+          if (
+            currencyLink &&
+            currencyLink.billingModuleCurrencyId !== billingModuleCurrencyId
+          ) {
+            await this.modules.ecommerce.ordersToBillingModuleCurrencies.update(
+              {
+                id: currencyLink.id,
+                data: { billingModuleCurrencyId },
+              },
+            );
+          }
+          if (
+            work?.resultVersionId &&
+            (ecommerceModuleOrders.length !== 1 || type !== "one_off")
+          ) {
+            throw new Error(
+              "Conflict error. An accepted result requires checkout for its one exact order",
+            );
+          }
+          if (work) {
+            const prepared = metadata.ecommerceModule.orders.find(
+              (entry: { id: string }) => entry.id === order.id,
+            );
+            prepared.orderWork = work;
+          }
 
           if (type === "subscription") {
             const sourceOrderIds = new Set<string>();
@@ -1100,6 +1262,8 @@ export class Service {
           const existingBillingModulePaymentIntentWithSameBillingModuleCurrencyAndCheckoutAttributes =
             billingModulePaymentIntents.find(
               (billingModulePaymentIntent) =>
+                !work &&
+                !billingModulePaymentIntent.managedWork &&
                 type !== "subscription" &&
                 billingModulePaymentIntent.billingModuleCurrencyId ===
                   billingModuleCurrencyId &&
@@ -1174,6 +1338,7 @@ export class Service {
 
           billingModulePaymentIntents.push({
             orderIds: [order.id],
+            managedWork: Boolean(work),
             billingModulePaymentIntent,
             billingModuleCurrencyId,
             checkoutAttributesByCurrency: {
@@ -1407,6 +1572,39 @@ export class Service {
       },
     };
   }
+  private async validateOrderProductQuantities(lines: IOrderLine[]) {
+    const products = await this.modules.ecommerce.product.find({
+      params: {
+        filters: {
+          and: [
+            {
+              column: "id",
+              method: "inArray",
+              value: [...new Set(lines.map((line) => line.productId))],
+            },
+          ],
+        },
+      },
+    });
+    if (!products?.length) {
+      throw new Error("Not Found error. No ecommerce module products found");
+    }
+    const productsById = new Map(
+      products.map((product) => [product.id, product]),
+    );
+    const seen = new Set<string>();
+    for (const line of lines) {
+      if (line.parentLineId) {
+        continue;
+      }
+      const key = `${line.orderId}/${line.productId}`;
+      const product = productsById.get(line.productId);
+      assertSingleUnitPerOrder(product, seen.has(key) ? 2 : line.quantity);
+      seen.add(key);
+    }
+    return products;
+  }
+
   private async resumePreparedCheckout(ids: string[]) {
     if (!RBAC_SECRET_KEY) {
       throw new Error("Configuration error. RBAC_SECRET_KEY is required");

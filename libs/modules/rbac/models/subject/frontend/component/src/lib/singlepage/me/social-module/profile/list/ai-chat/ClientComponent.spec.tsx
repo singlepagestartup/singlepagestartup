@@ -28,10 +28,6 @@ jest.mock("@sps/rbac/models/subject/sdk/client", () => ({
       }),
   },
 }));
-jest.mock("../../id/chat/id/thread/id/ai-chat/utils", () => ({
-  getProjectsQueryKey: (id: string) => ["projects", id],
-  findProjects: (props: any) => mockContextsFind(props),
-}));
 import Component from "./client";
 
 function example(initialProjects?: any[]) {

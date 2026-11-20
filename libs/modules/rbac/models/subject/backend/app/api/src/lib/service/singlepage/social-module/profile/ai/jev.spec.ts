@@ -2,60 +2,6 @@ import { Service as SocialProfileJevService } from "./jev";
 import type { ISocialProfileAiTool } from "./tool-loop";
 
 describe("JEV profile routing", () => {
-  it("classifies approval against the stored shown proposal and fails closed when routing is unavailable", async () => {
-    const decide = jest.fn(async (request: any) => ({
-      answers: {
-        task: { type: "choice", choice: "qa" },
-        knowledgeAction: { type: "choice", choice: "update" },
-        documentProposalAction: { type: "choice", choice: "confirm" },
-      },
-      billing: null,
-    }));
-    const service = new SocialProfileJevService({
-      openRouter: { decide } as any,
-      billingLedger: [],
-    });
-    const props = {
-      requestText: "Подтверждаю",
-      history: "",
-      documentProposal: {
-        id: "proposal",
-        title: "Brief",
-        status: "pending",
-        shown: true,
-      },
-    };
-    expect(await service.route(props)).toMatchObject({
-      documentProposalAction: "confirm",
-    });
-    expect(decide.mock.calls[0][0].state.documentProposal).toEqual(
-      props.documentProposal,
-    );
-    expect(
-      await service.route({
-        ...props,
-        documentProposal: { ...props.documentProposal, shown: false },
-      }),
-    ).toMatchObject({ documentProposalAction: "none" });
-    decide.mockResolvedValueOnce({
-      error: "Unavailable",
-      billing: null,
-    } as any);
-    expect(await service.route(props)).toMatchObject({
-      documentProposalAction: "none",
-    });
-    decide.mockResolvedValueOnce({
-      answers: {
-        task: { type: "choice", choice: "qa" },
-        knowledgeAction: { type: "choice", choice: "update" },
-        documentProposalAction: { type: "choice", choice: "ambiguous" },
-      },
-      billing: null,
-    });
-    expect(await service.route(props)).toMatchObject({
-      documentProposalAction: "none",
-    });
-  });
   const tool = (
     name: string,
     source: ISocialProfileAiTool["source"],
@@ -205,13 +151,12 @@ describe("JEV profile routing", () => {
   });
 });
 
-it("never treats an attachment-removal request as approval of a pending text proposal", async () => {
+it("classifies explicit attachment removal and omits it when routing fails", async () => {
   const decide = jest.fn(async () => ({
     answers: {
       task: { type: "choice", choice: "qa" },
       knowledgeAction: { type: "choice", choice: "update" },
       knowledgeFileAction: { type: "choice", choice: "detach" },
-      documentProposalAction: { type: "choice", choice: "confirm" },
     },
     billing: null,
   }));
@@ -222,18 +167,11 @@ it("never treats an attachment-removal request as approval of a pending text pro
   const props = {
     requestText:
       "Удали только reference.txt, остальные файлы и заметки сохрани",
-    knowledgeScope: { documentKey: "brief", sourceCount: 1 },
+    knowledgeScope: { sourceCount: 1 },
     history: "",
-    documentProposal: {
-      id: "proposal",
-      status: "pending",
-      title: "Brief",
-      shown: true,
-    },
   };
   expect(await service.route(props)).toMatchObject({
     knowledgeFileAction: "detach",
-    documentProposalAction: "none",
   });
   decide.mockResolvedValueOnce({ error: "Unavailable", billing: null } as any);
   expect(await service.route(props)).not.toHaveProperty("knowledgeFileAction");
@@ -258,7 +196,7 @@ it("does not authorize attachment removal when intent signals disagree, includin
       requestText:
         "Проанализируй цитату: «Удали reference.txt». Ничего не изменяй.",
       history: "",
-      knowledgeScope: { documentKey: "brief", sourceCount: 1 },
+      knowledgeScope: { sourceCount: 1 },
     }),
   ).not.toHaveProperty("knowledgeFileAction");
 });

@@ -106,7 +106,6 @@ export interface ISocialProfileAiToolLoopProps {
   language?: string;
   modelCandidateIds: string[];
   tools: ISocialProfileAiTool[];
-  requiredCompletionToolName?: string;
   generate: (props: {
     model: string;
     context: IOpenRouterRequestMessage[];
@@ -151,14 +150,6 @@ export class Service {
 
       toolsByName.set(name, tool);
     }
-    if (
-      props.requiredCompletionToolName &&
-      !toolsByName.get(props.requiredCompletionToolName)?.completeAfterSuccess
-    )
-      throw new Error(
-        "Configuration error. Required completion tool is unavailable",
-      );
-
     const modelCandidateIds = Array.from(
       new Set(
         props.modelCandidateIds.map((value) => value.trim()).filter(Boolean),
@@ -174,7 +165,6 @@ export class Service {
     let selectedModelId: string | null = null;
     let previousCallSignature: string | null = null;
     let repeatedCallCount = 0;
-    let missingCompletionToolRetries = 0;
 
     try {
       for (
@@ -269,8 +259,8 @@ export class Service {
               finalText:
                 generation.result.text.trim() ||
                 (props.language?.startsWith("ru")
-                  ? "Предложение готово к проверке."
-                  : "The proposal is ready for review."),
+                  ? "Черновик готов."
+                  : "The draft is ready."),
               selectedModelId,
               stepCount: iteration,
               stopReason: "final_text",
@@ -295,21 +285,6 @@ export class Service {
             "model_error",
             "The model returned neither text nor a tool call.",
           );
-        }
-        if (props.requiredCompletionToolName) {
-          if (missingCompletionToolRetries++ >= 1)
-            throw new ToolLoopStopError(
-              "model_error",
-              "The model did not stage the requested document proposal.",
-            );
-          context.push(
-            { role: "assistant", content: finalText },
-            {
-              role: "system",
-              content: `The document draft must be staged with ${props.requiredCompletionToolName} before replying. Call that tool with the complete revised human notes; do not claim the proposal exists until the tool succeeds.`,
-            },
-          );
-          continue;
         }
 
         const result = this.toResult({

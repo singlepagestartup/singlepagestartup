@@ -31,6 +31,9 @@ import { Service as OrdersToBillingModulePaymentIntentsService } from "@sps/ecom
 import { Service as BillingPaymentIntentService } from "@sps/billing/models/payment-intent/backend/app/api/src/lib/service";
 import { Service as SubscriptionPeriodService } from "../startup/subscription-period";
 import { Service as LifecycleService } from "../startup/lifecycle";
+import { Service as OrderWork } from "./work";
+import type { TReadOrderWorkExpertArchive } from "@sps/ecommerce/models/order-work/sdk/model";
+import { parseExactMonetaryAmount } from "@sps/backend-utils";
 import type {
   IExecuteProps as ISubscriptionPeriodProps,
   IFreezeProps as ISubscriptionPeriodFreezeProps,
@@ -40,12 +43,22 @@ export type IExtendedEcommerceModuleOrder = IGetExtendedResult;
 
 @injectable()
 export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
+  private readExpertArchive?: TReadOrderWorkExpertArchive;
+
   get modules() {
     return this.appAssembly.getOrCreate(createModules);
   }
 
   get module() {
     return this.appAssembly.getOrCreate(createModule);
+  }
+
+  get work() {
+    return new OrderWork(this, this.readExpertArchive);
+  }
+
+  configureExpertArchive(read: TReadOrderWorkExpertArchive) {
+    this.readExpertArchive = read;
   }
 
   declare repository: Repository;
@@ -269,10 +282,14 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
         ) {
           return undefined;
         }
-        return this.lifecycleService().writePaymentStatus({
+        const paid = await this.lifecycleService().writePaymentStatus({
           before: afterHook,
           status: "paid",
         });
+        if (paid) {
+          await this.work.confirmPayment(paid.id);
+        }
+        return paid;
       },
       "no key update",
     );
@@ -425,6 +442,26 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
   }
 
   async findByIdTotal(props: IFindByIdTotalExecuteProps) {
+    const resultPrice = await this.work.resultPriceForOrder(props.id);
+    if (resultPrice) {
+      const currency = await this.modules.billing.currency.findById({
+        id: resultPrice.currencyId,
+      });
+      if (!currency) {
+        throw new Error("Not Found error. Result currency is unavailable");
+      }
+      return {
+        totals: [
+          {
+            total: parseExactMonetaryAmount(resultPrice.price),
+            billingModuleCurrency: currency,
+          },
+        ],
+        availableCurrencyIds: [currency.id],
+        unpriced: [],
+        fixedCurrencyId: currency.id,
+      };
+    }
     const saved = await this.savedCheckoutContext(props.id);
     if (saved) {
       const currency =

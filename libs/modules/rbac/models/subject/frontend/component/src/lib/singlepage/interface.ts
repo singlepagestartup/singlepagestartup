@@ -33,11 +33,6 @@ import type { IComponentProps as IMeIdentityChangeEmail } from "./me/identity/ch
 import type { IComponentProps as IMeSocialModuleProfileIdAvatarUpdateAiChat } from "./me/social-module/profile/id/avatar-update-ai-chat/interface";
 import type { IComponentProps as IMeSocialModuleProfileIdUpdateAiChat } from "./me/social-module/profile/id/update-ai-chat/interface";
 import type { IComponentProps as IMeSocialModuleProfileIdNavigationAiChat } from "./me/social-module/profile/id/navigation-ai-chat/interface";
-import type { IComponentProps as IMeSocialModuleProfileIdChatIdThreadIdDownloadAiChat } from "./me/social-module/profile/id/chat/id/thread/id/download-ai-chat/interface";
-import type { IComponentProps as IMeSocialModuleProfileIdChatIdThreadIdKnowledgeModuleSourceListDocumentAiChat } from "./me/social-module/profile/id/chat/id/thread/id/knowledge-module/source/list/document-ai-chat/interface";
-import type { IComponentProps as IMeSocialModuleProfileIdChatIdThreadIdKnowledgeModuleSourceIdUpdateAiChat } from "./me/social-module/profile/id/chat/id/thread/id/knowledge-module/source/id/update-ai-chat/interface";
-import type { IComponentProps as IMeSocialModuleProfileIdChatIdThreadIdMessageCreateAiChat } from "./me/social-module/profile/id/chat/id/thread/id/message-create-ai-chat/interface";
-import type { IComponentProps as IMeSocialModuleProfileIdChatIdThreadIdMessageListAiChat } from "./me/social-module/profile/id/chat/id/thread/id/message-list-ai-chat/interface";
 import type { IComponentProps as IMeSocialModuleProfileListAiChat } from "./me/social-module/profile/list/ai-chat/interface";
 import type { IComponentProps as IMeCrmModuleFormSupportAiChat } from "./me/crm-module/form/support-ai-chat/interface";
 import type { IComponentProps as IMeEcommerceModuleOrderListAiChat } from "./me/ecommerce-module/order/list/ai-chat/interface";
@@ -45,7 +40,6 @@ import type { IComponentProps as IMeAccountAiChat } from "./me/account-ai-chat/i
 import type { IComponentProps as IMeProfileSettingsAiChat } from "./me/profile/settings-ai-chat/interface";
 import type { IComponentProps as IMeSocialModuleProfileIdChatIdThreadCreateAiChat } from "./me/social-module/profile/id/chat/id/thread/create-ai-chat/interface";
 import type { IComponentProps as IMeSocialModuleProfileIdSettingsAiChat } from "./me/social-module/profile/id/settings-ai-chat/interface";
-import type { IComponentProps as IMeSocialModuleProfileIdChatIdThreadIdAiChat } from "./me/social-module/profile/id/chat/id/thread/id/ai-chat/interface";
 import type { IComponentProps as IMeSocialModuleProfileCreateAiChat } from "./me/social-module/profile/create-ai-chat/interface";
 import { IComponentProps as IEcommerceModuleOrderCheckoutDefaultComponentProps } from "./ecommerce-module/order/checkout-default/interface";
 import { IComponentProps as IEcommerceModuleOrderListCheckoutDefaultComponentProps } from "./ecommerce-module/order/list/checkout-default/interface";
@@ -129,11 +123,6 @@ export type IComponentProps =
   | IMeSocialModuleProfileIdAvatarUpdateAiChat
   | IMeSocialModuleProfileIdUpdateAiChat
   | IMeSocialModuleProfileIdNavigationAiChat
-  | IMeSocialModuleProfileIdChatIdThreadIdDownloadAiChat
-  | IMeSocialModuleProfileIdChatIdThreadIdKnowledgeModuleSourceListDocumentAiChat
-  | IMeSocialModuleProfileIdChatIdThreadIdKnowledgeModuleSourceIdUpdateAiChat
-  | IMeSocialModuleProfileIdChatIdThreadIdMessageCreateAiChat
-  | IMeSocialModuleProfileIdChatIdThreadIdMessageListAiChat
   | IMeSocialModuleProfileListAiChat
   | IMeCrmModuleFormSupportAiChat
   | IMeEcommerceModuleOrderListAiChat
@@ -141,7 +130,6 @@ export type IComponentProps =
   | IMeProfileSettingsAiChat
   | IMeSocialModuleProfileIdChatIdThreadCreateAiChat
   | IMeSocialModuleProfileIdSettingsAiChat
-  | IMeSocialModuleProfileIdChatIdThreadIdAiChat
   | IMeSocialModuleProfileCreateAiChat
   | IEcommerceModuleOrderCheckoutDefaultComponentProps
   | IEcommerceModuleOrderListCheckoutDefaultComponentProps

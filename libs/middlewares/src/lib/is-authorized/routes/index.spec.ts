@@ -177,7 +177,6 @@ describe("is-authorized allowed routes", () => {
       ["GET", "is-authorized"],
       ["GET", "me"],
       ["GET", "init"],
-      ["POST", "bill-route"],
       ["POST", "refresh"],
       ["POST", "logout"],
       ["POST", "ethereum-virtual-machine"],
@@ -220,7 +219,7 @@ describe("is-authorized allowed routes", () => {
     expect(matcher.matches(`${prefix}/init`, "POST")).toBe(false);
     expect(matcher.matches(`${prefix}/is-authorized`, "POST")).toBe(false);
     expect(matcher.matches(`${prefix}/refresh`, "GET")).toBe(false);
-    expect(matcher.matches(`${prefix}/bill-route`, "GET")).toBe(false);
+
     expect(matcher.matches(`${prefix}/oauth/google`, "GET")).toBe(false);
     expect(matcher.matches(`${prefix}/oauth/google/callback`, "POST")).toBe(
       false,

@@ -48,9 +48,24 @@ function dependencies() {
         ]),
         chat: reader([{ id: "chat" }]),
         chatsToThreads: reader([
-          { chatId: "chat", threadId: "default" },
-          { chatId: "chat", threadId: "products" },
-          { chatId: "chat", threadId: "brief" },
+          {
+            chatId: "chat",
+            threadId: "products",
+            variant: "ai-chat",
+            orderIndex: 0,
+          },
+          {
+            chatId: "chat",
+            threadId: "brief",
+            variant: "ai-chat",
+            orderIndex: 1,
+          },
+          {
+            chatId: "chat",
+            threadId: "default",
+            variant: "default",
+            orderIndex: 2,
+          },
           { chatId: "another-chat", threadId: "foreign-thread" },
         ]),
         thread: reader([
@@ -82,17 +97,29 @@ function dependencies() {
   };
 }
 
-it("lists only assistant profiles owned by the Subject even when another assistant shares its Chat", async () => {
+it("opens the default relation of an owned project with former document threads and a shared assistant", async () => {
   const deps = dependencies();
   const projects = await new Service(deps as any).find({ subjectId: "owner" });
   expect(projects).toEqual([
     {
       profile: { id: "assistant", variant: "artificial-intelligence" },
       chat: { id: "chat" },
-      thread: expect.objectContaining({ id: "brief" }),
+      thread: expect.objectContaining({ id: "default" }),
       requesterProfileId: "personal",
     },
   ]);
+});
+
+it("uses the first linked thread by relation order for a project without a default relation", async () => {
+  const deps = dependencies();
+  deps.modules.social.chatsToThreads = reader([
+    { chatId: "chat", threadId: "brief", variant: "ai-chat", orderIndex: 2 },
+    { chatId: "chat", threadId: "products", variant: "ai-chat", orderIndex: 1 },
+  ]);
+
+  const projects = await new Service(deps as any).find({ subjectId: "owner" });
+
+  expect(projects[0].thread.id).toBe("products");
 });
 
 it("returns an empty list for a new Subject without reading unrelated projects", async () => {

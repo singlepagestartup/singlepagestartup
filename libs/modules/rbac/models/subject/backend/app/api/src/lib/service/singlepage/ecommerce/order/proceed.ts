@@ -19,6 +19,9 @@ import { logger } from "@sps/backend-utils";
 import type { ICheckout as IEcommerceProductCheckout } from "../product/checkout";
 import { Repository } from "../../../../repository";
 import type { IRenewal } from "./renewal";
+import Decimal from "decimal.js";
+
+const WalletAmount = Decimal.clone({ precision: 56 });
 
 export type IExecuteProps = {
   subjectId?: string;
@@ -292,6 +295,11 @@ export class Service {
               subjectsToRoles: rbacSubjectsToRoles,
             });
           } else if (extendedOrder.status === "paid") {
+            if (
+              await this.modules.ecommerce.order.work?.findByOrder(order.id)
+            ) {
+              continue;
+            }
             await this.fromPaidStatus({
               order: extendedOrder,
               extendedOrder,
@@ -598,16 +606,17 @@ export class Service {
           )
         )
           continue;
-        const amount = Number(attribute.number);
         if (
           typeof attribute.number !== "string" ||
           !attribute.number.trim() ||
-          !Number.isFinite(amount) ||
-          amount <= 0
-        )
+          !Number.isFinite(Number(attribute.number)) ||
+          Number(attribute.number) <= 0
+        ) {
           throw new Error(
             "Validation error. Topup amount must be finite and positive",
           );
+        }
+        const amount = new WalletAmount(attribute.number.trim());
         const links = attribute.attributesToBillingModuleCurrencies ?? [];
         if (!links.length)
           throw new Error("Configuration error. Topup currency is missing");
@@ -622,15 +631,16 @@ export class Service {
             );
           seen.add(link.billingModuleCurrencyId);
           const previous = currencies.get(link.billingModuleCurrencyId);
-          const total = Number(previous?.amount ?? 0) + amount * quantity;
-          if (!Number.isFinite(total) || total <= 0)
+          const total = amount.times(quantity).plus(previous?.amount ?? 0);
+          if (!Number.isFinite(total.toNumber()) || total.lte(0)) {
             throw new Error(
               "Validation error. Topup total must be finite and positive",
             );
+          }
           currencies.set(link.billingModuleCurrencyId, {
             billingModuleCurrencyId: link.billingModuleCurrencyId,
             billingModuleCurrency: link.billingModuleCurrency,
-            amount: String(total),
+            amount: total.toFixed(),
           });
         }
       }
@@ -1070,9 +1080,9 @@ export class Service {
             },
           );
 
-        const topupAmount =
-          parseFloat(topupCurrency.amount) +
-          invitedSocialModuleProfilesIds.length * 3;
+        const topupAmount = new WalletAmount(topupCurrency.amount).plus(
+          invitedSocialModuleProfilesIds.length * 3,
+        );
 
         if (existingSubjectToBillingModuleCurrency) {
           const credited =
@@ -1080,10 +1090,9 @@ export class Service {
               {
                 id: existingSubjectToBillingModuleCurrency.id,
                 expectedAmount: existingSubjectToBillingModuleCurrency.amount,
-                amount: String(
-                  parseFloat(existingSubjectToBillingModuleCurrency.amount) +
-                    topupAmount,
-                ),
+                amount: topupAmount
+                  .plus(existingSubjectToBillingModuleCurrency.amount)
+                  .toFixed(),
               },
             );
           if (!credited)
@@ -1095,7 +1104,7 @@ export class Service {
             data: {
               subjectId: props.subjectToEcommerceModuleOrder.subjectId,
               billingModuleCurrencyId: topupCurrency.billingModuleCurrency.id,
-              amount: String(topupAmount),
+              amount: topupAmount.toFixed(),
             },
           });
         }
@@ -1473,7 +1482,10 @@ export class Service {
 
           props.extendedEcommerceModuleOrder.ordersToFileStorageModuleFiles.forEach(
             (orderToFileStorageModuleFile) => {
-              if (!orderToFileStorageModuleFile.fileStorageModuleFile) {
+              if (
+                orderToFileStorageModuleFile.variant === "receipt-default" ||
+                !orderToFileStorageModuleFile.fileStorageModuleFile
+              ) {
                 return;
               }
 
@@ -1654,7 +1666,10 @@ export class Service {
 
           props.extendedEcommerceModuleOrder.ordersToFileStorageModuleFiles.forEach(
             (orderToFileStorageModuleFile) => {
-              if (!orderToFileStorageModuleFile.fileStorageModuleFile) {
+              if (
+                orderToFileStorageModuleFile.variant === "receipt-default" ||
+                !orderToFileStorageModuleFile.fileStorageModuleFile
+              ) {
                 return;
               }
 

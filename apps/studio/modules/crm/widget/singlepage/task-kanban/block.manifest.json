@@ -1,0 +1,28 @@
+{
+  "$schema": "../../../../../block.schema.json",
+  "id": "crm.widget.task-kanban",
+  "title": "CRM Widget / Task Kanban",
+  "layer": "singlepage",
+  "state": "draft",
+  "source": {
+    "module": "crm",
+    "entityType": "model",
+    "entity": "widget",
+    "variant": "task-kanban"
+  },
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "contentSlots": [],
+  "figma": {
+    "componentName": "crm.widget",
+    "pageName": "crm",
+    "variantName": "task-kanban",
+    "nodeId": null,
+    "variantNodeId": null,
+    "syncStatus": "not-created",
+    "metadataFile": "figma.json"
+  },
+  "tags": ["crm", "widget", "workflows"]
+}

@@ -1,10 +1,5 @@
 export type JsonValue =
-  | null
-  | string
-  | number
-  | boolean
-  | JsonValue[]
-  | { [key: string]: JsonValue };
+  null | string | number | boolean | JsonValue[] | { [key: string]: JsonValue };
 
 export interface IRecord {
   id: string;
@@ -16,6 +11,7 @@ export interface IRecord {
   subtitle: string | null;
   description: string | null;
   sourceSystemId: string | null;
+  workReplyKey: string | null;
   interaction: JsonValue | null;
   metadata: JsonValue | null;
 }

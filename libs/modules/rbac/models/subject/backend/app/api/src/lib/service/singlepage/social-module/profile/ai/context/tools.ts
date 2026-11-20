@@ -31,7 +31,7 @@ export class Service {
         textLength: text.length,
       };
     };
-    const tools: ISocialProfileAiTool[] = [
+    return [
       {
         source: "context",
         display: { label: "Read original thread messages" },
@@ -163,9 +163,7 @@ export class Service {
           return message ? [message] : [];
         },
       },
-    ];
-    if (!this.context.props.documentThread)
-      tools.push({
+      {
         source: "context",
         completeAfterSuccess: true,
         display: { label: "Stage exact working draft" },
@@ -197,15 +195,16 @@ export class Service {
               args.expectedHash === null ||
               typeof args.expectedHash === "string"
             )
-          )
+          ) {
             throw new Error("Invalid working draft");
+          }
           return this.context.stageDraft(
             args.title.trim(),
             args.text,
             args.expectedHash,
           );
         },
-      });
-    return tools;
+      },
+    ];
   }
 }

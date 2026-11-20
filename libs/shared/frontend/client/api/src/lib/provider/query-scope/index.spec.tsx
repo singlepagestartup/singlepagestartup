@@ -1,8 +1,19 @@
 /** @jest-environment jsdom */
 import "@testing-library/jest-dom";
-import { StrictMode } from "react";
-import { act, render, screen, waitFor } from "@testing-library/react";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { StrictMode, type ReactNode } from "react";
+import {
+  act,
+  render,
+  renderHook,
+  screen,
+  waitFor,
+} from "@testing-library/react";
+import {
+  QueryClient,
+  QueryClientProvider,
+  type UseQueryOptions,
+} from "@tanstack/react-query";
+import { actions } from "@sps/shared-frontend-api";
 import { factory } from "../../factory";
 import { patchInListQueries } from "../../cache";
 import { QueryScopeProvider } from ".";
@@ -183,6 +194,67 @@ it("all factory read methods retain principal/host positions and prevent options
       topics: ["custom.topic"],
     });
     expect(query.gcTime).toBe(0);
+  }
+});
+
+it("skips an empty detail ID even when the caller supplies enabled and queryFn", async () => {
+  interface IDetailProps {
+    id: string;
+    options: Pick<UseQueryOptions<IRow>, "enabled" | "queryFn">;
+  }
+
+  const initialProps: IDetailProps = { id: "", options: { enabled: false } };
+  const row = { id: "record", value: 1 };
+  const queryFn = jest.fn(async () => row);
+  const enabled = jest.fn(() => true);
+  const request = jest.spyOn(actions, "findById").mockResolvedValue(row);
+  const consoleError = jest
+    .spyOn(console, "error")
+    .mockImplementation(() => {});
+
+  try {
+    const { result, rerender } = renderHook(
+      ({ id, options }) => api.findById({ id, reactQueryOptions: options }),
+      {
+        initialProps,
+        wrapper: ({ children }: { children: ReactNode }) => (
+          <QueryClientProvider client={client}>
+            <QueryScopeProvider scopeKey="detail">
+              {children}
+            </QueryScopeProvider>
+          </QueryClientProvider>
+        ),
+      },
+    );
+
+    expect(result.current.fetchStatus).toBe("idle");
+    expect(request).not.toHaveBeenCalled();
+    expect(consoleError).not.toHaveBeenCalledWith(
+      expect.stringContaining("No queryFn was passed"),
+    );
+
+    rerender({ id: "", options: { enabled: true, queryFn } });
+    expect(result.current.isEnabled).toBe(false);
+    expect(queryFn).not.toHaveBeenCalled();
+
+    rerender({ id: row.id, options: { enabled: false, queryFn } });
+    expect(result.current.fetchStatus).toBe("idle");
+    expect(queryFn).not.toHaveBeenCalled();
+
+    rerender({ id: row.id, options: { enabled, queryFn } });
+    await waitFor(() => expect(result.current.data).toEqual(row));
+    expect(enabled).toHaveBeenCalled();
+
+    enabled.mockClear();
+    rerender({ id: "", options: { enabled, queryFn } });
+    expect(result.current.fetchStatus).toBe("idle");
+    expect(result.current.data).toBeUndefined();
+    expect(enabled).not.toHaveBeenCalled();
+    expect(queryFn).toHaveBeenCalledTimes(1);
+    expect(request).not.toHaveBeenCalled();
+  } finally {
+    consoleError.mockRestore();
+    request.mockRestore();
   }
 });
 

@@ -1,9 +1,6 @@
 import type { Service as SubjectService } from "../../index";
-import {
-  getAIChatDocument,
-  type IAIChatProject,
-} from "@sps/rbac/models/subject/sdk/model";
-import { AI_CHAT_DOCUMENTS } from "@sps/shared-utils";
+import type { IAIChatProject } from "@sps/rbac/models/subject/sdk/model";
+import { selectPrimaryLinkedThread } from "@sps/social/models/thread/sdk/model";
 
 export interface IFindProps {
   subjectId: string;
@@ -79,7 +76,7 @@ export class Service {
       },
     });
     const threadIds = [...new Set(threadLinks.map((link) => link.threadId))];
-    let threads;
+    let threads: IAIChatProject["thread"][];
     if (threadIds.length) {
       threads = await this.service.modules.social.thread.find({
         params: {
@@ -96,43 +93,35 @@ export class Service {
       const requesterProfileId = ownMemberships.find(
         (link) => link.chatId === chat.id,
       )?.profileId;
-      if (!requesterProfileId) continue;
-      const chatThreadIds = new Set(
-        threadLinks
-          .filter((link) => link.chatId === chat.id)
-          .map((link) => link.threadId),
+      if (!requesterProfileId) {
+        continue;
+      }
+      const chatThreadLinks = threadLinks.filter(
+        (link) => link.chatId === chat.id,
       );
-      const chatThreads = threads.filter((thread) =>
-        chatThreadIds.has(thread.id),
+      const defaultThreadLinks = chatThreadLinks.filter(
+        (link) => link.variant === "default",
       );
+      const thread =
+        selectPrimaryLinkedThread({
+          socialModuleChatsToThreads: defaultThreadLinks,
+          socialModuleThreads: threads,
+        }) ||
+        selectPrimaryLinkedThread({
+          socialModuleChatsToThreads: chatThreadLinks,
+          socialModuleThreads: threads,
+        });
+      if (!thread) {
+        continue;
+      }
       for (const profile of profiles) {
         if (
-          !memberships.some(
+          memberships.some(
             (link) => link.chatId === chat.id && link.profileId === profile.id,
           )
-        )
-          continue;
-        const documents = chatThreads.filter(
-          (thread) =>
-            getAIChatDocument(thread.metadata)?.profileId === profile.id,
-        );
-        documents.sort(
-          (a, b) =>
-            AI_CHAT_DOCUMENTS.findIndex(
-              (definition) =>
-                definition.key === getAIChatDocument(a.metadata)?.key,
-            ) -
-            AI_CHAT_DOCUMENTS.findIndex(
-              (definition) =>
-                definition.key === getAIChatDocument(b.metadata)?.key,
-            ),
-        );
-        const thread =
-          documents[0] ||
-          chatThreads.find((thread) => thread.variant === "default") ||
-          chatThreads[0];
-        if (thread)
+        ) {
           projects.push({ profile, chat, thread, requesterProfileId });
+        }
       }
     }
     return projects;

@@ -1,3 +1,5 @@
+import { providerReasoningEffortValues } from "@sps/shared-utils";
+
 export const RBAC_AI_REACTION_REQUEST_METADATA_KEY =
   "rbacAiReactionRequest" as const;
 export const RBAC_AI_REACTION_REQUEST_VERSION = 1 as const;
@@ -5,13 +7,7 @@ export const RBAC_AI_REACTION_REQUEST_MAX_SKILL_IDS = 50;
 
 export const rbacAiReactionReasoningValues = [
   "auto",
-  "max",
-  "xhigh",
-  "high",
-  "medium",
-  "low",
-  "minimal",
-  "none",
+  ...providerReasoningEffortValues,
 ] as const;
 
 export type TRbacAiReactionReasoning =

@@ -1,11 +1,14 @@
-import { serverHost, route } from "@sps/rbac/models/subject/sdk/model";
+import {
+  serverHost,
+  route,
+  type ISocialModuleChatThread,
+} from "@sps/rbac/models/subject/sdk/model";
 import {
   NextRequestOptions,
   responsePipe,
   transformResponseItem,
 } from "@sps/shared-utils";
 import QueryString from "qs";
-import { IModel as ISocialModuleThread } from "@sps/social/models/thread/sdk/model";
 
 export interface IProps {
   id: string;
@@ -19,7 +22,10 @@ export interface IProps {
   options?: Partial<NextRequestOptions>;
 }
 
-export type IResult = ISocialModuleThread[];
+export type IResult = (ISocialModuleChatThread & {
+  lastMessageAt?: Date | string | null;
+  unreadCount?: number;
+})[];
 
 export async function action(props: IProps): Promise<IResult> {
   const { id, socialModuleChatId, params, options, host = serverHost } = props;

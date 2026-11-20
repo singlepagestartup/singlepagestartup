@@ -12,7 +12,10 @@ import type { IPurchaseSnapshot } from "@sps/ecommerce/relations/orders-to-billi
 import type { IModel as IBillingModuleCurrency } from "@sps/billing/models/currency/sdk/model";
 import type { IModel as IFileStorageModuleFile } from "@sps/file-storage/models/file/sdk/model";
 
+export const STORE_TEST_ORDER_VARIANT = "store-test";
+
 export interface ICartDetails {
+  fixedResultPrice?: boolean;
   maxLineQuantity: number;
   /** Currencies shared by every line; the persisted selection may be stale. */
   availableCurrencyIds?: string[];
@@ -30,6 +33,7 @@ export interface IPurchaseCharge extends IPurchaseSnapshot {
 
 /** Subject-scoped order history assembled from invoices, receipts and subscription orders. */
 export interface IPurchaseDetails {
+  storeWork?: { storeId: string; taskId: string };
   primaryProductSlug?: string;
   /** Whether the Subject may retry an unfinished payment by replacing the cart. */
   canRepeatPayment?: boolean;
@@ -49,6 +53,7 @@ export interface IPurchaseDetails {
   unpriced?: IUnpricedOrderToProduct[];
   totals: { total: number; billingModuleCurrency: IBillingModuleCurrency }[];
   receipts: IFileStorageModuleFile[];
+  protectedReceipts?: Array<{ id: string; path: string }>;
   charges?: IPurchaseCharge[];
   invoiceShares?: {
     invoiceId: string;

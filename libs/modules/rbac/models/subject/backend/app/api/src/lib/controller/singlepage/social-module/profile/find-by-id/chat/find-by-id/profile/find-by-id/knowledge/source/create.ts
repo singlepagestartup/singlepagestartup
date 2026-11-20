@@ -37,6 +37,7 @@ export class Handler {
         orderIndex?: unknown;
       };
       const data = body.data || body;
+      const storeId = c.get("storeEmployeeTrainingStoreId");
       const title = toText(data.title).trim();
       const content = toText(data.content).trim();
 
@@ -60,6 +61,7 @@ export class Handler {
               data: {
                 profileId: targetSocialModuleProfileId,
                 knowledgeModuleSourceId: sourceId,
+                ...(storeId ? { storeId } : {}),
                 orderIndex: toOrderIndex(data.orderIndex),
               },
             },

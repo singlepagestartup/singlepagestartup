@@ -18,30 +18,23 @@ import {
   X,
 } from "lucide-react";
 
-function getLocalizedText(
-  value: Record<string, unknown> | null | undefined,
-  language: string,
-) {
-  const localized = value?.[language];
-
-  if (typeof localized === "string") {
-    return localized;
-  }
-
-  return "";
-}
-
 function getProfileTitle(props: IClientComponentProps) {
   return (
-    getLocalizedText(props.data.title, props.language) ||
-    props.data.adminTitle ||
+    getLocalizedPlainText(props.data.title, props.language) ||
+    props.data.adminTitle?.trim() ||
     props.data.slug
   );
 }
 
 export function Component(props: IClientComponentProps) {
+  const ru = props.language === "ru";
   const title = getProfileTitle(props);
-  const subtitle = getLocalizedText(props.data.subtitle, props.language);
+  const editProfile = ru ? "Изменить профиль" : "Edit profile";
+  const editPhoto = ru ? "Изменить фото профиля" : "Edit profile photo";
+  const editTools = ru ? "Настроить MCP-серверы" : "Edit MCP servers";
+  const newSkill = ru ? "Добавить навык" : "New skill";
+  const newKnowledge = ru ? "Добавить источник знаний" : "New knowledge";
+  const subtitle = getLocalizedPlainText(props.data.subtitle, props.language);
   const description = getLocalizedPlainText(
     props.data.description,
     props.language,
@@ -66,8 +59,8 @@ export function Component(props: IClientComponentProps) {
             <button
               type="button"
               className="shrink-0 rounded-full outline-none ring-offset-2 transition hover:opacity-80 focus-visible:ring-2 focus-visible:ring-slate-400"
-              aria-label={`Edit profile photo ${props.data.slug}`}
-              title="Edit profile photo"
+              aria-label={`${editPhoto} ${props.profileCaption ? title : props.data.slug}`}
+              title={editPhoto}
               onClick={() => {
                 props.onProfileEdit?.(props.data);
               }}
@@ -94,7 +87,7 @@ export function Component(props: IClientComponentProps) {
               {title}
             </h2>
             <p className="mt-0.5 truncate text-xs text-slate-500">
-              @{props.data.slug}
+              {props.profileCaption ?? `@${props.data.slug}`}
             </p>
           </div>
           {props.onClose ? (
@@ -102,7 +95,7 @@ export function Component(props: IClientComponentProps) {
               type="button"
               onClick={props.onClose}
               className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-md text-slate-400 transition hover:bg-slate-100 hover:text-slate-700"
-              aria-label="Close profile sidebar"
+              aria-label={ru ? "Закрыть профиль" : "Close profile sidebar"}
             >
               <X className="h-4 w-4" />
             </button>
@@ -117,15 +110,15 @@ export function Component(props: IClientComponentProps) {
               <div className="flex min-w-0 items-center gap-2">
                 <UserRound className="h-4 w-4 text-slate-400" />
                 <h3 className="text-xs font-semibold uppercase tracking-normal text-slate-500">
-                  Profile
+                  {ru ? "Профиль" : "Profile"}
                 </h3>
               </div>
               {props.onProfileEdit ? (
                 <button
                   type="button"
                   className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-slate-400 transition hover:bg-slate-100 hover:text-slate-700"
-                  aria-label={`Edit profile ${props.data.slug}`}
-                  title="Edit profile"
+                  aria-label={`${editProfile} ${props.profileCaption ? title : props.data.slug}`}
+                  title={editProfile}
                   onClick={() => {
                     props.onProfileEdit?.(props.data);
                   }}
@@ -143,7 +136,9 @@ export function Component(props: IClientComponentProps) {
               </p>
             ) : (
               <p className="text-xs leading-5 text-slate-400">
-                No profile description.
+                {ru
+                  ? "Описание профиля отсутствует."
+                  : "No profile description."}
               </p>
             )}
           </section>
@@ -153,7 +148,7 @@ export function Component(props: IClientComponentProps) {
               <div className="flex min-w-0 items-center gap-2">
                 <ServerCog className="h-4 w-4 text-slate-400" />
                 <h3 className="text-xs font-semibold uppercase tracking-normal text-slate-500">
-                  MCP
+                  {ru ? "Инструменты MCP" : "MCP"}
                 </h3>
                 <span className="text-xs text-slate-400">
                   {mcpServers.length}
@@ -163,8 +158,12 @@ export function Component(props: IClientComponentProps) {
                 <button
                   type="button"
                   className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-slate-400 transition hover:bg-slate-100 hover:text-slate-700"
-                  aria-label={`Edit MCP servers for ${props.data.slug}`}
-                  title="Edit MCP servers"
+                  aria-label={
+                    ru
+                      ? `${editTools} для ${title}`
+                      : `${editTools} for ${props.data.slug}`
+                  }
+                  title={editTools}
                   onClick={() => {
                     props.onMcpServersEdit?.(props.data);
                   }}
@@ -210,7 +209,9 @@ export function Component(props: IClientComponentProps) {
                 })}
               </div>
             ) : (
-              <p className="text-sm text-slate-400">No MCP servers.</p>
+              <p className="text-sm text-slate-400">
+                {ru ? "MCP-серверы не подключены." : "No MCP servers."}
+              </p>
             )}
           </section>
 
@@ -219,7 +220,7 @@ export function Component(props: IClientComponentProps) {
               <div className="flex min-w-0 items-center gap-2">
                 <Package className="h-4 w-4 text-slate-400" />
                 <h3 className="text-xs font-semibold uppercase tracking-normal text-slate-500">
-                  Skills
+                  {ru ? "Навыки" : "Skills"}
                 </h3>
                 {!props.isSkillsLoading ? (
                   <span className="text-xs text-slate-400">
@@ -231,8 +232,12 @@ export function Component(props: IClientComponentProps) {
                 <button
                   type="button"
                   className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-slate-400 transition hover:bg-slate-100 hover:text-slate-700"
-                  aria-label={`New skill for ${props.data.slug}`}
-                  title="New skill"
+                  aria-label={
+                    ru
+                      ? `${newSkill} для ${title}`
+                      : `${newSkill} for ${props.data.slug}`
+                  }
+                  title={newSkill}
                   onClick={() => {
                     props.onSkillCreate?.(props.data);
                   }}
@@ -242,7 +247,9 @@ export function Component(props: IClientComponentProps) {
               ) : null}
             </div>
             {props.isSkillsLoading ? (
-              <p className="text-sm text-slate-400">Loading skills...</p>
+              <p className="text-sm text-slate-400">
+                {ru ? "Загружаем навыки…" : "Loading skills..."}
+              </p>
             ) : skills.length ? (
               <div className="space-y-1">
                 {skills.map((skill) => {
@@ -260,7 +267,9 @@ export function Component(props: IClientComponentProps) {
                 })}
               </div>
             ) : (
-              <p className="text-sm text-slate-400">No linked skills.</p>
+              <p className="text-sm text-slate-400">
+                {ru ? "Нет связанных навыков." : "No linked skills."}
+              </p>
             )}
           </section>
 
@@ -269,7 +278,7 @@ export function Component(props: IClientComponentProps) {
               <div className="flex min-w-0 items-center gap-2">
                 <BookOpen className="h-4 w-4 text-slate-400" />
                 <h3 className="text-xs font-semibold uppercase tracking-normal text-slate-500">
-                  Knowledge
+                  {ru ? "Знания" : "Knowledge"}
                 </h3>
                 {!props.isKnowledgeSourcesLoading &&
                 !props.hasKnowledgeSourcesError ? (
@@ -282,8 +291,12 @@ export function Component(props: IClientComponentProps) {
                 <button
                   type="button"
                   className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-slate-400 transition hover:bg-slate-100 hover:text-slate-700"
-                  aria-label={`New knowledge for ${props.data.slug}`}
-                  title="New knowledge"
+                  aria-label={
+                    ru
+                      ? `${newKnowledge} для ${title}`
+                      : `${newKnowledge} for ${props.data.slug}`
+                  }
+                  title={newKnowledge}
                   onClick={() => {
                     props.onKnowledgeSourceCreate?.(props.data);
                   }}
@@ -293,11 +306,14 @@ export function Component(props: IClientComponentProps) {
               ) : null}
             </div>
             {props.isKnowledgeSourcesLoading ? (
-              <p className="text-sm text-slate-400">Loading knowledge...</p>
+              <p className="text-sm text-slate-400">
+                {ru ? "Загружаем источники знаний…" : "Loading knowledge..."}
+              </p>
             ) : props.hasKnowledgeSourcesError ? (
               <p className="text-sm text-amber-600">
-                Knowledge could not be loaded. Check access permissions and try
-                again.
+                {ru
+                  ? "Не удалось загрузить источники знаний."
+                  : "Knowledge could not be loaded."}
               </p>
             ) : knowledgeSources.length ? (
               <div className="space-y-1">
@@ -319,7 +335,9 @@ export function Component(props: IClientComponentProps) {
                 })}
               </div>
             ) : (
-              <p className="text-sm text-slate-400">No knowledge sources.</p>
+              <p className="text-sm text-slate-400">
+                {ru ? "Нет источников знаний." : "No knowledge sources."}
+              </p>
             )}
           </section>
         </div>

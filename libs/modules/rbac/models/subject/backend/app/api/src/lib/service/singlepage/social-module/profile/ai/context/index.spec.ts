@@ -84,7 +84,6 @@ function fixture(
     triggerMessageId: "message-10",
     resetMessageId: options.resetMessageId ?? null,
     history,
-    documentThread: false,
     mode: options.mode ?? "compact",
     modules: {
       social: social,

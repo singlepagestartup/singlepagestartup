@@ -1,0 +1,3565 @@
+import { createHash, randomUUID } from "node:crypto";
+import { isDeepStrictEqual } from "node:util";
+import { z } from "zod";
+import {
+  isStoreEmployeeTraining,
+  type IModel as CrmTask,
+} from "@sps/crm/models/task/sdk/model";
+import {
+  stageWorkCapabilities,
+  type IFunnelStage,
+  type IWorkFunding,
+} from "@sps/crm/models/funnel/sdk/model";
+import { supportsNestedWork } from "@sps/shared-third-parties";
+import { CUSTOMER_WORK_OFFER_CHOICE_REQUIRED } from "@sps/shared-utils";
+import {
+  assertSingleUnitPerOrder,
+  getHttpErrorType,
+  logger,
+} from "@sps/backend-utils";
+import Decimal from "decimal.js";
+import {
+  isSocialMessageExcludedFromOpenRouter,
+  type IModel as SocialMessage,
+} from "@sps/social/models/message/sdk/model";
+import type { IModel as SocialProfile } from "@sps/social/models/profile/sdk/model";
+import { selectRetailOffer } from "@sps/ecommerce/relations/stores-to-products/sdk/model";
+import type { IModel as IProduct } from "@sps/ecommerce/models/product/sdk/model";
+import { STORE_TEST_ORDER_VARIANT } from "@sps/ecommerce/models/order/sdk/model";
+import {
+  PROVIDER_MODEL_SELECTION_METADATA_KEY,
+  providerModelSelection,
+  type IProviderModelSelection,
+} from "@sps/rbac/models/subject/sdk/model/src/lib/provider-connections";
+import {
+  parseRbacAiReactionRequestMetadata,
+  RBAC_AI_REACTION_REQUEST_METADATA_KEY,
+  isStoreTest,
+  STORE_EMPLOYEE_CHAT_VARIANT,
+} from "@sps/rbac/models/subject/sdk/model";
+import type {
+  ICartDiscussion,
+  ICustomerWorkCartOffer,
+  ICustomerWorkMessage,
+  ICustomerWorkOfferAvailability,
+  ICustomerWorkOfferScope,
+  ICustomerWorkPrice,
+  ICustomerWorkReply,
+  ICustomerWorkRun,
+  ICustomerWorkRunAttachment,
+  ICustomerWorkScope,
+  ICustomerWorkSourceVersion,
+  ICustomerWorkView,
+  ICrmWorkspaceStartTest,
+  ICrmWorkspaceRefreshTest,
+  IPendingCustomerWork,
+  TCustomerWorkCommand,
+} from "@sps/rbac/models/subject/sdk/model";
+import type { Service as SubjectService } from "../../index";
+import { Service as CustomerKnowledge } from "./knowledge";
+import {
+  EmployeeTrainingBudgetUnavailable,
+  employeeTrainingThreadId,
+  Service as EmployeeTraining,
+} from "../../crm/workspace/training";
+import {
+  customerWorkAttachments,
+  customerWorkAttachmentDigest,
+  describeCustomerWorkAttachments,
+  permittedCustomerWorkMedia,
+  prepareCustomerWorkAttachments,
+  storeCustomerWorkAttachment,
+  type IPreparedAttachment,
+  type IStoredAttachment,
+} from "./media";
+import { Service as CustomerDelivery } from "./delivery";
+import { Service as CustomerCart, type IStoredProposal } from "./cart";
+import { Service as OrderSummary } from "./order-summary";
+import { criteria } from "./utils";
+
+type TOpenCustomerWork = Extract<
+  TCustomerWorkCommand,
+  { operation: "ask" | "add" | "open-cart-discussion" }
+>;
+type TOpenCartDiscussion = Extract<
+  TOpenCustomerWork,
+  { operation: "open-cart-discussion" }
+>;
+type TConversationCommand = Extract<
+  TCustomerWorkCommand,
+  { operation: "message" | "handoff" | "approve-budget" }
+>;
+type TMemoryCommand = Exclude<
+  TCustomerWorkCommand,
+  TOpenCustomerWork | TConversationCommand | { operation: "confirm-cart" }
+>;
+
+interface IMessageEntry {
+  message: SocialMessage;
+  profileId: string;
+  profile: SocialProfile | null;
+  linkedAt: Date;
+}
+
+const replyEventSchema = z.object({
+  id: z.uuid(),
+  taskId: z.uuid(),
+  revision: z.number().int().positive(),
+});
+interface IReplyEvent extends z.infer<typeof replyEventSchema> {}
+
+interface IThreadMessage {
+  customerId: string;
+  chatId: string;
+  threadId: string;
+  profileId: string;
+  text: unknown;
+  metadata?: SocialMessage["metadata"];
+  sourceSystemId?: string;
+  hasAttachments: boolean;
+  attachments?: File[];
+}
+
+interface IThreadSelection {
+  storeId: string;
+  funnelId: string;
+  publicationId: string;
+  productId?: string;
+  offerId?: string;
+  assigneeId?: string;
+}
+
+export class Service {
+  constructor(
+    private readonly subject: SubjectService,
+    private readonly wake?: (taskId: string) => void,
+  ) {}
+
+  private get crm() {
+    return this.subject.modules.crm;
+  }
+
+  private get social() {
+    return this.subject.modules.social;
+  }
+
+  private get knowledge() {
+    return new CustomerKnowledge(this.subject);
+  }
+
+  private get cart() {
+    return new CustomerCart(this.subject);
+  }
+
+  sendEmployeeTraining(input: Parameters<EmployeeTraining["send"]>[0]) {
+    return new EmployeeTraining(this.subject, this.wake).send(input);
+  }
+
+  async expertForMaintenance(
+    task: Pick<CrmTask, "storeId" | "productId" | "offerId">,
+  ) {
+    const expert = await this.knowledge.expert(task);
+    if (expert.conflict) {
+      throw new Error(
+        "Conflict error. The store has competing expert assignments",
+      );
+    }
+    return expert.profileId;
+  }
+
+  async execute(
+    customerId: string,
+    command: TCustomerWorkCommand,
+  ): Promise<ICustomerWorkView> {
+    if (
+      command.operation === "ask" ||
+      command.operation === "add" ||
+      command.operation === "open-cart-discussion"
+    ) {
+      return this.open(customerId, command);
+    }
+    if (command.operation === "confirm-cart") {
+      return this.subject.repository.withSubjectLock(
+        { subjectId: customerId },
+        async () => {
+          await this.confirmCart(customerId, command, command.proposalId);
+          return this.view(customerId, command);
+        },
+      );
+    }
+    if (
+      command.operation === "memory-project" ||
+      command.operation === "remember" ||
+      command.operation === "forget"
+    ) {
+      return this.recordMemory(customerId, command);
+    }
+    const result = await this.recordActivity(customerId, command);
+    if (command.operation === "message") {
+      this.wake?.(result.taskId);
+    }
+    return result;
+  }
+
+  async availability(
+    scope: ICustomerWorkOfferScope,
+  ): Promise<ICustomerWorkOfferAvailability> {
+    const selection = await this.selection(scope);
+    if (!selection) {
+      return { consultation: false, order: false, payAfterAcceptance: false };
+    }
+    const service = selection.product.kind === "service";
+    const [consultation, order] = await Promise.all([
+      this.crm.funnel.resolve({ ...scope, kind: "consultation" }),
+      this.crm.funnel.resolve({
+        ...scope,
+        kind: service ? "individual-service" : "physical-order",
+      }),
+    ]);
+    const workOrder = Boolean(
+      order && (!service || selection.offer.settings.requiresResultAcceptance),
+    );
+    return {
+      consultation: Boolean(consultation),
+      order: workOrder,
+      payAfterAcceptance: workOrder && service,
+    };
+  }
+
+  private async selection(scope: ICustomerWorkOfferScope) {
+    const ecommerce = this.subject.modules.ecommerce;
+    const [product, offers] = await Promise.all([
+      ecommerce.product.findById({ id: scope.productId }),
+      ecommerce.storesToProducts.offersForProduct({
+        storeId: scope.storeId,
+        productId: scope.productId,
+      }),
+    ]);
+    if (!product) {
+      return null;
+    }
+    const offer = selectRetailOffer({ ...scope, product, offers });
+    return offer ? { offer, product } : null;
+  }
+
+  async canOpenCartDiscussion(scope: ICustomerWorkOfferScope) {
+    const selection = await this.selection(scope);
+    if (
+      selection?.product.kind !== "service" ||
+      selection.product.type !== "one_off" ||
+      selection.offer.settings.requiresResultAcceptance !== true
+    ) {
+      return false;
+    }
+    try {
+      const publication = await this.crm.funnel.resolve({
+        ...scope,
+        kind: "individual-service",
+      });
+      return Boolean(publication);
+    } catch (error) {
+      if (getHttpErrorType(error).status === 409) {
+        return false;
+      }
+      throw error;
+    }
+  }
+
+  async openFromForm(input: {
+    customerId: string;
+    formId: string;
+    requestId: string;
+    title: string;
+    storeId: string;
+    funnelId: string;
+  }) {
+    return this.subject.repository.withSubjectLock(
+      { subjectId: input.customerId },
+      async () => {
+        const key = `crm-form:${input.requestId}`;
+        const [prior] = await this.crm.task.find(
+          criteria({ storeId: input.storeId, openingKey: key }),
+        );
+        if (prior) {
+          return prior;
+        }
+        const publication = await this.crm.funnel.current(
+          input.storeId,
+          input.funnelId,
+        );
+        if (!publication.bindings.formIds.includes(input.formId)) {
+          throw new Error(
+            "Conflict error. This form is unavailable for the published workflow",
+          );
+        }
+        const selected = await this.formSelection(
+          input.storeId,
+          publication.bindings,
+        );
+        const task = await this.crm.task.open({
+          ...input,
+          ...selected,
+          actorId: input.customerId,
+          operationKey: key,
+          causeId: input.requestId,
+        });
+        const { subjectId, profileId } = await this.ensureAssistant(
+          input.customerId,
+          input.storeId,
+        );
+        await this.createConversation(task, { title: input.title, profileId });
+        await this.assignDefault(task, subjectId);
+        return task;
+      },
+    );
+  }
+
+  private async formSelection(
+    storeId: string,
+    bindings: { productIds: string[]; offerIds: string[] },
+  ) {
+    const ecommerce = this.subject.modules.ecommerce;
+    if (bindings.offerIds.length === 1) {
+      const offer = await ecommerce.storesToProducts.findById({
+        id: bindings.offerIds[0],
+      });
+      if (offer?.storeId === storeId) {
+        const selected = await this.selection({
+          storeId,
+          offerId: offer.id,
+          productId: offer.productId,
+        });
+        if (selected) {
+          return { productId: selected.product.id, offerId: selected.offer.id };
+        }
+      }
+    }
+    if (bindings.offerIds.length || bindings.productIds.length !== 1) {
+      return undefined;
+    }
+    const [productId] = bindings.productIds;
+    const offers = await ecommerce.storesToProducts.offersForProduct({
+      storeId,
+      productId,
+    });
+    if (offers.length === 1) {
+      const selected = await this.selection({
+        storeId,
+        offerId: offers[0].id,
+        productId,
+      });
+      if (selected) {
+        return { productId, offerId: selected.offer.id };
+      }
+    }
+    return { productId };
+  }
+
+  async viewForOrder(customerId: string, storeId: string, orderId: string) {
+    const matches = await this.crm.task.list({
+      customerId,
+      storeId,
+      orderId,
+      limit: 1,
+    });
+    const task = matches.items[0];
+    if (!task) {
+      return null;
+    }
+    return this.view(customerId, { storeId, taskId: task.id });
+  }
+
+  async discussionForOrder(input: {
+    customerId: string;
+    orderId: string;
+    taskId?: string;
+  }): Promise<ICartDiscussion | undefined> {
+    const { customerId, orderId, taskId } = input;
+    const tasks = await this.crm.task.find({
+      params: {
+        ...criteria({
+          customerId,
+          orderId,
+          ...(taskId ? { id: taskId } : {}),
+        }).params,
+        limit: 2,
+      },
+    });
+    if (tasks.length !== 1) {
+      return;
+    }
+    const [task] = tasks;
+    const channel = await this.findChannel(task.id);
+    if (!channel) {
+      return;
+    }
+    return {
+      storeId: task.storeId,
+      taskId: task.id,
+      threadId: channel.threadId,
+      chatId: channel.chatId,
+    };
+  }
+
+  async closeRemovedOrder(input: { customerId: string; orderId: string }) {
+    const [task] = await this.crm.task.find(criteria(input));
+    if (!task || task.status === "closed") {
+      return;
+    }
+    await this.crm.task.close({
+      storeId: task.storeId,
+      taskId: task.id,
+      expectedRevision: task.revision,
+      operationKey: `cart-removed:${input.orderId}`,
+      actorId: input.customerId,
+      reason: "cart-removed",
+    });
+  }
+
+  async transferGuest(input: {
+    guestId: string;
+    customerId: string;
+    removedOrderIds: string[];
+    transferredOrderIds: string[];
+  }) {
+    const buyerProfile = await this.profileForSubject(input.guestId);
+    if (!buyerProfile) {
+      return;
+    }
+    const tasks = await this.crm.task.find(
+      criteria({ customerId: input.guestId }),
+    );
+    for (const task of tasks) {
+      const [threadLink] = await this.social.threadsToCrmModuleTasks.find(
+        criteria({ crmModuleTaskId: task.id }),
+      );
+      if (!threadLink) {
+        continue;
+      }
+      if (task.orderId && input.transferredOrderIds.includes(task.orderId)) {
+        await this.subject.modules.ecommerce.order.work.transferCustomer({
+          customerId: input.guestId,
+          nextCustomerId: input.customerId,
+          orderId: task.orderId,
+          storeId: task.storeId,
+          taskId: task.id,
+        });
+      } else if (
+        task.orderId &&
+        !input.removedOrderIds.includes(task.orderId)
+      ) {
+        const removal = await this.crm.taskEvent.byOperation(
+          task.id,
+          `cart-removed:${task.orderId}`,
+        );
+        if (removal?.kind !== "closed") {
+          continue;
+        }
+      }
+      const channel = await this.channel(task.id);
+      const profileId = await this.ensureProfile(input.customerId, "customer");
+      const [previousMembership] = await this.social.profilesToChats.find(
+        criteria({ chatId: channel.chatId, profileId: buyerProfile.id }),
+      );
+      if (previousMembership) {
+        await this.social.profilesToChats.delete({ id: previousMembership.id });
+      }
+      await this.social.profilesToChats.create({
+        data: { chatId: channel.chatId, profileId },
+      });
+      const transferred = await this.crm.task.transferCustomer({
+        storeId: task.storeId,
+        taskId: task.id,
+        expectedRevision: task.revision,
+        previousCustomerId: input.guestId,
+        customerId: input.customerId,
+        actorId: input.customerId,
+        operationKey: `guest-transfer:${input.guestId}`,
+      });
+      if (
+        transferred.status === "closed" ||
+        task.assigneeKind !== "ai" ||
+        !task.assigneeId
+      ) {
+        continue;
+      }
+      const [guestAssistant] =
+        await this.subject.module.subjectsToEcommerceModuleStores.find(
+          criteria({
+            customerSubjectId: input.guestId,
+            ecommerceModuleStoreId: task.storeId,
+            variant: "assistant",
+          }),
+        );
+      let assigneeId = task.assigneeId;
+      if (guestAssistant?.subjectId === task.assigneeId) {
+        const assistant = await this.ensureAssistant(
+          input.customerId,
+          task.storeId,
+        );
+        assigneeId = assistant.subjectId;
+        const previousProfile = await this.profileForSubject(
+          guestAssistant.subjectId,
+        );
+        if (previousProfile) {
+          const [previousAssistant] = await this.social.profilesToChats.find(
+            criteria({ chatId: channel.chatId, profileId: previousProfile.id }),
+          );
+          if (previousAssistant) {
+            await this.social.profilesToChats.delete({
+              id: previousAssistant.id,
+            });
+          }
+        }
+        await this.social.profilesToChats.create({
+          data: { chatId: channel.chatId, profileId: assistant.profileId },
+        });
+      }
+      await this.crm.task.assign({
+        taskId: task.id,
+        storeId: task.storeId,
+        expectedRevision: transferred.revision,
+        actorId: input.customerId,
+        assigneeId,
+        assigneeKind: "ai",
+        operationKey: `guest-assignment:${input.guestId}`,
+        assignmentExpiresAt: new Date(
+          Date.now() + 7 * 24 * 60 * 60 * 1000,
+        ).toISOString(),
+      });
+    }
+  }
+
+  private async taskForThread(customerId: string, threadId: string) {
+    const [link] = await this.social.threadsToCrmModuleTasks.find(
+      criteria({ threadId }),
+    );
+    const task = link
+      ? await this.crm.task.findById({ id: link.crmModuleTaskId })
+      : null;
+    if (
+      !task ||
+      task.customerId !== customerId ||
+      isStoreEmployeeTraining(task.openingKey)
+    ) {
+      throw new Error(
+        "Not Found error. The customer conversation could not be found",
+      );
+    }
+    return task;
+  }
+
+  async viewForThread(customerId: string, threadId: string) {
+    const task = await this.taskForThread(customerId, threadId);
+    const work = await this.view(customerId, {
+      storeId: task.storeId,
+      taskId: task.id,
+    });
+    if (!work.orderId) {
+      return work;
+    }
+    try {
+      const orderSummary = await new OrderSummary(this.subject).find({
+        subjectId: customerId,
+        orderId: work.orderId,
+        productId: task.productId,
+        offerId: work.offerId,
+      });
+      return { ...work, orderSummary };
+    } catch (error) {
+      logger.warn("Could not load the customer conversation order summary", {
+        orderId: work.orderId,
+        status: getHttpErrorType(error).status,
+      });
+      return work;
+    }
+  }
+
+  async attachment(input: {
+    customerId: string;
+    threadId: string;
+    messageId: string;
+    attachmentId: string;
+  }) {
+    await this.taskForThread(input.customerId, input.threadId);
+    const [link] = await this.social.threadsToMessages.find(
+      criteria({ threadId: input.threadId, messageId: input.messageId }),
+    );
+    const message = link
+      ? await this.social.message.findById({ id: input.messageId })
+      : null;
+    const attachment =
+      message &&
+      customerWorkAttachments(message).find(
+        ({ id }) => id === input.attachmentId,
+      );
+    if (attachment) {
+      const file = await this.subject.modules.fileStorage.privateFile.findById({
+        id: attachment.id,
+      });
+      if (file && file.digest === attachment.digest) {
+        return { ...file, name: attachment.name };
+      }
+    }
+    throw new Error("Not Found error. The message attachment is unavailable");
+  }
+
+  /** Classify private conversations before returning any chat or participant data. */
+  async chatAccess(
+    subjectId: string,
+    chats: {
+      id: string;
+      variant: string;
+      sourceSystemId?: string | null;
+      slug?: string;
+    }[],
+  ) {
+    const access = new Map<
+      string,
+      "customer" | "ordinary" | "employee-training"
+    >();
+    const ordinary: typeof chats = [];
+    for (const chat of chats) {
+      if (chat.variant !== STORE_EMPLOYEE_CHAT_VARIANT) {
+        ordinary.push(chat);
+        continue;
+      }
+      try {
+        await this.subject.crmWorkspace.employees.scopeForChat(subjectId, chat);
+        access.set(chat.id, "employee-training");
+      } catch (error) {
+        if (getHttpErrorType(error).status !== 404) {
+          throw error;
+        }
+      }
+    }
+    chats = ordinary;
+    if (!chats.length) {
+      return access;
+    }
+    const inIds = (column: string, value: string[]) => ({
+      params: {
+        filters: { and: [{ column, method: "inArray" as const, value }] },
+      },
+    });
+    const threads = await this.social.chatsToThreads.find(
+      inIds(
+        "chatId",
+        chats.map(({ id }) => id),
+      ),
+    );
+    const threadsByChat = new Map<string, string[]>();
+    for (const { chatId, threadId } of threads) {
+      const ids = threadsByChat.get(chatId) ?? [];
+      ids.push(threadId);
+      threadsByChat.set(chatId, ids);
+    }
+    const links = threads.length
+      ? await this.social.threadsToCrmModuleTasks.find(
+          inIds(
+            "threadId",
+            threads.map(({ threadId }) => threadId),
+          ),
+        )
+      : [];
+    const taskByThread = new Map(
+      links.map(({ threadId, crmModuleTaskId }) => [threadId, crmModuleTaskId]),
+    );
+    const tasks = links.length
+      ? await this.crm.task.find({
+          params: {
+            filters: {
+              and: [
+                { column: "customerId", method: "eq", value: subjectId },
+                {
+                  column: "id",
+                  method: "inArray",
+                  value: links.map(({ crmModuleTaskId }) => crmModuleTaskId),
+                },
+              ],
+            },
+          },
+        })
+      : [];
+    const owned = new Set(
+      tasks
+        .filter((task) => task.customerId === subjectId)
+        .map((task) => task.id),
+    );
+    for (const chat of chats) {
+      const ids = threadsByChat.get(chat.id) ?? [];
+      const linkedTasks = ids.flatMap((id) => {
+        const taskId = taskByThread.get(id);
+        return taskId ? [taskId] : [];
+      });
+      if (chat.variant !== "customer-work" && !linkedTasks.length) {
+        access.set(chat.id, "ordinary");
+      } else if (
+        linkedTasks.length &&
+        (chat.variant !== "customer-work" || ids.length === 1) &&
+        linkedTasks.every((taskId) => owned.has(taskId))
+      ) {
+        access.set(chat.id, "customer");
+      }
+    }
+    return access;
+  }
+
+  async assertChatAccess({
+    subjectId,
+    chatId,
+    threadId,
+    edit,
+    targetProfileId,
+  }: {
+    subjectId: string;
+    chatId: string;
+    threadId?: string;
+    edit: boolean;
+    targetProfileId?: string;
+  }) {
+    const chat = await this.social.chat.findById({ id: chatId });
+    if (!chat) {
+      return;
+    }
+    if (chat.variant === STORE_EMPLOYEE_CHAT_VARIANT) {
+      const training = await this.subject.crmWorkspace.employees.scopeForChat(
+        subjectId,
+        chat,
+        threadId,
+      );
+      if (edit && targetProfileId !== training.profileId) {
+        throw new Error(
+          "Forbidden error. The employee training conversation cannot be changed",
+        );
+      }
+      return;
+    }
+    const access = (await this.chatAccess(subjectId, [chat])).get(chatId);
+    if (!access) {
+      throw new Error(
+        "Not Found error. The customer conversation could not be found",
+      );
+    }
+    if (access === "customer" && edit) {
+      if (chat.variant !== "customer-work" && threadId) {
+        const [link] = await this.social.threadsToCrmModuleTasks.find(
+          criteria({ threadId }),
+        );
+        if (!link) {
+          return;
+        }
+      }
+      throw new Error(
+        "Forbidden error. Use customer work operations to change this conversation",
+      );
+    }
+  }
+
+  async view(
+    customerId: string,
+    scope: ICustomerWorkScope,
+  ): Promise<ICustomerWorkView> {
+    const task = await this.taskForCustomer(customerId, scope);
+    const publication = await this.crm.task.getPublication(scope);
+    const stage = publication.definition.stages.find(
+      ({ id }) => id === task.stageId,
+    );
+    const funding = publication.definition.workFunding;
+    const customerPays = funding?.payer === "customer";
+    const price = customerPays ? await this.price(task, funding) : undefined;
+    const approvedMaximum =
+      customerPays && price
+        ? await this.approvedMaximum(task, funding, task.revision, price.key)
+        : undefined;
+    const currency = customerPays
+      ? await this.subject.modules.billing.currency.findById({
+          id: funding.currencyId,
+        })
+      : undefined;
+    const channel = await this.channel(task.id);
+    const customerProfiles = await this.customerProfiles(task);
+    const profile = await this.profileForSubject(customerId);
+    const memory = profile
+      ? await this.knowledge.memory({
+          customerId,
+          storeId: task.storeId,
+          profileId: profile.id,
+          projectId: channel.memoryProjectId,
+        })
+      : undefined;
+    const entries = await this.messages(channel.threadId);
+    const proposal = this.cartProposal(entries);
+    const confirmed = proposal
+      ? await this.crm.taskEvent.byOperation(
+          task.id,
+          `cart-consent:${proposal.id}`,
+        )
+      : undefined;
+    const cartProposal =
+      proposal &&
+      (confirmed?.detail.orderId || this.cart.active(task, proposal))
+        ? this.cart.summary(proposal, confirmed?.detail.orderId)
+        : undefined;
+    const assignee = task.assigneeId
+      ? await this.profileForSubject(task.assigneeId)
+      : undefined;
+    const product = task.productId
+      ? await this.subject.modules.ecommerce.product.findById({
+          id: task.productId,
+        })
+      : null;
+    const testStore = isStoreTest(task.openingKey)
+      ? await this.subject.modules.ecommerce.store.findById({
+          id: task.storeId,
+        })
+      : undefined;
+    const messages: ICustomerWorkMessage[] = [];
+    for (const entry of entries) {
+      if (!entry.message.description) {
+        continue;
+      }
+      const customer = customerProfiles.has(entry.profileId);
+      const name = customer
+        ? "Вы"
+        : (entry.profile?.title?.ru ?? entry.profile?.title?.en ?? "Магазин");
+      messages.push({
+        id: entry.message.id,
+        author: name,
+        kind: customer ? "customer" : "operator",
+        body: entry.message.description,
+      });
+    }
+    return {
+      storeId: task.storeId,
+      taskId: task.id,
+      chatId: channel.chatId,
+      threadId: channel.threadId,
+      orderId: task.orderId ?? undefined,
+      offerId: task.offerId ?? undefined,
+      productSlug: product?.slug,
+      productTitle: product?.title,
+      consultationTaskId: channel.consultationTaskId ?? undefined,
+      workflow: stage
+        ? { title: publication.name, stageTitle: stage.name }
+        : undefined,
+      status: task.status,
+      storeTest: testStore
+        ? {
+            storeSlug: testStore.slug,
+            funnelId: task.funnelId,
+            version: publication.version,
+          }
+        : undefined,
+      customerPays,
+      requiredMaximum: customerPays ? funding.maxTaskAmount : undefined,
+      fundingCurrency: currency?.slug?.toUpperCase(),
+      price,
+      approvedMaximum,
+      memory,
+      cartProposal,
+      assignment:
+        task.assigneeKind === "ai"
+          ? "assistant"
+          : task.assigneeKind === "human"
+            ? "manager"
+            : "unassigned",
+      operator: assignee?.title?.ru ?? assignee?.title?.en,
+      messages,
+    };
+  }
+
+  private async taskForCustomer(customerId: string, scope: ICustomerWorkScope) {
+    const task = await this.crm.task.get(scope);
+    if (
+      task.customerId !== customerId ||
+      isStoreEmployeeTraining(task.openingKey)
+    ) {
+      throw new Error(
+        "Not Found error. The customer conversation could not be found",
+      );
+    }
+    return task;
+  }
+
+  async startStoreTest(customerId: string, input: ICrmWorkspaceStartTest) {
+    return this.subject.repository.withSubjectLock(
+      { subjectId: customerId },
+      async () => {
+        const openingKey = `store-test:${customerId}:${input.operationKey}`;
+        const [previous] = await this.crm.task.find(
+          criteria({ storeId: input.storeId, openingKey }),
+        );
+        if (previous) {
+          if (
+            previous.funnelId !== input.funnelId ||
+            previous.offerId !== input.offerId ||
+            previous.productId !== input.productId
+          ) {
+            throw new Error(
+              "Conflict error. This request key belongs to another test",
+            );
+          }
+          return this.storeTestLocation(previous.id);
+        }
+        const [publication, selection] = await Promise.all([
+          this.crm.funnel.current(input.storeId, input.funnelId),
+          this.selection(input),
+        ]);
+        if (!selection) {
+          throw new Error(
+            "Not Found error. The selected store offer is unavailable",
+          );
+        }
+        this.crm.funnel.assertApplicable(publication.bindings, input);
+        if (!publication.definition.workFunding) {
+          throw new Error(
+            "Validation error. Configure the token budget and publish the funnel before testing",
+          );
+        }
+        const individualService = publication.kind === "individual-service";
+        if (
+          (individualService &&
+            (selection.product.kind !== "service" ||
+              selection.product.type !== "one_off" ||
+              !selection.offer.settings.requiresResultAcceptance)) ||
+          (publication.kind === "physical-order" &&
+            selection.product.kind === "service")
+        ) {
+          throw new Error(
+            "Validation error. The product and its payment settings must match the funnel",
+          );
+        }
+        const stage = publication.definition.stages.find(
+          ({ id }) => id === publication.definition.initialStageId,
+        );
+        const configured = stage?.defaultAssigneeSubjectId;
+        const agent = configured
+          ? await this.subject.findById({ id: configured })
+          : undefined;
+        if (configured && agent?.variant !== "agent") {
+          throw new Error(
+            "Validation error. Assign an agent to the initial test stage",
+          );
+        }
+        const order =
+          publication.kind !== "consultation"
+            ? await this.subject.ecommerceModuleOrderCreate({
+                subjectId: customerId,
+                storeId: input.storeId,
+                offerId: input.offerId,
+                productId: input.productId,
+                quantity: 1,
+                separateService: true,
+                storeTest: true,
+              })
+            : undefined;
+        const task = await this.crm.task.open({
+          ...input,
+          actorId: customerId,
+          customerId,
+          operationKey: openingKey,
+          expectedPublicationId: publication.id,
+          orderId: order?.orderId,
+        });
+        if (order && publication.kind !== "consultation") {
+          await this.subject.modules.ecommerce.order.work.register({
+            orderId: order.orderId,
+            taskId: task.id,
+            storeId: task.storeId,
+            customerId,
+            kind: publication.kind,
+          });
+        }
+        if (agent && !(await this.storeWorker(task, agent.id))) {
+          throw new Error(
+            "Permission error. The configured agent does not belong to this store",
+          );
+        }
+        const assistant = agent
+          ? {
+              subjectId: agent.id,
+              profileId: await this.ensureProfile(agent.id, "assistant"),
+            }
+          : await this.ensureAssistant(customerId, input.storeId);
+        const { product } = selection;
+        await this.createConversation(task, {
+          title: `Тест · ${product.title?.ru ?? product.title?.en ?? product.adminTitle}`,
+          profileId: assistant.profileId,
+        });
+        await this.assignDefault(task, assistant.subjectId);
+        return this.storeTestLocation(task.id);
+      },
+    );
+  }
+
+  async refreshStoreTest(customerId: string, input: ICrmWorkspaceRefreshTest) {
+    return this.subject.repository.withSubjectLock(
+      { subjectId: customerId },
+      () =>
+        this.crm.task.withTask(input, async (task) => {
+          if (task.customerId !== customerId || !isStoreTest(task.openingKey)) {
+            throw new Error("Not Found error. The store test is unavailable");
+          }
+          if (task.orderId) {
+            const orders = this.subject.modules.ecommerce.order;
+            const order = await orders.findById({ id: task.orderId });
+            if (
+              order?.type === "cart" &&
+              order.status === "new" &&
+              order.variant !== STORE_TEST_ORDER_VARIANT
+            ) {
+              await orders.update({
+                id: order.id,
+                data: { variant: STORE_TEST_ORDER_VARIANT },
+              });
+            }
+          }
+          const publication = await this.crm.funnel.current(
+            task.storeId,
+            task.funnelId,
+          );
+          if (publication.id !== task.publicationId) {
+            const stage = publication.definition.stages.find(
+              ({ id, archived }) => id === task.stageId && !archived,
+            );
+            const previous = await this.crm.task.getPublication(input);
+            if (
+              !stage ||
+              previous.kind !== publication.kind ||
+              !publication.definition.workFunding
+            ) {
+              throw new Error(
+                "Conflict error. The new version is incompatible with this stage. Start a new test",
+              );
+            }
+            this.crm.funnel.assertApplicable(publication.bindings, {
+              storeId: task.storeId,
+              productId: task.productId ?? undefined,
+              offerId: task.offerId ?? undefined,
+            });
+            const migrated = await this.crm.task.migrate({
+              ...input,
+              actorId: customerId,
+              expectedRevision: task.revision,
+              publicationId: publication.id,
+              stageId: stage.id,
+              reason: "Apply the published version to the store test",
+            });
+            await this.assignStageAgent(migrated, stage);
+          }
+          return this.storeTestLocation(task.id);
+        }),
+    );
+  }
+
+  private async storeTestLocation(id: string) {
+    const { chatId, threadId } = await this.channel(id);
+    return { id, chatId, threadId };
+  }
+
+  private async open(
+    customerId: string,
+    input: TOpenCustomerWork,
+    proposal?: IStoredProposal,
+  ) {
+    return this.subject.repository.withSubjectLock(
+      { subjectId: customerId },
+      async () => {
+        const customer = await this.subject.findById({ id: customerId });
+        if (
+          !customer ||
+          customer.variant === "agent" ||
+          customer.variant === "anonymous"
+        ) {
+          throw new Error("Forbidden error. A buyer session is required");
+        }
+        const ecommerce = this.subject.modules.ecommerce;
+        const selection = await this.selection(input);
+        if (!selection) {
+          throw new Error("Not Found error. The selected offer is unavailable");
+        }
+        const { product, offer } = selection;
+        if (input.operation === "add") {
+          assertSingleUnitPerOrder(product, input.selection.quantity ?? 1);
+        }
+        const adoption = input.operation === "open-cart-discussion";
+        if (
+          adoption &&
+          (product.kind !== "service" ||
+            product.type !== "one_off" ||
+            offer.settings.requiresResultAcceptance !== true)
+        ) {
+          throw new Error(
+            "Conflict error. The selected offer does not use payment after acceptance",
+          );
+        }
+        if (adoption) {
+          await this.assertCartForDiscussion(customerId, input, product);
+        }
+        const openingKey = `store-work:${customerId}:${input.operationKey}`;
+        const [prior] = await this.crm.task.find(
+          criteria({ storeId: input.storeId, openingKey }),
+        );
+        if (prior) {
+          const publication = await this.crm.task.getPublication({
+            taskId: prior.id,
+            storeId: prior.storeId,
+          });
+          if (
+            prior.offerId !== input.offerId ||
+            (adoption && prior.orderId !== input.orderId) ||
+            (input.operation === "ask") !==
+              (publication.kind === "consultation")
+          ) {
+            throw new Error(
+              "Conflict error. This request key belongs to another operation",
+            );
+          }
+          return this.view(customerId, {
+            storeId: input.storeId,
+            taskId: prior.id,
+          });
+        }
+        if (adoption) {
+          const existing = await this.cartDiscussionTask(customerId, input);
+          if (existing) {
+            return this.view(customerId, {
+              storeId: existing.storeId,
+              taskId: existing.id,
+            });
+          }
+        }
+        const isCustomService = product.kind === "service";
+        if (
+          input.operation === "add" &&
+          isCustomService &&
+          !offer.settings.requiresResultAcceptance
+        ) {
+          throw new Error(
+            "Validation error. This offer uses standard cart checkout",
+          );
+        }
+        const kind =
+          input.operation === "ask"
+            ? "consultation"
+            : isCustomService
+              ? "individual-service"
+              : "physical-order";
+        const publication = await this.crm.funnel.resolve({ ...input, kind });
+        if (!publication) {
+          throw new Error(
+            "Not Found error. The store has no published workflow for this offer",
+          );
+        }
+
+        let orderId = adoption ? input.orderId : undefined;
+        let consultationTaskId: string | undefined;
+        if (
+          input.operation !== "ask" &&
+          (await this.subject.ecommerceModuleProductInitialGrantIncludes({
+            productId: input.productId,
+          }))
+        ) {
+          throw new Error(
+            "Permission error. Initial grants use authentication bootstrap",
+          );
+        }
+        if (input.operation === "add") {
+          if (input.consultationTaskId) {
+            const consultation = await this.taskForCustomer(customerId, {
+              storeId: input.storeId,
+              taskId: input.consultationTaskId,
+            });
+            const consultationPublication = await this.crm.task.getPublication({
+              storeId: input.storeId,
+              taskId: consultation.id,
+            });
+            if (
+              (consultation.offerId !== input.offerId &&
+                proposal?.offerId !== input.offerId) ||
+              consultationPublication.kind !== "consultation"
+            ) {
+              throw new Error(
+                "Validation error. The consultation does not match this offer",
+              );
+            }
+            consultationTaskId = consultation.id;
+            if (isCustomService) {
+              const existing = await this.cartTaskForConsultation(consultation);
+              if (existing) {
+                if (existing.orderId) {
+                  await this.assertExistingProductQuantity(
+                    existing.orderId,
+                    product,
+                  );
+                }
+                return this.view(customerId, {
+                  storeId: existing.storeId,
+                  taskId: existing.id,
+                });
+              }
+            }
+          }
+          orderId = await this.orderForSelection(
+            customerId,
+            input,
+            isCustomService,
+            product,
+          );
+          const existing = await this.crm.task.list({
+            storeId: input.storeId,
+            customerId,
+            orderId,
+            limit: 1,
+          });
+          if (existing.items[0]) {
+            return this.view(customerId, {
+              storeId: input.storeId,
+              taskId: existing.items[0].id,
+            });
+          }
+        }
+        const task = await this.crm.task.open({
+          storeId: input.storeId,
+          productId: product.id,
+          offerId: offer.id,
+          customerId,
+          actorId: customerId,
+          operationKey: openingKey,
+          funnelId: publication.funnelId,
+          orderId,
+          causeId: consultationTaskId,
+        });
+        if (orderId && publication.kind !== "consultation") {
+          await ecommerce.order.work.register({
+            orderId,
+            taskId: task.id,
+            storeId: task.storeId,
+            customerId,
+            kind: publication.kind,
+          });
+        }
+        const title =
+          product.title?.ru ?? product.title?.en ?? product.adminTitle;
+        const { subjectId, profileId } = await this.ensureAssistant(
+          customerId,
+          input.storeId,
+        );
+        await this.createConversation(task, {
+          title,
+          profileId,
+          consultationTaskId,
+        });
+        await this.assignDefault(task, subjectId);
+        return this.view(customerId, {
+          storeId: task.storeId,
+          taskId: task.id,
+        });
+      },
+    );
+  }
+
+  private async assertCartForDiscussion(
+    customerId: string,
+    input: TOpenCartDiscussion,
+    product: IProduct,
+  ) {
+    const { ecommerce } = this.subject.modules;
+    const { orderId, offerId, productId, storeId } = input;
+    await ecommerce.order.lockForLifecycle({ id: orderId });
+    const owners =
+      await this.subject.module.subjectsToEcommerceModuleOrders.find(
+        criteria({ ecommerceModuleOrderId: orderId }),
+      );
+    if (
+      !owners.length ||
+      owners.some((owner) => owner.subjectId !== customerId)
+    ) {
+      throw new Error(
+        "Not Found error. The selected cart order is unavailable",
+      );
+    }
+    const order = await ecommerce.order.findById({ id: orderId });
+    if (
+      order?.type !== "cart" ||
+      order.status !== "new" ||
+      order.subscriptionSourceOrderId
+    ) {
+      throw new Error("Conflict error. This order is no longer an open cart");
+    }
+    const [lines, stores, payments] = await Promise.all([
+      ecommerce.ordersToProducts.find(criteria({ orderId })),
+      ecommerce.storesToOrders.find(criteria({ orderId })),
+      ecommerce.order.ordersToBillingModulePaymentIntents.find(
+        criteria({ orderId }),
+      ),
+    ]);
+    const primary = lines.filter((line) => !line.parentLineId);
+    if (
+      primary.length !== 1 ||
+      primary[0].productId !== productId ||
+      primary[0].offerId !== offerId ||
+      stores.length !== 1 ||
+      stores[0].storeId !== storeId
+    ) {
+      throw new Error("Conflict error. The saved store offer changed");
+    }
+    assertSingleUnitPerOrder(product, primary[0].quantity);
+    if (payments.length) {
+      throw new Error(
+        "Conflict error. This order already has a payment attempt",
+      );
+    }
+  }
+
+  private async cartDiscussionTask(
+    customerId: string,
+    input: TOpenCartDiscussion,
+  ) {
+    const tasks = await this.crm.task.find(
+      criteria({ orderId: input.orderId }),
+    );
+    const work = await this.subject.modules.ecommerce.order.work.findByOrder(
+      input.orderId,
+    );
+    if (!tasks.length && !work) {
+      return null;
+    }
+    const [task] = tasks;
+    if (
+      tasks.length !== 1 ||
+      task.customerId !== customerId ||
+      task.storeId !== input.storeId ||
+      task.offerId !== input.offerId ||
+      task.productId !== input.productId ||
+      work?.taskId !== task.id ||
+      work.kind !== "individual-service" ||
+      work.customerId !== customerId ||
+      work.storeId !== input.storeId
+    ) {
+      throw new Error(
+        "Conflict error. This order already has an assigned workflow",
+      );
+    }
+    return task;
+  }
+
+  private async cartTaskForConsultation(consultation: CrmTask) {
+    const links = await this.social.threadsToCrmModuleTasks.find(
+      criteria({ consultationTaskId: consultation.id }),
+    );
+    for (const { crmModuleTaskId } of links) {
+      const task = await this.crm.task.findById({ id: crmModuleTaskId });
+      if (
+        task?.storeId !== consultation.storeId ||
+        task.customerId !== consultation.customerId ||
+        task.offerId !== consultation.offerId ||
+        !task.orderId ||
+        task.status === "closed"
+      ) {
+        continue;
+      }
+      const order = await this.subject.modules.ecommerce.order.findById({
+        id: task.orderId,
+      });
+      if (order?.type === "cart" && order.status === "new") {
+        return task;
+      }
+    }
+    return null;
+  }
+
+  private async assignDefault(task: CrmTask, assistantId: string) {
+    const current = await this.crm.task.getPublication({
+      taskId: task.id,
+      storeId: task.storeId,
+    });
+    const stage = current.definition.stages.find(
+      ({ id }) => id === task.stageId,
+    );
+    const configured = stage?.defaultAssigneeSubjectId;
+    const worker =
+      configured && (await this.storeWorker(task, configured))
+        ? await this.subject.findById({ id: configured })
+        : null;
+    const assigned = await this.crm.task.assign({
+      storeId: task.storeId,
+      taskId: task.id,
+      expectedRevision: task.revision,
+      actorId: task.customerId,
+      operationKey: `assign-assistant:${task.id}`,
+      assigneeId: worker?.id ?? assistantId,
+      assigneeKind: worker && worker.variant !== "agent" ? "human" : "ai",
+      assignmentExpiresAt: new Date(
+        Date.now() + 7 * 24 * 60 * 60 * 1000,
+      ).toISOString(),
+    });
+    await this.ensureAssignedAgentInThread(assigned);
+  }
+
+  async assignStageAgent(
+    task: CrmTask,
+    stage: IFunnelStage,
+    beforeAssignment?: () => Promise<unknown>,
+  ) {
+    const assigneeId = stage.defaultAssigneeSubjectId;
+    if (
+      stage.id !== task.stageId ||
+      !assigneeId ||
+      task.assigneeKind !== "ai" ||
+      assigneeId === task.assigneeId ||
+      task.status === "closed" ||
+      (task.assignmentExpiresAt && task.assignmentExpiresAt <= new Date())
+    ) {
+      return task;
+    }
+
+    const [previous] = await this.crm.taskEvent.find({
+      params: {
+        limit: 1,
+        filters: {
+          and: [
+            { column: "taskId", method: "eq", value: task.id },
+            { column: "kind", method: "eq", value: "assigned" },
+            {
+              column: "assignmentRevision",
+              method: "eq",
+              value: task.assignmentRevision,
+            },
+          ],
+        },
+      },
+    });
+    const automatic =
+      previous?.actorKind === "system" ||
+      (previous?.actorId === task.customerId &&
+        (previous.operationKey === `assign-assistant:${task.id}` ||
+          previous.operationKey.startsWith("guest-assignment:")));
+    if (!automatic) {
+      return task;
+    }
+
+    const [grants, agent] = await Promise.all([
+      this.subject.module.subjectsToEcommerceModuleStores.find(
+        criteria({
+          subjectId: assigneeId,
+          ecommerceModuleStoreId: task.storeId,
+          variant: "crm-agent",
+        }),
+      ),
+      this.subject.findById({ id: assigneeId }),
+    ]);
+    if (!grants.length || agent?.variant !== "agent") {
+      return task;
+    }
+
+    if (beforeAssignment) {
+      await beforeAssignment();
+    }
+    const assigned = await this.crm.task.assign(
+      {
+        storeId: task.storeId,
+        taskId: task.id,
+        expectedRevision: task.revision,
+        actorId: task.customerId,
+        assigneeId,
+        assigneeKind: "ai",
+        operationKey: `stage-assignment:${task.revision}`,
+        assignmentExpiresAt: task.assignmentExpiresAt?.toISOString(),
+      },
+      "system",
+    );
+    await this.ensureAssignedAgentInThread(assigned);
+    return assigned;
+  }
+
+  private cartProposal(entries: IMessageEntry[], proposalId?: string) {
+    for (const { message } of [...entries].reverse()) {
+      if (!message.workReplyKey?.startsWith("attempt:")) {
+        continue;
+      }
+      const proposal = this.cart.read(
+        message.metadata?.customerWorkCartProposal,
+      );
+      if (
+        proposal &&
+        message.workReplyKey === `attempt:${proposal.id}` &&
+        (!proposalId || proposal.id === proposalId)
+      ) {
+        return proposal;
+      }
+    }
+    return undefined;
+  }
+
+  private async confirmCart(
+    customerId: string,
+    scope: ICustomerWorkScope,
+    proposalId: string,
+  ) {
+    const task = await this.taskForCustomer(customerId, scope);
+    if (isStoreTest(task.openingKey)) {
+      throw new Error(
+        "Conflict error. Store tests cannot add products to the shopping cart",
+      );
+    }
+    const operationKey = `cart-consent:${proposalId}`;
+    const previous = await this.crm.taskEvent.byOperation(
+      task.id,
+      operationKey,
+    );
+    if (
+      previous?.kind === "customer-cart-approved" &&
+      previous.detail.orderId
+    ) {
+      return previous.detail.orderId;
+    }
+    const channel = await this.channel(task.id);
+    const entries = await this.messages(channel.threadId);
+    const proposal = this.cartProposal(entries, proposalId);
+    if (!proposal) {
+      throw new Error(
+        "Not Found error. The cart suggestion could not be found",
+      );
+    }
+    return this.crm.task.withWork(
+      {
+        ...scope,
+        assigneeId: proposal.assigneeId,
+        expectedAssignmentRevision: proposal.assignmentRevision,
+      },
+      async ({ task, stage }) => {
+        if (
+          task.customerId !== customerId ||
+          !(await this.storeWorker(task, proposal.assigneeId))
+        ) {
+          throw new Error(
+            "Forbidden error. The current assignment cannot add this offer",
+          );
+        }
+        await this.requireInputEvent({
+          ...scope,
+          eventId: proposal.eventId,
+          assigneeId: proposal.assigneeId,
+          assignmentRevision: proposal.assignmentRevision,
+        });
+        const { product } = await this.cart.verify(task, stage, proposal);
+        const orderId = await this.addProposedOrder(
+          task,
+          proposal,
+          product.kind === "service",
+        );
+        await this.crm.task.activity({
+          ...scope,
+          actorId: customerId,
+          expectedRevision: task.revision,
+          operationKey,
+          kind: "customer-cart-approved",
+          causeId: proposal.eventId,
+          orderId,
+          cartSelection: {
+            proposalId,
+            offerId: proposal.offerId,
+            currencyId: proposal.currencyId,
+            quantity: proposal.quantity,
+            amount: proposal.amount,
+            quoteVersion: proposal.quoteVersion,
+          },
+        });
+        return orderId;
+      },
+    );
+  }
+
+  private async addProposedOrder(
+    task: CrmTask,
+    proposal: IStoredProposal,
+    separateService: boolean,
+  ) {
+    const { productId, offerId, storeId, quantity, currencyId, quoteVersion } =
+      proposal;
+    if (!separateService) {
+      const orderId =
+        await this.subject.ecommerceModuleFindOpenCartOrderWithProduct({
+          subjectId: task.customerId,
+          productId,
+          offerId,
+        });
+      if (orderId) {
+        const details =
+          await this.subject.modules.ecommerce.order.findByIdCartDetails({
+            id: orderId,
+          });
+        const [line] = details.lines;
+        if (
+          details.lines.length !== 1 ||
+          line.quantity !== quantity ||
+          details.billingModuleCurrencyId !== currencyId
+        ) {
+          throw new Error(
+            "Conflict error. The cart already contains a different selection for this offer",
+          );
+        }
+        return orderId;
+      }
+    }
+    const selection = {
+      quantity,
+      billingModuleCurrencyId: currencyId,
+      expectedQuoteVersion: quoteVersion,
+    };
+    const scope = { productId, offerId, storeId };
+    const intake = await this.availability(scope);
+    if (intake.order) {
+      const publication = await this.crm.task.getPublication({
+        taskId: task.id,
+        storeId,
+      });
+      const created = await this.open(
+        task.customerId,
+        {
+          ...scope,
+          operation: "add",
+          operationKey: proposal.id,
+          selection,
+          consultationTaskId:
+            publication.kind === "consultation" ? task.id : undefined,
+        },
+        proposal,
+      );
+      if (created.orderId) {
+        return created.orderId;
+      }
+      throw new Error(
+        "Internal error. The confirmed cart order is unavailable",
+      );
+    }
+    const created = await this.subject.ecommerceModuleOrderCreate({
+      ...scope,
+      ...selection,
+      subjectId: task.customerId,
+      separateService,
+    });
+    return created.orderId;
+  }
+
+  private async orderForSelection(
+    customerId: string,
+    input: Extract<TOpenCustomerWork, { operation: "add" }>,
+    separateService: boolean,
+    product: IProduct,
+  ) {
+    if (!separateService) {
+      const existing =
+        await this.subject.ecommerceModuleFindOpenCartOrderWithProduct({
+          subjectId: customerId,
+          productId: input.productId,
+          offerId: input.offerId,
+        });
+      if (existing) {
+        await this.assertExistingProductQuantity(existing, product);
+        return existing;
+      }
+    }
+    const created = await this.subject.ecommerceModuleOrderCreate({
+      ...input.selection,
+      subjectId: customerId,
+      productId: input.productId,
+      offerId: input.offerId,
+      storeId: input.storeId,
+      quantity: input.selection.quantity ?? 1,
+      billingModuleCurrencyId:
+        input.selection.billingModule?.currency?.id ??
+        input.selection.billingModuleCurrencyId,
+      separateService,
+    });
+    return created.orderId;
+  }
+
+  private async assertExistingProductQuantity(
+    orderId: string,
+    product: IProduct,
+  ) {
+    if (!product.singleUnitPerOrder) {
+      return;
+    }
+    const lines = await this.subject.modules.ecommerce.ordersToProducts.find(
+      criteria({ orderId, productId: product.id }),
+    );
+    const primary = lines.filter((line) => !line.parentLineId);
+    assertSingleUnitPerOrder(
+      product,
+      primary.length === 1 ? primary[0].quantity : 0,
+    );
+  }
+
+  private async profileForSubject(subjectId: string) {
+    const [link] =
+      await this.subject.module.subjectsToSocialModuleProfiles.find(
+        criteria({ subjectId, variant: "default" }),
+      );
+    if (!link) {
+      return undefined;
+    }
+    return this.social.profile.findById({ id: link.socialModuleProfileId });
+  }
+
+  private async assignedAgentProfile(task: CrmTask, chatId: string) {
+    if (task.assigneeKind !== "ai" || !task.assigneeId) {
+      return undefined;
+    }
+    const [profiles, memberships] = await Promise.all([
+      this.subject.module.subjectsToSocialModuleProfiles.find(
+        criteria({ subjectId: task.assigneeId }),
+      ),
+      this.social.profilesToChats.find(criteria({ chatId })),
+    ]);
+    const memberIds = new Set(memberships.map(({ profileId }) => profileId));
+    const matches: SocialProfile[] = [];
+    for (const { socialModuleProfileId: id } of profiles) {
+      if (!memberIds.has(id)) {
+        continue;
+      }
+      const profile = await this.social.profile.findById({ id });
+      if (profile?.variant === "artificial-intelligence") {
+        matches.push(profile);
+      }
+    }
+    if (matches.length > 1) {
+      throw new Error(
+        "Conflict error. The assigned agent has multiple profiles in this chat",
+      );
+    }
+    return matches[0];
+  }
+
+  async ensureAssignedAgentInThread(task: CrmTask) {
+    if (task.assigneeKind !== "ai" || !task.assigneeId) {
+      return;
+    }
+    const channel = await this.findChannel(task.id);
+    if (!channel || (await this.assignedAgentProfile(task, channel.chatId))) {
+      return;
+    }
+    if (!(await this.storeWorker(task, task.assigneeId))) {
+      throw new Error(
+        "Permission error. The assigned agent does not belong to the store",
+      );
+    }
+    const profileId = await this.ensureProfile(task.assigneeId, "assistant");
+    const profile = await this.social.profile.findById({ id: profileId });
+    if (profile?.variant !== "artificial-intelligence") {
+      throw new Error(
+        "Conflict error. The assignee does not have an agent profile",
+      );
+    }
+    await this.social.profilesToChats.create({
+      data: { chatId: channel.chatId, profileId },
+    });
+    if (isStoreTest(task.openingKey)) {
+      const members = await this.social.profilesToChats.find(
+        criteria({ chatId: channel.chatId }),
+      );
+      for (const member of members) {
+        if (member.profileId === profileId) {
+          continue;
+        }
+        const previous = await this.social.profile.findById({
+          id: member.profileId,
+        });
+        if (previous?.variant === "artificial-intelligence") {
+          await this.social.profilesToChats.delete({ id: member.id });
+        }
+      }
+    }
+  }
+
+  private async customerProfiles(task: CrmTask) {
+    const previous = await this.crm.taskEvent.find(
+      criteria({ taskId: task.id, kind: "customer-transferred" }),
+    );
+    const subjectIds = new Set([task.customerId]);
+    for (const event of previous) {
+      if (event.detail.previousCustomerId) {
+        subjectIds.add(event.detail.previousCustomerId);
+      }
+    }
+    const profileIds = new Set<string>();
+    for (const subjectId of subjectIds) {
+      const profiles =
+        await this.subject.module.subjectsToSocialModuleProfiles.find(
+          criteria({ subjectId }),
+        );
+      for (const profile of profiles) {
+        if (profile.variant === "default" || profile.variant === "telegram") {
+          profileIds.add(profile.socialModuleProfileId);
+        }
+      }
+    }
+    return profileIds;
+  }
+
+  private async ensureProfile(
+    subjectId: string,
+    role: "customer" | "assistant",
+  ) {
+    const current = await this.profileForSubject(subjectId);
+    if (current) {
+      return current.id;
+    }
+    const assistant = role === "assistant";
+    const profile = await this.social.profile.create({
+      data: assistant
+        ? {
+            variant: "artificial-intelligence",
+            title: { ru: "Личный ассистент", en: "Personal assistant" },
+            adminTitle: "Customer assistant",
+          }
+        : {
+            title: { ru: "Покупатель", en: "Customer" },
+            adminTitle: "Store customer",
+          },
+    });
+    await this.subject.module.subjectsToSocialModuleProfiles.create({
+      data: { subjectId, socialModuleProfileId: profile.id },
+    });
+    return profile.id;
+  }
+
+  private async ensureAssistant(customerId: string, storeId: string) {
+    const links = this.subject.module.subjectsToEcommerceModuleStores;
+    const [current] = await links.find(
+      criteria({
+        customerSubjectId: customerId,
+        ecommerceModuleStoreId: storeId,
+        variant: "assistant",
+      }),
+    );
+    if (current) {
+      const profileId = await this.ensureProfile(
+        current.subjectId,
+        "assistant",
+      );
+      return { subjectId: current.subjectId, profileId };
+    }
+    const assistant = await this.subject.create({ data: { variant: "agent" } });
+    await links.bindAssistant({
+      subjectId: assistant.id,
+      customerSubjectId: customerId,
+      ecommerceModuleStoreId: storeId,
+    });
+    const profileId = await this.ensureProfile(assistant.id, "assistant");
+    return { subjectId: assistant.id, profileId };
+  }
+
+  private async storeWorker(task: CrmTask, subjectId: string) {
+    const roles =
+      await this.subject.module.subjectsToEcommerceModuleStores.find(
+        criteria({ subjectId, ecommerceModuleStoreId: task.storeId }),
+      );
+    return roles.some(
+      (role) =>
+        [
+          "owner",
+          "crm-manager",
+          "crm-manager-finance",
+          "crm-worker",
+          "crm-agent",
+        ].includes(role.variant) ||
+        (role.variant === "assistant" &&
+          role.customerSubjectId === task.customerId),
+    );
+  }
+
+  private async price(
+    task: CrmTask,
+    funding: IWorkFunding,
+  ): Promise<ICustomerWorkPrice | undefined> {
+    if (task.assigneeKind !== "ai" || !task.assigneeId) {
+      return undefined;
+    }
+    const publication = await this.crm.task.getPublication({
+      taskId: task.id,
+      storeId: task.storeId,
+    });
+    const stage = publication.definition.stages.find(
+      ({ id }) => id === task.stageId,
+    );
+    if (!stage) {
+      return undefined;
+    }
+    const rates: ICustomerWorkPrice["rates"] = [];
+    const connectionIds: string[] = [];
+    for (const capability of stageWorkCapabilities(stage)) {
+      try {
+        const binding = await this.subject.providerConnections.resolve(
+          task.storeId,
+          task.assigneeId,
+          capability,
+        );
+        const { model, provider, terms } = binding;
+        if (
+          capability !== "text" &&
+          capability !== "image" &&
+          !supportsNestedWork(provider, model, capability)
+        ) {
+          return undefined;
+        }
+        rates.push({ model, provider, capability, ...terms });
+        connectionIds.push(binding.connectionId);
+      } catch (error) {
+        if (
+          !(error instanceof Error) ||
+          !/^(Permission|Forbidden) error\./i.test(error.message)
+        ) {
+          throw error;
+        }
+        return undefined;
+      }
+    }
+    const key = createHash("sha256")
+      .update(
+        JSON.stringify({
+          publicationId: task.publicationId,
+          stageId: task.stageId,
+          funding,
+          connectionIds,
+          rates,
+        }),
+      )
+      .digest("hex");
+    return { key, rates };
+  }
+
+  private async approvedMaximum(
+    task: CrmTask,
+    funding: IWorkFunding,
+    revision: number,
+    priceKey: string,
+  ) {
+    const approvals = await this.crm.taskEvent.find({
+      params: {
+        filters: {
+          and: [
+            ...criteria({
+              taskId: task.id,
+              actorId: task.customerId,
+              kind: "customer-budget-approved",
+            }).params.filters.and,
+            { column: "revision", method: "lte", value: revision },
+          ],
+        },
+        orderBy: { and: [{ column: "revision", method: "desc" }] },
+      },
+    });
+    return approvals.find(
+      ({ detail }) =>
+        detail.publicationId === task.publicationId &&
+        detail.stageId === task.stageId &&
+        detail.customerId === task.customerId &&
+        detail.budgetCurrencyId === funding.currencyId &&
+        detail.budgetPriceKey === priceKey,
+    )?.detail.approvedMaximum;
+  }
+
+  private async createConversation(
+    task: CrmTask,
+    options: { title: string; profileId: string; consultationTaskId?: string },
+  ) {
+    const buyer = await this.ensureProfile(task.customerId, "customer");
+    const chat = await this.social.chat.create({
+      data: { title: options.title, variant: "customer-work" },
+    });
+    const chatId = chat.id;
+    for (const profileId of [buyer, options.profileId]) {
+      await this.social.profilesToChats.create({ data: { profileId, chatId } });
+    }
+    const thread = await this.social.thread.create({
+      data: { title: options.title, variant: "default" },
+    });
+    await this.social.chatsToThreads.create({
+      data: { chatId, threadId: thread.id, variant: "default" },
+    });
+    await this.social.threadsToCrmModuleTasks.create({
+      data: {
+        threadId: thread.id,
+        crmModuleTaskId: task.id,
+        consultationTaskId: options.consultationTaskId,
+      },
+    });
+  }
+
+  private async channel(taskId: string) {
+    const channel = await this.findChannel(taskId);
+    if (!channel) {
+      throw new Error(
+        "Not Found error. No private conversation is linked to this task",
+      );
+    }
+    return channel;
+  }
+
+  private async findChannel(taskId: string) {
+    const threads = await this.social.threadsToCrmModuleTasks.find(
+      criteria({ crmModuleTaskId: taskId }),
+    );
+    if (threads.length !== 1) {
+      return null;
+    }
+    const [thread] = threads;
+    const chats = await this.social.chatsToThreads.find(
+      criteria({ threadId: thread.threadId }),
+    );
+    if (chats.length !== 1) {
+      return null;
+    }
+    const [chat] = chats;
+    return {
+      id: thread.id,
+      threadId: thread.threadId,
+      chatId: chat.chatId,
+      consultationTaskId: thread.consultationTaskId,
+      memoryProjectId: thread.memoryProjectId,
+    };
+  }
+
+  private async messages(threadId: string) {
+    const links = await this.social.threadsToMessages.find({
+      ...criteria({ threadId }),
+      params: {
+        ...criteria({ threadId }).params,
+        limit: 100,
+        orderBy: {
+          and: [
+            { column: "createdAt", method: "desc" },
+            { column: "id", method: "desc" },
+          ],
+        },
+      },
+    });
+    const entries: IMessageEntry[] = [];
+    for (const link of links.reverse()) {
+      const message = await this.social.message.findById({
+        id: link.messageId,
+      });
+      if (!message || message.variant !== "customer-work") {
+        continue;
+      }
+      const [profileLink] = await this.social.profilesToMessages.find(
+        criteria({ messageId: message.id }),
+      );
+      if (!profileLink) {
+        continue;
+      }
+      const profile = await this.social.profile.findById({
+        id: profileLink.profileId,
+      });
+      entries.push({
+        message,
+        profileId: profileLink.profileId,
+        profile,
+        linkedAt: link.createdAt,
+      });
+    }
+    return entries;
+  }
+
+  private async writeMessage(props: {
+    chatId: string;
+    threadId: string;
+    profileId: string;
+    text: string;
+    sourceSystemId?: string;
+    requestMetadata?: Record<string, unknown>;
+    sourceVersions?: ICustomerWorkSourceVersion[];
+    resultVersionId?: string;
+    replyEvent?: IReplyEvent;
+    attachments?: IPreparedAttachment[];
+    cartProposal?: IStoredProposal;
+    imageDraft?: {
+      stageId: string;
+      assignmentRevision: number;
+      assigneeId: string;
+      digest: string | null;
+    };
+  }) {
+    let metadata = props.requestMetadata;
+    if (props.sourceVersions) {
+      metadata = {
+        ...metadata,
+        customerWorkSourceVersions: props.sourceVersions,
+      };
+    }
+    if (props.resultVersionId) {
+      metadata = {
+        ...metadata,
+        customerWorkResultVersionId: props.resultVersionId,
+      };
+    }
+    if (props.replyEvent) {
+      metadata = { ...metadata, customerWorkReplyEvent: props.replyEvent };
+    }
+    if (props.attachments?.length) {
+      const attachments: IStoredAttachment[] = [];
+      for (const attachment of props.attachments) {
+        attachments.push(
+          await storeCustomerWorkAttachment(this.subject, attachment),
+        );
+      }
+      metadata = {
+        ...metadata,
+        customerWorkAttachments: attachments,
+      };
+    }
+    if (props.imageDraft) {
+      metadata = { ...metadata, customerWorkImageDraft: props.imageDraft };
+    }
+    if (props.cartProposal) {
+      metadata = { ...metadata, customerWorkCartProposal: props.cartProposal };
+    }
+    const message = await this.social.message.createWorkMessage({
+      description: props.text,
+      metadata,
+      sourceSystemId: props.sourceSystemId,
+    });
+    await this.social.profilesToMessages.create({
+      data: { profileId: props.profileId, messageId: message.id },
+    });
+    await this.social.chatsToMessages.create({
+      data: { chatId: props.chatId, messageId: message.id },
+    });
+    await this.social.threadsToMessages.create({
+      data: { threadId: props.threadId, messageId: message.id },
+    });
+    return message;
+  }
+
+  async messageFromThread(input: IThreadMessage) {
+    const [link] = await this.social.threadsToCrmModuleTasks.find(
+      criteria({ threadId: input.threadId }),
+    );
+    const text = typeof input.text === "string" ? input.text.trim() : "";
+    const files = input.attachments ?? [];
+    const selection =
+      !link &&
+      (files.length || text) &&
+      !text.startsWith("/") &&
+      !isSocialMessageExcludedFromOpenRouter(input.metadata)
+        ? await this.threadSelection(input)
+        : null;
+    if (!link && !selection) {
+      return null;
+    }
+    const saved = await this.subject.repository.withSubjectLock(
+      { subjectId: input.customerId },
+      async () => {
+        const [current] = await this.social.threadsToCrmModuleTasks.find(
+          criteria({ threadId: input.threadId }),
+        );
+        const [owner] =
+          await this.subject.module.subjectsToSocialModuleProfiles.find(
+            criteria({
+              subjectId: input.customerId,
+              socialModuleProfileId: input.profileId,
+            }),
+          );
+        const [membership] = await this.social.profilesToChats.find(
+          criteria({ chatId: input.chatId, profileId: input.profileId }),
+        );
+        if (
+          !owner ||
+          !["default", "telegram"].includes(owner.variant) ||
+          !membership
+        ) {
+          throw new Error(
+            "Not Found error. The customer conversation could not be found",
+          );
+        }
+        let task;
+        if (current) {
+          task = await this.crm.task.findById({ id: current.crmModuleTaskId });
+        } else if (selection) {
+          task = await this.openFromThread(input, selection);
+        }
+        if (
+          !task ||
+          task.customerId !== input.customerId ||
+          isStoreEmployeeTraining(task.openingKey)
+        ) {
+          throw new Error(
+            "Not Found error. The customer conversation could not be found",
+          );
+        }
+        const channel = await this.channel(task.id);
+        if (
+          channel.chatId !== input.chatId ||
+          channel.threadId !== input.threadId
+        ) {
+          throw new Error(
+            "Not Found error. The customer conversation could not be found",
+          );
+        }
+        if (
+          (!text && !files.length) ||
+          text.length > 8000 ||
+          (input.hasAttachments && !files.length)
+        ) {
+          throw new Error(
+            "Validation error. Send a file or a message of up to 8000 characters",
+          );
+        }
+        const attachments = await prepareCustomerWorkAttachments(files);
+        const requestMetadata: Record<string, unknown> = {};
+        const legacyRequest = parseRbacAiReactionRequestMetadata(
+          input.metadata,
+        );
+        if (legacyRequest) {
+          requestMetadata[RBAC_AI_REACTION_REQUEST_METADATA_KEY] =
+            legacyRequest;
+        }
+        if (
+          input.metadata &&
+          PROVIDER_MODEL_SELECTION_METADATA_KEY in input.metadata
+        ) {
+          const provider = providerModelSelection.safeParse(
+            input.metadata[PROVIDER_MODEL_SELECTION_METADATA_KEY],
+          );
+          if (!provider.success) {
+            throw new Error(
+              "Validation error. Invalid provider model selection",
+            );
+          }
+          requestMetadata[PROVIDER_MODEL_SELECTION_METADATA_KEY] =
+            provider.data;
+        }
+        const command = {
+          operation: "message" as const,
+          storeId: task.storeId,
+          taskId: task.id,
+          operationKey: input.sourceSystemId
+            ? createHash("sha256").update(input.sourceSystemId).digest("hex")
+            : randomUUID(),
+          text,
+        };
+        const result = await this.recordActivity(input.customerId, command, {
+          profileId: input.profileId,
+          sourceSystemId: input.sourceSystemId,
+          requestMetadata: Object.keys(requestMetadata).length
+            ? requestMetadata
+            : undefined,
+          attachments,
+        });
+        const key = this.activityKey(input.customerId, command.operationKey);
+        const event = await this.crm.taskEvent.byOperation(result.taskId, key);
+        const message = event?.detail.messageId
+          ? await this.social.message.findById({ id: event.detail.messageId })
+          : null;
+        if (!message) {
+          throw new Error(
+            "Internal error. The saved conversation message is unavailable",
+          );
+        }
+        return { message, taskId: task.id };
+      },
+    );
+    this.wake?.(saved.taskId);
+    return saved.message;
+  }
+
+  private async threadSelection(
+    input: IThreadMessage,
+  ): Promise<IThreadSelection | null> {
+    const [products, chat, customer, author] = await Promise.all([
+      this.social.threadsToEcommerceModuleProducts.find(
+        criteria({ threadId: input.threadId }),
+      ),
+      this.social.chat.findById({ id: input.chatId }),
+      this.subject.findById({ id: input.customerId }),
+      this.social.profile.findById({ id: input.profileId }),
+    ]);
+    if (
+      !chat ||
+      !customer ||
+      !author ||
+      customer.variant === "agent" ||
+      author.variant === "artificial-intelligence" ||
+      author.slug === "telegram-bot" ||
+      chat.sourceSystemId?.startsWith("-")
+    ) {
+      return null;
+    }
+    const threads = await this.social.chatsToThreads.find(
+      criteria({ threadId: input.threadId }),
+    );
+    if (threads.length !== 1 || threads[0].chatId !== input.chatId) {
+      return null;
+    }
+    const memberships = await this.social.profilesToChats.find(
+      criteria({ chatId: input.chatId }),
+    );
+    const otherMembers = memberships.filter(
+      ({ profileId }) => profileId !== input.profileId,
+    );
+    const agents: SocialProfile[] = [];
+    for (const { profileId } of otherMembers) {
+      const profile = await this.social.profile.findById({ id: profileId });
+      if (
+        profile?.variant !== "artificial-intelligence" &&
+        profile?.slug !== "telegram-bot"
+      ) {
+        return null;
+      }
+      if (profile.variant === "artificial-intelligence") {
+        agents.push(profile);
+      }
+    }
+    const visibleProducts = products.filter(
+      ({ variant }) => variant !== "hidden",
+    );
+    if (!visibleProducts.length) {
+      return agents.length === 1
+        ? this.genericThreadSelection(input.customerId, agents[0])
+        : null;
+    }
+
+    const candidates: IThreadSelection[] = [];
+    const ecommerce = this.subject.modules.ecommerce;
+    for (const { ecommerceModuleProductId: productId } of visibleProducts) {
+      const [offers, product] = await Promise.all([
+        ecommerce.storesToProducts.offersForProduct({ productId }),
+        ecommerce.product.findById({ id: productId }),
+      ]);
+      if (!product) {
+        continue;
+      }
+      for (const offer of offers) {
+        if (
+          !selectRetailOffer({ offers: [offer], product, offerId: offer.id })
+        ) {
+          continue;
+        }
+        const scope = { storeId: offer.storeId, productId, offerId: offer.id };
+        const publication = await this.crm.funnel.resolve({
+          ...scope,
+          kind: "consultation",
+        });
+        if (publication) {
+          candidates.push({
+            ...scope,
+            funnelId: publication.funnelId,
+            publicationId: publication.id,
+          });
+        }
+      }
+    }
+    if (candidates.length > 1) {
+      throw new Error(CUSTOMER_WORK_OFFER_CHOICE_REQUIRED);
+    }
+    return candidates[0] ?? null;
+  }
+
+  private async genericThreadSelection(
+    customerId: string,
+    profile: SocialProfile,
+  ) {
+    const candidates = new Map<string, IThreadSelection>();
+    const links = await this.subject.module.subjectsToSocialModuleProfiles.find(
+      criteria({ socialModuleProfileId: profile.id }),
+    );
+    for (const { subjectId, variant } of links) {
+      if (variant === "assistant") {
+        continue;
+      }
+      const agent = await this.subject.findById({ id: subjectId });
+      if (agent?.variant !== "agent") {
+        continue;
+      }
+      const stores =
+        await this.subject.module.subjectsToEcommerceModuleStores.find(
+          criteria({ subjectId }),
+        );
+      for (const store of stores) {
+        if (
+          store.variant !== "crm-agent" &&
+          !(
+            store.variant === "assistant" &&
+            store.customerSubjectId === customerId
+          )
+        ) {
+          continue;
+        }
+        const storeId = store.ecommerceModuleStoreId;
+        const publication = await this.crm.funnel.resolve({
+          storeId,
+          kind: "consultation",
+        });
+        const stage = publication?.definition.stages.find(
+          ({ id }) => id === publication.definition.initialStageId,
+        );
+        if (
+          !publication?.definition.workFunding ||
+          !stage ||
+          (stage.output && stage.output !== "chat") ||
+          (stage.defaultAssigneeSubjectId &&
+            stage.defaultAssigneeSubjectId !== subjectId)
+        ) {
+          continue;
+        }
+        candidates.set(`${publication.id}:${subjectId}:${profile.id}`, {
+          storeId,
+          funnelId: publication.funnelId,
+          publicationId: publication.id,
+          assigneeId: subjectId,
+        });
+      }
+    }
+    if (candidates.size > 1) {
+      throw new Error(
+        "Conflict error. Multiple published consultations match the conversation",
+      );
+    }
+    return candidates.values().next().value ?? null;
+  }
+
+  private async openFromThread(
+    input: IThreadMessage,
+    { publicationId, assigneeId, ...selection }: IThreadSelection,
+  ) {
+    const task = await this.crm.task.open({
+      ...selection,
+      actorId: input.customerId,
+      customerId: input.customerId,
+      operationKey: `channel-intake:${input.threadId}`,
+    });
+    if (task.publicationId !== publicationId) {
+      throw new Error(
+        "Conflict error. The workflow changed before the conversation opened",
+      );
+    }
+    await this.social.threadsToCrmModuleTasks.create({
+      data: { threadId: input.threadId, crmModuleTaskId: task.id },
+    });
+    if (assigneeId) {
+      await this.assignDefault(task, assigneeId);
+    } else {
+      const assistant = await this.ensureAssistant(
+        input.customerId,
+        selection.storeId,
+      );
+      const [membership] = await this.social.profilesToChats.find(
+        criteria({ chatId: input.chatId, profileId: assistant.profileId }),
+      );
+      if (!membership) {
+        await this.social.profilesToChats.create({
+          data: { chatId: input.chatId, profileId: assistant.profileId },
+        });
+      }
+      await this.assignDefault(task, assistant.subjectId);
+    }
+    return this.crm.task.get({ taskId: task.id, storeId: task.storeId });
+  }
+
+  private activityKey(customerId: string, key: string) {
+    return `store-work:${customerId}:${key}`;
+  }
+
+  private async recordMemory(customerId: string, command: TMemoryCommand) {
+    return this.subject.repository.withSubjectLock(
+      { subjectId: customerId },
+      async () => {
+        const task = await this.taskForCustomer(customerId, command);
+        const profile = await this.profileForSubject(customerId);
+        if (!profile) {
+          throw new Error(
+            "Not Found error. The customer profile is unavailable",
+          );
+        }
+        const thread = await this.channel(task.id);
+        await this.knowledge.record(
+          {
+            customerId,
+            storeId: task.storeId,
+            profileId: profile.id,
+            projectId: thread.memoryProjectId,
+          },
+          thread,
+          command,
+        );
+        return this.view(customerId, command);
+      },
+    );
+  }
+
+  private async recordActivity(
+    customerId: string,
+    command: TConversationCommand,
+    author?: {
+      profileId: string;
+      sourceSystemId?: string;
+      requestMetadata?: Record<string, unknown>;
+      attachments?: IPreparedAttachment[];
+    },
+  ) {
+    return this.subject.repository.withSubjectLock(
+      { subjectId: customerId },
+      () =>
+        this.crm.task.withTask(command, async (task) => {
+          if (
+            task.customerId !== customerId ||
+            isStoreEmployeeTraining(task.openingKey)
+          ) {
+            throw new Error(
+              "Not Found error. The customer conversation could not be found",
+            );
+          }
+          const channel = await this.channel(task.id);
+          const operationKey = this.activityKey(
+            customerId,
+            command.operationKey,
+          );
+          const event = await this.crm.taskEvent.byOperation(
+            task.id,
+            operationKey,
+          );
+          if (event) {
+            const expected = {
+              message: "customer-message",
+              handoff: "customer-handoff-requested",
+              "approve-budget": "customer-budget-approved",
+            }[command.operation];
+            if (event.kind !== expected) {
+              throw new Error(
+                "Conflict error. This request key belongs to another operation",
+              );
+            }
+            if (command.operation === "message" && event.detail.messageId) {
+              const previous = await this.social.message.findById({
+                id: event.detail.messageId,
+              });
+              const savedReaction =
+                previous?.metadata?.[RBAC_AI_REACTION_REQUEST_METADATA_KEY];
+              const suppliedMetadata = author?.requestMetadata;
+              const stored = previous ? customerWorkAttachments(previous) : [];
+              const supplied = author?.attachments ?? [];
+              const [previousAuthor] = author
+                ? await this.social.profilesToMessages.find(
+                    criteria({ messageId: event.detail.messageId }),
+                  )
+                : [];
+              if (
+                previous?.description !== command.text ||
+                (author && previousAuthor?.profileId !== author.profileId) ||
+                !isDeepStrictEqual(
+                  previous?.metadata?.[PROVIDER_MODEL_SELECTION_METADATA_KEY],
+                  suppliedMetadata?.[PROVIDER_MODEL_SELECTION_METADATA_KEY],
+                ) ||
+                (savedReaction !== undefined &&
+                  !isDeepStrictEqual(
+                    savedReaction,
+                    suppliedMetadata?.[RBAC_AI_REACTION_REQUEST_METADATA_KEY],
+                  )) ||
+                stored.length !== supplied.length ||
+                stored.some(
+                  ({ digest, name, size }, index) =>
+                    digest !== customerWorkAttachmentDigest(supplied[index]) ||
+                    (size !== undefined && name !== supplied[index].name),
+                )
+              ) {
+                throw new Error(
+                  "Conflict error. This request key belongs to another message",
+                );
+              }
+            }
+            if (
+              command.operation === "approve-budget" &&
+              (event.detail.approvedMaximum !== command.maximum ||
+                event.detail.budgetPriceKey !== command.priceKey)
+            ) {
+              throw new Error(
+                "Conflict error. This request key belongs to another spending limit",
+              );
+            }
+            return this.view(customerId, command);
+          }
+          const activity = {
+            storeId: task.storeId,
+            taskId: task.id,
+            actorId: customerId,
+            expectedRevision: task.revision,
+            operationKey,
+          };
+          if (command.operation === "approve-budget") {
+            const session = await this.subject.authenticationMe({
+              subjectId: customerId,
+            });
+            if (!session?.authenticated) {
+              throw new Error("Forbidden error. Sign in to authorize spending");
+            }
+            const publication = await this.crm.task.getPublication(command);
+            const funding = publication.definition.workFunding;
+            const price =
+              funding?.payer === "customer"
+                ? await this.price(task, funding)
+                : undefined;
+            if (
+              !funding ||
+              !price ||
+              price.key !== command.priceKey ||
+              !new Decimal(command.maximum).eq(funding.maxTaskAmount)
+            ) {
+              throw new Error(
+                "Conflict error. Reload the current work price before approving",
+              );
+            }
+            await this.crm.task.activity({
+              ...activity,
+              kind: "customer-budget-approved",
+              approvedMaximum: command.maximum,
+              priceKey: price.key,
+              rates: price.rates.map((rate) => ({ ...rate })),
+            });
+            return this.view(customerId, command);
+          }
+          if (command.operation === "handoff") {
+            if (isStoreTest(task.openingKey)) {
+              throw new Error(
+                "Conflict error. Store tests have no manager handoff",
+              );
+            }
+            if (task.assigneeKind === "ai") {
+              await this.crm.task.activity({
+                ...activity,
+                kind: "customer-handoff-requested",
+              });
+            }
+            return this.view(customerId, command);
+          }
+          const current = await this.crm.task.getPublication(command);
+          const funding = current.definition.workFunding;
+          const stage = current.definition.stages.find(
+            ({ id }) => id === task.stageId,
+          );
+          let workTask = task;
+          if (stage) {
+            workTask = await this.assignStageAgent(task, stage);
+          }
+          const selected = providerModelSelection.safeParse(
+            author?.requestMetadata?.[PROVIDER_MODEL_SELECTION_METADATA_KEY],
+          ).data;
+          if (selected && selected.modelId !== "auto") {
+            if (
+              funding &&
+              workTask.assigneeKind === "ai" &&
+              workTask.assigneeId &&
+              stage
+            ) {
+              await this.subject.providerConnections.resolve(
+                workTask.storeId,
+                workTask.assigneeId,
+                stage.output === "image" ? "image" : "text",
+                { ...selected, defaultOnly: funding.payer === "customer" },
+              );
+            } else if (selected.reasoning) {
+              throw new Error(
+                "Validation error. Reasoning effort is unavailable for this stage",
+              );
+            }
+          }
+          await this.ensureAssignedAgentInThread(workTask);
+          const profileId =
+            author?.profileId ??
+            (await this.ensureProfile(customerId, "customer"));
+          const personalProfile = await this.profileForSubject(customerId);
+          const remembered =
+            personalProfile &&
+            (await this.knowledge.rememberFromMessage(
+              {
+                customerId,
+                storeId: task.storeId,
+                profileId: personalProfile.id,
+                projectId: channel.memoryProjectId,
+              },
+              channel,
+              { ...command, operationKey },
+            ));
+          const message = await this.writeMessage({
+            ...channel,
+            text: command.text,
+            profileId,
+            sourceSystemId: author?.sourceSystemId,
+            requestMetadata: author?.requestMetadata,
+            attachments: author?.attachments,
+          });
+          const recorded = await this.crm.task.activity({
+            ...activity,
+            expectedRevision: workTask.revision,
+            kind: "customer-message",
+            messageId: message.id,
+          });
+          const isConfirmation =
+            !author?.attachments?.length &&
+            /^(?:add (?:this choice )?to my cart|добавить (?:предложение )?в корзину)[.!]?$/iu.test(
+              command.text,
+            );
+          const proposal = isConfirmation
+            ? this.cartProposal(await this.messages(channel.threadId))
+            : undefined;
+          if (proposal) {
+            await this.confirmCart(customerId, command, proposal.id);
+          }
+          const price =
+            funding?.payer === "customer"
+              ? await this.price(recorded.task, funding)
+              : undefined;
+          const approved =
+            funding?.payer !== "customer" ||
+            (price &&
+              (await this.approvedMaximum(
+                recorded.task,
+                funding,
+                recorded.event.revision,
+                price.key,
+              )));
+          const expert = await this.knowledge.expert(recorded.task);
+          if (expert.conflict && recorded.task.assigneeKind === "ai") {
+            await this.crm.task.activity({
+              ...activity,
+              expectedRevision: recorded.task.revision,
+              operationKey: `expert-conflict:${message.id}`,
+              kind: "customer-handoff-requested",
+            });
+          }
+          await this.social.messagesToCrmModuleTaskEvents.create({
+            data: {
+              messageId: message.id,
+              crmModuleTaskEventId: recorded.event.id,
+              pending:
+                !remembered &&
+                !proposal &&
+                Boolean(funding && approved) &&
+                !expert.conflict &&
+                recorded.task.assigneeKind === "ai" &&
+                recorded.task.status === "active",
+            },
+          });
+          return this.view(customerId, command);
+        }),
+    );
+  }
+
+  async listPendingWork(
+    input: { limit?: number; taskId?: string } = {},
+  ): Promise<IPendingCustomerWork[]> {
+    const limit = Math.min(100, Math.max(1, input.limit ?? 50));
+    const queue = await this.social.messagesToCrmModuleTaskEvents.pendingHeads(
+      limit,
+      input.taskId,
+    );
+    const work: IPendingCustomerWork[] = [];
+    for (const item of queue) {
+      const event = await this.crm.taskEvent.findById({
+        id: item.crmModuleTaskEventId,
+      });
+      const task = event
+        ? await this.crm.task.findById({ id: event.taskId })
+        : null;
+      if (
+        !task ||
+        !event?.detail.assigneeId ||
+        event.kind !== "customer-message" ||
+        task.assigneeKind !== "ai" ||
+        task.assigneeId !== event.detail.assigneeId ||
+        task.assignmentRevision !== event.assignmentRevision ||
+        task.status === "closed" ||
+        (task.assignmentExpiresAt && task.assignmentExpiresAt <= new Date())
+      ) {
+        await this.ack({ eventId: item.crmModuleTaskEventId });
+        continue;
+      }
+      if (task.status !== "active") {
+        await this.defer({ eventId: event.id });
+        continue;
+      }
+      work.push({
+        taskId: task.id,
+        storeId: task.storeId,
+        eventId: event.id,
+        assigneeId: event.detail.assigneeId,
+        assignmentRevision: event.assignmentRevision,
+        capability: "text",
+      });
+    }
+    return work;
+  }
+
+  async pendingForMessage(input: {
+    messageId: string;
+    threadId: string;
+  }): Promise<IPendingCustomerWork | null> {
+    const [link] = await this.social.threadsToMessages.find(criteria(input));
+    const [record] = await this.social.messagesToCrmModuleTaskEvents.find(
+      criteria({ messageId: input.messageId, pending: true }),
+    );
+    if (!link || !record) {
+      return null;
+    }
+    const event = await this.crm.taskEvent.findById({
+      id: record.crmModuleTaskEventId,
+    });
+    if (!event || event.detail.messageId !== input.messageId) {
+      return null;
+    }
+    const task = await this.crm.task.findById({ id: event.taskId });
+    if (
+      !task ||
+      task.status !== "active" ||
+      event.kind !== "customer-message" ||
+      task.assigneeKind !== "ai" ||
+      !event.detail.assigneeId ||
+      task.assigneeId !== event.detail.assigneeId ||
+      task.assignmentRevision !== event.assignmentRevision ||
+      (task.assignmentExpiresAt && task.assignmentExpiresAt <= new Date())
+    ) {
+      return null;
+    }
+    if (isStoreEmployeeTraining(task.openingKey)) {
+      if (employeeTrainingThreadId(task) !== input.threadId) {
+        return null;
+      }
+    } else {
+      const [work] = await this.social.threadsToCrmModuleTasks.find(
+        criteria({ threadId: input.threadId }),
+      );
+      if (work?.crmModuleTaskId !== task.id) {
+        return null;
+      }
+    }
+    return {
+      eventId: event.id,
+      taskId: task.id,
+      storeId: task.storeId,
+      assigneeId: event.detail.assigneeId,
+      assignmentRevision: event.assignmentRevision,
+      capability: "text",
+    };
+  }
+
+  async ack(input: { eventId: string }) {
+    await this.social.messagesToCrmModuleTaskEvents.updatePending(
+      input.eventId,
+      false,
+    );
+  }
+
+  async defer(input: { eventId: string }) {
+    await this.social.messagesToCrmModuleTaskEvents.updatePending(
+      input.eventId,
+      true,
+    );
+  }
+
+  async contextForRun(input: ICustomerWorkRun): Promise<{
+    messages: { role: "system" | "user" | "assistant"; content: string }[];
+    approvedMaximum?: string;
+    sourceVersions: ICustomerWorkSourceVersion[];
+    knowledgeSourceIds?: string[];
+    skillGuidance?: string;
+    skillTitles?: string[];
+    requestedModelId?: string;
+    requestedReasoning?: IProviderModelSelection["reasoning"];
+    media?: { id: string; digest: string; mimeType: string };
+    attachments: ICustomerWorkRunAttachment[];
+    imageBrief?: {
+      replies: { id: string; text: string }[];
+      triggerMessageId: string;
+      draftDigest?: string;
+      draftReplyAnchorId?: string;
+    };
+    cartOffers?: ICustomerWorkCartOffer[];
+  }> {
+    const { task, stage, funding } = await this.crm.task.getWork({
+      ...input,
+      expectedAssignmentRevision: input.assignmentRevision,
+    });
+    const event = await this.requireInputEvent(input);
+    if (isStoreEmployeeTraining(task.openingKey)) {
+      return this.employeeWorkContext(task, funding, input, event);
+    }
+    if (!(await this.storeWorker(task, input.assigneeId))) {
+      throw new Error(
+        "Forbidden error. The agent no longer belongs to the store",
+      );
+    }
+    const channel = await this.channel(task.id);
+    const customerProfiles = await this.customerProfiles(task);
+    const entries = await this.messages(channel.threadId);
+    const messages: {
+      role: "system" | "user" | "assistant";
+      content: string;
+    }[] = [];
+    const triggerIndex = entries.findIndex(
+      ({ message }) => message.id === event.detail.messageId,
+    );
+    const trigger = entries[triggerIndex];
+    const triggerFiles = trigger
+      ? customerWorkAttachments(trigger.message)
+      : [];
+    if (
+      !trigger ||
+      !customerProfiles.has(trigger.profileId) ||
+      (!trigger.message.description && !triggerFiles.length)
+    ) {
+      throw new Error(
+        "Conflict error. The triggering message is outside the active conversation",
+      );
+    }
+    const modelSelection =
+      trigger.message.metadata?.[PROVIDER_MODEL_SELECTION_METADATA_KEY];
+    let providerSelection: IProviderModelSelection | undefined;
+    if (modelSelection !== undefined) {
+      const selected = providerModelSelection.safeParse(modelSelection);
+      if (!selected.success) {
+        throw new Error(
+          "Validation error. The selected provider model is invalid",
+        );
+      }
+      providerSelection = selected.data;
+    }
+    const [customerProfile, session, agent, senderLinks] = await Promise.all([
+      this.profileForSubject(task.customerId),
+      this.subject.authenticationMe({ subjectId: task.customerId }),
+      this.assignedAgentProfile(task, channel.chatId),
+      this.subject.module.subjectsToSocialModuleProfiles.find(
+        criteria({
+          subjectId: task.customerId,
+          socialModuleProfileId: trigger.profileId,
+        }),
+      ),
+    ]);
+    if (!agent) {
+      throw new Error(
+        "Conflict error. The assigned agent has no profile in this conversation",
+      );
+    }
+    const senderOwnsProfile = senderLinks.some(
+      ({ variant }) => variant === "default" || variant === "telegram",
+    );
+    const references = await this.knowledge.context(
+      task,
+      {
+        senderProfileId: senderOwnsProfile ? trigger.profileId : undefined,
+        agentProfileId: agent.id,
+        stage,
+        memory:
+          session?.authenticated && customerProfile
+            ? {
+                customerId: task.customerId,
+                profileId: customerProfile.id,
+                storeId: task.storeId,
+                projectId: channel.memoryProjectId,
+              }
+            : undefined,
+      },
+      trigger.message.description ?? "",
+    );
+    if (references.content) {
+      messages.push({ role: "system", content: references.content });
+    }
+    if (references.skillGuidance) {
+      messages.push({
+        role: "system",
+        content: `Stage skills\n${references.skillGuidance}`,
+      });
+    }
+    const attachments: ICustomerWorkRunAttachment[] = [];
+    const replies: { id: string; text: string }[] = [];
+    let draftDigest: string | undefined;
+    let draftReplyAnchorId: string | undefined;
+    const preparesImageBrief = stage.imageBrief === "marketplace-cover";
+    const history = await this.historyForRun(entries, triggerIndex, event);
+    for (const entry of history) {
+      const { message, profileId } = entry;
+      const customer = customerProfiles.has(profileId);
+      if (message.workReplyKey) {
+        if (customer) {
+          continue;
+        }
+        if (preparesImageBrief && agent.id === profileId && message.metadata) {
+          const draft = this.parseImageDraft(
+            message.metadata.customerWorkImageDraft,
+          );
+          if (
+            draft?.assigneeId === input.assigneeId &&
+            draft.assignmentRevision === input.assignmentRevision &&
+            draft.stageId === stage.id
+          ) {
+            draftDigest = draft.digest ?? undefined;
+            draftReplyAnchorId = draft.digest ? replies.at(-1)?.id : undefined;
+          }
+        }
+        if (message.description) {
+          messages.push({
+            role: "assistant",
+            content: message.description.slice(0, 2000),
+          });
+        }
+        continue;
+      }
+      const files = customer ? customerWorkAttachments(message) : [];
+      for (const { id, name, digest, mimeType } of files) {
+        attachments.push({ messageId: message.id, id, name, digest, mimeType });
+      }
+      if (customer && message.description) {
+        replies.push({ id: message.id, text: message.description });
+      }
+      const content = [
+        message.description,
+        files.length ? describeCustomerWorkAttachments(files) : "",
+      ]
+        .filter(Boolean)
+        .join("\n\n");
+      if (!content) {
+        continue;
+      }
+      messages.push({
+        role: customer ? "user" : "assistant",
+        content,
+      });
+    }
+    const customerPays = funding?.payer === "customer";
+    const price = customerPays ? await this.price(task, funding) : undefined;
+    const approvedMaximum =
+      customerPays && price
+        ? await this.approvedMaximum(task, funding, event.revision, price.key)
+        : undefined;
+    if (customerPays && (!approvedMaximum || !session?.authenticated)) {
+      throw new Error(
+        "Forbidden error. The customer must approve a spending limit before work",
+      );
+    }
+    const media = permittedCustomerWorkMedia(
+      triggerFiles,
+      stage.operations ?? [],
+    );
+    const cartOffers = stage.cartOfferIds?.length
+      ? await this.cart.offers(task, stage)
+      : undefined;
+    return {
+      messages,
+      approvedMaximum,
+      sourceVersions: references.sourceVersions,
+      knowledgeSourceIds: references.knowledgeSourceIds,
+      skillGuidance: references.skillGuidance,
+      skillTitles: references.skillTitles,
+      requestedModelId: providerSelection?.modelId,
+      requestedReasoning: providerSelection?.reasoning,
+      media,
+      attachments: attachments.slice(-24),
+      imageBrief: preparesImageBrief
+        ? {
+            replies,
+            triggerMessageId: trigger.message.id,
+            draftDigest,
+            draftReplyAnchorId,
+          }
+        : undefined,
+      cartOffers,
+    };
+  }
+
+  private async employeeWorkScope(
+    task: CrmTask,
+    assigneeId: string,
+    event: Awaited<ReturnType<Service["requireInputEvent"]>>,
+  ) {
+    const threadId = employeeTrainingThreadId(task);
+    const messageId = event.detail.messageId;
+    const unavailable =
+      "Conflict error. The employee training conversation changed";
+    if (!threadId || !messageId) {
+      throw new Error(unavailable);
+    }
+    const [chats, placements, authors] = await Promise.all([
+      this.social.chatsToThreads.find(criteria({ threadId })),
+      this.social.threadsToMessages.find(criteria({ messageId })),
+      this.social.profilesToMessages.find(criteria({ messageId })),
+    ]);
+    if (
+      chats.length !== 1 ||
+      placements.length !== 1 ||
+      placements[0].threadId !== threadId ||
+      authors.length !== 1
+    ) {
+      throw new Error(unavailable);
+    }
+    const chat = await this.social.chat.findById({ id: chats[0].chatId });
+    if (chat?.variant !== STORE_EMPLOYEE_CHAT_VARIANT) {
+      throw new Error(unavailable);
+    }
+    let scope;
+    try {
+      scope = await this.subject.crmWorkspace.employees.scopeForChat(
+        task.customerId,
+        chat,
+        threadId,
+      );
+    } catch (error) {
+      if (getHttpErrorType(error).status === 404) {
+        throw new Error(unavailable);
+      }
+      throw error;
+    }
+    const [owner] =
+      await this.subject.module.subjectsToEcommerceModuleStores.find(
+        criteria({
+          subjectId: task.customerId,
+          ecommerceModuleStoreId: scope.storeId,
+          variant: "owner",
+        }),
+      );
+    if (
+      !owner ||
+      scope.subjectId !== assigneeId ||
+      scope.storeId !== task.storeId ||
+      authors[0].profileId !== scope.actorProfileId
+    ) {
+      throw new Error(unavailable);
+    }
+    return scope;
+  }
+
+  private async employeeWorkContext(
+    task: CrmTask,
+    funding: IWorkFunding | undefined,
+    input: ICustomerWorkRun,
+    event: Awaited<ReturnType<Service["requireInputEvent"]>>,
+  ) {
+    const scope = await this.employeeWorkScope(task, input.assigneeId, event);
+    await this.assertEmployeeWorkBudget(task, funding);
+    const entries = await this.messages(scope.threadId);
+    const triggerIndex = entries.findIndex(
+      ({ message }) => message.id === event.detail.messageId,
+    );
+    const trigger = entries[triggerIndex];
+    const question = trigger?.message.description;
+    if (!question || trigger.profileId !== scope.actorProfileId) {
+      throw new Error(
+        "Conflict error. The training message is outside the conversation",
+      );
+    }
+    const selection = providerModelSelection.safeParse(
+      trigger.message.metadata?.[PROVIDER_MODEL_SELECTION_METADATA_KEY],
+    ).data;
+    const training = new EmployeeTraining(this.subject);
+    const [profile, references, skills, history] = await Promise.all([
+      this.social.profile.findById({ id: scope.profileId }),
+      training.references(scope, question),
+      this.social.profilesToSkills.linkedSkills(scope.profileId),
+      this.historyForRun(entries, triggerIndex, event),
+    ]);
+    const label =
+      profile?.title?.ru || profile?.title?.en || profile?.adminTitle;
+    const instructions = profile?.description?.ru || profile?.description?.en;
+    const system = [
+      label && `Employee name: ${label}`,
+      instructions?.slice(0, 4000),
+      ...skills
+        .slice(0, 12)
+        .map(
+          ({ title, description }) =>
+            `Skill: ${title}\n${description.slice(0, 2000)}`,
+        ),
+      ...references.map(({ text }) => `Stored reference\n${text}`),
+    ]
+      .filter(Boolean)
+      .join("\n\n");
+    const messages: {
+      role: "system" | "user" | "assistant";
+      content: string;
+    }[] = [];
+    if (system) {
+      messages.push({ role: "system", content: system });
+    }
+    for (const { message, profileId } of history.slice(-24)) {
+      if (
+        message.description &&
+        [scope.actorProfileId, scope.profileId].includes(profileId)
+      ) {
+        messages.push({
+          role: profileId === scope.actorProfileId ? "user" : "assistant",
+          content: message.description,
+        });
+      }
+    }
+    const sourceVersions = [
+      ...new Map(
+        references.map(({ id, version }) => [id, { id, version }]),
+      ).values(),
+    ];
+    return {
+      messages,
+      sourceVersions,
+      requestedModelId: selection?.modelId,
+      requestedReasoning: selection?.reasoning,
+      attachments: [],
+    };
+  }
+
+  private async assertEmployeeWorkBudget(
+    task: CrmTask,
+    funding?: IWorkFunding,
+  ) {
+    let publication;
+    try {
+      // Prepare holds this funnel row until the work reservation commits.
+      publication = await this.crm.funnel.current(
+        task.storeId,
+        task.funnelId,
+        true,
+      );
+    } catch (error) {
+      if ([404, 409].includes(getHttpErrorType(error).status)) {
+        throw new EmployeeTrainingBudgetUnavailable();
+      }
+      throw error;
+    }
+    if (
+      funding?.payer !== "store-owner" ||
+      publication.definition.maintenanceSourceId ||
+      !isDeepStrictEqual(publication.definition.workFunding, funding)
+    ) {
+      throw new EmployeeTrainingBudgetUnavailable();
+    }
+  }
+
+  private async historyForRun(
+    entries: IMessageEntry[],
+    triggerIndex: number,
+    event: IReplyEvent,
+  ) {
+    const trigger = entries[triggerIndex];
+    const links = await this.social.messagesToCrmModuleTaskEvents.find({
+      params: {
+        limit: entries.length,
+        filters: {
+          and: [
+            {
+              column: "messageId",
+              method: "inArray",
+              value: entries.map(({ message }) => message.id),
+            },
+          ],
+        },
+      },
+    });
+    const inputs = links.length
+      ? await this.crm.taskEvent.find({
+          params: {
+            limit: links.length,
+            filters: {
+              and: [
+                { column: "taskId", method: "eq", value: event.taskId },
+                { column: "kind", method: "eq", value: "customer-message" },
+                {
+                  column: "id",
+                  method: "inArray",
+                  value: links.map(
+                    ({ crmModuleTaskEventId }) => crmModuleTaskEventId,
+                  ),
+                },
+              ],
+            },
+          },
+        })
+      : [];
+    const linkedMessages = new Set(links.map(({ messageId }) => messageId));
+    const revisions = new Map([[trigger.message.id, event.revision]]);
+    for (const input of inputs) {
+      if (input.detail.messageId) {
+        revisions.set(input.detail.messageId, input.revision);
+      }
+    }
+
+    const history: {
+      entry: IMessageEntry;
+      revision: number;
+      isInput: boolean;
+    }[] = [];
+    let earlierRevision = 0;
+    for (const [index, entry] of entries.entries()) {
+      const revision = revisions.get(entry.message.id);
+      if (revision !== undefined) {
+        if (revision < event.revision) {
+          earlierRevision = Math.max(earlierRevision, revision);
+        }
+        if (revision <= event.revision) {
+          history.push({ entry, revision, isInput: true });
+        }
+        continue;
+      }
+      if (entry.message.workReplyKey) {
+        const replyRevision = this.priorWorkReplyRevision(
+          entry,
+          trigger,
+          event,
+        );
+        if (replyRevision !== undefined) {
+          history.push({
+            entry,
+            revision: replyRevision || earlierRevision,
+            isInput: false,
+          });
+        }
+        continue;
+      }
+      if (index < triggerIndex && !linkedMessages.has(entry.message.id)) {
+        history.push({ entry, revision: earlierRevision, isInput: false });
+      }
+    }
+    return history
+      .sort(
+        (a, b) =>
+          a.revision - b.revision || Number(b.isInput) - Number(a.isInput),
+      )
+      .map(({ entry }) => entry);
+  }
+
+  private priorWorkReplyRevision(
+    entry: IMessageEntry,
+    trigger: IMessageEntry,
+    event: IReplyEvent,
+  ) {
+    const key = entry.message.workReplyKey;
+    if (
+      !key ||
+      key === `attempt:${event.id}` ||
+      !(key.startsWith("attempt:") || key.startsWith("reminder:"))
+    ) {
+      return undefined;
+    }
+    const raw = entry.message.metadata?.customerWorkReplyEvent;
+    if (raw === undefined) {
+      // Legacy replies have no event link. Use only strictly earlier placements.
+      return entry.linkedAt.getTime() < trigger.linkedAt.getTime()
+        ? 0
+        : undefined;
+    }
+    const origin = replyEventSchema.safeParse(raw);
+    if (
+      origin.success &&
+      origin.data.taskId === event.taskId &&
+      origin.data.id !== event.id &&
+      origin.data.revision < event.revision
+    ) {
+      return origin.data.revision;
+    }
+    return undefined;
+  }
+
+  private parseImageDraft(value: unknown) {
+    return z
+      .object({
+        stageId: z.string(),
+        assignmentRevision: z.number().int().nonnegative(),
+        assigneeId: z.uuid(),
+        digest: z
+          .string()
+          .regex(/^[a-f0-9]{64}$/)
+          .nullable(),
+      })
+      .safeParse(value).data;
+  }
+
+  private async requireInputEvent(input: ICustomerWorkRun) {
+    const event = await this.crm.taskEvent.findById({ id: input.eventId });
+    if (
+      !event ||
+      event.taskId !== input.taskId ||
+      event.kind !== "customer-message" ||
+      event.detail.assigneeId !== input.assigneeId ||
+      event.assignmentRevision !== input.assignmentRevision
+    ) {
+      throw new Error(
+        "Forbidden error. The triggering event does not match the task assignment",
+      );
+    }
+    return event;
+  }
+
+  async deliverEmployeeTrainingFailure(
+    input: ICustomerWorkRun,
+    reason: "provider" | "payment" | "budget-changed",
+  ) {
+    const task = await this.crm.task.findById({ id: input.taskId });
+    if (!task || !isStoreEmployeeTraining(task.openingKey)) {
+      return false;
+    }
+    try {
+      const event = await this.requireInputEvent(input);
+      const message = event.detail.messageId
+        ? await this.social.message.findById({ id: event.detail.messageId })
+        : undefined;
+      const russian = /\p{Script=Cyrillic}/u.test(message?.description ?? "");
+      let text = russian
+        ? "Не удалось получить ответ от текстового провайдера."
+        : "The text provider could not return a reply.";
+      if (reason === "payment") {
+        text = russian
+          ? "Бюджета или средств на балансе магазина не хватило для ответа ИИ."
+          : "The store budget or wallet balance did not cover the AI reply.";
+      } else if (reason === "budget-changed") {
+        text = russian
+          ? "Бюджет обучения изменён или отключён. Отправьте сообщение заново после настройки бюджета."
+          : "The training budget changed or was disabled. Send the message again once the budget is set.";
+      }
+      await this.deliverReply({ ...input, attemptId: input.eventId, text });
+    } catch (error) {
+      if (![403, 404, 409].includes(getHttpErrorType(error).status)) {
+        throw error;
+      }
+    }
+    return true;
+  }
+
+  async deliverReply(input: ICustomerWorkReply) {
+    const key = `attempt:${input.attemptId}`;
+    const service = this.crm.task;
+    return service.withWork(
+      { ...input, expectedAssignmentRevision: input.assignmentRevision },
+      async ({ task, stage }) => {
+        const event = await this.requireInputEvent(input);
+        const [previous] = await this.social.message.find(
+          criteria({ workReplyKey: key }),
+        );
+        if (previous) {
+          return { messageId: previous.id };
+        }
+        const training = isStoreEmployeeTraining(task.openingKey)
+          ? await this.employeeWorkScope(task, input.assigneeId, event)
+          : undefined;
+        const channel = training ?? (await this.channel(task.id));
+        const profile = await this.assignedAgentProfile(task, channel.chatId);
+        if (
+          !profile ||
+          (training && profile.id !== training.profileId) ||
+          task.assigneeKind !== "ai" ||
+          !input.text.trim() ||
+          !(await this.storeWorker(task, input.assigneeId))
+        ) {
+          throw new Error(
+            "Forbidden error. The current agent cannot send a response",
+          );
+        }
+        const imageDraft =
+          input.imageDraftDigest === undefined
+            ? undefined
+            : this.parseImageDraft({
+                stageId: stage.id,
+                assignmentRevision: input.assignmentRevision,
+                assigneeId: input.assigneeId,
+                digest: input.imageDraftDigest,
+              });
+        if (
+          input.imageDraftDigest !== undefined &&
+          (!imageDraft || stage.imageBrief !== "marketplace-cover")
+        ) {
+          throw new Error(
+            "Validation error. The current stage does not accept an image brief",
+          );
+        }
+        const cartProposal =
+          input.cartSelection && !training
+            ? await this.cart.propose(
+                {
+                  ...input,
+                  selection: input.cartSelection,
+                },
+                task,
+                stage,
+              )
+            : undefined;
+        let text = input.text;
+        if (cartProposal) {
+          const chat = await this.social.chat.findById({ id: channel.chatId });
+          if (chat?.variant === "telegram") {
+            text += `\n\n${cartProposal.title}, ${cartProposal.quantity} ×, ${cartProposal.amount} ${cartProposal.currency.toUpperCase()}. Чтобы принять, ответьте «Добавить в корзину».`;
+          }
+        }
+        const message = await this.writeMessage({
+          ...channel,
+          profileId: profile.id,
+          text,
+          sourceVersions: input.sourceVersions,
+          resultVersionId: input.resultVersionId,
+          replyEvent: {
+            id: event.id,
+            taskId: event.taskId,
+            revision: event.revision,
+          },
+          cartProposal,
+          imageDraft,
+        });
+        await this.social.message.bindWorkReply(message.id, key);
+        if (!training) {
+          await new CustomerDelivery(this.subject).queue({
+            ...channel,
+            customerId: task.customerId,
+            message,
+          });
+        }
+        return { messageId: message.id };
+      },
+    );
+  }
+
+  async deliverReminder(input: ICustomerWorkScope & { eventId: string }) {
+    const task = await this.crm.task.get(input);
+    const event = await this.crm.taskEvent.findById({ id: input.eventId });
+    if (
+      event?.kind !== "reminder-due" ||
+      event.taskId !== task.id ||
+      task.status !== "waiting" ||
+      task.assigneeKind !== "ai" ||
+      !task.assigneeId ||
+      (task.assignmentExpiresAt && task.assignmentExpiresAt <= new Date()) ||
+      event.assignmentRevision !== task.assignmentRevision ||
+      event.detail.customerId !== task.customerId ||
+      event.detail.publicationId !== task.publicationId ||
+      event.detail.stageId !== task.stageId ||
+      event.detail.waitingRevision !== task.waitingRevision ||
+      !task.deadlineAt ||
+      task.deadlineAt <= new Date()
+    ) {
+      return;
+    }
+    const key = `reminder:${event.id}`;
+    const [previous] = await this.social.message.find(
+      criteria({ workReplyKey: key }),
+    );
+    if (previous) {
+      return { messageId: previous.id };
+    }
+    const channel = await this.findChannel(task.id);
+    if (!channel || !(await this.storeWorker(task, task.assigneeId))) {
+      return;
+    }
+    const profile = await this.assignedAgentProfile(task, channel.chatId);
+    if (!profile) {
+      return;
+    }
+    const message = await this.writeMessage({
+      ...channel,
+      profileId: profile.id,
+      text: "Please check the latest request when you have a moment. / Пожалуйста, проверьте последнее обращение, когда будет удобно.",
+      replyEvent: { id: event.id, taskId: task.id, revision: event.revision },
+    });
+    await this.social.message.bindWorkReply(message.id, key);
+    await new CustomerDelivery(this.subject).queue({
+      ...channel,
+      customerId: task.customerId,
+      message,
+    });
+    return { messageId: message.id };
+  }
+}
