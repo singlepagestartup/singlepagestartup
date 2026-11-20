@@ -23,7 +23,9 @@ export const mockOrderWorkRead = jest.fn();
 
 jest.mock("client-only", () => ({}), { virtual: true });
 export const mockChatComponentState = {
+  favoriteModelIds: [] as string[],
   knowledgeSources: [] as any[],
+  orderModelIds: ["openai/gpt-5.2"] as string[],
   profileMessageRelations: [] as any[],
   profiles: [] as any[],
   profileSkillRelations: [] as any[],
@@ -424,7 +426,61 @@ jest.mock("@sps/rbac/models/subject/sdk/client", () => {
         };
       }),
       socialModuleProfileFindByIdChatFindByIdOpenrouterModelFind: jest.fn(
-        () => {
+        ({ socialModuleThreadId }: { socialModuleThreadId?: string }) => {
+          const models = [
+            {
+              id: "openai/gpt-5.2",
+              canonicalId: "openai/gpt-5.2",
+              name: "GPT-5.2",
+              description: "Text model",
+              contextLength: 128000,
+              inputModalities: ["text"],
+              outputModalities: ["text"],
+              supportedParameters: ["reasoning"],
+              supportsReasoning: true,
+              reasoning: {
+                defaultEffort: "high",
+                defaultEnabled: true,
+                mandatory: true,
+                supportedEfforts: ["high", "low"],
+                supportsMaxTokens: false,
+              },
+            },
+            {
+              id: "openai/gpt-basic",
+              canonicalId: "openai/gpt-basic",
+              name: "GPT Basic",
+              description: "Text model without reasoning",
+              contextLength: 32000,
+              inputModalities: ["text"],
+              outputModalities: ["text"],
+              supportedParameters: [],
+              supportsReasoning: false,
+              reasoning: null,
+            },
+            {
+              id: "gpt-5.2",
+              canonicalId: "openai/gpt-5.2",
+              name: "GPT-5.2",
+              description: "OpenAI API",
+              contextLength: 128000,
+              inputModalities: ["text"],
+              outputModalities: ["text"],
+              supportedParameters: ["reasoning"],
+              supportsReasoning: true,
+              reasoning: {
+                defaultEffort: "high",
+                defaultEnabled: true,
+                mandatory: true,
+                supportedEfforts: ["high", "low"],
+                supportsMaxTokens: false,
+              },
+            },
+          ].filter(({ id }) =>
+            socialModuleThreadId
+              ? mockChatComponentState.orderModelIds.includes(id)
+              : id.startsWith("openai/"),
+          );
           return {
             data: {
               auto: {
@@ -432,64 +488,27 @@ jest.mock("@sps/rbac/models/subject/sdk/client", () => {
                 name: "Auto",
                 description: "Automatically select the best model.",
               },
-              groups: [
-                {
-                  id: "text",
-                  title: "Text",
-                  models: [
-                    {
-                      id: "openai/gpt-5.2",
-                      name: "GPT-5.2",
-                      description: "Text model",
-                      contextLength: 128000,
-                      inputModalities: ["text"],
-                      outputModalities: ["text"],
-                      supportedParameters: ["reasoning"],
-                      supportsReasoning: true,
-                      reasoning: {
-                        defaultEffort: "high",
-                        defaultEnabled: true,
-                        mandatory: true,
-                        supportedEfforts: ["high", "low"],
-                        supportsMaxTokens: false,
-                      },
-                    },
-                    {
-                      id: "openai/gpt-basic",
-                      name: "GPT Basic",
-                      description: "Text model without reasoning",
-                      contextLength: 32000,
-                      inputModalities: ["text"],
-                      outputModalities: ["text"],
-                      supportedParameters: [],
-                      supportsReasoning: false,
-                      reasoning: null,
-                    },
-                  ],
-                },
-              ],
+              groups: models.length
+                ? [{ id: "text", title: "Text", models }]
+                : [],
             },
             isLoading: false,
           };
         },
       ),
       socialModuleProfileFindByIdChatFindByIdOpenrouterModelFavoriteFind:
-        jest.fn(() => {
-          return {
-            data: {
-              favoriteModelIds: [],
-            },
-            isLoading: false,
-          };
-        }),
+        jest.fn(() => ({
+          data: {
+            favoriteModelIds: mockChatComponentState.favoriteModelIds,
+          },
+          isLoading: false,
+        })),
       socialModuleProfileFindByIdChatFindByIdOpenrouterModelFavoriteUpdate:
-        jest.fn(() => {
-          return {
-            mutate: mockOpenRouterModelFavoriteUpdateMutate,
-            isPending: false,
-            isSuccess: false,
-          };
-        }),
+        jest.fn(() => ({
+          mutate: mockOpenRouterModelFavoriteUpdateMutate,
+          isPending: false,
+          isSuccess: false,
+        })),
       socialModuleChatFindByIdThreadUpdate: jest.fn(() => {
         return {
           mutate: mockThreadUpdateMutate,
@@ -659,7 +678,8 @@ interface RenderComponentOptions {
 }
 
 export function renderComponent(
-  chatVariant: "default" | "knowledge" | "ai-chat" | "customer-work",
+  chatVariant:
+    "default" | "knowledge" | "ai-chat" | "customer-work" | "store-employee",
   options: RenderComponentOptions = {},
 ) {
   // Timeline data now flows through the mocked SDK find queries consumed by
@@ -680,7 +700,8 @@ export function renderComponent(
     .filter((item) => item.type === "action")
     .map((item) => item.data);
 
-  return render(
+  const thread = options.socialModuleThread ?? { id: "thread-1", metadata: {} };
+  const view = (activeThread: typeof thread) => (
     <Component
       isServer={false}
       variant="social-module-profile-chat-message-list-default"
@@ -718,16 +739,17 @@ export function renderComponent(
           participants: mockChatComponentState.profiles,
         } as any
       }
-      socialModuleThread={
-        options.socialModuleThread ||
-        ({
-          id: "thread-1",
-          metadata: {},
-        } as any)
-      }
-      socialModuleThreadId="thread-1"
-    />,
+      socialModuleThread={activeThread}
+      socialModuleThreadId={activeThread.id}
+    />
   );
+  const result = render(view(thread));
+  return {
+    ...result,
+    rerenderThread(activeThread: typeof thread) {
+      result.rerender(view(activeThread));
+    },
+  };
 }
 
 export function resetChatComponentMocks() {
@@ -740,7 +762,12 @@ export function resetChatComponentMocks() {
   mockMessageCreateMutate.mockReset();
   mockMessageDeleteMutate.mockReset();
   mockMessageUpdateMutate.mockReset();
-  mockOpenRouterModelFavoriteUpdateMutate.mockReset();
+  mockOpenRouterModelFavoriteUpdateMutate
+    .mockReset()
+    .mockImplementation(({ data }, options) => {
+      mockChatComponentState.favoriteModelIds = data.favoriteModelIds;
+      options?.onSuccess?.(data);
+    });
   mockThreadUpdateMutate.mockReset();
   mockProfileSkillFind.mockReset();
   mockProfileUpdateMutate.mockReset();
@@ -754,6 +781,9 @@ export function resetChatComponentMocks() {
   mockProfilesToSkillsCreateMutateAsync.mockReset();
   mockToastError.mockReset();
   mockToastSuccess.mockReset();
+  mockChatComponentState.favoriteModelIds = [];
+  mockChatComponentState.orderModelIds = ["openai/gpt-5.2"];
+  window.localStorage.removeItem("sps.openrouter.modelFavorites.subject-1");
   mockChatComponentState.knowledgeSources = [];
   mockChatComponentState.profileMessageRelations = [];
   mockChatComponentState.profiles = [];

@@ -7,6 +7,7 @@ import type {
   IOrderWorkView,
 } from "@sps/rbac/models/subject/sdk/model";
 import { Button } from "@sps/shared-ui-shadcn";
+import { Select } from "@sps/ui-adapter";
 import { api as currencyApi } from "@sps/billing/models/currency/sdk/client";
 import { formatCurrencyAmount } from "@sps/shared-frontend-client-utils";
 
@@ -14,6 +15,7 @@ interface IProps {
   subjectId: string;
   work: IOrderWorkView;
   language: string;
+  storeTest?: boolean;
   selectedVersionId?: string;
   onVersionSelect?: (id: string) => void;
 }
@@ -48,6 +50,7 @@ export function ResultReview({
   subjectId,
   work,
   language,
+  storeTest,
   selectedVersionId,
   onVersionSelect,
 }: IProps) {
@@ -86,7 +89,7 @@ export function ResultReview({
     ru ? `Версия ${number}` : `Version ${number}`;
   const choosing = work.state === "awaiting-result" && !work.acceptedVersionId;
   const shippingStatus =
-    work.versions.length === 0
+    !storeTest && work.versions.length === 0
       ? {
           "awaiting-payment": ru ? "Ожидает оплаты" : "Awaiting payment",
           paid: ru ? "Оплачен" : "Paid",
@@ -158,19 +161,17 @@ export function ResultReview({
         <>
           <label className="grid gap-1 text-sm font-medium">
             {ru ? "Версия результата" : "Result version"}
-            <select
+            <Select
+              ui="shadcn"
+              aria-label={ru ? "Версия результата" : "Result version"}
               value={version.id}
-              onChange={(event) =>
-                (onVersionSelect ?? setSelection)(event.currentTarget.value)
-              }
-              className="min-h-11 rounded-lg border border-input bg-background px-3 text-sm"
-            >
-              {availableVersions.map(({ id, number }) => (
-                <option key={id} value={id}>
-                  {versionLabel(number)}
-                </option>
-              ))}
-            </select>
+              onValueChange={onVersionSelect ?? setSelection}
+              className="min-h-11 w-full"
+              options={availableVersions.map(({ id, number }) => ({
+                value: id,
+                label: versionLabel(number),
+              }))}
+            />
           </label>
           <Button
             type="button"
@@ -247,9 +248,13 @@ export function ResultReview({
       )}
       {work.state === "awaiting-result" && !version && (
         <p role="status" className="text-sm text-muted-foreground">
-          {ru
-            ? "Цена появится вместе с превью. Оплата откроется после принятия версии."
-            : "The preview includes its price. You can pay after accepting a version."}
+          {storeTest
+            ? ru
+              ? "Здесь появится результат теста."
+              : "The test result will appear here."
+            : ru
+              ? "Цена появится вместе с превью. Оплата откроется после принятия версии."
+              : "The preview includes its price. You can pay after accepting a version."}
         </p>
       )}
       {work.acceptedVersionId && version && (

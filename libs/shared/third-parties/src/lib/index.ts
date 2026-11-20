@@ -3,6 +3,7 @@ export { TelegramBot, telegramDeliveryRateLimit } from "./telegram";
 export * from "./yandex";
 export { Service as OpenAI, type TranscribeAudioResult } from "./open-ai";
 export { Service as ZAI } from "./z-ai";
+export { providerModelReasoning } from "./model-capabilities";
 export {
   Service as OpenRouter,
   type IOpenRouterMessageContent,
@@ -34,6 +35,7 @@ export type {
 } from "./open-router/interface";
 export {
   sendWork,
+  supportsStrictStageDecision,
   readWorkUsage,
   estimateWork,
   ProviderRejected,
@@ -44,6 +46,8 @@ export {
 export {
   estimateImageWork,
   sendImageWork,
+  supportsImageWork,
+  IMAGE_WORK_MAX_SOURCE_IMAGES,
   type IImageWorkRequest,
 } from "./open-router/image-work";
 export {

@@ -59,7 +59,7 @@ export function Component(props: IClientComponentProps) {
             <button
               type="button"
               className="shrink-0 rounded-full outline-none ring-offset-2 transition hover:opacity-80 focus-visible:ring-2 focus-visible:ring-slate-400"
-              aria-label={`${editPhoto} ${props.data.slug}`}
+              aria-label={`${editPhoto} ${props.profileCaption ? title : props.data.slug}`}
               title={editPhoto}
               onClick={() => {
                 props.onProfileEdit?.(props.data);
@@ -87,7 +87,7 @@ export function Component(props: IClientComponentProps) {
               {title}
             </h2>
             <p className="mt-0.5 truncate text-xs text-slate-500">
-              @{props.data.slug}
+              {props.profileCaption ?? `@${props.data.slug}`}
             </p>
           </div>
           {props.onClose ? (
@@ -117,7 +117,7 @@ export function Component(props: IClientComponentProps) {
                 <button
                   type="button"
                   className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-slate-400 transition hover:bg-slate-100 hover:text-slate-700"
-                  aria-label={`${editProfile} ${props.data.slug}`}
+                  aria-label={`${editProfile} ${props.profileCaption ? title : props.data.slug}`}
                   title={editProfile}
                   onClick={() => {
                     props.onProfileEdit?.(props.data);

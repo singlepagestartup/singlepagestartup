@@ -5,6 +5,7 @@ export function Component(props: IComponentPropsExtended) {
     <Subject
       isServer={props.isServer}
       variant="social-module-profile-find"
+      skeleton={props.skeleton}
       data={props.data}
       language={props.language}
       apiProps={{ params: { socialModuleChatId: props.socialModuleChatId } }}

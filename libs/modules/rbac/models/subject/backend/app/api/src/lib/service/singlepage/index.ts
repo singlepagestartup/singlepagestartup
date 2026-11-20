@@ -160,6 +160,8 @@ export type SubjectServiceDependencies<Keys extends keyof Service = never> =
 
 @injectable()
 export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
+  private customerWorkWakeup?: (taskId: string) => void;
+
   get modules() {
     return this.appAssembly.getOrCreate(createModules);
   }
@@ -177,7 +179,11 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
   }
 
   get customerWork() {
-    return new CustomerWork(this);
+    return new CustomerWork(this, this.customerWorkWakeup);
+  }
+
+  configureCustomerWorkWakeup(wake: (taskId: string) => void) {
+    this.customerWorkWakeup = wake;
   }
 
   get workLedger() {

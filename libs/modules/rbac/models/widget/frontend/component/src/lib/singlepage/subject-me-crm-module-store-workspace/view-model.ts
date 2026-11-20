@@ -2,7 +2,10 @@ import type {
   IFunnelStage,
   TEvidenceKind,
 } from "@sps/crm/models/funnel/sdk/model";
-import type { ICrmWorkspaceTask } from "@sps/rbac/models/subject/sdk/model";
+import type {
+  ICrmWorkspaceParticipant,
+  ICrmWorkspaceTask,
+} from "@sps/rbac/models/subject/sdk/model";
 import type { TaskActions } from "./primitives";
 
 export type TaskState = "active" | "waiting" | "completed" | "closed";
@@ -46,6 +49,7 @@ export interface ITaskCollectionProps extends TaskActions {
   tasks: WorkflowTask[];
   people: WorkflowPerson[];
   pendingIds?: ReadonlySet<string>;
+  canAssign: boolean;
 }
 
 export const taskStateLabels: Record<TaskState, string> = {
@@ -64,6 +68,23 @@ export const evidenceLabels: Record<TEvidenceKind, string> = {
   delivery: "Доставка подтверждена",
   "file-access": "Доступ к файлу открыт",
 };
+
+export function assigneeOptionGroups(people: ICrmWorkspaceParticipant[]) {
+  return [
+    {
+      label: "ИИ-сотрудники",
+      options: people
+        .filter(({ kind }) => kind === "ai")
+        .map(({ id, name }) => ({ value: id, label: name })),
+    },
+    {
+      label: "Другие исполнители",
+      options: people
+        .filter(({ kind }) => kind === "human")
+        .map(({ id, name }) => ({ value: id, label: name })),
+    },
+  ];
+}
 
 export function timestampLabel(value: string, withYear = false) {
   return new Intl.DateTimeFormat("ru-RU", {
@@ -118,6 +139,10 @@ export function taskView(
 
 export function taskHref(language: string, slug: string, id: string) {
   return `/${language}/ecommerce/stores/${encodeURIComponent(slug)}/crm/tasks/${encodeURIComponent(id)}`;
+}
+
+export function storeHref(language: string, slug: string) {
+  return `/${language}/ecommerce/stores/${encodeURIComponent(slug)}`;
 }
 
 export function workspaceHref(language: string, slug?: string) {

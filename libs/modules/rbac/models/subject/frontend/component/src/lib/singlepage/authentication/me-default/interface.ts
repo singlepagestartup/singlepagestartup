@@ -8,6 +8,8 @@ export const variant = "authentication-me-default" as const;
 
 export interface IComponentProps extends ISpsComponentBase {
   variant: typeof variant;
+  /** On pages with authentication-init, keep showing the skeleton until the bootstrap finishes. */
+  waitForAuthenticationInit?: boolean;
   fallback?: import("react").ReactNode;
   unauthenticatedRedirectHref?: string;
   set?: Dispatch<SetStateAction<IModel | undefined>>;

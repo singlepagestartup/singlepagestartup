@@ -13,6 +13,7 @@ export interface IClientComponentProps extends Pick<
 > {
   data: IModel;
   language: string;
+  profileCaption?: string;
   skills?: ISocialModuleSkill[];
   knowledgeSources?: IKnowledgeModuleSource[];
   selectedKnowledgeSource?: IKnowledgeModuleSource | null;

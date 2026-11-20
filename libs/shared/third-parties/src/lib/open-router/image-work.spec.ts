@@ -111,6 +111,113 @@ it("preserves OpenRouter usage even when a returned URL cannot become an artifac
   });
 });
 
+it("sends source bytes to OpenAI image edits and reserves for the image input", async () => {
+  const source = new Uint8Array([0xff, 0xd8, 0xff]);
+  const request = { ...direct, sourceImages: [source] };
+  const network = jest.fn<typeof fetch>().mockResolvedValue(
+    Response.json(
+      {
+        data: [{ b64_json: imageHeader().toString("base64") }],
+        usage: {
+          input_tokens: 150,
+          input_tokens_details: { text_tokens: 100, image_tokens: 50 },
+          output_tokens: 200,
+        },
+      },
+      { headers: { "x-request-id": "req_edit" } },
+    ),
+  );
+  const response = await sendImageWork(
+    request,
+    "test-secret",
+    "attempt",
+    network,
+  );
+  const [url, init] = network.mock.calls[0];
+  expect(url).toBe("https://api.openai.com/v1/images/edits");
+  expect(new Headers(init?.headers).get("content-type")).toBeNull();
+  const form = init?.body as FormData;
+  expect(form.get("model")).toBe(direct.model);
+  expect(form.get("quality")).toBe("low");
+  expect(form.get("n")).toBe("1");
+  const input = form.get("image[]") as Blob;
+  expect(input.type).toBe("image/jpeg");
+  expect(new Uint8Array(await input.arrayBuffer())).toEqual(source);
+  expect(estimateImageWork(request).input).toBeGreaterThan(
+    estimateImageWork(direct).input,
+  );
+  expect(response.result.usage.usd).toBe("0.0069");
+  await expect(
+    sendImageWork(
+      { ...router, sourceImages: [source] },
+      "test-secret",
+      "attempt",
+      network,
+    ),
+  ).rejects.toThrow("Unsupported image source inputs");
+  expect(network).toHaveBeenCalledTimes(1);
+});
+
+it.each([
+  {
+    name: "OpenAI image edit",
+    request: { ...direct, sourceImages: [new Uint8Array([0xff, 0xd8, 0xff])] },
+  },
+  { name: "OpenRouter background", request: router },
+])(
+  "sends and meters only the approved cover prompt for $name",
+  async ({ request }) => {
+    const network = jest.fn<typeof fetch>().mockResolvedValue(
+      Response.json(
+        {
+          data: [{ b64_json: imageHeader().toString("base64") }],
+          usage: {
+            input_tokens: 100,
+            input_tokens_details: { text_tokens: 100, image_tokens: 0 },
+            output_tokens: 200,
+            prompt_tokens: 100,
+            completion_tokens: 200,
+            cost: 0.002,
+          },
+        },
+        {
+          headers: {
+            "x-request-id": "req_cover",
+            "x-generation-id": "gen_cover",
+          },
+        },
+      ),
+    );
+    const withoutSkill: IImageWorkRequest = {
+      ...request,
+      messages: [{ role: "system", content: "Unrelated private references" }],
+      coverBackground: {
+        width: 800,
+        height: 1000,
+        description: "Cream studio background",
+      },
+    };
+    const skillGuidance =
+      "Studio styling\nUse a subtle, embossed linen texture.";
+    const withSkill = {
+      ...withoutSkill,
+      coverBackground: { ...withoutSkill.coverBackground!, skillGuidance },
+    };
+    await sendImageWork(withSkill, "test-secret", "attempt", network);
+    const [, init] = network.mock.calls[0];
+    const prompt =
+      init?.body instanceof FormData
+        ? init.body.get("prompt")
+        : JSON.parse(String(init?.body)).prompt;
+    expect(prompt).toContain(skillGuidance);
+    expect(prompt).toContain("Cream studio background");
+    expect(prompt).not.toContain("Unrelated private references");
+    expect(estimateImageWork(withSkill).input).toBeGreaterThan(
+      estimateImageWork(withoutSkill).input,
+    );
+  },
+);
+
 it("refuses an unpriced request before sending and never repeats a request with unknown usage", async () => {
   const network = jest.fn<typeof fetch>();
   await expect(

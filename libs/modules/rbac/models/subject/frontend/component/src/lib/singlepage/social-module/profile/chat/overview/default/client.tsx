@@ -4,6 +4,7 @@ import "client-only";
 import { Component as ChildComponent } from "./Component";
 import { IComponentProps } from "./interface";
 import { api } from "@sps/rbac/models/subject/sdk/client";
+import { Skeleton } from "./Skeleton";
 import Link from "next/link";
 import { isChatAccessError } from "../../message/list/default/utils";
 import { Button } from "@sps/shared-ui-shadcn";
@@ -26,8 +27,7 @@ export default function Component(props: IComponentProps) {
     });
 
   const ru = props.language === "ru";
-  if (isPending)
-    return <p role="status">{ru ? "Загружаем чат…" : "Loading chat…"}</p>;
+  if (isPending) return <Skeleton language={props.language} />;
   if (isError || !data) {
     if (isChatAccessError(error)) {
       return (

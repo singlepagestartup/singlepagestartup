@@ -14,11 +14,14 @@ interface IBuyerReply {
   text: string;
 }
 
+type TCaptionBackground = "panel" | "transparent";
+
 export interface ICoverBrief {
   size: ICoverSize;
   appearance: ICoverAppearance;
   caption: string | null;
   captionColor?: string;
+  captionBackground?: TCaptionBackground;
   photo: ICustomerWorkRunAttachment;
   font?: ICustomerWorkRunAttachment;
 }
@@ -32,12 +35,18 @@ interface ICoverAppearance {
 
 export interface ICoverLayers {
   size: ICoverSize;
-  product: OverlayOptions;
+  product?: OverlayOptions;
   caption?: OverlayOptions;
 }
 
 export type TCoverIssue =
-  "size" | "background" | "photo" | "font" | "caption" | "caption-color";
+  | "size"
+  | "background"
+  | "photo"
+  | "font"
+  | "caption"
+  | "caption-color"
+  | "caption-background";
 
 const dimensionPattern = /\b(\d{2,5})\s*[xх×]\s*(\d{2,5})\b/giu;
 const aspectPattern =
@@ -50,6 +59,14 @@ const quotedCaption =
   /(?:caption|надписью?|подписью?|текст\s+на\s+обложке)\s*[«“"]([^»”"\n]+)[»”"]/iu;
 const noCaption =
   /(?:^|[\n;.!?])\s*(?:без\s+(?:надписи|подписи|текста)|no\s+(?:caption|text))\s*(?=$|[\n;.!?])/iu;
+const captionBackgroundLabel =
+  /^(?:подложка\s+надписи|caption\s+background)\s*[:—]\s*(.*?)\s*[.!?]*$/iu;
+const captionBackgroundModes = new Map<string, TCaptionBackground>([
+  ["без плашки", "transparent"],
+  ["transparent", "transparent"],
+  ["с плашкой", "panel"],
+  ["panel", "panel"],
+]);
 const appearanceFields = [
   "background",
   "palette",
@@ -65,6 +82,13 @@ const appearanceLabels = {
 };
 const colorWord =
   /#[0-9a-f]{3}(?:[0-9a-f]{3})?\b|кремов|бордов|коричнев|зел[её]н|\b(?:cream|green|burgundy|brown|black|white|blue|red|gray|teal)\b|син(?:ий|яя|ее)|красн|бежев|ч[её]рн|бел(?:ый|ая|ое)|сер(?:ый|ая|ое)/iu;
+const paletteRoleLabels = [
+  [
+    "primary",
+    /^(?:основной\s+цвет|главный\s+цвет|(?:primary|main)\s+colou?r)(?=\s|[:—#])/iu,
+  ],
+  ["accent", /^(?:акцент(?:ный\s+цвет)?|accent(?:\s+colou?r)?)(?=\s|[:—#])/iu],
+] as const;
 const hexColor = /#(?:[0-9a-f]{6}|[0-9a-f]{3})(?![\p{L}\p{N}])/giu;
 const paletteColor =
   /т[её]мно[-‐‑–\s]+зел[её]н\p{L}*|dark[-\s]+green|кремов\p{L}*|\bcream\b/giu;
@@ -192,7 +216,9 @@ export function readCoverBrief(
   let aspect: ICoverSize | null | undefined;
   let caption: string | null | undefined;
   let captionColor: string | null | undefined;
+  let captionBackground: TCaptionBackground | null | undefined;
   const paletteColors = new Map<string, string>();
+  const paletteRoles = new Map<(typeof paletteRoleLabels)[number][0], string>();
   const appearance: ICoverAppearance = {};
   for (const { text } of replies) {
     const nextPixels = matchedPair(text, dimensionPattern);
@@ -223,6 +249,13 @@ export function readCoverBrief(
         quotedCaption.test(sentence) ||
         noCaption.test(sentence)
       ) {
+        continue;
+      }
+      const backgroundSetting = captionBackgroundLabel.exec(sentence);
+      if (backgroundSetting) {
+        captionBackground =
+          captionBackgroundModes.get(backgroundSetting[1].toLowerCase()) ??
+          null;
         continue;
       }
       const namedColors = [...sentence.matchAll(paletteColor)];
@@ -256,6 +289,16 @@ export function readCoverBrief(
       );
       if (field) {
         appearance[field] = appearanceLabels[field].exec(sentence)?.[1]?.trim();
+        if (field === "palette") {
+          paletteRoles.clear();
+        }
+        continue;
+      }
+      const paletteRole = paletteRoleLabels.find(([, label]) =>
+        label.test(sentence),
+      );
+      if (paletteRole && colorWord.test(sentence)) {
+        paletteRoles.set(paletteRole[0], sentence);
         continue;
       }
       if (compositionNote.test(sentence)) {
@@ -275,7 +318,7 @@ export function readCoverBrief(
       } else if (
         caption === undefined &&
         (pixels || aspect) &&
-        Object.values(appearance).some(Boolean) &&
+        (paletteRoles.size || Object.values(appearance).some(Boolean)) &&
         rawCaption.test(sentence) &&
         !conversational.test(sentence) &&
         !sizeLabel.test(sentence)
@@ -283,6 +326,11 @@ export function readCoverBrief(
         caption = sentence;
       }
     }
+  }
+  if (paletteRoles.size) {
+    appearance.palette = [appearance.palette, ...paletteRoles.values()]
+      .filter(Boolean)
+      .join("\n");
   }
   const size = dimensions(pixels, aspect);
   const photo = attachments.findLast(({ mimeType }) =>
@@ -319,6 +367,9 @@ export function readCoverBrief(
   if (caption && captionColor === null) {
     issues.push("caption-color");
   }
+  if (caption && captionBackground === null) {
+    issues.push("caption-background");
+  }
   if (issues.length || !size || !photo || caption === undefined) {
     return { issues };
   }
@@ -328,6 +379,7 @@ export function readCoverBrief(
       appearance,
       caption,
       captionColor: caption ? (captionColor ?? undefined) : undefined,
+      captionBackground: caption ? (captionBackground ?? undefined) : undefined,
       photo,
       font: caption ? font : undefined,
     },
@@ -348,7 +400,11 @@ export function describeAppearance(
     .join("\n");
 }
 
-export function coverDigest(brief: ICoverBrief) {
+export function coverDigest(
+  brief: ICoverBrief,
+  productMode?: "provider-edit",
+  skillGuidance?: string,
+) {
   return createHash("sha256")
     .update(
       JSON.stringify({
@@ -356,8 +412,11 @@ export function coverDigest(brief: ICoverBrief) {
         appearance: describeAppearance(brief.appearance),
         caption: brief.caption,
         captionColor: brief.captionColor,
+        captionBackground: brief.captionBackground,
         photo: [brief.photo.id, brief.photo.digest],
         font: brief.font && [brief.font.id, brief.font.digest],
+        productMode,
+        skillGuidance,
       }),
     )
     .digest("hex");
@@ -382,10 +441,11 @@ function rasterFormat(bytes: Buffer) {
 export const photoByteLimit = 8 * 1024 * 1024;
 export const fontByteLimit = 1024 * 1024;
 
-export async function productLayer(
+export async function prepareCoverPhoto(
   bytes: Buffer,
   brief: ICoverBrief,
-): Promise<OverlayOptions> {
+  allowEdit: boolean,
+): Promise<{ product: OverlayOptions } | { sourceImage: Uint8Array }> {
   const format = rasterFormat(bytes);
   if (
     !format ||
@@ -404,6 +464,27 @@ export async function productLayer(
   ) {
     throw new Error("Unsupported product image");
   }
+  if (allowEdit) {
+    const alpha = metadata.hasAlpha
+      ? (await photo.stats()).channels.at(-1)
+      : undefined;
+    if (alpha?.max === 0) {
+      throw new Error("The product image is fully transparent");
+    }
+    if (!alpha || alpha.min >= 16 || alpha.mean >= 250) {
+      const sourceImage = await photo
+        .rotate()
+        .resize({
+          width: 512,
+          height: 512,
+          fit: "inside",
+          withoutEnlargement: true,
+        })
+        .jpeg({ quality: 90 })
+        .toBuffer();
+      return { sourceImage };
+    }
+  }
   const { width, height } = brief.size;
   const frameWidth = Math.round(width * 0.82);
   const frameHeight = Math.round(height * (brief.caption ? 0.66 : 0.82));
@@ -413,11 +494,14 @@ export async function productLayer(
     .png()
     .toBuffer({ resolveWithObject: true });
   return {
-    input: data,
-    left: Math.floor((width - info.width) / 2),
-    top: Math.floor(
-      (frameHeight - info.height) / 2 + height * (brief.caption ? 0.07 : 0.09),
-    ),
+    product: {
+      input: data,
+      left: Math.floor((width - info.width) / 2),
+      top: Math.floor(
+        (frameHeight - info.height) / 2 +
+          height * (brief.caption ? 0.07 : 0.09),
+      ),
+    },
   };
 }
 
@@ -483,6 +567,13 @@ export async function captionLayer(
   const fontSize = Math.round(
     Math.min(width * (caption.length < 24 ? 0.067 : 0.05), panelHeight * 0.3),
   );
+  const panelStyle =
+    brief.captionBackground === "transparent"
+      ? {}
+      : {
+          backgroundColor: "#fff7e7",
+          borderRadius: Math.round(panelHeight * 0.2),
+        };
   const svg = await satori(
     createElement(
       "div",
@@ -498,8 +589,7 @@ export async function captionLayer(
           fontFamily: "BuyerCoverFont",
           fontSize,
           color: brief.captionColor ?? "#172a21",
-          backgroundColor: "#fff7e7",
-          borderRadius: Math.round(panelHeight * 0.2),
+          ...panelStyle,
         },
       },
       caption,
@@ -532,8 +622,11 @@ export async function composeCover(
     .resize({ width, height, fit: "cover" })
     .png()
     .toBuffer();
-  const overlays = layers.caption
-    ? [layers.product, layers.caption]
-    : [layers.product];
+  const overlays = [layers.product, layers.caption].filter(
+    (layer): layer is OverlayOptions => layer !== undefined,
+  );
+  if (!overlays.length) {
+    return base;
+  }
   return sharp(base).composite(overlays).png().toBuffer();
 }

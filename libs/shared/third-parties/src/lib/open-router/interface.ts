@@ -1,3 +1,8 @@
+import {
+  providerReasoningEffortValues,
+  type TProviderReasoningEffort,
+} from "@sps/shared-utils";
+
 export interface IOpenRouterSessionOptions {
   sessionId?: string;
 }
@@ -143,25 +148,14 @@ export interface IOpenRouterDecisionsSuccess {
 }
 
 export type IOpenRouterDecisionsResult =
-  | IOpenRouterDecisionsSuccess
-  | IOpenRouterGenerationError;
+  IOpenRouterDecisionsSuccess | IOpenRouterGenerationError;
 
 export type IOpenRouterGenerateResult =
-  | IOpenRouterGenerationSuccess
-  | IOpenRouterGenerationError;
+  IOpenRouterGenerationSuccess | IOpenRouterGenerationError;
 
-export const openRouterReasoningEffortValues = [
-  "max",
-  "xhigh",
-  "high",
-  "medium",
-  "low",
-  "minimal",
-  "none",
-] as const;
+export const openRouterReasoningEffortValues = providerReasoningEffortValues;
 
-export type TOpenRouterReasoningEffort =
-  (typeof openRouterReasoningEffortValues)[number];
+export type TOpenRouterReasoningEffort = TProviderReasoningEffort;
 
 export interface IOpenRouterModelReasoning {
   mandatory?: boolean;

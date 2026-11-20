@@ -86,6 +86,8 @@ const resultPricingSchema = z.discriminatedUnion("kind", [
   }),
 ]);
 
+export const FUNNEL_STAGE_SKILL_LIMIT = 6;
+
 const stageSchema = z
   .object({
     id: stageIdSchema,
@@ -108,6 +110,11 @@ const stageSchema = z
     missingDataInstruction: z.string().trim().max(4000).optional(),
     payerSubjectId: z.uuid().optional(),
     defaultAssigneeSubjectId: z.uuid().optional(),
+    skillIds: z
+      .array(z.uuid())
+      .max(FUNNEL_STAGE_SKILL_LIMIT)
+      .refine((ids) => new Set(ids).size === ids.length)
+      .optional(),
     settlementEvent: z.string().trim().max(150).optional(),
     settlementInstruction: z.string().trim().max(4000).optional(),
     resultPricing: resultPricingSchema.optional(),
@@ -117,7 +124,14 @@ const stageSchema = z
   .refine((stage) => !stage.imageBrief || stage.output === "image", {
     path: ["imageBrief"],
     message: "Marketplace cover brief requires image output",
-  });
+  })
+  .refine(
+    (stage) => !stage.skillIds?.length || stage.defaultAssigneeSubjectId,
+    {
+      path: ["skillIds"],
+      message: "Stage skills require an assigned agent",
+    },
+  );
 
 const workFundingSchema = z.object({
   payer: z.enum(["store-owner", "customer"]),

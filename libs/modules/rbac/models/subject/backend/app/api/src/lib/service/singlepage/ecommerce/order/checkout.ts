@@ -1,3 +1,4 @@
+import { STORE_TEST_ORDER_VARIANT } from "@sps/ecommerce/models/order/sdk/model";
 import type { SubjectServiceDependencies } from "../../index";
 import { Service as InitialGrantProducts } from "../../billing/initial-grant-products";
 import { Service as CheckoutClaim } from "../../../startup/ecommerce/order/checkout-claim";
@@ -136,6 +137,13 @@ export class Service {
 
     if (!ecommerceModuleOrders?.length) {
       throw new Error("Not Found error. No ecommerce module orders found");
+    }
+    if (
+      ecommerceModuleOrders.some(
+        (order) => order.variant === STORE_TEST_ORDER_VARIANT,
+      )
+    ) {
+      throw new Error("Validation error. Store tests cannot be paid as orders");
     }
     if (
       guardedSelection &&

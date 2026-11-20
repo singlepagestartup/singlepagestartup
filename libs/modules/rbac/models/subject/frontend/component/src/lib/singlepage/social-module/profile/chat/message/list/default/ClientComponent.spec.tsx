@@ -8,7 +8,14 @@
  * Then: /learn, @knowledge, profile skills, and profile knowledge work when an AI profile is present.
  */
 
-import { fireEvent, screen, waitFor, within } from "@testing-library/react";
+import {
+  act,
+  fireEvent,
+  screen,
+  waitFor,
+  within,
+} from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import {
   mockChatComponentState,
   mockCustomerWork,
@@ -119,6 +126,201 @@ describe("Social thread context", () => {
       id: "subject-1",
       threadId: "",
     });
+  });
+
+  it("keeps a Knowledge mention as plain text in a CRM message", async () => {
+    renderComponent("customer-work", {
+      knowledgeAssistantProfile: aiOpponentProfile,
+    });
+
+    const textarea = screen.getByRole("textbox", { name: "Message" });
+    fireEvent.change(textarea, { target: { value: "@kn" } });
+    expect(screen.queryByText("Knowledge")).toBeNull();
+    expect(screen.queryByText("No skills found")).toBeNull();
+
+    const description = "@knowledge Do you have the specification?";
+    fireEvent.change(textarea, { target: { value: description } });
+    expect(screen.queryByText("@knowledge")).toBeNull();
+    fireEvent.click(screen.getByLabelText("Send message"));
+
+    await waitFor(() => {
+      expect(mockMessageCreateMutate).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({ description }),
+        }),
+        expect.any(Object),
+      );
+    });
+    const [payload] = mockMessageCreateMutate.mock.calls[0];
+    expect(payload.data.metadata?.knowledgeMention).toBeUndefined();
+  });
+
+  it("sends the selected CRM model with the triggering message", async () => {
+    renderComponent("customer-work");
+    fireEvent.click(screen.getByRole("button", { name: "Reply model" }));
+    const picker = screen.getByRole("dialog", { name: "Reply model" });
+    expect(within(picker).queryByText("GPT Basic")).toBeNull();
+    fireEvent.click(within(picker).getByText("GPT-5.2"));
+    fireEvent.change(screen.getByRole("textbox", { name: "Message" }), {
+      target: { value: "Please review the brief." },
+    });
+    fireEvent.click(screen.getByLabelText("Send message"));
+    await waitFor(() => {
+      expect(mockMessageCreateMutate).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({
+            metadata: { provider: { modelId: "openai/gpt-5.2" } },
+          }),
+        }),
+        expect.any(Object),
+      );
+    });
+  });
+
+  it("sends the direct provider ID with a supported order reasoning effort", async () => {
+    const user = userEvent.setup();
+    mockChatComponentState.orderModelIds = ["gpt-5.2"];
+    renderComponent("customer-work");
+
+    await user.click(screen.getByRole("button", { name: "Reply model" }));
+    const search = screen.getByRole("searchbox", { name: "Search models" });
+    expect(document.activeElement).toBe(search);
+    await user.type(search, "openai/gpt-5.2");
+    await user.keyboard("{ArrowDown}{Enter}");
+    expect(screen.queryByRole("dialog", { name: "Reply model" })).toBeNull();
+
+    await user.click(screen.getByRole("button", { name: "Thinking" }));
+    expect(screen.queryByRole("menuitemradio", { name: "Medium" })).toBeNull();
+    await user.click(screen.getByRole("menuitemradio", { name: "High" }));
+    await user.type(
+      screen.getByRole("textbox", { name: "Message" }),
+      "Review the brief.",
+    );
+    await user.click(screen.getByRole("button", { name: "Send message" }));
+
+    expect(mockThreadUpdateMutate).not.toHaveBeenCalled();
+    expect(mockMessageCreateMutate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          metadata: { provider: { modelId: "gpt-5.2", reasoning: "high" } },
+        }),
+      }),
+      expect.any(Object),
+    );
+  });
+
+  it("shares one favorite between direct-provider and OpenRouter aliases", () => {
+    mockChatComponentState.orderModelIds = ["gpt-5.2"];
+    const order = renderComponent("customer-work");
+    const replyTrigger = screen.getByRole("button", { name: "Reply model" });
+    fireEvent.click(replyTrigger);
+    fireEvent.click(
+      screen.getByRole("button", {
+        name: "Favorite GPT-5.2 (OpenAI API)",
+        pressed: false,
+      }),
+    );
+    expect(replyTrigger.textContent).toContain("Stage default");
+    expect(screen.getByRole("heading", { name: "Favorites" })).toBeTruthy();
+    expect(mockOpenRouterModelFavoriteUpdateMutate).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        data: { favoriteModelIds: ["openai/gpt-5.2"] },
+      }),
+      expect.any(Object),
+    );
+    order.unmount();
+
+    const assistant = renderComponent("knowledge");
+    fireEvent.click(
+      screen.getByRole("button", { name: "Select OpenRouter model" }),
+    );
+    expect(screen.getByRole("heading", { name: "Favorites" })).toBeTruthy();
+    fireEvent.click(
+      screen.getByRole("button", { name: "Favorite GPT-5.2", pressed: true }),
+    );
+    expect(screen.queryByRole("heading", { name: "Favorites" })).toBeNull();
+    assistant.unmount();
+
+    renderComponent("customer-work");
+    fireEvent.click(screen.getByRole("button", { name: "Reply model" }));
+    expect(screen.queryByRole("heading", { name: "Favorites" })).toBeNull();
+  });
+
+  it("keeps order choices scoped to each thread and requires a still-eligible model", async () => {
+    const user = userEvent.setup();
+    const order = renderComponent("customer-work");
+    await user.click(screen.getByRole("button", { name: "Reply model" }));
+    await user.click(screen.getByText("GPT-5.2"));
+    await user.click(screen.getByRole("button", { name: "Thinking" }));
+    await user.click(screen.getByRole("menuitemradio", { name: "High" }));
+
+    mockChatComponentState.orderModelIds = [];
+    order.rerenderThread({ id: "thread-1" });
+    await user.type(
+      screen.getByRole("textbox", { name: "Message" }),
+      "Review the brief.",
+    );
+    expect(
+      screen.getByRole<HTMLButtonElement>("button", { name: "Send message" })
+        .disabled,
+    ).toBe(true);
+    expect(
+      screen.getByRole("button", { name: "Reply model" }).textContent,
+    ).toContain("Model unavailable");
+
+    await user.click(screen.getByRole("button", { name: "Reply model" }));
+    await user.click(screen.getByRole("button", { name: "Stage default" }));
+    await user.click(screen.getByRole("button", { name: "Send message" }));
+    expect(mockMessageCreateMutate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          metadata: { provider: { modelId: "auto" } },
+        }),
+      }),
+      expect.any(Object),
+    );
+
+    mockChatComponentState.orderModelIds = ["openai/gpt-5.2"];
+    order.rerenderThread({ id: "thread-1" });
+    await user.click(screen.getByRole("button", { name: "Reply model" }));
+    await user.click(screen.getByText("GPT-5.2"));
+
+    order.rerenderThread({ id: "thread-2" });
+    expect(
+      screen.getByRole("button", { name: "Reply model" }).textContent,
+    ).toContain("Stage default");
+    expect(screen.queryByRole("button", { name: "Thinking" })).toBeNull();
+  });
+
+  it("rolls back a failed favorites update and honors an empty server list", () => {
+    window.localStorage.setItem(
+      "sps.openrouter.modelFavorites.subject-1",
+      JSON.stringify(["gpt-5.2"]),
+    );
+    let rejectFavorite: (() => void) | undefined;
+    mockOpenRouterModelFavoriteUpdateMutate.mockImplementationOnce(
+      (_props, callbacks) => {
+        rejectFavorite = callbacks.onError;
+      },
+    );
+    renderComponent("knowledge");
+    fireEvent.click(
+      screen.getByRole("button", { name: "Select OpenRouter model" }),
+    );
+    expect(screen.queryByRole("heading", { name: "Favorites" })).toBeNull();
+
+    fireEvent.click(
+      screen.getByRole("button", { name: "Favorite GPT-5.2", pressed: false }),
+    );
+    expect(
+      screen.getByRole("button", { name: "Favorite GPT-5.2", pressed: true }),
+    ).toBeTruthy();
+
+    act(() => rejectFavorite?.());
+    expect(
+      screen.getByRole("button", { name: "Favorite GPT-5.2", pressed: false }),
+    ).toBeTruthy();
+    expect(screen.queryByRole("heading", { name: "Favorites" })).toBeNull();
   });
 
   it("shows linked products for a discussion before a CRM task exists", () => {
@@ -758,10 +960,7 @@ describe("Given: OpenRouter chat profile sidebar", () => {
 
     renderComponent("knowledge");
 
-    fireEvent.pointerDown(screen.getByLabelText("Select OpenRouter model"), {
-      button: 0,
-      ctrlKey: false,
-    });
+    fireEvent.click(screen.getByLabelText("Select OpenRouter model"));
     fireEvent.click(await screen.findByText("GPT-5.2"));
 
     await waitFor(() => {
@@ -821,10 +1020,7 @@ describe("Given: OpenRouter chat profile sidebar", () => {
 
     renderComponent("knowledge");
 
-    fireEvent.pointerDown(screen.getByLabelText("Select OpenRouter model"), {
-      button: 0,
-      ctrlKey: false,
-    });
+    fireEvent.click(screen.getByLabelText("Select OpenRouter model"));
     fireEvent.click(await screen.findByText("GPT-5.2"));
     fireEvent.pointerDown(screen.getByLabelText("Select OpenRouter thinking"), {
       button: 0,
@@ -891,10 +1087,7 @@ describe("Given: OpenRouter chat profile sidebar", () => {
 
     renderComponent("knowledge");
 
-    fireEvent.pointerDown(screen.getByLabelText("Select OpenRouter model"), {
-      button: 0,
-      ctrlKey: false,
-    });
+    fireEvent.click(screen.getByLabelText("Select OpenRouter model"));
     fireEvent.click(await screen.findByText("GPT-5.2"));
 
     fireEvent.pointerDown(screen.getByLabelText("Select OpenRouter thinking"), {
@@ -903,10 +1096,7 @@ describe("Given: OpenRouter chat profile sidebar", () => {
     });
     fireEvent.click(await screen.findByText("High"));
 
-    fireEvent.pointerDown(screen.getByLabelText("Select OpenRouter model"), {
-      button: 0,
-      ctrlKey: false,
-    });
+    fireEvent.click(screen.getByLabelText("Select OpenRouter model"));
     fireEvent.click(await screen.findByText("GPT Basic"));
 
     await waitFor(() => {
@@ -949,12 +1139,9 @@ describe("Given: OpenRouter chat profile sidebar", () => {
 
     renderComponent("knowledge");
 
-    fireEvent.pointerDown(screen.getByLabelText("Select OpenRouter model"), {
-      button: 0,
-      ctrlKey: false,
-    });
+    fireEvent.click(screen.getByLabelText("Select OpenRouter model"));
     fireEvent.change(
-      await screen.findByPlaceholderText("Search model or slug..."),
+      await screen.findByRole("searchbox", { name: "Search models" }),
       {
         target: {
           value: "openai/gpt-5.2",
@@ -963,17 +1150,20 @@ describe("Given: OpenRouter chat profile sidebar", () => {
     );
 
     expect(await screen.findByText("GPT-5.2")).toBeTruthy();
-    fireEvent.click(screen.getByLabelText("Add model to favorites"));
+    fireEvent.click(
+      screen.getByRole("button", { name: "Favorite GPT-5.2", pressed: false }),
+    );
 
     await waitFor(() => {
-      expect(mockOpenRouterModelFavoriteUpdateMutate).toHaveBeenCalledWith({
-        id: "subject-1",
-        socialModuleProfileId: "profile-1",
-        socialModuleChatId: "chat-1",
-        data: {
-          favoriteModelIds: ["openai/gpt-5.2"],
+      expect(mockOpenRouterModelFavoriteUpdateMutate).toHaveBeenCalledWith(
+        {
+          id: "subject-1",
+          socialModuleProfileId: "profile-1",
+          socialModuleChatId: "chat-1",
+          data: { favoriteModelIds: ["openai/gpt-5.2"] },
         },
-      });
+        expect.any(Object),
+      );
     });
   });
 
@@ -2174,5 +2364,44 @@ describe("Given: OpenRouter chat profile sidebar", () => {
     renderComponent("default");
 
     expect(screen.queryByText("Knowledge")).toBeNull();
+  });
+
+  it("opens the employee knowledge and skills in an empty training conversation", () => {
+    renderComponent("store-employee", {
+      artificialIntelligenceOpponentProfile: {
+        id: "employee-profile",
+        slug: "alice",
+        variant: "artificial-intelligence",
+        adminTitle: "Alice",
+      },
+      socialModuleThread: {
+        id: "thread-1",
+        metadata: {},
+        hasCustomerWork: true,
+      },
+    });
+    expect(
+      screen.getByRole("button", { name: "New knowledge for alice" }),
+    ).toBeTruthy();
+    expect(
+      screen.getByRole("button", { name: "New skill for alice" }),
+    ).toBeTruthy();
+    expect(screen.queryByRole("button", { name: "Attach files" })).toBeNull();
+    fireEvent.click(screen.getByRole("button", { name: "Show right sidebar" }));
+    fireEvent.click(screen.getByRole("button", { name: "Hide right sidebar" }));
+    fireEvent.click(screen.getByRole("button", { name: "Employee knowledge" }));
+    expect(
+      screen.getByRole("button", {
+        name: "Hide right sidebar",
+        expanded: true,
+      }),
+    ).toBeTruthy();
+    expect(
+      screen.getByRole("button", { name: "New knowledge for alice" }),
+    ).toBeTruthy();
+    fireEvent.change(screen.getByRole("textbox", { name: "Message" }), {
+      target: { value: "/" },
+    });
+    expect(screen.queryByText("/learn")).toBeNull();
   });
 });

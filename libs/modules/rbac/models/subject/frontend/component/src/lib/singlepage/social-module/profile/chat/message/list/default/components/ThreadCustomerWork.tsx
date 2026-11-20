@@ -134,6 +134,15 @@ export function ThreadCustomerWork(props: IProps) {
           </dt>
           <dd className="break-words">{work.operator || assignment}</dd>
         </dl>
+        {work.storeTest && (
+          <Link
+            href={`/${language}/ecommerce/stores/${encodeURIComponent(work.storeTest.storeSlug)}?funnel=${work.storeTest.funnelId}&testTask=${work.taskId}&edit=1#store-workspace`}
+            className="text-sm font-medium underline underline-offset-4"
+          >
+            {ru ? "Редактировать воронку" : "Edit funnel"} ·{" "}
+            {ru ? "версия" : "version"} {work.storeTest.version}
+          </Link>
+        )}
       </ThreadContextCard>
       {showOrder && (
         <ThreadContextCard
@@ -167,6 +176,7 @@ export function ThreadCustomerWork(props: IProps) {
             subjectId={subjectId}
             work={order}
             language={language}
+            storeTest={Boolean(work.storeTest)}
             selectedVersionId={props.selectedVersionId}
             onVersionSelect={props.onVersionSelect}
           />
@@ -181,24 +191,28 @@ export function ThreadCustomerWork(props: IProps) {
               : "Could not load the order result."}
           </p>
         )}
-      {(work.assignment === "manager" ||
-        (work.assignment === "assistant" && work.status !== "closed")) && (
-        <ThreadContextCard icon={UserRound} title={ru ? "Менеджер" : "Manager"}>
-          {work.assignment === "manager" ? (
-            <p className="break-words text-sm">
-              {work.operator ||
-                (ru ? "Менеджер подключён." : "A manager has joined.")}
-            </p>
-          ) : (
-            <OrderActions
-              subjectId={subjectId}
-              work={work}
-              language={language}
-              managerOnly
-            />
-          )}
-        </ThreadContextCard>
-      )}
+      {!work.storeTest &&
+        (work.assignment === "manager" ||
+          (work.assignment === "assistant" && work.status !== "closed")) && (
+          <ThreadContextCard
+            icon={UserRound}
+            title={ru ? "Менеджер" : "Manager"}
+          >
+            {work.assignment === "manager" ? (
+              <p className="break-words text-sm">
+                {work.operator ||
+                  (ru ? "Менеджер подключён." : "A manager has joined.")}
+              </p>
+            ) : (
+              <OrderActions
+                subjectId={subjectId}
+                work={work}
+                language={language}
+                managerOnly
+              />
+            )}
+          </ThreadContextCard>
+        )}
       {work.memory && (
         <ThreadContextCard
           icon={LockKeyhole}

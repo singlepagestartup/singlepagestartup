@@ -2,13 +2,14 @@ import { getHttpErrorType } from "@sps/backend-utils";
 import { createMiddleware } from "hono/factory";
 import { HTTPException } from "hono/http-exception";
 import { MiddlewareHandler } from "hono";
+import { STORE_EMPLOYEE_CHAT_VARIANT } from "@sps/rbac/models/subject/sdk/model";
 
 export interface IMiddlewareGeneric {}
 
 import type { SubjectServiceDependencies } from "@sps/rbac/models/subject/backend/app/api/src/lib/service/singlepage";
 
 type IService = SubjectServiceDependencies<
-  "find" | "socialModuleChatLifecycleAssertSubjectOwnsChat"
+  "find" | "socialModuleChatLifecycleAssertSubjectOwnsChat" | "crmWorkspace"
 >;
 
 function requireParam(
@@ -52,10 +53,28 @@ export class Middleware {
           socialModuleProfileId,
         });
 
+        const chat = await this.service.modules.social.chat.findById({
+          id: socialModuleChatId,
+        });
+        const employeeScope =
+          chat?.variant === STORE_EMPLOYEE_CHAT_VARIANT
+            ? await this.service.crmWorkspace.employees.scopeForChat(id, chat)
+            : undefined;
+        if (
+          employeeScope &&
+          (employeeScope.profileId !== targetSocialModuleProfileId ||
+            employeeScope.actorProfileId !== socialModuleProfileId)
+        ) {
+          throw new Error("Not Found error. Employee profile is unavailable");
+        }
         await this.assertTargetAgentProfileAccess({
           targetSocialModuleProfileId,
           socialModuleChatId,
+          managedEmployee: Boolean(employeeScope),
         });
+        if (employeeScope) {
+          c.set("storeEmployeeTrainingStoreId", employeeScope.storeId);
+        }
 
         if (socialModuleSkillId && options.requireLinkedSkill !== false) {
           await this.assertTargetSkillAccess({
@@ -68,6 +87,7 @@ export class Middleware {
           await this.assertTargetKnowledgeSourceAccess({
             targetSocialModuleProfileId,
             knowledgeModuleSourceId,
+            storeId: employeeScope?.storeId,
           });
         }
 
@@ -114,6 +134,7 @@ export class Middleware {
   async assertTargetAgentProfileAccess(props: {
     targetSocialModuleProfileId: string;
     socialModuleChatId: string;
+    managedEmployee: boolean;
   }) {
     const targetProfile = await this.service.modules.social.profile.findById({
       id: props.targetSocialModuleProfileId,
@@ -207,6 +228,27 @@ export class Middleware {
         'Authorization error. Target social-module profile must be linked to rbac.subject variant="agent"',
       );
     }
+    if (!props.managedEmployee) {
+      const grants =
+        await this.service.module.subjectsToEcommerceModuleStores.find({
+          params: {
+            filters: {
+              and: [
+                {
+                  column: "subjectId",
+                  method: "inArray",
+                  value: targetSubjects.map(({ id }) => id),
+                },
+                { column: "variant", method: "eq", value: "crm-agent" },
+              ],
+            },
+            limit: 1,
+          },
+        });
+      if (grants.length) {
+        throw new Error("Not Found error. Employee profile is unavailable");
+      }
+    }
   }
 
   async assertTargetSkillAccess(props: {
@@ -243,6 +285,7 @@ export class Middleware {
   async assertTargetKnowledgeSourceAccess(props: {
     targetSocialModuleProfileId: string;
     knowledgeModuleSourceId: string;
+    storeId?: string;
   }) {
     const relations =
       await this.service.modules.social.profilesToKnowledgeModuleSources.find({
@@ -259,16 +302,59 @@ export class Middleware {
                 method: "eq",
                 value: props.knowledgeModuleSourceId,
               },
+              ...(props.storeId
+                ? [
+                    {
+                      column: "variant",
+                      method: "eq" as const,
+                      value: "default",
+                    },
+                  ]
+                : []),
             ],
           },
           limit: 1,
         },
       });
 
-    if (!relations?.length) {
+    if (
+      !relations?.some(
+        (link) =>
+          !props.storeId ||
+          ((!link.storeId || link.storeId === props.storeId) &&
+            !link.offerId &&
+            !link.projectId),
+      )
+    ) {
       throw new Error(
         "Authorization error. Requested Knowledge Source is not linked to target profile",
       );
+    }
+    if (props.storeId) {
+      const [source, sourceLinks] = await Promise.all([
+        this.service.modules.knowledge.source.findById({
+          id: props.knowledgeModuleSourceId,
+        }),
+        this.service.modules.social.profilesToKnowledgeModuleSources.find({
+          params: {
+            filters: {
+              and: [
+                {
+                  column: "knowledgeModuleSourceId",
+                  method: "eq",
+                  value: props.knowledgeModuleSourceId,
+                },
+              ],
+            },
+            limit: 2,
+          },
+        }),
+      ]);
+      if (source?.variant !== "default" || sourceLinks.length !== 1) {
+        throw new Error(
+          "Not Found error. Employee knowledge source is unavailable",
+        );
+      }
     }
   }
 }

@@ -1,3 +1,4 @@
+import { STORE_TEST_ORDER_VARIANT } from "@sps/ecommerce/models/order/sdk/model";
 import type { SubjectServiceDependencies } from "../../index";
 import type { IModel as IOrder } from "@sps/ecommerce/models/order/sdk/model";
 import type { Repository } from "../../../../repository";
@@ -92,7 +93,11 @@ export class Service {
               "delivering",
               "delivered",
             ].includes(order.status);
-          if (!order || (!openCart && !payingHistory)) {
+          if (
+            !order ||
+            order.variant === STORE_TEST_ORDER_VARIANT ||
+            (!openCart && !payingHistory)
+          ) {
             throw new Error(
               "Conflict error. Checkout order is no longer an open cart",
             );

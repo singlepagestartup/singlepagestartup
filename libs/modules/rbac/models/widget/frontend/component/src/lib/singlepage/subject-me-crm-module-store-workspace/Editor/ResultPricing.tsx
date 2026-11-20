@@ -1,3 +1,4 @@
+import { Select } from "@sps/ui-adapter";
 import { Plus, Trash2 } from "lucide-react";
 import type {
   IFunnelStage,
@@ -34,23 +35,27 @@ export function ResultPricing({
   return (
     <>
       <Field label="Основание цены результата">
-        <select
+        <Select
+          ui="shadcn"
           className={fieldClass}
           value={pricing?.kind ?? "offer"}
-          onChange={(event) =>
+          disabled={stage.archived}
+          onValueChange={(selectedValue) =>
             onChange({
               resultPricing:
-                event.currentTarget.value === "confirmed-cost"
+                selectedValue === "confirmed-cost"
                   ? { kind: "confirmed-cost", multiplier: "1", conversions: [] }
                   : undefined,
             })
           }
-        >
-          <option value="offer">Цена предложения</option>
-          <option value="confirmed-cost">
-            Подтверждённые затраты × коэффициент
-          </option>
-        </select>
+          options={[
+            { value: "offer", label: "Цена предложения" },
+            {
+              value: "confirmed-cost",
+              label: "Подтверждённые затраты × коэффициент",
+            },
+          ]}
+        />
       </Field>
       {pricing?.kind === "confirmed-cost" && (
         <div className="grid gap-3">
@@ -91,40 +96,46 @@ export function ResultPricing({
               </div>
               <div className="grid gap-3 sm:grid-cols-2">
                 <Field label="Валюта расходов">
-                  <select
+                  <Select
+                    ui="shadcn"
                     className={fieldClass}
-                    value={rate.fromCurrencyId}
-                    onChange={(event) =>
+                    value={rate.fromCurrencyId || "none"}
+                    disabled={stage.archived}
+                    onValueChange={(selectedValue) =>
                       changeRate(index, {
-                        fromCurrencyId: event.currentTarget.value,
+                        fromCurrencyId:
+                          selectedValue === "none" ? "" : selectedValue,
                       })
                     }
-                  >
-                    <option value="">Выберите валюту</option>
-                    {currencies.map(({ id, title }) => (
-                      <option key={id} value={id}>
-                        {title}
-                      </option>
-                    ))}
-                  </select>
+                    options={[
+                      { value: "none", label: "Выберите валюту" },
+                      ...currencies.map(({ id, title }) => ({
+                        value: id,
+                        label: title,
+                      })),
+                    ]}
+                  />
                 </Field>
                 <Field label="Валюта цены">
-                  <select
+                  <Select
+                    ui="shadcn"
                     className={fieldClass}
-                    value={rate.toCurrencyId}
-                    onChange={(event) =>
+                    value={rate.toCurrencyId || "none"}
+                    disabled={stage.archived}
+                    onValueChange={(selectedValue) =>
                       changeRate(index, {
-                        toCurrencyId: event.currentTarget.value,
+                        toCurrencyId:
+                          selectedValue === "none" ? "" : selectedValue,
                       })
                     }
-                  >
-                    <option value="">Выберите валюту</option>
-                    {currencies.map(({ id, title }) => (
-                      <option key={id} value={id}>
-                        {title}
-                      </option>
-                    ))}
-                  </select>
+                    options={[
+                      { value: "none", label: "Выберите валюту" },
+                      ...currencies.map(({ id, title }) => ({
+                        value: id,
+                        label: title,
+                      })),
+                    ]}
+                  />
                 </Field>
                 <TextField
                   label="Курс"

@@ -39,6 +39,23 @@ jest.mock("@sps/social/relations/profiles-to-chats/sdk/server", () => ({
 import { Service as ChatLifecycleService } from "./lifecycle";
 import { api as threadApi } from "@sps/social/models/thread/sdk/server";
 
+it.each([
+  { variant: "store-employee" },
+  { slug: "store-employee-training-reserved" },
+])(
+  "reserves employee training chat identities from ordinary create",
+  async (data) => {
+    const lifecycle = new ChatLifecycleService({} as never);
+    await expect(
+      lifecycle.createChatWithDefaultThread({
+        subjectId: "subject",
+        autoBootstrapProfile: true,
+        data,
+      }),
+    ).rejects.toThrow("Forbidden error");
+  },
+);
+
 it("creates one default thread without document metadata for a new AI Chat", async () => {
   const thread = { id: "default-thread", variant: "default", metadata: {} };
   mockSocialModuleThreadCreate.mockResolvedValueOnce(thread);

@@ -1,5 +1,6 @@
 "use client";
 
+import { Select } from "@sps/ui-adapter";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   ArrowLeft,
@@ -7,9 +8,11 @@ import {
   List,
   Plus,
   SlidersHorizontal,
+  Users,
   Workflow,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { api } from "@sps/rbac/models/subject/sdk/client";
 import type {
   ICrmWorkspaceFunnel,
@@ -24,10 +27,12 @@ import { Kanban } from "./Kanban";
 import { MoveDialog } from "./MoveDialog";
 import { TaskDrawer } from "./TaskDrawer";
 import { TaskTable } from "./TaskTable";
+import { TestRun } from "./TestRun";
 import { fieldClass, primaryClass, secondaryClass } from "./primitives";
 import {
   taskHref,
   taskView,
+  storeHref,
   workspaceHref,
   type RequestMove,
   type WorkflowPerson,
@@ -38,6 +43,7 @@ interface IWorkspaceProps {
   storeSlug?: string;
   initialTaskId?: string;
   language: string;
+  embedded?: boolean;
 }
 
 interface IFilters {
@@ -99,6 +105,7 @@ export function Workspace({
   storeSlug,
   initialTaskId,
   language,
+  embedded,
 }: IWorkspaceProps) {
   const router = useRouter();
   const [filters, setFilters] = useState(initialFilters);
@@ -106,6 +113,8 @@ export function Workspace({
   const [querySearch, setQuerySearch] = useState("");
   const [cursors, setCursors] = useState<string[]>([]);
   const [editor, setEditor] = useState<ICrmWorkspaceFunnel | "new">();
+  const [testTaskId, setTestTaskId] = useState<string>();
+  const autoEditFunnel = useRef<string | null>(null);
   const [openedTaskId, setOpenedTaskId] = useState(initialTaskId);
   const [historyCursor, setHistoryCursor] = useState<string>();
   const [move, setMove] = useState<IMove>();
@@ -118,6 +127,11 @@ export function Workspace({
 
   useEffect(() => {
     const location = readFilters();
+    const params = new URLSearchParams(window.location.search);
+    setTestTaskId(params.get("testTask") ?? undefined);
+    if (params.get("edit") === "1") {
+      autoEditFunnel.current = params.get("funnel");
+    }
     setFilters(location);
     setQuerySearch(location.search);
     setInitialized(true);
@@ -149,6 +163,20 @@ export function Workspace({
     publications.data?.items.find(
       (version) => version.id === filters.version,
     ) ?? publications.data?.items[0];
+  const latestPublication = publications.data?.items.find(
+    (version) => version.version === selectedFunnel?.publishedVersion,
+  );
+  useEffect(() => {
+    if (selectedFunnel && selectedFunnel.id === autoEditFunnel.current) {
+      setEditor(selectedFunnel);
+      autoEditFunnel.current = null;
+    }
+  }, [selectedFunnel]);
+  const assigneeFilter = options.data?.participants.some(
+    ({ id }) => id === filters.assignee,
+  )
+    ? filters.assignee
+    : undefined;
   const normalizedStatus = ["active", "waiting", "closed"].includes(
     filters.status,
   )
@@ -161,11 +189,7 @@ export function Workspace({
         storeId,
         funnelId: selectedFunnel?.id,
         publicationId: selectedPublication?.id,
-        assigneeId: options.data?.participants.some(
-          (person) => person.id === filters.assignee,
-        )
-          ? filters.assignee
-          : undefined,
+        assigneeId: assigneeFilter,
         status: normalizedStatus,
         search: querySearch.trim() || undefined,
         cursor: cursors.at(-1),
@@ -303,15 +327,48 @@ export function Workspace({
   const conflictStage = conflict.data?.publication.definition.stages.find(
     (stage) => stage.id === conflict.data?.task.stageId,
   )?.name;
+  const testRun = embedded && selectedStore?.canTest && latestPublication && (
+    <TestRun
+      key={latestPublication.id}
+      storeId={storeId}
+      language={language}
+      publication={latestPublication}
+      offers={options.data?.offers ?? []}
+      taskId={testTaskId}
+      execute={mutation.mutateAsync}
+    />
+  );
 
   return (
-    <div lang="ru" className="min-w-0 text-foreground">
+    <div
+      lang="ru"
+      id="store-workspace"
+      className="min-w-0 scroll-mt-4 text-foreground"
+    >
       <div className="mb-5 flex min-h-12 items-center justify-between gap-2 border-b border-border pb-3">
         <p className="flex min-w-0 items-center gap-2.5 text-sm">
           <span className="grid size-8 shrink-0 place-items-center rounded-lg bg-primary text-primary-foreground">
             <Workflow aria-hidden="true" className="size-4" />
           </span>
-          <span className="font-semibold">CRM</span>
+          {embedded ? (
+            <Link
+              href={workspaceHref(language)}
+              className="font-semibold hover:underline"
+            >
+              Мои магазины
+            </Link>
+          ) : (
+            <Link
+              href={
+                selectedStore
+                  ? storeHref(language, selectedStore.slug)
+                  : workspaceHref(language)
+              }
+              className="font-semibold hover:underline"
+            >
+              CRM
+            </Link>
+          )}
           {selectedStore && (
             <span className="truncate border-s border-border ps-2.5 text-muted-foreground">
               {selectedStore.title}
@@ -351,14 +408,22 @@ export function Workspace({
           Загружаем магазины…
         </p>
       ) : editor && options.data ? (
-        <Editor
-          key={editor === "new" ? "new" : editor.id}
-          storeId={storeId}
-          initial={editor === "new" ? undefined : editor}
-          options={options.data}
-          execute={mutation.mutateAsync}
-          onPublished={(funnel) => changeFilters({ funnel, version: "" })}
-        />
+        <div className="grid gap-5">
+          <Editor
+            key={editor === "new" ? "new" : editor.id}
+            storeId={storeId}
+            initial={editor === "new" ? undefined : editor}
+            options={options.data}
+            execute={mutation.mutateAsync}
+            onPublished={(funnel) => {
+              changeFilters({ funnel, version: "" });
+              if (editor === "new") setEditor(undefined);
+            }}
+          />
+          {editor !== "new" &&
+            editor.id === latestPublication?.funnelId &&
+            testRun}
+        </div>
       ) : (
         <div className="grid min-w-0 gap-4">
           <header className="flex flex-wrap items-end justify-between gap-3">
@@ -368,7 +433,7 @@ export function Workspace({
                 tabIndex={-1}
                 className="text-3xl font-semibold tracking-tight"
               >
-                Задачи магазина
+                {embedded ? "Воронки и задачи" : "Задачи магазина"}
               </h1>
               {selectedPublication && (
                 <p className="mt-1 text-sm text-muted-foreground">
@@ -378,6 +443,15 @@ export function Workspace({
               )}
             </div>
             <div className="flex flex-wrap gap-2">
+              {!embedded && options.data?.canManageEmployees && (
+                <Link
+                  href={`${storeHref(language, selectedStore.slug)}#store-employees`}
+                  className={secondaryClass}
+                >
+                  <Users aria-hidden="true" className="size-4" />
+                  Сотрудники
+                </Link>
+              )}
               {selectedFunnel && (
                 <button
                   type="button"
@@ -399,6 +473,7 @@ export function Workspace({
               </button>
             </div>
           </header>
+          {testRun}
           <div className="grid gap-3 rounded-xl border border-border bg-card p-3.5">
             <div className="flex flex-wrap justify-between gap-3">
               <label className="block w-full sm:max-w-md">
@@ -437,90 +512,105 @@ export function Workspace({
               </div>
             </div>
             <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3 xl:grid-cols-5">
-              <Field label="Магазин">
-                <select
-                  className={fieldClass}
-                  value={selectedStore.slug}
-                  onChange={(event) =>
-                    router.push(
-                      workspaceHref(language, event.currentTarget.value),
-                    )
-                  }
-                >
-                  {stores.data?.map((store) => (
-                    <option key={store.id} value={store.slug}>
-                      {store.title}
-                    </option>
-                  ))}
-                </select>
-              </Field>
+              {!embedded && (
+                <Field label="Магазин">
+                  <Select
+                    ui="shadcn"
+                    className={fieldClass}
+                    value={selectedStore.slug}
+                    onValueChange={(selectedValue) =>
+                      router.push(workspaceHref(language, selectedValue))
+                    }
+                    options={
+                      stores.data?.map((store) => ({
+                        value: store.slug,
+                        label: store.title,
+                      })) ?? []
+                    }
+                  />
+                </Field>
+              )}
               <Field label="Воронка">
-                <select
+                <Select
+                  ui="shadcn"
                   className={fieldClass}
                   value={selectedFunnel?.id ?? ""}
-                  onChange={(event) =>
+                  disabled={!selectedFunnel}
+                  onValueChange={(selectedValue) =>
                     changeFilters({
-                      funnel: event.currentTarget.value,
+                      funnel: selectedValue,
                       version: "",
                     })
                   }
-                >
-                  {!selectedFunnel && <option value="">Нет воронок</option>}
-                  {funnels.data?.items.map((funnel) => (
-                    <option key={funnel.id} value={funnel.id}>
-                      {funnel.name}
-                      {funnel.publishedVersion === null ? " · Черновик" : ""}
-                    </option>
-                  ))}
-                </select>
+                  placeholder={
+                    funnels.isPending ? "Загружаем воронки…" : "Нет воронок"
+                  }
+                  options={
+                    funnels.data?.items.map((funnel) => ({
+                      value: funnel.id,
+                      label: `${funnel.name}${funnel.publishedVersion === null ? " · Черновик" : ""}`,
+                    })) ?? []
+                  }
+                />
               </Field>
               <Field label="Версия">
-                <select
+                <Select
+                  ui="shadcn"
                   className={fieldClass}
                   value={selectedPublication?.id ?? ""}
-                  onChange={(event) =>
-                    changeFilters({ version: event.currentTarget.value })
+                  disabled={!selectedPublication}
+                  onValueChange={(selectedValue) =>
+                    changeFilters({ version: selectedValue })
                   }
-                >
-                  {!selectedPublication && (
-                    <option value="">Нет публикаций</option>
-                  )}
-                  {publications.data?.items.map((version) => (
-                    <option key={version.id} value={version.id}>
-                      Версия {version.version}
-                    </option>
-                  ))}
-                </select>
+                  placeholder={
+                    selectedFunnel && publications.isPending
+                      ? "Загружаем публикации…"
+                      : "Нет публикаций"
+                  }
+                  options={
+                    publications.data?.items.map((version) => ({
+                      value: version.id,
+                      label: `Версия ${version.version}`,
+                    })) ?? []
+                  }
+                />
               </Field>
               <Field label="Исполнитель">
-                <select
+                <Select
+                  ui="shadcn"
                   className={fieldClass}
-                  value={filters.assignee}
-                  onChange={(event) =>
-                    changeFilters({ assignee: event.currentTarget.value })
+                  value={assigneeFilter ?? "all"}
+                  onValueChange={(selectedValue) =>
+                    changeFilters({
+                      assignee: selectedValue === "all" ? "" : selectedValue,
+                    })
                   }
-                >
-                  <option value="">Все исполнители</option>
-                  {options.data?.participants.map(({ id, name }) => (
-                    <option key={id} value={id}>
-                      {name}
-                    </option>
-                  ))}
-                </select>
+                  options={[
+                    { value: "all", label: "Все исполнители" },
+                    ...(options.data?.participants.map(({ id, name }) => ({
+                      value: id,
+                      label: name,
+                    })) ?? []),
+                  ]}
+                />
               </Field>
               <Field label="Состояние">
-                <select
+                <Select
+                  ui="shadcn"
                   className={fieldClass}
-                  value={filters.status}
-                  onChange={(event) =>
-                    changeFilters({ status: event.currentTarget.value })
+                  value={normalizedStatus ?? "all"}
+                  onValueChange={(selectedValue) =>
+                    changeFilters({
+                      status: selectedValue === "all" ? "" : selectedValue,
+                    })
                   }
-                >
-                  <option value="">Все состояния</option>
-                  <option value="active">В работе</option>
-                  <option value="waiting">Ожидание</option>
-                  <option value="closed">Закрытые</option>
-                </select>
+                  options={[
+                    { value: "all", label: "Все состояния" },
+                    { value: "active", label: "В работе" },
+                    { value: "waiting", label: "Ожидание" },
+                    { value: "closed", label: "Закрытые" },
+                  ]}
+                />
               </Field>
             </div>
           </div>
@@ -567,6 +657,7 @@ export function Workspace({
                   tasks={records}
                   people={people}
                   pendingIds={pending}
+                  canAssign={Boolean(options.data?.participants.length)}
                   onOpenTask={openTask}
                   onRequestMove={requestMove}
                 />
@@ -576,6 +667,7 @@ export function Workspace({
                   tasks={records}
                   people={people}
                   pendingIds={pending}
+                  canAssign={Boolean(options.data?.participants.length)}
                   onOpenTask={openTask}
                   onRequestMove={requestMove}
                 />
@@ -615,6 +707,7 @@ export function Workspace({
         <TaskDrawer
           key={openedTaskId}
           taskId={openedTaskId}
+          language={language}
           options={options.data}
           detail={isDenied(detail.error) ? undefined : detail.data}
           error={

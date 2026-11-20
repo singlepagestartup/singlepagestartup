@@ -5,6 +5,7 @@ export async function findProfileKnowledgeSourceIds(props: {
   targetSocialModuleProfileId: string;
   limit?: number;
   offset?: number;
+  storeId?: string;
 }) {
   const relations =
     await props.service.modules.social.profilesToKnowledgeModuleSources.find({
@@ -16,6 +17,9 @@ export async function findProfileKnowledgeSourceIds(props: {
               method: "eq",
               value: props.targetSocialModuleProfileId,
             },
+            ...(props.storeId
+              ? [{ column: "variant", method: "eq" as const, value: "default" }]
+              : []),
           ],
         },
         orderBy: {
@@ -30,8 +34,12 @@ export async function findProfileKnowledgeSourceIds(props: {
             },
           ],
         },
-        ...(props.limit === undefined ? {} : { limit: props.limit }),
-        ...(props.offset === undefined ? {} : { offset: props.offset }),
+        ...(props.limit === undefined || props.storeId
+          ? {}
+          : { limit: props.limit }),
+        ...(props.offset === undefined || props.storeId
+          ? {}
+          : { offset: props.offset }),
       },
     });
 
@@ -44,6 +52,15 @@ export async function findProfileKnowledgeSourceIds(props: {
         return typeof sourceId === "string" && Boolean(sourceId);
       }) || []
   );
+  if (props.storeId) {
+    const relevant = relations.filter(
+      ({ storeId, offerId, projectId }) =>
+        (!storeId || storeId === props.storeId) && !offerId && !projectId,
+    );
+    return relevant.map(
+      ({ knowledgeModuleSourceId }) => knowledgeModuleSourceId,
+    );
+  }
 }
 
 export function toText(value: unknown) {

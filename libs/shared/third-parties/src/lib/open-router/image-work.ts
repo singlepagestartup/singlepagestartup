@@ -26,6 +26,9 @@ const imageSize = 1024;
 // Reserve a conservative envelope for one low-quality 1024px generation. The
 // Images API meters actual tokens but does not accept a max-output-tokens field.
 const imageOutputCeiling = 16_384;
+const sourceImageTokenCeiling = 4096;
+export const IMAGE_WORK_MAX_SOURCE_IMAGES = 4;
+const sourceImageByteLimit = 2 * 1024 * 1024;
 const responseByteLimit = 8 * 1024 * 1024;
 const Price = Decimal.clone({ precision: 56 });
 const pngHeader = Buffer.from("89504e470d0a1a0a0000000d49484452", "hex");
@@ -63,7 +66,14 @@ export interface IImageWorkRequest {
   provider: keyof typeof routes;
   model: string;
   messages: IWorkMessage[];
-  coverBackground?: { width: number; height: number; description: string };
+  coverBackground?: {
+    width: number;
+    height: number;
+    description: string;
+    captionSpace?: boolean;
+    skillGuidance?: string;
+  };
+  sourceImages?: Uint8Array[];
   maxOutputTokens: number;
   inputUsdPerMillion: string;
   outputUsdPerMillion: string;
@@ -74,16 +84,45 @@ interface ICompletedImageWork {
   bytes?: Uint8Array;
 }
 
+export function supportsImageWork(
+  provider: IImageWorkRequest["provider"],
+  model: string,
+) {
+  return routes[provider].model === model;
+}
+
 function promptOf(request: IImageWorkRequest) {
   const background = request.coverBackground;
   if (background) {
-    const { width, height, description } = background;
+    const { width, height, description, skillGuidance } = background;
+    const guidance = skillGuidance
+      ? `Apply the selected stage skills where they fit the buyer's visual direction and output constraints.\n${skillGuidance}`
+      : "";
+    if (request.sourceImages?.length) {
+      return [
+        `Create a new studio scene for a marketplace cover whose final canvas is ${width}×${height} pixels. Use the photo as the product reference.`,
+        "Identify the most prominent foreground item and show it once as the hero product. Preserve its recognizable silhouette, proportions, materials, details and colors. Remove the original setting, people, signs, multiple products and distractions. Render the item naturally in the requested scene with a soft contact shadow. Do not paste the original rectangular photo into the result.",
+        `The buyer's visual direction is: ${description}`,
+        guidance,
+        "Keep the whole product and its shadow within the central area so a center crop to the final canvas fits.",
+        background.captionSpace
+          ? "Leave the bottom fifth of the final composition clear for the caption that will be added separately."
+          : "",
+        "Omit text, logos, watermarks, frames and captions.",
+      ]
+        .filter(Boolean)
+        .join("\n");
+    }
     return [
       `Create only the background for a marketplace cover whose final canvas is ${width}×${height} pixels.`,
       `The buyer's background direction is: ${description}`,
+      guidance,
       "Use a cohesive background with space in the center and near the bottom. Keep the design suitable for a center crop. The original product photo and caption will be added separately. Leave out products, people, typography, logos, watermarks and frames.",
-    ].join("\n");
+    ]
+      .filter(Boolean)
+      .join("\n");
   }
+
   return request.messages
     .map(({ role, content }) => `${role}: ${content}`)
     .join("\n\n");
@@ -91,10 +130,22 @@ function promptOf(request: IImageWorkRequest) {
 
 export function estimateImageWork(request: IImageWorkRequest) {
   const route = routes[request.provider];
-  if (request.model !== route.model) {
+  if (!supportsImageWork(request.provider, request.model)) {
     throw new Error(
       "Permission error. This model does not support metered image work",
     );
+  }
+
+  const sources = request.sourceImages ?? [];
+  if (
+    sources.length &&
+    (request.provider !== "openai" ||
+      sources.length > IMAGE_WORK_MAX_SOURCE_IMAGES ||
+      sources.some(
+        (source) => !source.length || source.length > sourceImageByteLimit,
+      ))
+  ) {
+    throw new Error("Validation error. Unsupported image source inputs");
   }
 
   const inputRate = new Price(request.inputUsdPerMillion);
@@ -133,7 +184,10 @@ export function estimateImageWork(request: IImageWorkRequest) {
     );
   }
 
-  const input = Buffer.byteLength(prompt, "utf8") + 128;
+  const input =
+    Buffer.byteLength(prompt, "utf8") +
+    128 +
+    sources.length * sourceImageTokenCeiling;
   const usd = inputRate
     .times(input)
     .plus(outputRate.times(imageOutputCeiling))
@@ -251,14 +305,36 @@ export async function sendImageWork(
         }
       : {}),
   };
-  const response = await network(route.url, {
+  const headers = {
+    Authorization: `Bearer ${secret}`,
+    "X-Client-Request-Id": attemptId,
+  };
+  let url = route.url;
+  let payloadBody: string | FormData;
+  if (request.sourceImages?.length) {
+    url = "https://api.openai.com/v1/images/edits";
+    const form = new FormData();
+    for (const [name, value] of Object.entries(body)) {
+      form.set(name, String(value));
+    }
+    for (const source of request.sourceImages) {
+      form.append(
+        "image[]",
+        new Blob([Uint8Array.from(source)], { type: "image/jpeg" }),
+        "source.jpg",
+      );
+    }
+    payloadBody = form;
+  } else {
+    payloadBody = JSON.stringify(body);
+  }
+  const response = await network(url, {
     method: "POST",
-    headers: {
-      Authorization: `Bearer ${secret}`,
-      "Content-Type": "application/json",
-      "X-Client-Request-Id": attemptId,
-    },
-    body: JSON.stringify(body),
+    headers:
+      typeof payloadBody === "string"
+        ? { ...headers, "Content-Type": "application/json" }
+        : headers,
+    body: payloadBody,
     redirect: "error",
     signal: AbortSignal.timeout(90_000),
   });

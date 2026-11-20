@@ -23,7 +23,7 @@ export function ChatListActivity({
         </time>
       )}
       {typeof unreadCount === "number" && unreadCount > 0 && (
-        <span className="inline-flex min-h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1.5 font-semibold text-primary-foreground">
+        <span className="relative inline-flex min-h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1.5 font-semibold text-primary-foreground">
           <span className="sr-only">
             {language === "ru" ? "Непрочитано: " : "Unread: "}
           </span>

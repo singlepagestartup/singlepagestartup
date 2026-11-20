@@ -5,10 +5,26 @@ import {
   trackRepositoryRead,
   withConsistencyDatabase,
 } from "@sps/shared-backend-api";
-import { and, asc, desc, eq, gt, isNull, lt, lte, or, sql } from "drizzle-orm";
+import {
+  and,
+  asc,
+  desc,
+  eq,
+  gt,
+  isNull,
+  lt,
+  lte,
+  notLike,
+  or,
+  sql,
+} from "drizzle-orm";
 import { Table } from "@sps/crm/models/task/backend/repository/database";
 import { readPageCursor, updatedPage } from "@sps/crm/models/funnel/sdk/model";
-import type { IListTasks, ITaskScope } from "@sps/crm/models/task/sdk/model";
+import {
+  STORE_EMPLOYEE_TRAINING_KEY_PREFIX,
+  type IListTasks,
+  type ITaskScope,
+} from "@sps/crm/models/task/sdk/model";
 
 @injectable()
 @injectFromBase()
@@ -50,7 +66,10 @@ export class Repository extends DatabaseRepository<typeof Table> {
 
   async list(input: IListTasks, now: Date) {
     const limit = input.limit ?? 50;
-    const predicates = [eq(Table.storeId, input.storeId)];
+    const predicates = [
+      eq(Table.storeId, input.storeId),
+      notLike(Table.openingKey, `${STORE_EMPLOYEE_TRAINING_KEY_PREFIX}%`),
+    ];
     if (input.funnelId) {
       predicates.push(eq(Table.funnelId, input.funnelId));
     }

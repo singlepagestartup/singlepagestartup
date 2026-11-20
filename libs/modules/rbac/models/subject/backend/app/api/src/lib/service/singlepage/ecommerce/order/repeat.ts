@@ -1,3 +1,4 @@
+import { STORE_TEST_ORDER_VARIANT } from "@sps/ecommerce/models/order/sdk/model";
 import type { FindServiceProps } from "@sps/shared-backend-api";
 import { assertSingleUnitPerOrder } from "@sps/backend-utils";
 import {
@@ -71,6 +72,11 @@ export class Service {
                   { column: "id", method: "inArray", value: subjectOrderIds },
                   { column: "type", method: "eq", value: "cart" },
                   { column: "status", method: "eq", value: "new" },
+                  {
+                    column: "variant",
+                    method: "ne",
+                    value: STORE_TEST_ORDER_VARIANT,
+                  },
                 ],
               },
             },

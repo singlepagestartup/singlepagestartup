@@ -2,6 +2,7 @@ import { getHttpErrorType } from "@sps/backend-utils";
 import { Context } from "hono";
 import { HTTPException } from "hono/http-exception";
 import { Service } from "../../../../../../../../service";
+import { STORE_EMPLOYEE_CHAT_VARIANT } from "@sps/rbac/models/subject/sdk/model";
 
 export class Handler {
   constructor(readonly service: Service) {}
@@ -12,6 +13,23 @@ export class Handler {
 
       if (!socialModuleChatId) {
         throw new Error("Validation error. No socialModuleChatId provided");
+      }
+      const chat = await this.service.modules.social.chat.findById({
+        id: socialModuleChatId,
+      });
+      if (chat?.variant === STORE_EMPLOYEE_CHAT_VARIANT) {
+        const actorId = c.req.param("id") || "";
+        const scope = await this.service.crmWorkspace.employees.scopeForChat(
+          actorId,
+          chat,
+        );
+        if (scope.actorProfileId !== c.req.param("socialModuleProfileId")) {
+          throw new Error("Not Found error. Employee profile is unavailable");
+        }
+        const profile = await this.service.modules.social.profile.findById({
+          id: scope.profileId,
+        });
+        return c.json({ data: profile ? [profile] : [] });
       }
 
       const chatRelations =
@@ -98,9 +116,31 @@ export class Handler {
       } else {
         agentSubjects = [];
       }
-      const agentSubjectIds = new Set(
-        (agentSubjects || []).map((subject) => subject.id),
+      const agentSubjectIds = new Set<string>(
+        (agentSubjects || [])
+          .map((subject) => subject.id)
+          .filter((id: unknown): id is string => typeof id === "string"),
       );
+      if (agentSubjectIds.size) {
+        const grants =
+          await this.service.module.subjectsToEcommerceModuleStores.find({
+            params: {
+              filters: {
+                and: [
+                  {
+                    column: "subjectId",
+                    method: "inArray",
+                    value: [...agentSubjectIds],
+                  },
+                  { column: "variant", method: "eq", value: "crm-agent" },
+                ],
+              },
+            },
+          });
+        for (const { subjectId } of grants) {
+          agentSubjectIds.delete(subjectId);
+        }
+      }
       const manageableProfileIds = new Set(
         (subjectRelations || [])
           .filter((relation) => agentSubjectIds.has(relation.subjectId))

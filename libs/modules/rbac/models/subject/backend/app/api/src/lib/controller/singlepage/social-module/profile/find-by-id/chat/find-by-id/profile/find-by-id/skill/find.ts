@@ -1,4 +1,7 @@
-import { getHttpErrorType } from "@sps/backend-utils";
+import {
+  getHttpErrorType,
+  storeEmployeeSkillCommand,
+} from "@sps/backend-utils";
 import { Context } from "hono";
 import { HTTPException } from "hono/http-exception";
 import { Service } from "../../../../../../../../../../service";
@@ -44,12 +47,18 @@ export class Handler {
       const skillsById = new Map(
         (skills || []).map((skill) => [skill.id, skill]),
       );
-
-      return c.json({
-        data: skillIds
-          .map((skillId) => skillsById.get(skillId))
-          .filter((skill) => Boolean(skill)),
+      const employee = Boolean(c.get("storeEmployeeTrainingStoreId"));
+      const linked = skillIds.flatMap((skillId) => {
+        const skill = skillsById.get(skillId);
+        return skill ? [skill] : [];
       });
+      const data = employee
+        ? linked.map((skill) => ({
+            ...skill,
+            slug: storeEmployeeSkillCommand(skill.slug),
+          }))
+        : linked;
+      return c.json({ data });
     } catch (error: unknown) {
       const { status, message, details } = getHttpErrorType(error);
       throw new HTTPException(status, { message, cause: details });

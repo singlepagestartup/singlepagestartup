@@ -88,6 +88,33 @@ export class Repository extends DatabaseRepository<typeof Table> {
       .where(and(eq(Table.storeId, storeId), eq(Table.kind, kind)));
   }
 
+  async trainingBudget(storeId: string) {
+    await trackRepositoryRead(Table, this.db, {
+      and: [{ column: "storeId", method: "eq", value: storeId }],
+    });
+    await trackRepositoryRead(Publication, this.db);
+    const [row] = await this.db
+      .select({ publication: Publication })
+      .from(Table)
+      .innerJoin(
+        Publication,
+        and(
+          eq(Table.id, Publication.funnelId),
+          eq(Table.publishedVersion, Publication.version),
+        ),
+      )
+      .where(
+        and(
+          eq(Table.storeId, storeId),
+          sql`${Publication.definition}->'workFunding'->>'payer' = 'store-owner'`,
+          sql`${Publication.definition}->>'maintenanceSourceId' is null`,
+        ),
+      )
+      .orderBy(desc(Publication.createdAt), desc(Publication.id))
+      .limit(1);
+    return row?.publication;
+  }
+
   async publishedForForm(formId: string) {
     await trackRepositoryRead(Table, this.db);
     await trackRepositoryRead(Publication, this.db);

@@ -1,6 +1,9 @@
 import { z } from "zod";
 import Decimal from "decimal.js";
-import { ECOMMERCE_ORDER_LINE_QUANTITY_BOUNDS } from "@sps/shared-utils";
+import {
+  ECOMMERCE_ORDER_LINE_QUANTITY_BOUNDS,
+  type TProviderReasoningEffort,
+} from "@sps/shared-utils";
 
 export interface IWorkMessage {
   role: "system" | "user" | "assistant";
@@ -16,9 +19,13 @@ export interface IWorkRequest {
   model: string;
   messages: IWorkMessage[];
   capability: "text" | "compression" | "decision";
+  reasoning?: TProviderReasoningEffort;
   actions?: Array<{ id: string; instruction: string }>;
   cartOffers?: Array<{ offerId: string; prices: { currencyId: string }[] }>;
   artifact?: "pdf";
+  clientRequestId?: string;
+  stageClarification?: string;
+  stageAccepted?: string;
   maxOutputTokens: number;
   inputUsdPerMillion: string;
   outputUsdPerMillion: string;
@@ -55,6 +62,78 @@ export class ProviderOutcomeUnknown extends Error {
   }
 }
 const Price = Decimal.clone({ precision: 56 });
+
+export function supportsStrictStageDecision(
+  request: Pick<IWorkRequest, "provider" | "model">,
+) {
+  return (
+    request.provider === "openai" &&
+    /^gpt-(?:4\.1|4o|5)(?:[.-]|$)/.test(request.model)
+  );
+}
+
+const stageDecision = z
+  .object({
+    decision: z.discriminatedUnion("kind", [
+      z
+        .object({
+          kind: z.literal("advance"),
+          actionId: z.string(),
+          reply: z.string(),
+        })
+        .strict(),
+      z
+        .object({
+          kind: z.literal("clarify"),
+          clarification: z.string().trim().max(4000),
+        })
+        .strict(),
+    ]),
+  })
+  .strict();
+
+function stageDecisionFormat(actions: NonNullable<IWorkRequest["actions"]>) {
+  return {
+    type: "json_schema",
+    json_schema: {
+      name: "crm_stage_decision",
+      strict: true,
+      schema: {
+        type: "object",
+        additionalProperties: false,
+        required: ["decision"],
+        properties: {
+          decision: {
+            anyOf: [
+              {
+                type: "object",
+                additionalProperties: false,
+                required: ["kind", "actionId", "reply"],
+                properties: {
+                  kind: { type: "string", enum: ["advance"] },
+                  actionId: {
+                    type: "string",
+                    enum: actions.map(({ id }) => id),
+                  },
+                  reply: { type: "string" },
+                },
+              },
+              {
+                type: "object",
+                additionalProperties: false,
+                required: ["kind", "clarification"],
+                properties: {
+                  kind: { type: "string", enum: ["clarify"] },
+                  clarification: { type: "string" },
+                },
+              },
+            ],
+          },
+        },
+      },
+    },
+  };
+}
 
 export function estimateWork(request: IWorkRequest) {
   // UTF-8 bytes upper-bound tokens for supported byte-based text tokenizers.
@@ -93,24 +172,50 @@ export async function sendWork(
           },
         },
       }
-    : { max_completion_tokens: request.maxOutputTokens };
+    : {
+        max_completion_tokens: request.maxOutputTokens,
+        service_tier: "default",
+        store: false,
+      };
+  const strictStage =
+    request.stageClarification &&
+    request.actions?.length &&
+    supportsStrictStageDecision(request) &&
+    !request.cartOffers?.length &&
+    !request.artifact;
+  let responseFormat;
+  if (strictStage && request.actions) {
+    responseFormat = stageDecisionFormat(request.actions);
+  } else if (
+    request.capability === "decision" ||
+    request.actions?.length ||
+    request.artifact ||
+    request.cartOffers?.length
+  ) {
+    responseFormat = { type: "json_object" };
+  }
+  let reasoning;
+  if (request.capability === "text" && request.reasoning) {
+    reasoning = router
+      ? { reasoning: { effort: request.reasoning } }
+      : { reasoning_effort: request.reasoning };
+  }
   const body = {
     model: request.model,
     messages: request.messages,
     stream: false,
     ...control,
-    ...(request.capability === "decision" ||
-    request.actions?.length ||
-    request.artifact ||
-    request.cartOffers?.length
-      ? { response_format: { type: "json_object" } }
-      : {}),
+    ...reasoning,
+    ...(responseFormat ? { response_format: responseFormat } : {}),
   };
   const response = await network(url, {
     method: "POST",
     headers: {
       Authorization: `Bearer ${secret}`,
       "Content-Type": "application/json",
+      ...(request.clientRequestId
+        ? { "X-Client-Request-Id": request.clientRequestId }
+        : {}),
     },
     body: JSON.stringify(body),
     redirect: "error",
@@ -121,9 +226,15 @@ export async function sendWork(
       "Provider declined the request before generation",
     );
   const payload = await response.json().catch(() => null);
-  const requestId = z
+  const completionId = z
     .object({ id: z.string().min(1).max(300) })
     .safeParse(payload).data?.id;
+  const requestId = router
+    ? completionId
+    : (z
+        .string()
+        .regex(/^[\w.:-]{1,300}$/)
+        .safeParse(response.headers.get("x-request-id")).data ?? completionId);
   if (!response.ok) throw new ProviderOutcomeUnknown(requestId);
   const parsed = completionSchema.safeParse(payload);
   if (!parsed.success || (router && parsed.data.usage.cost === undefined))
@@ -154,8 +265,21 @@ export async function sendWork(
     } catch {
       candidate = null;
     }
+    if (strictStage) {
+      const parsedDecision = stageDecision.safeParse(candidate);
+      const decision = parsedDecision.data?.decision;
+      if (decision?.kind === "advance") {
+        candidate = { actionId: decision.actionId, reply: decision.reply };
+      } else {
+        candidate = {
+          reply: "",
+          clarification: decision?.clarification,
+        };
+      }
+    }
     const replySchema = z.object({
       reply: z.string(),
+      clarification: z.string().trim().max(4000).nullish(),
       actionId: z.string().nullable().optional(),
       cartSelection: z.unknown().optional(),
     });
@@ -209,12 +333,23 @@ export async function sendWork(
       ) {
         artifactText = answer.data.artifactText;
       }
+      if (
+        request.stageClarification &&
+        !actionId &&
+        !cartSelection &&
+        !artifactText
+      ) {
+        text = answer.data.clarification || request.stageClarification;
+      }
+      if (actionId && !text.trim() && request.stageAccepted) {
+        text = request.stageAccepted;
+      }
     } else {
       text = "";
     }
   }
   return {
-    providerRequestId: id,
+    providerRequestId: requestId ?? id,
     text,
     actionId,
     ...(cartSelection ? { cartSelection } : {}),

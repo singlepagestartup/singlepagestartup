@@ -16,6 +16,7 @@ import {
   closeTaskSchema,
   customerTaskActivitySchema,
   getTaskWorkSchema,
+  isStoreEmployeeTraining,
   listDueTasksSchema,
   listTasksSchema,
   migrateTaskSchema,
@@ -53,6 +54,7 @@ import {
   getStage,
   nextTimer,
   operationDigest,
+  trainEmployeeStage,
 } from "./utils";
 
 type TTask = typeof Table.$inferSelect;
@@ -165,11 +167,15 @@ export class Service extends CRUDService<TTask> {
       new Date(),
     );
     const publication = await this.publication(task);
+    const stage = getStage(publication.definition, task.stageId);
+    const employeeTraining = isStoreEmployeeTraining(task.openingKey);
     return {
       task,
-      stage: getStage(publication.definition, task.stageId),
+      stage: employeeTraining ? trainEmployeeStage(stage.id) : stage,
       funding: publication.definition.workFunding,
-      maintenanceSourceId: publication.definition.maintenanceSourceId,
+      maintenanceSourceId: employeeTraining
+        ? undefined
+        : publication.definition.maintenanceSourceId,
     };
   }
 
@@ -283,6 +289,25 @@ export class Service extends CRUDService<TTask> {
   }
 
   async open(input: IOpenTask) {
+    if (isStoreEmployeeTraining(input.operationKey?.trim())) {
+      throw new Error("Validation error. This opening key is reserved");
+    }
+    return this.openConversation(input, false);
+  }
+
+  async openEmployeeTraining(
+    input: Omit<IOpenTask, "productId" | "offerId" | "orderId" | "formId">,
+  ) {
+    if (
+      !isStoreEmployeeTraining(input.operationKey) ||
+      input.actorId !== input.customerId
+    ) {
+      throw new Error("Validation error. Invalid employee training task");
+    }
+    return this.openConversation(input, true);
+  }
+
+  private async openConversation(input: IOpenTask, employeeTraining: boolean) {
     const data = openTaskSchema.parse(input);
     const digest = operationDigest("opened", data);
     const owner = this.owner();
@@ -312,14 +337,43 @@ export class Service extends CRUDService<TTask> {
         data.storeId,
         data.funnelId,
       );
-      const selection = await this.module.funnel.resolveSelection(data);
-      this.module.funnel.assertApplicable(publication.bindings, {
-        ...selection,
-        formId: data.formId,
-        storeId: data.storeId,
-      });
-      if (data.orderId) {
-        await this.validateOrder(data.storeId, data.orderId, selection);
+      if (
+        data.expectedPublicationId &&
+        data.expectedPublicationId !== publication.id
+      ) {
+        throw new Error(
+          "Conflict error. The funnel was published again. Reload its current version",
+        );
+      }
+      let selection: Awaited<
+        ReturnType<typeof this.module.funnel.resolveSelection>
+      > = {
+        productId: undefined,
+        offerId: undefined,
+      };
+      if (employeeTraining) {
+        if (
+          data.productId ||
+          data.offerId ||
+          data.orderId ||
+          data.formId ||
+          publication.definition.workFunding?.payer !== "store-owner" ||
+          publication.definition.maintenanceSourceId
+        ) {
+          throw new Error(
+            "Validation error. Employee training requires a published store budget",
+          );
+        }
+      } else {
+        selection = await this.module.funnel.resolveSelection(data);
+        this.module.funnel.assertApplicable(publication.bindings, {
+          ...selection,
+          formId: data.formId,
+          storeId: data.storeId,
+        });
+        if (data.orderId) {
+          await this.validateOrder(data.storeId, data.orderId, selection);
+        }
       }
       const stage = getStage(
         publication.definition,
@@ -334,7 +388,13 @@ export class Service extends CRUDService<TTask> {
         customerId: data.customerId,
         ...selection,
         orderId: data.orderId,
-        ...enterStage(id, stage, 1, 0, new Date()),
+        ...enterStage(
+          id,
+          employeeTraining ? trainEmployeeStage(stage.id) : stage,
+          1,
+          0,
+          new Date(),
+        ),
         openingDigest: digest,
         openingKey: data.operationKey,
       });
@@ -428,7 +488,10 @@ export class Service extends CRUDService<TTask> {
     });
   }
 
-  async assign(input: IAssignTask) {
+  async assign(
+    input: IAssignTask,
+    actorKind: "manager" | "system" = "manager",
+  ) {
     const data = assignTaskSchema.parse(input);
     return this.change(data, "assigned", async (task, now) => {
       const assignmentRevision = task.assignmentRevision + 1;
@@ -471,7 +534,7 @@ export class Service extends CRUDService<TTask> {
       return {
         patch,
         detail: { assigneeId: data.assigneeId, assignmentRevision },
-        actorKind: "manager",
+        actorKind,
       };
     });
   }

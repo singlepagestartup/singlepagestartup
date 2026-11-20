@@ -6,6 +6,7 @@ import {
   Clock3,
   Dot,
   MoveRight,
+  UserPlus,
 } from "lucide-react";
 import {
   taskStateLabels,
@@ -83,8 +84,32 @@ export function DueDate({ value }: { value?: string }) {
 }
 
 export interface TaskActions {
-  onOpenTask?: (id: string, element: HTMLAnchorElement) => void;
+  onOpenTask?: (id: string, element: HTMLElement) => void;
   onRequestMove?: (move: RequestMove, element?: HTMLElement) => void;
+}
+
+export function AssignButton({
+  taskId,
+  taskLabel,
+  onOpenTask,
+}: {
+  taskId: string;
+  taskLabel: string;
+  onOpenTask?: TaskActions["onOpenTask"];
+}) {
+  if (!onOpenTask) return null;
+
+  return (
+    <button
+      type="button"
+      aria-label={`Назначить исполнителя для задачи «${taskLabel}»`}
+      className={`${secondaryClass} w-fit px-2.5 py-1 text-xs`}
+      onClick={(event) => onOpenTask(taskId, event.currentTarget)}
+    >
+      <UserPlus aria-hidden="true" className="size-3.5" />
+      Назначить
+    </button>
+  );
 }
 
 interface MoveButtonProps extends Pick<TaskActions, "onRequestMove"> {

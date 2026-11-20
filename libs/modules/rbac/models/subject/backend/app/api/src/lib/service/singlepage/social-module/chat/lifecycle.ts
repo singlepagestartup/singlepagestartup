@@ -10,7 +10,9 @@ import {
 import { api as socialModuleChatsToThreadsApi } from "@sps/social/relations/chats-to-threads/sdk/server";
 import { api as socialModuleProfilesToChatsApi } from "@sps/social/relations/profiles-to-chats/sdk/server";
 import { RBAC_SECRET_KEY } from "@sps/shared-utils";
+import { STORE_EMPLOYEE_CHAT_VARIANT } from "@sps/rbac/models/subject/sdk/model/src/lib/crm-workspace";
 import type { Service as SubjectService } from "../../index";
+import { storeEmployeeChatSlugPrefix } from "../../crm/workspace/employees";
 
 export class Service {
   protected service: SubjectService;
@@ -29,6 +31,15 @@ export class Service {
     socialModuleProfileId: string;
     socialModuleDefaultThread: ISocialModuleThread;
   }> {
+    if (
+      props.data?.variant === STORE_EMPLOYEE_CHAT_VARIANT ||
+      (typeof props.data?.slug === "string" &&
+        props.data.slug.startsWith(storeEmployeeChatSlugPrefix))
+    ) {
+      throw new Error(
+        "Forbidden error. Store employee conversations are managed by the store workspace",
+      );
+    }
     if (!RBAC_SECRET_KEY) {
       throw new Error("Configuration error. RBAC_SECRET_KEY not set");
     }

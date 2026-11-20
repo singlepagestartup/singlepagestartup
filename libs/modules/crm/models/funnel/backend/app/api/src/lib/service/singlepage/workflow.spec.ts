@@ -109,3 +109,30 @@ it("keeps the marketplace cover brief on image stages only", () => {
     "Marketplace cover brief requires image output",
   );
 });
+
+it("preserves explicit skill selections on the assigned stage", () => {
+  const skillId = "5bd2af60-e3f0-4494-a8b1-c645c2369129";
+  const assigneeId = "5bd2af60-e3f0-4494-a8b1-c645c2369130";
+  const stage = {
+    id: "cover",
+    name: "Cover",
+    actions: [],
+    skillIds: [skillId],
+  };
+  expect(() =>
+    funnelDefinitionSchema.parse({ initialStageId: stage.id, stages: [stage] }),
+  ).toThrow("Stage skills require an assigned agent");
+  const assigned = { ...stage, defaultAssigneeSubjectId: assigneeId };
+  expect(
+    funnelDefinitionSchema.parse({
+      initialStageId: stage.id,
+      stages: [assigned],
+    }).stages[0].skillIds,
+  ).toEqual([skillId]);
+  expect(() =>
+    funnelDefinitionSchema.parse({
+      initialStageId: stage.id,
+      stages: [{ ...assigned, skillIds: [skillId, skillId] }],
+    }),
+  ).toThrow();
+});

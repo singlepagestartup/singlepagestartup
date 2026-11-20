@@ -9,6 +9,7 @@ import type {
   TCustomerWorkCommand,
 } from "@sps/rbac/models/subject/sdk/model";
 import { Button } from "@sps/shared-ui-shadcn";
+import { Select } from "@sps/ui-adapter";
 
 type TMemoryCommand = Extract<
   TCustomerWorkCommand,
@@ -88,24 +89,26 @@ export function PersonalNotes({ subjectId, work, memory, language }: IProps) {
         {memory.projects.length > 0 && (
           <label className="block text-sm font-medium">
             {ru ? "Область заметки" : "Note scope"}
-            <select
-              value={memory.currentProjectId ?? ""}
+            <Select
+              ui="shadcn"
+              aria-label={ru ? "Область заметки" : "Note scope"}
+              value={memory.currentProjectId ?? "store"}
               disabled={mutation.isPending}
-              onChange={(event) =>
+              onValueChange={(value) =>
                 void change({
                   operation: "memory-project",
-                  projectId: event.currentTarget.value || null,
+                  projectId: value === "store" ? null : value,
                 })
               }
-              className="mt-1 block min-h-11 w-full rounded-lg border border-input bg-background px-3"
-            >
-              <option value="">{ru ? "Этот магазин" : "This store"}</option>
-              {memory.projects.map(({ id, title }) => (
-                <option key={id} value={id}>
-                  {title}
-                </option>
-              ))}
-            </select>
+              className="mt-1 min-h-11 w-full"
+              options={[
+                { value: "store", label: ru ? "Этот магазин" : "This store" },
+                ...memory.projects.map(({ id, title }) => ({
+                  value: id,
+                  label: title,
+                })),
+              ]}
+            />
           </label>
         )}
         <ul className="space-y-2">

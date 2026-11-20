@@ -1,4 +1,6 @@
+import { Select } from "@sps/ui-adapter";
 import * as Dialog from "@radix-ui/react-dialog";
+import Link from "next/link";
 import { ArrowUpRight, History, X } from "lucide-react";
 import { useRef, useState } from "react";
 import type {
@@ -14,7 +16,11 @@ import {
   secondaryClass,
   TaskStatus,
 } from "./primitives";
-import { evidenceLabels, timestampLabel } from "./view-model";
+import {
+  assigneeOptionGroups,
+  evidenceLabels,
+  timestampLabel,
+} from "./view-model";
 
 export const dialogOverlay = "fixed inset-0 z-50 bg-black/45";
 
@@ -23,6 +29,7 @@ interface ITaskDrawerProps {
   detail?: ICrmWorkspaceTaskDetail;
   error?: string;
   href: string;
+  language: string;
   options?: ICrmWorkspaceOptions;
   onClose: () => void;
   onRestoreFocus: () => void;
@@ -47,6 +54,24 @@ const fulfillmentStatus = {
   delivered: "Вручён",
 };
 
+const orderStatus: Record<string, string> = {
+  ...fulfillmentStatus,
+  new: "Новый",
+  draft: "Готовится",
+  open: fulfillmentStatus["awaiting-payment"],
+  paying: fulfillmentStatus["awaiting-payment"],
+  approving: "Ожидает подтверждения",
+  packaging: fulfillmentStatus.preparing,
+  delivering: fulfillmentStatus["in-transit"],
+  completed: "Завершён",
+  expired: "Срок истёк",
+  requested_cancelation: "Запрошена отмена",
+  canceling: "Отменяется",
+  canceled: "Отменён",
+  uncollectible: "Не удалось получить оплату",
+  void: "Аннулирован",
+};
+
 const eventNames: Record<string, string> = {
   opened: "Задача открыта",
   assigned: "Назначение или передача",
@@ -55,6 +80,8 @@ const eventNames: Record<string, string> = {
   "customer-message": "Сообщение клиента",
   "customer-handoff-requested": "Запрошена передача",
   "customer-transferred": "Клиент изменился",
+  "customer-budget-approved": "Клиент согласовал бюджет",
+  "customer-cart-approved": "Клиент подтвердил товары",
   migrated: "Смена версии",
   "order-attached": "Добавлен заказ",
   closed: "Задача закрыта",
@@ -67,6 +94,7 @@ export function TaskDrawer({
   detail,
   error,
   href,
+  language,
   options,
   onClose,
   onRestoreFocus,
@@ -77,11 +105,26 @@ export function TaskDrawer({
   const [assignment, setAssignment] = useState("");
   const [pending, setPending] = useState(false);
   const [assignmentError, setAssignmentError] = useState("");
+  const assignmentOperation = useRef<{
+    assigneeId: string;
+    revision: number;
+    key: string;
+  } | null>(null);
   const task = detail?.task;
   const stages = detail?.publication.definition.stages ?? [];
   const stage = stages.find(({ id }) => id === task?.stageId);
+  const participants = options?.participants ?? [];
+  const assistant = detail?.assistant;
+  const assignees =
+    assistant && !participants.some(({ id }) => id === assistant.id)
+      ? [...participants, assistant]
+      : participants;
+  const candidates = assignees.filter(
+    ({ id, kind }) => id !== task?.assigneeId && (!task?.test || kind === "ai"),
+  );
+  const selectedCandidate = candidates.find(({ id }) => id === assignment);
   const name = (id?: string | null) =>
-    options?.participants.find((person) => person.id === id)?.name ?? id;
+    assignees.find((person) => person.id === id)?.name ?? id;
 
   return (
     <Dialog.Root
@@ -156,12 +199,23 @@ export function TaskDrawer({
                     </div>
                   )}
                 </dl>
-                {task.status !== "closed" && options?.participants.length ? (
+                {task.status !== "closed" && candidates.length > 0 ? (
                   <form
                     className="grid gap-3 rounded-xl border border-border p-4"
                     onSubmit={async (event) => {
                       event.preventDefault();
-                      if (!assignment || pending) return;
+                      if (pending || !selectedCandidate) return;
+                      if (
+                        assignmentOperation.current?.assigneeId !==
+                          assignment ||
+                        assignmentOperation.current.revision !== task.revision
+                      ) {
+                        assignmentOperation.current = {
+                          assigneeId: assignment,
+                          revision: task.revision,
+                          key: crypto.randomUUID(),
+                        };
+                      }
                       setPending(true);
                       setAssignmentError("");
                       try {
@@ -169,9 +223,10 @@ export function TaskDrawer({
                           storeId: task.storeId,
                           taskId,
                           expectedRevision: task.revision,
-                          operationKey: crypto.randomUUID(),
+                          operationKey: assignmentOperation.current.key,
                           assigneeId: assignment,
                         });
+                        assignmentOperation.current = null;
                         setAssignment("");
                       } catch (failure) {
                         setAssignmentError(
@@ -184,23 +239,22 @@ export function TaskDrawer({
                       }
                     }}
                   >
-                    <Field label="Передать исполнителю">
-                      <select
+                    <h3 className="font-semibold">
+                      {task.assigneeId
+                        ? "Передать задачу"
+                        : "Назначить исполнителя"}
+                    </h3>
+                    <Field label="Исполнитель задачи">
+                      <Select
+                        ui="shadcn"
                         className={fieldClass}
                         value={assignment}
-                        onChange={(event) =>
-                          setAssignment(event.currentTarget.value)
-                        }
-                      >
-                        <option value="">Выберите исполнителя</option>
-                        {options.participants
-                          .filter(({ id }) => id !== task.assigneeId)
-                          .map(({ id, name }) => (
-                            <option key={id} value={id}>
-                              {name}
-                            </option>
-                          ))}
-                      </select>
+                        onValueChange={setAssignment}
+                        placeholder="Выберите исполнителя"
+                        disabled={pending}
+                        contentClassName="z-[60]"
+                        options={assigneeOptionGroups(candidates)}
+                      />
                     </Field>
                     {assignmentError && (
                       <p role="alert" className="text-sm text-destructive">
@@ -208,12 +262,20 @@ export function TaskDrawer({
                       </p>
                     )}
                     <button
+                      type="submit"
                       className={`${secondaryClass} w-fit`}
-                      disabled={!assignment || pending}
+                      disabled={!selectedCandidate || pending}
                     >
-                      Назначить
+                      {pending ? "Назначаем…" : "Назначить"}
                     </button>
                   </form>
+                ) : task.status !== "closed" &&
+                  !task.assigneeId &&
+                  options?.canManageEmployees ? (
+                  <p className="rounded-xl border border-border p-4 text-sm text-muted-foreground">
+                    Добавьте ИИ-сотрудника в разделе «Сотрудники» магазина,
+                    чтобы назначить ему задачу.
+                  </p>
                 ) : null}
                 <section className="grid gap-3 border-t border-border pt-5">
                   <h3 className="flex items-center gap-2 font-semibold">
@@ -227,7 +289,7 @@ export function TaskDrawer({
                         key={entry.id}
                       >
                         <p className="font-medium">
-                          {eventNames[entry.kind] ?? entry.kind}
+                          {eventNames[entry.kind] ?? "Событие задачи"}
                         </p>
                         <p className="text-xs text-muted-foreground">
                           <time dateTime={entry.createdAt}>
@@ -275,10 +337,16 @@ export function TaskDrawer({
                 {detail.thread && (
                   <section className="grid gap-1 border-t border-border pt-5">
                     <h3 className="font-semibold">Тред</h3>
-                    <p className="text-sm">{detail.thread.title}</p>
-                    <p className="text-xs text-muted-foreground">
-                      {detail.thread.id}
-                    </p>
+                    {detail.thread.chatId ? (
+                      <Link
+                        href={`/${language}/social/chats/${detail.thread.chatId}/threads/${detail.thread.id}`}
+                        className={`${secondaryClass} w-fit`}
+                      >
+                        Открыть тестовый чат
+                      </Link>
+                    ) : (
+                      <p className="text-sm">{detail.thread.title}</p>
+                    )}
                   </section>
                 )}
                 {detail.order && (
@@ -288,7 +356,10 @@ export function TaskDrawer({
                     <p className="text-xs text-muted-foreground">
                       {detail.order.fulfillment
                         ? fulfillmentStatus[detail.order.fulfillment.state]
-                        : detail.order.paymentStatus || detail.order.status}
+                        : (detail.order.paymentStatus &&
+                            orderStatus[detail.order.paymentStatus]) ||
+                          orderStatus[detail.order.status] ||
+                          "Статус неизвестен"}
                     </p>
                     {detail.order.fulfillment?.trackingNumber && (
                       <p className="text-sm">

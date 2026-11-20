@@ -1,3 +1,4 @@
+import { STORE_TEST_ORDER_VARIANT } from "@sps/ecommerce/models/order/sdk/model";
 import { verifyJwt } from "@sps/backend-utils";
 import { RBAC_JWT_SECRET } from "@sps/shared-utils";
 import { isRbacSubjectTokenRevoked } from "@sps/rbac/models/subject/sdk/model";
@@ -189,6 +190,11 @@ export class Service {
             { column: "id", method: "inArray" as const, value: ids },
             { column: "type", method: "eq", value: "cart" },
             { column: "status", method: "eq", value: "new" },
+            {
+              column: "variant",
+              method: "ne",
+              value: STORE_TEST_ORDER_VARIANT,
+            },
           ],
         },
       },

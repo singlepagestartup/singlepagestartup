@@ -173,29 +173,41 @@ it.each(["openrouter", "openai"] as const)(
               model,
               terms,
             });
-          await assign("text", "configured-chat-model");
+          const replyModel =
+            provider === "openrouter" ? "openai/gpt-5.2" : "gpt-5.2";
+          await assign("text", replyModel);
           await assign("decision", "unsupported-for-json");
-          await subject.customerWork.execute(customer.id, {
-            operation: "message",
-            storeId: store.id,
-            taskId: task.id,
-            operationKey: randomUUID(),
-            text: "What size is this phone?",
-          });
-          const message = (await subject.customerWork.listPendingWork()).find(
-            (entry) => entry.taskId === task.id,
-          );
-          if (!message) {
-            throw new Error("Fixture event is not queued");
-          }
+          const [customerProfile] =
+            await rbac.subjectsToSocialModuleProfiles.find({
+              params: {
+                filters: {
+                  and: [
+                    { column: "subjectId", method: "eq", value: customer.id },
+                    { column: "variant", method: "eq", value: "default" },
+                  ],
+                },
+              },
+            });
+          const catalogUrl = "https://openrouter.ai/api/v1/models";
+          const completionUrl =
+            provider === "openrouter"
+              ? "https://openrouter.ai/api/v1/chat/completions"
+              : "https://api.openai.com/v1/chat/completions";
           const external = jest
             .spyOn(globalThis, "fetch")
             .mockImplementation(async (url, options) => {
-              expect(String(url)).toBe(
-                provider === "openrouter"
-                  ? "https://openrouter.ai/api/v1/chat/completions"
-                  : "https://api.openai.com/v1/chat/completions",
-              );
+              if (String(url) === catalogUrl) {
+                return Response.json({
+                  data: [
+                    {
+                      id: replyModel,
+                      supported_parameters: ["reasoning"],
+                      reasoning: { supported_efforts: ["high"] },
+                    },
+                  ],
+                });
+              }
+              expect(String(url)).toBe(completionUrl);
               expect(new Headers(options?.headers).get("Authorization")).toBe(
                 `Bearer ${secret}`,
               );
@@ -220,8 +232,19 @@ it.each(["openrouter", "openai"] as const)(
                     entry.state === "held",
                 ),
               ).toBe(true);
-              const decision =
-                JSON.parse(content).response_format?.type === "json_object";
+              const body = JSON.parse(content);
+              const decision = body.response_format?.type === "json_object";
+              if (decision) {
+                expect(body).not.toHaveProperty("reasoning");
+                expect(body).not.toHaveProperty("reasoning_effort");
+              } else {
+                expect(body.model).toBe(replyModel);
+                if (provider === "openrouter") {
+                  expect(body.reasoning).toEqual({ effort: "high" });
+                } else {
+                  expect(body.reasoning_effort).toBe("high");
+                }
+              }
               return Response.json({
                 id: decision ? "fixture-child" : "fixture-reply",
                 choices: [
@@ -241,11 +264,57 @@ it.each(["openrouter", "openai"] as const)(
               });
             });
           try {
+            const input = {
+              customerId: customer.id,
+              chatId: intake.chatId,
+              threadId: intake.threadId,
+              profileId: customerProfile.socialModuleProfileId,
+              text: "What size is this phone?",
+              sourceSystemId: randomUUID(),
+              hasAttachments: false,
+            };
+            await expect(
+              subject.customerWork.messageFromThread({
+                ...input,
+                metadata: {
+                  provider: { modelId: replyModel, reasoning: "max" },
+                },
+              }),
+            ).rejects.toThrow("reasoning effort is unavailable for this model");
+            const metadata = {
+              provider: { modelId: replyModel, reasoning: "high" },
+            };
+            const saved = await subject.customerWork.messageFromThread({
+              ...input,
+              metadata,
+            });
+            expect(saved?.metadata).toMatchObject(metadata);
+            if (!saved) {
+              throw new Error("Fixture message is not recorded");
+            }
+            await expect(
+              subject.customerWork.messageFromThread({ ...input, metadata }),
+            ).resolves.toMatchObject({ id: saved.id });
+            await expect(
+              subject.customerWork.messageFromThread({
+                ...input,
+                metadata: { provider: { modelId: replyModel } },
+              }),
+            ).rejects.toThrow("This request key belongs to another message");
+            const message = await subject.customerWork.pendingForMessage({
+              threadId: intake.threadId,
+              messageId: saved.id,
+            });
+            if (!message) {
+              throw new Error("Fixture event is not queued");
+            }
+            const operationCalls = () =>
+              external.mock.calls.filter(([url]) => String(url) !== catalogUrl);
             const run = { ...message, capability: "text" as const };
             await expect(worker.dispatch(run)).rejects.toThrow(
               "does not support",
             );
-            expect(external).not.toHaveBeenCalled();
+            expect(operationCalls()).toHaveLength(0);
             expect(
               (await connections.list(owner.id, store.id)).operations,
             ).toHaveLength(0);
@@ -260,7 +329,7 @@ it.each(["openrouter", "openai"] as const)(
             await expect(
               createService(createAppAssembly()).dispatch(run),
             ).resolves.toEqual(result);
-            expect(external).toHaveBeenCalledTimes(2);
+            expect(operationCalls()).toHaveLength(2);
             const settings = await connections.list(owner.id, store.id);
             const journal = settings.operations.flatMap((entry) =>
               entry.providerWork ? [entry.providerWork] : [],
@@ -313,13 +382,14 @@ it.each(["openrouter", "openai"] as const)(
                 variant: "store-expert",
               },
             });
-            await social.profilesToKnowledgeModuleSources.create({
-              data: {
-                profileId: expert.id,
-                storeId: store.id,
-                knowledgeModuleSourceId: source.id,
-              },
-            });
+            const sourceAccess =
+              await social.profilesToKnowledgeModuleSources.create({
+                data: {
+                  profileId: expert.id,
+                  storeId: store.id,
+                  knowledgeModuleSourceId: source.id,
+                },
+              });
             const indexDraft = await crm.funnel.saveDraft({
               storeId: store.id,
               kind: "consultation",
@@ -405,7 +475,7 @@ it.each(["openrouter", "openai"] as const)(
             });
             await createService(createAppAssembly()).drainKnowledgeIndex();
             await createService(createAppAssembly()).drainKnowledgeIndex();
-            expect(external).toHaveBeenCalledTimes(3);
+            expect(operationCalls()).toHaveLength(3);
             const embeddingIndex = `${provider}:${model}:768:v1`;
             expect(
               await knowledge.source.hasEmbeddingIndex(
@@ -443,6 +513,10 @@ it.each(["openrouter", "openai"] as const)(
               state: "delivered",
               model,
               basis: provider === "openrouter" ? "provider" : "rate-card",
+            });
+            await social.profilesToKnowledgeModuleSources.update({
+              id: sourceAccess.id,
+              data: { offerId: offer.id, variant: "product-specification" },
             });
             const dialogue = await crm.funnel.saveDraft({
               storeId: store.id,
@@ -494,8 +568,32 @@ it.each(["openrouter", "openai"] as const)(
               productId: product.id,
               operationKey: randomUUID(),
             });
+            // The earlier questions belong to the manager's part of the conversation.
+            const scope = { storeId: store.id, taskId: followUp.taskId };
+            const opening = await crm.task.get(scope);
+            await subject.crmWorkspace.execute(owner.id, {
+              kind: "assign",
+              assignment: {
+                ...scope,
+                expectedRevision: opening.revision,
+                operationKey: randomUUID(),
+                assigneeId: owner.id,
+              },
+            });
             let triggerId: string | undefined;
             for (let index = 0; index < 9; index += 1) {
+              if (index === 8) {
+                const managed = await crm.task.get(scope);
+                await subject.crmWorkspace.execute(owner.id, {
+                  kind: "assign",
+                  assignment: {
+                    ...scope,
+                    expectedRevision: managed.revision,
+                    operationKey: randomUUID(),
+                    assigneeId: opening.assigneeId!,
+                  },
+                });
+              }
               const text =
                 "Does the phone have a warranty? Question " + (index + 1);
               const operationKey = randomUUID();
@@ -580,16 +678,21 @@ it.each(["openrouter", "openai"] as const)(
               .mockImplementationOnce(async (url, options) => {
                 expect(String(url)).toMatch(/chat\/completions$/);
                 const body = String(options?.body);
+                expect(JSON.parse(body)).not.toHaveProperty("reasoning");
+                expect(JSON.parse(body)).not.toHaveProperty("reasoning_effort");
                 expect(body).toContain(
                   "Earlier questions concerned the phone warranty.",
                 );
                 expect(body).toContain("Store references");
                 return resultWith("The battery warranty is included.");
               });
-            expect(
-              (await worker.dispatch({ ...latest, capability: "text" })).state,
-            ).toBe("delivered");
-            expect(external).toHaveBeenCalledTimes(7);
+            const answered = await worker.dispatch({
+              ...latest,
+              capability: "text",
+            });
+            await Promise.all(external.mock.results.map(({ value }) => value));
+            expect(answered.state).toBe("delivered");
+            expect(operationCalls()).toHaveLength(7);
             const steps = (
               await connections.list(owner.id, store.id)
             ).operations

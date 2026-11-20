@@ -2,6 +2,7 @@ import { Archive } from "lucide-react";
 import { memo } from "react";
 import {
   Assignee,
+  AssignButton,
   DueDate,
   MoveButton,
   TaskLink,
@@ -21,6 +22,7 @@ interface TaskRowProps extends TaskActions {
   person?: WorkflowPerson;
   stage?: WorkflowStage;
   pending: boolean;
+  canAssign: boolean;
 }
 
 const TaskRow = memo(function TaskRow({
@@ -28,6 +30,7 @@ const TaskRow = memo(function TaskRow({
   person,
   stage,
   pending,
+  canAssign,
   onOpenTask,
   onRequestMove,
 }: TaskRowProps) {
@@ -70,7 +73,19 @@ const TaskRow = memo(function TaskRow({
         )}
       </td>
       <td className="min-w-36">
-        <Assignee person={person} />
+        <div className="grid gap-1.5">
+          <Assignee person={person} />
+          {canAssign &&
+            !task.assignee &&
+            task.state !== "closed" &&
+            task.state !== "completed" && (
+              <AssignButton
+                taskId={task.id}
+                taskLabel={task.label}
+                onOpenTask={onOpenTask}
+              />
+            )}
+        </div>
       </td>
       <td className="min-w-36">
         <TaskStatus state={task.state} />
@@ -113,6 +128,7 @@ export function TaskTable({
   tasks,
   people,
   pendingIds,
+  canAssign,
   onOpenTask,
   onRequestMove,
 }: ITaskCollectionProps) {
@@ -149,6 +165,7 @@ export function TaskTable({
               stage={stages.find((stage) => stage.id === task.stageId)}
               person={people.find((person) => person.id === task.assignee)}
               pending={Boolean(pendingIds?.has(task.id))}
+              canAssign={canAssign}
               onOpenTask={onOpenTask}
               onRequestMove={onRequestMove}
             />

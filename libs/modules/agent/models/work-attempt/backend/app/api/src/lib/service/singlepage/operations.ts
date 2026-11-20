@@ -157,7 +157,7 @@ export class Operations {
     perform: (step: IWorkStep) => Promise<IModel>,
   ): Promise<IWorkPlan> {
     const { crm, rbac, knowledge, fileStorage } = this.service.modules;
-    const { stage, task } = await crm.task.getWork({
+    const { stage, task, funding } = await crm.task.getWork({
       ...input,
       expectedAssignmentRevision: input.assignmentRevision,
     });
@@ -166,6 +166,17 @@ export class Operations {
       return {};
     }
     const context = await rbac.subject.customerWork.contextForRun(input);
+    const replyCapability = stage.output === "image" ? "image" : "text";
+    await rbac.subject.providerConnections.resolve(
+      task.storeId,
+      input.assigneeId,
+      replyCapability,
+      {
+        modelId: context.requestedModelId,
+        reasoning: context.requestedReasoning,
+        defaultOnly: funding?.payer === "customer",
+      },
+    );
     const trigger = context.messages.at(-1);
     if (trigger?.role !== "user" || !trigger.content.trim()) {
       return {};

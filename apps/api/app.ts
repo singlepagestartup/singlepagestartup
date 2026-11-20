@@ -22,6 +22,7 @@ import {
 import { MIDDLEWARE_HTTP_CACHE } from "@sps/shared-utils";
 import { getFileContentHeaders, resolveCorsOrigin } from "@sps/backend-utils";
 import { moduleBootstrap as agentApp } from "@sps/agent/backend/app/api/src/lib/bootstrap";
+import { createService as createWorkAttemptService } from "@sps/agent/models/work-attempt/backend/app/api/src/lib/bootstrap";
 import { moduleBootstrap as analyticApp } from "@sps/analytic/backend/app/api/src/lib/bootstrap";
 import {
   configureHostRouting,
@@ -70,11 +71,14 @@ const mountedModules = await Promise.all(
   }),
 );
 const { app: rbac } = await rbacApp.bootstrap(defaultAppAssembly);
+const subjectService = createSubjectService(defaultAppAssembly);
+const workAttempts = createWorkAttemptService(defaultAppAssembly);
+subjectService.configureCustomerWorkWakeup((taskId) =>
+  workAttempts.wakeCustomerWork(taskId),
+);
 const ecommerce = defaultAppAssembly.getOrCreate(createEcommerceServices);
 ecommerce.order.configureExpertArchive((scope) =>
-  createSubjectService(defaultAppAssembly).orderWork.captureExpertArchive(
-    scope,
-  ),
+  subjectService.orderWork.captureExpertArchive(scope),
 );
 defaultAppAssembly
   .getOrCreate(createFileStorageServices)

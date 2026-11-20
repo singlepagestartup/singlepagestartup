@@ -1,4 +1,5 @@
 import type { IModel as CrmTask } from "@sps/crm/models/task/sdk/model";
+import type { IFunnelStage } from "@sps/crm/models/funnel/sdk/model";
 import type {
   ICustomerWorkMemory,
   TCustomerWorkCommand,
@@ -20,9 +21,30 @@ interface IMemoryScope {
   projectId?: string | null;
 }
 
+interface IReferenceScope {
+  senderProfileId?: string;
+  agentProfileId?: string;
+  stage?: Pick<
+    IFunnelStage,
+    "name" | "output" | "defaultAssigneeSubjectId" | "skillIds"
+  >;
+  memory?: IMemoryScope;
+}
+
 interface ITaskThread {
   id: string;
   memoryProjectId: string | null;
+}
+
+export class StageSkillsUnavailable extends Error {
+  readonly reply: string;
+
+  constructor(russian: boolean) {
+    super("Conflict error. Stage skills are unavailable to the assigned agent");
+    this.reply = russian
+      ? "Навыки для этого этапа сейчас недоступны. Обратитесь к сотруднику магазина, чтобы продолжить."
+      : "The skills for this stage are unavailable. Contact the store team to continue.";
+  }
 }
 
 export class Service {
@@ -59,9 +81,6 @@ export class Service {
   }
 
   private async personalSources(scope: IMemoryScope) {
-    if (!(await this.canUseProject(scope))) {
-      return [];
-    }
     const links = await this.social.profilesToKnowledgeModuleSources.find(
       criteria({
         profileId: scope.profileId,
@@ -90,9 +109,15 @@ export class Service {
       return undefined;
     }
     const projects = await this.projects(scope.customerId);
-    const notes = await this.personalSources(scope);
+    const currentProjectId = projects.find(
+      ({ id }) => id === scope.projectId,
+    )?.id;
+    const notes =
+      !scope.projectId || currentProjectId
+        ? await this.personalSources(scope)
+        : [];
     return {
-      currentProjectId: projects.find(({ id }) => id === scope.projectId)?.id,
+      currentProjectId,
       projects,
       notes: notes.map(({ id, content }) => ({ id, text: content })),
     };
@@ -265,6 +290,24 @@ export class Service {
     return links.map(({ knowledgeModuleSourceId }) => knowledgeModuleSourceId);
   }
 
+  private async profileSourceIds(
+    task: CrmTask,
+    profileId: string,
+    projectId?: string | null,
+  ) {
+    const links = await this.social.profilesToKnowledgeModuleSources.find(
+      criteria({ profileId, variant: "default" }),
+    );
+    return links
+      .filter(
+        (link) =>
+          (!link.storeId || link.storeId === task.storeId) &&
+          (!link.offerId || link.offerId === task.offerId) &&
+          (!link.projectId || link.projectId === projectId),
+      )
+      .map(({ knowledgeModuleSourceId }) => knowledgeModuleSourceId);
+  }
+
   async archive(task: CrmTask) {
     const expert = await this.expert(task);
     if (!expert.profileId || !task.offerId) {
@@ -287,11 +330,34 @@ export class Service {
     return this.sources.specificationSnapshots(ids);
   }
 
-  async context(
+  private async selectedStageSkills(
     task: CrmTask,
-    scope: IMemoryScope | undefined,
+    scope: IReferenceScope,
     question: string,
   ) {
+    const { stage, agentProfileId } = scope;
+    if (!stage?.skillIds?.length) {
+      return [];
+    }
+    const russian = /\p{Script=Cyrillic}/u.test(`${stage.name} ${question}`);
+    if (
+      !agentProfileId ||
+      task.assigneeKind !== "ai" ||
+      task.assigneeId !== stage.defaultAssigneeSubjectId
+    ) {
+      throw new StageSkillsUnavailable(russian);
+    }
+    const skills = await this.social.profilesToSkills.linkedSkills(
+      agentProfileId,
+      stage.skillIds,
+    );
+    if (skills.length !== stage.skillIds.length) {
+      throw new StageSkillsUnavailable(russian);
+    }
+    return skills;
+  }
+
+  async context(task: CrmTask, scope: IReferenceScope, question: string) {
     const expert = await this.expert(task);
     if (expert.conflict) {
       throw new Error(
@@ -300,6 +366,14 @@ export class Service {
     }
     const sourceIds = new Set<string>();
     const instructions: string[] = [];
+    const memory =
+      scope.memory &&
+      scope.memory.customerId === task.customerId &&
+      scope.memory.storeId === task.storeId &&
+      (await this.canUseProject(scope.memory))
+        ? scope.memory
+        : undefined;
+    const profileIds = new Set([scope.senderProfileId, scope.agentProfileId]);
     if (task.productId && task.offerId) {
       const [product, offer] = await Promise.all([
         this.subject.modules.ecommerce.product.findById({ id: task.productId }),
@@ -332,38 +406,54 @@ export class Service {
         for (const id of specifications) {
           sourceIds.add(id);
         }
-        const links = await this.social.profilesToKnowledgeModuleSources.find(
-          criteria({ profileId: profile.id, variant: "default" }),
-        );
-        for (const link of links) {
-          if (
-            (!link.storeId || link.storeId === task.storeId) &&
-            !link.projectId
-          ) {
-            sourceIds.add(link.knowledgeModuleSourceId);
-          }
-        }
-        const skillLinks = await this.social.profilesToSkills.find(
-          criteria({ profileId: profile.id, variant: "default" }),
-        );
-        for (const link of skillLinks.slice(0, 6)) {
-          const skill = await this.social.skill.findById({ id: link.skillId });
-          if (!skill || skill.variant !== "default") {
-            continue;
-          }
-          instructions.push(
-            `${skill.title}\n${skill.description.slice(0, 1500)}`,
-          );
-          const content = await this.social.skillsToKnowledgeModuleSources.find(
-            criteria({ skillId: skill.id, variant: "default" }),
-          );
-          for (const item of content) {
-            sourceIds.add(item.knowledgeModuleSourceId);
-          }
+      }
+    }
+    const skills = await this.selectedStageSkills(task, scope, question);
+    const agentSourceIds = new Set<string>();
+    for (const profileId of profileIds) {
+      if (!profileId) {
+        continue;
+      }
+      const ids = await this.profileSourceIds(
+        task,
+        profileId,
+        memory?.projectId,
+      );
+      for (const id of ids) {
+        if (profileId === scope.agentProfileId) {
+          agentSourceIds.add(id);
+        } else {
+          sourceIds.add(id);
         }
       }
     }
-    const expertSources = sourceIds.size
+    if (agentSourceIds.size) {
+      const skillLinks = await this.social.skillsToKnowledgeModuleSources.find({
+        params: {
+          filters: {
+            and: [
+              { column: "variant", method: "eq", value: "default" },
+              {
+                column: "knowledgeModuleSourceId",
+                method: "inArray",
+                value: [...agentSourceIds],
+              },
+            ],
+          },
+        },
+      });
+      const linkedSkillIds = new Set(skills.map(({ id }) => id));
+      for (const { skillId, knowledgeModuleSourceId: id } of skillLinks) {
+        agentSourceIds.delete(id);
+        if (scope.stage?.output !== "image" && linkedSkillIds.has(skillId)) {
+          sourceIds.add(id);
+        }
+      }
+    }
+    for (const id of agentSourceIds) {
+      sourceIds.add(id);
+    }
+    const referenceSources = sourceIds.size
       ? await this.sources.find({
           params: {
             filters: {
@@ -375,10 +465,18 @@ export class Service {
           },
         })
       : [];
+    const skillTitles = skills.length
+      ? skills.map(({ title }) => title)
+      : undefined;
+    const skillGuidance = skills.length
+      ? skills
+          .map(({ title, description }) => `${title}\n${description}`)
+          .join("\n\n")
+      : undefined;
     const words = [
       ...new Set(question.toLowerCase().match(/[\p{L}\p{N}]{3,}/gu) ?? []),
     ];
-    const excerpts = expertSources.flatMap(
+    const excerpts = referenceSources.flatMap(
       ({ id, contentHash, title, content }) =>
         content.split(/\n{2,}/).map((paragraph) => {
           const searchable = `${title} ${paragraph}`.toLowerCase();
@@ -396,8 +494,8 @@ export class Service {
     excerpts.sort((a, b) => b.matches - a.matches);
     const selected = excerpts.slice(0, 4);
     const knowledgeSourceIds = [...new Set(selected.map(({ id }) => id))];
-    if (scope) {
-      const notes = await this.personalSources(scope);
+    if (memory) {
+      const notes = await this.personalSources(memory);
       for (const note of notes.slice(0, 4)) {
         selected.push({
           id: note.id,
@@ -423,6 +521,12 @@ export class Service {
           ]
         : []),
     ].join("\n\n");
-    return { content, sourceVersions, knowledgeSourceIds };
+    return {
+      content,
+      sourceVersions,
+      knowledgeSourceIds,
+      skillGuidance,
+      skillTitles,
+    };
   }
 }

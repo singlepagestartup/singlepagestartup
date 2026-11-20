@@ -1,5 +1,6 @@
 "use client";
 
+import { Select } from "@sps/ui-adapter";
 import { useEffect, useRef, useState } from "react";
 import type { FormEvent, ReactNode } from "react";
 import { api } from "@sps/rbac/models/subject/sdk/client";
@@ -19,6 +20,7 @@ type TLabels = (russian: string, english: string) => string;
 
 const inputClass =
   "mt-1 block min-h-11 w-full min-w-0 rounded-lg border border-input bg-background px-3 py-2 text-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring";
+const selectClass = `${inputClass} flex`;
 const panelClass =
   "min-w-0 rounded-2xl border border-border bg-card p-4 sm:p-6";
 const providerName: Record<IProviderType, string> = {
@@ -145,27 +147,23 @@ function ConnectionPanel({
       </h3>
       <label className="mt-4 block text-sm font-medium">
         {copy("Метка подключения", "Connection label")}
-        <select
+        <Select
+          ui="shadcn"
           aria-label={copy("Метка подключения", "Connection label")}
-          className={inputClass}
+          className={selectClass}
           value={selected?.id ?? ""}
-          onChange={(event) => {
-            setSelectedId(event.currentTarget.value);
+          disabled={!data.connections.length}
+          onValueChange={(selectedValue) => {
+            setSelectedId(selectedValue);
             setForm(undefined);
             setConfirmRevoke(false);
           }}
-        >
-          {!data.connections.length && (
-            <option value="">
-              {copy("Подключений пока нет", "No connections yet")}
-            </option>
-          )}
-          {data.connections.map(({ id, label, provider }) => (
-            <option key={id} value={id}>
-              {label} · {providerName[provider]}
-            </option>
-          ))}
-        </select>
+          placeholder={copy("Подключений пока нет", "No connections yet")}
+          options={data.connections.map(({ id, label, provider }) => ({
+            value: id,
+            label: `${label} · ${providerName[provider]}`,
+          }))}
+        />
       </label>
       {selected && (
         <div className="mt-3 rounded-xl border border-border bg-muted p-3 text-sm">
@@ -262,6 +260,7 @@ function ConnectionPanel({
           key={form + selected?.id}
           storeId={storeId}
           selected={form === "rotate" ? selected : undefined}
+          executorSubjects={data.executorSubjects}
           command={command}
           pending={pending}
           copy={copy}
@@ -285,6 +284,7 @@ function ConnectionPanel({
 
 function CredentialForm({
   selected,
+  executorSubjects,
   storeId,
   command,
   pending,
@@ -292,6 +292,7 @@ function CredentialForm({
   close,
 }: {
   selected?: TConnection;
+  executorSubjects?: IProviderSettings["executorSubjects"];
   storeId: string;
   command: TCommand;
   pending: boolean;
@@ -299,6 +300,8 @@ function CredentialForm({
   close: () => void;
 }) {
   const firstField = useRef<HTMLInputElement>(null);
+  const [provider, setProvider] = useState<IProviderType>("openai");
+  const [executorId, setExecutorId] = useState("");
   useEffect(() => {
     firstField.current?.focus();
   }, []);
@@ -322,10 +325,12 @@ function CredentialForm({
           secret,
           label: String(fields.get("label") ?? "").trim(),
           externalAccount: String(fields.get("account") ?? "").trim(),
-          provider:
-            fields.get("provider") === "openai" ? "openai" : "openrouter",
+          provider,
+          ...(executorId ? { executorId } : {}),
         };
     form.reset();
+    setProvider("openai");
+    setExecutorId("");
     if (await command(payload)) close();
   }
 
@@ -338,15 +343,41 @@ function CredentialForm({
         <>
           <label className="text-sm font-medium">
             {copy("Провайдер", "Provider")}
-            <select
-              name="provider"
+            <Select
+              ui="shadcn"
               aria-label={copy("Провайдер", "Provider")}
-              className={inputClass}
-            >
-              <option value="openrouter">OpenRouter</option>
-              <option value="openai">OpenAI API</option>
-            </select>
+              className={selectClass}
+              value={provider}
+              onValueChange={(value) =>
+                setProvider(value === "openrouter" ? "openrouter" : "openai")
+              }
+              options={[
+                { value: "openai", label: "OpenAI API" },
+                { value: "openrouter", label: "OpenRouter" },
+              ]}
+            />
           </label>
+          {Boolean(executorSubjects?.length) && (
+            <label className="text-sm font-medium">
+              {copy("Технический субъект", "Technical subject")}
+              <Select
+                ui="shadcn"
+                aria-label={copy("Технический субъект", "Technical subject")}
+                className={selectClass}
+                value={executorId || "new"}
+                onValueChange={(value) =>
+                  setExecutorId(value === "new" ? "" : value)
+                }
+                options={[
+                  { value: "new", label: copy("Создать новый", "Create new") },
+                  ...(executorSubjects?.map(({ id, label }) => ({
+                    value: id,
+                    label,
+                  })) ?? []),
+                ]}
+              />
+            </label>
+          )}
           <label className="text-sm font-medium">
             {copy("Метка ключа", "Key label")}
             <input
@@ -470,7 +501,7 @@ function AssignmentForm({
   }
   const nativePrefix = connection.provider === "openrouter" ? "openai/" : "";
   const defaultModel = {
-    text: undefined,
+    text: connection.provider === "openai" ? "gpt-5.2" : undefined,
     image: imageModel,
     decision: nativePrefix + "gpt-4o-mini",
     embedding: nativePrefix + "text-embedding-3-small",
@@ -545,46 +576,49 @@ function AssignmentForm({
       </h4>
       <label className="block text-sm font-medium">
         {copy("Кому доступна модель", "Who can use the model")}
-        <select
+        <Select
+          ui="shadcn"
           name="assistantId"
+          aria-label={copy("Кому доступна модель", "Who can use the model")}
           value={assistantId}
-          onChange={(event) => setAssistantId(event.currentTarget.value)}
-          className={inputClass}
+          onValueChange={setAssistantId}
+          className={selectClass}
           required
-        >
-          <option value={storeDefault}>
-            {copy(
-              "Новые и действующие ассистенты магазина",
-              "New and existing store assistants",
-            )}
-          </option>
-          {agentOptions.map(({ id, label }) => (
-            <option key={id} value={id}>
-              {label}
-            </option>
-          ))}
-        </select>
+          options={[
+            {
+              value: storeDefault,
+              label: copy(
+                "Новые и действующие ассистенты магазина",
+                "New and existing store assistants",
+              ),
+            },
+            ...agentOptions.map(({ id, label }) => ({
+              value: id,
+              label,
+            })),
+          ]}
+        />
       </label>
       <label className="block text-sm font-medium">
         {copy("Назначение модели", "Model capability")}
-        <select
+        <Select
+          ui="shadcn"
+          aria-label={copy("Назначение модели", "Model capability")}
           value={capability}
-          onChange={(event) => {
+          onValueChange={(selectedValue) => {
             const selected = capabilities.find(
-              ({ id }) => id === event.currentTarget.value,
+              ({ id }) => id === selectedValue,
             );
             if (selected) {
               setCapability(selected.id);
             }
           }}
-          className={inputClass}
-        >
-          {capabilities.map(({ id, label }) => (
-            <option key={id} value={id}>
-              {label}
-            </option>
-          ))}
-        </select>
+          className={selectClass}
+          options={capabilities.map(({ id, label }) => ({
+            value: id,
+            label,
+          }))}
+        />
       </label>
       <div key={`${assistantId}:${capability}`} className="grid gap-3">
         <label className="block text-sm font-medium">
@@ -696,18 +730,14 @@ function SpendPanel({
       {taskIds.length > 0 && (
         <label className="mt-4 block text-sm font-medium">
           {copy("Задача", "Task")}
-          <select
+          <Select
+            ui="shadcn"
             aria-label={copy("Задача", "Task")}
-            className={inputClass}
+            className={selectClass}
             value={selectedTask ?? ""}
-            onChange={(event) => setTask(event.currentTarget.value)}
-          >
-            {taskIds.map((id) => (
-              <option key={id} value={id}>
-                {id}
-              </option>
-            ))}
-          </select>
+            onValueChange={setTask}
+            options={taskIds.map((id) => ({ value: id, label: id }))}
+          />
         </label>
       )}
       <ul className="mt-4 space-y-2">
@@ -856,13 +886,23 @@ function ProviderAttempt({
     <div className="border-t border-border py-3">
       <dl className="grid gap-2 text-sm">
         <LedgerPair label={copy("Провайдер", "Provider")}>
-          {work.provider}
+          {providerName[work.provider]}
         </LedgerPair>
         <LedgerPair label={copy("Внешний аккаунт", "External account")}>
           {work.externalAccount}
         </LedgerPair>
         <LedgerPair label={copy("Состояние вызова", "Attempt state")}>
-          {work.state}
+          {
+            {
+              dispatching: copy("Отправляем запрос", "Sending request"),
+              unknown: copy("Ожидает сверки", "Awaiting reconciliation"),
+              received: copy("Ответ получен", "Response received"),
+              settled: copy("Расход учтён", "Settled"),
+              delivered: copy("Результат передан", "Result delivered"),
+              stale: copy("Заменён новым запросом", "Superseded"),
+              failed: copy("Ошибка вызова", "Request failed"),
+            }[work.state]
+          }
         </LedgerPair>
         <LedgerPair label={copy("ID попытки", "Attempt ID")}>
           {work.attemptId}
@@ -874,7 +914,18 @@ function ProviderAttempt({
         )}
         {work.usd && (
           <LedgerPair label={copy("Внешняя стоимость", "External cost")}>
-            {work.usd} USD · {work.basis}
+            {work.usd} USD
+            {work.basis &&
+              ` · ${
+                {
+                  provider: copy("По данным провайдера", "Provider reported"),
+                  "rate-card": copy("По тарифу", "Rate card"),
+                  "owner-statement": copy(
+                    "По результатам сверки",
+                    "Reconciled",
+                  ),
+                }[work.basis]
+              }`}
           </LedgerPair>
         )}
         {work.inputTokens !== undefined && (
@@ -917,24 +968,30 @@ function ProviderAttempt({
             >
               <label className="block text-sm font-medium">
                 {copy("Запись во внешнем кабинете", "External account record")}
-                <select
-                  className={inputClass}
+                <Select
+                  ui="shadcn"
+                  aria-label={copy(
+                    "Запись во внешнем кабинете",
+                    "External account record",
+                  )}
+                  className={selectClass}
                   value={resolution}
-                  onChange={(event) =>
+                  onValueChange={(selectedValue) =>
                     setResolution(
-                      event.currentTarget.value === "charged"
-                        ? "charged"
-                        : "no-charge",
+                      selectedValue === "charged" ? "charged" : "no-charge",
                     )
                   }
-                >
-                  <option value="no-charge">
-                    {copy("Списания нет", "No charge")}
-                  </option>
-                  <option value="charged">
-                    {copy("Есть списание", "Charged")}
-                  </option>
-                </select>
+                  options={[
+                    {
+                      value: "no-charge",
+                      label: copy("Списания нет", "No charge"),
+                    },
+                    {
+                      value: "charged",
+                      label: copy("Есть списание", "Charged"),
+                    },
+                  ]}
+                />
               </label>
               <label className="block text-sm font-medium">
                 {copy("Ссылка или ID записи", "Record link or ID")}

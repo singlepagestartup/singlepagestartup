@@ -15,12 +15,14 @@ import {
 import { api, queryClient } from "@sps/rbac/models/subject/sdk/client";
 import {
   route,
+  STORE_EMPLOYEE_CHAT_VARIANT,
   type IModel as IRbacSubject,
 } from "@sps/rbac/models/subject/sdk/model";
 import {
   ChatListActivity,
   ChatWorkspace,
   ChatWorkspaceNavigation,
+  ChatThreadSkeleton,
   FormField,
   Icon,
 } from "@sps/ui-adapter";
@@ -808,7 +810,9 @@ export function Component(props: IComponentPropsExtended) {
     );
   };
 
-  const canManageChat = props.socialModuleChat.variant !== "customer-work";
+  const canManageChat =
+    props.socialModuleChat.variant !== "customer-work" &&
+    props.socialModuleChat.variant !== STORE_EMPLOYEE_CHAT_VARIANT;
   const backToChats = ru ? "К списку чатов" : "Back to chats";
   const threadListLabel = ru ? "Обсуждения" : "Threads";
   const threadSearchLabel = ru ? "Поиск обсуждений" : "Search threads";
@@ -975,6 +979,8 @@ export function Component(props: IComponentPropsExtended) {
               variant="social-module-profile-chat-message-list-default"
               navigation={navigationTrigger}
             />
+          ) : socialModuleThreadsIsLoading ? (
+            <ChatThreadSkeleton />
           ) : (
             <section className="flex min-h-0 min-w-0 flex-1 flex-col">
               <header className="flex shrink-0 items-center gap-2 border-b border-border px-3 py-2 lg:hidden">
@@ -986,21 +992,17 @@ export function Component(props: IComponentPropsExtended) {
               <div className="grid min-h-0 flex-1 place-items-center overflow-y-auto p-6 text-center">
                 <div>
                   <p role="status" className="text-sm text-muted-foreground">
-                    {socialModuleThreadsIsLoading
+                    {socialModuleThreadsIsError
                       ? ru
-                        ? "Загрузка обсуждений…"
-                        : "Loading threads…"
-                      : socialModuleThreadsIsError
+                        ? "Не удалось загрузить обсуждения."
+                        : "Could not load threads."
+                      : props.socialModuleThreadId
                         ? ru
-                          ? "Не удалось загрузить обсуждения."
-                          : "Could not load threads."
-                        : props.socialModuleThreadId
-                          ? ru
-                            ? "Обсуждение недоступно."
-                            : "This thread is unavailable."
-                          : ru
-                            ? "В этом чате пока нет обсуждений."
-                            : "This chat has no threads yet."}
+                          ? "Обсуждение недоступно."
+                          : "This thread is unavailable."
+                        : ru
+                          ? "В этом чате пока нет обсуждений."
+                          : "This chat has no threads yet."}
                   </p>
                   {socialModuleThreadsIsError && (
                     <button

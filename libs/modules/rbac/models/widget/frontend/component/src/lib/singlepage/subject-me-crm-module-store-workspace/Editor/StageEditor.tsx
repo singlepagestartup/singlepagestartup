@@ -1,5 +1,7 @@
+import { Select } from "@sps/ui-adapter";
 import { Plus, Trash2 } from "lucide-react";
 import { useState } from "react";
+import { FUNNEL_STAGE_SKILL_LIMIT } from "@sps/crm/models/funnel/sdk/model";
 import type {
   IFunnelAction,
   IFunnelStage,
@@ -10,7 +12,7 @@ import type {
 } from "@sps/crm/models/funnel/sdk/model";
 import type { ICrmWorkspaceOptions } from "@sps/rbac/models/subject/sdk/model";
 import { fieldClass, iconButtonClass, secondaryClass } from "../primitives";
-import { evidenceLabels } from "../view-model";
+import { assigneeOptionGroups, evidenceLabels } from "../view-model";
 import { Field, TextField } from "./Fields";
 import { ResultPricing } from "./ResultPricing";
 
@@ -78,6 +80,14 @@ export function StageEditor({
   const activeEvent = waiting?.expectedEvent ?? "";
   const reminders =
     waiting?.reminderSeconds.map((seconds) => seconds / 3600).join(", ") ?? "";
+  const agent = options.participants.find(
+    ({ id, kind }) => kind === "ai" && id === stage.defaultAssigneeSubjectId,
+  );
+  const skills = agent ? (options.skillsByAssignee?.[agent.id] ?? []) : [];
+  const selectedSkillIds = stage.skillIds ?? [];
+  const unavailableSkillIds = selectedSkillIds.filter(
+    (id) => !skills.some((skill) => skill.id === id),
+  );
 
   function patchAction(id: string, patch: Partial<IFunnelAction>) {
     onChange({
@@ -102,29 +112,56 @@ export function StageEditor({
         required
         onChange={(name) => onChange({ name })}
       />
+      <Field
+        label="Исполнитель этапа"
+        hint="Назначается автоматически при переходе задачи на этот этап."
+      >
+        <Select
+          ui="shadcn"
+          className={fieldClass}
+          value={stage.defaultAssigneeSubjectId ?? "manual"}
+          onValueChange={(value) =>
+            onChange({
+              defaultAssigneeSubjectId: value === "manual" ? undefined : value,
+              skillIds: undefined,
+            })
+          }
+          disabled={stage.archived}
+          options={[
+            { value: "manual", label: "Назначить вручную" },
+            ...assigneeOptionGroups(options.participants),
+          ]}
+        />
+      </Field>
       <div className="grid gap-3 border-t border-border pt-5">
         <h4 className="text-sm font-semibold">Что делает исполнитель</h4>
         <Field label="Формат результата">
-          <select
+          <Select
+            ui="shadcn"
             className={fieldClass}
             value={stage.output ?? "chat"}
-            onChange={(event) => {
-              const output = event.currentTarget
-                .value as IFunnelStage["output"];
+            onValueChange={(selectedValue) => {
+              const output = selectedValue as IFunnelStage["output"];
               onChange({
                 output,
                 imageBrief: output === "image" ? stage.imageBrief : undefined,
               });
             }}
-          >
-            <option value="chat">Ответ в чате</option>
-            <option value="pdf" disabled={kind !== "individual-service"}>
-              PDF
-            </option>
-            <option value="image" disabled={kind !== "individual-service"}>
-              Изображение
-            </option>
-          </select>
+            disabled={stage.archived}
+            options={[
+              { value: "chat", label: "Ответ в чате" },
+              {
+                value: "pdf",
+                label: "PDF",
+                disabled: kind !== "individual-service",
+              },
+              {
+                value: "image",
+                label: "Изображение",
+                disabled: kind !== "individual-service",
+              },
+            ]}
+          />
         </Field>
         {stage.output === "image" && (
           <label className="flex items-center gap-2 text-sm font-medium">
@@ -198,12 +235,13 @@ export function StageEditor({
       <div className="grid gap-3 border-t border-border pt-5">
         <h4 className="text-sm font-semibold">Ожидание и напоминания</h4>
         <Field label="Событие ожидания">
-          <select
+          <Select
+            ui="shadcn"
             className={fieldClass}
-            value={activeEvent}
-            onChange={(event) => {
-              const expectedEvent = event.currentTarget.value as
-                TWaiting["expectedEvent"] | "";
+            value={activeEvent || "none"}
+            onValueChange={(selectedValue) => {
+              const value = selectedValue === "none" ? "" : selectedValue;
+              const expectedEvent = value as TWaiting["expectedEvent"] | "";
               onChange({
                 waiting: expectedEvent
                   ? {
@@ -216,14 +254,15 @@ export function StageEditor({
                   : undefined,
               });
             }}
-          >
-            <option value="">Без ожидания</option>
-            {waitEvents.map((kind) => (
-              <option key={kind} value={kind}>
-                {evidenceLabels[kind]}
-              </option>
-            ))}
-          </select>
+            disabled={stage.archived}
+            options={[
+              { value: "none", label: "Без ожидания" },
+              ...waitEvents.map((kind) => ({
+                value: kind,
+                label: evidenceLabels[kind],
+              })),
+            ]}
+          />
         </Field>
         {waiting && (
           <div className="grid gap-3 sm:grid-cols-3">
@@ -253,26 +292,30 @@ export function StageEditor({
               }
             />
             <Field label="Исход при молчании">
-              <select
+              <Select
+                ui="shadcn"
                 className={fieldClass}
                 value={waiting.silenceOutcome ?? "closed-without-result"}
-                onChange={(event) => {
-                  const silenceOutcome = event.currentTarget
-                    .value as TTaskOutcome;
+                onValueChange={(selectedValue) => {
+                  const silenceOutcome = selectedValue as TTaskOutcome;
                   const completionEvidence =
                     silenceOutcome === "completed"
                       ? ["model-result" as const]
                       : [];
                   patchWaiting({ silenceOutcome, completionEvidence });
                 }}
-              >
-                <option value="closed-without-result">
-                  Закрыто без результата
-                </option>
-                <option value="completed">
-                  Выполнено при наличии результата
-                </option>
-              </select>
+                disabled={stage.archived}
+                options={[
+                  {
+                    value: "closed-without-result",
+                    label: "Закрыто без результата",
+                  },
+                  {
+                    value: "completed",
+                    label: "Выполнено при наличии результата",
+                  },
+                ]}
+              />
             </Field>
           </div>
         )}
@@ -294,63 +337,95 @@ export function StageEditor({
             onChange={onChange}
           />
         )}
-        <div className="grid gap-3 sm:grid-cols-3">
-          <Field label="Ответственный">
-            <select
-              className={fieldClass}
-              value={stage.defaultAssigneeSubjectId ?? ""}
-              onChange={(event) =>
-                onChange({
-                  defaultAssigneeSubjectId:
-                    event.currentTarget.value || undefined,
-                })
-              }
-            >
-              <option value="">Назначить вручную</option>
-              {options.participants.map((person) => (
-                <option key={person.id} value={person.id}>
-                  {person.name}
-                </option>
-              ))}
-            </select>
-          </Field>
+        <div className="grid gap-3 sm:grid-cols-2">
           <Field label="Плательщик этапа">
-            <select
+            <Select
+              ui="shadcn"
               className={fieldClass}
-              value={stage.payerSubjectId ?? ""}
-              onChange={(event) =>
+              value={stage.payerSubjectId ?? "funnel-budget"}
+              onValueChange={(value) =>
                 onChange({
-                  payerSubjectId: event.currentTarget.value || undefined,
+                  payerSubjectId: value === "funnel-budget" ? undefined : value,
                 })
               }
-            >
-              <option value="">По бюджету воронки</option>
-              {options.payers.map((person) => (
-                <option key={person.id} value={person.id}>
-                  {person.name}
-                </option>
-              ))}
-            </select>
+              disabled={stage.archived}
+              options={[
+                { value: "funnel-budget", label: "По бюджету воронки" },
+                ...options.payers.map((person) => ({
+                  value: person.id,
+                  label: person.name,
+                })),
+              ]}
+            />
           </Field>
           <Field label="Событие расчёта">
-            <select
+            <Select
+              ui="shadcn"
               className={fieldClass}
-              value={stage.settlementEvent ?? ""}
-              onChange={(event) =>
+              value={stage.settlementEvent ?? "none"}
+              onValueChange={(value) =>
                 onChange({
-                  settlementEvent: event.currentTarget.value || undefined,
+                  settlementEvent: value === "none" ? undefined : value,
                 })
               }
-            >
-              <option value="">Выберите событие</option>
-              {settlementEvents.map(([id, name]) => (
-                <option key={id} value={id}>
-                  {name}
-                </option>
-              ))}
-            </select>
+              disabled={stage.archived}
+              options={[
+                { value: "none", label: "Выберите событие" },
+                ...settlementEvents.map(([id, name]) => ({
+                  value: id,
+                  label: name,
+                })),
+              ]}
+            />
           </Field>
         </div>
+        {(agent || selectedSkillIds.length > 0) && (
+          <fieldset className="grid gap-2 text-sm">
+            <legend className="font-medium">Навыки на этапе</legend>
+            {!skills.length && (
+              <p className="text-muted-foreground">
+                У исполнителя нет доступных навыков.
+              </p>
+            )}
+            {skills.map(({ id, title }) => (
+              <label key={id} className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  checked={selectedSkillIds.includes(id)}
+                  disabled={
+                    selectedSkillIds.length >= FUNNEL_STAGE_SKILL_LIMIT &&
+                    !selectedSkillIds.includes(id)
+                  }
+                  onChange={(event) =>
+                    onChange({
+                      skillIds: event.currentTarget.checked
+                        ? [...selectedSkillIds, id]
+                        : selectedSkillIds.filter(
+                            (selectedId) => selectedId !== id,
+                          ),
+                    })
+                  }
+                />
+                {title}
+              </label>
+            ))}
+            {unavailableSkillIds.length > 0 && (
+              <button
+                type="button"
+                className={`${secondaryClass} justify-self-start`}
+                onClick={() =>
+                  onChange({
+                    skillIds: selectedSkillIds.filter(
+                      (id) => !unavailableSkillIds.includes(id),
+                    ),
+                  })
+                }
+              >
+                Убрать недоступные навыки
+              </button>
+            )}
+          </fieldset>
+        )}
       </div>
       <div className="grid gap-3 border-t border-border pt-5">
         <h4 className="text-sm font-semibold">Разрешённые операции</h4>
@@ -382,11 +457,12 @@ export function StageEditor({
             </div>
             <div className="grid gap-3 sm:grid-cols-2">
               <Field label="Основание операции">
-                <select
+                <Select
+                  ui="shadcn"
                   className={fieldClass}
                   value={action.evidence[0]}
-                  onChange={(event) => {
-                    const evidence = event.currentTarget.value as TEvidenceKind;
+                  onValueChange={(selectedValue) => {
+                    const evidence = selectedValue as TEvidenceKind;
                     patchAction(action.id, {
                       evidence: [evidence],
                       actors: actionActor(evidence),
@@ -396,41 +472,45 @@ export function StageEditor({
                           : undefined,
                     });
                   }}
-                >
-                  {actionKinds.map((kind) => (
-                    <option key={kind} value={kind}>
-                      {evidenceLabels[kind]}
-                    </option>
-                  ))}
-                </select>
+                  disabled={stage.archived}
+                  options={actionKinds.map((kind) => ({
+                    value: kind,
+                    label: evidenceLabels[kind],
+                  }))}
+                />
               </Field>
               {kind === "physical-order" &&
                 action.evidence.includes("delivery") && (
                   <Field label="Этап исполнения заказа">
-                    <select
+                    <Select
+                      ui="shadcn"
                       className={fieldClass}
                       value={action.deliveryStage ?? "delivered"}
-                      onChange={(event) =>
+                      onValueChange={(selectedValue) =>
                         patchAction(action.id, {
-                          deliveryStage: event.currentTarget
-                            .value as IFunnelAction["deliveryStage"],
+                          deliveryStage:
+                            selectedValue as IFunnelAction["deliveryStage"],
                         })
                       }
-                    >
-                      <option value="preparing">Сборка началась</option>
-                      <option value="in-transit">
-                        Заказ передан перевозчику
-                      </option>
-                      <option value="delivered">Вручение подтверждено</option>
-                    </select>
+                      disabled={stage.archived}
+                      options={[
+                        { value: "preparing", label: "Сборка началась" },
+                        {
+                          value: "in-transit",
+                          label: "Заказ передан перевозчику",
+                        },
+                        { value: "delivered", label: "Вручение подтверждено" },
+                      ]}
+                    />
                   </Field>
                 )}
               <Field label="Результат операции">
-                <select
+                <Select
+                  ui="shadcn"
                   className={fieldClass}
                   value={action.nextStageId ?? action.outcome ?? ""}
-                  onChange={(event) => {
-                    const value = event.currentTarget.value;
+                  placeholder="Выберите этап или исход"
+                  onValueChange={(value) => {
                     const outcome =
                       value in outcomes ? (value as TTaskOutcome) : undefined;
                     patchAction(action.id, {
@@ -438,22 +518,24 @@ export function StageEditor({
                       nextStageId: outcome ? undefined : value,
                     });
                   }}
-                >
-                  <optgroup label="Перейти к этапу">
-                    {nextStages.map((item) => (
-                      <option key={item.id} value={item.id}>
-                        {item.name}
-                      </option>
-                    ))}
-                  </optgroup>
-                  <optgroup label="Закрыть задачу">
-                    {Object.entries(outcomes).map(([id, name]) => (
-                      <option key={id} value={id}>
-                        {name}
-                      </option>
-                    ))}
-                  </optgroup>
-                </select>
+                  disabled={stage.archived}
+                  options={[
+                    {
+                      label: "Перейти к этапу",
+                      options: nextStages.map((item) => ({
+                        value: item.id,
+                        label: item.name,
+                      })),
+                    },
+                    {
+                      label: "Закрыть задачу",
+                      options: Object.entries(outcomes).map(([id, name]) => ({
+                        value: id,
+                        label: name,
+                      })),
+                    },
+                  ]}
+                />
               </Field>
             </div>
           </div>
@@ -487,19 +569,23 @@ export function StageEditor({
         </summary>
         <div className="mt-3 grid gap-3">
           <Field label="Пример события">
-            <select
+            <Select
+              ui="shadcn"
               className={fieldClass}
               value={preview}
-              onChange={(event) => setPreview(event.currentTarget.value)}
-            >
-              <option value="missing">Данных пока недостаточно</option>
-              {stage.actions.map((action) => (
-                <option key={action.id} value={action.id}>
-                  {action.name}
-                </option>
-              ))}
-              {waiting && <option value="timeout">Истёк срок ожидания</option>}
-            </select>
+              onValueChange={setPreview}
+              disabled={stage.archived}
+              options={[
+                { value: "missing", label: "Данных пока недостаточно" },
+                ...stage.actions.map((action) => ({
+                  value: action.id,
+                  label: action.name,
+                })),
+                ...(waiting
+                  ? [{ value: "timeout", label: "Истёк срок ожидания" }]
+                  : []),
+              ]}
+            />
           </Field>
           <p className="text-sm text-muted-foreground" aria-live="polite">
             {stage.name} →{" "}

@@ -4,18 +4,13 @@ import { IClientComponentProps } from "./interface";
 import { cn } from "@sps/shared-frontend-client-utils";
 import { FileText } from "lucide-react";
 
-function formatKnowledgeDate(value?: string | Date | null) {
-  if (!value) {
-    return "Not indexed";
+function formatKnowledgeDate(language: string, value?: string | Date | null) {
+  const date = value ? new Date(value) : undefined;
+  if (!date || Number.isNaN(date.getTime())) {
+    return language === "ru" ? "Индекс ещё не создан" : "Not indexed";
   }
 
-  const date = new Date(value);
-
-  if (Number.isNaN(date.getTime())) {
-    return "Not indexed";
-  }
-
-  return date.toLocaleString([], {
+  return date.toLocaleString(language === "ru" ? "ru-RU" : [], {
     month: "short",
     day: "numeric",
     hour: "2-digit",
@@ -24,6 +19,7 @@ function formatKnowledgeDate(value?: string | Date | null) {
 }
 
 export function Component(props: IClientComponentProps) {
+  const ru = props.language === "ru";
   return (
     <button
       type="button"
@@ -51,12 +47,12 @@ export function Component(props: IClientComponentProps) {
           {props.data.title}
         </span>
         <span className="mt-0.5 block max-w-full truncate text-[11px] text-slate-400">
-          {formatKnowledgeDate(props.data.lastIndexedAt)}
+          {formatKnowledgeDate(props.language, props.data.lastIndexedAt)}
         </span>
       </span>
       {props.needsReindex ? (
         <span className="shrink-0 rounded-full bg-amber-50 px-2 py-0.5 text-[10px] text-amber-700">
-          stale
+          {ru ? "Нужна индексация" : "stale"}
         </span>
       ) : null}
     </button>

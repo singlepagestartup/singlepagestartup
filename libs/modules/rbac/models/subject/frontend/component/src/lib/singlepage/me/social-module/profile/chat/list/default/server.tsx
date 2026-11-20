@@ -1,5 +1,6 @@
 "use server";
 import "server-only";
+import { ChatNotice } from "../../Notice";
 import AuthenticationMe from "../../../../../../authentication/me-default/server";
 import { Component as ChildComponent } from "./Component";
 import type { IComponentProps } from "./interface";
@@ -27,7 +28,7 @@ export default async function Server(props: IComponentProps) {
         data && authenticated ? (
           <ChildComponent {...props} isServer={true} data={data} />
         ) : (
-          <p role="status">Sign in to view chats.</p>
+          <ChatNotice language={props.language} />
         )
       }
     </AuthenticationMe>

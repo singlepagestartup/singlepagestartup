@@ -3,6 +3,8 @@ import type {
   ICustomerWorkRun,
   ICustomerWorkRunAttachment,
 } from "@sps/rbac/models/subject/sdk/model";
+import type { IProviderType } from "@sps/rbac/models/subject/sdk/model/src/lib/provider-connections";
+import { StageSkillsUnavailable } from "@sps/rbac/models/subject/backend/app/api/src/lib/service/singlepage/ecommerce/customer-work/knowledge";
 import type { Service as WorkAttempt } from "../index";
 import {
   captionLayer,
@@ -11,7 +13,7 @@ import {
   fontByteLimit,
   isCoverConfirmation,
   photoByteLimit,
-  productLayer,
+  prepareCoverPhoto,
   readCoverBrief,
   type ICoverBrief,
   type ICoverLayers,
@@ -31,6 +33,8 @@ export interface IConfirmedCover {
   stageId: string;
   brief: ICoverBrief;
   layers: ICoverLayers;
+  provider: IProviderType;
+  sourceImage?: Uint8Array;
 }
 
 interface ICoverReply {
@@ -45,10 +49,11 @@ export class CoverWork {
     input: ICustomerWorkRun,
     newDraft = false,
   ): Promise<IConfirmedCover | ICoverReply | null> {
-    const { task, stage } = await this.service.modules.crm.task.getWork({
-      ...input,
-      expectedAssignmentRevision: input.assignmentRevision,
-    });
+    const { task, stage, funding } =
+      await this.service.modules.crm.task.getWork({
+        ...input,
+        expectedAssignmentRevision: input.assignmentRevision,
+      });
     if (stage.output !== "image" || stage.imageBrief !== "marketplace-cover") {
       return null;
     }
@@ -69,8 +74,18 @@ export class CoverWork {
         "Conflict error. The cover needs an unpaid individual-service order",
       );
     }
-    const context =
-      await this.service.modules.rbac.subject.customerWork.contextForRun(input);
+    let context;
+    try {
+      context =
+        await this.service.modules.rbac.subject.customerWork.contextForRun(
+          input,
+        );
+    } catch (error) {
+      if (error instanceof StageSkillsUnavailable) {
+        return { text: error.reply, imageDraftDigest: null };
+      }
+      throw error;
+    }
     const { imageBrief, attachments } = context;
     if (!imageBrief) {
       throw new Error("Conflict error. The cover brief is unavailable");
@@ -84,7 +99,27 @@ export class CoverWork {
     }
 
     const { brief } = parsed;
-    const digest = coverDigest(brief);
+    const binding =
+      await this.service.modules.rbac.subject.providerConnections.resolve(
+        task.storeId,
+        input.assigneeId,
+        "image",
+        {
+          modelId: newDraft ? undefined : context.requestedModelId,
+          reasoning: newDraft ? undefined : context.requestedReasoning,
+          defaultOnly: funding?.payer === "customer",
+        },
+      );
+    const artwork = await this.artwork(brief, binding.provider === "openai");
+    if (typeof artwork === "string") {
+      return this.clarify([artwork], russian);
+    }
+    const { layers, sourceImage } = artwork;
+    const digest = coverDigest(
+      brief,
+      sourceImage ? "provider-edit" : undefined,
+      context.skillGuidance,
+    );
     const approval = newDraft ? "new-draft" : this.approval(imageBrief, digest);
     if (approval === "repeat") {
       return {
@@ -101,12 +136,14 @@ export class CoverWork {
       };
     }
 
-    const layers = await this.layers(brief);
-    if (typeof layers === "string") {
-      return this.clarify([layers], russian);
-    }
     if (approval !== "approved") {
-      return this.propose(brief, digest, russian);
+      return this.propose(
+        brief,
+        digest,
+        russian,
+        Boolean(sourceImage),
+        context.skillTitles ?? [],
+      );
     }
     return {
       digest,
@@ -114,6 +151,8 @@ export class CoverWork {
       stageId: stage.id,
       brief,
       layers,
+      provider: binding.provider,
+      sourceImage,
     };
   }
 
@@ -123,7 +162,12 @@ export class CoverWork {
       throw new Error("Conflict error. The cover draft confirmation changed");
     }
     const parsed = readCoverBrief(imageBrief.replies, attachments);
-    if (!("brief" in parsed) || coverDigest(parsed.brief) !== cover.digest) {
+    const productMode = cover.sourceImage ? "provider-edit" : undefined;
+    if (
+      !("brief" in parsed) ||
+      coverDigest(parsed.brief, productMode, context.skillGuidance) !==
+        cover.digest
+    ) {
       throw new Error("Conflict error. The confirmed cover inputs changed");
     }
   }
@@ -177,23 +221,29 @@ export class CoverWork {
     return file.bytes;
   }
 
-  private async layers(
+  private async artwork(
     brief: ICoverBrief,
-  ): Promise<ICoverLayers | TCoverIssue> {
-    let product;
+    allowEdit: boolean,
+  ): Promise<{ layers: ICoverLayers; sourceImage?: Uint8Array } | TCoverIssue> {
+    let photo;
     try {
       const bytes = await this.storedBytes(brief.photo, photoByteLimit);
-      product = await productLayer(bytes, brief);
+      photo = await prepareCoverPhoto(bytes, brief, allowEdit);
     } catch {
       return "photo";
     }
+    const layers: ICoverLayers = { size: brief.size };
+    if ("product" in photo) {
+      layers.product = photo.product;
+    }
+    const sourceImage = "sourceImage" in photo ? photo.sourceImage : undefined;
     if (!brief.font) {
-      return { size: brief.size, product };
+      return { layers, sourceImage };
     }
     try {
       const bytes = await this.storedBytes(brief.font, fontByteLimit);
-      const caption = await captionLayer(bytes, brief);
-      return { size: brief.size, product, caption };
+      layers.caption = await captionLayer(bytes, brief);
+      return { layers, sourceImage };
     } catch {
       return "font";
     }
@@ -210,6 +260,8 @@ export class CoverWork {
             "Пришлите точный текст «Подпись: …» или напишите «Без надписи».",
           "caption-color":
             "Укажите один точный цвет надписи, например «Цвет текста: #183C32».",
+          "caption-background":
+            "Напишите «Подложка надписи: без плашки» или «Подложка надписи: с плашкой».",
           font: "Пришлите файл TTF или OTF, в котором есть символы для подписи.",
         }
       : {
@@ -221,6 +273,8 @@ export class CoverWork {
             "Provide ‘Caption: …’ with the exact wording, or enter ‘No caption’.",
           "caption-color":
             "Specify one exact caption color, for example ‘Caption color: #183C32’.",
+          "caption-background":
+            "Enter ‘Caption background: transparent’ or ‘Caption background: panel’.",
           font: "Upload a TTF or OTF font that includes the caption characters.",
         };
     return {
@@ -233,27 +287,53 @@ export class CoverWork {
     brief: ICoverBrief,
     digest: string,
     russian: boolean,
+    usesPhotoReference: boolean,
+    skillTitles: string[],
   ): ICoverReply {
     const size = `${brief.size.width}×${brief.size.height} px`;
+    let captionBackground = "";
+    if (brief.captionBackground === "transparent") {
+      captionBackground = russian
+        ? "Надпись без плашки."
+        : "The caption has a transparent background.";
+    } else if (brief.captionBackground === "panel") {
+      captionBackground = russian
+        ? "Надпись на плашке."
+        : "The caption has a background panel.";
+    }
     const text = russian
       ? [
           `Обложка ${size}.`,
           `Фото товара «${brief.photo.name}».`,
+          usesPhotoReference
+            ? "Используем фото как образец товара для новой сцены."
+            : "",
           describeAppearance(brief.appearance, true),
+          skillTitles.length
+            ? `При генерации учтём навыки ${skillTitles.map((title) => `«${title}»`).join(", ")}.`
+            : "",
           brief.caption
             ? `Надпись «${brief.caption}», шрифт «${brief.font?.name}».`
             : "Без надписи.",
           brief.captionColor ? `Цвет текста — ${brief.captionColor}.` : "",
+          captionBackground,
           "Если всё верно, ответьте «Генерируй».",
         ]
       : [
           `Cover ${size}.`,
           `Product photo ‘${brief.photo.name}’.`,
+          usesPhotoReference
+            ? "The photo will guide the appearance of the product in the new scene."
+            : "",
           describeAppearance(brief.appearance),
+          skillTitles.length
+            ? `The image will use ${skillTitles.map((title) => `‘${title}’`).join(", ")}.`
+            : "",
           brief.caption
             ? `Caption ‘${brief.caption}’ in font ‘${brief.font?.name}’.`
             : "No caption.",
           brief.captionColor ? `Caption color — ${brief.captionColor}.` : "",
+          captionBackground,
           "Reply ‘Generate’ to confirm.",
         ];
     return { text: text.filter(Boolean).join("\n"), imageDraftDigest: digest };

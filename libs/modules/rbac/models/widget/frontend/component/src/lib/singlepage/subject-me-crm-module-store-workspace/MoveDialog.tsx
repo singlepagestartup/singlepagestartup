@@ -1,3 +1,4 @@
+import { Select } from "@sps/ui-adapter";
 import * as Dialog from "@radix-ui/react-dialog";
 import { MoveRight, X } from "lucide-react";
 import { useState } from "react";
@@ -109,23 +110,26 @@ export function MoveDialog({
             }}
           >
             <Field label="Переместить в…">
-              <select
+              <Select
+                ui="shadcn"
                 className={fieldClass}
                 required
                 value={selected}
-                onChange={(event) => setSelected(event.currentTarget.value)}
-              >
-                <option value="">Выберите этап</option>
-                {actions.map((action) => (
-                  <option key={action.id} value={action.id}>
-                    {
-                      stages.find((item) => item.id === action.nextStageId)
-                        ?.name
-                    }{" "}
-                    · {action.name}
-                  </option>
-                ))}
-              </select>
+                onValueChange={setSelected}
+                placeholder="Выберите этап"
+                contentClassName="z-[60]"
+                options={actions.map((action) => {
+                  const stage = stages.find(
+                    (item) => item.id === action.nextStageId,
+                  );
+                  return {
+                    value: action.id,
+                    label: stage
+                      ? `${stage.name} · ${action.name}`
+                      : action.name,
+                  };
+                })}
+              />
             </Field>
             <Field label="Причина перехода">
               <textarea

@@ -46,6 +46,7 @@ jest.mock("@sps/social/models/profile/sdk/server", () => ({
 import { signJwt } from "@sps/backend-utils";
 import { DefaultApp } from "@sps/shared-backend-api";
 import { Controller } from ".";
+import { Handler as ModelFavorites } from "./social-module/profile/find-by-id/chat/find-by-id/openrouter/model-favorites";
 
 const catalogPath =
   "/subject-owner/social-module/profiles/profile-owned/chats/chat-1/openrouter/models";
@@ -98,6 +99,33 @@ describe("Given: the OpenRouter model catalog route of a chat", () => {
       { id: "subject-owner-profile", subjectId: "subject-owner" },
     ]);
     mockSocialModuleProfileFindById.mockResolvedValue({ id: "profile-owned" });
+  });
+
+  it("allows a customer to update their favorites with read access to the order chat", async () => {
+    const assertChatAccess = jest.fn().mockResolvedValue(undefined);
+    const save = jest
+      .spyOn(ModelFavorites.prototype, "execute")
+      .mockImplementation(async (context) =>
+        context.json({ data: { favoriteModelIds: [] } }),
+      );
+
+    try {
+      const response = await createApp({
+        customerWork: { assertChatAccess },
+      }).request(catalogPath.replace("/models", "/model-favorites"), {
+        method: "PATCH",
+        headers: await createHeaders("subject-owner"),
+      });
+      expect(response.status).toBe(200);
+      expect(assertChatAccess).toHaveBeenCalledWith({
+        subjectId: "subject-owner",
+        chatId: "chat-1",
+        edit: false,
+      });
+      expect(save).toHaveBeenCalledTimes(1);
+    } finally {
+      save.mockRestore();
+    }
   });
 
   /**

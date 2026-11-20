@@ -164,6 +164,7 @@ function createService() {
     modules: {
       social: {
         message: {
+          find: jest.fn().mockResolvedValue([]),
           create: (...args: unknown[]) =>
             mockSocialModuleMessageCreate(...args),
         },
@@ -257,6 +258,55 @@ describe("Given: rbac social message create author relation", () => {
         attachments: [],
       },
     });
+    expect(mockSocialModuleMessageCreate).not.toHaveBeenCalled();
+  });
+
+  it("passes the selected text model and reasoning effort to the linked workflow", async () => {
+    const service = createService();
+    service.customerWork.messageFromThread.mockResolvedValue({
+      id: "workflow-message",
+    });
+    const context = createContext([], {
+      description: "Hello",
+      metadata: { provider: { modelId: " gpt-5.2 ", reasoning: "high" } },
+    });
+    await new Handler(service).execute(context, jest.fn());
+
+    expect(service.customerWork.messageFromThread).toHaveBeenCalledWith(
+      expect.objectContaining({
+        metadata: { provider: { modelId: "gpt-5.2", reasoning: "high" } },
+      }),
+    );
+    expect(mockSocialModuleMessageCreate).not.toHaveBeenCalled();
+  });
+
+  it.each([
+    { modelId: "gpt-5.2", reasoning: "unknown" },
+    { modelId: "auto", reasoning: "high" },
+  ])(
+    "rejects an invalid reasoning selection before calling the workflow",
+    async (provider) => {
+      const service = createService();
+      const context = createContext([], {
+        description: "Hello",
+        metadata: { provider },
+      });
+      await expect(
+        new Handler(service).execute(context, jest.fn()),
+      ).rejects.toThrow("Invalid provider model selection");
+      expect(service.customerWork.messageFromThread).not.toHaveBeenCalled();
+      expect(mockSocialModuleMessageCreate).not.toHaveBeenCalled();
+    },
+  );
+
+  it("rejects explicit workflow reasoning in an ordinary Social message", async () => {
+    const context = createContext([], {
+      description: "Hello",
+      metadata: { provider: { modelId: "gpt-5.2", reasoning: "high" } },
+    });
+    await expect(
+      new Handler(createService()).execute(context, jest.fn()),
+    ).rejects.toThrow("Reasoning effort is unavailable for this conversation");
     expect(mockSocialModuleMessageCreate).not.toHaveBeenCalled();
   });
 

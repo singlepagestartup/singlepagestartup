@@ -10,6 +10,7 @@ import {
   resolveFunnelSchema,
   saveDraftSchema,
   type IFunnelBindings,
+  type IFunnelDefinition,
   type IListFunnels,
   type IListPublications,
   type IPublishFunnel,
@@ -42,16 +43,16 @@ export class Service extends CRUDService<typeof Table.$inferSelect> {
     return this.repository as Repository;
   }
 
-  async get(storeId: string, funnelId: string) {
-    const funnel = await this.owner().scoped(storeId, funnelId);
+  async get(storeId: string, funnelId: string, lock = false) {
+    const funnel = await this.owner().scoped(storeId, funnelId, lock);
     if (!funnel) {
       throw new Error("Not Found error. Funnel does not exist in this store");
     }
     return funnel;
   }
 
-  async current(storeId: string, funnelId: string) {
-    const funnel = await this.get(storeId, funnelId);
+  async current(storeId: string, funnelId: string, lock = false) {
+    const funnel = await this.get(storeId, funnelId, lock);
     if (funnel.publishedVersion === null) {
       throw new Error(
         "Conflict error. Publish the funnel before opening tasks",
@@ -70,6 +71,10 @@ export class Service extends CRUDService<typeof Table.$inferSelect> {
 
   async list(input: IListFunnels) {
     return this.owner().list(listFunnelsSchema.parse(input));
+  }
+
+  async trainingBudget(storeId: string) {
+    return this.owner().trainingBudget(storeId);
   }
 
   async listPublications(input: IListPublications) {
@@ -204,7 +209,10 @@ export class Service extends CRUDService<typeof Table.$inferSelect> {
     });
   }
 
-  async publish(input: IPublishFunnel) {
+  async publish(
+    input: IPublishFunnel,
+    validateStageAssignments?: (definition: IFunnelDefinition) => Promise<void>,
+  ) {
     const data = publishFunnelSchema.parse(input);
     const owner = this.owner();
 
@@ -247,6 +255,9 @@ export class Service extends CRUDService<typeof Table.$inferSelect> {
       }
 
       validatePublication(funnel.definition, funnel.kind);
+      if (validateStageAssignments) {
+        await validateStageAssignments(funnel.definition);
+      }
       await this.validateBindings(funnel.storeId, funnel.bindings);
       const cartOfferIds = new Set(
         funnel.definition.stages.flatMap((stage) => stage.cartOfferIds ?? []),

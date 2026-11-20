@@ -2,6 +2,7 @@
 
 import { Component as Subject } from "@sps/rbac/models/subject/frontend/component";
 import { Workspace } from "./Workspace";
+import { Stores } from "./Stores";
 
 interface IClientProps {
   ecommerceModuleStoreSlug?: string;
@@ -27,7 +28,7 @@ export function Component({
       fallback={fallback}
     >
       {({ data, authenticated }) =>
-        data && authenticated ? (
+        data && authenticated && ecommerceModuleStoreSlug ? (
           <Workspace
             key={`${data.id}:${ecommerceModuleStoreSlug ?? ""}:${crmModuleTaskId ?? ""}`}
             subjectId={data.id}
@@ -35,6 +36,8 @@ export function Component({
             initialTaskId={crmModuleTaskId}
             language={language}
           />
+        ) : data && authenticated ? (
+          <Stores subjectId={data.id} language={language} />
         ) : (
           fallback
         )

@@ -7,6 +7,10 @@ import type { Repository } from "../../repository";
 @injectable()
 @injectFromBase()
 export class Service extends CRUDService<typeof Table.$inferSelect> {
+  pendingHeads(limit: number, taskId?: string) {
+    return (this.repository as Repository).pendingHeads(limit, taskId);
+  }
+
   updatePending(eventId: string, pending: boolean) {
     return (this.repository as Repository).updatePending(eventId, pending);
   }

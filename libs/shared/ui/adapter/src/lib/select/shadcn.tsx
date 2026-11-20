@@ -3,7 +3,24 @@ import { forwardRef } from "react";
 import * as SelectPrimitive from "@radix-ui/react-select";
 import { cn } from "@sps/shared-frontend-client-utils";
 import { Icon } from "../icons";
-import type { IComponentProps } from "./interface";
+import type { IComponentProps, ISelectOption } from "./interface";
+
+function SelectItem({ option }: { option: ISelectOption }) {
+  return (
+    <SelectPrimitive.Item
+      value={option.value}
+      disabled={option.disabled}
+      className="relative flex min-h-9 w-full cursor-default select-none items-center rounded-md py-1.5 pl-8 pr-3 text-sm outline-none data-[highlighted]:bg-muted data-[disabled]:pointer-events-none data-[disabled]:opacity-40"
+    >
+      <span className="absolute left-2 flex size-4 items-center justify-center">
+        <SelectPrimitive.ItemIndicator>
+          <Icon name="check" className="size-4" />
+        </SelectPrimitive.ItemIndicator>
+      </span>
+      <SelectPrimitive.ItemText>{option.label}</SelectPrimitive.ItemText>
+    </SelectPrimitive.Item>
+  );
+}
 
 export const Component = forwardRef<HTMLButtonElement, IComponentProps>(
   function Component(
@@ -63,23 +80,22 @@ export const Component = forwardRef<HTMLButtonElement, IComponentProps>(
               <Icon name="caret-down" className="rotate-180" />
             </SelectPrimitive.ScrollUpButton>
             <SelectPrimitive.Viewport className="p-1">
-              {options.map((option) => (
-                <SelectPrimitive.Item
-                  key={option.value}
-                  value={option.value}
-                  disabled={option.disabled}
-                  className="relative flex min-h-9 w-full cursor-default select-none items-center rounded-md py-1.5 pl-8 pr-3 text-sm outline-none data-[highlighted]:bg-muted data-[disabled]:pointer-events-none data-[disabled]:opacity-40"
-                >
-                  <span className="absolute left-2 flex size-4 items-center justify-center">
-                    <SelectPrimitive.ItemIndicator>
-                      <Icon name="check" className="size-4" />
-                    </SelectPrimitive.ItemIndicator>
-                  </span>
-                  <SelectPrimitive.ItemText>
-                    {option.label}
-                  </SelectPrimitive.ItemText>
-                </SelectPrimitive.Item>
-              ))}
+              {options.map((option) =>
+                "options" in option ? (
+                  option.options.length > 0 && (
+                    <SelectPrimitive.Group key={option.label}>
+                      <SelectPrimitive.Label className="py-1.5 pl-8 pr-3 text-xs font-medium text-muted-foreground">
+                        {option.label}
+                      </SelectPrimitive.Label>
+                      {option.options.map((item) => (
+                        <SelectItem key={item.value} option={item} />
+                      ))}
+                    </SelectPrimitive.Group>
+                  )
+                ) : (
+                  <SelectItem key={option.value} option={option} />
+                ),
+              )}
             </SelectPrimitive.Viewport>
             <SelectPrimitive.ScrollDownButton className="flex h-7 items-center justify-center">
               <Icon name="caret-down" />

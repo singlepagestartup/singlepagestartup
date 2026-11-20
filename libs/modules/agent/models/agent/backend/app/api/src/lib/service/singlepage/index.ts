@@ -2275,6 +2275,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
       }
 
       if (
+        props.socialModuleMessage.variant === "customer-work" ||
         isSocialMessageExcludedFromOpenRouter(
           props.socialModuleMessage.metadata,
         ) ||

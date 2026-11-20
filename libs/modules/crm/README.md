@@ -64,6 +64,11 @@ generic HTTP operations.
   `funnel.resolve` checks published form, offer, product and store-wide
   bindings in that order and reports a conflict between equally specific
   matches. `funnel.listPublications` reads the version history.
+- An AI stage can select Social skills linked to its configured store agent.
+  The publication pins the selection by ID. Each run checks that its current
+  agent can still use every selected skill before sending work to a provider.
+  Automatic AI assignments follow the configured agent when the task enters
+  a stage with skills. Manual assignments and human handoffs stay in place.
 - `task.open` pins a publication and writes the first event in one transaction.
   A task stays on that version until a manager explicitly maps it to a stage of
   another publication and records a reason. Closing retains the last stage.

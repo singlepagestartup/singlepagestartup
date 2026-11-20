@@ -1,3 +1,4 @@
+import { Select } from "@sps/ui-adapter";
 import { ArrowDown, ArrowUp, ListOrdered, Plus } from "lucide-react";
 import { useState } from "react";
 import type {
@@ -57,6 +58,9 @@ export function Editor({
 }: IEditorProps) {
   const [funnel, setFunnel] = useState(initial);
   const [name, setName] = useState(initial?.name ?? "");
+  const [productIds, setProductIds] = useState(
+    initial?.bindings.productIds ?? [],
+  );
   const [kind, setKind] = useState<TFunnelKind>(
     initial?.kind ?? "consultation",
   );
@@ -72,6 +76,11 @@ export function Editor({
     (stage) => stage.id === selectedId,
   );
   const selected = definition.stages[selectedIndex];
+  const products = [
+    ...new Map(
+      options.offers?.map((offer) => [offer.productId, offer]),
+    ).values(),
+  ];
 
   function patchStage(patch: Partial<IFunnelStage>) {
     setDefinition((value) => ({
@@ -126,6 +135,7 @@ export function Editor({
       expectedRevision: funnel?.revision,
       name,
       kind,
+      productIds,
       definition: { ...definition, initialStageId },
     };
     setPending(true);
@@ -226,20 +236,19 @@ export function Editor({
         <div className="grid gap-3 sm:grid-cols-2">
           <TextField label="Название воронки" value={name} onChange={setName} />
           <Field label="Тип воронки">
-            <select
+            <Select
+              ui="shadcn"
               className={fieldClass}
               value={kind}
               disabled={Boolean(funnel?.id)}
-              onChange={(event) =>
-                setKind(event.currentTarget.value as TFunnelKind)
+              onValueChange={(selectedValue) =>
+                setKind(selectedValue as TFunnelKind)
               }
-            >
-              {Object.entries(kinds).map(([id, title]) => (
-                <option key={id} value={id}>
-                  {title}
-                </option>
-              ))}
-            </select>
+              options={Object.entries(kinds).map(([id, title]) => ({
+                value: id,
+                label: title,
+              }))}
+            />
           </Field>
           <TextField
             label="Когда применять"
@@ -268,6 +277,36 @@ export function Editor({
             />
           )}
         </div>
+        <fieldset className="grid gap-2 rounded-lg border border-border p-3">
+          <legend className="px-1 text-sm font-medium">Товары воронки</legend>
+          {products.length ? (
+            products.map((product) => (
+              <label
+                key={product.productId}
+                className="flex items-center gap-2 text-sm"
+              >
+                <input
+                  type="checkbox"
+                  checked={productIds.includes(product.productId)}
+                  onChange={(event) => {
+                    const checked = event.currentTarget.checked;
+                    setProductIds((ids) =>
+                      checked
+                        ? [...ids, product.productId]
+                        : ids.filter((id) => id !== product.productId),
+                    );
+                  }}
+                  className="size-4 accent-primary"
+                />
+                {product.title}
+              </label>
+            ))
+          ) : (
+            <p className="text-sm text-muted-foreground">
+              Добавьте товар на странице магазина.
+            </p>
+          )}
+        </fieldset>
         <fieldset className="grid gap-3 border-t border-border pt-4">
           <label className="flex min-h-10 items-center gap-2 text-sm font-medium">
             <input
@@ -293,45 +332,48 @@ export function Editor({
           {funding && (
             <div className="grid gap-3 md:grid-cols-4">
               <Field label="Кто оплачивает работу ИИ">
-                <select
+                <Select
+                  ui="shadcn"
                   className={fieldClass}
                   value={funding.payer}
-                  onChange={(event) =>
+                  onValueChange={(selectedValue) =>
                     setDefinition({
                       ...definition,
                       workFunding: {
                         ...funding,
-                        payer: event.currentTarget
-                          .value as typeof funding.payer,
+                        payer: selectedValue as typeof funding.payer,
                       },
                     })
                   }
-                >
-                  <option value="store-owner">Владелец магазина</option>
-                  <option value="customer">Клиент</option>
-                </select>
+                  options={[
+                    { value: "store-owner", label: "Владелец магазина" },
+                    { value: "customer", label: "Клиент" },
+                  ]}
+                />
               </Field>
               <Field label="Валюта бюджета">
-                <select
+                <Select
+                  ui="shadcn"
                   className={fieldClass}
-                  value={funding.currencyId}
-                  onChange={(event) =>
+                  value={funding.currencyId || "none"}
+                  onValueChange={(selectedValue) =>
                     setDefinition({
                       ...definition,
                       workFunding: {
                         ...funding,
-                        currencyId: event.currentTarget.value,
+                        currencyId:
+                          selectedValue === "none" ? "" : selectedValue,
                       },
                     })
                   }
-                >
-                  <option value="">Выберите валюту</option>
-                  {options.currencies.map((currency) => (
-                    <option key={currency.id} value={currency.id}>
-                      {currency.title}
-                    </option>
-                  ))}
-                </select>
+                  options={[
+                    { value: "none", label: "Выберите валюту" },
+                    ...options.currencies.map((currency) => ({
+                      value: currency.id,
+                      label: currency.title,
+                    })),
+                  ]}
+                />
               </Field>
               <TextField
                 label="Лимит на задачу"

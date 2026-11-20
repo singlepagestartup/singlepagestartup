@@ -26,6 +26,17 @@ export function getStage(definition: IFunnelDefinition, stageId: string) {
   return stage;
 }
 
+export function trainEmployeeStage(id: string): IFunnelStage {
+  return {
+    id,
+    name: "Employee training",
+    output: "chat",
+    instruction:
+      "This is a private conversation with store staff. Answer their questions about the employee's work and discuss proposed instructions. Only the explicit save command can change stored knowledge. Never claim to have saved a note or taken an action.",
+    actions: [],
+  };
+}
+
 export function assertOpen(task: ITask) {
   if (task.status === "closed") {
     throw new Error("Conflict error. The task is closed");

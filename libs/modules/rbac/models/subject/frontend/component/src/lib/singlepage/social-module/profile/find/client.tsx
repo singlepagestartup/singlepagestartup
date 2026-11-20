@@ -21,9 +21,11 @@ export function Component(props: IComponentProps) {
   }
   if (isLoading)
     return (
-      <p role="status">
-        {props.language === "ru" ? "Загружаем профили…" : "Loading profiles…"}
-      </p>
+      props.skeleton ?? (
+        <p role="status">
+          {props.language === "ru" ? "Загружаем профили…" : "Loading profiles…"}
+        </p>
+      )
     );
   return data ? props.children({ data }) : null;
 }

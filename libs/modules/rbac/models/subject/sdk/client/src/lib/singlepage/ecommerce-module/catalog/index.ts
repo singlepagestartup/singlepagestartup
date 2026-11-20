@@ -112,6 +112,7 @@ export function offerCreate(props: IOfferCreateProps = {}) {
             `${productRoute}/count`,
             `${offerRoute}/count`,
             `${route}/${variables.id}/ecommerce-module/catalogue-context`,
+            `${route}/${variables.id}/crm-module/workspace/options`,
           ].includes(String(query.queryKey[0])),
       });
       globalActionsStore.getState().addAction({
@@ -214,6 +215,9 @@ export function mutation(props: IMutationProps = {}) {
       await queryClient.invalidateQueries({
         predicate: (query) =>
           String(query.queryKey[0]).startsWith(entityRoute) ||
+          (variables.data.entity === "stores" &&
+            query.queryKey[0] ===
+              `${route}/${variables.id}/crm-module/workspace/stores`) ||
           query.queryKey[0] ===
             `${route}/${variables.id}/ecommerce-module/catalogue-context`,
       });

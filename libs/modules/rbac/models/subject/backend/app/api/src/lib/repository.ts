@@ -164,6 +164,10 @@ export class Repository extends DatabaseRepository<typeof Table> {
     return this.withScopedLocks("rbac.catalog", keys, operation);
   }
 
+  withStoreEmployeeLock<T>(actorId: string, operation: () => Promise<T>) {
+    return this.withScopedLocks("rbac.store-employee", [actorId], operation);
+  }
+
   withWalletLocks<T>(keys: string[], operation: () => Promise<T>): Promise<T> {
     return this.withScopedLocks("rbac.wallet", keys, operation);
   }

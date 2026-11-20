@@ -12,6 +12,8 @@ import type { IPurchaseSnapshot } from "@sps/ecommerce/relations/orders-to-billi
 import type { IModel as IBillingModuleCurrency } from "@sps/billing/models/currency/sdk/model";
 import type { IModel as IFileStorageModuleFile } from "@sps/file-storage/models/file/sdk/model";
 
+export const STORE_TEST_ORDER_VARIANT = "store-test";
+
 export interface ICartDetails {
   fixedResultPrice?: boolean;
   maxLineQuantity: number;

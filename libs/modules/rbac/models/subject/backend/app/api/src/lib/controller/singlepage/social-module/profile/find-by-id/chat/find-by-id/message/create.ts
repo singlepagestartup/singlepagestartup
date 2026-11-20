@@ -23,7 +23,16 @@ import {
 import { api as fileStorageModuleFileApi } from "@sps/file-storage/models/file/sdk/server";
 import { IModel as IFileStorageModuleFile } from "@sps/file-storage/models/file/sdk/model";
 import { shouldSkipOrdinaryNotificationForAudioTranscription } from "./audio-transcription";
-import { normalizeRbacAiReactionRequestMetadata } from "@sps/rbac/models/subject/sdk/model";
+import {
+  normalizeRbacAiReactionRequestMetadata,
+  STORE_EMPLOYEE_CHAT_VARIANT,
+} from "@sps/rbac/models/subject/sdk/model";
+import { isStoreEmployeeTraining } from "@sps/crm/models/task/sdk/model";
+import {
+  PROVIDER_MODEL_SELECTION_METADATA_KEY,
+  providerModelSelection,
+  type IProviderModelSelection,
+} from "@sps/rbac/models/subject/sdk/model/src/lib/provider-connections";
 import { getDrizzle } from "@sps/shared-backend-database-config";
 import { withConsistencyDatabase } from "@sps/shared-backend-api";
 import { projectCustomerWorkAttachments } from "../../../../../../../../service/singlepage/ecommerce/customer-work/media";
@@ -122,12 +131,27 @@ export class Handler {
         throw new Error("Validation error. Invalid JSON in body['data']");
       }
 
+      let requestMetadata: Record<string, unknown> | undefined;
+      let providerSelection: IProviderModelSelection | undefined;
       if (parsedBody.data?.metadata !== undefined) {
         const metadata = normalizeRbacAiReactionRequestMetadata(
           parsedBody.data.metadata,
         );
         if (metadata) {
+          if (PROVIDER_MODEL_SELECTION_METADATA_KEY in metadata) {
+            const provider = providerModelSelection.safeParse(
+              metadata[PROVIDER_MODEL_SELECTION_METADATA_KEY],
+            );
+            if (!provider.success) {
+              throw new Error(
+                "Validation error. Invalid provider model selection",
+              );
+            }
+            metadata[PROVIDER_MODEL_SELECTION_METADATA_KEY] = provider.data;
+            providerSelection = provider.data;
+          }
           parsedBody.data.metadata = metadata;
+          requestMetadata = metadata;
         }
       }
 
@@ -143,14 +167,59 @@ export class Handler {
       });
 
       const incomingId = parsedBody.data?.sourceSystemId;
+      const sourceSystemId =
+        typeof incomingId === "string" ? incomingId.trim() : "";
+      const chat = await this.service.modules.social.chat.findById({
+        id: socialModuleChatId,
+      });
+      if (chat?.variant === STORE_EMPLOYEE_CHAT_VARIANT) {
+        operation.stage = "employee-training.message";
+        const message = await this.service.customerWork.sendEmployeeTraining({
+          actorId: id,
+          actorProfileId: socialModuleProfileId,
+          chat,
+          threadId: socialModuleThreadId,
+          text: parsedBody.data?.description,
+          sourceSystemId: sourceSystemId || undefined,
+          selection: providerSelection,
+          hasAttachments: files.length > 0,
+        });
+        c.header("X-SPS-SKIP-ACTION-LOGGER", "1");
+        return c.json({
+          data: {
+            ...message,
+            authorProfileIds: [socialModuleProfileId],
+            attachments: [],
+          },
+        });
+      }
+      if (isStoreEmployeeTraining(sourceSystemId)) {
+        throw new Error("Validation error. This message key is reserved");
+      }
+      if (sourceSystemId) {
+        const existingMessage = await this.findExistingBySourceSystemId({
+          sourceSystemId,
+          socialModuleChatId,
+          socialModuleThreadId,
+        });
+        if (existingMessage && existingMessage.variant !== "customer-work") {
+          if (providerSelection?.reasoning) {
+            throw new Error(
+              "Conflict error. This request key belongs to another message",
+            );
+          }
+          c.header("X-SPS-SKIP-ACTION-LOGGER", "1");
+          return c.json({ data: existingMessage });
+        }
+      }
       const workMessage = await this.service.customerWork.messageFromThread({
         customerId: id,
         chatId: socialModuleChatId,
         threadId: socialModuleThreadId,
         profileId: socialModuleProfileId,
         text: parsedBody.data?.description,
-        sourceSystemId:
-          typeof incomingId === "string" ? incomingId.trim() : undefined,
+        ...(requestMetadata ? { metadata: requestMetadata } : {}),
+        sourceSystemId: sourceSystemId || undefined,
         hasAttachments: files.length > 0,
         ...(files.length ? { attachments: files } : {}),
       });
@@ -164,6 +233,11 @@ export class Handler {
           },
         });
       }
+      if (providerSelection?.reasoning) {
+        throw new Error(
+          "Validation error. Reasoning effort is unavailable for this conversation",
+        );
+      }
 
       operation.stage = "message.prepare";
 
@@ -171,31 +245,8 @@ export class Handler {
         delete parsedBody.data.threadId;
       }
 
-      const sourceSystemId =
-        typeof parsedBody.data?.sourceSystemId === "string"
-          ? parsedBody.data.sourceSystemId.trim()
-          : "";
-
-      if (sourceSystemId) {
-        const existingMessage = await this.findExistingBySourceSystemId({
-          sourceSystemId,
-          socialModuleChatId,
-          socialModuleThreadId,
-        });
-
-        if (existingMessage) {
-          c.header("X-SPS-SKIP-ACTION-LOGGER", "1");
-          return c.json({
-            data: existingMessage,
-          });
-        }
-      }
-
       operation.stage = "attachment.validate";
       if (files.length) {
-        const chat = await this.service.modules.social.chat.findById({
-          id: socialModuleChatId,
-        });
         if (chat?.variant === "ai-chat") {
           try {
             assertSupportedAiChatAttachments(files, "message");

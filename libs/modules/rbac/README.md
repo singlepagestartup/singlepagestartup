@@ -39,7 +39,15 @@ The RBAC module defines authentication subjects, identities, roles, permissions,
 
 ### Store work in Social conversations
 
+The **Employees** section on a store page lets an owner or administrator create a named AI Subject and open a private conversation with its Social profile. Reopening the employee returns to the same conversation for that operator. Send “Remember…” or “Запомни…” to save a source in the employee’s profile. The sidebar also lets the operator edit sources, upload reference files and manage the employee’s skills.
+
+Choose the employee as the assignee in a funnel stage and select the skills that stage needs. An operator can also assign an existing task from its details. Customer replies use the assigned employee’s knowledge. The worker includes the chosen skills for the current stage. Private training messages stay in the operator’s conversation.
+
 A customer's message belongs to a Social thread linked to a CRM task. RBAC verifies the customer and the current assignment. The Agent worker claims the message event and calls the provider connection assigned to that assistant and capability. The store owner's published funnel determines who funds the task and its spending limit. A task funded by the customer also requires the customer's approval.
+
+Store owners can assign provider capabilities to AI Subjects with an `assistant` or `crm-agent` grant in that store. The same grant check applies when the worker resolves a model for the current assignee.
+
+The worker processes each CRM task’s pending messages in order for the current assignment, and a manager can take over in the same thread. Knowledge draws on permitted sources linked to the customer’s sending profile and the assigned assistant’s profile, along with the store’s applicable expertise. The composer saves the model choice on each message, and RBAC resolves it through an active provider connection allowed for the current stage.
 
 Each external call has an attempt ID and a reserved maximum. Settlement records the provider's charge or a rate-card estimate, the internal currency transfers and the released amount. The technical provider Subject identifies the external account. Replies use the assigned executor and the current stage. The customer can read the result from the original conversation. [Wallet operations](relations/subjects-to-wallet-operations/README.md)
 

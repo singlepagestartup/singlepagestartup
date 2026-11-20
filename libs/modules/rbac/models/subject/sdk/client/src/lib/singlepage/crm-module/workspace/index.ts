@@ -24,9 +24,12 @@ type TProps<R extends TReader> = Parameters<TReaders[R]>[0];
 type TResult<R extends TReader> = Awaited<ReturnType<TReaders[R]>>;
 
 const topics = [
+  "rbac.subjects",
   "rbac.subjects-to-ecommerce-module-stores",
+  "rbac.subjects-to-social-module-profiles",
   "ecommerce.stores",
   "ecommerce.products",
+  "ecommerce.stores-to-products",
   "ecommerce.orders",
   "crm.funnels",
   "crm.funnel-publications",
@@ -34,6 +37,8 @@ const topics = [
   "crm.task-events",
   "social.threads-to-crm-module-tasks",
   "social.threads",
+  "social.profiles",
+  "social.profiles-to-skills",
   "rbac.subjects-to-wallet-operations",
 ];
 
@@ -90,6 +95,21 @@ function useCommand(id: string) {
         requestId: createId(),
       });
       await invalidateRouteQueries(queryClient, workspaceRoute(id));
+      if (
+        result.kind === "create-employee" ||
+        result.kind === "open-employee-chat"
+      ) {
+        await invalidateRouteQueries(
+          queryClient,
+          `${route}/${id}/social-module/profiles`,
+        );
+      }
+      if (result.kind === "refresh-test") {
+        await invalidateRouteQueries(
+          queryClient,
+          `${route}/${id}/customer-work/threads/${result.data.threadId}`,
+        );
+      }
     },
   });
 }

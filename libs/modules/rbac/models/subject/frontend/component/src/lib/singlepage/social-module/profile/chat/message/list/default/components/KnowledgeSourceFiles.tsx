@@ -10,6 +10,7 @@ import type { KnowledgeSource } from "../types";
 
 interface IProps {
   scope: IScope;
+  language: string;
   disabled?: boolean;
   onUpdated: (source: KnowledgeSource) => void;
 }
@@ -17,12 +18,14 @@ interface IRowProps {
   id: string;
   title: string;
   fileUrl: string | null;
+  language: string;
   busy: boolean;
   disabled: boolean;
   onReplace: (id: string) => void;
   onRemove: (id: string) => void;
 }
 const Row = memo(function Row(props: IRowProps) {
+  const ru = props.language === "ru";
   return (
     <li className="flex flex-wrap items-center gap-2 rounded-md border p-2 text-xs">
       <span className="min-w-0 flex-1 break-all">{props.title}</span>
@@ -32,9 +35,9 @@ const Row = memo(function Row(props: IRowProps) {
             href={props.fileUrl}
             target="_blank"
             rel="noopener noreferrer"
-            aria-label={`Open ${props.title}`}
+            aria-label={ru ? `Открыть ${props.title}` : `Open ${props.title}`}
           >
-            Open
+            {ru ? "Открыть" : "Open"}
           </a>
         </Button>
       ) : null}
@@ -46,7 +49,7 @@ const Row = memo(function Row(props: IRowProps) {
         disabled={props.disabled || props.busy}
         onClick={() => props.onReplace(props.id)}
       >
-        Replace
+        {ru ? "Заменить" : "Replace"}
       </Button>
       <Button
         type="button"
@@ -56,12 +59,13 @@ const Row = memo(function Row(props: IRowProps) {
         disabled={props.disabled || props.busy}
         onClick={() => props.onRemove(props.id)}
       >
-        Detach
+        {ru ? "Убрать" : "Detach"}
       </Button>
     </li>
   );
 });
 export function KnowledgeSourceFiles(props: IProps) {
+  const ru = props.language === "ru";
   const files = useFiles(props.scope);
   const input = useRef<HTMLInputElement>(null);
   const [replacingId, setReplacingId] = useState<string | null>(null);
@@ -69,8 +73,13 @@ export function KnowledgeSourceFiles(props: IProps) {
   const update = useUpdateFiles({
     onSuccess(result) {
       if (result.source) props.onUpdated(result.source);
-      if (result.processingError) toast.error(result.processingError);
-      else toast.success("Materials analyzed");
+      if (result.processingError) {
+        toast.error(
+          ru ? "Не удалось разобрать материалы." : result.processingError,
+        );
+      } else {
+        toast.success(ru ? "Материалы обработаны" : "Materials analyzed");
+      }
       void files.refetch();
     },
   });
@@ -87,15 +96,21 @@ export function KnowledgeSourceFiles(props: IProps) {
       setProcessingId(id);
       try {
         await update.mutateAsync({ ...props.scope, data });
-      } catch (error: any) {
-        toast.error(error instanceof Error ? error.message : String(error));
+      } catch (error) {
+        toast.error(
+          ru
+            ? "Не удалось обновить файлы."
+            : error instanceof Error
+              ? error.message
+              : String(error),
+        );
         void files.refetch();
       } finally {
         setProcessingId(null);
         setReplacingId(null);
       }
     },
-    [update.mutateAsync, props.scope, files.refetch],
+    [update.mutateAsync, props.scope, files.refetch, ru],
   );
   const replace = useCallback((id: string) => {
     setReplacingId(id);
@@ -110,7 +125,9 @@ export function KnowledgeSourceFiles(props: IProps) {
   return (
     <div className="space-y-2 border-t px-6 py-3">
       <div className="flex items-center justify-between">
-        <h3 className="text-sm font-medium">Attached materials</h3>
+        <h3 className="text-sm font-medium">
+          {ru ? "Прикреплённые материалы" : "Attached materials"}
+        </h3>
         <Button
           type="button"
           variant="outline"
@@ -122,7 +139,7 @@ export function KnowledgeSourceFiles(props: IProps) {
             input.current?.click();
           }}
         >
-          Add files
+          {ru ? "Добавить файлы" : "Add files"}
         </Button>
       </div>
       <input
@@ -130,7 +147,7 @@ export function KnowledgeSourceFiles(props: IProps) {
         className="hidden"
         type="file"
         multiple
-        aria-label="Knowledge files"
+        aria-label={ru ? "Файлы источника знаний" : "Knowledge files"}
         onChange={(event) => {
           const selected = Array.from(event.target.files || []);
           event.target.value = "";
@@ -155,12 +172,16 @@ export function KnowledgeSourceFiles(props: IProps) {
             void mutate({ reanalyze: true }, "analysis");
           }}
         >
-          Analyze files
+          {ru ? "Разобрать файлы" : "Analyze files"}
         </Button>
       ) : null}
-      {files.isLoading ? <p className="text-xs">Loading files…</p> : null}
+      {files.isLoading ? (
+        <p className="text-xs">{ru ? "Загружаем файлы…" : "Loading files…"}</p>
+      ) : null}
       {files.isError ? (
-        <p className="text-xs text-red-600">Could not load materials.</p>
+        <p className="text-xs text-red-600">
+          {ru ? "Не удалось загрузить материалы." : "Could not load materials."}
+        </p>
       ) : null}
       <ul className="space-y-1">
         {files.data?.map(({ file }) => (
@@ -168,6 +189,7 @@ export function KnowledgeSourceFiles(props: IProps) {
             key={file.id}
             id={file.id}
             title={file.adminTitle || file.alt || file.id}
+            language={props.language}
             fileUrl={
               file.file
                 ? /^https?:\/\//i.test(file.file)
@@ -184,12 +206,16 @@ export function KnowledgeSourceFiles(props: IProps) {
       </ul>
       {update.isPending ? (
         <p className="text-xs text-slate-600">
-          Analyzing all attached materials…
+          {ru
+            ? "Разбираем прикреплённые материалы…"
+            : "Analyzing all attached materials…"}
         </p>
       ) : null}
       {props.disabled ? (
         <p className="text-xs text-slate-600">
-          Save your text changes before changing files.
+          {ru
+            ? "Сохраните текст, прежде чем менять файлы."
+            : "Save your text changes before changing files."}
         </p>
       ) : null}
     </div>

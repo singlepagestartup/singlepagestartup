@@ -1,7 +1,6 @@
 "use client";
 
 import { KnowledgeCommandPicker } from "./KnowledgeCommandPicker";
-import { OpenRouterControls } from "./OpenRouterControls";
 import {
   SelectedComposerPills,
   type SelectedComposerFile,
@@ -9,12 +8,7 @@ import {
 import { SkillMentionPicker } from "./SkillMentionPicker";
 import { useChatComposer } from "../hooks/use-chat-composer";
 import { ThreadMessagesCache } from "../hooks/use-thread-messages-refetch";
-import {
-  OpenRouterChatModelGroup,
-  OpenRouterReasoningOption,
-  OpenRouterReasoningValue,
-  SocialSkill,
-} from "../types";
+import type { IChatModelControls, SocialSkill } from "../types";
 import {
   filterSkillMentionOptions,
   getKnowledgeCommandMatch,
@@ -25,7 +19,8 @@ import {
   shouldShowKnowledgeMentionOption,
 } from "../utils";
 import { Form } from "@sps/shared-ui-shadcn";
-import { Paperclip, Send } from "lucide-react";
+import { ModelPicker } from "@sps/ui-adapter";
+import { BookOpen, Paperclip, Send } from "lucide-react";
 import { Controller, useWatch } from "react-hook-form";
 import {
   useCallback,
@@ -38,13 +33,13 @@ import {
 } from "react";
 
 interface ComposerProps {
+  isEmployeeChat?: boolean;
+  onEmployeeProfileOpen?: () => void;
+  onEmployeeMessageSaved?: () => void;
   isCustomerWork: boolean;
-  canSelectOpenRouterReasoning: boolean;
   canUseKnowledge: boolean;
   clearSelectedSkills: () => void;
   isArtificialIntelligenceOpponent: boolean;
-  isOpenRouterModelFavoritesUpdating: boolean;
-  isOpenRouterModelsLoading: boolean;
   isSkillOptionsLoading: boolean;
   language: string;
   /**
@@ -53,24 +48,14 @@ interface ComposerProps {
    * composer boundary (issue #195).
    */
   markShouldScrollToBottom: () => void;
-  onOpenRouterModelFavoriteToggle: (modelId: string) => void;
-  onOpenRouterModelChange: (value: string) => void;
-  onOpenRouterReasoningChange: (value: OpenRouterReasoningValue) => void;
+  modelControls?: IChatModelControls;
   onRemoveSelectedSkill: (skillId: string) => void;
   onSkillSelect: (skill: SocialSkill) => void;
-  openRouterFavoriteModelIds: string[];
-  openRouterModelGroups: OpenRouterChatModelGroup[];
-  openRouterModelId: string;
-  openRouterModelLabel: string;
-  openRouterReasoning: OpenRouterReasoningValue;
-  openRouterReasoningLabel: string;
-  openRouterReasoningOptions: OpenRouterReasoningOption[];
   profileSkills: SocialSkill[];
   /** Lets the shell focus the textarea (e.g. after a skill is saved). */
   registerFocusComposerTextArea: (focus: () => void) => void;
   selectedSkillIds: string[];
   selectedSkills: SocialSkill[];
-  showOpenRouterControls: boolean;
   socialModuleChatId: string;
   socialModuleProfileId: string;
   socialModuleThreadId: string;
@@ -92,17 +77,26 @@ export function Composer(props: ComposerProps) {
   const keyboardHint = ru
     ? "Enter — отправить. Shift+Enter — новая строка."
     : "Enter to send. Shift+Enter for a new line.";
+  const placeholder = props.isEmployeeChat
+    ? ru
+      ? "Задайте вопрос или напишите «Запомни…», чтобы добавить знание сотруднику."
+      : "Ask a question or type “Remember…” to add to this employee’s knowledge."
+    : keyboardHint;
+  const { modelControls } = props;
   const composer = useChatComposer({
     isCustomerWork: props.isCustomerWork,
+    isEmployeeChat: props.isEmployeeChat,
+    onEmployeeMessageSaved: props.onEmployeeMessageSaved,
     subjectId: props.subjectId,
     socialModuleProfileId: props.socialModuleProfileId,
     socialModuleChatId: props.socialModuleChatId,
     socialModuleThreadId: props.socialModuleThreadId,
     clearSelectedSkills: props.clearSelectedSkills,
     markShouldScrollToBottom: props.markShouldScrollToBottom,
-    openRouterModelId: props.openRouterModelId,
-    openRouterReasoning: props.openRouterReasoning,
-    persistAiReactionRequest: props.isArtificialIntelligenceOpponent,
+    modelId: modelControls?.selectedModelId ?? "auto",
+    reasoning: modelControls?.selectedReasoning ?? "auto",
+    persistAiReactionRequest:
+      props.isArtificialIntelligenceOpponent && !props.isEmployeeChat,
     profileSkills: props.profileSkills,
     selectedSkillIds: props.selectedSkillIds,
     threadMessagesCache: props.threadMessagesCache,
@@ -135,8 +129,13 @@ export function Composer(props: ComposerProps) {
   // state lives in the shell, but its setter bails out when nothing changed,
   // so plain typing does not rerender the shell.
   useEffect(() => {
-    props.syncSelectedSkillsToDescription(description);
-  }, [description, props.syncSelectedSkillsToDescription]);
+    if (!props.isEmployeeChat)
+      props.syncSelectedSkillsToDescription(description);
+  }, [
+    description,
+    props.isEmployeeChat,
+    props.syncSelectedSkillsToDescription,
+  ]);
 
   const fileSequence = useRef(0);
   const fileIds = useRef(new WeakMap<File, string>());
@@ -174,6 +173,7 @@ export function Composer(props: ComposerProps) {
   }, [selectedFiles]);
   const canSubmit =
     (Boolean(description?.trim()) || selectedFileItems.length > 0) &&
+    !modelControls?.isSelectionUnavailable &&
     !composer.createMessage.isPending;
 
   const knowledgeCommandMatch = getKnowledgeCommandMatch(description);
@@ -202,9 +202,15 @@ export function Composer(props: ComposerProps) {
     props.canUseKnowledge && shouldShowKnowledgeMentionOption(description)
       ? knowledgeMentionOption
       : null;
-  const isKnowledgeSearchSelected = hasKnowledgeMention(description);
+  const isKnowledgeSearchSelected =
+    !props.isEmployeeChat &&
+    !props.isCustomerWork &&
+    hasKnowledgeMention(description);
   const isSkillMentionPickerOpen =
-    Boolean(getSkillMentionMatch(description)) && !isKnowledgeCommandPickerOpen;
+    !props.isEmployeeChat &&
+    !props.isCustomerWork &&
+    Boolean(getSkillMentionMatch(description)) &&
+    !isKnowledgeCommandPickerOpen;
 
   const knowledgeCommandCount =
     visibleKnowledgeChatCommands.length + visibleSlashSkillOptions.length;
@@ -475,30 +481,21 @@ export function Composer(props: ComposerProps) {
     }
   }
 
-  const openRouterControls = props.showOpenRouterControls ? (
-    <OpenRouterControls
-      favoriteModelIds={props.openRouterFavoriteModelIds}
-      isUpdatingFavorites={props.isOpenRouterModelFavoritesUpdating}
-      isLoadingModels={props.isOpenRouterModelsLoading}
-      language={props.language}
-      modelGroups={props.openRouterModelGroups}
-      onFavoriteToggle={props.onOpenRouterModelFavoriteToggle}
-      selectedModelId={props.openRouterModelId}
-      selectedModelLabel={props.openRouterModelLabel}
-      selectedReasoning={props.openRouterReasoning}
-      selectedReasoningLabel={props.openRouterReasoningLabel}
-      reasoningOptions={props.openRouterReasoningOptions}
-      showReasoningControl={props.canSelectOpenRouterReasoning}
-      onModelChange={props.onOpenRouterModelChange}
-      onReasoningChange={props.onOpenRouterReasoningChange}
-    />
-  ) : null;
+  const showModelPicker =
+    modelControls &&
+    (modelControls.mode === "assistant" ||
+      modelControls.modelGroups.some(({ models }) => models.length) ||
+      modelControls.isSelectionUnavailable);
 
   return (
     <Form {...composer.form}>
       <form
         className="max-h-[75%] min-w-0 shrink-0 overflow-y-auto border-t border-border p-4"
-        onSubmit={composer.form.handleSubmit(composer.onSubmit)}
+        onSubmit={composer.form.handleSubmit(async (data) => {
+          if (canSubmit) {
+            await composer.onSubmit(data);
+          }
+        })}
       >
         {isKnowledgeCommandPickerOpen ? (
           <KnowledgeCommandPicker
@@ -526,6 +523,7 @@ export function Composer(props: ComposerProps) {
         <input
           ref={composer.fileInputRef}
           type="file"
+          disabled={props.isEmployeeChat}
           multiple
           className="hidden"
           onChange={(event) => {
@@ -578,7 +576,7 @@ export function Composer(props: ComposerProps) {
                 }}
                 aria-label={ru ? "Сообщение" : "Message"}
                 aria-describedby={keyboardHintId}
-                placeholder={keyboardHint}
+                placeholder={placeholder}
                 rows={4}
                 className="h-32 min-h-24 max-h-[min(50dvh,480px)] w-full resize-y rounded-lg bg-transparent text-sm leading-6 outline-none placeholder:text-muted-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
                 onChange={(event) => {
@@ -594,13 +592,65 @@ export function Composer(props: ComposerProps) {
             <button
               type="button"
               className="inline-flex min-h-10 shrink-0 items-center gap-2 rounded-md text-xs font-semibold text-muted-foreground hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
-              onClick={() => composer.fileInputRef.current?.click()}
+              disabled={props.isEmployeeChat && !props.onEmployeeProfileOpen}
+              onClick={
+                props.isEmployeeChat
+                  ? props.onEmployeeProfileOpen
+                  : () => composer.fileInputRef.current?.click()
+              }
             >
-              <Paperclip className="size-4" aria-hidden="true" />
-              {ru ? "Прикрепить файлы" : "Attach files"}
+              {props.isEmployeeChat ? (
+                <>
+                  <BookOpen className="size-4" aria-hidden="true" />
+                  {ru ? "Знания сотрудника" : "Employee knowledge"}
+                </>
+              ) : (
+                <>
+                  <Paperclip className="size-4" aria-hidden="true" />
+                  {ru ? "Прикрепить файлы" : "Attach files"}
+                </>
+              )}
             </button>
             <div className="ml-auto flex min-w-0 flex-wrap items-center justify-end gap-2">
-              {openRouterControls}
+              {showModelPicker && (
+                <ModelPicker
+                  key={props.socialModuleThreadId}
+                  {...modelControls}
+                  language={props.language}
+                  modelLabel={
+                    props.isCustomerWork || props.isEmployeeChat
+                      ? ru
+                        ? "Модель ответа"
+                        : "Reply model"
+                      : ru
+                        ? "Выбрать модель OpenRouter"
+                        : "Select OpenRouter model"
+                  }
+                  autoLabel={
+                    props.isCustomerWork || props.isEmployeeChat
+                      ? ru
+                        ? props.isEmployeeChat
+                          ? "Модель сотрудника"
+                          : "Модель этапа"
+                        : props.isEmployeeChat
+                          ? "Employee default"
+                          : "Stage default"
+                      : ru
+                        ? "Авто"
+                        : "Auto"
+                  }
+                  reasoningControlLabel={
+                    props.isCustomerWork || props.isEmployeeChat
+                      ? undefined
+                      : ru
+                        ? "Выбрать режим рассуждения OpenRouter"
+                        : "Select OpenRouter thinking"
+                  }
+                  showModelDescription={
+                    props.isCustomerWork || props.isEmployeeChat
+                  }
+                />
+              )}
               <button
                 type="submit"
                 className="inline-flex min-h-10 shrink-0 items-center gap-2 rounded-xl bg-primary px-4 text-sm font-semibold text-primary-foreground hover:bg-primary/90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring disabled:opacity-50"

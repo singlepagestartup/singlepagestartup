@@ -132,7 +132,9 @@ a rate-card estimate.
 
 For a commissioned cover, publish an image stage with `imageBrief: "marketplace-cover"`. The preceding chat stages collect the buyer’s palette, font, product photo, composition, caption and dimensions. A style reference is optional. The agent summarizes the materials in the order’s Social thread and waits for the buyer to confirm that version of the brief. A corrected brief requires a new confirmation.
 
-The image provider generates the background. The worker places the original product photo and the caption rendered in the supplied font on the requested canvas. It publishes a private original and preview. The agent’s reply links the version to its order. The buyer can accept it in the same thread and download the original after payment.
+The buyer can remove the caption panel by entering `Caption background: transparent` or `Подложка надписи: без плашки` in the brief. The caption keeps its approved color and font.
+
+With direct OpenAI and an opaque product photo, the worker sends the photo as a reference to the Images API to render the product in a new scene. For transparent packshots and OpenRouter requests, the provider generates a background and the worker composites the original photo onto it. In both modes, the worker produces the cover at the requested dimensions and renders any caption once in the supplied font. It publishes a private original and preview. The agent’s reply links the version to its order. The buyer can accept it in the same thread and download the original after payment.
 
 ### Maintain a store knowledge index
 

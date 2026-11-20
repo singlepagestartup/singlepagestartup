@@ -17,6 +17,7 @@ interface ProfileSidebarPanelProps {
   onSkillCreate?: (profile: ISocialModuleProfile) => void;
   onSkillEdit?: (skill: SocialSkill) => void;
   profile: ISocialModuleProfile | null;
+  profileCaption?: string;
   selectedKnowledgeSource?: KnowledgeSource | null;
   skills: SocialSkill[];
 }
@@ -32,6 +33,7 @@ export function ProfileSidebarPanel(props: ProfileSidebarPanelProps) {
       variant="chat-profile-sidebar"
       dataSource="props"
       data={props.profile}
+      profileCaption={props.profileCaption}
       language={props.language}
       skills={props.skills}
       knowledgeSources={props.knowledgeSources}

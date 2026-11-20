@@ -8,6 +8,7 @@ export function Component(props: IComponentPropsExtended) {
       className={props.className}
       data={props.data}
       language={props.language}
+      profileCaption={props.profileCaption}
       skills={props.skills}
       knowledgeSources={props.knowledgeSources}
       selectedKnowledgeSource={props.selectedKnowledgeSource}

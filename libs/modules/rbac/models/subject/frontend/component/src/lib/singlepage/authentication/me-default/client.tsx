@@ -3,7 +3,7 @@ import "client-only";
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useJwt } from "react-jwt";
-import { useQueryClient } from "@tanstack/react-query";
+import { useMutationState, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { api } from "@sps/rbac/models/subject/sdk/client";
 import { route } from "@sps/rbac/models/subject/sdk/model";
@@ -33,6 +33,23 @@ function readAuthenticationJwtCookie() {
   } catch {
     return cookie.slice(authenticationJwtCookieName.length + 1);
   }
+}
+
+function PendingAuthentication({
+  skeleton,
+  fallback,
+}: Pick<IComponentProps, "skeleton" | "fallback">) {
+  const init = api.authenticationInit({
+    reactQueryOptions: { enabled: false },
+  });
+  const refresh = useMutationState({
+    filters: { mutationKey: [`${route}/authentication/refresh`] },
+    select: (mutation) => mutation.state.status,
+  });
+  if (!init.isFetching && (init.isError || refresh.at(-1) === "error")) {
+    return fallback ?? <Skeleton />;
+  }
+  return skeleton ?? <Skeleton />;
 }
 
 export default function Client(props: IComponentProps) {
@@ -152,6 +169,14 @@ export default function Client(props: IComponentProps) {
   ]);
 
   if (!rawToken || !decoded?.subject || token.isExpired) {
+    if (props.waitForAuthenticationInit) {
+      return (
+        <PendingAuthentication
+          skeleton={props.skeleton}
+          fallback={props.fallback}
+        />
+      );
+    }
     return props.unauthenticatedRedirectHref
       ? (props.skeleton ?? <Skeleton />)
       : (props.fallback ?? <Skeleton />);

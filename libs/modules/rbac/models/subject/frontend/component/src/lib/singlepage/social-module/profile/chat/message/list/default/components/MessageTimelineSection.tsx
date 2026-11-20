@@ -15,6 +15,7 @@ import { memo, useEffect, useMemo, type MutableRefObject } from "react";
 
 interface MessageTimelineSectionProps {
   isCustomerWork: boolean;
+  isEmployeeChat?: boolean;
   language: string;
   participants?: ISocialModuleProfile[];
   /**
@@ -56,7 +57,10 @@ export const MessageTimelineSection = memo(function MessageTimelineSection(
     data: loadedMessages,
     error: messagesError,
     isLoading: socialModuleMessagesIsLoading,
-  } = useThreadMessages(props, props.isCustomerWork ? 3000 : false);
+  } = useThreadMessages(
+    props,
+    props.isCustomerWork || props.isEmployeeChat ? 3000 : false,
+  );
   const {
     data: loadedActions,
     error: actionsError,
@@ -149,7 +153,7 @@ export const MessageTimelineSection = memo(function MessageTimelineSection(
             return (
               <div
                 key={placeholderIndex}
-                className="h-16 w-3/4 animate-pulse rounded-2xl bg-muted even:ml-auto even:w-1/2"
+                className="h-16 w-3/4 motion-safe:animate-pulse rounded-2xl bg-muted even:ml-auto even:w-1/2"
               />
             );
           })}

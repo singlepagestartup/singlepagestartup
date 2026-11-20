@@ -1,8 +1,20 @@
 import { z } from "zod";
+import { providerReasoningEffortValues } from "@sps/shared-utils";
 
 const text = z.string().trim().min(1).max(150);
 const secret = z.string().min(8).max(8192).regex(/^\S+$/);
 const money = z.string().regex(/^(0|[1-9]\d{0,15})(\.\d{1,12})?$/);
+export const PROVIDER_MODEL_SELECTION_METADATA_KEY = "provider";
+export const providerModelSelection = z
+  .object({
+    modelId: text,
+    reasoning: z.enum(providerReasoningEffortValues).optional(),
+  })
+  .strict()
+  .refine(({ modelId, reasoning }) => modelId !== "auto" || !reasoning, {
+    path: ["reasoning"],
+  });
+export type IProviderModelSelection = z.infer<typeof providerModelSelection>;
 export const providerType = z.enum(["openrouter", "openai"]);
 export const providerCapability = z.enum([
   "text",
@@ -46,6 +58,7 @@ export const connectionCommand = z.discriminatedUnion("operation", [
       label: text,
       externalAccount: text,
       provider: providerType,
+      executorId: z.uuid().optional(),
       secret,
     })
     .strict(),
@@ -117,6 +130,7 @@ export type IProviderTerms = z.infer<typeof providerTerms>;
 export interface IProviderSettings {
   nextCursor: string | null;
   assistants: Array<{ id: string; label: string }>;
+  executorSubjects?: Array<{ id: string; label: string }>;
   connections: Array<
     Pick<
       import("@sps/rbac/relations/subjects-to-provider-identities/sdk/model").IModel,
@@ -131,4 +145,33 @@ export interface IProviderSettings {
   >;
   assignments: import("@sps/rbac/relations/subjects-to-provider-agents/sdk/model").IModel[];
   operations: import("@sps/rbac/relations/subjects-to-wallet-operations/sdk/model").IModel[];
+}
+
+export interface IProviderChatModelOption {
+  id: string;
+  /** Favorite identity shared by equivalent model codes. Dispatch uses id. */
+  canonicalId?: string;
+  name: string;
+  description: string;
+  contextLength: number;
+  inputModalities: string[];
+  outputModalities: string[];
+  supportedParameters: string[];
+  supportsReasoning: boolean;
+  reasoning: import("@sps/shared-utils").IProviderModelReasoning | null;
+}
+
+export interface IProviderChatModelGroup {
+  id: "text" | "vision_file" | "image" | "audio";
+  title: string;
+  models: IProviderChatModelOption[];
+}
+
+export interface IProviderChatModelsResult {
+  auto: {
+    id: "auto";
+    name: string;
+    description: string;
+  };
+  groups: IProviderChatModelGroup[];
 }

@@ -6,7 +6,9 @@ interface IService {
   assertChatAccess(input: {
     subjectId: string;
     chatId: string;
+    threadId?: string;
     edit: boolean;
+    targetProfileId?: string;
   }): Promise<void>;
 }
 
@@ -19,7 +21,15 @@ export class Middleware {
         const subjectId = c.req.param("id");
         const chatId = c.req.param("socialModuleChatId");
         if (subjectId && chatId) {
-          await this.customerWork.assertChatAccess({ subjectId, chatId, edit });
+          const threadId = c.req.param("socialModuleThreadId");
+          const targetProfileId = c.req.param("targetSocialModuleProfileId");
+          await this.customerWork.assertChatAccess({
+            subjectId,
+            chatId,
+            threadId,
+            edit,
+            ...(targetProfileId ? { targetProfileId } : {}),
+          });
         }
         return next();
       } catch (error) {

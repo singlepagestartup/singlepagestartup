@@ -17,6 +17,7 @@ import {
 import { createService } from "@sps/agent/models/work-attempt/backend/app/api/src/lib/bootstrap";
 import { Handler as MessageHandler } from "@sps/rbac/models/subject/backend/app/api/src/lib/controller/singlepage/social-module/profile/find-by-id/chat/find-by-id/message/create";
 import { Table as Wallet } from "@sps/rbac/relations/subjects-to-billing-module-currencies/backend/repository/database";
+import { Table as Task } from "@sps/crm/models/task/backend/repository/database";
 import { Table as ThreadMessage } from "@sps/social/relations/threads-to-messages/backend/repository/database";
 import { Table as SocialMessage } from "@sps/social/models/message/backend/repository/database";
 import type { IChatMessage } from "@sps/social/models/message/sdk/model";
@@ -128,6 +129,98 @@ async function verifyCover(provider: "openai" | "openrouter") {
           expect(cart.work?.state).toBe("discussion-unavailable");
           expect(cart.discussion).toBeUndefined();
         }
+        const catalogFact =
+          "Стул коллекции «Линия А17» сделан из гнутого ясеня.";
+        const composition = "Поставь стул на низкий архитектурный подиум.";
+        const route = new Hono();
+        route.post(
+          "/subjects/:id/profiles/:socialModuleProfileId/chats/:socialModuleChatId/threads/:socialModuleThreadId/messages",
+          (context, next) => new MessageHandler(subject).execute(context, next),
+        );
+        let employeeId: string | undefined;
+        let stageSkill: string | undefined;
+        if (startsInIntake) {
+          const create = {
+            kind: "create-employee" as const,
+            employee: {
+              storeId: store.id,
+              name: "Дизайнер обложек",
+              operationKey: randomUUID(),
+            },
+          };
+          await expect(
+            subject.crmWorkspace.execute(stranger.id, create),
+          ).rejects.toThrow();
+          const created = await subject.crmWorkspace.execute(owner.id, create);
+          if (created.kind !== "create-employee")
+            throw new Error("Expected an employee");
+          const employee = created.data;
+          employeeId = employee.id;
+          expect(await subject.crmWorkspace.execute(owner.id, create)).toEqual(
+            created,
+          );
+          const opened = await subject.crmWorkspace.execute(owner.id, {
+            kind: "open-employee-chat",
+            employee: { storeId: store.id, subjectId: employee.id },
+          });
+          expect(opened.data).toEqual(employee);
+          const [membership] = await rbac.subjectsToSocialModuleProfiles.find({
+            params: {
+              filters: {
+                and: [
+                  { column: "subjectId", method: "eq", value: owner.id },
+                  { column: "variant", method: "eq", value: "default" },
+                ],
+              },
+            },
+          });
+          const form = new FormData();
+          form.set(
+            "data",
+            JSON.stringify({
+              sourceSystemId: randomUUID(),
+              description: "Запомни: " + catalogFact,
+            }),
+          );
+          const endpoint = `/subjects/${owner.id}/profiles/${membership.socialModuleProfileId}/chats/${employee.chatId}/threads/${employee.threadId}/messages`;
+          for (let retry = 0; retry < 2; retry++) {
+            const response = await route.request(endpoint, {
+              method: "POST",
+              body: form,
+            });
+            if (!response.ok) throw new Error(await response.text());
+          }
+          const links = await social.profilesToKnowledgeModuleSources.find({
+            params: {
+              filters: {
+                and: [
+                  {
+                    column: "profileId",
+                    method: "eq",
+                    value: employee.profileId,
+                  },
+                ],
+              },
+            },
+          });
+          expect(links).toHaveLength(1);
+          expect(
+            await worker.modules.knowledge.source.findById({
+              id: links[0].knowledgeModuleSourceId,
+            }),
+          ).toMatchObject({ content: expect.stringContaining(catalogFact) });
+          const skill = await social.skill.create({
+            data: { title: "Предметная съёмка", description: composition },
+          });
+          await social.profilesToSkills.create({
+            data: { profileId: employee.profileId, skillId: skill.id },
+          });
+          stageSkill = skill.id;
+          expect(
+            (await subject.crmWorkspace.options(owner.id, store.id))
+              .skillsByAssignee[employee.id],
+          ).toContainEqual({ id: skill.id, title: skill.title });
+        }
         const funnel = await crm.funnel.saveDraft({
           storeId: store.id,
           name: "Commissioned cover",
@@ -147,6 +240,7 @@ async function verifyCover(provider: "openai" | "openrouter") {
                     {
                       id: "intake",
                       name: "Бриф",
+                      defaultAssigneeSubjectId: employeeId,
                       instruction: "Уточните детали для обложки.",
                       actions: [
                         {
@@ -163,10 +257,30 @@ async function verifyCover(provider: "openai" | "openrouter") {
               {
                 id: "design",
                 name: "Обложка",
+                defaultAssigneeSubjectId: employeeId,
+                skillIds: stageSkill ? [stageSkill] : [],
                 instruction: "Подготовить обложку товара.",
                 output: "image",
                 imageBrief: "marketplace-cover",
-                actions: [],
+                waiting: startsInIntake
+                  ? undefined
+                  : {
+                      expectedEvent: "message",
+                      deadlineSeconds: 900,
+                      reminderSeconds: [60, 120],
+                      completionEvidence: [],
+                    },
+                actions: startsInIntake
+                  ? []
+                  : [
+                      {
+                        id: "stop-after-message",
+                        name: "Закрыть обсуждение",
+                        actors: ["human" as const],
+                        evidence: ["message" as const],
+                        outcome: "closed-without-result" as const,
+                      },
+                    ],
               },
             ],
           },
@@ -328,12 +442,6 @@ async function verifyCover(provider: "openai" | "openrouter") {
             },
           },
         });
-        const route = new Hono();
-        route.post(
-          "/subjects/:id/profiles/:socialModuleProfileId/chats/:socialModuleChatId/threads/:socialModuleThreadId/messages",
-          (context, next) => new MessageHandler(subject).execute(context, next),
-        );
-
         let sequence = Date.now();
         const setHistoryTime = async (messageId: string, createdAt: Date) => {
           await tx
@@ -350,11 +458,16 @@ async function verifyCover(provider: "openai" | "openrouter") {
           sequence += 1000;
           return setHistoryTime(messageId, new Date(sequence));
         };
-        const submit = async (text: string, file?: File) => {
+        const post = async (
+          text: string,
+          file?: File,
+          sourceSystemId = randomUUID(),
+          metadata?: Record<string, unknown>,
+        ) => {
           const form = new FormData();
           form.set(
             "data",
-            JSON.stringify({ sourceSystemId: randomUUID(), description: text }),
+            JSON.stringify({ sourceSystemId, description: text, metadata }),
           );
           if (file) {
             form.append("files", file);
@@ -367,6 +480,9 @@ async function verifyCover(provider: "openai" | "openrouter") {
           const { data: message }: { data: IChatMessage } =
             await response.json();
           await advanceHistory(message.id);
+          return message;
+        };
+        const dispatch = async (message: IChatMessage) => {
           const request = await subject.customerWork.pendingForMessage({
             threadId: view.threadId,
             messageId: message.id,
@@ -396,6 +512,10 @@ async function verifyCover(provider: "openai" | "openrouter") {
           await subject.customerWork.ack(request);
           return { ...result, reply, request, message };
         };
+        const submit = async (text: string, file?: File) => {
+          const message = await post(text, file);
+          return dispatch(message);
+        };
 
         const pixels = await sharp({
           create: {
@@ -422,42 +542,69 @@ async function verifyCover(provider: "openai" | "openrouter") {
           .toBuffer();
         const url =
           provider === "openai"
-            ? "https://api.openai.com/v1/images/generations"
+            ? "https://api.openai.com/v1/images/edits"
             : "https://openrouter.ai/api/v1/images";
         let backgroundsSent = 0;
         let intakeCalls = 0;
+        let previousIntakeReply: string | undefined;
+        let beforeIntakeResponse: (() => Promise<void>) | undefined;
         const network = jest
           .spyOn(globalThis, "fetch")
           .mockImplementation(async (destination, init) => {
+            if (String(destination) === "https://openrouter.ai/api/v1/models") {
+              return Response.json({
+                data: [
+                  {
+                    id: "test-intake-model",
+                    supported_parameters: ["reasoning"],
+                    reasoning: { supported_efforts: ["high"] },
+                  },
+                ],
+              });
+            }
             expect(new Headers(init?.headers).get("Authorization")).toBe(
               "Bearer offline-cover-key",
             );
-            const body = JSON.parse(String(init?.body));
             if (
               startsInIntake &&
               String(destination) ===
                 "https://openrouter.ai/api/v1/chat/completions"
             ) {
+              const body = JSON.parse(String(init?.body));
+              // The buyer never supplied this catalog fact. It must come from the trained employee.
+              expect(JSON.stringify(body.messages)).toContain(catalogFact);
+              expect(JSON.stringify(body.messages)).not.toContain(composition);
               intakeCalls += 1;
               const ready = body.messages.at(-1)?.content === "Формат: 3:4";
+              if (ready) {
+                expect(body.reasoning).toEqual({ effort: "high" });
+              }
               expect(body.messages[0].content).toContain(
                 "include its exact actionId in the same JSON response",
               );
               expect(body.messages[0].content).toContain(
                 "ask only for the missing information in the current stage",
               );
-              if (intakeCalls > 1) {
+              if (previousIntakeReply) {
                 expect(body.messages).toContainEqual({
                   role: "assistant",
-                  content: `Уточняю детали. Ответ ${intakeCalls - 1}.`,
+                  content: previousIntakeReply,
                 });
               }
               const result = {
-                reply: ready
-                  ? "Непривязанный ответ модели"
-                  : `Уточняю детали. Ответ ${intakeCalls}.`,
+                reply: ready ? "Непривязанный ответ модели" : "",
                 actionId: ready ? "advance" : null,
+                clarification: ready
+                  ? ""
+                  : `Уточняю детали. Ответ ${intakeCalls}.`,
               };
+              if (beforeIntakeResponse) {
+                const operation = beforeIntakeResponse;
+                beforeIntakeResponse = undefined;
+                await operation();
+              } else if (!ready) {
+                previousIntakeReply = result.clarification;
+              }
               return Response.json({
                 id: `cover-intake-${intakeCalls}`,
                 choices: [{ message: { content: JSON.stringify(result) } }],
@@ -470,22 +617,51 @@ async function verifyCover(provider: "openai" | "openrouter") {
             }
             expect(String(destination)).toBe(url);
             backgroundsSent += 1;
-            expect(body.prompt).toContain("1200×1600");
-            expect(body.prompt).toContain("чистый студийный");
-            expect(body.prompt).toContain(palette);
-            expect(body.prompt).toContain("мягкая тень у стула");
-            expect(body.prompt).toContain("Оставьте внизу место для подписи.");
-            expect(body.prompt).toContain("минимализм");
-            expect(body.prompt).not.toContain("Стул Берёза");
-            expect(String(init?.body)).not.toMatch(
+            let prompt: string;
+            if (provider === "openai") {
+              expect(init?.body).toBeInstanceOf(FormData);
+              const form = init?.body as FormData;
+              const images = form.getAll("image[]");
+              expect(images).toHaveLength(1);
+              const source = images[0] as File;
+              expect(source.name).toBe("source.jpg");
+              expect(source.type).toBe("image/jpeg");
+              expect(
+                await sharp(Buffer.from(await source.arrayBuffer())).metadata(),
+              ).toMatchObject({
+                width: 140,
+                height: 100,
+              });
+              prompt = String(form.get("prompt"));
+              expect(prompt).toContain("most prominent foreground item");
+              expect(prompt).toContain("Remove the original setting");
+              expect(prompt).toContain(
+                "Do not paste the original rectangular photo",
+              );
+            } else {
+              const request = JSON.parse(String(init?.body));
+              expect(request).not.toHaveProperty("reasoning");
+              expect(request).not.toHaveProperty("reasoning_effort");
+              prompt = request.prompt;
+              expect(prompt).toContain("Create only the background");
+              expect(prompt).toContain(composition);
+            }
+            expect(prompt).toContain("1200×1600");
+            expect(prompt).toContain("чистый студийный");
+            expect(prompt).toContain(palette);
+            expect(prompt).toContain("мягкая тень у стула");
+            expect(prompt).toContain("Оставьте внизу место для подписи.");
+            expect(prompt).toContain("минимализм");
+            expect(prompt).not.toContain("Стул Берёза");
+            expect(prompt).not.toMatch(
               /Фото стула|buyer-font|offline-cover-key|data:image|"b64_json"\s*:/,
             );
             const usage =
               provider === "openai"
                 ? {
-                    input_tokens: 10,
+                    input_tokens: 30,
                     output_tokens: 20,
-                    input_tokens_details: { text_tokens: 10, image_tokens: 0 },
+                    input_tokens_details: { text_tokens: 10, image_tokens: 20 },
                   }
                 : { prompt_tokens: 10, completion_tokens: 20, cost: 0.001 };
             return Response.json({
@@ -495,6 +671,208 @@ async function verifyCover(provider: "openai" | "openrouter") {
             });
           });
         try {
+          if (!startsInIntake) {
+            const scope = { storeId: store.id, taskId: view.taskId };
+            const opening = await crm.task.get(scope);
+            const forceReminder = async () => {
+              await tx
+                .update(Task)
+                .set({ nextActionAt: new Date(0) })
+                .where(eq(Task.id, view.taskId));
+              const scheduled = await crm.task.get(scope);
+              const timer = { ...scope, timerKey: scheduled.timer!.key };
+              const result = await crm.task.applyTimer(timer, (event) =>
+                subject.customerWork.deliverReminder({
+                  ...scope,
+                  eventId: event.id,
+                }),
+              );
+              expect(result).toMatchObject({
+                applied: true,
+                event: { kind: "reminder-due" },
+                task: { status: "waiting" },
+              });
+              expect(result.task.timer?.key).not.toBe(timer.timerKey);
+              expect((await crm.task.applyTimer(timer)).applied).toBe(false);
+              return result;
+            };
+            await subject.crmWorkspace.execute(owner.id, {
+              kind: "assign",
+              assignment: {
+                ...scope,
+                expectedRevision: opening.revision,
+                operationKey: randomUUID(),
+                assigneeId: owner.id,
+              },
+            });
+            const managed = await forceReminder();
+            expect(managed.task.timer).toMatchObject({
+              kind: "reminder",
+              number: 2,
+            });
+            expect(
+              (
+                await subject.customerWork.viewForThread(
+                  buyer.id,
+                  view.threadId,
+                )
+              ).messages,
+            ).toHaveLength(0);
+            await subject.crmWorkspace.execute(owner.id, {
+              kind: "assign",
+              assignment: {
+                ...scope,
+                expectedRevision: managed.task.revision,
+                operationKey: randomUUID(),
+                assigneeId: opening.assigneeId!,
+              },
+            });
+            const assisted = await forceReminder();
+            expect(assisted.task.timer?.kind).toBe("deadline");
+            expect(
+              (
+                await subject.customerWork.viewForThread(
+                  buyer.id,
+                  view.threadId,
+                )
+              ).messages,
+            ).toMatchObject([
+              {
+                author: "Личный ассистент",
+                kind: "operator",
+                body: expect.stringContaining("проверьте последнее обращение"),
+              },
+            ]);
+          }
+          if (startsInIntake) {
+            const scope = { storeId: store.id, taskId: view.taskId };
+            const taskWork = async () =>
+              (await subject.customerWork.listPendingWork()).filter(
+                ({ taskId }) => taskId === view.taskId,
+              );
+            const metadata = {
+              provider: { modelId: "test-intake-model" },
+              rbacAiReactionRequest: {
+                version: 1,
+                modelId: "auto",
+                reasoning: "low",
+                skillIds: [],
+                useKnowledgeSearch: false,
+              },
+            };
+            const key = randomUUID();
+            const first = await post(
+              "Первая деталь для брифа",
+              undefined,
+              key,
+              metadata,
+            );
+            expect(first.metadata).toMatchObject(metadata);
+            expect((await crm.task.get(scope)).assigneeId).toBe(employeeId);
+            const retry = await post(
+              "Первая деталь для брифа",
+              undefined,
+              key,
+              metadata,
+            );
+            expect(retry.id).toBe(first.id);
+            const second = await post("Вторая деталь для брифа");
+            await setHistoryTime(second.id, new Date(0));
+            const queued = await taskWork();
+            expect(queued).toHaveLength(1);
+            expect(queued[0]).toEqual(
+              await subject.customerWork.pendingForMessage({
+                threadId: view.threadId,
+                messageId: first.id,
+              }),
+            );
+            const firstContext = await subject.customerWork.contextForRun(
+              queued[0],
+            );
+            expect(
+              firstContext.messages.map(({ content }) => content),
+            ).not.toContain("Вторая деталь для брифа");
+            const firstReply = await dispatch(first);
+            expect(await taskWork()).toHaveLength(1);
+            const sameTime = new Date(0);
+            await setHistoryTime(first.id, sameTime);
+            const [next] = await taskWork();
+            const secondContext =
+              await subject.customerWork.contextForRun(next);
+            expect(
+              secondContext.messages.slice(-3).map(({ content }) => content),
+            ).toEqual([
+              "Первая деталь для брифа",
+              firstReply.reply.description,
+              "Вторая деталь для брифа",
+            ]);
+            await advanceHistory(first.id);
+            await advanceHistory(firstReply.reply.id);
+            await advanceHistory(second.id);
+            expect(intakeCalls).toBe(1);
+            expect(await worker.dispatch(firstReply.request)).toEqual({
+              id: firstReply.id,
+              state: "delivered",
+            });
+            expect(intakeCalls).toBe(1);
+            await dispatch(second);
+            expect(await taskWork()).toHaveLength(0);
+            expect(intakeCalls).toBe(2);
+
+            const oldMessage = await post("Сообщение перед передачей задачи");
+            const oldWork = await taskWork();
+            expect(oldWork).toHaveLength(1);
+            let duringHandoff: IChatMessage | undefined;
+            beforeIntakeResponse = async () => {
+              const task = await crm.task.get(scope);
+              await subject.crmWorkspace.execute(owner.id, {
+                kind: "assign",
+                assignment: {
+                  ...scope,
+                  expectedRevision: task.revision,
+                  operationKey: randomUUID(),
+                  assigneeId: owner.id,
+                },
+              });
+              duringHandoff = await post("Сообщение для менеджера");
+            };
+            const stale = await worker.dispatch(oldWork[0]);
+            expect(stale.state).toBe("stale");
+            expect(await taskWork()).toHaveLength(0);
+            expect(
+              (
+                await subject.customerWork.viewForThread(
+                  buyer.id,
+                  view.threadId,
+                )
+              ).messages.some(
+                ({ body }) => body === "Уточняю детали. Ответ 3.",
+              ),
+            ).toBe(false);
+            for (const message of [oldMessage, duringHandoff!]) {
+              await expect(
+                subject.customerWork.pendingForMessage({
+                  threadId: view.threadId,
+                  messageId: message.id,
+                }),
+              ).resolves.toBeNull();
+            }
+
+            const managed = await subject.crmWorkspace.detail(owner.id, scope);
+            expect(managed.task.assigneeKind).toBe("human");
+            expect(managed.assistant?.id).toBe(oldWork[0].assigneeId);
+            await subject.crmWorkspace.execute(owner.id, {
+              kind: "assign",
+              assignment: {
+                ...scope,
+                expectedRevision: managed.task.revision,
+                operationKey: randomUUID(),
+                assigneeId: managed.assistant!.id,
+              },
+            });
+            await submit("Сообщение после возврата ассистенту");
+            expect(intakeCalls).toBe(4);
+          }
           const originalPhoto = new File(
             [new Uint8Array(pixels)],
             "Фото стула.png",
@@ -536,7 +914,11 @@ async function verifyCover(provider: "openai" | "openrouter") {
             }),
           );
           const previewRequest = startsInIntake
-            ? await submit("Формат: 3:4")
+            ? await dispatch(
+                await post("Формат: 3:4", undefined, randomUUID(), {
+                  provider: { modelId: "test-intake-model", reasoning: "high" },
+                }),
+              )
             : fontReply;
           if (startsInIntake) {
             expect(intakeCalls).toBeGreaterThan(0);
@@ -664,7 +1046,9 @@ async function verifyCover(provider: "openai" | "openrouter") {
             ...data.subarray(3 * (1200 * y + x), 3 * (1200 * y + x) + 3),
           ];
           expect(rgb(3, 3)).toEqual([0x28, 0x4c, 0x36]);
-          expect(rgb(600, 650)).toEqual([0xc2, 0x57, 0x27]);
+          expect(rgb(600, 650)).toEqual(
+            provider === "openai" ? [0x28, 0x4c, 0x36] : [0xc2, 0x57, 0x27],
+          );
           expect(rgb(200, 1290)).toEqual([0xff, 0xf7, 0xe7]);
           expect(
             data.includes(
@@ -676,6 +1060,130 @@ async function verifyCover(provider: "openai" | "openrouter") {
           ).toBe(true);
         } finally {
           network.mockRestore();
+        }
+        if (provider === "openai") {
+          const command = {
+            kind: "start-test" as const,
+            test: {
+              ...offerScope,
+              funnelId: funnel.id,
+              operationKey: randomUUID(),
+            },
+          };
+          await expect(
+            subject.crmWorkspace.execute(stranger.id, command),
+          ).rejects.toThrow("another owner");
+          const opened = await subject.crmWorkspace.execute(owner.id, command);
+          expect(await subject.crmWorkspace.execute(owner.id, command)).toEqual(
+            opened,
+          );
+          if (opened.kind !== "start-test")
+            throw new Error("Expected a store test");
+          const first = await subject.customerWork.viewForThread(
+            owner.id,
+            opened.data.threadId,
+          );
+          expect(first).toMatchObject({
+            taskId: opened.data.id,
+            assignment: "assistant",
+            storeTest: {
+              storeSlug: store.slug,
+              funnelId: funnel.id,
+              version: 1,
+            },
+          });
+          expect(first?.orderId).toBeDefined();
+          expect(
+            await ecommerce.order.findById({ id: first!.orderId! }),
+          ).toMatchObject({
+            status: "new",
+            variant: "store-test",
+          });
+          expect(
+            await subject.ecommerceModuleFindOpenCartOrderWithProduct({
+              subjectId: owner.id,
+              productId: product.id,
+              offerId: offer.id,
+            }),
+          ).toBeNull();
+          const memberships = await social.profilesToChats.find({
+            params: {
+              filters: {
+                and: [
+                  { column: "chatId", method: "eq", value: opened.data.chatId },
+                ],
+              },
+            },
+          });
+          expect(memberships).toHaveLength(2);
+          await expect(
+            subject.customerWork.execute(owner.id, {
+              operation: "handoff",
+              storeId: store.id,
+              taskId: opened.data.id,
+              operationKey: randomUUID(),
+            }),
+          ).rejects.toThrow("no manager handoff");
+          const message = "Уточним параметры тестовой обложки.";
+          await subject.customerWork.execute(owner.id, {
+            operation: "message",
+            storeId: store.id,
+            taskId: opened.data.id,
+            operationKey: randomUUID(),
+            text: message,
+          });
+
+          const current = await crm.funnel.get(store.id, funnel.id);
+          const next = await subject.crmWorkspace.execute(owner.id, {
+            kind: "save",
+            draft: {
+              storeId: store.id,
+              funnelId: funnel.id,
+              expectedRevision: current.revision,
+              name: "Updated cover test",
+              kind: current.kind,
+              productIds: [product.id],
+              definition: current.definition,
+            },
+          });
+          if (next.kind !== "save") throw new Error("Expected a saved funnel");
+          expect(next.data.bindings).toMatchObject({
+            offerIds: [offer.id],
+            productIds: [product.id],
+          });
+          await subject.crmWorkspace.execute(owner.id, {
+            kind: "publish",
+            publication: {
+              storeId: store.id,
+              funnelId: funnel.id,
+              expectedRevision: next.data.revision,
+              operationKey: randomUUID(),
+            },
+          });
+          expect(
+            await subject.customerWork.viewForThread(
+              owner.id,
+              opened.data.threadId,
+            ),
+          ).toMatchObject({ storeTest: { version: 1 } });
+          const continued = await subject.crmWorkspace.execute(owner.id, {
+            kind: "refresh-test",
+            test: {
+              storeId: store.id,
+              taskId: opened.data.id,
+              operationKey: randomUUID(),
+            },
+          });
+          expect(continued.data).toEqual(opened.data);
+          expect(
+            await subject.customerWork.viewForThread(
+              owner.id,
+              opened.data.threadId,
+            ),
+          ).toMatchObject({
+            storeTest: { version: 2 },
+            messages: [expect.objectContaining({ body: message })],
+          });
         }
         throw rollback;
       }),

@@ -2,6 +2,7 @@ import { Archive, Inbox } from "lucide-react";
 import { memo, useState } from "react";
 import {
   Assignee,
+  AssignButton,
   DueDate,
   MoveButton,
   TaskLink,
@@ -17,12 +18,14 @@ interface TaskCardProps extends TaskActions {
   task: WorkflowTask;
   person?: WorkflowPerson;
   pending: boolean;
+  canAssign: boolean;
 }
 
 const TaskCard = memo(function TaskCard({
   task,
   person,
   pending,
+  canAssign,
   onOpenTask,
   onRequestMove,
 }: TaskCardProps) {
@@ -58,6 +61,16 @@ const TaskCard = memo(function TaskCard({
       <div className="mt-3 flex items-center justify-between gap-2 border-t border-border pt-3">
         <div className="grid min-w-0 gap-1.5">
           <Assignee person={person} />
+          {canAssign &&
+            !task.assignee &&
+            state !== "closed" &&
+            state !== "completed" && (
+              <AssignButton
+                taskId={id}
+                taskLabel={label}
+                onOpenTask={onOpenTask}
+              />
+            )}
           <span className="text-xs">
             <DueDate value={dueAt} />
           </span>
@@ -90,6 +103,7 @@ export function Kanban({
   tasks,
   people,
   pendingIds,
+  canAssign,
   onOpenTask,
   onRequestMove,
 }: ITaskCollectionProps) {
@@ -170,6 +184,7 @@ export function Kanban({
                       (person) => person.id === task.assignee,
                     )}
                     pending={Boolean(pendingIds?.has(task.id))}
+                    canAssign={canAssign}
                     onOpenTask={onOpenTask}
                     onRequestMove={onRequestMove}
                   />

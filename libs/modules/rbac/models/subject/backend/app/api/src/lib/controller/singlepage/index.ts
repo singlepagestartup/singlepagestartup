@@ -235,6 +235,8 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
       handler: (c: Context) => new OrderWork(this.service.orderWork).execute(c),
       middlewares: [crmSignedInSubject],
     }));
+    const modelFavoritesPath =
+      "/:id/social-module/profiles/:socialModuleProfileId/chats/:socialModuleChatId/openrouter/model-favorites";
     const threadReadPath =
       "/:id/social-module/chats/:socialModuleChatId/threads/:socialModuleThreadId/read";
     const routes: Parameters<typeof this.bindHttpRoutes>[0] = [
@@ -956,14 +958,14 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
       },
       {
         method: "GET",
-        path: "/:id/social-module/profiles/:socialModuleProfileId/chats/:socialModuleChatId/openrouter/model-favorites",
+        path: modelFavoritesPath,
         handler:
           this.socialModuleProfileFindByIdChatFindByIdOpenrouterModelFavorites,
         middlewares: [new RequestProfileSubjectIdOwner().init()],
       },
       {
         method: "PATCH",
-        path: "/:id/social-module/profiles/:socialModuleProfileId/chats/:socialModuleChatId/openrouter/model-favorites",
+        path: modelFavoritesPath,
         handler:
           this.socialModuleProfileFindByIdChatFindByIdOpenrouterModelFavorites,
         middlewares: [new RequestProfileSubjectIdOwner().init()],
@@ -1154,11 +1156,15 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
           route.method === "POST" && route.path.endsWith("/messages");
         const markThreadRead =
           route.method === "POST" && route.path === threadReadPath;
+        const updateOwnFavorites =
+          route.method === "PATCH" && route.path === modelFavoritesPath;
         return {
           ...route,
           middlewares: [
             ...(route.middlewares ?? []),
-            customerChat.init(!read && !postMessage && !markThreadRead),
+            customerChat.init(
+              !read && !postMessage && !markThreadRead && !updateOwnFavorites,
+            ),
           ],
         };
       }),

@@ -6,6 +6,11 @@ import {
 } from "@sps/crm/models/funnel/sdk/model";
 
 const scopeSchema = z.object({ storeId: z.uuid() });
+export const STORE_EMPLOYEE_TRAINING_KEY_PREFIX = "store-employee-training:";
+
+export function isStoreEmployeeTraining(openingKey?: string | null) {
+  return Boolean(openingKey?.startsWith(STORE_EMPLOYEE_TRAINING_KEY_PREFIX));
+}
 export const taskScopeSchema = scopeSchema.extend({ taskId: z.uuid() });
 const auditSchema = z.object({
   actorId: z.uuid(),
@@ -54,6 +59,7 @@ export const taskEvidenceSchema = z.discriminatedUnion("kind", [
 export const openTaskSchema = scopeSchema.extend({
   ...auditSchema.shape,
   funnelId: z.uuid(),
+  expectedPublicationId: z.uuid().optional(),
   customerId: z.uuid(),
   productId: z.uuid().optional(),
   offerId: z.uuid().optional(),

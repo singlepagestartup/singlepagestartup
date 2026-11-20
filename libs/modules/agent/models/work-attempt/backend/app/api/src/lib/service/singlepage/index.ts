@@ -1,17 +1,26 @@
 import { logger } from "@sps/backend-utils";
+import { createHash } from "node:crypto";
 import type { IModel as IWalletOperation } from "@sps/rbac/relations/subjects-to-wallet-operations/sdk/model";
+import type { ICustomerWorkRunAttachment } from "@sps/rbac/models/subject/sdk/model";
+import { isStoreTest } from "@sps/rbac/models/subject/sdk/model";
+import { isStoreEmployeeTraining } from "@sps/crm/models/task/sdk/model";
+import { StageSkillsUnavailable } from "@sps/rbac/models/subject/backend/app/api/src/lib/service/singlepage/ecommerce/customer-work/knowledge";
+import { EmployeeTrainingBudgetUnavailable } from "@sps/rbac/models/subject/backend/app/api/src/lib/service/singlepage/crm/workspace/training";
 import Decimal from "decimal.js";
+import sharp from "sharp";
 import { inject, injectable } from "inversify";
 import { z } from "zod";
-import { CRUDService, DI } from "@sps/shared-backend-api";
+import { consistencyContext, CRUDService, DI } from "@sps/shared-backend-api";
 import { createModules } from "@sps/agent/backend/app/api/src/lib/modules";
 import type { IModel } from "@sps/agent/models/work-attempt/sdk/model";
 import {
   estimateImageWork,
   estimateWork,
   estimateNestedWork,
+  IMAGE_WORK_MAX_SOURCE_IMAGES,
   TRANSCRIPTION_USD_PER_MINUTE,
   supportsNestedWork,
+  supportsStrictStageDecision,
   sendNestedWork,
   type TNestedWorkRequest,
   ProviderOutcomeUnknown,
@@ -60,6 +69,7 @@ const now = () => new Date();
 
 @injectable()
 export class Service extends CRUDService<IModel> {
+  private readonly taskWakeups = new Map<string, { requested: boolean }>();
   declare repository: Repository;
   constructor(@inject(DI.IRepository) repository: Repository) {
     super(repository);
@@ -139,6 +149,54 @@ export class Service extends CRUDService<IModel> {
       );
     }
     return rows[0];
+  }
+
+  private async imageSourceInputs(attachments: ICustomerWorkRunAttachment[]) {
+    const images = attachments.filter(({ mimeType }) =>
+      ["image/jpeg", "image/png", "image/webp"].includes(mimeType),
+    );
+    const latestMessageId = images.at(-1)?.messageId;
+    const latest = images.filter(
+      ({ messageId }) => messageId === latestMessageId,
+    );
+    if (latest.length > IMAGE_WORK_MAX_SOURCE_IMAGES) {
+      throw new Error(
+        "Validation error. Too many image sources for this request",
+      );
+    }
+    return Promise.all(
+      latest.map(async (source) => {
+        const file = await this.modules.fileStorage.privateFile.findById({
+          id: source.id,
+        });
+        if (
+          !file ||
+          file.mimeType !== source.mimeType ||
+          file.digest !== source.digest ||
+          file.bytes.length !== file.size ||
+          createHash("sha256").update(file.bytes).digest("hex") !==
+            source.digest
+        ) {
+          throw new Error("Permission error. The source image is unavailable");
+        }
+        try {
+          return await sharp(file.bytes, { limitInputPixels: 16_000_000 })
+            .rotate()
+            .resize({
+              width: 512,
+              height: 512,
+              fit: "inside",
+              withoutEnlargement: true,
+            })
+            .jpeg({ quality: 85 })
+            .toBuffer();
+        } catch {
+          throw new Error(
+            "Validation error. The source image could not be read",
+          );
+        }
+      }),
+    );
   }
 
   private async prepare(
@@ -253,12 +311,46 @@ export class Service extends CRUDService<IModel> {
             }
           }
 
+          const context = indexing
+            ? {
+                sourceVersions: [
+                  { id: indexing.sourceId, version: indexing.contentHash },
+                ],
+                messages: [],
+                approvedMaximum: undefined,
+              }
+            : await rbac.customerWork.contextForRun({
+                storeId,
+                taskId,
+                assigneeId,
+                eventId,
+                assignmentRevision,
+              });
+          const requestedModelId =
+            !step && "requestedModelId" in context
+              ? context.requestedModelId
+              : undefined;
+          const reasoning =
+            !step && "requestedReasoning" in context
+              ? context.requestedReasoning
+              : undefined;
+          const selection = {
+            modelId: requestedModelId,
+            reasoning,
+            defaultOnly: funding.payer === "customer",
+          };
           const capability = output === "image" ? "image" : channel;
           const binding = await rbac.providerConnections.resolve(
             storeId,
             assigneeId,
             capability,
+            selection,
           );
+          if (cover && binding.provider !== cover.provider) {
+            throw new Error(
+              "Conflict error. The cover's provider changed after the brief was confirmed",
+            );
+          }
           const terms =
             capability === "transcription"
               ? {
@@ -307,21 +399,6 @@ export class Service extends CRUDService<IModel> {
               }
             }
           }
-          const context = indexing
-            ? {
-                sourceVersions: [
-                  { id: indexing.sourceId, version: indexing.contentHash },
-                ],
-                messages: [],
-                approvedMaximum: undefined,
-              }
-            : await rbac.customerWork.contextForRun({
-                storeId,
-                taskId,
-                assigneeId,
-                eventId,
-                assignmentRevision,
-              });
           if (cover && "attachments" in context) {
             new CoverWork(this).assertConfirmed(context, cover);
           }
@@ -350,6 +427,19 @@ export class Service extends CRUDService<IModel> {
           }
           const payerId =
             funding.payer === "customer" ? task.customerId : binding.ownerId;
+          if (isStoreTest(task.openingKey) && payerId !== task.customerId) {
+            throw new Error(
+              "Permission error. A store test must use the initiating owner's token balance",
+            );
+          }
+          if (
+            isStoreEmployeeTraining(task.openingKey) &&
+            (funding.payer !== "store-owner" || payerId !== task.customerId)
+          ) {
+            throw new Error(
+              "Permission error. Employee training must use the initiating owner's token balance",
+            );
+          }
           const budget = new Money(funding.maxTaskAmount);
           if (
             funding.payer === "customer" &&
@@ -392,14 +482,52 @@ export class Service extends CRUDService<IModel> {
               JSON.stringify(cartOffers),
             );
           }
+          const hasStageDecision =
+            capability !== "image" &&
+            actions.some(({ nextStageId, outcome }) => nextStageId || outcome);
+          if (
+            !step &&
+            output === "chat" &&
+            "knowledgeSourceIds" in context &&
+            context.knowledgeSourceIds?.length
+          ) {
+            instructions.push(
+              "Answer the customer's direct questions about this product or service first, using the supplied Current references. Do this even when the same customer message also supplies stage evidence. If the references do not support the answer, say so without guessing. Respect any explicit stage restrictions on what can be discussed or shared. After the answer, acknowledge the evidence received or ask for the missing current-stage details. Use the evidence alone to decide whether the stage can advance.",
+            );
+          }
+          const strictStage =
+            hasStageDecision &&
+            output === "chat" &&
+            !cartOffers?.length &&
+            supportsStrictStageDecision(binding);
           if (output === "pdf") {
             instructions.push(
               "Return a JSON object with reply (a question if details are missing), artifactText (the finished PDF content as plain text, or null if the brief is incomplete), and actionId (null or an allowed action).",
             );
-          } else if (capability !== "image" && actions.length) {
+          } else if (!strictStage && capability !== "image" && actions.length) {
             instructions.push(
               "Return a JSON object with reply (customer-facing text) and actionId (null or an allowed action).",
             );
+          }
+          let stageClarification: string | undefined;
+          let stageAccepted: string | undefined;
+          if (hasStageDecision) {
+            const russian = /\p{Script=Cyrillic}/u.test(
+              stage.name + stage.instruction,
+            );
+            stageClarification = russian
+              ? `Уточните недостающие данные для этапа «${stage.name}».`
+              : `Please clarify the missing details for the “${stage.name}” stage.`;
+            stageAccepted = russian ? "Принято." : "Details received.";
+            if (strictStage) {
+              instructions.push(
+                'Set decision.kind to "advance" and give the allowed actionId when the customer has supplied the evidence for the current stage. Put the customer-facing response in decision.reply. If the evidence is missing or ambiguous, set decision.kind to "clarify" and put the customer-facing response in decision.clarification. Ask only for missing current-stage information.',
+              );
+            } else {
+              instructions.push(
+                "When actionId is null and you are not proposing a cart or delivering a document, put the customer-facing response in the separate JSON string field clarification. Ask only for missing information about the current stage. Leave reply empty. Reserve reply for a confirmed transition or a valid cart proposal.",
+              );
+            }
           }
           if (capability !== "image" && actions.length) {
             const transitions = actions.map(({ id, ...condition }) => ({
@@ -409,7 +537,9 @@ export class Service extends CRUDService<IModel> {
             instructions.push(
               `The task is currently in stage ${JSON.stringify(stage.id)}. Use the latest customer reply and relevant earlier messages to check the evidence for this stage.`,
               "When the evidence clearly satisfies an allowed transition, include its exact actionId in the same JSON response. Do this even if reply also acknowledges completion or asks the first question for the next stage. Never acknowledge that the stage is complete, announce a next stage, or ask the customer for information from a later stage with actionId set to null.",
-              "If required evidence is missing or ambiguous, set actionId to null and ask only for the missing information in the current stage. Advance at most one stage in this response. Do not invent an actionId. For an outstanding cart proposal, keep actionId null until the customer confirms the quote.",
+              strictStage
+                ? "Choose based on the current stage's evidence only. A complete answer can be written in natural language. Treat additional details for earlier or later stages as context, and do not require them again. Advance at most one stage."
+                : "If required evidence is missing or ambiguous, set actionId to null and ask only for the missing information in the current stage. Advance at most one stage in this response. Do not invent an actionId. For an outstanding cart proposal, keep actionId null until the customer confirms the quote.",
               "Allowed transitions: " + JSON.stringify(transitions),
             );
           }
@@ -442,20 +572,35 @@ export class Service extends CRUDService<IModel> {
           if (step) {
             request = makeNestedRequest(step, requestProps);
           } else if (capability === "image") {
+            let sourceImages: Uint8Array[] | undefined;
+            if (cover?.sourceImage) {
+              sourceImages = [cover.sourceImage];
+            } else if (!cover && "attachments" in context) {
+              sourceImages = await this.imageSourceInputs(context.attachments);
+            }
             request = {
               ...requestProps,
               capability,
+              sourceImages,
               coverBackground: cover && {
                 ...cover.brief.size,
                 description: describeAppearance(cover.brief.appearance),
+                captionSpace: Boolean(cover.brief.caption),
+                skillGuidance:
+                  "skillGuidance" in context
+                    ? context.skillGuidance
+                    : undefined,
               },
             };
           } else {
             request = {
               ...requestProps,
               capability: "text",
+              reasoning,
               actions,
               cartOffers,
+              stageClarification,
+              stageAccepted,
               artifact: output === "pdf" ? "pdf" : undefined,
             };
           }
@@ -491,6 +636,7 @@ export class Service extends CRUDService<IModel> {
             assigneeId,
             capability,
             binding,
+            selection,
           );
           const attempt = await this.create({
             data: {
@@ -691,18 +837,21 @@ export class Service extends CRUDService<IModel> {
                 candidate.actors.includes("ai") &&
                 candidate.evidence.includes("model-result"),
             );
-            let enteringCover = false;
-            if (result.text && !result.artifact && action?.nextStageId) {
+            let nextStage;
+            if (action?.nextStageId) {
               const publication = await this.modules.crm.task.getPublication({
                 storeId,
                 taskId,
               });
-              enteringCover = publication.definition.stages.some(
-                (candidate) =>
-                  candidate.id === action.nextStageId &&
-                  candidate.imageBrief === "marketplace-cover",
+              nextStage = publication.definition.stages.find(
+                (candidate) => candidate.id === action.nextStageId,
               );
             }
+            const enteringCover = Boolean(
+              result.text &&
+              !result.artifact &&
+              nextStage?.imageBrief === "marketplace-cover",
+            );
             const scope = {
               storeId,
               taskId,
@@ -739,6 +888,12 @@ export class Service extends CRUDService<IModel> {
               });
               resultId = version.id;
               const russian = /\p{Script=Cyrillic}/u.test(stage.instruction);
+              const previewMessage = russian
+                ? "Предпросмотр готов. Откройте его и примите результат, чтобы перейти к оплате."
+                : "Your preview is ready. Open it and accept the result to proceed to payment.";
+              const testPreviewMessage = russian
+                ? "Тестовое превью готово. Откройте его и проверьте результат."
+                : "The test preview is ready to review.";
               await subject.customerWork.deliverReply({
                 storeId,
                 taskId,
@@ -747,9 +902,9 @@ export class Service extends CRUDService<IModel> {
                 assignmentRevision,
                 attemptId: id,
                 resultVersionId: version.id,
-                text: russian
-                  ? "Предпросмотр готов. Откройте его и примите результат, чтобы перейти к оплате."
-                  : "Your preview is ready. Open it and accept the result to proceed to payment.",
+                text: isStoreTest(task.openingKey)
+                  ? testPreviewMessage
+                  : previewMessage,
               });
             } else if (result.text && !enteringCover) {
               await subject.customerWork.deliverReply({
@@ -757,7 +912,9 @@ export class Service extends CRUDService<IModel> {
                 attemptId: id,
                 sourceVersions: current.sourceVersions,
                 text: result.text,
-                cartSelection: result.cartSelection,
+                cartSelection: isStoreTest(task.openingKey)
+                  ? undefined
+                  : result.cartSelection,
               });
             }
             const delivered = Boolean(result.artifact || result.text);
@@ -766,7 +923,7 @@ export class Service extends CRUDService<IModel> {
                 storeId,
                 taskId,
               });
-              await this.modules.crm.task.transition({
+              const transitioned = await this.modules.crm.task.transition({
                 storeId,
                 taskId,
                 expectedRevision: latest.revision,
@@ -778,7 +935,31 @@ export class Service extends CRUDService<IModel> {
                 causeId: eventId,
                 evidence: { kind: "model-result", resultId },
               });
-              if (enteringCover) {
+              let assigned = transitioned;
+              if (nextStage) {
+                assigned = await subject.customerWork.assignStageAgent(
+                  transitioned,
+                  nextStage,
+                  enteringCover
+                    ? async () => {
+                        const russian = /\p{Script=Cyrillic}/u.test(
+                          `${nextStage.name} ${nextStage.instruction}`,
+                        );
+                        await subject.customerWork.deliverReply({
+                          ...scope,
+                          attemptId: id,
+                          text: russian
+                            ? "Этап подготовки обложки начат. Отправьте сообщение, чтобы новый исполнитель проверил бриф."
+                            : "Cover preparation has started. Send a message so the new agent can review your brief.",
+                        });
+                      }
+                    : undefined,
+                );
+              }
+              if (
+                enteringCover &&
+                assigned.assignmentRevision === assignmentRevision
+              ) {
                 const draft = await new CoverWork(this).prepare(scope, true);
                 if (!draft || !("text" in draft)) {
                   throw new Error(
@@ -822,6 +1003,57 @@ export class Service extends CRUDService<IModel> {
 
   async dispatch(raw: IDispatch) {
     const input = requestSchema.parse(raw);
+    let result;
+    try {
+      result = await this.runPending(input);
+    } catch (error) {
+      if (error instanceof StageSkillsUnavailable) {
+        await this.modules.rbac.subject.customerWork.deliverReply({
+          ...input,
+          attemptId: input.eventId,
+          text: error.reply,
+        });
+        result = { id: input.eventId, state: "delivered" };
+      } else if (
+        error instanceof Error &&
+        /^(Payment required|Permission error|Forbidden error)\./.test(
+          error.message,
+        )
+      ) {
+        let reason: "budget-changed" | "payment" | "provider" = "provider";
+        if (error instanceof EmployeeTrainingBudgetUnavailable) {
+          reason = "budget-changed";
+        } else if (error.message.startsWith("Payment required.")) {
+          reason = "payment";
+        }
+        const delivered =
+          await this.modules.rbac.subject.customerWork.deliverEmployeeTrainingFailure(
+            input,
+            reason,
+          );
+        if (!delivered) {
+          throw error;
+        }
+        result = { id: input.eventId, state: "delivered" };
+      } else {
+        throw error;
+      }
+    }
+    if (result.state === "failed") {
+      await this.modules.rbac.subject.customerWork.deliverEmployeeTrainingFailure(
+        input,
+        "provider",
+      );
+    }
+    if (["delivered", "stale", "failed"].includes(result.state)) {
+      await this.modules.rbac.subject.customerWork.ack({
+        eventId: input.eventId,
+      });
+    }
+    return result;
+  }
+
+  private async runPending(input: IDispatch) {
     const prior =
       (await this.previous({ ...input, capability: "text" })) ??
       (await this.previous({ ...input, capability: "image" }));
@@ -884,7 +1116,12 @@ export class Service extends CRUDService<IModel> {
       ) {
         response = { result: await sendNestedWork(request, secret) };
       } else {
-        response = { result: await sendWork(request as IWorkRequest, secret) };
+        response = {
+          result: await sendWork(
+            { ...(request as IWorkRequest), clientRequestId: attempt.id },
+            secret,
+          ),
+        };
       }
     } catch (error) {
       const rejected = error instanceof ProviderRejected;
@@ -1067,10 +1304,16 @@ export class Service extends CRUDService<IModel> {
     ) {
       // A revoked or rotated credential requires an owner statement. Never send a second generation.
       const secret = await this.modules.rbac.subject.providerConnections
-        .credential(attempt.storeId, attempt.assigneeId, attempt.capability, {
-          identityId: attempt.identityId,
-          version: attempt.credentialVersion,
-        })
+        .credential(
+          attempt.storeId,
+          attempt.assigneeId,
+          attempt.capability,
+          {
+            identityId: attempt.identityId,
+            version: attempt.credentialVersion,
+          },
+          { modelId: attempt.model },
+        )
         .catch(() => undefined);
       const usage =
         secret &&
@@ -1197,23 +1440,50 @@ export class Service extends CRUDService<IModel> {
     }
   }
 
-  async drain(limit = 30) {
+  wakeCustomerWork(taskId: string) {
+    const current = this.taskWakeups.get(taskId);
+    if (current) {
+      current.requested = true;
+      return;
+    }
+    const wakeup = { requested: true };
+    this.taskWakeups.set(taskId, wakeup);
+    void consistencyContext.exit(async () => {
+      try {
+        do {
+          wakeup.requested = false;
+          const progressed = await this.drain(1, taskId);
+          if (progressed) {
+            wakeup.requested = true;
+          }
+        } while (wakeup.requested);
+      } catch {
+        logger.warn("Could not wake customer work", { taskId });
+      } finally {
+        this.taskWakeups.delete(taskId);
+      }
+    });
+  }
+
+  async drain(limit = 30, taskId?: string) {
     const intake = this.modules.rbac.subject.customerWork;
-    const messages = await intake.listPendingWork({ limit });
+    const messages = await intake.listPendingWork({ limit, taskId });
+    let progressed = false;
     for (const item of messages) {
       try {
         const result = await this.dispatch(item);
         if (["delivered", "stale", "failed"].includes(result.state)) {
-          await intake.ack({ eventId: item.eventId });
+          progressed = true;
         } else {
           await intake.defer({ eventId: item.eventId });
         }
       } catch (error) {
         if (
           error instanceof Error &&
-          error.message.startsWith("Conflict error.")
+          /^(Conflict|Validation) error\./.test(error.message)
         ) {
           await intake.ack({ eventId: item.eventId });
+          progressed = true;
         } else {
           await intake.defer({ eventId: item.eventId });
           if (
@@ -1230,5 +1500,6 @@ export class Service extends CRUDService<IModel> {
         }
       }
     }
+    return progressed;
   }
 }

@@ -211,6 +211,7 @@ export interface ICustomerWorkView {
   workflow?: { title: string; stageTitle: string };
   assignment: "assistant" | "manager" | "unassigned";
   status: "active" | "waiting" | "closed";
+  storeTest?: { storeSlug: string; funnelId: string; version: number };
   customerPays: boolean;
   requiredMaximum?: string;
   fundingCurrency?: string;
@@ -219,6 +220,10 @@ export interface ICustomerWorkView {
   memory?: ICustomerWorkMemory;
   cartProposal?: ICustomerWorkCartProposal;
   messages: ICustomerWorkMessage[];
+}
+
+export function isStoreTest(openingKey?: string | null) {
+  return openingKey?.startsWith("store-test:") === true;
 }
 
 export interface IPendingCustomerWork {

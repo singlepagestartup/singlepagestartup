@@ -1,6 +1,7 @@
 import {
   getHttpErrorType,
   getPrivateAIChatSkillProfileId,
+  storeEmployeeSkillCommand,
 } from "@sps/backend-utils";
 import { Context } from "hono";
 import { HTTPException } from "hono/http-exception";
@@ -17,6 +18,7 @@ export class Handler {
         "targetSocialModuleProfileId",
       );
       const { limit, offset = 0 } = parsePagination(c);
+      const employee = Boolean(c.get("storeEmployeeTrainingStoreId"));
       const search = c.req.query("search")?.trim().toLocaleLowerCase();
       const linkedIds = new Set(
         await findProfileSkillIds({
@@ -35,9 +37,10 @@ export class Handler {
         },
       });
       const available = (skills || []).filter((skill) => {
+        const owner = getPrivateAIChatSkillProfileId(skill.slug);
         if (
           linkedIds.has(skill.id) ||
-          getPrivateAIChatSkillProfileId(skill.slug)
+          (owner && !(employee && owner === targetSocialModuleProfileId))
         ) {
           return false;
         }
@@ -53,12 +56,17 @@ export class Handler {
         );
       });
 
-      return c.json({
-        data: available.slice(
-          offset,
-          limit === undefined ? undefined : offset + limit,
-        ),
-      });
+      const page = available.slice(
+        offset,
+        limit === undefined ? undefined : offset + limit,
+      );
+      const data = employee
+        ? page.map((skill) => ({
+            ...skill,
+            slug: storeEmployeeSkillCommand(skill.slug),
+          }))
+        : page;
+      return c.json({ data });
     } catch (error: unknown) {
       const { status, message, details } = getHttpErrorType(error);
       throw new HTTPException(status, { message, cause: details });
