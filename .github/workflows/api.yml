@@ -29,44 +29,17 @@ jobs:
   trigger-service-update:
     name: Update service
     runs-on: ubuntu-latest
-    timeout-minutes: 45
     env:
       IMAGE_TAG: ${{ inputs.TAG }}
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-
-      - name: Set up Node.js
-        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
-        with:
-          node-version: 24
-
       - name: Send webhook for preview service update
         if: ${{ inputs.PRERELEASE == true }}
-        run: curl --fail --silent --show-error --max-time 40 --request POST "${{ secrets.PREVIEW_PORTAINER_API_UPDATE_URL }}?tag=${IMAGE_TAG}"
+        env:
+          SERVICE_UPDATE_URL: ${{ secrets.PREVIEW_PORTAINER_API_UPDATE_URL }}
+        run: curl --fail --silent --show-error --max-time 40 --request POST "${SERVICE_UPDATE_URL}?tag=${IMAGE_TAG}"
 
       - name: Send webhook for production service update
         if: ${{ inputs.PRERELEASE == false }}
-        run: curl --fail --silent --show-error --max-time 40 --request POST "${{ secrets.PORTAINER_API_UPDATE_URL }}?tag=${IMAGE_TAG}"
-
-      - name: Wait for preview API readiness
-        if: ${{ inputs.PRERELEASE == true }}
         env:
-          DOMAIN: ${{ vars.PREVIEW_DOMAIN }}
-          PORTAINER_SERVICE_SUBDOMAIN: ${{ vars.PREVIEW_PORTAINER_SERVICE_SUBDOMAIN }}
-          PORTAINER_USERNAME: ${{ vars.PREVIEW_PORTAINER_USERNAME }}
-          PORTAINER_PASSWORD: ${{ secrets.PREVIEW_PORTAINER_PASSWORD }}
-          SERVICE_UPDATE_URL: ${{ secrets.PREVIEW_PORTAINER_API_UPDATE_URL }}
-          IMAGE_TAG: ${{ inputs.TAG || 'latest' }}
-        run: node tools/deployer/portainer/wait-service.mjs
-
-      - name: Wait for production API readiness
-        if: ${{ inputs.PRERELEASE == false }}
-        env:
-          DOMAIN: ${{ vars.DOMAIN }}
-          PORTAINER_SERVICE_SUBDOMAIN: ${{ vars.PORTAINER_SERVICE_SUBDOMAIN }}
-          PORTAINER_USERNAME: ${{ vars.PORTAINER_USERNAME }}
-          PORTAINER_PASSWORD: ${{ secrets.PORTAINER_PASSWORD }}
           SERVICE_UPDATE_URL: ${{ secrets.PORTAINER_API_UPDATE_URL }}
-          IMAGE_TAG: ${{ inputs.TAG || 'latest' }}
-        run: node tools/deployer/portainer/wait-service.mjs
+        run: curl --fail --silent --show-error --max-time 40 --request POST "${SERVICE_UPDATE_URL}?tag=${IMAGE_TAG}"
