@@ -1,4 +1,4 @@
-fastapi==0.163.1
+fastapi==0.165.0
 openai==3.51.0
 anthropic==2.8.0
 uvicorn[standard]==0.54.0
