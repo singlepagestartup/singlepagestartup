@@ -1,5 +1,7 @@
 import { randomUUID } from "node:crypto";
+import { withConsistencyTransaction } from "@sps/shared-backend-api";
 import { Service, type IConstructorProps, type IRecord } from "./index";
+import { Service as StoreProducts } from "../product/store-management";
 
 const owner = randomUUID();
 const other = randomUUID();
@@ -10,12 +12,16 @@ const productId = randomUUID();
 const currencyId = randomUUID();
 const offerId = randomUUID();
 
-function setup() {
+function setup(onCommit?: () => void) {
   const tables: Record<string, IRecord[]> = Object.fromEntries(
     [
       "stores",
       "products",
       "attributes",
+      "categories",
+      "categories-to-products",
+      "products-to-file-storage-module-files",
+      "files",
       "attribute-keys",
       "currencies",
       "stores-to-products",
@@ -39,7 +45,17 @@ function setup() {
       async withCatalogLock(_keys, operation) {
         const previous = structuredClone(tables);
         try {
-          return await operation();
+          const database = {
+            async transaction<T>(run: (tx: unknown) => Promise<T>) {
+              const value = await run(tables);
+              onCommit?.();
+              return value;
+            },
+          };
+          return await withConsistencyTransaction(
+            database as Parameters<typeof withConsistencyTransaction>[0],
+            operation,
+          );
         } catch (error) {
           for (const name of Object.keys(tables)) {
             tables[name] = previous[name];
@@ -149,7 +165,185 @@ function stock(tables: Record<string, IRecord[]>, number = "3") {
   return { attributeId, keyId, linkId };
 }
 
+function newStoreProduct(onCommit?: () => void) {
+  const { service, tables, dependencies } = setup(onCommit);
+  const entities = dependencies.entities;
+  const secondCurrency = randomUUID();
+  const categoryId = randomUUID();
+  const attributeId = randomUUID();
+  tables.currencies.push({ id: secondCurrency });
+  tables.categories.push({ id: categoryId, variant: "default" });
+  tables.attributes.push({ id: attributeId, string: { en: "Blue" } });
+  const findAttributes = jest.fn().mockResolvedValue([{ id: attributeId }]);
+  const discarded: string[] = [];
+  const storePublicImage = jest.fn(async (file: File) => {
+    const entity = await entities.files.create({ data: { id: file.name } });
+    return {
+      entity,
+      discard: async () => {
+        discarded.push(file.name);
+      },
+    };
+  });
+  const subject = {
+    ecommerceCatalog: service,
+    crmWorkspace: {
+      stores: async () => [
+        { id: storeId, canManageCatalog: true, canReadCosts: true },
+      ],
+    },
+    storeCatalogDirectories: { findAttributes },
+    modules: {
+      ecommerce: {
+        store: entities.stores,
+        category: entities.categories,
+        storesToProductsToAttributes:
+          entities["stores-to-products-to-attributes"],
+        categoriesToProducts: entities["categories-to-products"],
+        productsToFileStorageModuleFiles:
+          entities["products-to-file-storage-module-files"],
+      },
+      fileStorage: { file: { storePublicImage } },
+    },
+  };
+  const storeProducts = new StoreProducts(
+    subject as unknown as ConstructorParameters<typeof StoreProducts>[0],
+  );
+  const data = {
+    storeId,
+    product: {
+      title: { en: "Desk" },
+      kind: "physical",
+      formula: "unit_price * quantity",
+    },
+    prices: [
+      { currencyId, amount: "90.25" },
+      { currencyId: secondCurrency, amount: "100" },
+    ],
+    categoryIds: [categoryId],
+    attributeIds: [attributeId],
+  };
+  const images = [new File(["a"], "first.png"), new File(["b"], "second.png")];
+  return {
+    storeProducts,
+    tables,
+    findAttributes,
+    discarded,
+    storePublicImage,
+    data,
+    images,
+  };
+}
+
 describe("seller catalogue ownership and atomic writes", () => {
+  test("creates two currency prices and links the selected category, existing attribute and ordered photos", async () => {
+    const f = newStoreProduct();
+    const { product, offer } = await f.storeProducts.createOffer(
+      owner,
+      f.data,
+      f.images,
+    );
+    expect(
+      f.tables["attributes-to-billing-module-currencies"].map(
+        (row) => row.billingModuleCurrencyId,
+      ),
+    ).toEqual(f.data.prices.map((price) => price.currencyId));
+    expect(f.findAttributes).toHaveBeenCalledWith(
+      storeId,
+      f.data.attributeIds,
+      true,
+    );
+    expect(f.tables["stores-to-products-to-attributes"]).toContainEqual(
+      expect.objectContaining({
+        storesToProductsId: offer.id,
+        attributeId: f.data.attributeIds[0],
+      }),
+    );
+    expect(f.tables["categories-to-products"]).toContainEqual(
+      expect.objectContaining({
+        productId: product.id,
+        categoryId: f.data.categoryIds[0],
+      }),
+    );
+    expect(
+      f.tables["products-to-file-storage-module-files"].map(
+        ({ fileStorageModuleFileId, orderIndex }) => [
+          fileStorageModuleFileId,
+          orderIndex,
+        ],
+      ),
+    ).toEqual([
+      ["first.png", 0],
+      ["second.png", 1],
+    ]);
+    expect(f.discarded).toEqual([]);
+  });
+
+  test("rolls back the offer and directory links and discards stored bytes if the next photo fails", async () => {
+    const f = newStoreProduct();
+    const before = structuredClone(f.tables);
+    f.storePublicImage
+      .mockImplementationOnce(async () => ({
+        entity: { id: "first" },
+        discard: async () => {
+          f.discarded.push("first");
+        },
+      }))
+      .mockRejectedValueOnce(new Error("invalid image"));
+    await expect(
+      f.storeProducts.createOffer(owner, f.data, f.images),
+    ).rejects.toThrow("invalid image");
+    expect(f.tables).toEqual(before);
+    expect(f.discarded).toEqual(["first"]);
+  });
+
+  test("removes both uploaded files and their metadata if the database rejects the final commit", async () => {
+    const f = newStoreProduct(() => {
+      throw new Error("commit failed");
+    });
+    const before = structuredClone(f.tables);
+    await expect(
+      f.storeProducts.createOffer(owner, f.data, f.images),
+    ).rejects.toThrow("commit failed");
+    expect(f.storePublicImage).toHaveBeenCalledTimes(2);
+    expect(f.discarded).toEqual(["second.png", "first.png"]);
+    expect(f.tables).toEqual(before);
+  });
+
+  test("rejects another store, an inaccessible attribute, a hidden category and attachments on an existing product", async () => {
+    const f = newStoreProduct();
+    const before = structuredClone(f.tables);
+    await expect(
+      f.storeProducts.createOffer(other, f.data, f.images),
+    ).rejects.toThrow("another owner");
+    await expect(
+      f.storeProducts.createOffer(
+        owner,
+        { ...f.data, attributeIds: [randomUUID()] },
+        f.images,
+      ),
+    ).rejects.toThrow("unavailable");
+    await expect(
+      f.storeProducts.createOffer(
+        owner,
+        {
+          ...f.data,
+          productId,
+          product: undefined,
+          categoryIds: [],
+          attributeIds: [],
+        },
+        f.images,
+      ),
+    ).rejects.toThrow("new product");
+    f.tables.categories[0].variant = "hidden";
+    before.categories[0].variant = "hidden";
+    await expect(
+      f.storeProducts.createOffer(owner, f.data, f.images),
+    ).rejects.toThrow("Category is unavailable");
+    expect(f.storePublicImage).not.toHaveBeenCalled();
+    expect(f.tables).toEqual(before);
+  });
   test("only the product owner or admin can change shared delivery and add-on links", async () => {
     const { service, tables } = setup();
     const targetOfferId = randomUUID();
@@ -540,6 +734,31 @@ test("a signed-in buyer cannot create a standalone Product through the seller mu
     }),
   ).rejects.toThrow("Create a seller product through a store offer");
   expect(tables.products).toHaveLength(count);
+});
+
+test("a stale store form cannot overwrite translations saved by another editor", async () => {
+  const { service, tables } = setup();
+  const store = tables.stores[0];
+  store.updatedAt = new Date("2026-01-05T12:30:00.123Z");
+  store.title = { ru: "Студия", en: "Studio" };
+  const patch = {
+    entity: "stores",
+    method: "PATCH",
+    recordId: store.id,
+    data: { title: { ru: "Мастерская", en: "Studio" } },
+  } as const;
+  await expect(
+    service.mutation({
+      subjectId: owner,
+      data: { ...patch, expectedUpdatedAt: "2026-01-05T12:30:00.122Z" },
+    }),
+  ).rejects.toThrow("Store settings have changed");
+  expect(tables.stores[0].title).toEqual({ ru: "Студия", en: "Studio" });
+  const updated = await service.mutation({
+    subjectId: owner,
+    data: { ...patch, expectedUpdatedAt: "2026-01-05T12:30:00.123Z" },
+  });
+  expect(updated?.title).toEqual(patch.data.title);
 });
 
 test("Subject mutations create caller ownership and reject foreign edits and ownership grants", async () => {

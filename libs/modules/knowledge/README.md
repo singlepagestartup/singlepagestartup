@@ -18,22 +18,21 @@ The service combines these descriptions with user context into Source content. F
 
 Content contains `Контекст пользователя`, `Сведения из материалов`, and `Общее описание` sections. The `knowledge:user` Markdown markers separate confirmed notes from generated file descriptions so reconstruction preserves the notes. AI Chat hides these internal delimiters and the enclosing header in its editor, Preview, and Markdown downloads. The editor changes the notes; Preview includes notes and analyzed materials. Generated descriptions are also available under Analyzed materials. Saving notes preserves the generated sections. A Source without Files can use ordinary text content.
 
-Adding, detaching, replacing, reordering, or moving a File relation invalidates generated content and chunks atomically and analyzes all current Files. Moving a relation rebuilds both Sources. Physical File deletion captures affected Sources before cascade. Source deletion and relation detachment preserve stored Files. Failed analysis leaves human text and attachments available for retry and does not publish partial descriptions. Conditional publication rejects a changed content hash or attachment snapshot.
+Direct file-relation CRUD invalidates generated content and chunks for every affected Source. Editing attachments through the profile analyzes the current Files and rebuilds the index in the same transaction. Physical File deletion captures affected Sources before cascade. Source deletion and relation detachment preserve stored Files. When analysis or embedding fails, the operation rolls back and the previous text, attachment links and searchable chunks remain available. Conditional publication rejects a changed content hash or attachment snapshot.
 
 Stored File updates and deletions that affect Knowledge go through
 `KnowledgeService.updateStoredFile` and `deleteStoredFile`. Knowledge captures
-the affected Sources and calls the File Storage service in its transaction,
-then rebuilds every affected Source from its current attachments. File Storage
+the affected Sources and rebuilds each from its updated attachments in the same transaction. Deletion removes the original file after the rebuilds succeed. File Storage
 has no dependency on Knowledge and does not start analysis itself. Its service
 owns deletion of the original stored bytes and the File record.
 
 ## Indexing and search
 
-The server computes SHA-256 `contentHash` from content with normalized line endings and outer whitespace. Indexing chunks the saved content, validates embedding count and dimensions, and replaces chunks in a transaction. It publishes only if the Source still has the processed hash. Success sets `indexedContentHash` and `lastIndexedAt` through ordinary framework CRUD.
+The server computes SHA-256 `contentHash` from content with normalized line endings and outer whitespace. Saving knowledge to a profile or through chat indexes the proposed content, validates embedding count and dimensions, and commits the Source, its links and its chunks together. An unavailable embedding provider returns HTTP 503 and leaves the previous version intact. Creating or editing a Source through the generic admin CRUD saves its text and content hash without calling an embedding provider. It publishes only if the Source still has the processed hash. Success sets `indexedContentHash` and `lastIndexedAt` through ordinary framework CRUD.
 
-Search accepts only chunks whose Source hashes match. Profile-scoped search materializes the permitted candidates before ranking, so approximate global vector filtering cannot silently lose candidates from a small profile scope. Global search ranks fresh chunks through the HNSW index before joining the bounded results to Sources. Neighbor retrieval also checks index freshness.
+Search accepts only chunks whose Source hashes match. OpenAI vectors carry a provider, model and dimension identity compatible with existing paid Knowledge indexes. The query ranks only matching vectors. Global search excludes personal notes before reading chunk text. `searchAuthorizedSources` takes explicit Source IDs from the owning authorization service and can include personal notes in that scope. When both employee and personal Source IDs are present, it embeds the query once and reserves part of the result for each scope. Neighbor retrieval stays in the same Source version and embedding index.
 
-`Reindex` rebuilds chunks and embeddings from saved content; it does not repeat vision or transcription. Changing the embedding model or chunking configuration requires an explicit forced rebuild of affected Sources before using the new configuration. `--clear` removes chunks and index markers and preserves Source and its Files/relations. Dry-run makes no writes and invokes no model provider.
+`Reindex` rebuilds chunks and embeddings from saved content. File analysis is a separate operation. After switching to OpenAI, indexing rebuilds older vectors from the existing Source text even when its content hash still matches. Search reads the current index without rebuilding or publishing any Source. A legacy Source with a missing index can be explicitly reindexed. A bulk index with a limit scans past current Sources to reach outdated ones. `--clear` removes chunks and index markers and preserves Source and its Files/relations. Dry-run makes no writes and invokes no model provider.
 
 ## Chat and access
 
@@ -46,20 +45,15 @@ the answer, before reporting information unavailable. It requests relevant
 saved wording is needed. Tool failures and missing information are reported
 separately.
 
-`profile_knowledge_search` returns bounded excerpts with `sourceId`, `textLength`, and `textTruncated`. `profile_knowledge_read` reads saved content in pages of up to 12,000 Unicode characters and returns `nextOffset` and the current content hash. Both tool responses fit a 24 KiB UTF-8 JSON budget, below the tool loop's 32 KiB limit. Pagination preserves the full saved text, including multibyte characters and JSON escapes. Follow `nextOffset` with the same `section`; offsets count UTF-16 code units.
+`profile_knowledge_search` returns bounded excerpts with `sourceId`, `textLength`, and `textTruncated`. `profile_knowledge_read` reads saved content in pages of up to 12,000 Unicode characters and returns `nextOffset` and the current content hash. Both tool responses fit a 24 KiB UTF-8 JSON budget. Pagination preserves the full saved text, including multibyte characters and JSON escapes. Follow `nextOffset` with the same `section`; offsets count UTF-16 code units.
 
-The read response includes a user-context preview. If `userContextTruncated` is true, read all pages with `section=userContext` before editing. `profile_knowledge_edit` directly saves user context and an optional title when the user requests or confirms the edit; it preserves file-derived sections and triggers indexing. The edit must carry the hash returned by the read operation, so a concurrent content change requires another read. Chat edits use ordinary Source updates. There is no separate approval entity, version history, or restore operation.
+The read response includes a user-context preview. If `userContextTruncated` is true, read all pages with `section=userContext` before editing. `profile_knowledge_edit` directly saves user context and an optional title when the user requests or confirms the edit; it preserves file-derived sections and triggers indexing. The edit must carry the hash returned by the read operation, so a concurrent content change requires another read. Chat edits use the profile-scoped save operation. There is no separate approval entity, version history, or restore operation.
 
 The native `profile_knowledge_files` tool lists exact attachment IDs and the
 Source hash. `profile_knowledge_file_detach` is available only for an explicit
 current removal request. The scoped Files mutation checks the hash and existing
 attachment list atomically, preserves original Files and human notes, and
-rebuilds analyzed content and the index. Detachment returns immediately after
-saving the relation change; `analysisPending` identifies unfinished processing.
-A separate scoped reanalysis request emits the normal cache and WebSocket
-updates when it completes. The model must not report an index as ready while
-processing remains pending. Analysis errors are logged and leave the Source
-unindexed.
+rebuilds analyzed content and the index. The request completes after the new index is ready. If rebuilding fails, the previous attachment list and index stay available.
 
 Origin and citation links use `messages-to-knowledge-module-sources` with `kind=origin|citation`; skill material uses `skills-to-knowledge-module-sources`. Metadata can contain generation results and usage, but relations determine material ownership and origin.
 
@@ -85,15 +79,16 @@ The Knowledge module SDK uses `sourceIds` and `reindexSource`. Source content ed
 
 PostgreSQL uses `pgvector/pgvector:pg17`. The database bootstrap creates the untrusted `vector` extension as the PostgreSQL administrator before the API role runs migrations. If migrations report `permission denied to create extension "vector"`, follow [Moving an existing installation to the application role](../../../tools/deployer/README.md#moving-an-existing-installation-to-the-application-role).
 
-Embeddings and chat configuration live in `backend/app/api/src/lib/configuration.ts`; vector dimensions are 768. File analysis and synthesis use `openai/gpt-6.1-sol` with `high` reasoning from the shared model policy in `libs/shared/utils/src/lib/constants/open-router-models.ts`.
+Embeddings use `text-embedding-3-large` with 768 dimensions through the OpenAI API. Set `OPEN_AI_API_KEY` in the API environment. In this mode, file analysis and synthesis use GPT‑4.1 and timestamped audio transcription uses Whisper‑1 with the same key. The optional `llm` and `openrouter` embedding modes retain the OpenRouter material analysis path. The standalone Knowledge model catalog and `/knowledge/generate` operation use the `apps/llm` gateway.
 
-| Variable                             | Default            |
-| ------------------------------------ | ------------------ |
-| `KNOWLEDGE_TRANSCRIPTION_MODEL`      | `openai/whisper-1` |
-| `KNOWLEDGE_VIDEO_FRAME_STEP_SECONDS` | `1`                |
-| `KNOWLEDGE_NATIVE_MEDIA_ENABLED`     | `true`             |
-| `KNOWLEDGE_PDF_INFO_COMMAND`         | `pdfinfo`          |
-| `KNOWLEDGE_PDF_RENDER_COMMAND`       | `pdftoppm`         |
+| Variable                             | Default                                |
+| ------------------------------------ | -------------------------------------- |
+| `KNOWLEDGE_EMBEDDING_PROVIDER`       | `openai`                               |
+| `KNOWLEDGE_TRANSCRIPTION_MODEL`      | `openai/whisper-1` for OpenRouter mode |
+| `KNOWLEDGE_VIDEO_FRAME_STEP_SECONDS` | `1`                                    |
+| `KNOWLEDGE_NATIVE_MEDIA_ENABLED`     | `true`                                 |
+| `KNOWLEDGE_PDF_INFO_COMMAND`         | `pdfinfo`                              |
+| `KNOWLEDGE_PDF_RENDER_COMMAND`       | `pdftoppm`                             |
 
 Install Poppler and FFmpeg for local processing; the application Docker image includes them. Current per-file limits are 100 MB, 200 PDF pages, and 3600 seconds of audio/video. A synthesis input over one million characters is rejected. Empty, failed, or truncated model responses are not published. Errors are returned by the operation or logged; Source has no persisted processing-status fields.
 

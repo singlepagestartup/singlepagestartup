@@ -9,7 +9,7 @@ export interface ISocialProfileAiToolLoopLimits {
   maxIterations: number;
   totalTimeoutMs: number;
   toolTimeoutMs: number;
-  maxResultBytes: number;
+  maxResultBytes?: number;
   maxRepeatedCalls: number;
 }
 
@@ -18,7 +18,6 @@ export const SOCIAL_PROFILE_AI_TOOL_LOOP_DEFAULTS: ISocialProfileAiToolLoopLimit
     maxIterations: 50,
     totalTimeoutMs: 300_000,
     toolTimeoutMs: 30_000,
-    maxResultBytes: 32 * 1024,
     maxRepeatedCalls: 2,
   };
 
@@ -376,7 +375,7 @@ export class Service {
 
   private async executeToolCall(props: {
     call: IOpenRouterToolCall;
-    maxResultBytes: number;
+    maxResultBytes?: number;
     onEvent?: ISocialProfileAiToolLoopProps["onEvent"];
     selectedModelId: string;
     timeoutMs: number;
@@ -455,7 +454,10 @@ export class Service {
       const serialized = this.serializeToolResult(result);
       const resultBytes = Buffer.byteLength(serialized, "utf8");
 
-      if (resultBytes > props.maxResultBytes) {
+      if (
+        props.maxResultBytes !== undefined &&
+        resultBytes > props.maxResultBytes
+      ) {
         throw new ToolLoopStopError(
           "tool_result_too_large",
           "The tool returned more data than can be processed safely.",

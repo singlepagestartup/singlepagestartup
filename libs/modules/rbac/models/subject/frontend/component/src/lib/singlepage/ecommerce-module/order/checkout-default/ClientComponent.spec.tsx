@@ -14,6 +14,11 @@ import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 
 const mutateAsyncMock = jest.fn();
 const useFormMock = jest.fn();
+const mockReplace = jest.fn();
+
+jest.mock("next/navigation", () => ({
+  useRouter: () => ({ replace: mockReplace }),
+}));
 
 const submitPayload = {
   provider: "stripe",
@@ -66,6 +71,7 @@ import { Component } from "./ClientComponent";
 
 describe("Given: order checkout-default action component", () => {
   beforeEach(() => {
+    mockReplace.mockReset();
     mutateAsyncMock.mockReset();
     useFormMock.mockReset();
     window.history.replaceState(null, "", checkoutPage);
@@ -123,5 +129,80 @@ describe("Given: order checkout-default action component", () => {
         }),
       }),
     );
+  });
+
+  it("opens only the checkout form targeted by its exact order anchor", () => {
+    window.history.replaceState(
+      null,
+      "",
+      `${checkoutPage}#checkout-order-order-2`,
+    );
+    const props = {
+      isServer: false,
+      variant: "ecommerce-module-order-checkout-default" as const,
+      data: { id: "subject-1" } as any,
+      ecommerceModuleProduct: { id: "product-1" } as any,
+      language: "en",
+    };
+    render(
+      <>
+        <Component {...props} ecommerceModuleOrder={{ id: "order-1" } as any} />
+        <Component {...props} ecommerceModuleOrder={{ id: "order-2" } as any} />
+      </>,
+    );
+    expect(
+      (document.getElementById("checkout-order-order-1") as HTMLDetailsElement)
+        .open,
+    ).toBe(false);
+    expect(
+      (document.getElementById("checkout-order-order-2") as HTMLDetailsElement)
+        .open,
+    ).toBe(true);
+  });
+
+  it("returns to the exact discussion for a submitted service order with a dummy invoice", async () => {
+    mutateAsyncMock.mockResolvedValue({
+      billingModule: {
+        invoices: [
+          { provider: "dummy", paymentUrl: `${checkoutPage}#legacy-home` },
+        ],
+      },
+    });
+    render(
+      <Component
+        isServer={false}
+        variant="ecommerce-module-order-checkout-default"
+        data={{ id: "subject-1" } as any}
+        ecommerceModuleProduct={{ id: "product-1" } as any}
+        ecommerceModuleOrder={
+          {
+            id: "order-1",
+            cartDetails: {
+              discussion: {
+                storeId: "store",
+                taskId: "task",
+                chatId: "exact-chat",
+                threadId: "exact-thread",
+              },
+              work: {
+                state: "awaiting-payment",
+                paymentTiming: "after-acceptance",
+                orderId: "order-1",
+                storeId: "store",
+              },
+            },
+          } as any
+        }
+        language="ru"
+      />,
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "Перейти к оплате" }));
+    await waitFor(() =>
+      expect(mockReplace).toHaveBeenCalledWith(
+        "/ru/social/chats/exact-chat/threads/exact-thread",
+      ),
+    );
+    expect(window.location.href).toBe(checkoutPage);
   });
 });

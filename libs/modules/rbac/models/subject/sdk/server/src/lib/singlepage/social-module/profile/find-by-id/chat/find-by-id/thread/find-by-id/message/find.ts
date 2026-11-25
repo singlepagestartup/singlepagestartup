@@ -5,9 +5,13 @@ import {
   transformResponseItem,
 } from "@sps/shared-utils";
 import QueryString from "qs";
-import { IChatMessage as ISocialModuleMessage } from "@sps/social/models/message/sdk/model";
+import type {
+  IChatMessage as ISocialModuleMessage,
+  TChatThreadReadResult,
+} from "@sps/social/models/message/sdk/model";
 
-export interface IProps {
+export interface IProps<IsIndex extends boolean = false> {
+  attachmentIndex?: IsIndex;
   id: string;
   socialModuleProfileId: string;
   socialModuleChatId: string;
@@ -23,7 +27,9 @@ export interface IProps {
 
 export type IResult = ISocialModuleMessage[];
 
-export async function action(props: IProps): Promise<IResult> {
+export async function action<IsIndex extends boolean = false>(
+  props: IProps<IsIndex>,
+): Promise<TChatThreadReadResult<IsIndex>> {
   const {
     id,
     socialModuleProfileId,
@@ -34,9 +40,14 @@ export async function action(props: IProps): Promise<IResult> {
     host = serverHost,
   } = props;
 
-  const stringifiedQuery = QueryString.stringify(params, {
-    encodeValuesOnly: true,
-  });
+  const stringifiedQuery = QueryString.stringify(
+    props.attachmentIndex
+      ? { ...params, populate: "attachment-index" }
+      : params,
+    {
+      encodeValuesOnly: true,
+    },
+  );
 
   const requestOptions: NextRequestOptions = {
     credentials: "include",
@@ -52,11 +63,12 @@ export async function action(props: IProps): Promise<IResult> {
     requestOptions,
   );
 
-  const json = await responsePipe<{ data: IResult }>({
+  const json = await responsePipe<{ data: TChatThreadReadResult<IsIndex> }>({
     res,
   });
 
-  const transformedData = transformResponseItem<IResult>(json);
+  const transformedData =
+    transformResponseItem<TChatThreadReadResult<IsIndex>>(json);
 
   return transformedData;
 }

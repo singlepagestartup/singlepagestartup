@@ -10,10 +10,15 @@ export const variant = "id-settings-ai-chat" as const;
 export interface IComponentProps extends IParent<IModel, typeof variant> {
   language?: string;
   pending?: boolean;
+  dialogDescription?: string;
+  mode?: "personal" | "agent";
   children?: ReactNode;
   onSave: (
     data: Pick<IModel, "title" | "subtitle" | "description" | "slug">,
   ) => Promise<unknown>;
 }
-export interface IComponentPropsExtended
-  extends IParentExtended<IModel, typeof variant, IComponentProps> {}
+export interface IComponentPropsExtended extends IParentExtended<
+  IModel,
+  typeof variant,
+  IComponentProps
+> {}

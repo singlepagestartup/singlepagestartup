@@ -1,0 +1,47 @@
+{
+  "metadata": {
+    "seo": {
+      "title": {
+        "en": "New store task — SinglePageStartup",
+        "ru": "Новая задача магазина — SinglePageStartup"
+      },
+      "description": {
+        "en": "Open a task for this store.",
+        "ru": "Откройте задачу для этого магазина."
+      }
+    },
+    "seoDisplay": {
+      "twitterTitle": {
+        "en": "New store task — SinglePageStartup",
+        "ru": "Новая задача магазина — SinglePageStartup"
+      },
+      "opengraphTitle": {
+        "en": "New store task — SinglePageStartup",
+        "ru": "Новая задача магазина — SinglePageStartup"
+      },
+      "opengraphLocale": {
+        "en": "en_US",
+        "ru": "ru_RU"
+      },
+      "twitterDescription": {
+        "en": "Open a task for this store.",
+        "ru": "Откройте задачу для этого магазина."
+      },
+      "opengraphDescription": {
+        "en": "Open a task for this store.",
+        "ru": "Откройте задачу для этого магазина."
+      }
+    }
+  },
+  "id": "dd073559-0d57-4f2a-acc1-885e85b6a1d2",
+  "title": "New store task",
+  "url": "/ecommerce/stores/[ecommerce.stores.slug]/crm/tasks/new",
+  "slug": "crm-workspace-task-create",
+  "description": "Open a task for this store.",
+  "createdAt": "2026-11-22T20:23:00.516Z",
+  "updatedAt": "2026-11-22T20:23:00.516Z",
+  "variant": "noindex",
+  "className": null,
+  "language": "en",
+  "adminTitle": "New store task"
+}

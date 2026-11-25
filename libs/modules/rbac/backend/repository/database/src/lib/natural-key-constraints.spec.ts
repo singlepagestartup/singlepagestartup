@@ -116,7 +116,7 @@ describe("Given: startup RBAC repository schemas", () => {
    */
   it("When: subject-identity constraints are composed Then: keeps one owner per identity", () => {
     expectUniqueIndex(SubjectsToIdentitiesTable, {
-      name: "sps_rc_subject_identity_identity_unique",
+      name: "sps_rc_identity_principal",
       columns: ["iy_id"],
     });
   });

@@ -6,21 +6,26 @@ export interface IModelPickerOption {
 }
 
 export interface IModelPickerProps<TEffort extends string> {
+  id?: string;
+  "aria-describedby"?: string;
   language: string;
   modelLabel: string;
+  modelTriggerClassName?: string;
+  reasoningTriggerClassName?: string;
   autoLabel: string;
   reasoningControlLabel?: string;
   showModelDescription?: boolean;
-  favoriteModelIds: readonly string[];
+  disabled?: boolean;
+  favoriteModelIds?: readonly string[];
   isLoadingModels: boolean;
   isSelectionUnavailable: boolean;
-  isUpdatingFavorites: boolean;
+  isUpdatingFavorites?: boolean;
   modelGroups: readonly {
     id: string;
     title: string;
     models: readonly IModelPickerOption[];
   }[];
-  onFavoriteToggle: (canonicalId: string) => void;
+  onFavoriteToggle?: (canonicalId: string) => void;
   onModelChange: (modelId: string) => void;
   onReasoningChange: (effort: TEffort) => void;
   reasoningOptions: readonly {

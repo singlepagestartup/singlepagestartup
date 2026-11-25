@@ -129,7 +129,7 @@ it.each([
               variant: "owner",
             },
           });
-          const funnel = await crm.funnel.saveDraft({
+          await crm.funnel.save({
             storeId,
             name: "Product question",
             kind: "consultation",
@@ -151,13 +151,6 @@ it.each([
                 },
               ],
             },
-          });
-          await crm.funnel.publish({
-            storeId,
-            funnelId: funnel.id,
-            expectedRevision: funnel.revision,
-            actorId: owner.id,
-            operationKey: randomUUID(),
           });
           const initial = await rbac.subject.customerWork.execute(customer.id, {
             operation: "ask",

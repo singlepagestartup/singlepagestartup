@@ -1,10 +1,10 @@
-import { Archive, Inbox } from "lucide-react";
+import { Archive, GripVertical, Inbox } from "lucide-react";
 import { memo, useState } from "react";
 import {
   Assignee,
   AssignButton,
-  DueDate,
   MoveButton,
+  storeList,
   TaskLink,
   TaskStatus,
   type TaskActions,
@@ -26,33 +26,41 @@ const TaskCard = memo(function TaskCard({
   person,
   pending,
   canAssign,
-  onOpenTask,
   onRequestMove,
 }: TaskCardProps) {
-  const { id, label, customer, state, waitingFor, dueAt } = task;
+  const { id, label, customer, state, waitingFor } = task;
+
+  const canDrag = Boolean(onRequestMove) && task.canMove && !pending;
 
   return (
     <article
       aria-busy={pending}
-      className={`rounded-xl border border-border bg-card p-3.5 text-card-foreground shadow-xs ${onRequestMove && task.canMove && !pending ? "cursor-grab active:cursor-grabbing" : ""}`}
-      draggable={Boolean(onRequestMove) && task.canMove && !pending}
+      className={`${storeList.row} relative isolate p-3.5`}
+      draggable={canDrag}
       onDragStart={(event) => {
+        if (!canDrag) return;
         event.dataTransfer.setData(taskDragType, id);
         event.dataTransfer.effectAllowed = "move";
       }}
     >
-      <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
-        <span className="text-xs font-medium tabular-nums text-muted-foreground">
-          {id}
-        </span>
+      <div className="mb-2 flex min-w-0 items-center gap-2">
+        {canDrag && (
+          <GripVertical
+            aria-hidden="true"
+            className="relative z-10 size-4 shrink-0 cursor-grab text-muted-foreground active:cursor-grabbing"
+          />
+        )}
         <TaskStatus state={state} />
+        <span
+          title={customer}
+          className="ml-auto min-w-0 truncate text-xs text-muted-foreground"
+        >
+          {customer}
+        </span>
       </div>
-      <TaskLink href={task.href} taskId={id} onOpenTask={onOpenTask}>
+      <TaskLink href={task.href} taskId={id}>
         {label}
       </TaskLink>
-      <p className="mt-1 break-words text-sm text-muted-foreground">
-        {customer}
-      </p>
       {waitingFor && (
         <p className="mt-3 break-words rounded-md border-l-2 border-amber-500 bg-amber-50 px-2.5 py-1.5 text-xs leading-5 text-amber-950">
           {waitingFor}
@@ -65,21 +73,14 @@ const TaskCard = memo(function TaskCard({
             !task.assignee &&
             state !== "closed" &&
             state !== "completed" && (
-              <AssignButton
-                taskId={id}
-                taskLabel={label}
-                onOpenTask={onOpenTask}
-              />
+              <AssignButton href={task.href} taskLabel={label} />
             )}
-          <span className="text-xs">
-            <DueDate value={dueAt} />
-          </span>
         </div>
         <MoveButton
           taskId={id}
           taskLabel={label}
           pending={pending}
-          onRequestMove={onRequestMove}
+          onRequestMove={task.canMove ? onRequestMove : undefined}
         />
       </div>
       {pending && (
@@ -104,7 +105,6 @@ export function Kanban({
   people,
   pendingIds,
   canAssign,
-  onOpenTask,
   onRequestMove,
 }: ITaskCollectionProps) {
   const [dropStage, setDropStage] = useState<string>();
@@ -125,7 +125,7 @@ export function Kanban({
             key={stage.id}
             aria-label={stage.title}
             data-stage-id={stage.id}
-            className={`min-w-0 rounded-xl border p-2.5 sm:min-h-72 sm:flex-[1_0_15.5rem] ${dropStage === stage.id ? "border-ring bg-accent" : "border-border/70 bg-background/65"}`}
+            className={`min-w-0 rounded-xl border p-2.5 sm:min-h-72 sm:flex-[1_0_15.5rem] ${dropStage === stage.id ? "border-ring bg-accent" : "border-border bg-muted/40"}`}
             onDragOver={(event) => {
               if (
                 !onRequestMove ||
@@ -152,7 +152,11 @@ export function Kanban({
               event.preventDefault();
               setDropStage(undefined);
               const task = tasks.find(({ id }) => id === taskId);
-              if (!task || task.stageId === stage.id || pendingIds?.has(taskId))
+              if (
+                !task?.canMove ||
+                task.stageId === stage.id ||
+                pendingIds?.has(taskId)
+              )
                 return;
               onRequestMove({ taskId, toStageId: stage.id });
             }}
@@ -185,7 +189,6 @@ export function Kanban({
                     )}
                     pending={Boolean(pendingIds?.has(task.id))}
                     canAssign={canAssign}
-                    onOpenTask={onOpenTask}
                     onRequestMove={onRequestMove}
                   />
                 ))}

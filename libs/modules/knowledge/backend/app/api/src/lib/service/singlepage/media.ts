@@ -6,11 +6,15 @@ import { promisify } from "node:util";
 import { mkdtemp, readFile, writeFile, readdir, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
+import OpenAI from "openai";
+import { z } from "zod";
 import { assertKnowledgeAttachmentBytes } from "@sps/backend-utils";
 import {
   knowledgeMediaDemuxers,
+  getKnowledgeConfiguration,
   KNOWLEDGE_MAX_MEDIA_SECONDS,
   KNOWLEDGE_MAX_VIDEO_FRAMES,
+  KNOWLEDGE_OPEN_AI_ANALYSIS_MODEL,
 } from "../../configuration";
 
 export interface MediaServiceProps {
@@ -19,6 +23,20 @@ export interface MediaServiceProps {
   readFile?: (file: { file: string | null }) => Promise<Buffer>;
 }
 const runCommand = promisify(execFile);
+const audioTranscript = z.object({
+  text: z.string(),
+  segments: z
+    .array(
+      z
+        .object({
+          start: z.number().nonnegative(),
+          end: z.number().nonnegative(),
+          text: z.string(),
+        })
+        .refine(({ start, end }) => end >= start),
+    )
+    .optional(),
+});
 
 export class Service {
   private run: typeof runCommand;
@@ -29,13 +47,26 @@ export class Service {
     return this.props.provider || new OpenRouter();
   }
 
-  async analyze(file: IFile, userContext: string) {
+  private directOpenAIConfiguration() {
+    const embedding = getKnowledgeConfiguration().embedding;
+    if (this.props.provider || embedding.provider !== "openai") {
+      return undefined;
+    }
+    if (!embedding.apiKey) {
+      throw new Error(
+        "Configuration error. OPEN_AI_API_KEY is required for Knowledge analysis.",
+      );
+    }
+    return { apiKey: embedding.apiKey, url: embedding.url };
+  }
+
+  async analyze(file: IFile, userContext: string, attachedBytes?: Buffer) {
     assertKnowledgeAttachmentBytes({
       bytes: new Uint8Array(),
       name: file.file || file.adminTitle || "",
       mimeType: file.mimeType || undefined,
     });
-    const bytes = await this.read(file.file);
+    const bytes = attachedBytes ?? (await this.read(file.file));
     assertKnowledgeAttachmentBytes({
       bytes,
       name: file.extension ? "file." + file.extension : file.adminTitle || "",
@@ -278,12 +309,8 @@ export class Service {
         .filter((name) => /^audio-\d+\.wav$/.test(name))
         .sort();
       for (const [i, name] of audio.entries()) {
-        const transcript = await this.provider().transcribeAudio({
-          data: await readFile(path.join(directory, name)),
-          format: "wav",
-          model:
-            process.env.KNOWLEDGE_TRANSCRIPTION_MODEL || "openai/whisper-1",
-        });
+        const bytes = await readFile(path.join(directory, name));
+        const transcript = await this.transcribe(bytes);
         if (!transcript.segments?.length && transcript.text?.trim()) {
           throw new Error(
             "Transcription provider returned no time-aligned segments.",
@@ -303,6 +330,42 @@ export class Service {
       .join("\n\n");
   }
 
+  private async transcribe(bytes: Buffer) {
+    const config = this.directOpenAIConfiguration();
+    if (!config) {
+      return this.provider().transcribeAudio({
+        data: bytes,
+        format: "wav",
+        model: process.env.KNOWLEDGE_TRANSCRIPTION_MODEL || "openai/whisper-1",
+      });
+    }
+    const form = new FormData();
+    form.set(
+      "file",
+      new Blob([Uint8Array.from(bytes)], { type: "audio/wav" }),
+      "clip.wav",
+    );
+    form.set("model", "whisper-1");
+    form.set("response_format", "verbose_json");
+    form.set("timestamp_granularities[]", "segment");
+    try {
+      const response = await fetch(`${config.url}/audio/transcriptions`, {
+        method: "POST",
+        headers: { authorization: `Bearer ${config.apiKey}` },
+        redirect: "error",
+        signal: AbortSignal.timeout(120_000),
+        body: form,
+      });
+      if (!response.ok) {
+        await response.body?.cancel().catch(() => undefined);
+        throw new Error("Invalid audio response status");
+      }
+      return audioTranscript.parse(await response.json());
+    } catch {
+      throw new Error("OpenAI could not transcribe the Knowledge audio.");
+    }
+  }
+
   private async describe(
     bytes: Buffer,
     context: string,
@@ -316,6 +379,44 @@ export class Service {
   }
 
   private async generate(prompt: string, image?: string) {
+    const config = this.directOpenAIConfiguration();
+    if (config) {
+      const client = new OpenAI({
+        apiKey: config.apiKey,
+        baseURL: config.url,
+        maxRetries: 0,
+        timeout: 120_000,
+      });
+      let response;
+      try {
+        response = await client.chat.completions.create({
+          model: KNOWLEDGE_OPEN_AI_ANALYSIS_MODEL,
+          max_completion_tokens: 8192,
+          store: false,
+          messages: [
+            {
+              role: "user",
+              content: image
+                ? [
+                    { type: "text", text: prompt },
+                    {
+                      type: "image_url",
+                      image_url: { url: image, detail: "high" },
+                    },
+                  ]
+                : prompt,
+            },
+          ],
+        });
+      } catch {
+        throw new Error("OpenAI could not analyze the Knowledge material.");
+      }
+      const choice = response.choices[0];
+      if (choice?.finish_reason !== "stop" || !choice.message.content?.trim()) {
+        throw new Error("OpenAI returned an incomplete Knowledge analysis.");
+      }
+      return choice.message.content;
+    }
     const response = await this.provider().generate({
       model: OPEN_ROUTER_ASSISTANT_MODEL.id,
       reasoning: OPEN_ROUTER_ASSISTANT_MODEL.reasoning,

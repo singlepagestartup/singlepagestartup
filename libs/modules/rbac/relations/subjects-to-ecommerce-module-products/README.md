@@ -12,6 +12,8 @@ Existing `default` associations retain their presentation and purchase behavior.
 The admin form writes this relation through its own SDK. The API checks the
 caller’s permission for the requested method and relation route.
 
+The `store-expert` variant assigns a product to an AI Subject. Customer work selects the assigned Subject among the employees of the store that published the offer. Its Social profile supplies the employee’s description and knowledge.
+
 ## Fields
 
 - `id`: unique identifier (UUID).

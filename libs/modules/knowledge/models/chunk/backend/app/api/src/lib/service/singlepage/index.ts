@@ -16,7 +16,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     return (this.repository as Repository).search(props);
   }
 
-  hasEmbeddingIndex(ids: string[], embeddingIndex: string) {
+  hasEmbeddingIndex(ids: string[], embeddingIndex?: string) {
     return (this.repository as Repository).hasEmbeddingIndex(
       ids,
       embeddingIndex,

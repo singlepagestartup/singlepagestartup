@@ -7,7 +7,7 @@ import {
   primaryClass,
   secondaryClass,
 } from "../../../shared/workflow-ui";
-import type { WorkflowRelease, WorkflowTask } from "../../../shared/workflows";
+import type { Workflow, WorkflowTask } from "../../../shared/workflows";
 import { Field } from "../workflow-editor/Fields";
 
 export interface MoveInput {
@@ -20,7 +20,7 @@ export interface MoveInput {
 
 interface TaskMoveDialogProps {
   task: WorkflowTask;
-  release: WorkflowRelease;
+  workflow: Workflow;
   initialStageId?: string;
   onClose: () => void;
   onRestoreFocus: () => void;
@@ -33,7 +33,7 @@ const moveDialog =
 
 export function TaskMoveDialog({
   task,
-  release,
+  workflow,
   initialStageId,
   onClose,
   onRestoreFocus,
@@ -42,10 +42,10 @@ export function TaskMoveDialog({
   const [toStageId, setToStageId] = useState(initialStageId ?? "");
   const [reason, setReason] = useState("");
   const [evidence, setEvidence] = useState("");
-  const currentStage = release.stages.find(
+  const currentStage = workflow.stages.find(
     (stage) => stage.id === task.stageId,
   );
-  const nextStages = release.stages.filter(
+  const nextStages = workflow.stages.filter(
     (stage) => stage.id !== task.stageId && !stage.archived,
   );
   const selected = nextStages.find((stage) => stage.id === toStageId);

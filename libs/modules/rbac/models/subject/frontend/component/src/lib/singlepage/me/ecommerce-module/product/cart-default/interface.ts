@@ -38,4 +38,5 @@ export interface ISavedOrderProps extends Pick<
   "subject" | "ecommerceModuleOrder" | "language"
 > {
   ecommerceModuleProduct: IEcommerceModuleProduct;
+  canOpenDiscussion: () => boolean;
 }

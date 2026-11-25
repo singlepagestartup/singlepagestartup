@@ -10,6 +10,7 @@ jest.mock("client-only", () => ({}), { virtual: true });
 jest.mock("server-only", () => ({}), { virtual: true });
 const mockCreate = jest.fn();
 const mockPush = jest.fn();
+const mockChatDetail = jest.fn();
 const subject = { id: "owner", slug: "owner" };
 jest.mock("react-cookie", () => ({
   useCookies: () => [{ "rbac.subject.jwt": "jwt" }, null, null, jest.fn()],
@@ -29,6 +30,8 @@ jest.mock("@sps/rbac/models/subject/sdk/client", () => ({
   Provider: ({ children }: any) => children,
   api: {
     findById: () => ({ isLoading: false }),
+    socialModuleProfileFindByIdChatFindById: (args: unknown) =>
+      mockChatDetail(args),
     socialModuleChatFindByIdThreadCreate: () => ({
       mutateAsync: mockCreate,
       isPending: false,
@@ -41,6 +44,7 @@ jest.mock("@sps/ui-adapter", () => ({
 }));
 import { Component } from "./index";
 const project = {
+  requesterProfileId: "requester",
   profile: { id: "profile" },
   chat: { id: "chat" },
   thread: { id: "initial" },
@@ -53,6 +57,7 @@ const props = {
   project,
 } as any;
 beforeEach(() => {
+  mockChatDetail.mockReturnValue({ data: { canManageChat: true } });
   mockCreate.mockReset();
   mockPush.mockReset();
 });
@@ -114,4 +119,17 @@ it("retains the failed draft, permits retry and resets it when the project chang
     "",
   );
   expect(screen.queryByRole("alert")).toBeNull();
+});
+
+it("keeps a directly opened thread form read-only for a member", () => {
+  mockChatDetail.mockReturnValue({ data: { canManageChat: false } });
+  render(<Component {...props} />);
+  expect(mockChatDetail).toHaveBeenCalledWith({
+    id: subject.id,
+    socialModuleProfileId: project.requesterProfileId,
+    socialModuleChatId: project.chat.id,
+  });
+  expect(screen.queryByRole("button", { name: "Create thread" })).toBeNull();
+  expect(screen.getByRole("status").textContent).toContain("owner");
+  expect(mockCreate).not.toHaveBeenCalled();
 });

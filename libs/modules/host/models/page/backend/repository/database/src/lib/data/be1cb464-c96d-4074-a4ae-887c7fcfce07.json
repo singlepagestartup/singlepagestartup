@@ -1,0 +1,47 @@
+{
+  "metadata": {
+    "seo": {
+      "title": {
+        "en": "Store orders — SinglePageStartup",
+        "ru": "Заказы магазина — SinglePageStartup"
+      },
+      "description": {
+        "en": "View orders placed at this store.",
+        "ru": "Заказы, оформленные в этом магазине."
+      }
+    },
+    "seoDisplay": {
+      "twitterTitle": {
+        "en": "Store orders — SinglePageStartup",
+        "ru": "Заказы магазина — SinglePageStartup"
+      },
+      "opengraphTitle": {
+        "en": "Store orders — SinglePageStartup",
+        "ru": "Заказы магазина — SinglePageStartup"
+      },
+      "opengraphLocale": {
+        "en": "en_US",
+        "ru": "ru_RU"
+      },
+      "twitterDescription": {
+        "en": "View orders placed at this store.",
+        "ru": "Заказы, оформленные в этом магазине."
+      },
+      "opengraphDescription": {
+        "en": "View orders placed at this store.",
+        "ru": "Заказы, оформленные в этом магазине."
+      }
+    }
+  },
+  "id": "be1cb464-c96d-4074-a4ae-887c7fcfce07",
+  "title": "Store orders",
+  "url": "/ecommerce/stores/[ecommerce.stores.slug]/orders",
+  "slug": "store-orders",
+  "description": "View orders placed at this store.",
+  "createdAt": "2026-11-24T20:25:23.360Z",
+  "updatedAt": "2026-11-24T20:25:23.360Z",
+  "variant": "noindex",
+  "className": null,
+  "language": "en",
+  "adminTitle": "Store orders"
+}

@@ -77,6 +77,12 @@ export const topicRules: ITopicRule[] = [
 
   {
     routeTemplate:
+      "/api/rbac/subjects/[rbac.subjects.id]/social-module/profiles/[social.profiles.id]/chats/[social.chats.id]/threads/[social.threads.id]/typing",
+    topics: ["social.threads.[social.threads.id].actions"],
+    stop: true,
+  },
+  {
+    routeTemplate:
       "/api/rbac/subjects/[rbac.subjects.id]/social-module/chats/[social.chats.id]/threads/[social.threads.id]/read",
     topics: ["rbac.subjects.[rbac.subjects.id].social-read"],
     stop: true,
@@ -110,6 +116,24 @@ export const topicRules: ITopicRule[] = [
       "knowledge.chunks",
       "knowledge.sources-to-chunks",
       "knowledge.sources-to-file-storage-module-files",
+    ],
+    stop: true,
+  },
+  {
+    routeTemplate:
+      "/api/rbac/subjects/[rbac.subjects.id]/social-module/profiles/[social.profiles.id]/knowledge/sources/personal",
+    topics: [
+      "social.profiles-to-knowledge-module-sources",
+      "knowledge.sources",
+    ],
+    stop: true,
+  },
+  {
+    routeTemplate:
+      "/api/rbac/subjects/[rbac.subjects.id]/social-module/profiles/[social.profiles.id]/knowledge/sources/personal/[knowledge.sources.id]",
+    topics: [
+      "social.profiles-to-knowledge-module-sources",
+      "knowledge.sources",
     ],
     stop: true,
   },

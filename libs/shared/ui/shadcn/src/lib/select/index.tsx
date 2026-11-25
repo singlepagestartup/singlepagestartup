@@ -157,3 +157,8 @@ export {
   SelectScrollUpButton,
   SelectScrollDownButton,
 };
+export {
+  SearchMultiSelect,
+  type ISearchSelectOption,
+  type ISearchSelectQuery,
+} from "./SearchMultiSelect";

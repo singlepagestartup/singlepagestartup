@@ -1,0 +1,47 @@
+{
+  "metadata": {
+    "seo": {
+      "title": {
+        "en": "Store employee — SinglePageStartup",
+        "ru": "Сотрудник магазина — SinglePageStartup"
+      },
+      "description": {
+        "en": "View a store employee and their current tasks.",
+        "ru": "Откройте профиль сотрудника и его текущие задачи."
+      }
+    },
+    "seoDisplay": {
+      "twitterTitle": {
+        "en": "Store employee — SinglePageStartup",
+        "ru": "Сотрудник магазина — SinglePageStartup"
+      },
+      "opengraphTitle": {
+        "en": "Store employee — SinglePageStartup",
+        "ru": "Сотрудник магазина — SinglePageStartup"
+      },
+      "opengraphLocale": {
+        "en": "en_US",
+        "ru": "ru_RU"
+      },
+      "twitterDescription": {
+        "en": "View a store employee and their current tasks.",
+        "ru": "Откройте профиль сотрудника и его текущие задачи."
+      },
+      "opengraphDescription": {
+        "en": "View a store employee and their current tasks.",
+        "ru": "Откройте профиль сотрудника и его текущие задачи."
+      }
+    }
+  },
+  "id": "5cce4a24-7a76-419d-8bfc-3b5950b1c462",
+  "title": "Store employee",
+  "url": "/ecommerce/stores/[ecommerce.stores.slug]/employees/[rbac.subjects.id]",
+  "slug": "store-employee-detail",
+  "description": "View a store employee and their current tasks.",
+  "createdAt": "2026-11-22T20:22:59.422Z",
+  "updatedAt": "2026-11-22T20:22:59.422Z",
+  "variant": "noindex",
+  "className": null,
+  "language": "en",
+  "adminTitle": "Store employee"
+}

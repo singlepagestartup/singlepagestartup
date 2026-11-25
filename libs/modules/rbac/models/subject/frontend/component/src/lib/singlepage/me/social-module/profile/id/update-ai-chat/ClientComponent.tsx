@@ -41,6 +41,7 @@ export function Component(props: IComponentPropsExtended) {
       language={props.language}
       isServer={false}
       variant="id-settings-ai-chat"
+      dataSource="props"
       data={props.profile}
       onSave={save}
       pending={update.isPending}
@@ -49,6 +50,7 @@ export function Component(props: IComponentPropsExtended) {
         language={props.language}
         isServer={false}
         variant="me-social-module-profile-id-avatar-update-ai-chat"
+        dataSource="props"
         data={props.data}
         profile={props.profile}
       />

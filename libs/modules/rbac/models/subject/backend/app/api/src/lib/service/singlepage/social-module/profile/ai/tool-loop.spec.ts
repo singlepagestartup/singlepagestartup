@@ -87,7 +87,8 @@ describe("Given: a bounded social.profile AI tool loop", () => {
    * Then: the final text and redacted trace identify the social.profile tool execution without exposing raw arguments.
    */
   it("When: an available tool is requested Then: its result is replayed before final text", async () => {
-    const tool = createTool();
+    const record = { id: "record-1", description: "Ж".repeat(65_536) };
+    const tool = createTool({ execute: jest.fn(async () => record) });
     const generate = jest
       .fn()
       .mockResolvedValueOnce({
@@ -122,7 +123,7 @@ describe("Given: a bounded social.profile AI tool loop", () => {
         expect.objectContaining({
           role: "tool",
           tool_call_id: "call-1",
-          content: '{"id":"record-1","ok":true}',
+          content: JSON.stringify(record),
         }),
       ]),
     );

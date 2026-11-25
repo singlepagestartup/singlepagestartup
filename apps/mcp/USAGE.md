@@ -49,7 +49,8 @@ plugin when a tool response is empty or unclear.
 3. Use `model-record-count` / `relation-record-count` when the number of
    matching records matters.
 4. Use `model-record-find` / `relation-record-find` with explicit filters and a
-   bounded `limit`.
+   bounded `limit`. For a list of article titles, `model-record-find` accepts
+   `fields: ["id", "title", "slug"]`. Omitting `fields` returns full records.
 5. Use `model-record-get` / `relation-record-get` after an id has been
    resolved.
 

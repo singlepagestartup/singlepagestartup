@@ -1,7 +1,7 @@
 "use client";
 
-import { cn } from "@sps/shared-frontend-client-utils";
-import { Node, mergeAttributes } from "@tiptap/core";
+import { cn, getRichTextEditorValue } from "@sps/shared-frontend-client-utils";
+import { Node, mergeAttributes, type JSONContent } from "@tiptap/core";
 import {
   useEditor,
   EditorContent,
@@ -9,7 +9,14 @@ import {
   NodeViewWrapper,
 } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
-import { ChangeEventHandler, forwardRef, useCallback, useState } from "react";
+import {
+  ChangeEventHandler,
+  forwardRef,
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 import { ControllerRenderProps, UseFormReturn } from "react-hook-form";
 import { Toggle } from "../toggle";
 import Link from "@tiptap/extension-link";
@@ -114,7 +121,12 @@ function CopyButtonView({ node }) {
 
   return (
     <NodeViewWrapper as="span" className="inline-flex items-center">
-      <Button onClick={copyText} variant="link" className="w-fit p-0">
+      <Button
+        type="button"
+        onClick={copyText}
+        variant="link"
+        className="w-fit p-0"
+      >
         {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
       </Button>
     </NodeViewWrapper>
@@ -136,34 +148,58 @@ export type ITipTapEditableProps = {
 
 export type ITipTapProps = ITipTapEditableProps | ITipTapContentProps;
 
-export const TipTapEditable = forwardRef<
-  HTMLInputElement,
-  ITipTapEditableProps
->((props: ITipTapEditableProps, ref) => {
+interface ITipTapEditorProps {
+  value: string | JSONContent | JSONContent[];
+  className?: string;
+  language?: string;
+  label?: string;
+  disabled?: boolean;
+  onValueChange: (value: string, empty: boolean) => void;
+}
+
+export function TipTapEditor(props: ITipTapEditorProps) {
+  const ru = props.language === "ru";
+  const content = useMemo(() => {
+    if (typeof props.value !== "string") return props.value;
+    const serialized = getRichTextEditorValue(props.value);
+    return serialized ? (JSON.parse(serialized) as JSONContent) : "";
+  }, [props.value]);
   const editor = useEditor({
     immediatelyRender: false,
     extensions: [
       StarterKit.configure({ link: false }),
-      Link.configure({
-        openOnClick: false,
-        autolink: true,
-      }),
+      Link.configure({ openOnClick: false, autolink: true }),
       CopyButton,
     ],
-    content: props.value,
+    content,
+    editable: !props.disabled,
     editorProps: {
       attributes: {
+        role: "textbox",
+        "aria-multiline": "true",
+        ...(props.label && { "aria-label": props.label }),
         class: cn(
-          "prose dark:prose-invert prose-xs lg:prose-base p-5 focus:outline-hidden w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 placeholder:text-muted-foreground focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50",
+          "prose dark:prose-invert w-full max-w-none min-h-32 rounded-md border border-input bg-background px-3 py-2 text-sm focus-visible:outline-2 focus-visible:outline-ring",
           props.className,
         ),
       },
     },
-    onUpdate: ({ editor }) => {
-      const editorJson = editor?.getJSON();
-      props.form.setValue(props.name, JSON.stringify(editorJson));
-    },
+    onUpdate: ({ editor }) =>
+      props.onValueChange(JSON.stringify(editor.getJSON()), editor.isEmpty),
   });
+
+  useEffect(() => {
+    if (!editor || editor.isDestroyed) return;
+    const matches = content
+      ? JSON.stringify(content) === JSON.stringify(editor.getJSON())
+      : editor.isEmpty;
+    if (!matches) editor.commands.setContent(content, { emitUpdate: false });
+  }, [editor, content]);
+
+  useEffect(() => {
+    if (editor && editor.isEditable === Boolean(props.disabled))
+      editor.setEditable(!props.disabled, false);
+  }, [editor, props.disabled]);
 
   const setLink = useCallback(() => {
     if (!editor) {
@@ -194,15 +230,18 @@ export const TipTapEditable = forwardRef<
   }
 
   return (
-    <div className={cn("relative flex flex-col gap-1", props.className)}>
+    <div
+      className={cn("relative flex min-w-0 flex-col gap-1", props.className)}
+    >
       {editor ? (
-        <div className="flex max-w-full flex-wrap gap-1 rounded-lg bg-white">
+        <div className="flex max-w-full flex-wrap gap-1 rounded-lg bg-muted/40">
           <Toggle
-            aria-label="Toggle Heading 1"
+            aria-label={ru ? "Заголовок 1" : "Heading 1"}
             data-state={editor.isActive("heading", { level: 1 }) ? "on" : "off"}
             asChild={true}
           >
             <button
+              type="button"
               onClick={(e) => {
                 e.preventDefault();
 
@@ -213,11 +252,12 @@ export const TipTapEditable = forwardRef<
             </button>
           </Toggle>
           <Toggle
-            aria-label="Toggle heading 2"
+            aria-label={ru ? "Заголовок 2" : "Heading 2"}
             data-state={editor.isActive("heading", { level: 2 }) ? "on" : "off"}
             asChild={true}
           >
             <button
+              type="button"
               onClick={(e) => {
                 e.preventDefault();
 
@@ -228,11 +268,12 @@ export const TipTapEditable = forwardRef<
             </button>
           </Toggle>
           <Toggle
-            aria-label="Toggle heading 3"
+            aria-label={ru ? "Заголовок 3" : "Heading 3"}
             data-state={editor.isActive("heading", { level: 3 }) ? "on" : "off"}
             asChild={true}
           >
             <button
+              type="button"
               onClick={(e) => {
                 e.preventDefault();
 
@@ -243,11 +284,12 @@ export const TipTapEditable = forwardRef<
             </button>
           </Toggle>
           <Toggle
-            aria-label="Toggle heading 4"
+            aria-label={ru ? "Заголовок 4" : "Heading 4"}
             data-state={editor.isActive("heading", { level: 4 }) ? "on" : "off"}
             asChild={true}
           >
             <button
+              type="button"
               onClick={(e) => {
                 e.preventDefault();
 
@@ -258,11 +300,12 @@ export const TipTapEditable = forwardRef<
             </button>
           </Toggle>
           <Toggle
-            aria-label="Toggle heading 5"
+            aria-label={ru ? "Заголовок 5" : "Heading 5"}
             data-state={editor.isActive("heading", { level: 5 }) ? "on" : "off"}
             asChild={true}
           >
             <button
+              type="button"
               onClick={(e) => {
                 e.preventDefault();
 
@@ -273,11 +316,12 @@ export const TipTapEditable = forwardRef<
             </button>
           </Toggle>
           <Toggle
-            aria-label="Toggle heading 6"
+            aria-label={ru ? "Заголовок 6" : "Heading 6"}
             data-state={editor.isActive("heading", { level: 6 }) ? "on" : "off"}
             asChild={true}
           >
             <button
+              type="button"
               onClick={(e) => {
                 e.preventDefault();
 
@@ -288,11 +332,12 @@ export const TipTapEditable = forwardRef<
             </button>
           </Toggle>
           <Toggle
-            aria-label="Toggle bold"
+            aria-label={ru ? "Полужирный" : "Bold"}
             data-state={editor.isActive("bold") ? "on" : "off"}
             asChild={true}
           >
             <button
+              type="button"
               onClick={(e) => {
                 e.preventDefault();
 
@@ -303,11 +348,12 @@ export const TipTapEditable = forwardRef<
             </button>
           </Toggle>
           <Toggle
-            aria-label="Toggle italic"
+            aria-label={ru ? "Курсив" : "Italic"}
             data-state={editor.isActive("italic") ? "on" : "off"}
             asChild={true}
           >
             <button
+              type="button"
               onClick={(e) => {
                 e.preventDefault();
 
@@ -318,11 +364,12 @@ export const TipTapEditable = forwardRef<
             </button>
           </Toggle>
           <Toggle
-            aria-label="Toggle strike"
+            aria-label={ru ? "Зачёркнутый" : "Strikethrough"}
             data-state={editor.isActive("strike") ? "on" : "off"}
             asChild={true}
           >
             <button
+              type="button"
               onClick={(e) => {
                 e.preventDefault();
 
@@ -335,11 +382,12 @@ export const TipTapEditable = forwardRef<
 
           {editor.isActive("link") ? (
             <Toggle
-              aria-label="Toggle strike"
-              data-state={editor.isActive("strike") ? "on" : "off"}
+              aria-label={ru ? "Удалить ссылку" : "Remove link"}
+              data-state="on"
               asChild={true}
             >
               <button
+                type="button"
                 onClick={(e) => {
                   e.preventDefault();
 
@@ -351,11 +399,12 @@ export const TipTapEditable = forwardRef<
             </Toggle>
           ) : (
             <Toggle
-              aria-label="Toggle strike"
-              data-state={editor.isActive("strike") ? "on" : "off"}
+              aria-label={ru ? "Добавить ссылку" : "Add link"}
+              data-state="off"
               asChild={true}
             >
               <button
+                type="button"
                 onClick={(e) => {
                   e.preventDefault();
 
@@ -367,8 +416,12 @@ export const TipTapEditable = forwardRef<
             </Toggle>
           )}
           <Button
+            type="button"
+            aria-label={ru ? "Кнопка копирования" : "Insert copy button"}
             onClick={() => {
-              const text = window.prompt("Type text to copy", "Copy me!");
+              const text = window.prompt(
+                ru ? "Текст для копирования" : "Text to copy",
+              );
               if (text) {
                 editor.chain().focus().insertCopyButton(text).run();
               }
@@ -382,6 +435,19 @@ export const TipTapEditable = forwardRef<
       ) : null}
       <EditorContent editor={editor} />
     </div>
+  );
+}
+
+export const TipTapEditable = forwardRef<
+  HTMLInputElement,
+  ITipTapEditableProps
+>(function TipTapEditable(props, ref) {
+  return (
+    <TipTapEditor
+      value={props.value}
+      className={props.className}
+      onValueChange={(value) => props.form.setValue(props.name, value)}
+    />
   );
 });
 

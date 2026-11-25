@@ -7,7 +7,8 @@ import {
   resetPostgresClient,
 } from "@sps/shared-backend-database-config";
 import { createService } from "@sps/rbac/models/subject/backend/app/api/src/lib/bootstrap";
-import { Table as Operation } from "@sps/rbac/relations/subjects-to-wallet-operations/backend/repository/database";
+import { Table as Parties } from "@sps/billing/relations/transactions-to-wallets/backend/repository/database";
+import { Table as Operation } from "@sps/billing/models/transaction/backend/repository/database";
 import { Table as Balance } from "@sps/rbac/relations/subjects-to-billing-module-currencies/backend/repository/database";
 import { Table as Subject } from "@sps/rbac/models/subject/backend/repository/database";
 import { Table as Store } from "@sps/ecommerce/models/store/backend/repository/database";
@@ -53,22 +54,36 @@ it("pages through every receipt even when wallet operations share a timestamp", 
   const db = getDrizzle({});
   await db.insert(Store).values({ id: historyStore });
   try {
-    await db.insert(Operation).values(
-      Array.from({ length: 103 }, (_, i) => ({
-        storeId: historyStore,
+    const receipts = await db
+      .insert(Operation)
+      .values(
+        Array.from({ length: 103 }, (_, i) => ({
+          storeId: historyStore,
+          currencyId,
+          taskId,
+          actorId: senderId,
+          senderId,
+          recipientId,
+          amount: "1",
+          purpose: "history",
+          operationKey: String(i),
+          kind: "transfer" as const,
+          state: "posted" as const,
+        })),
+      )
+      .returning({ id: Operation.id });
+    const owners = service.module.subjectsToBillingModuleWallets;
+    const senderWalletId = await owners.ensureDefaultWallet(senderId);
+    const recipientWalletId = await owners.ensureDefaultWallet(recipientId);
+    await db.insert(Parties).values(
+      receipts.map((receipt) => ({
+        transactionId: receipt.id,
+        senderWalletId,
+        recipientWalletId,
         currencyId,
-        taskId,
-        actorId: senderId,
-        senderId,
-        recipientId,
-        amount: "1",
-        purpose: "history",
-        operationKey: String(i),
-        kind: "transfer" as const,
-        state: "posted" as const,
       })),
     );
-    const ledger = service.module.subjectsToWalletOperations;
+    const ledger = service.modules.billing.transaction;
     const first = await ledger.history(historyStore);
     expect(first.items).toHaveLength(100);
     if (!first.nextCursor) throw new Error("Expected a second ledger page");
@@ -126,6 +141,24 @@ it("serializes last-balance reservations, posts each transfer once and releases 
   await expect(
     ledger.settle({ ...claim, providerAmount: "19" }),
   ).rejects.toThrow("Conflict");
+  const owners = service.module.subjectsToBillingModuleWallets;
+  const source = await owners.defaultWallet(senderId);
+  const destination = await owners.defaultWallet(recipientId);
+  expect(source).not.toBe(senderId);
+  expect(destination).not.toBe(recipientId);
+  const links = await service.modules.billing.transactionsToWallets.find({
+    params: {
+      filters: {
+        and: [{ column: "transactionId", method: "eq", value: first[0].id }],
+      },
+    },
+  });
+  expect(links).toHaveLength(1);
+  expect(links[0]).toMatchObject({
+    senderWalletId: source,
+    recipientWalletId: destination,
+    currencyId,
+  });
   const wallets = service.module.subjectsToBillingModuleCurrencies;
   const totals = await Promise.all(
     [senderId, recipientId, providerSubjectId].map((id) =>

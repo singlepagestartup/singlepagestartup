@@ -4,7 +4,6 @@ export interface IOrderDownload {
   id: string;
   kind: "result" | "receipt";
   filename: string;
-  versionNumber?: number;
 }
 
 export interface IComponentProps {

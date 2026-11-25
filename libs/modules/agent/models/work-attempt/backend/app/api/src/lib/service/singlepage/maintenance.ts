@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { stageWorkFunding } from "@sps/crm/models/funnel/sdk/model";
 import { chunkText } from "@sps/knowledge/backend/app/api/src/lib/indexer/chunker";
 import type { IModel } from "@sps/agent/models/work-attempt/sdk/model";
 import type { Service as WorkAttempt } from "./index";
@@ -66,35 +67,49 @@ export class Maintenance {
       );
     }
     const task = await crm.task.get(scope);
-    const publication = await crm.task.getPublication(scope);
-    const sourceId = publication.definition.maintenanceSourceId;
+    const funnel = await crm.task.getFunnel(scope);
+    const stage = funnel.definition.stages.find(
+      ({ id }) => id === task.stageId,
+    );
+    const sourceId = funnel.definition.maintenanceSourceId;
     if (
       !sourceId ||
       !task.assigneeId ||
       task.assigneeKind !== "ai" ||
       task.customerId !== actorId ||
       task.orderId ||
-      publication.definition.workFunding?.payer !== "store-owner"
+      !stage ||
+      stageWorkFunding(funnel.definition, stage)?.payer !== "store-owner" ||
+      (stage.workFunding && stage.workFunding.payerSubjectId !== actorId)
     ) {
       throw new Error(
         "Permission error. Use a separate store-owner-funded maintenance task",
       );
     }
-    const expert = await rbac.subject.customerWork.expertForMaintenance(task);
-    if (!expert) {
+    const employee = await rbac.subject.crmWorkspace.employees.employee(
+      task.storeId,
+      task.assigneeId,
+    );
+    if (!employee) {
       throw new Error(
-        "Not Found error. The maintenance task must have one store expert",
+        "Not Found error. The maintenance assignee must be a store employee",
       );
     }
     const links = await social.profilesToKnowledgeModuleSources.find(
       where({
-        profileId: expert,
+        profileId: employee.profileId,
         knowledgeModuleSourceId: sourceId,
-        storeId: scope.storeId,
         variant: "default",
       }),
     );
-    if (!links.some((link) => !link.projectId)) {
+    if (
+      !links.some(
+        (link) =>
+          !link.projectId &&
+          !link.offerId &&
+          (!link.storeId || link.storeId === task.storeId),
+      )
+    ) {
       throw new Error(
         "Not Found error. This source is unavailable for store maintenance",
       );
@@ -105,7 +120,10 @@ export class Maintenance {
         "Not Found error. This source is unavailable for store maintenance",
       );
     }
-    const opening = await crm.taskEvent.byOperation(task.id, task.openingKey);
+    const opening = await crm.tasksToStages.byOperation(
+      task.id,
+      task.openingKey,
+    );
     if (opening?.kind !== "opened" || opening.actorId !== actorId) {
       throw new Error(
         "Permission error. The maintenance task was opened by a different actor",

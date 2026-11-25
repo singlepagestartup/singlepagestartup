@@ -53,7 +53,7 @@ export class Service {
           this.service.customerWork.openFromForm({
             customerId: entity.id,
             storeId: intake.storeId,
-            funnelId: intake.publication.funnelId,
+            funnelId: intake.funnel.id,
             formId: form.id,
             requestId,
             title: form.title?.ru ?? form.title?.en ?? form.adminTitle,

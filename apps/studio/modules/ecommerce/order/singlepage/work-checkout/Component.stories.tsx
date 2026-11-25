@@ -14,7 +14,7 @@ const order = {
   id: "418-02",
   title: "Стратегия продвижения",
   total: 4900,
-  resultVersionNumber: 2,
+  resultFilename: "strategy-partnerships.pdf",
   invoiceId: "INV-418-02-V2",
 };
 const meta = {

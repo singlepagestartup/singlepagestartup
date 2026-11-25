@@ -1,7 +1,6 @@
 import type { Repository } from "../../../../repository";
 import type { SubjectServiceDependencies } from "../../index";
 import type { IEcommerceCartSelection } from "@sps/rbac/models/subject/sdk/model";
-import { STORE_TEST_ORDER_VARIANT } from "@sps/ecommerce/models/order/sdk/model";
 
 export interface IExecuteProps {
   subjectId: string;
@@ -15,7 +14,6 @@ export interface IExecuteProps {
   comment?: string;
   expectedQuoteVersion?: string;
   separateService?: boolean;
-  storeTest?: boolean;
 }
 
 interface IConstructorProps {
@@ -200,7 +198,6 @@ export class Service {
         const order = await service.modules.ecommerce.order.create({
           data: {
             comment: props.comment,
-            variant: props.storeTest ? STORE_TEST_ORDER_VARIANT : undefined,
           },
         });
         if (!order) {

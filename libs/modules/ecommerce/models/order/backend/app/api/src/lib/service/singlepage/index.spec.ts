@@ -12,6 +12,9 @@ function fixture() {
     subscriptionPeriodInvoiceId: "invoice-a",
   };
   const repository = {
+    withLifecycleLock: jest.fn((_id: string, run: () => Promise<unknown>) =>
+      run(),
+    ),
     find: jest.fn().mockResolvedValue([]),
     findFirstByField: jest.fn().mockResolvedValue(record),
     insert: jest.fn().mockResolvedValue({ id: "created" }),
@@ -25,6 +28,24 @@ function fixture() {
 }
 
 describe("server-managed Order lifecycle fields", () => {
+  it("sends one chat notification when the order status changes", async () => {
+    const { service, repository, record } = fixture();
+    const paid = { ...record, status: "paid" };
+    const deliver = jest.fn().mockResolvedValue(undefined);
+    service.configureStatusDelivery(deliver);
+    repository.updateFirstByField.mockResolvedValue(paid);
+    await service.update({ id: record.id, data: { status: "paid" } });
+    repository.findFirstByField.mockResolvedValue(paid);
+    await service.update({ id: record.id, data: { status: "paid" } });
+    expect(deliver.mock.calls).toEqual([[paid, "delivering"]]);
+    const failure = new Error("Chat notification failed");
+    repository.updateFirstByField.mockResolvedValue(record);
+    deliver.mockRejectedValueOnce(failure);
+    await expect(
+      service.update({ id: record.id, data: { status: "delivering" } }),
+    ).rejects.toBe(failure);
+  });
+
   it.each([
     "subscriptionPeriodStartsAt",
     "subscriptionPeriodEndsAt",

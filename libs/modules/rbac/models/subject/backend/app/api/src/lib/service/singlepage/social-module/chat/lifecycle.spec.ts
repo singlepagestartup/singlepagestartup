@@ -8,25 +8,6 @@ jest.mock("@sps/shared-utils", () => {
   };
 });
 
-jest.mock("@sps/social/models/thread/sdk/server", () => {
-  return {
-    api: {
-      create: (...args: unknown[]) => mockSocialModuleThreadCreate(...args),
-      findById: jest.fn(),
-    },
-  };
-});
-
-jest.mock("@sps/social/relations/chats-to-threads/sdk/server", () => {
-  return {
-    api: {
-      create: (...args: unknown[]) =>
-        mockSocialModuleChatsToThreadsCreate(...args),
-    },
-  };
-});
-
-jest.mock("@sps/social/models/chat/sdk/server", () => ({ api: {} }));
 jest.mock("@sps/social/models/profile/sdk/server", () => ({ api: {} }));
 jest.mock(
   "@sps/rbac/relations/subjects-to-social-module-profiles/sdk/server",
@@ -37,7 +18,6 @@ jest.mock("@sps/social/relations/profiles-to-chats/sdk/server", () => ({
 }));
 
 import { Service as ChatLifecycleService } from "./lifecycle";
-import { api as threadApi } from "@sps/social/models/thread/sdk/server";
 
 it.each([
   { variant: "store-employee" },
@@ -59,7 +39,6 @@ it.each([
 it("creates one default thread without document metadata for a new AI Chat", async () => {
   const thread = { id: "default-thread", variant: "default", metadata: {} };
   mockSocialModuleThreadCreate.mockResolvedValueOnce(thread);
-  jest.mocked(threadApi.findById).mockResolvedValueOnce(thread as never);
   const lifecycle = new ChatLifecycleService({
     modules: {
       social: {
@@ -68,7 +47,11 @@ it("creates one default thread without document metadata for a new AI Chat", asy
             .fn()
             .mockResolvedValue({ id: "chat-1", variant: "ai-chat" }),
         },
-        chatsToThreads: { find: jest.fn().mockResolvedValue([]) },
+        thread: { create: mockSocialModuleThreadCreate },
+        chatsToThreads: {
+          find: jest.fn().mockResolvedValue([]),
+          create: mockSocialModuleChatsToThreadsCreate,
+        },
       },
     },
   } as never);

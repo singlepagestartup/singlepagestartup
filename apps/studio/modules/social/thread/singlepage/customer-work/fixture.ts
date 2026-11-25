@@ -1,9 +1,9 @@
-import type { IWorkResultVersion } from "./interface";
+import type { IWorkResultFile } from "./interface";
 
-export const strategyVersions: readonly IWorkResultVersion[] = [
+export const strategyFiles: readonly IWorkResultFile[] = [
   {
-    id: "strategy-v1",
-    number: 1,
+    id: "strategy-file",
+    filename: "strategy.pdf",
     title: "Продвижение мастерской",
     sections: [
       "Локальная аудитория",
@@ -13,8 +13,8 @@ export const strategyVersions: readonly IWorkResultVersion[] = [
     pages: 8,
   },
   {
-    id: "strategy-v2",
-    number: 2,
+    id: "partnerships-file",
+    filename: "strategy-partnerships.pdf",
     title: "Продвижение мастерской и партнёрства",
     sections: [
       "Локальная аудитория",

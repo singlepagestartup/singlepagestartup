@@ -4,6 +4,7 @@ import { serviceBootstrap as sourcesToFilesOwner } from "@sps/knowledge/relation
 import { serviceBootstrap as fileOwner } from "@sps/file-storage/models/file/backend/app/api/src/lib/bootstrap";
 import {
   createChildAppAssembly,
+  withConsistencyDatabase,
   type IAppAssembly,
   type IRepository,
   type IServiceBootstrap,
@@ -63,34 +64,21 @@ export function configureSource(
   scope: IKnowledgeServices,
   processing: boolean,
   inTransaction: boolean,
-  queue: (() => Promise<unknown>)[],
   sourceOwner: IServiceBootstrap<SourceService>,
   rootAssembly: IAppAssembly,
 ): void {
-  const process = async (sourceId: string, material: boolean) => {
+  const rebuildStoredFileSource = async (sourceId: string) => {
     if (!processing) {
       return;
     }
-    try {
-      if (material) {
-        const { Service: MaterialService } =
-          await import("../service/materials");
-        await new MaterialService({ source: graph.source }).rebuild(sourceId);
-      }
-      const { KnowledgeIndexer } = await import("../indexer");
-      await new KnowledgeIndexer({ source: graph.source }).index({ sourceId });
-    } catch (error) {
-      console.error(
-        "Knowledge Source saved; processing failed",
-        sourceId,
-        error,
-      );
-    }
+    const { Service: MaterialService } = await import("../service/materials");
+    await new MaterialService({ source: scope.source }).rebuild(sourceId);
+    const { KnowledgeIndexer } = await import("../indexer");
+    await new KnowledgeIndexer({ source: scope.source }).index({
+      authorizedSourceIds: [sourceId],
+    });
   };
-  const createTransactionGraph = (
-    tx: unknown,
-    afterCommit: (() => Promise<unknown>)[],
-  ) => {
+  const createTransactionGraph = (tx: unknown) => {
     let transactionGraph: IKnowledgeServices;
     const assembly = createKnowledgeAssembly(
       rootAssembly,
@@ -113,7 +101,6 @@ export function configureSource(
       transactionGraph,
       processing,
       true,
-      afterCommit,
       sourceOwner,
       rootAssembly,
     );
@@ -123,26 +110,18 @@ export function configureSource(
 
   scope.source.configure({
     inTransaction,
-    afterCommit(operation) {
-      queue.push(operation);
-    },
-    process,
+    rebuildStoredFileSource,
     readSnapshot(operation) {
       return (graph.source.repository as SourceRepository).readSnapshot(
-        async (tx) => operation(createTransactionGraph(tx, []).source),
+        async (tx) => operation(createTransactionGraph(tx).source),
       );
     },
     async transaction(operation) {
-      const afterCommit: (() => Promise<unknown>)[] = [];
-      const result = await (
-        graph.source.repository as SourceRepository
-      ).transaction(async (tx) =>
-        operation(createTransactionGraph(tx, afterCommit).source),
+      return (scope.source.repository as SourceRepository).transaction((tx) =>
+        withConsistencyDatabase(tx, () =>
+          operation(createTransactionGraph(tx).source),
+        ),
       );
-      for (const callback of afterCommit) {
-        await callback();
-      }
-      return result;
     },
   });
 }
@@ -180,5 +159,5 @@ export function configureScopedKnowledgeSource(
       return source.modules.fileStorage.file;
     },
   };
-  configureSource(graph, graph, true, false, [], sourceOwner, assembly);
+  configureSource(graph, graph, true, false, sourceOwner, assembly);
 }

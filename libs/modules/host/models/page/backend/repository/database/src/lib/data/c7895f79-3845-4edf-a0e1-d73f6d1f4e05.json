@@ -1,0 +1,47 @@
+{
+  "metadata": {
+    "seo": {
+      "title": {
+        "en": "Edit CRM Funnel — SinglePageStartup",
+        "ru": "Редактирование воронки CRM — SinglePageStartup"
+      },
+      "description": {
+        "en": "Edit the stages and settings of this store’s CRM funnel.",
+        "ru": "Настройте этапы и параметры воронки CRM магазина."
+      }
+    },
+    "seoDisplay": {
+      "twitterTitle": {
+        "en": "Edit CRM Funnel — SinglePageStartup",
+        "ru": "Редактирование воронки CRM — SinglePageStartup"
+      },
+      "opengraphTitle": {
+        "en": "Edit CRM Funnel — SinglePageStartup",
+        "ru": "Редактирование воронки CRM — SinglePageStartup"
+      },
+      "opengraphLocale": {
+        "en": "en_US",
+        "ru": "ru_RU"
+      },
+      "twitterDescription": {
+        "en": "Edit the stages and settings of this store’s CRM funnel.",
+        "ru": "Настройте этапы и параметры воронки CRM магазина."
+      },
+      "opengraphDescription": {
+        "en": "Edit the stages and settings of this store’s CRM funnel.",
+        "ru": "Настройте этапы и параметры воронки CRM магазина."
+      }
+    }
+  },
+  "id": "c7895f79-3845-4edf-a0e1-d73f6d1f4e05",
+  "title": "Edit CRM Funnel",
+  "url": "/ecommerce/stores/[ecommerce.stores.slug]/crm/funnels/[crm.funnels.slug]",
+  "slug": "crm-store-funnel-edit",
+  "description": "Edit the stages and settings of this store’s CRM funnel.",
+  "createdAt": "2026-11-22T18:28:59.623Z",
+  "updatedAt": "2026-11-22T18:32:06.809Z",
+  "variant": "noindex",
+  "className": null,
+  "language": "en",
+  "adminTitle": "Edit Store CRM Funnel"
+}

@@ -90,7 +90,7 @@ it("counts incoming messages using independent monotonic read cursors", async ()
           const createdAt = new Date(start.getTime() + minute * 60_000);
           const [message] = await tx
             .insert(Message)
-            .values({ createdAt })
+            .values({ createdAt, description: `Message\n**${minute}**` })
             .returning();
           await tx
             .insert(ChatMessage)
@@ -127,8 +127,15 @@ it("counts incoming messages using independent monotonic read cursors", async ()
             id: thread.id,
             unreadCount: 2,
             lastMessageAt: second.createdAt.toISOString(),
+            lastMessagePreview: "Message 3",
+            lastMessageAuthorId: otherProfile.id,
+            lastMessageHasFiles: false,
           }),
-          expect.objectContaining({ id: unrelated.id, unreadCount: 1 }),
+          expect.objectContaining({
+            id: unrelated.id,
+            unreadCount: 1,
+            lastMessagePreview: "Message 4",
+          }),
         ]);
         await expect(activity.forChats(reader.id, [chat])).resolves.toEqual([
           expect.objectContaining({

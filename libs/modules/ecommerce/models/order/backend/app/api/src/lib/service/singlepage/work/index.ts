@@ -10,18 +10,17 @@ import { isLegacyOrderReceipt } from "@sps/file-storage/models/file/sdk/model";
 import type {
   IDecideOrderWorkResult,
   IDeclineOrderWorkResult,
-  IModel as IWork,
+  IOrderWork as IWork,
   IOrderPhysicalEvidence,
   IAcceptedOrderWorkCheckout,
   IOrderWorkCheckout,
   IOrderWorkOrderLine,
   IOrderWorkPayment,
   IOrderWorkScope,
-  IOrderWorkVersion,
+  IOrderWorkFile,
   IPublishOrderWorkResult,
   IRegisterOrderWork,
-  TReadOrderWorkExpertArchive,
-} from "@sps/ecommerce/models/order-work/sdk/model";
+} from "@sps/ecommerce/models/order/sdk/model";
 import type { Service as Order } from "../index";
 
 function requestHash(value: unknown) {
@@ -33,14 +32,7 @@ function contentHash(bytes: Uint8Array) {
 }
 
 export class Service {
-  constructor(
-    private readonly order: Order,
-    private readonly readExpertArchive?: TReadOrderWorkExpertArchive,
-  ) {}
-
-  private get records() {
-    return this.order.module.orderWork;
-  }
+  constructor(private readonly order: Order) {}
 
   withOrderLock<T>(orderId: string, operation: () => Promise<T>) {
     return this.order.repository.withLifecycleLock(orderId, operation);
@@ -60,7 +52,9 @@ export class Service {
   }
 
   private async require(input: IOrderWorkScope) {
-    const record = await this.records.byOrder(input.orderId);
+    const record = await this.order.repository.fulfillmentForOrder(
+      input.orderId,
+    );
     if (!record) {
       throw new Error("Not Found error. Order work does not exist");
     }
@@ -69,16 +63,30 @@ export class Service {
     return record;
   }
 
-  private version(record: IWork, versionId: string) {
-    const version = record.versions.find(
-      (candidate) => candidate.id === versionId,
+  private file(record: IWork, fileId: string) {
+    const file = record.files.find(
+      (candidate) =>
+        candidate.id === fileId || candidate.legacyMessageId === fileId,
     );
-    if (!version) {
+    if (!file) {
       throw new Error(
-        "Not Found error. Result version does not belong to the order",
+        "Not Found error. Result file does not belong to the order",
       );
     }
-    return version;
+    return file;
+  }
+
+  assertCurrentFile(record: IWork, file: IOrderWorkFile) {
+    const changesRequested = record.decisions.some(
+      (decision) => decision.fileId === file.id && decision.kind === "declined",
+    );
+    if (
+      record.files.at(-1)?.id !== file.id ||
+      file.invalidatedByCartEdit ||
+      changesRequested
+    ) {
+      throw new Error("Conflict error. This file is no longer awaiting review");
+    }
   }
 
   async register(input: IRegisterOrderWork) {
@@ -88,7 +96,9 @@ export class Service {
         throw new Error("Not Found error. Order does not exist");
       }
 
-      const previous = await this.records.byOrder(input.orderId);
+      const previous = await this.order.repository.fulfillmentForOrder(
+        input.orderId,
+      );
       if (previous) {
         this.verifyScope(previous, input);
         if (previous.kind !== input.kind) {
@@ -104,22 +114,49 @@ export class Service {
         );
       }
 
-      const record = await this.records.add({
+      const now = new Date().toISOString();
+      const record: IWork = {
+        id: randomUUID(),
+        createdAt: now,
+        updatedAt: now,
+        files: [],
+        decisions: [],
+        fulfillment: [],
+        acceptedFileId: null,
+        paid: null,
+        expertArchive: null,
+        deliveredAt: null,
+        receiptFileId: null,
+        resultFileId: null,
+        paidDispatchedAt: null,
         ...input,
         state:
           input.kind === "individual-service"
             ? "awaiting-result"
             : "awaiting-payment",
-      });
-      await this.order.module.ordersToOrderWorks.create({
-        data: { orderId: input.orderId, orderWorkId: record.id },
-      });
-      return record;
+      };
+      return this.order.repository.saveFulfillment(input.orderId, record);
+    });
+  }
+
+  async startServiceDiscussion(input: IOrderWorkScope) {
+    await this.order.repository.withLifecycleLock(input.orderId, async () => {
+      const work = await this.require(input);
+      if (work.kind !== "individual-service") {
+        return;
+      }
+      const order = await this.order.findById({ id: input.orderId });
+      if (order?.type === "cart" && order.status === "new" && !work.paid) {
+        await this.order.update({
+          id: input.orderId,
+          data: { type: "history", status: "delivering" },
+        });
+      }
     });
   }
 
   findByOrder(orderId: string) {
-    return this.records.byOrder(orderId);
+    return this.order.repository.fulfillmentForOrder(orderId);
   }
 
   async isProtectedLegacyReceipt(input: { relativePath: string }) {
@@ -215,42 +252,39 @@ export class Service {
   }
 
   async resultPriceForOrder(orderId: string) {
-    const record = await this.records.byOrder(orderId);
-    const versionId =
-      record?.paid?.resultVersionId ?? record?.acceptedVersionId;
-    if (record?.kind !== "individual-service" || !versionId) {
+    const record = await this.order.repository.fulfillmentForOrder(orderId);
+    const fileId = record?.paid?.fileId ?? record?.acceptedFileId;
+    if (record?.kind !== "individual-service" || !fileId) {
       return null;
     }
-    const { currencyId, price } = this.version(record, versionId);
+    const { currencyId, price } = this.file(record, fileId);
     return { currencyId, price };
   }
 
   async invalidateCartResults(orderId: string) {
     return this.withOrderLock(orderId, async () => {
-      const record = await this.records.byOrder(orderId);
+      const record = await this.order.repository.fulfillmentForOrder(orderId);
       if (
         record?.kind !== "individual-service" ||
+        record.state === "canceled" ||
         record.paid ||
-        !record.versions.length
+        !record.files.length
       ) {
         return;
       }
-      await this.records.revise(record.id, {
-        acceptedVersionId: null,
+      await this.order.repository.patchFulfillment(record.orderId, {
+        acceptedFileId: null,
         state: "awaiting-result",
-        versions: record.versions.map((version) => ({
-          ...version,
+        files: record.files.map((file) => ({
+          ...file,
           invalidatedByCartEdit: true,
         })),
       });
     });
   }
 
-  async assertResultQuantitySnapshot(
-    orderId: string,
-    version: IOrderWorkVersion,
-  ) {
-    if (version.invalidatedByCartEdit) {
+  async assertResultQuantitySnapshot(orderId: string, file: IOrderWorkFile) {
+    if (file.invalidatedByCartEdit) {
       throw new Error(
         "Conflict error. The cart changed. A new result is required",
       );
@@ -273,7 +307,7 @@ export class Service {
         continue;
       }
       assertSingleUnitPerOrder(product, line.quantity);
-      const quoted = version.purchaseQuote?.lines.find(
+      const quoted = file.purchaseQuote?.lines.find(
         (entry) => entry.id === line.id && !entry.parentLineId,
       );
       if (
@@ -301,7 +335,7 @@ export class Service {
           "Conflict error. Only an unpaid draft can change customer",
         );
       }
-      return this.records.revise(record.id, {
+      return this.order.repository.patchFulfillment(record.orderId, {
         customerId: input.nextCustomerId,
       });
     });
@@ -332,8 +366,8 @@ export class Service {
         originalMime: input.original.mimeType,
         previewMime: input.preview.mimeType,
       });
-      const previous = record.versions.find(
-        (version) => version.operationKey === input.operationKey,
+      const previous = record.files.find(
+        (file) => file.operationKey === input.operationKey,
       );
       if (previous) {
         const priced = JSON.parse(
@@ -353,9 +387,14 @@ export class Service {
         }
         return previous;
       }
-      if (record.kind !== "individual-service" || record.paid) {
+      if (
+        record.kind !== "individual-service" ||
+        record.state === "canceled" ||
+        record.paid ||
+        record.acceptedFileId
+      ) {
         throw new Error(
-          "Conflict error. This work cannot accept another result version",
+          "Conflict error. This order cannot accept another result file",
         );
       }
       if (input.purchaseQuote) {
@@ -381,12 +420,29 @@ export class Service {
         throw new Error("Conflict error. This order has been removed");
       }
 
-      const files = this.order.modules.fileStorage.privateFile;
-      const original = await files.write(input.original);
-      const preview = await files.write(input.preview);
-      const version: IOrderWorkVersion = {
-        id: randomUUID(),
-        number: record.versions.length + 1,
+      const files = this.order.modules.fileStorage.file.privateContent;
+      const original = await files.write({
+        ...input.original,
+        ownerId: input.actorId,
+      });
+      const preview = await files.write({
+        ...input.preview,
+        ownerId: input.actorId,
+      });
+      for (const [fileId, variant] of [
+        [preview.id, "result-preview"],
+        [original.id, "result-original"],
+      ]) {
+        await this.order.module.ordersToFileStorageModuleFiles.create({
+          data: {
+            orderId: record.orderId,
+            fileStorageModuleFileId: fileId,
+            variant,
+          },
+        });
+      }
+      const file: IOrderWorkFile = {
+        id: preview.id,
         actorId: input.actorId,
         operationKey: input.operationKey,
         operationDigest: digest,
@@ -394,15 +450,18 @@ export class Service {
         originalFileId: original.id,
         previewFileId: preview.id,
         previewMimeType: input.preview.mimeType,
+        previewName: input.preview.name,
+        originalName: input.original.name,
+        originalMimeType: input.original.mimeType,
         currencyId: input.currencyId,
         price,
         priceBasis: input.priceBasis,
         purchaseQuote: input.purchaseQuote,
       };
-      await this.records.revise(record.id, {
-        versions: [...record.versions, version],
+      await this.order.repository.patchFulfillment(record.orderId, {
+        files: [...record.files, file],
       });
-      return version;
+      return file;
     });
   }
 
@@ -413,14 +472,14 @@ export class Service {
   ) {
     return this.order.repository.withLifecycleLock(input.orderId, async () => {
       const record = await this.require(input);
-      const version = this.version(record, input.resultVersionId);
+      const file = this.file(record, input.fileId);
       const prior = record.decisions.find(
         (decision) => decision.operationKey === input.operationKey,
       );
       if (prior) {
         if (
           prior.kind !== kind ||
-          prior.resultVersionId !== version.id ||
+          prior.fileId !== file.id ||
           prior.reason !== reason
         ) {
           throw new Error(
@@ -429,28 +488,41 @@ export class Service {
         }
         return record;
       }
+      this.assertCurrentFile(record, file);
+      if (record.acceptedFileId === file.id && kind === "accepted") {
+        return record;
+      }
+      if (record.acceptedFileId) {
+        throw new Error("Conflict error. This order file was already accepted");
+      }
       const order = await this.order.findById({ id: input.orderId });
-      if (!order || record.paid || !["new", "paying"].includes(order.status)) {
+      if (
+        !order ||
+        record.paid ||
+        !(
+          ["new", "paying"].includes(order.status) ||
+          (record.kind === "individual-service" &&
+            order.type === "history" &&
+            order.status === "delivering")
+        )
+      ) {
         throw new Error(
           "Conflict error. This order can no longer accept a result decision",
         );
       }
 
-      let acceptedVersionId = record.acceptedVersionId;
       if (kind === "accepted") {
-        await this.assertResultQuantitySnapshot(input.orderId, version);
-        acceptedVersionId = version.id;
-      } else if (record.acceptedVersionId === version.id) {
-        acceptedVersionId = null;
+        await this.assertResultQuantitySnapshot(input.orderId, file);
       }
+      const acceptedFileId = kind === "accepted" ? file.id : null;
 
-      return this.records.revise(record.id, {
-        acceptedVersionId,
-        state: acceptedVersionId ? "awaiting-payment" : "awaiting-result",
+      return this.order.repository.patchFulfillment(record.orderId, {
+        acceptedFileId,
+        state: acceptedFileId ? "awaiting-payment" : "awaiting-result",
         decisions: [
           ...record.decisions,
           {
-            resultVersionId: version.id,
+            fileId: file.id,
             operationKey: input.operationKey,
             receivedAt: new Date().toISOString(),
             kind,
@@ -485,23 +557,27 @@ export class Service {
       parentLineId?: string | null;
     }>;
   }): Promise<IAcceptedOrderWorkCheckout | null> {
-    const record = await this.records.byOrder(input.orderId);
+    const record = await this.order.repository.fulfillmentForOrder(
+      input.orderId,
+    );
     if (record?.kind !== "individual-service") {
       return null;
     }
-    if (record.customerId !== input.customerId || record.paid) {
+    if (
+      record.customerId !== input.customerId ||
+      record.paid ||
+      record.state === "canceled"
+    ) {
       throw new Error(
         "Conflict error. This work order cannot be checked out by the current customer",
       );
     }
-    if (!record.acceptedVersionId) {
-      throw new Error(
-        "Conflict error. Accept a result version before checkout",
-      );
+    if (!record.acceptedFileId) {
+      throw new Error("Conflict error. Accept a result file before checkout");
     }
 
-    const version = this.version(record, record.acceptedVersionId);
-    const savedLines = version.purchaseQuote?.lines;
+    const file = this.file(record, record.acceptedFileId);
+    const savedLines = file.purchaseQuote?.lines;
     if (
       savedLines &&
       (savedLines.length !== input.lines.length ||
@@ -525,11 +601,11 @@ export class Service {
         customerId: record.customerId,
         taskId: record.taskId,
         storeId: record.storeId,
-        resultVersionId: version.id,
-        price: version.price,
-        currencyId: version.currencyId,
+        fileId: file.id,
+        price: file.price,
+        currencyId: file.currencyId,
       },
-      purchaseQuote: version.purchaseQuote,
+      purchaseQuote: file.purchaseQuote,
     };
   }
 
@@ -539,7 +615,9 @@ export class Service {
     price: number;
     currencyId: string;
   }) {
-    const record = await this.records.byOrder(input.orderId);
+    const record = await this.order.repository.fulfillmentForOrder(
+      input.orderId,
+    );
     if (!record) {
       if (await this.requiresAcceptance(input.orderId)) {
         throw new Error(
@@ -548,7 +626,11 @@ export class Service {
       }
       return null;
     }
-    if (record.customerId !== input.customerId || record.paid) {
+    if (
+      record.customerId !== input.customerId ||
+      record.paid ||
+      record.state === "canceled"
+    ) {
       throw new Error(
         "Conflict error. This work order cannot be checked out by the current customer",
       );
@@ -566,14 +648,14 @@ export class Service {
       customerId: record.customerId,
       taskId: record.taskId,
       storeId: record.storeId,
-      resultVersionId: null,
+      fileId: null,
       price,
       currencyId: input.currencyId,
     } satisfies IOrderWorkCheckout;
   }
 
   async confirmPayment(orderId: string) {
-    const record = await this.records.byOrder(orderId);
+    const record = await this.order.repository.fulfillmentForOrder(orderId);
     if (!record || record.paid) {
       return record?.paid;
     }
@@ -587,11 +669,9 @@ export class Service {
     )) {
       const payment = await this.settlement(record, id);
       if (payment) {
-        const expertArchive = await this.captureExpertArchive(record);
-        await this.records.revise(record.id, {
+        await this.order.repository.patchFulfillment(record.orderId, {
           paid: payment,
-          expertArchive,
-          state: "paid",
+          state: record.state === "canceled" ? "canceled" : "paid",
         });
         return payment;
       }
@@ -600,26 +680,6 @@ export class Service {
     throw new Error(
       "Conflict error. The confirmed payment does not match an authorized order attempt",
     );
-  }
-
-  private async captureExpertArchive(work: IOrderWorkScope) {
-    const read = this.readExpertArchive;
-    if (!read) {
-      return null;
-    }
-
-    const { orderId, storeId, taskId, customerId } = work;
-    try {
-      return await this.order.repository.withArchiveSavepoint(() =>
-        read({ orderId, storeId, taskId, customerId }),
-      );
-    } catch {
-      logger.warn({
-        event: "ecommerce.order-work.expert-archive-failed",
-        orderId,
-      });
-      return [];
-    }
   }
 
   private async settlement(
@@ -643,9 +703,18 @@ export class Service {
       };
     } | null;
     const orders = metadata?.ecommerceModule?.orders ?? [];
-    const snapshot = orders.find(
-      (entry) => entry.id === work.orderId,
-    )?.orderWork;
+    const stored = orders.find((entry) => entry.id === work.orderId)?.orderWork;
+    let snapshot: IOrderWorkCheckout | undefined;
+    if (stored) {
+      const { resultVersionId, ...fields } = stored as IOrderWorkCheckout & {
+        resultVersionId?: string | null;
+      };
+      const reference = fields.fileId ?? resultVersionId;
+      snapshot = {
+        ...fields,
+        fileId: reference ? this.file(work, reference).id : null,
+      };
+    }
     if (
       !snapshot ||
       snapshot.currencyId !== intent.checkoutCurrencyId ||
@@ -656,11 +725,11 @@ export class Service {
     }
     this.verifyScope(work, snapshot);
 
-    if (snapshot.resultVersionId) {
-      const version = this.version(work, snapshot.resultVersionId);
+    if (snapshot.fileId) {
+      const file = this.file(work, snapshot.fileId);
       if (
-        version.price !== snapshot.price ||
-        version.currencyId !== snapshot.currencyId
+        file.price !== snapshot.price ||
+        file.currencyId !== snapshot.currencyId
       ) {
         return null;
       }
@@ -722,7 +791,9 @@ export class Service {
     if (!Number.isSafeInteger(limit) || limit < 1 || limit > 200) {
       throw new Error("Validation error. Invalid order payment outbox limit");
     }
-    for (const { orderId } of await this.records.missingPayments(limit)) {
+    for (const { orderId } of await this.order.repository.missingPayments(
+      limit,
+    )) {
       try {
         await this.order.repository.withLifecycleLock(orderId, () =>
           this.confirmPayment(orderId),
@@ -735,7 +806,7 @@ export class Service {
       }
     }
     const queue = this.order.modules.broadcast.channel.queue;
-    const records = await this.records.undeliveredPayments(limit);
+    const records = await this.order.repository.undeliveredPayments(limit);
     let count = 0;
     for (const work of records) {
       if (!work.paid) {
@@ -746,70 +817,94 @@ export class Service {
         key: `order-work-payment:${work.paid.id}`,
         payload: JSON.stringify(work.paid),
       });
-      await this.records.revise(work.id, { paidDispatchedAt: new Date() });
+      await this.order.repository.patchFulfillment(work.orderId, {
+        paidDispatchedAt: new Date().toISOString(),
+      });
       count += 1;
     }
     return count;
   }
 
-  async deliver(
-    input: { orderId: string; eventId: string },
-    grant: (
-      snapshot: IOrderWorkPayment,
-      artifactIds: string[],
-    ) => Promise<void>,
+  private async verifiedPayment(work: IWork, eventId: string) {
+    if (!work.paid || work.paid.id !== eventId) {
+      throw new Error("Conflict error. The order payment is not confirmed");
+    }
+    const paid = await this.settlement(
+      work,
+      work.paid.paymentIntentId,
+      work.paid.invoiceId,
+    );
+    if (
+      !paid ||
+      paid.invoiceId !== work.paid.invoiceId ||
+      paid.fileId !== work.paid.fileId
+    ) {
+      throw new Error(
+        "Conflict error. Payment no longer matches its order snapshot",
+      );
+    }
+    return paid;
+  }
+
+  async issueReceipt(
+    input: IOrderWorkScope & { eventId: string },
+    grant: (payment: IOrderWorkPayment, ids: string[]) => Promise<void>,
     receipt: (
-      event: IOrderWorkPayment,
+      payment: IOrderWorkPayment,
     ) => Promise<{ name: string; mimeType: string; bytes: Uint8Array }>,
   ) {
-    return this.order.repository.withLifecycleLock(input.orderId, async () => {
-      const work = await this.records.byOrder(input.orderId);
-      if (!work?.paid || work.paid.id !== input.eventId) {
-        throw new Error("Not Found error. Order payment event does not exist");
-      }
-      if (work.deliveredAt) {
+    return this.withOrderLock(input.orderId, async () => {
+      const work = await this.require(input);
+      if (work.paid?.id === input.eventId && work.receiptFileId) {
         return work;
       }
-      const payment = await this.settlement(
-        work,
-        work.paid.paymentIntentId,
-        work.paid.invoiceId,
-      );
+      const paid = await this.verifiedPayment(work, input.eventId);
+      const document = await receipt(paid);
+      const stored =
+        await this.order.modules.fileStorage.file.privateContent.write(
+          document,
+        );
+      await grant(paid, [stored.id]);
+      return this.order.repository.patchFulfillment(input.orderId, {
+        receiptFileId: stored.id,
+        ...(!paid.fileId && { deliveredAt: new Date().toISOString() }),
+      });
+    });
+  }
+
+  async releasePaidFile(
+    input: IOrderWorkScope & { eventId: string; fileId: string },
+    grant: (payment: IOrderWorkPayment, ids: string[]) => Promise<void>,
+  ) {
+    return this.withOrderLock(input.orderId, async () => {
+      const work = await this.require(input);
+      const paid = await this.verifiedPayment(work, input.eventId);
       if (
-        !payment ||
-        payment.invoiceId !== work.paid.invoiceId ||
-        payment.resultVersionId !== work.paid.resultVersionId
+        paid.fileId !== input.fileId ||
+        work.acceptedFileId !== input.fileId
       ) {
         throw new Error(
-          "Conflict error. Payment no longer matches its order snapshot",
+          "Conflict error. This file was not accepted and paid for in this order",
         );
       }
-      const receiptFile =
-        await this.order.modules.fileStorage.privateFile.write(
-          await receipt(payment),
-        );
-      const artifacts = [receiptFile.id];
-      let resultFileId: string | null = null;
-      if (payment.resultVersionId) {
-        const version = this.version(work, payment.resultVersionId);
-        resultFileId = version.originalFileId;
-        artifacts.push(resultFileId);
+      const file = this.file(work, input.fileId);
+      if (work.deliveredAt && work.resultFileId === file.originalFileId) {
+        return file;
       }
-      await grant(payment, artifacts);
-
-      if (resultFileId) {
-        await this.order.update({
-          id: work.orderId,
-          data: { status: "delivered" },
-        });
+      if (work.state === "canceled") {
+        throw new Error("Conflict error. This order was canceled");
       }
-
-      return this.records.revise(work.id, {
-        receiptFileId: receiptFile.id,
-        resultFileId,
-        deliveredAt: new Date(),
-        state: resultFileId ? "delivered" : work.state,
+      await grant(paid, [file.originalFileId]);
+      await this.order.update({
+        id: input.orderId,
+        data: { status: "delivered" },
       });
+      await this.order.repository.patchFulfillment(input.orderId, {
+        resultFileId: file.originalFileId,
+        deliveredAt: new Date().toISOString(),
+        state: "delivered",
+      });
+      return file;
     });
   }
 
@@ -831,6 +926,9 @@ export class Service {
           );
         }
         return previous;
+      }
+      if (work.state === "canceled") {
+        throw new Error("Conflict error. This order was canceled");
       }
       if (work.kind !== "physical-order" || !work.paid) {
         throw new Error(
@@ -871,7 +969,7 @@ export class Service {
         delivered: "delivered",
       }[input.stage];
       await this.order.update({ id: work.orderId, data: { status } });
-      await this.records.revise(work.id, {
+      await this.order.repository.patchFulfillment(work.orderId, {
         state: input.stage,
         fulfillment: [...work.fulfillment, event],
       });

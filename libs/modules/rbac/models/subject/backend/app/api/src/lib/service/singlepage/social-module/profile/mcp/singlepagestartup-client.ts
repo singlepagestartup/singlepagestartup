@@ -4,7 +4,6 @@ import Ajv from "ajv";
 
 export const SINGLEPAGESTARTUP_MCP_SERVER_ID = "singlepagestartup" as const;
 export const SINGLEPAGESTARTUP_MCP_TOOL_TIMEOUT_MS = 30_000;
-export const SINGLEPAGESTARTUP_MCP_RESULT_LIMIT_BYTES = 32 * 1024;
 export const SINGLEPAGESTARTUP_MCP_RBAC_SUBJECT_TOKEN_EXCHANGE_PATH =
   "/internal/rbac-subject-token-exchange";
 
@@ -19,6 +18,17 @@ export interface INormalizedMcpToolResult {
   isError: boolean;
   text: string;
   structuredContent?: Record<string, unknown>;
+}
+
+export class McpToolResultTooLarge extends Error {
+  constructor(limit: number) {
+    super(`MCP tool result exceeds ${limit} byte limit`);
+  }
+}
+
+export interface IMcpToolCallProps {
+  name: string;
+  arguments?: Record<string, unknown>;
 }
 
 interface IMcpListToolsResult {
@@ -50,10 +60,7 @@ interface IMcpWireClient {
 export interface ISinglePageStartupMcpSession {
   readonly serverId: typeof SINGLEPAGESTARTUP_MCP_SERVER_ID;
   listTools(): Promise<IMcpToolDefinition[]>;
-  callTool(props: {
-    name: string;
-    arguments?: Record<string, unknown>;
-  }): Promise<INormalizedMcpToolResult>;
+  callTool(props: IMcpToolCallProps): Promise<INormalizedMcpToolResult>;
   close(): Promise<void>;
 }
 
@@ -84,7 +91,7 @@ export class Service {
     ISinglePageStartupMcpClientDependencies["createWireClient"]
   >;
   private readonly toolTimeoutMs: number;
-  private readonly resultLimitBytes: number;
+  private readonly resultLimitBytes?: number;
 
   constructor(dependencies: ISinglePageStartupMcpClientDependencies = {}) {
     this.fetchImplementation = dependencies.fetch ?? fetch;
@@ -100,8 +107,7 @@ export class Service {
       dependencies.createWireClient ?? createSdkWireClient;
     this.toolTimeoutMs =
       dependencies.toolTimeoutMs ?? SINGLEPAGESTARTUP_MCP_TOOL_TIMEOUT_MS;
-    this.resultLimitBytes =
-      dependencies.resultLimitBytes ?? SINGLEPAGESTARTUP_MCP_RESULT_LIMIT_BYTES;
+    this.resultLimitBytes = dependencies.resultLimitBytes;
   }
 
   async openSession(props: {
@@ -143,6 +149,7 @@ export class Service {
     );
     const response = await this.fetchImplementation(exchangeUrl, {
       method: "POST",
+      redirect: "error",
       headers: {
         "content-type": "application/json",
         "x-mcp-internal-token-exchange-secret": this.exchangeSecret,
@@ -153,9 +160,8 @@ export class Service {
     });
 
     if (!response.ok) {
-      const details = await response.text();
       throw new Error(
-        `MCP rbac.subject token exchange failed (${response.status}): ${details}`,
+        `MCP rbac.subject token exchange failed (${response.status})`,
       );
     }
 
@@ -180,7 +186,7 @@ class SinglePageStartupMcpSession implements ISinglePageStartupMcpSession {
   readonly serverId = SINGLEPAGESTARTUP_MCP_SERVER_ID;
   private readonly wireClient: IMcpWireClient;
   private readonly toolTimeoutMs: number;
-  private readonly resultLimitBytes: number;
+  private readonly resultLimitBytes?: number;
   private readonly ajv = new Ajv({ allErrors: true, strictSchema: true });
   private tools?: IMcpToolDefinition[];
   private closed = false;
@@ -188,7 +194,7 @@ class SinglePageStartupMcpSession implements ISinglePageStartupMcpSession {
   constructor(props: {
     wireClient: IMcpWireClient;
     toolTimeoutMs: number;
-    resultLimitBytes: number;
+    resultLimitBytes?: number;
   }) {
     this.wireClient = props.wireClient;
     this.toolTimeoutMs = props.toolTimeoutMs;
@@ -218,10 +224,7 @@ class SinglePageStartupMcpSession implements ISinglePageStartupMcpSession {
     return tools;
   }
 
-  async callTool(props: {
-    name: string;
-    arguments?: Record<string, unknown>;
-  }): Promise<INormalizedMcpToolResult> {
+  async callTool(props: IMcpToolCallProps): Promise<INormalizedMcpToolResult> {
     this.assertOpen();
     const tools = this.tools ?? (await this.listTools());
     const tool = tools.find((candidate) => candidate.name === props.name);
@@ -263,12 +266,12 @@ class SinglePageStartupMcpSession implements ISinglePageStartupMcpSession {
         }),
       ]);
       const normalized = normalizeMcpToolResult(result);
-      const resultSize = Buffer.byteLength(JSON.stringify(normalized), "utf8");
-
-      if (resultSize > this.resultLimitBytes) {
-        throw new Error(
-          `MCP tool result exceeds ${this.resultLimitBytes} byte limit`,
-        );
+      if (
+        this.resultLimitBytes !== undefined &&
+        Buffer.byteLength(JSON.stringify(normalized), "utf8") >
+          this.resultLimitBytes
+      ) {
+        throw new McpToolResultTooLarge(this.resultLimitBytes);
       }
 
       return normalized;
@@ -328,6 +331,7 @@ async function createSdkWireClient(props: {
   });
   const transport = new StreamableHTTPClientTransport(new URL(props.mcpUrl), {
     requestInit: {
+      redirect: "error",
       headers: {
         authorization: `Bearer ${props.accessToken}`,
       },

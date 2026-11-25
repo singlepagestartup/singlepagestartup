@@ -3,8 +3,6 @@
 import {
   queryClient,
   appendToListQueries,
-  patchInListQueries,
-  removeFromListQueries,
 } from "@sps/shared-frontend-client-api";
 import { route, clientHost } from "@sps/rbac/models/subject/sdk/model";
 import {
@@ -20,12 +18,15 @@ import {
   type IProps as IParentProps,
   type IResult as IParentResult,
 } from "@sps/rbac/models/subject/sdk/server";
+import { cachePersonalKnowledgeSource } from "./find";
 import { saturateHeaders } from "@sps/shared-frontend-client-utils";
 
 export type IProps = {
+  mute?: boolean;
   reactQueryOptions?: Partial<UseMutationOptions<any, DefaultError, any>>;
   id: string;
   socialModuleProfileId: string;
+  personal?: boolean;
 };
 
 export type IResult =
@@ -34,7 +35,8 @@ export type IResult =
 export function action(props: IProps) {
   const { onSuccess: consumerOnSuccess, ...reactQueryOptions } =
     props.reactQueryOptions || {};
-  const mutationKey = `${route}/${props.id}/social-module/profiles/${props.socialModuleProfileId}/knowledge/sources`;
+  const collectionRoute = `${route}/${props.id}/social-module/profiles/${props.socialModuleProfileId}/knowledge/sources${props.personal ? "/personal" : ""}`;
+  const mutationKey = collectionRoute;
 
   return useMutation<
     IResult,
@@ -49,6 +51,7 @@ export function action(props: IProps) {
         const result =
           await api.socialModuleProfileFindByIdKnowledgeSourceCreate({
             ...mutationFunctionProps,
+            personal: mutationFunctionProps.personal ?? props.personal,
             options: {
               ...mutationFunctionProps.options,
               headers: saturateHeaders(mutationFunctionProps.options?.headers),
@@ -58,20 +61,26 @@ export function action(props: IProps) {
 
         return result;
       } catch (error: any) {
-        toast.error(error.message);
+        if (!props.mute) toast.error(error.message);
 
         throw error;
       }
     },
-    onSuccess(data, variables, context) {
-      const collectionRoute =
-        mutationKey.split("/knowledge/sources")[0] + "/knowledge/sources";
+    onSuccess(data, variables, onMutateResult, context) {
+      const personal = variables.personal ?? props.personal;
+      if (personal) {
+        cachePersonalKnowledgeSource(variables, data);
+        consumerOnSuccess?.(data, variables, onMutateResult, context);
+        return data;
+      }
+      const updatedCollection = `${route}/${variables.id}/social-module/profiles/${variables.socialModuleProfileId}/knowledge/sources`;
       for (const query of queryClient.getQueryCache().findAll({
         predicate: (query) => {
           const key = query.queryKey[0];
           return (
             typeof key === "string" &&
-            (key === collectionRoute || key.startsWith(collectionRoute + "?"))
+            (key === updatedCollection ||
+              key.startsWith(updatedCollection + "?"))
           );
         },
       })) {
@@ -88,9 +97,9 @@ export function action(props: IProps) {
         timestamp: Date.now(),
         requestId: createId(),
       });
-
+      consumerOnSuccess?.(data, variables, onMutateResult, context);
       return data;
     },
-    ...props?.reactQueryOptions,
+    ...reactQueryOptions,
   });
 }

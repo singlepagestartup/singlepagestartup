@@ -43,9 +43,8 @@ export function PdfPreview(props: IPdfPreviewProps) {
           props.localFile || (await props.onDownload?.(controller.signal));
         if (!blob) throw new Error("File is unavailable");
         // The webpack entry bundles the worker locally; file bytes stay in this browser.
-        const pdfjs: typeof import("pdfjs-dist") = await import(
-          "pdfjs-dist/webpack.mjs"
-        );
+        const pdfjs: typeof import("pdfjs-dist") =
+          await import("pdfjs-dist/webpack.mjs");
         const data = new Uint8Array(await blob.arrayBuffer());
         if (!active) return;
         task = pdfjs.getDocument({
@@ -59,8 +58,8 @@ export function PdfPreview(props: IPdfPreviewProps) {
         if (active)
           setError(
             props.language === "ru"
-              ? "Не удалось показать PDF. Откройте или скачайте оригинал."
-              : "This PDF could not be displayed. Open or download the original.",
+              ? "Не удалось показать PDF. Скачайте оригинал."
+              : "This PDF could not be displayed. Download the original.",
           );
       }
     })();
@@ -93,8 +92,8 @@ export function PdfPreview(props: IPdfPreviewProps) {
         if (active)
           setError(
             props.language === "ru"
-              ? "Не удалось показать страницу PDF. Откройте или скачайте оригинал."
-              : "This PDF page could not be displayed. Open or download the original.",
+              ? "Не удалось показать страницу PDF. Скачайте оригинал."
+              : "This PDF page could not be displayed. Download the original.",
           );
       } finally {
         if (active) setRendering(false);

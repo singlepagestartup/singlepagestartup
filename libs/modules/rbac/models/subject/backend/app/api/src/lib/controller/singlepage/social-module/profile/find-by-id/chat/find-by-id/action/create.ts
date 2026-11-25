@@ -1,3 +1,4 @@
+import { AI_EXECUTION_ACTION_VARIANT } from "@sps/rbac/models/subject/sdk/model/src/lib/ai-execution-action";
 import { RBAC_JWT_SECRET, RBAC_SECRET_KEY } from "@sps/shared-utils";
 import { Context } from "hono";
 import { HTTPException } from "hono/http-exception";
@@ -138,6 +139,19 @@ export class Handler {
 
       if (!data || typeof data !== "object" || Array.isArray(data)) {
         throw new Error("Validation error. Invalid action payload");
+      }
+
+      if (
+        data.variant === AI_EXECUTION_ACTION_VARIANT &&
+        data.payload?.phase === "reply_generation"
+      ) {
+        throw new Error(
+          "Forbidden error. Only the reply worker can report generation status",
+        );
+      }
+
+      if (data.variant === "typing") {
+        throw new Error("Validation error. Use the thread typing endpoint");
       }
 
       const actionData = { ...data };

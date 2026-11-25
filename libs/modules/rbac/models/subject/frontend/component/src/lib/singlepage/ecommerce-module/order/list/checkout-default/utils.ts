@@ -1,6 +1,10 @@
 import type { ICartDetails } from "@sps/ecommerce/models/order/sdk/model";
 import type { IModel as IProduct } from "@sps/ecommerce/models/product/sdk/model";
 
+export function orderCheckoutAnchor(orderId: string) {
+  return `checkout-order-${encodeURIComponent(orderId)}`;
+}
+
 export function hasSingleUnitLimit(
   details: ICartDetails,
   line: ICartDetails["lines"][number],

@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import type { IComponentProps as IParentComponentProps } from "@sps/shared-frontend-components/singlepage/default/interface";
 export { type IModel } from "@sps/knowledge/models/source/sdk/model";
 import { IModel } from "@sps/knowledge/models/source/sdk/model";
@@ -17,16 +18,16 @@ export interface IClientComponentProps extends Pick<
   data: IModel;
   language: string;
   draft: IKnowledgeSourceDraft;
+  attachments?: ReactNode;
   isDirty?: boolean;
   isDeleting?: boolean;
-  isReindexing?: boolean;
   isSaving?: boolean;
   mode?: "create" | "edit";
   needsReindex?: boolean;
+  retryIndexOnSave?: boolean;
+  saveBlocked?: boolean;
   onDraftChange: (draft: IKnowledgeSourceDraft) => void;
-  onUnlink?: (source: IModel) => Promise<void> | void;
   onDelete?: (document: IModel) => Promise<void> | void;
-  onReindex: (document: IModel) => Promise<void> | void;
   onSave: (document: IModel) => void;
 }
 

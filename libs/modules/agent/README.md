@@ -114,44 +114,80 @@ current image through an inline link.
 
 ## Paid CRM operations
 
-A published CRM stage lists the paid operations it may call. JEV classification,
+A CRM stage lists the paid operations it may call. JEV classification,
 tool selection and dialog compression run as separate work attempts. The
 worker records each child result with the triggering task event. Only the final
-reply writes to the chat. Vision and supported WAV transcription use the
-customer's private attachment from that same event.
+reply writes to the chat. The reply model receives the triggering message’s
+attachments directly. Legacy vision and transcription flags no longer schedule
+a second model to read these files.
 
-Every attempt resolves the store's assigned provider account and reserves funds
-before sending a request. A worker that restarts loads the attempt by event and
-step. An unknown result keeps its reservation for reconciliation. The provider
-credential is used in the authorization header and stays out of the wallet
-journal and request body. OpenRouter usage includes the returned USD charge.
-Direct OpenAI usage is priced from the terms saved on the attempt and marked as
-a rate-card estimate.
+Store-owner-funded work uses the server's `OPEN_AI_API_KEY`. The worker records
+the owner and assigned employee, selects a model supported by the operation,
+and reserves funds before sending the request. The successful charge is based
+on returned OpenAI usage and the saved rate card at 20 Token per USD. Settlement
+posts one transfer from the owner to the employee. The wallet journal records
+the provider request ID and the external USD cost calculated from usage.
+
+For customer-funded stages, the platform reads the reference wallet top-up product from
+`AI_WORK_TOKEN_TOPUP_PRODUCT_ID`. The default is the seeded 100 RUB pack
+(`8aab55ed-f82d-49de-87b2-9625f5261f4c`). Its USD price and Token credit are
+the two inputs to the exchange rate. Store employees set the stage multiplier and
+spending limits. The customer approves the quoted terms before any paid work.
+Each attempt records the pack ID, price, credit and multiplier. The charge in Token
+equals provider USD × pack Token credit ÷ pack USD price × stage multiplier.
+A zero multiplier allows the stage to run without reserving or transferring customer funds.
+
+After a restart, the worker loads the attempt by event and step. An unknown
+result keeps its reservation for reconciliation. Earlier Identity-backed
+attempts and customer-funded agreements use their saved provider terms.
+
+### Employee MCP tools
+
+An employee can use the MCP servers enabled on its Social profile during
+training and assigned CRM work. For each event, the worker reads the live tool
+catalog under the employee’s identity and sends the available function schemas
+to the text model. The model can request one tool per round, for up to two
+rounds. A second call can use information returned by the first.
+
+Each model round has its own budget reservation and usage receipt. A retry of
+the same event reuses the recorded round. The final model receives the tool
+results before it replies or chooses an allowed stage action. On an automatic
+marketplace cover stage, the review model uses those results when deciding
+whether to generate the image. The image worker handles generation, payment
+and delivery.
 
 ### Marketplace cover
 
 For a commissioned cover, publish an image stage with `imageBrief: "marketplace-cover"`. The preceding chat stages collect the buyer’s palette, font, product photo, composition, caption and dimensions. A style reference is optional. The agent summarizes the materials in the order’s Social thread and waits for the buyer to confirm that version of the brief. A corrected brief requires a new confirmation.
 
-The buyer can remove the caption panel by entering `Caption background: transparent` or `Подложка надписи: без плашки` in the brief. The caption keeps its approved color and font.
+Set `imageBriefAutoGenerate: true` on the image stage to review the accumulated brief with paid JEV routing and generate a preview as soon as the buyer supplies the required materials. The pipeline carries the original customer message into the image stage. Missing fields prompt a question. A buyer’s explicit pause stops generation until they ask to continue. Once a preview exists, the pipeline requires a substantive change or a request for a new version before generating again.
 
-With direct OpenAI and an opaque product photo, the worker sends the photo as a reference to the Images API to render the product in a new scene. For transparent packshots and OpenRouter requests, the provider generates a background and the worker composites the original photo onto it. In both modes, the worker produces the cover at the requested dimensions and renders any caption once in the supplied font. It publishes a private original and preview. The agent’s reply links the version to its order. The buyer can accept it in the same thread and download the original after payment.
+When the image stage uses direct OpenAI and has no selected skills or authorized knowledge sources, the worker sends the order’s design conversation and the original product photo to the Images API. It includes the original style reference when the buyer supplies one. OpenAI renders the finished cover from those materials. The worker preserves the returned PNG byte for byte and creates a separate, scaled preview. An order without a specified size uses a 1024×1024 canvas. The worker requests a supported size within the metered image budget.
+
+In the guided brief, the buyer can remove the caption panel by entering `Caption background: transparent` or `Подложка надписи: без плашки`. The caption keeps its approved color and font.
+
+In the guided brief without a style reference, direct OpenAI can render an opaque product photo in a new scene. For transparent packshots and OpenRouter requests, the provider generates a background and the worker composites the photo onto it. The worker fits the cover to the requested dimensions and renders the caption in the supplied font.
+
+The agent’s reply links the private preview to the order. The buyer can accept it in the same thread and download the original after payment.
 
 ### Maintain a store knowledge index
 
-In a separate, store-owner-funded consultation funnel, set the maintenance
-source to the ID of the store's expert source. Bind the source to the expert
-profile for that store and assign an assistant with a supported embedding model.
+In a store-owner-funded consultation funnel, assign an employee to the maintenance
+stage and select a knowledge source linked to that employee's profile.
 Open a maintenance task with the store owner as both the customer and actor.
 The funnel is excluded from customer intake.
 
 An authenticated store owner queues work with
 `POST /api/agent/work-attempts/<owner-id>/knowledge-index` and the JSON fields
-`storeId` and `taskId`. The Agent cron reads the queue and bills the owner
-through the assigned provider connection. The same task queues one index run.
+`storeId` and `taskId`. The Agent cron reads the queue, uses the server's OpenAI
+embedding model and pays the employee from the owner's reserved balance. The
+same task queues one index run.
 Open a new task when the source content, workflow, or model changes.
 
 The worker publishes chunks only while the content hash and assignment match
 the queued task. It tags every vector with the provider, model, and the
 768-dimensional index version. Paid semantic search uses matching tagged
-vectors from the current task's permitted expert sources. An empty source
-scope skips the embedding request.
+vectors for the sources RBAC grants to this task, including the employee’s
+references and the speaker’s scoped preferences. The paid step uses the same
+Knowledge search as a chat reply and records its embedding charge in the task
+ledger. Empty source lists skip the model call.

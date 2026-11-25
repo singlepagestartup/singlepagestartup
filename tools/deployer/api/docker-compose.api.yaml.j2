@@ -7,6 +7,7 @@ services:
       - traefik_overlay
     volumes:
       - /home/code/api_data:/usr/src/app/apps/api/public/file-storage/dynamic
+      - /home/code/api_private:/var/lib/sps/private-files
     env_file:
       - ./{{ SERVICE_NAME }}.env
     command: "sh -c './start.sh api'"

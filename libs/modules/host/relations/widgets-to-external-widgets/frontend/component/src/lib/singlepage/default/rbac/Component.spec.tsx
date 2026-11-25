@@ -10,30 +10,24 @@ const rbacRenders = jest.fn();
 const websiteReads = jest.fn();
 const websiteRenders = jest.fn();
 const pageReads = jest.fn();
-const routeParams = Object.freeze({
+const mockRouteParams = Object.freeze({
   "social.profiles.id": "profile",
   "social.chats.id": "chat",
   "social.threads.id": "thread",
   "rbac.subjects.slug": "subject",
+  "rbac.subjects.id": "subject-id",
   "ecommerce.products.slug": "product",
+  "ecommerce.products.id": "product-id",
   "ecommerce.categories.slug": "category",
   "ecommerce.stores.slug": "store",
+  "crm.funnels.slug": "funnel",
+  "crm.tasks.id": "task",
   "extension.records.slug": "future-value",
 });
 jest.mock("@sps/host/models/page/frontend/component", () => ({
   Component: (props: any) => {
     pageReads(props);
-    return props.children({
-      data: {
-        "social.profiles.id": "profile",
-        "social.chats.id": "chat",
-        "social.threads.id": "thread",
-        "rbac.subjects.slug": "subject",
-        "ecommerce.products.slug": "product",
-        "ecommerce.categories.slug": "category",
-        "ecommerce.stores.slug": "store",
-      },
-    });
+    return props.children({ data: mockRouteParams });
   },
 }));
 jest.mock("@sps/rbac/models/widget/frontend/component", () => ({
@@ -100,9 +94,13 @@ it.each(["select-method", "registration", "forgot-password", "reset-password"])(
         socialModuleChatId: "chat",
         socialModuleThreadId: "thread",
         subjectSlug: "subject",
+        rbacSubjectId: "subject-id",
+        ecommerceModuleProductId: "product-id",
         ecommerceModuleProductSlug: "product",
         ecommerceModuleCategorySlug: "category",
         ecommerceModuleStoreSlug: "store",
+        crmModuleFunnelSlug: "funnel",
+        crmModuleTaskId: "task",
         language: "en",
         variant: record.variant,
       }),

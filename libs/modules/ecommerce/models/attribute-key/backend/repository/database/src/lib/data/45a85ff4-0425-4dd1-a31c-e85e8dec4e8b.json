@@ -1,0 +1,15 @@
+{
+  "id": "45a85ff4-0425-4dd1-a31c-e85e8dec4e8b",
+  "createdAt": "2026-11-17T07:10:36.979Z",
+  "updatedAt": "2026-11-17T07:10:36.979Z",
+  "variant": "default",
+  "type": "feature",
+  "field": "string",
+  "adminTitle": "formula_version",
+  "slug": "formula_version",
+  "title": {
+    "en": "formula_version"
+  },
+  "prefix": {},
+  "suffix": {}
+}

@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { Component as Thread } from "../..";
-import { strategyVersions } from "./fixture";
+import { strategyFiles } from "./fixture";
 import type { IComponentProps } from "./interface";
 
 function Preview(props: IComponentProps) {
@@ -24,7 +24,7 @@ const meta = {
     handoff: "assistant",
     price: 4900,
     resultStatus: "review",
-    versions: strategyVersions,
+    files: strategyFiles,
     messages: [
       {
         id: "m1",
@@ -36,7 +36,7 @@ const meta = {
         id: "m2",
         author: "Алекс",
         kind: "operator",
-        body: "Подготовил два варианта. Откройте превью, чтобы сравнить их.",
+        body: "Прикрепил стратегию. Проверьте план публикаций и расходы по каналам.",
       },
     ],
     onSend: () => {},
@@ -56,7 +56,7 @@ export const Accepted: Story = {
     handoff: "manager",
     operator: "Мария",
     resultStatus: "accepted",
-    acceptedVersionId: "strategy-v2",
+    acceptedFileId: "partnerships-file",
   },
 };
 export const Declined: Story = { args: { resultStatus: "declined" } };

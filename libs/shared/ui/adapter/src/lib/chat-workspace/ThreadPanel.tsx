@@ -1,81 +1,44 @@
 "use client";
-import { useId, useState, useSyncExternalStore } from "react";
+import { useId, useState } from "react";
 import { FileText, PanelRightClose, PanelRightOpen } from "lucide-react";
 import type { IChatThreadPanelProps } from "./interface";
-
-const desktopContextMediaQuery = "(min-width: 80rem)";
-
-function subscribeToDesktopContext(callback: () => void) {
-  if (typeof window.matchMedia !== "function") return () => {};
-  const viewport = window.matchMedia(desktopContextMediaQuery);
-  viewport.addEventListener?.("change", callback);
-  return () => viewport.removeEventListener?.("change", callback);
-}
-
-function isDesktopContext() {
-  return window.matchMedia?.(desktopContextMediaQuery).matches ?? false;
-}
-
-function isDesktopContextOnServer() {
-  return false;
-}
 
 /** The production Thread and the local landing preview share this pane layout. */
 export function ChatThreadPanel(props: IChatThreadPanelProps) {
   const [localPane, setLocalPane] = useState<"chat" | "context">("chat");
   const pane = props.pane ?? localPane;
   const setPane = props.onPaneChange ?? setLocalPane;
-  const [localContextOpen, setLocalContextOpen] = useState<boolean>();
+  const [localContextOpen, setLocalContextOpen] = useState(false);
   const contextOpen = props.contextOpen ?? localContextOpen;
   const setContextOpen = props.onContextOpenChange ?? setLocalContextOpen;
   const contextId = useId();
-  const desktop = useSyncExternalStore(
-    subscribeToDesktopContext,
-    isDesktopContext,
-    isDesktopContextOnServer,
-  );
   const ru = props.language === "ru";
   const hasContext = !props.isDocument && Boolean(props.context);
-  const showDesktopContext = hasContext && contextOpen !== false;
-  const showMobileContext = hasContext && contextOpen === true;
-  const hideMobileChat = props.isDocument
-    ? pane === "context"
-    : showMobileContext;
-  const hasDesktopColumns = props.isDocument || showDesktopContext;
-  const isContextOpen = contextOpen ?? desktop;
-  const contextToggleLabel = isContextOpen
+  const showContext = hasContext && contextOpen;
+  const hideMobileChat = props.isDocument ? pane === "context" : showContext;
+  const hasDesktopColumns = props.isDocument || showContext;
+  const contextToggleLabel = contextOpen
     ? ru
       ? "Скрыть правую панель"
       : "Hide right sidebar"
     : ru
       ? "Показать правую панель"
       : "Show right sidebar";
-  const ContextToggleIcon = isContextOpen ? PanelRightClose : PanelRightOpen;
+  const ContextToggleIcon = contextOpen ? PanelRightClose : PanelRightOpen;
 
   return (
     <div className="flex min-h-0 min-w-0 flex-1 flex-col">
       <header
-        className={`flex shrink-0 items-center justify-between gap-3 border-b border-border bg-card ${props.isProjectThread ? "flex-wrap p-4" : "px-4 py-3 lg:h-16 lg:py-2"}`}
+        className={`flex shrink-0 items-center justify-between gap-3 border-b border-border bg-card ${props.isProjectThread ? "flex-wrap p-4" : "px-4 py-3 lg:min-h-16 lg:py-2"}`}
       >
-        <div className="flex min-w-0 items-center gap-3">
+        <div className="flex min-w-0 flex-1 items-center gap-3">
           {props.navigation}
           <div className="min-w-0">
-            <p className="text-xs text-muted-foreground">
-              {props.isDocument
-                ? ru
-                  ? "Обсуждение документа"
-                  : "Document thread"
-                : ru
-                  ? props.isProjectThread
-                    ? "Обсуждение проекта"
-                    : "Обсуждение"
-                  : "Thread"}
-            </p>
             <h2
-              className="mt-1 min-w-0 break-words text-base font-semibold lg:truncate"
-              title={props.title}
+              className="min-w-0 break-words text-base font-semibold lg:truncate"
+              title={props.titleContent ? undefined : props.title}
             >
-              {props.title}
+              {props.titleContent ?? props.title}
             </h2>
           </div>
         </div>
@@ -108,10 +71,10 @@ export function ChatThreadPanel(props: IChatThreadPanelProps) {
           <button
             type="button"
             aria-label={contextToggleLabel}
-            aria-expanded={isContextOpen}
+            aria-expanded={contextOpen}
             aria-controls={contextId}
             title={contextToggleLabel}
-            onClick={() => setContextOpen(!isContextOpen)}
+            onClick={() => setContextOpen(!contextOpen)}
             className="grid size-10 shrink-0 place-items-center rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
           >
             <ContextToggleIcon className="size-5" aria-hidden="true" />
@@ -160,8 +123,8 @@ export function ChatThreadPanel(props: IChatThreadPanelProps) {
             id={contextId}
             data-thread-id={props.threadId}
             aria-label={ru ? "Контекст" : "Context"}
-            hidden={contextOpen === false}
-            className={`${showMobileContext ? "block" : "hidden"} min-h-0 min-w-0 overflow-y-auto overscroll-contain border-border bg-muted p-4 ${showDesktopContext ? "xl:block xl:border-l" : ""}`}
+            hidden={!showContext}
+            className="min-h-0 min-w-0 overflow-y-auto overscroll-contain border-border bg-muted p-4 xl:border-l"
           >
             {props.context}
           </aside>

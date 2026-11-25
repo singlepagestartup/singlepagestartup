@@ -4,7 +4,11 @@ import {
   isSupportedMcpServerIdentifier,
   type TSupportedMcpServerIdentifier,
 } from "@sps/social/models/profile/sdk/model";
-import { RBAC_SECRET_KEY } from "@sps/shared-utils";
+import { internationalization } from "@sps/shared-configuration";
+import {
+  AGENT_PROFILE_DESCRIPTION_MAX_LENGTH,
+  RBAC_SECRET_KEY,
+} from "@sps/shared-utils";
 import { Context } from "hono";
 import { HTTPException } from "hono/http-exception";
 import { Service } from "../../../../../../../../../service";
@@ -60,13 +64,7 @@ export class Handler {
         title?: LocalizedText;
         subtitle?: LocalizedText;
         description?: LocalizedText;
-      } = {
-        adminTitle: currentProfile.adminTitle,
-        allowedMcpServerIds: [...(currentProfile.allowedMcpServerIds || [])],
-        title: { ...(currentProfile.title || {}) },
-        subtitle: { ...(currentProfile.subtitle || {}) },
-        description: { ...(currentProfile.description || {}) },
-      };
+      } = {};
 
       if ("adminTitle" in data) {
         updateData.adminTitle = this.toOptionalString(data.adminTitle);
@@ -87,19 +85,28 @@ export class Handler {
         ] as TSupportedMcpServerIdentifier[];
       }
 
-      if ("title" in data) {
-        updateData.title = this.toLocalizedText(data.title, "title");
-      }
-
-      if ("subtitle" in data) {
-        updateData.subtitle = this.toLocalizedText(data.subtitle, "subtitle");
-      }
-
-      if ("description" in data) {
-        updateData.description = this.toLocalizedText(
-          data.description,
-          "description",
-        );
+      for (const field of ["title", "subtitle", "description"] as const) {
+        if (field in data) {
+          const translations = this.toLocalizedText(data[field], field);
+          const stored = this.storedTranslations(currentProfile[field]);
+          if (field === "description") {
+            for (const [language, text] of Object.entries(translations)) {
+              if (
+                text &&
+                text !== stored[language] &&
+                text.length > AGENT_PROFILE_DESCRIPTION_MAX_LENGTH
+              ) {
+                throw new Error(
+                  `Validation error. Agent description (${language}) accepts up to ${AGENT_PROFILE_DESCRIPTION_MAX_LENGTH} characters`,
+                );
+              }
+            }
+          }
+          updateData[field] = {
+            ...stored,
+            ...translations,
+          };
+        }
       }
 
       const updatedProfile = await socialModuleProfileApi.update({
@@ -158,6 +165,30 @@ export class Handler {
     }
 
     return value.trim();
+  }
+
+  private storedTranslations(value: unknown): LocalizedText {
+    if (!value) {
+      return {};
+    }
+    let stored = value;
+    if (typeof value === "string") {
+      try {
+        stored = JSON.parse(value);
+      } catch {
+        return { [internationalization.defaultLanguage.code]: value };
+      }
+    }
+    if (
+      typeof stored === "object" &&
+      stored &&
+      !Array.isArray(stored) &&
+      !("type" in stored)
+    ) {
+      return stored as LocalizedText;
+    }
+    const text = typeof value === "string" ? value : JSON.stringify(value);
+    return { [internationalization.defaultLanguage.code]: text };
   }
 
   private toLocalizedText(value: unknown, field: string): LocalizedText {

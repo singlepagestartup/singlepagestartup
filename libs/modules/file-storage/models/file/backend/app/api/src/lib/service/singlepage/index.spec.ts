@@ -62,4 +62,46 @@ describe("File Storage service", () => {
     );
     expect(Provider).not.toHaveBeenCalled();
   });
+
+  it("stores a detected image and cleans up only its new object if requested", async () => {
+    const png = Buffer.from(
+      "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jD1sAAAAASUVORK5CYII=",
+      "base64",
+    );
+    const location = "/file-storage/static/uploaded-cover.png";
+    const uploadFile = jest.fn().mockResolvedValue(location);
+    jest
+      .mocked(Provider)
+      .mockImplementation(() => ({ uploadFile, deleteFile }) as any);
+    const entity = { id: "image-id", file: location };
+    const repository = { insert: jest.fn().mockResolvedValue(entity) };
+    const service = new Service(repository as any);
+    const result = await service.storePublicImage(
+      new File([png], "cover.png", { type: "image/png" }),
+    );
+    expect(result.entity).toBe(entity);
+    expect(repository.insert).toHaveBeenCalledWith(
+      expect.objectContaining({
+        file: location,
+        adminTitle: "cover.png",
+        mimeType: "image/png",
+        extension: "png",
+        width: 1,
+        height: 1,
+      }),
+    );
+    expect(deleteFile).not.toHaveBeenCalled();
+    await result.discard();
+    expect(deleteFile).toHaveBeenCalledWith({ name: "uploaded-cover.png" });
+  });
+
+  it("rejects a spoofed image before using the public storage provider", async () => {
+    const service = new Service({} as any);
+    await expect(
+      service.storePublicImage(
+        new File(["not an image"], "cover.png", { type: "image/png" }),
+      ),
+    ).rejects.toThrow("Upload a PNG, JPEG, WebP, GIF or AVIF image");
+    expect(Provider).not.toHaveBeenCalled();
+  });
 });

@@ -1,3 +1,4 @@
+import assert from "node:assert/strict";
 import { randomBytes, randomUUID } from "node:crypto";
 import { mkdtemp, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
@@ -18,6 +19,7 @@ import { createService } from "@sps/agent/models/work-attempt/backend/app/api/sr
 import { Table as Wallet } from "@sps/rbac/relations/subjects-to-billing-module-currencies/backend/repository/database";
 import { Table as PaymentIntent } from "@sps/billing/models/payment-intent/backend/repository/database";
 import { Table as SocialMessage } from "@sps/social/models/message/backend/repository/database";
+import { Service as ProfileSources } from "@sps/rbac/models/subject/backend/app/api/src/lib/service/singlepage/social-module/profile/knowledge/sources";
 import { api as subjectApi } from "@sps/rbac/models/subject/sdk/server";
 import { Handler as AttachmentHandler } from "@sps/rbac/models/subject/backend/app/api/src/lib/controller/singlepage/ecommerce-module/customer-work";
 import { Handler as MessageHandler } from "@sps/rbac/models/subject/backend/app/api/src/lib/controller/singlepage/social-module/profile/find-by-id/chat/find-by-id/message/create";
@@ -31,8 +33,16 @@ import {
 import { Provider as KvProvider } from "@sps/providers-kv";
 import { KV_PROVIDER, RBAC_JWT_SECRET } from "@sps/shared-utils";
 
+import {
+  embeddingResponse,
+  useFixtureEmbeddings,
+} from "../../test-utils/knowledge-embeddings";
+
+useFixtureEmbeddings();
+
 const rollback = new Error("Remove cart consent fixtures");
 const previousEnv = {
+  OPEN_AI_API_KEY: process.env.OPEN_AI_API_KEY,
   SPS_PROVIDER_SECRET_DIR: process.env.SPS_PROVIDER_SECRET_DIR,
   SPS_PROVIDER_ACTIVE_MASTER_KEY: process.env.SPS_PROVIDER_ACTIVE_MASTER_KEY,
   SPS_PROVIDER_MASTER_KEYS: process.env.SPS_PROVIDER_MASTER_KEYS,
@@ -40,6 +50,7 @@ const previousEnv = {
 let vault: string;
 
 beforeAll(async () => {
+  process.env.OPEN_AI_API_KEY = "cart-fixture-openai-key";
   vault = await mkdtemp(join(tmpdir(), "sps-cart-consent-"));
   process.env.SPS_PROVIDER_SECRET_DIR = vault;
   process.env.SPS_PROVIDER_ACTIVE_MASTER_KEY = "cart-fixture";
@@ -65,17 +76,13 @@ afterAll(async () => {
   }
 });
 
-it("checks out the buyer-approved 300 RUB selection and preserves only that purchase’s expert specification", async () => {
+it("checks out the buyer-approved 300 RUB selection without publishing the employee’s knowledge", async () => {
   try {
     await getDrizzle({}).transaction((tx) =>
       withConsistencyDatabase(tx, async () => {
         const worker = createService(createAppAssembly());
-        const { rbac, ecommerce, crm, billing, social, knowledge } =
-          worker.modules;
+        const { rbac, ecommerce, crm, billing, social } = worker.modules;
         const subject = rbac.subject;
-        ecommerce.order.configureExpertArchive((scope) =>
-          subject.orderWork.captureExpertArchive(scope),
-        );
         const owner = await subject.create({ data: {} });
         const buyer = await subject.create({ data: {} });
         const stranger = await subject.create({ data: {} });
@@ -127,55 +134,46 @@ it("checks out the buyer-approved 300 RUB selection and preserves only that purc
         const topUp = await createOffer(store.id, "Account top-up");
         const unrelatedOffer = await createOffer(store.id, "Separate item");
         const foreign = await createOffer(otherStore.id, "Other store top-up");
-        const expert = await social.profile.create({
-          data: {
-            variant: "artificial-intelligence",
-            title: { en: "Account expert" },
+        const employee = await subject.crmWorkspace.execute(owner.id, {
+          kind: "create-employee",
+          employee: {
+            storeId: store.id,
+            name: "Account expert",
+            operationKey: randomUUID(),
           },
         });
-        await social.profilesToEcommerceModuleProducts.create({
+        if (employee.kind !== "create-employee") {
+          throw new Error("Expected a store employee");
+        }
+        await subject.module.subjectsToEcommerceModuleProducts.create({
           data: {
-            profileId: expert.id,
-            storeId: store.id,
-            offerId: topUp.offer.id,
+            subjectId: employee.data.id,
+            ecommerceModuleProductId: topUp.offer.productId,
             variant: "store-expert",
           },
         });
-        const specification = await knowledge.source.upsertSourceBySlug({
-          slug: `cart-specification-${randomUUID()}`,
-          title: "Top-up conditions",
-          content: "Top-up conditions version A",
-        });
-        const specificationLink = {
-          profileId: expert.id,
-          knowledgeModuleSourceId: specification.id,
-          offerId: topUp.offer.id,
-          variant: "product-specification" as const,
-        };
-        await expect(
-          social.profilesToKnowledgeModuleSources.create({
-            data: { ...specificationLink, storeId: otherStore.id },
-          }),
-        ).rejects.toThrow(/offer.*store/i);
-        await social.profilesToKnowledgeModuleSources.create({
-          data: { ...specificationLink, storeId: store.id },
-        });
-        const privateNote = await knowledge.source.upsertSourceBySlug({
-          slug: `cart-private-note-${randomUUID()}`,
-          title: "Personal note",
-          content: "Customer information must stay private",
-          variant: "customer-memory",
-        });
+        const profileSources = new ProfileSources(subject);
+        const { source: specification } = await profileSources.create(
+          owner.id,
+          {
+            profileId: employee.data.profileId,
+            slug: `cart-reference-${randomUUID()}`,
+            title: "Top-up conditions",
+            content: "Top-up conditions version A",
+          },
+        );
         await expect(
           social.profilesToKnowledgeModuleSources.create({
             data: {
-              ...specificationLink,
+              profileId: employee.data.profileId,
+              knowledgeModuleSourceId: specification.id,
               storeId: store.id,
-              knowledgeModuleSourceId: privateNote.id,
+              offerId: topUp.offer.id,
+              variant: "product-specification",
             },
           }),
-        ).rejects.toThrow(/specification needs content/i);
-        const orderDraft = await crm.funnel.saveDraft({
+        ).rejects.toThrow(/link the knowledge source to the profile/i);
+        await crm.funnel.save({
           storeId: store.id,
           name: "Top-up purchases",
           kind: "physical-order",
@@ -198,13 +196,6 @@ it("checks out the buyer-approved 300 RUB selection and preserves only that purc
               },
             ],
           },
-        });
-        await crm.funnel.publish({
-          storeId: store.id,
-          funnelId: orderDraft.id,
-          expectedRevision: orderDraft.revision,
-          actorId: owner.id,
-          operationKey: randomUUID(),
         });
         const unrelated = await subject.ecommerceModuleOrderCreate({
           subjectId: buyer.id,
@@ -234,7 +225,7 @@ it("checks out the buyer-approved 300 RUB selection and preserves only that purc
         await crm.stepsToInputs.create({
           data: { stepId: formStep.id, inputId: formField.id },
         });
-        const draft = await crm.funnel.saveDraft({
+        await crm.funnel.save({
           storeId: store.id,
           name: "Top-up consultations",
           kind: "consultation",
@@ -256,13 +247,6 @@ it("checks out the buyer-approved 300 RUB selection and preserves only that purc
               },
             ],
           },
-        });
-        await crm.funnel.publish({
-          storeId: store.id,
-          funnelId: draft.id,
-          expectedRevision: draft.revision,
-          actorId: owner.id,
-          operationKey: randomUUID(),
         });
         const connection = await subject.providerConnections.change(owner.id, {
           operation: "connect",
@@ -289,17 +273,98 @@ it("checks out the buyer-approved 300 RUB selection and preserves only that purc
             version: "test-v1",
           },
         });
-        const ask = () =>
-          subject.customerWork.execute(buyer.id, {
+        const colleague = await subject.create({ data: {} });
+        await rbac.subjectsToEcommerceModuleStores.create({
+          data: {
+            subjectId: colleague.id,
+            ecommerceModuleStoreId: store.id,
+            variant: "crm-worker",
+          },
+        });
+        const intake = {
+          kind: "start-work" as const,
+          participantIds: [colleague.id, employee.data.id],
+          work: {
+            operation: "ask" as const,
+            storeId: store.id,
+            productId: topUp.product.id,
+            offerId: topUp.offer.id,
+            operationKey: randomUUID(),
+          },
+        };
+        const invalidKey = randomUUID();
+        await expect(
+          subject.crmWorkspace.execute(owner.id, {
+            ...intake,
+            participantIds: [colleague.id, stranger.id],
+            work: { ...intake.work, operationKey: invalidKey },
+          }),
+        ).rejects.toThrow(/employee of this store/);
+        expect(
+          await crm.task.find({
+            params: {
+              filters: {
+                and: [
+                  {
+                    column: "openingKey",
+                    method: "eq",
+                    value: `store-work:${owner.id}:${invalidKey}`,
+                  },
+                ],
+              },
+            },
+          }),
+        ).toHaveLength(0);
+        const opened = await subject.crmWorkspace.execute(owner.id, intake);
+        if (opened.kind !== "start-work") {
+          throw new Error("Expected task intake");
+        }
+        expect(
+          (await subject.crmWorkspace.execute(owner.id, intake)).data.id,
+        ).toBe(opened.data.id);
+        const colleagueProfile =
+          await subject.crmWorkspace.employees.ensureActorProfile(colleague.id);
+        const memberships = await social.profilesToChats.find({
+          params: {
+            filters: {
+              and: [
+                { column: "chatId", method: "eq", value: opened.data.chatId },
+              ],
+            },
+          },
+        });
+        for (const profileId of [colleagueProfile, employee.data.profileId]) {
+          expect(
+            memberships.filter((member) => member.profileId === profileId),
+          ).toHaveLength(1);
+        }
+        await expect(
+          subject.crmWorkspace.detail(colleague.id, {
+            storeId: store.id,
+            taskId: opened.data.id,
+          }),
+        ).resolves.toMatchObject({ task: { id: opened.data.id } });
+        await expect(
+          subject.crmWorkspace.detail(stranger.id, {
+            storeId: store.id,
+            taskId: opened.data.id,
+          }),
+        ).rejects.toThrow();
+        const ask = (customerId = buyer.id) =>
+          subject.customerWork.execute(customerId, {
             operation: "ask",
             storeId: store.id,
             productId: topUp.product.id,
             offerId: topUp.offer.id,
             operationKey: randomUUID(),
           });
-        async function submit(taskId: string, threadId: string) {
+        async function submit(
+          taskId: string,
+          threadId: string,
+          customerId = buyer.id,
+        ) {
           const text = "Хочу пополнить на 300 рублей";
-          const saved = await subject.customerWork.execute(buyer.id, {
+          const saved = await subject.customerWork.execute(customerId, {
             operation: "message",
             storeId: store.id,
             taskId,
@@ -319,13 +384,47 @@ it("checks out the buyer-approved 300 RUB selection and preserves only that purc
           }
           return run;
         }
+        for (const person of [buyer, stranger]) {
+          const identity = await subject.module.identity.create({
+            data: { email: person.id + "@example.test" },
+          });
+          await subject.module.subjectsToIdentities.create({
+            data: { subjectId: person.id, identityId: identity.id },
+          });
+        }
         const consultation = await ask();
+        const preference = "Показывай мне цены в рублях.";
+        await subject.customerWork.execute(buyer.id, {
+          operation: "message",
+          storeId: store.id,
+          taskId: consultation.taskId,
+          operationKey: randomUUID(),
+          text: "Запомни: " + preference,
+        });
         const run = await submit(consultation.taskId, consultation.threadId);
         const { cartOffers, messages: originalContext } =
           await subject.customerWork.contextForRun(run);
         expect(
           originalContext.map(({ content }) => content).join("\n"),
         ).toContain("Top-up conditions version A");
+        expect(
+          originalContext
+            .filter(({ role }) => role === "system")
+            .map(({ content }) => content)
+            .join("\n"),
+        ).toContain(preference);
+        const otherChat = await ask(stranger.id);
+        const otherRun = await submit(
+          otherChat.taskId,
+          otherChat.threadId,
+          stranger.id,
+        );
+        const otherContext = await subject.customerWork.contextForRun(otherRun);
+        const otherReferences = otherContext.messages
+          .map(({ content }) => content)
+          .join("\n");
+        expect(otherReferences).toContain("Top-up conditions version A");
+        expect(otherReferences).not.toContain(preference);
         expect(cartOffers).toEqual([
           {
             offerId: topUp.offer.id,
@@ -352,10 +451,22 @@ it("checks out the buyer-approved 300 RUB selection and preserves only that purc
 
         const external = jest
           .spyOn(globalThis, "fetch")
-          .mockImplementation(async (request) => {
+          .mockImplementation(async (request, options) => {
+            if (String(request).endsWith("/embeddings")) {
+              return embeddingResponse(request, options);
+            }
             expect(String(request)).toBe(
               "https://api.openai.com/v1/chat/completions",
             );
+            expect(
+              new Headers(options?.headers).get("Authorization") ===
+                "Bearer cart-fixture-openai-key",
+            ).toBe(true);
+            expect(JSON.parse(String(options?.body))).toMatchObject({
+              model: "gpt-6.2-astra",
+              reasoning_effort: "high",
+              response_format: { type: "json_object" },
+            });
             return Response.json({
               id: "cart-fixture-result",
               choices: [
@@ -378,7 +489,11 @@ it("checks out the buyer-approved 300 RUB selection and preserves only that purc
           expect((await worker.findById({ id: execution.id }))?.payerId).toBe(
             owner.id,
           );
-          expect(external).toHaveBeenCalledTimes(1);
+          expect(
+            external.mock.calls.filter(([url]) =>
+              String(url).endsWith("/chat/completions"),
+            ),
+          ).toHaveLength(1);
         } finally {
           external.mockRestore();
         }
@@ -477,6 +592,76 @@ it("checks out the buyer-approved 300 RUB selection and preserves only that purc
           storeId: store.id,
           taskId: purchase!.taskId,
         };
+        const openOrder = {
+          kind: "open-order-work" as const,
+          order: { storeId: store.id, orderId: orderId! },
+        };
+        await expect(
+          subject.crmWorkspace.execute(owner.id, {
+            ...openOrder,
+            participantIds: [colleague.id],
+          }),
+        ).rejects.toThrow(/chat owner/);
+        const linked = await subject.crmWorkspace.execute(owner.id, openOrder);
+        expect(linked.data.id).toBe(purchase!.taskId);
+        expect(
+          (await subject.crmWorkspace.execute(owner.id, openOrder)).data.id,
+        ).toBe(linked.data.id);
+        const purchaseChat = (
+          await subject.crmWorkspace.detail(owner.id, {
+            storeId: store.id,
+            taskId: linked.data.id,
+          })
+        ).thread!;
+        const owned = await subject.crmWorkspace.chatSettings.scope(
+          buyer.id,
+          purchaseChat.chatId,
+        );
+        assert.ok(owned);
+        await subject.crmWorkspace.chatSettings.addParticipant(
+          owned,
+          buyer.id,
+          { profileId: colleagueProfile },
+        );
+        expect(
+          (await subject.crmWorkspace.detail(colleague.id, purchaseScope))
+            .thread?.chatId,
+        ).toBe(purchaseChat.chatId);
+        const orderMembers = await social.profilesToChats.find({
+          params: {
+            filters: {
+              and: [
+                { column: "chatId", method: "eq", value: purchaseChat.chatId },
+                { column: "profileId", method: "eq", value: colleagueProfile },
+              ],
+            },
+          },
+        });
+        expect(orderMembers).toHaveLength(1);
+        const firstPage = await subject.crmWorkspace.tasks(colleague.id, {
+          storeId: store.id,
+          limit: 1,
+        });
+        expect(firstPage.items).toHaveLength(1);
+        assert.ok(firstPage.nextCursor);
+        const secondPage = await subject.crmWorkspace.tasks(colleague.id, {
+          storeId: store.id,
+          limit: 1,
+          cursor: firstPage.nextCursor,
+        });
+        expect(
+          new Set(
+            [...firstPage.items, ...secondPage.items].map(({ id }) => id),
+          ),
+        ).toEqual(new Set([opened.data.id, linked.data.id]));
+        const assignedOnly = await subject.crmWorkspace.tasks(colleague.id, {
+          storeId: store.id,
+          assigneeId: colleague.id,
+        });
+        expect(assignedOnly.items).toHaveLength(0);
+        await expect(
+          subject.crmWorkspace.tasks(stranger.id, { storeId: store.id }),
+        ).rejects.toThrow();
         const readPurchase = () =>
           subject.orderWork.read(buyer.id, purchaseScope);
         expect((await readPurchase()).expertArchive).toBeUndefined();
@@ -499,24 +684,16 @@ it("checks out the buyer-approved 300 RUB selection and preserves only that purc
           onPaymentSucceeded: async () => {},
         };
         await ecommerce.order.completePaymentStatus(settle);
-        const archived = [
-          {
-            sourceId: specification.id,
-            versionDigest: specification.contentHash,
-            title: specification.title,
-            content: "Top-up conditions version A",
-          },
-        ];
-        expect((await readPurchase()).expertArchive).toEqual(archived);
+        expect((await readPurchase()).expertArchive).toBeUndefined();
         await expect(
           subject.orderWork.read(stranger.id, purchaseScope),
         ).rejects.toThrow();
-        await knowledge.source.updateSource({
+        await profileSources.knowledge.updateSource({
           sourceId: specification.id,
           content: "Top-up conditions version B",
         });
         await ecommerce.order.completePaymentStatus(settle);
-        expect((await readPurchase()).expertArchive).toEqual(archived);
+        expect((await readPurchase()).expertArchive).toBeUndefined();
 
         const expiryConsultation = await ask();
         const expiryRun = await submit(
@@ -818,7 +995,12 @@ it("checks out the buyer-approved 300 RUB selection and preserves only that purc
         const fileContext = await subject.customerWork.contextForRun(
           fileEvent!,
         );
-        expect(fileContext.media).toBeUndefined();
+        expect(fileContext.inputAttachments).toContainEqual(
+          expect.objectContaining({
+            id: scriptFile.id,
+            messageId: chatMessage.id,
+          }),
+        );
         expect(
           fileContext.attachments.map(({ id, name, mimeType }) => ({
             id,

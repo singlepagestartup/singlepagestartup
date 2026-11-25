@@ -2,10 +2,11 @@
   "metadata": {},
   "id": "e13709ae-58ea-416f-b6d5-d2802c9f5bce",
   "createdAt": "2025-01-24T23:47:55.629Z",
-  "updatedAt": "2026-11-17T00:05:36.015Z",
+  "updatedAt": "2026-11-17T07:14:51.397Z",
   "variant": "default",
   "kind": "digital",
   "type": "one_off",
+  "singleUnitPerOrder": false,
   "slug": "website",
   "title": {
     "en": "Website",

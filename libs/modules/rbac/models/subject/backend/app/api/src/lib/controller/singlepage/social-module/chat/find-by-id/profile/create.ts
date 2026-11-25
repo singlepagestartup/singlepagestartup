@@ -75,6 +75,17 @@ export class Handler {
           ? data.socialModuleProfileId.trim()
           : undefined;
 
+      const taskChat = c.get("taskChatScope");
+      if (taskChat) {
+        const member =
+          await this.service.crmWorkspace.chatSettings.addParticipant(
+            taskChat,
+            id,
+            { profileId: socialModuleProfileId, agentSubjectId },
+          );
+        return c.json({ data: member });
+      }
+
       if (agentSubjectId) {
         const socialModuleProfileToChat = await this.createAgentProfileForChat({
           agentSubjectId,

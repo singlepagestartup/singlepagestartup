@@ -6,5 +6,11 @@ import { Table } from "@sps/crm/models/task/backend/repository/database";
 @injectable()
 @injectFromBase()
 export class Controller extends RESTController<typeof Table.$inferSelect> {
-  override httpRoutes = [];
+  override httpRoutes = [
+    {
+      method: "GET" as const,
+      path: "/admin-records",
+      handler: this.find.bind(this),
+    },
+  ];
 }

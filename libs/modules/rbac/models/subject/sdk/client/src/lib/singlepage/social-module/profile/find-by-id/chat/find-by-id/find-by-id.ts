@@ -27,7 +27,17 @@ export type IResult =
 
 export function action(props: IProps) {
   const queryKey = `${route}/${props.id}/social-module/profiles/${props.socialModuleProfileId}/chats/${props.socialModuleChatId}`;
-  const topics = deriveTopicsFromPath(queryKey);
+  const topics = [
+    ...deriveTopicsFromPath(queryKey),
+    "rbac.subjects-to-ecommerce-module-stores",
+    "rbac.subjects-to-crm-module-tasks",
+    "rbac.subjects-to-roles",
+    "rbac.subjects-to-social-module-profiles",
+    "rbac.subjects-to-social-module-chats",
+    "social.profiles-to-chats",
+    "social.chats-to-crm-module-tasks",
+    "social.chats-to-threads",
+  ];
   // Merge caller meta last but never let it clobber topics (issue #195): a
   // project passing reactQueryOptions.meta must not silently drop the realtime
   // topic subscription.
@@ -42,8 +52,13 @@ export function action(props: IProps) {
   return useQuery<IResult>({
     queryKey: consistencyQueryKey(queryKey, props.params, clientHost),
     meta: {
-      topics,
       ...(userMeta ?? {}),
+      topics: Array.from(
+        new Set([
+          ...topics,
+          ...(Array.isArray(userMeta?.topics) ? userMeta.topics : []),
+        ]),
+      ),
     },
     queryFn: async () => {
       const result = await api.socialModuleProfileFindByIdChatFindById({

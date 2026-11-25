@@ -8,6 +8,13 @@
       "when": 1795077311046,
       "tag": "0000_windy_argent",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1795524314451,
+      "tag": "0001_tiresome_vulcan",
+      "breakpoints": true
     }
   ]
 }

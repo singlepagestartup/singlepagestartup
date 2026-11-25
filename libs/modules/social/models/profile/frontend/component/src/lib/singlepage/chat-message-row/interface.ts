@@ -20,10 +20,17 @@ export interface IClientComponentProps extends Pick<
   profile?: IModel;
   avatar?: IProfileAvatar | null;
   message: ISocialModuleChatMessage;
+  attachmentsSlot?: ReactNode;
   messageContentSlot?: ReactNode;
+  interactionSlot?: ReactNode;
   isDeleting?: boolean;
   isOwnMessage?: boolean;
-  onProfileOpen?: (profile: IModel) => void;
+  onProfileOpen?: (
+    profile: IModel,
+    trigger: HTMLButtonElement,
+    avatar?: IProfileAvatar | null,
+    displayName?: string,
+  ) => void;
   onEdit?: (message: ISocialModuleMessage) => void;
   onDelete?: (message: ISocialModuleMessage) => void;
 }

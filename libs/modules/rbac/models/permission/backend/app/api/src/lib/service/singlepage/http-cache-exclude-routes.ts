@@ -1,11 +1,13 @@
 import type { IRouteRule } from "@sps/shared-utils";
 import {
   controllerGuardedRoutes,
+  crmAdminListRoute,
   privateCommerceRoutes,
 } from "./sensitive-routes";
 
 export const rbacHttpCacheExcludeRoutes: IRouteRule[] = [
   ...controllerGuardedRoutes,
+  crmAdminListRoute,
   ...privateCommerceRoutes,
   {
     regexPath: /^\/api\/file-storage\/files(?:\/.*)?$/i,

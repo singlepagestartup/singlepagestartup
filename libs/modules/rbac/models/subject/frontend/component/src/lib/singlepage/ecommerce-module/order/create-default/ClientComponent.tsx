@@ -147,6 +147,8 @@ export function Component(props: IComponentPropsExtended) {
       : offers[0];
   }
   const selected = offerForDraft(draft);
+  const continueConsultation =
+    newServiceOrder && selected?.id === returnOffer?.id;
   const consultationOffer = selected ?? returnOffer ?? retailOffers[0];
   const workQuery = api.customerWorkAvailability({
     id: props.data.id,
@@ -576,7 +578,10 @@ export function Component(props: IComponentPropsExtended) {
         offerId: configuration.selection.offerId,
         storeId: configuration.storeId,
       };
-      if (workQuery.data?.order) {
+      if (
+        workQuery.data?.order &&
+        (!workQuery.data.payAfterAcceptance || continueConsultation)
+      ) {
         const result = await workMutation.mutateAsync({
           id: props.data.id,
           data: {
@@ -595,6 +600,12 @@ export function Component(props: IComponentPropsExtended) {
         });
         workRequest.current = undefined;
         if (submittedIdentity === currentIdentity.current) {
+          if (continueConsultation) {
+            router.push(
+              `/${props.language}/social/chats/${result.chatId}/threads/${result.threadId}`,
+            );
+            return;
+          }
           setSelectionWork({
             identity: submittedIdentity,
             offerId: offer.offerId,
@@ -1131,13 +1142,17 @@ export function Component(props: IComponentPropsExtended) {
               disabled={pending || !ready}
               className="min-h-11 w-full rounded-xl"
             >
-              {pending
+              {continueConsultation
                 ? ru
-                  ? "Добавляем…"
-                  : "Adding…"
-                : ru
-                  ? "Добавить в корзину"
-                  : "Add to cart"}
+                  ? "Перейти в чат заказа"
+                  : "Go to order chat"
+                : pending
+                  ? ru
+                    ? "Добавляем…"
+                    : "Adding…"
+                  : ru
+                    ? "Добавить в корзину"
+                    : "Add to cart"}
             </Button>
             {workQuery.data?.payAfterAcceptance && (
               <p className="text-xs text-muted-foreground">

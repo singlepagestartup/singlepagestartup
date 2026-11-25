@@ -1,0 +1,9 @@
+{
+  "id": "1b58fa17-a633-457a-997f-c791bc3245e5",
+  "createdAt": "2026-11-17T23:08:18.270Z",
+  "updatedAt": "2026-11-17T23:08:18.270Z",
+  "variant": "default",
+  "type": "HTTP",
+  "method": "POST",
+  "path": "/api/rbac/subjects/[rbac.subjects.id]/ecommerce-module/catalogue-mutations"
+}

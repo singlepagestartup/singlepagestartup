@@ -8,7 +8,11 @@ import {
   type ICustomerWorkOfferScope,
   type ICustomerWorkOfferAvailability,
 } from "@sps/rbac/models/subject/sdk/model";
-import { responsePipe, type NextRequestOptions } from "@sps/shared-utils";
+import {
+  readChatAttachmentBlob,
+  responsePipe,
+  type NextRequestOptions,
+} from "@sps/shared-utils";
 
 interface IRequest {
   id: string;
@@ -28,6 +32,7 @@ export interface IThreadProps extends IRequest {
 export interface IAttachmentProps extends IThreadProps {
   messageId: string;
   attachmentId: string;
+  maxBytes?: number;
 }
 export interface ICommandProps extends IRequest {
   data: TCustomerWorkCommand;
@@ -99,6 +104,7 @@ export async function customerWorkAttachment({
   threadId,
   messageId,
   attachmentId,
+  maxBytes,
   host = serverHost,
   options,
 }: IAttachmentProps) {
@@ -118,7 +124,7 @@ export async function customerWorkAttachment({
     await responsePipe({ res });
     throw new Error("Message attachment is unavailable");
   }
-  return res.blob();
+  return readChatAttachmentBlob(res, maxBytes);
 }
 
 export async function changeCustomerWork({

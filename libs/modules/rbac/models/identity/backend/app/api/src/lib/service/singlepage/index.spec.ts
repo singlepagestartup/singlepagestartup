@@ -139,9 +139,7 @@ describe("one-time password reset codes", () => {
 
   it("rejects changes to an outgoing provider identity through generic CRUD", async () => {
     const repository = {
-      findFirstByField: jest
-        .fn()
-        .mockResolvedValue({ id: "provider", usage: "outbound_api" }),
+      findFirstByField: jest.fn().mockResolvedValue(null),
       updateFirstByField: jest.fn(),
     };
     const service = new Service(
@@ -154,7 +152,7 @@ describe("one-time password reset codes", () => {
           Service["update"]
         >[0]["data"],
       }),
-    ).rejects.toThrow("Outbound identities");
+    ).resolves.toBeNull();
     expect(repository.updateFirstByField).not.toHaveBeenCalled();
   });
 

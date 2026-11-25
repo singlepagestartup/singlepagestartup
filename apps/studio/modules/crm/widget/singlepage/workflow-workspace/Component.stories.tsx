@@ -10,7 +10,6 @@ const meta = {
   args: {
     variant: "workflow-workspace",
     fixture: demoWorkflows,
-    canReadCosts: true,
   },
 } satisfies Meta<
   Extract<

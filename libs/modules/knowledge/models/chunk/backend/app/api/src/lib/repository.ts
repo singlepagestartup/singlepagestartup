@@ -10,18 +10,21 @@ import { sql } from "drizzle-orm";
 @injectable()
 @injectFromBase()
 export class Repository extends DatabaseRepository<typeof Table> {
-  async hasEmbeddingIndex(ids: string[], embeddingIndex: string) {
+  async hasEmbeddingIndex(ids: string[], embeddingIndex?: string) {
     if (!ids.length) {
       return false;
     }
     await trackRepositoryRead(Table, this.db, {
       and: [{ column: "id", method: "inArray", value: ids }],
     });
+    const matchesIndex = embeddingIndex
+      ? sql`${Table.metadata}->>'embeddingIndex' = ${embeddingIndex}`
+      : sql`${Table.metadata}->>'embeddingIndex' IS NULL`;
     const [row] = await this.db
       .select({ id: Table.id })
       .from(Table)
       .where(
-        sql`${Table.id} = ANY(${sql.param(ids)}::uuid[]) AND ${Table.metadata}->>'embeddingIndex' = ${embeddingIndex}`,
+        sql`${Table.id} = ANY(${sql.param(ids)}::uuid[]) AND ${matchesIndex}`,
       )
       .limit(1);
     return Boolean(row);
@@ -29,6 +32,7 @@ export class Repository extends DatabaseRepository<typeof Table> {
 
   async search(props: {
     ids?: string[];
+    excludeIds?: string[];
     embedding: number[];
     topK: number;
     minSimilarity?: number;
@@ -48,9 +52,12 @@ export class Repository extends DatabaseRepository<typeof Table> {
     const byId = props.ids
       ? sql`${Table.id} = ANY(${sql.param(props.ids)}::uuid[])`
       : sql`TRUE`;
-    const scope = props.embeddingIndex
+    const indexScope = props.embeddingIndex
       ? sql`${byId} AND ${Table.metadata}->>'embeddingIndex' = ${props.embeddingIndex}`
       : sql`${byId} AND ${Table.metadata}->>'embeddingIndex' IS NULL`;
+    const scope = props.excludeIds?.length
+      ? sql`${indexScope} AND NOT (${Table.id} = ANY(${sql.param(props.excludeIds)}::uuid[]))`
+      : indexScope;
     if (props.materialized) {
       const rows = await this.db.execute(sql`WITH candidates AS MATERIALIZED (
         SELECT id, text, chunk_index AS "chunkIndex", metadata, embedding FROM ${Table}

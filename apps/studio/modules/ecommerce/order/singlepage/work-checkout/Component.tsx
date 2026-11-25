@@ -53,10 +53,10 @@ export function Component({
           <dt className="text-muted-foreground">Предложение</dt>
           <dd className="font-medium">{order.title}</dd>
         </div>
-        {order.resultVersionNumber !== undefined && (
+        {order.resultFilename !== undefined && (
           <div className="flex flex-wrap justify-between gap-x-4 gap-y-1">
-            <dt className="text-muted-foreground">Версия результата</dt>
-            <dd className="font-medium">Версия {order.resultVersionNumber}</dd>
+            <dt className="text-muted-foreground">Файл заказа</dt>
+            <dd className="font-medium">{order.resultFilename}</dd>
           </div>
         )}
         {order.invoiceId && (
@@ -74,8 +74,8 @@ export function Component({
       </dl>
       {state === "locked" && (
         <p className="mt-4 text-sm leading-relaxed text-muted-foreground">
-          Выберите и примите версию в обсуждении заказа. После этого здесь
-          появится оплата.
+          Подтвердите файл в обсуждении заказа. После этого здесь появится
+          оплата.
         </p>
       )}
       {state === "failed" && (

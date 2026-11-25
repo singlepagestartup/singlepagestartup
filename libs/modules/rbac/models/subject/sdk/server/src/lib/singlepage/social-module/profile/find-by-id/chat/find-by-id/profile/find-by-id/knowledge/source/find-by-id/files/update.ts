@@ -27,8 +27,6 @@ export type SourceFile = { file: IFile; relation: IRelation };
 export type IResult = {
   files: SourceFile[];
   source: ISource | null;
-  processingError?: string;
-  analysisPending?: boolean;
 };
 export async function action(props: IProps): Promise<IResult> {
   const body = new FormData();

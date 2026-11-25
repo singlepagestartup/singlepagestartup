@@ -2,10 +2,26 @@ import { randomUUID } from "node:crypto";
 import { STORE_EMPLOYEE_CHAT_VARIANT } from "@sps/rbac/models/subject/sdk/model/src/lib/crm-workspace";
 import Decimal from "decimal.js";
 import {
+  OPEN_AI_IMAGE_WORK_MODEL,
+  TRANSCRIPTION_USD_PER_MINUTE,
   providerModelReasoning,
   supportsImageWork,
 } from "@sps/shared-third-parties";
-import { providerModelFavoriteId } from "@sps/shared-utils";
+import {
+  stageWorkFunding,
+  type IFunnelStage,
+  type IWorkFunding,
+} from "@sps/crm/models/funnel/sdk/model";
+import { isStoreEmployeeTraining } from "@sps/crm/models/task/sdk/model";
+import { isStoreTest } from "@sps/rbac/models/subject/sdk/model/src/lib/customer-work";
+import {
+  KNOWLEDGE_OPEN_AI_EMBEDDING_MODEL,
+  OPEN_AI_STAGE_TEXT_DEFAULT,
+  OPEN_AI_STAGE_TEXT_MODEL_LABEL,
+  OPEN_AI_STAGE_TEXT_REASONING,
+  providerModelFavoriteId,
+} from "@sps/shared-utils";
+import { TokenTopupRate } from "../billing/token-topup-rate";
 import { ProviderSecretStore } from "./secret-store";
 import type { SubjectServiceDependencies } from "../index";
 import {
@@ -18,9 +34,92 @@ import {
   type IProviderChatModelsResult,
   type IProviderType,
   type IProviderModelSelection,
+  type IProviderTerms,
 } from "@sps/rbac/models/subject/sdk/model/src/lib/provider-connections";
 
 const providerAgentGrantVariants = ["assistant", "crm-agent"];
+
+interface IWorkProviderScope {
+  payer: IWorkFunding["payer"];
+  preferredOwnerId?: string;
+  customerPricing?: { multiplier: string; currencyId: string };
+}
+
+interface IWorkModelSelection extends Partial<IProviderModelSelection> {
+  provider?: IProviderType;
+}
+
+// OpenAI Standard pricing per million tokens within the server's 50k input cap.
+// https://developers.openai.com/api/docs/models/gpt-6.2-astra
+const astraText = {
+  model: OPEN_AI_STAGE_TEXT_DEFAULT.modelId,
+  inputUsdPerMillion: "8",
+  cachedInputUsdPerMillion: "0.40",
+  cacheWriteUsdPerMillion: "10",
+  outputUsdPerMillion: "40",
+};
+const legacyText = {
+  model: "gpt-5.4-mini-2026-03-17",
+  inputUsdPerMillion: "0.75",
+  cachedInputUsdPerMillion: "0.075",
+  outputUsdPerMillion: "4.50",
+};
+const auxiliaryText = {
+  model: "gpt-4.1-mini",
+  inputUsdPerMillion: "0.40",
+  cachedInputUsdPerMillion: "0.10",
+  outputUsdPerMillion: "1.60",
+};
+const serverTerms: IProviderTerms = {
+  maxInputTokens: 50_000,
+  maxOutputTokens: 2048,
+  maxCostUsd: "0.75",
+  inputUsdPerMillion: "0",
+  outputUsdPerMillion: "0",
+  usdPerSps: "0.05",
+  workMultiplier: "1",
+  version: "2026-11-openai-store-work",
+};
+const serverModels = {
+  text: [astraText, legacyText, auxiliaryText],
+  decision: [auxiliaryText],
+  compression: [auxiliaryText],
+  vision: [auxiliaryText],
+  image: [
+    {
+      model: OPEN_AI_IMAGE_WORK_MODEL,
+      maxOutputTokens: 16_384,
+      inputUsdPerMillion: "8",
+      outputUsdPerMillion: "30",
+    },
+  ],
+  embedding: [
+    { model: KNOWLEDGE_OPEN_AI_EMBEDDING_MODEL, inputUsdPerMillion: "0.13" },
+  ],
+  transcription: [
+    {
+      model: "gpt-transcribe",
+      audioUsdPerMinute: TRANSCRIPTION_USD_PER_MINUTE,
+    },
+  ],
+} satisfies Record<
+  IProviderCapability,
+  ({ model: string } & Partial<IProviderTerms>)[]
+>;
+
+export class ServerWorkCredentialUnavailable extends Error {
+  constructor() {
+    super("Permission error. The server OpenAI work key is unavailable");
+  }
+}
+
+function serverCredential() {
+  const secret = process.env.OPEN_AI_API_KEY?.trim();
+  if (!secret) {
+    throw new ServerWorkCredentialUnavailable();
+  }
+  return secret;
+}
 
 export class ProviderConnections {
   constructor(
@@ -118,6 +217,7 @@ export class ProviderConnections {
       > & {
         provider: IProviderType;
         kind: "text" | "image";
+        storeText?: boolean;
       }
     >();
     const chat = await social.chat.findById({ id: chatId });
@@ -134,6 +234,7 @@ export class ProviderConnections {
         "Forbidden error. Profile is outside this employee conversation",
       );
     }
+    let stageModelId: string | undefined;
     for (const thread of threads) {
       const scope = employeeChat
         ? {
@@ -141,12 +242,43 @@ export class ProviderConnections {
             assigneeId: employeeChat.subjectId,
             kind: "text" as const,
             customerPays: false,
+            fixedModel: undefined,
           }
         : await this.modelScopeForTask(customerId, thread.threadId);
       if (!scope) continue;
+      if (scope.fixedModel) {
+        if (threadId) {
+          stageModelId = scope.fixedModel;
+        }
+        continue;
+      }
       const { storeId, assigneeId, kind, customerPays } = scope;
+      if (!customerPays) {
+        if (!process.env.OPEN_AI_API_KEY?.trim()) {
+          continue;
+        }
+        await this.assertStoreAgent(storeId, assigneeId);
+        for (const model of kind === "text"
+          ? [astraText]
+          : serverModels.image) {
+          models.set(`${model.model}:${kind}`, {
+            id: model.model,
+            canonicalId: providerModelFavoriteId(model.model),
+            name:
+              kind === "text" ? OPEN_AI_STAGE_TEXT_MODEL_LABEL : model.model,
+            storeText: kind === "text",
+            description: "OpenAI API",
+            contextLength: serverTerms.maxInputTokens,
+            provider: "openai",
+            kind,
+            inputModalities: kind === "image" ? ["text", "image"] : ["text"],
+            outputModalities: [kind],
+          });
+        }
+        continue;
+      }
       const bindings = await this.availableBindings(storeId, assigneeId, kind);
-      const assigned = customerPays ? bindings.slice(0, 1) : bindings;
+      const assigned = bindings.slice(0, 1);
       const seen = new Set<string>();
       for (const binding of assigned) {
         if (seen.has(binding.model)) {
@@ -184,24 +316,33 @@ export class ProviderConnections {
       }
     }
     const options = await Promise.all(
-      [...models.values()].map(async ({ provider, kind, ...model }) => {
-        let reasoning: IProviderChatModelOption["reasoning"] = null;
-        if (kind === "text") {
-          reasoning = await providerModelReasoning(provider, model.id);
-        }
-        const supportedParameters: string[] = [];
-        if (reasoning) {
-          supportedParameters.push(
-            provider === "openai" ? "reasoning_effort" : "reasoning",
-          );
-        }
-        return {
-          ...model,
-          supportedParameters,
-          supportsReasoning: Boolean(reasoning),
-          reasoning,
-        };
-      }),
+      [...models.values()].map(
+        async ({ provider, kind, storeText, ...model }) => {
+          let reasoning: IProviderChatModelOption["reasoning"] = null;
+          if (kind === "text") {
+            reasoning = await providerModelReasoning(provider, model.id);
+            if (reasoning && storeText) {
+              reasoning = {
+                ...reasoning,
+                defaultEffort: OPEN_AI_STAGE_TEXT_DEFAULT.reasoning,
+                supportedEfforts: [...OPEN_AI_STAGE_TEXT_REASONING],
+              };
+            }
+          }
+          const supportedParameters: string[] = [];
+          if (reasoning) {
+            supportedParameters.push(
+              provider === "openai" ? "reasoning_effort" : "reasoning",
+            );
+          }
+          return {
+            ...model,
+            supportedParameters,
+            supportsReasoning: Boolean(reasoning),
+            reasoning,
+          };
+        },
+      ),
     );
     const groups = (["text", "image"] as const).map((kind) => ({
       id: kind,
@@ -209,10 +350,11 @@ export class ProviderConnections {
       models: options.filter((model) => model.outputModalities.includes(kind)),
     }));
     return {
+      ...(stageModelId && { stageModelFixed: true, stageModelId }),
       auto: {
         id: "auto",
         name: "Auto",
-        description: "Use the model assigned to this stage.",
+        description: "Use the default model for this stage.",
       },
       groups: groups.filter((group) => group.models.length),
     };
@@ -220,14 +362,7 @@ export class ProviderConnections {
 
   private async modelScopeForTask(customerId: string, threadId: string) {
     const social = this.subject.modules.social;
-    const [link] = await social.threadsToCrmModuleTasks.find({
-      params: {
-        filters: {
-          and: [{ column: "threadId", method: "eq", value: threadId }],
-        },
-        limit: 1,
-      },
-    });
+    const link = await social.chatsToCrmModuleTasks.forThread(threadId);
     if (!link) {
       return;
     }
@@ -243,36 +378,33 @@ export class ProviderConnections {
     ) {
       return;
     }
-    const publication = await this.subject.modules.crm.task.getPublication({
+    const funnel = await this.subject.modules.crm.task.getFunnel({
       storeId: task.storeId,
       taskId: task.id,
     });
-    const stage = publication.definition.stages.find(
+    const stage = funnel.definition.stages.find(
       ({ id }) => id === task.stageId,
     );
-    if (!stage || !publication.definition.workFunding) {
+    const funding = stage && stageWorkFunding(funnel.definition, stage);
+    if (!stage || !funding) {
       return;
     }
     return {
       storeId: task.storeId,
       assigneeId: task.assigneeId,
       kind: stage.output === "image" ? ("image" as const) : ("text" as const),
-      customerPays: publication.definition.workFunding.payer === "customer",
+      customerPays:
+        funding.payer === "customer" && funding.multiplier === undefined,
+      fixedModel: stage.provider?.modelId,
     };
   }
 
   async list(actorId: string, storeId: string, before?: string) {
     await this.assertOwner(actorId, storeId);
-    const filters = {
-      and: [{ column: "storeId", method: "eq" as const, value: storeId }],
-    };
+    const linksService = this.subject.module.subjectsToIdentities;
     const [connections, assignments] = await Promise.all([
-      this.subject.module.subjectsToProviderIdentities.find({
-        params: { filters },
-      }),
-      this.subject.module.subjectsToProviderAgents.find({
-        params: { filters },
-      }),
+      linksService.providerConnections(storeId),
+      linksService.providerAssignments(storeId),
     ]);
     const visible = await Promise.all(
       connections.map(
@@ -285,9 +417,8 @@ export class ProviderConnections {
           version,
           active,
         }) => {
-          const identity = await this.subject.module.identity.findById({
-            id: identityId,
-          });
+          const identity =
+            await this.subject.module.identity.outboundProvider(identityId);
           return {
             id,
             identityId,
@@ -302,10 +433,7 @@ export class ProviderConnections {
       ),
     );
     const { items: operations, nextCursor } =
-      await this.subject.module.subjectsToWalletOperations.history(
-        storeId,
-        before,
-      );
+      await this.subject.modules.billing.transaction.history(storeId, before);
     const links =
       await this.subject.module.subjectsToEcommerceModuleStores.find({
         params: {
@@ -390,21 +518,13 @@ export class ProviderConnections {
 
   private async apply(actorId: string, command: IConnectionCommand) {
     await this.assertOwner(actorId, command.storeId);
-    const service = this.subject.module.subjectsToProviderIdentities;
+    const service = this.subject.module.subjectsToIdentities;
     if (command.operation === "connect") {
       let executorId = command.executorId;
       if (executorId) {
-        const [existing] = await service.find({
-          params: {
-            filters: {
-              and: [
-                { column: "storeId", method: "eq", value: command.storeId },
-                { column: "ownerId", method: "eq", value: actorId },
-                { column: "subjectId", method: "eq", value: executorId },
-              ],
-            },
-            limit: 1,
-          },
+        const [existing] = await service.providerConnections(command.storeId, {
+          ownerId: actorId,
+          subjectId: executorId,
         });
         if (!existing) {
           throw new Error(
@@ -413,7 +533,7 @@ export class ProviderConnections {
         }
       } else {
         const executor = await this.subject.create({
-          data: { variant: "agent" },
+          data: { variant: "provider-agent" },
         });
         executorId = executor.id;
       }
@@ -425,19 +545,19 @@ export class ProviderConnections {
         { storeId: command.storeId, identityId: identity.id, version },
         command.secret,
       );
-      return service.create({
-        data: {
-          storeId: command.storeId,
-          identityId: identity.id,
-          subjectId: executorId,
-          ownerId: actorId,
-          label: command.label,
-          externalAccount: command.externalAccount,
-          version,
-        },
+      return service.createProviderConnection({
+        storeId: command.storeId,
+        identityId: identity.id,
+        subjectId: executorId,
+        ownerId: actorId,
+        label: command.label,
+        externalAccount: command.externalAccount,
+        version,
       });
     }
-    const conn = await service.findById({ id: command.connectionId });
+    const [conn] = await service.providerConnections(command.storeId, {
+      id: command.connectionId,
+    });
     if (!conn || conn.storeId !== command.storeId || conn.ownerId !== actorId) {
       throw new Error("Not found. Provider connection");
     }
@@ -492,11 +612,10 @@ export class ProviderConnections {
       };
       if (command.attemptId) {
         const key = `work:${command.attemptId}`;
-        const original =
-          await this.subject.module.subjectsToWalletOperations.byKey(
-            conn.storeId,
-            key,
-          );
+        const original = await this.subject.modules.billing.transaction.byKey(
+          conn.storeId,
+          key,
+        );
         if (original?.providerWork?.connectionId !== conn.id)
           throw new Error(
             "Forbidden error. Attempt belongs to another connection",
@@ -525,12 +644,6 @@ export class ProviderConnections {
       const assistantId =
         command.operation === "assign" ? command.assistantId : null;
       if (assistantId) await this.assertStoreAgent(conn.storeId, assistantId);
-      const bindings = this.subject.module.subjectsToProviderAgents;
-      const existing = await this.binding(
-        conn.storeId,
-        assistantId,
-        command.capability,
-      );
       const data = {
         storeId: conn.storeId,
         subjectId: assistantId,
@@ -540,21 +653,14 @@ export class ProviderConnections {
         model: command.model,
         terms: command.terms,
       };
-      if (existing) {
-        return bindings.update({
-          id: existing.id,
-          data: { ...data, updatedAt: new Date() },
-        });
-      }
-      return bindings.create({ data });
+      return service.setProviderAssignment(data);
     }
     if (conn.version !== command.expectedVersion) {
       throw new Error("Conflict error. Provider connection changed");
     }
     if (command.operation === "revoke") {
-      return service.update({
-        id: conn.id,
-        data: { active: false, updatedAt: new Date() },
+      return service.updateProviderConnection(command.storeId, conn.id, {
+        active: false,
       });
     }
     const version = randomUUID();
@@ -562,9 +668,9 @@ export class ProviderConnections {
       { storeId: conn.storeId, identityId: conn.identityId, version },
       command.secret,
     );
-    return service.update({
-      id: conn.id,
-      data: { active: true, version, updatedAt: new Date() },
+    return service.updateProviderConnection(command.storeId, conn.id, {
+      active: true,
+      version,
     });
   }
 
@@ -572,12 +678,13 @@ export class ProviderConnections {
     await this.subject.repository.withWalletLocks(
       [`provider-store:${storeId}`],
       async () => {
-        const service = this.subject.module.subjectsToProviderIdentities;
-        const current = await service.findById({ id: connectionId });
+        const service = this.subject.module.subjectsToIdentities;
+        const [current] = await service.providerConnections(storeId, {
+          id: connectionId,
+        });
         if (current?.storeId === storeId && current.version === version) {
-          await service.update({
-            id: connectionId,
-            data: { active: false, updatedAt: new Date() },
+          await service.updateProviderConnection(storeId, connectionId, {
+            active: false,
           });
         }
       },
@@ -619,27 +726,10 @@ export class ProviderConnections {
     subjectId: string | null,
     capability?: IProviderCapability,
   ) {
-    return this.subject.module.subjectsToProviderAgents.find({
-      params: {
-        filters: {
-          and: [
-            { column: "storeId", method: "eq", value: storeId },
-            subjectId
-              ? { column: "subjectId", method: "eq", value: subjectId }
-              : { column: "subjectId", method: "isNull", value: null },
-            ...(capability
-              ? [
-                  {
-                    column: "capability",
-                    method: "eq" as const,
-                    value: capability,
-                  },
-                ]
-              : []),
-          ],
-        },
-      },
-    });
+    return this.subject.module.subjectsToIdentities.providerAssignments(
+      storeId,
+      { subjectId, capability },
+    );
   }
 
   private async binding(
@@ -669,27 +759,23 @@ export class ProviderConnections {
     storeId: string,
     assigned: NonNullable<Awaited<ReturnType<ProviderConnections["binding"]>>>,
   ) {
-    const [conn] = await this.subject.module.subjectsToProviderIdentities.find({
-      params: {
-        filters: {
-          and: [
-            { column: "storeId", method: "eq", value: storeId },
-            { column: "identityId", method: "eq", value: assigned.identityId },
-            { column: "subjectId", method: "eq", value: assigned.executorId },
-            { column: "active", method: "eq", value: true },
-          ],
+    const [conn] =
+      await this.subject.module.subjectsToIdentities.providerConnections(
+        storeId,
+        {
+          identityId: assigned.identityId,
+          subjectId: assigned.executorId,
+          active: true,
         },
-        limit: 1,
-      },
-    });
+      );
     if (!conn) {
       return;
     }
-    const identity = await this.subject.module.identity.findById({
-      id: conn.identityId,
-    });
+    const identity = await this.subject.module.identity.outboundProvider(
+      conn.identityId,
+    );
     const provider = providerType.safeParse(identity?.provider);
-    if (identity?.usage !== "outbound_api" || !provider.success) {
+    if (!provider.success) {
       return;
     }
     return {
@@ -709,7 +795,7 @@ export class ProviderConnections {
     storeId: string,
     subjectId: string,
     capability: IProviderCapability,
-    selection?: Partial<IProviderModelSelection> & { defaultOnly?: boolean },
+    selection?: IWorkModelSelection & { defaultOnly?: boolean },
   ) {
     const { modelId: requestedModelId, reasoning } = selection ?? {};
     const explicit =
@@ -739,6 +825,11 @@ export class ProviderConnections {
     if (!connection) {
       throw new Error("Permission error. Provider connection is inactive");
     }
+    if (selection?.provider && connection.provider !== selection.provider) {
+      throw new Error(
+        "Validation error. The selected provider is unavailable for this stage",
+      );
+    }
     if (
       capability === "image" &&
       !supportsImageWork(connection.provider, connection.model)
@@ -760,6 +851,183 @@ export class ProviderConnections {
       }
     }
     return connection;
+  }
+
+  async resolveWork(
+    storeId: string,
+    subjectId: string,
+    capability: IProviderCapability,
+    scope: IWorkProviderScope,
+    selection?: IWorkModelSelection,
+  ) {
+    if (scope.payer === "customer" && !scope.customerPricing) {
+      const connection = await this.resolve(storeId, subjectId, capability, {
+        ...selection,
+        defaultOnly: true,
+      });
+      return {
+        ...connection,
+        mode: "identity" as const,
+        reasoning: selection?.reasoning,
+      };
+    }
+
+    await this.assertStoreAgent(storeId, subjectId);
+    serverCredential();
+    if (selection?.provider && selection.provider !== "openai") {
+      throw new Error(
+        "Validation error. The selected provider is unavailable for this stage",
+      );
+    }
+    const { modelId, reasoning } = selection ?? {};
+    const explicit = Boolean(modelId && modelId !== "auto");
+    const allowed: readonly ({ model: string } & Partial<IProviderTerms>)[] =
+      serverModels[capability];
+    const chosen = explicit
+      ? allowed.find(({ model }) => model === modelId)
+      : allowed[0];
+    if (!chosen) {
+      throw new Error(
+        "Validation error. The selected model is unavailable for this stage",
+      );
+    }
+    const usesAstra = capability === "text" && chosen.model === astraText.model;
+    if (reasoning) {
+      const options =
+        explicit && capability === "text"
+          ? await providerModelReasoning("openai", chosen.model)
+          : undefined;
+      if (
+        !options?.supportedEfforts.includes(reasoning) ||
+        (usesAstra &&
+          !OPEN_AI_STAGE_TEXT_REASONING.some((effort) => effort === reasoning))
+      ) {
+        throw new Error(
+          "Validation error. The selected reasoning effort is unavailable for this model",
+        );
+      }
+    }
+    let ownerId = scope.preferredOwnerId;
+    if (ownerId) {
+      await this.assertOwner(ownerId, storeId);
+    } else {
+      const owners =
+        await this.subject.module.subjectsToEcommerceModuleStores.find({
+          params: {
+            filters: {
+              and: [
+                {
+                  column: "ecommerceModuleStoreId",
+                  method: "eq",
+                  value: storeId,
+                },
+                { column: "variant", method: "eq", value: "owner" },
+              ],
+            },
+            limit: 2,
+          },
+        });
+      if (owners.length !== 1) {
+        throw new Error(
+          "Permission error. Select the store owner who pays for this stage",
+        );
+      }
+      ownerId = owners[0].subjectId;
+    }
+    const { model, ...rates } = chosen;
+    const terms: IProviderTerms = { ...serverTerms, ...rates };
+    if (scope.customerPricing) {
+      terms.workMultiplier = scope.customerPricing.multiplier;
+      if (new Decimal(scope.customerPricing.multiplier).gt(0)) {
+        Object.assign(
+          terms,
+          await new TokenTopupRate(this.subject.modules.ecommerce.product).read(
+            scope.customerPricing.currencyId,
+          ),
+        );
+      }
+    }
+    return {
+      mode: "server" as const,
+      ownerId,
+      provider: "openai" as const,
+      externalAccount: "server",
+      model,
+      reasoning:
+        reasoning ??
+        (usesAstra ? OPEN_AI_STAGE_TEXT_DEFAULT.reasoning : undefined),
+      terms,
+    };
+  }
+
+  selectableServerRates(
+    capability: IProviderCapability,
+    terms: IProviderTerms,
+  ) {
+    return serverModels[capability].map(({ model, ...prices }) => ({
+      model,
+      provider: "openai" as const,
+      capability,
+      ...serverTerms,
+      ...prices,
+      usdPerSps: terms.usdPerSps,
+      workMultiplier: terms.workMultiplier,
+      ...(terms.topupProductId &&
+        terms.topupUsd &&
+        terms.topupTokens && {
+          topupProductId: terms.topupProductId,
+          topupUsd: terms.topupUsd,
+          topupTokens: terms.topupTokens,
+        }),
+    }));
+  }
+
+  workScope(
+    task: { customerId: string; openingKey?: string | null },
+    stage: Pick<IFunnelStage, "payerSubjectId" | "workFunding">,
+    funding: IWorkFunding,
+    initiatingOwnerId?: string,
+  ): IWorkProviderScope {
+    let fallbackOwnerId = initiatingOwnerId;
+    if (
+      isStoreTest(task.openingKey) ||
+      isStoreEmployeeTraining(task.openingKey)
+    ) {
+      fallbackOwnerId = task.customerId;
+    }
+    return {
+      payer: funding.payer,
+      ...(funding.multiplier !== undefined && {
+        customerPricing: {
+          multiplier: funding.multiplier,
+          currencyId: funding.currencyId,
+        },
+      }),
+      preferredOwnerId:
+        stage.workFunding?.payerSubjectId ??
+        stage.payerSubjectId ??
+        fallbackOwnerId,
+    };
+  }
+
+  savedCredential(storeId: string, identityId: string, version: string) {
+    return this.vault.read({ storeId, identityId, version });
+  }
+
+  workCredential(
+    storeId: string,
+    subjectId: string,
+    capability: IProviderCapability,
+    binding: Awaited<ReturnType<ProviderConnections["resolveWork"]>>,
+    selection?: IWorkModelSelection,
+  ) {
+    if (binding.mode === "server") {
+      return serverCredential();
+    }
+    return this.credential(storeId, subjectId, capability, binding, {
+      ...selection,
+      defaultOnly: true,
+    });
   }
 
   async credential(

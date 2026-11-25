@@ -1,0 +1,15 @@
+{
+  "id": "f30e28fd-9cfd-4a61-ad1b-c900d46fb9c6",
+  "createdAt": "2026-11-24T19:13:20.751Z",
+  "updatedAt": "2026-11-24T19:13:20.751Z",
+  "variant": "default",
+  "type": "feature",
+  "field": "string",
+  "adminTitle": "size",
+  "slug": "notable-turquoise-crawdad-7091",
+  "title": {
+    "ru": "size"
+  },
+  "prefix": {},
+  "suffix": {}
+}

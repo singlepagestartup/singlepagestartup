@@ -1,20 +1,22 @@
 "use client";
 
 import type { IModelPickerOption, IModelPickerProps } from "./interface";
-import { cn } from "@sps/shared-frontend-client-utils";
+import { cn } from "@sps/shared-frontend-client-utils/cn";
+import { Button } from "@sps/shared-ui-shadcn/button";
 import {
-  Button,
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuLabel,
   DropdownMenuRadioGroup,
   DropdownMenuRadioItem,
   DropdownMenuTrigger,
-  Input,
+} from "@sps/shared-ui-shadcn/dropdown-menu";
+import { Input } from "@sps/shared-ui-shadcn/input";
+import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "@sps/shared-ui-shadcn";
+} from "@sps/shared-ui-shadcn/popover";
 import { Bot, Brain, Check, ChevronDown, Search, Star } from "lucide-react";
 import {
   memo,
@@ -25,6 +27,8 @@ import {
   useState,
   type KeyboardEvent,
 } from "react";
+
+const emptyFavorites: readonly string[] = [];
 
 interface ModelOptionProps {
   id: string;
@@ -100,7 +104,7 @@ export function ModelPicker<TEffort extends string>(
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
   const query = search.trim().toLowerCase();
-  const { modelLabel, autoLabel } = props;
+  const { modelLabel, autoLabel, favoriteModelIds = emptyFavorites } = props;
   const unavailableLabel = ru ? "Модель недоступна" : "Model unavailable";
   const selectedLabel = props.isSelectionUnavailable
     ? unavailableLabel
@@ -122,7 +126,7 @@ export function ModelPicker<TEffort extends string>(
         ) {
           return false;
         }
-        if (!props.favoriteModelIds.includes(canonicalId)) return true;
+        if (!favoriteModelIds.includes(canonicalId)) return true;
         const favorites = models.get(canonicalId) ?? [];
         if (!favorites.some(({ id }) => id === model.id)) {
           models.set(canonicalId, [...favorites, model]);
@@ -131,10 +135,10 @@ export function ModelPicker<TEffort extends string>(
       }),
     }));
     return {
-      favorites: props.favoriteModelIds.flatMap((id) => models.get(id) ?? []),
+      favorites: favoriteModelIds.flatMap((id) => models.get(id) ?? []),
       groups: matchingGroups.filter(({ models }) => models.length),
     };
-  }, [props.favoriteModelIds, props.modelGroups, query]);
+  }, [favoriteModelIds, props.modelGroups, query]);
 
   const changeOpen = useCallback((value: boolean) => {
     setOpen(value);
@@ -152,7 +156,7 @@ export function ModelPicker<TEffort extends string>(
   const toggleFavorite = useCallback(
     (id: string) => {
       searchRef.current?.focus();
-      props.onFavoriteToggle(id);
+      props.onFavoriteToggle?.(id);
     },
     [props.onFavoriteToggle],
   );
@@ -179,7 +183,7 @@ export function ModelPicker<TEffort extends string>(
 
   function renderModel(model: IModelPickerOption) {
     const favoriteId = model.canonicalId ?? model.id;
-    const isFavorite = props.favoriteModelIds.includes(favoriteId);
+    const isFavorite = favoriteModelIds.includes(favoriteId);
     const modelName =
       props.showModelDescription && model.description
         ? `${model.name} (${model.description})`
@@ -213,7 +217,7 @@ export function ModelPicker<TEffort extends string>(
         favoriteAction={favoriteAction}
         isUpdatingFavorites={props.isUpdatingFavorites}
         onSelect={selectModel}
-        onFavoriteToggle={toggleFavorite}
+        onFavoriteToggle={props.onFavoriteToggle ? toggleFavorite : undefined}
       />
     );
   }
@@ -229,9 +233,16 @@ export function ModelPicker<TEffort extends string>(
             type="button"
             variant="ghost"
             size="sm"
-            className="h-9 w-auto max-w-44 gap-1.5 px-2 text-xs text-muted-foreground hover:bg-muted hover:text-foreground"
+            disabled={props.disabled}
+            id={props.id}
+            className={cn(
+              "h-9 w-auto max-w-44 gap-1.5 px-2 text-xs text-muted-foreground hover:bg-muted hover:text-foreground",
+              props.modelTriggerClassName,
+            )}
             aria-label={modelLabel}
-            aria-describedby={modelLabelId}
+            aria-describedby={[modelLabelId, props["aria-describedby"]]
+              .filter(Boolean)
+              .join(" ")}
           >
             <Bot className="size-4 shrink-0" aria-hidden="true" />
             <span id={modelLabelId} className="truncate">
@@ -331,7 +342,11 @@ export function ModelPicker<TEffort extends string>(
               type="button"
               variant="ghost"
               size="sm"
-              className="h-9 w-auto max-w-36 gap-1.5 px-2 text-xs text-muted-foreground hover:bg-muted hover:text-foreground"
+              disabled={props.disabled}
+              className={cn(
+                "h-9 w-auto max-w-36 gap-1.5 px-2 text-xs text-muted-foreground hover:bg-muted hover:text-foreground",
+                props.reasoningTriggerClassName,
+              )}
               aria-label={props.reasoningControlLabel ?? reasoningLabel}
               aria-describedby={reasoningLabelId}
             >

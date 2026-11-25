@@ -1,23 +1,26 @@
 "use client";
 
+import Link from "next/link";
 import { useRef, useState } from "react";
 import { api } from "@sps/rbac/models/subject/sdk/client";
 import type {
   IOrderArtifact,
   IOrderWorkView,
 } from "@sps/rbac/models/subject/sdk/model";
-import { Button } from "@sps/shared-ui-shadcn";
-import { Select } from "@sps/ui-adapter";
+import { Button, Textarea } from "@sps/shared-ui-shadcn";
 import { api as currencyApi } from "@sps/billing/models/currency/sdk/client";
 import { formatCurrencyAmount } from "@sps/shared-frontend-client-utils";
 
+import type { IOrderFileReview } from "@sps/rbac/models/subject/sdk/model/src/lib/order-work";
+
 interface IProps {
+  prompt?: IOrderFileReview;
   subjectId: string;
   work: IOrderWorkView;
   language: string;
   storeTest?: boolean;
-  selectedVersionId?: string;
-  onVersionSelect?: (id: string) => void;
+  checkoutHref?: string;
+  onReadArtifact?: (id: string) => Promise<Blob>;
 }
 
 export async function downloadOrderArtifact(
@@ -31,6 +34,10 @@ export async function downloadOrderArtifact(
     orderId,
     artifactId,
   });
+  saveOrderArtifact(blob, filename);
+}
+
+function saveOrderArtifact(blob: Blob, filename: string) {
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;
@@ -46,16 +53,34 @@ export async function downloadOrderArtifact(
   setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 
-export function ResultReview({
+export function ResultReview(props: IProps) {
+  return props.onReadArtifact ? (
+    <ResultReviewContent {...props} />
+  ) : (
+    <BuyerResultReview {...props} />
+  );
+}
+
+function BuyerResultReview(props: IProps) {
+  const decision = api.orderWork.decision();
+  return <ResultReviewContent {...props} decision={decision} />;
+}
+
+interface IResultReviewContentProps extends IProps {
+  decision?: ReturnType<typeof api.orderWork.decision>;
+}
+
+function ResultReviewContent({
   subjectId,
   work,
   language,
   storeTest,
-  selectedVersionId,
-  onVersionSelect,
-}: IProps) {
+  checkoutHref,
+  prompt,
+  onReadArtifact,
+  decision,
+}: IResultReviewContentProps) {
   const ru = language === "ru";
-  const [selection, setSelection] = useState("");
   const [reason, setReason] = useState("");
   const [declining, setDeclining] = useState(false);
   const [error, setError] = useState("");
@@ -63,33 +88,36 @@ export function ResultReview({
     undefined,
   );
   const [downloadingId, setDownloadingId] = useState<string | null>(null);
-  const decision = api.orderWork.decision();
-  const availableVersions = work.versions.filter(
-    (version) => !version.invalidatedByCartEdit,
-  );
-  const version =
-    availableVersions.find(
-      ({ id }) =>
-        id ===
-        (work.paidVersionId ??
-          work.acceptedVersionId ??
-          selectedVersionId ??
-          selection),
-    ) ?? availableVersions.at(-1);
+  const settledId = work.paidFileId ?? work.acceptedFileId;
+  const file = settledId
+    ? work.files?.find((entry) => entry.id === settledId)
+    : work.files?.at(-1);
+  const currentFile = file?.invalidatedByCartEdit ? undefined : file;
+  const canCheckout =
+    !onReadArtifact &&
+    checkoutHref &&
+    !storeTest &&
+    work.state === "awaiting-payment" &&
+    !work.paidFileId &&
+    Boolean(work.acceptedFileId && work.acceptedFileId === currentFile?.id);
   const currencies = currencyApi.find({
     params: {
       filters: {
-        and: [{ column: "id", method: "eq", value: version?.currencyId ?? "" }],
+        and: [
+          { column: "id", method: "eq", value: currentFile?.currencyId ?? "" },
+        ],
       },
     },
-    reactQueryOptions: { enabled: Boolean(version?.currencyId) },
+    reactQueryOptions: { enabled: Boolean(currentFile?.currencyId) },
   });
   const currency = currencies.data?.[0];
-  const versionLabel = (number: number) =>
-    ru ? `Версия ${number}` : `Version ${number}`;
-  const choosing = work.state === "awaiting-result" && !work.acceptedVersionId;
+  const choosing =
+    !onReadArtifact &&
+    work.state === "awaiting-result" &&
+    !work.acceptedFileId &&
+    !currentFile?.changesRequested;
   const shippingStatus =
-    !storeTest && work.versions.length === 0
+    !storeTest && !work.paidFileId && (work.files?.length ?? 0) === 0
       ? {
           "awaiting-payment": ru ? "Ожидает оплаты" : "Awaiting payment",
           paid: ru ? "Оплачен" : "Paid",
@@ -97,6 +125,7 @@ export function ResultReview({
           "in-transit": ru ? "В пути" : "In transit",
           delivered: ru ? "Вручён" : "Delivered",
           "awaiting-result": undefined,
+          canceled: undefined,
         }[work.state]
       : undefined;
 
@@ -104,12 +133,17 @@ export function ResultReview({
     setError("");
     setDownloadingId(artifact.id);
     try {
-      await downloadOrderArtifact(
-        subjectId,
-        work.orderId,
-        artifact.id,
-        filename,
-      );
+      if (onReadArtifact) {
+        const blob = await onReadArtifact(artifact.id);
+        saveOrderArtifact(blob, filename);
+      } else {
+        await downloadOrderArtifact(
+          subjectId,
+          work.orderId,
+          artifact.id,
+          filename,
+        );
+      }
     } catch {
       setError(ru ? "Не удалось открыть файл." : "Could not open the file.");
     } finally {
@@ -118,15 +152,15 @@ export function ResultReview({
   }
 
   async function choose(operation: "accept" | "decline") {
-    if (!choosing || !version || decision.isPending) return;
-    const signature = `${operation}:${version.id}:${reason.trim()}`;
+    if (!choosing || !currentFile || !decision || decision.isPending) return;
+    const signature = `${operation}:${currentFile.id}:${reason.trim()}`;
     if (intent.current?.signature !== signature) {
       intent.current = { signature, key: crypto.randomUUID() };
     }
     const input = {
       storeId: work.storeId,
       taskId: work.taskId,
-      resultVersionId: version.id,
+      fileId: currentFile.id,
       operationKey: intent.current.key,
     };
     setError("");
@@ -139,6 +173,8 @@ export function ResultReview({
             ? { ...input, operation }
             : { ...input, operation, reason: reason.trim() },
       });
+      if (operation === "accept" && !storeTest && checkoutHref)
+        window.location.assign(checkoutHref);
       setDeclining(false);
       intent.current = undefined;
     } catch (cause) {
@@ -152,81 +188,82 @@ export function ResultReview({
     }
   }
 
+  if (prompt && (!choosing || prompt.fileId !== currentFile?.id)) return null;
   return (
     <section
-      className="grid gap-3 rounded-xl border border-border bg-card p-4"
+      className={
+        prompt
+          ? "mt-2 grid gap-2"
+          : "grid gap-3 rounded-xl border border-border bg-card p-4"
+      }
       aria-label={ru ? "Результат работы" : "Order result"}
     >
-      {choosing && version && (
+      {currentFile && !work.acceptedFileId && (
         <>
-          <label className="grid gap-1 text-sm font-medium">
-            {ru ? "Версия результата" : "Result version"}
-            <Select
-              ui="shadcn"
-              aria-label={ru ? "Версия результата" : "Result version"}
-              value={version.id}
-              onValueChange={onVersionSelect ?? setSelection}
-              className="min-h-11 w-full"
-              options={availableVersions.map(({ id, number }) => ({
-                value: id,
-                label: versionLabel(number),
-              }))}
-            />
-          </label>
-          <Button
-            type="button"
-            variant="outline"
-            className="min-h-11 justify-self-start"
-            disabled={downloadingId !== null}
-            onClick={() =>
-              void download(version.preview, `preview-${version.number}`)
-            }
-          >
-            {ru ? "Скачать превью" : "Download preview"}
-          </Button>
+          {!prompt && (
+            <Button
+              type="button"
+              variant="outline"
+              className="min-h-11 justify-self-start"
+              disabled={downloadingId !== null}
+              onClick={() =>
+                void download(currentFile.preview, `preview-${currentFile.id}`)
+              }
+            >
+              {ru ? "Скачать превью" : "Download preview"}
+            </Button>
+          )}
           {currency ? (
             <p className="text-sm">
-              {ru ? "Цена этой версии" : "Price for this version"} ·{" "}
-              {formatCurrencyAmount(version.price, language)}{" "}
+              {ru ? "Цена" : "Price"} ·{" "}
+              {formatCurrencyAmount(currentFile.price, language)}{" "}
               {currency.symbol || currency.title}
             </p>
           ) : (
             <p role="status" className="text-sm text-muted-foreground">
               {currencies.isPending
                 ? ru
-                  ? "Загружаем цену версии…"
-                  : "Loading the version price…"
+                  ? "Загружаем цену…"
+                  : "Loading the price…"
                 : ru
                   ? "Не удалось загрузить валюту цены."
                   : "The price currency could not be loaded."}
             </p>
           )}
-          <div className="flex flex-wrap gap-2">
-            <Button
-              type="button"
-              variant="primary"
-              className="min-h-11"
-              disabled={decision.isPending || !currency}
-              onClick={() => void choose("accept")}
-            >
-              {ru
-                ? `Принять версию ${version.number}`
-                : `Accept version ${version.number}`}
-            </Button>
-            <Button
-              type="button"
-              variant="outline"
-              className="min-h-11"
-              disabled={decision.isPending}
-              onClick={() => setDeclining((open) => !open)}
-            >
-              {ru ? "Отказаться" : "Decline"}
-            </Button>
-          </div>
-          {declining && (
+          {choosing && (
+            <div className="flex flex-wrap gap-2">
+              <Button
+                type="button"
+                variant="primary"
+                className="min-h-11"
+                disabled={decision?.isPending || !currency}
+                onClick={() => void choose("accept")}
+              >
+                {prompt?.acceptText ??
+                  (ru
+                    ? checkoutHref && !storeTest
+                      ? "Принять файл и перейти к оплате"
+                      : "Принять файл"
+                    : checkoutHref && !storeTest
+                      ? "Accept file and continue to payment"
+                      : "Accept file")}
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                className="min-h-11"
+                disabled={decision?.isPending}
+                onClick={() => setDeclining((open) => !open)}
+              >
+                {prompt?.declineText ??
+                  (ru ? "Запросить правки" : "Request changes")}
+              </Button>
+            </div>
+          )}
+          {choosing && declining && (
             <label className="grid gap-2 text-sm font-medium">
-              {ru ? "Причина отказа" : "Reason for declining"}
-              <textarea
+              {ru ? "Что нужно исправить?" : "What should change?"}
+              <Textarea
                 value={reason}
                 maxLength={4000}
                 rows={2}
@@ -237,34 +274,65 @@ export function ResultReview({
                 type="button"
                 variant="outline"
                 className="min-h-11 justify-self-start"
-                disabled={!reason.trim() || decision.isPending}
+                disabled={!reason.trim() || decision?.isPending}
                 onClick={() => void choose("decline")}
               >
-                {ru ? "Подтвердить отказ" : "Confirm decline"}
+                {ru ? "Отправить правки" : "Send feedback"}
               </Button>
             </label>
           )}
         </>
       )}
-      {work.state === "awaiting-result" && !version && (
+      {!onReadArtifact && work.state === "awaiting-result" && !currentFile && (
         <p role="status" className="text-sm text-muted-foreground">
           {storeTest
             ? ru
               ? "Здесь появится результат теста."
               : "The test result will appear here."
             : ru
-              ? "Цена появится вместе с превью. Оплата откроется после принятия версии."
-              : "The preview includes its price. You can pay after accepting a version."}
+              ? "Превью и цена появятся, когда файл будет готов."
+              : "The preview and price will appear when the file is ready."}
         </p>
       )}
-      {work.acceptedVersionId && version && (
+      {currentFile?.changesRequested && !work.acceptedFileId && (
+        <p role="status">{ru ? "Правки запрошены." : "Changes requested."}</p>
+      )}
+      {work.state === "canceled" && (
+        <p role="status">{ru ? "Заказ отменён." : "Order canceled."}</p>
+      )}
+      {work.paidFileId && work.state !== "canceled" && (
         <p role="status" className="text-sm font-medium">
-          {ru
-            ? `Принята версия ${version.number}`
-            : `Version ${version.number} accepted`}
-          {" · "}
-          {formatCurrencyAmount(version.price, language)} {currency?.symbol}
+          {work.deliveryStatus === "pending"
+            ? ru
+              ? "Оплата подтверждена. Ожидаем файл от исполнителя."
+              : "Payment confirmed. Waiting for the file from the assigned employee."
+            : ru
+              ? "Оплачено"
+              : "Paid"}
         </p>
+      )}
+      {!onReadArtifact &&
+        work.state !== "canceled" &&
+        !work.paidFileId &&
+        work.acceptedFileId &&
+        currentFile && (
+          <p role="status" className="text-sm font-medium">
+            {ru ? "Файл принят" : "File accepted"}
+            {" · "}
+            {formatCurrencyAmount(currentFile.price, language)}{" "}
+            {currency?.symbol}
+          </p>
+        )}
+      {canCheckout && (
+        <Button
+          asChild
+          variant="primary"
+          className="min-h-11 justify-self-start"
+        >
+          <Link href={checkoutHref}>
+            {ru ? "Перейти к оплате" : "Continue to payment"}
+          </Link>
+        </Button>
       )}
       {shippingStatus && (
         <p role="status" className="text-sm font-medium">
@@ -320,12 +388,7 @@ export function ResultReview({
           variant="outline"
           className="min-h-11 justify-self-start"
           disabled={downloadingId !== null}
-          onClick={() =>
-            void download(
-              work.result!,
-              `order-${work.orderId}-v${version?.number}`,
-            )
-          }
+          onClick={() => void download(work.result!, `order-${work.orderId}`)}
         >
           {ru ? "Скачать оригинал" : "Download original"}
         </Button>

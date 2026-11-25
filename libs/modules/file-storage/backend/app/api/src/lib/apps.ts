@@ -7,7 +7,6 @@ import {
   type IAppAssembly,
   type IModuleAppEntry,
 } from "@sps/shared-backend-api";
-import { serviceBootstrap as PrivateFileApp } from "@sps/file-storage/models/private-file/backend/app/api/src/lib/bootstrap";
 
 export class Apps {
   apps: IModuleAppEntry[] = [];
@@ -31,11 +30,6 @@ export class Apps {
       type: "relation",
       route: "/widgets-to-files",
       app: createModuleChildApp(widgetsToFiles, this.assembly),
-    });
-    this.apps.push({
-      type: "model",
-      route: "/private-files",
-      app: createModuleChildApp(PrivateFileApp, this.assembly),
     });
   }
 }

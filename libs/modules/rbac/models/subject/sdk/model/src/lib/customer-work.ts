@@ -2,7 +2,10 @@ import type { IModel as IEcommerceModuleProduct } from "@sps/ecommerce/models/pr
 import type { IModel as ISocialModuleThread } from "@sps/social/models/thread/sdk/model";
 import { z } from "zod";
 import { ecommerceOrderCreateSchema } from "./ecommerce-product-purchase";
-import type { TStageWorkCapability } from "@sps/crm/models/funnel/sdk/model";
+import type {
+  TCoverAttachmentRole,
+  TStageWorkCapability,
+} from "@sps/crm/models/funnel/sdk/model";
 import type { IProviderTerms, IProviderType } from "./provider-connections";
 import { ECOMMERCE_ORDER_LINE_QUANTITY_BOUNDS } from "@sps/shared-utils";
 
@@ -28,7 +31,30 @@ const offerScopeSchema = scopeSchema.extend({
 });
 
 export const customerWorkCommandSchema = z.discriminatedUnion("operation", [
+  scopeSchema
+    .extend({
+      operation: z.literal("chat-checkout"),
+      taskId: z.uuid(),
+      input: z.discriminatedUnion("kind", [
+        z.object({ kind: z.literal("begin") }).strict(),
+        z
+          .object({
+            kind: z.literal("button"),
+            messageId: z.uuid(),
+            value: z.string().min(1).max(64),
+          })
+          .strict(),
+      ]),
+    })
+    .strict(),
   offerScopeSchema.extend({ operation: z.literal("ask") }).strict(),
+  scopeSchema
+    .extend({
+      operation: z.literal("enter-order-discussion"),
+      orderId: z.uuid(),
+      taskId: z.uuid(),
+    })
+    .strict(),
   offerScopeSchema
     .extend({
       operation: z.literal("open-cart-discussion"),
@@ -75,7 +101,8 @@ export const customerWorkCommandSchema = z.discriminatedUnion("operation", [
       maximum: z
         .string()
         .regex(/^(?:0|[1-9][0-9]{0,17})(?:\.[0-9]{1,12})?$/)
-        .refine((value) => /[1-9]/.test(value)),
+        .refine((value) => /[1-9]/.test(value))
+        .optional(),
       priceKey: z.string().regex(/^[a-f0-9]{64}$/),
     })
     .strict(),
@@ -197,6 +224,7 @@ export interface ICustomerWorkOrderSummary {
 }
 
 export interface ICustomerWorkView {
+  checkoutUrl?: string;
   storeId: string;
   taskId: string;
   chatId: string;
@@ -208,12 +236,21 @@ export interface ICustomerWorkView {
   productTitle?: IEcommerceModuleProduct["title"];
   consultationTaskId?: string;
   operator?: string;
-  workflow?: { title: string; stageTitle: string };
+  canRequestManager: boolean;
+  awaitingManager?: boolean;
+  workflow?: {
+    title: string;
+    stageTitle: string;
+    checkoutPromptId?: string;
+    orderStep?:
+      "review" | "ecommerce-module-order-payment" | "order-file-delivery";
+  };
   assignment: "assistant" | "manager" | "unassigned";
   status: "active" | "waiting" | "closed";
-  storeTest?: { storeSlug: string; funnelId: string; version: number };
+  storeTest?: { storeSlug: string; funnelId: string; funnelSlug: string };
   customerPays: boolean;
   requiredMaximum?: string;
+  rateApproved?: boolean;
   fundingCurrency?: string;
   price?: ICustomerWorkPrice;
   approvedMaximum?: string;
@@ -233,6 +270,7 @@ export interface IPendingCustomerWork {
   assigneeId: string;
   assignmentRevision: number;
   capability: "text";
+  purpose?: "stage-check";
 }
 
 export interface ICustomerWorkRun extends Omit<
@@ -251,6 +289,7 @@ export interface ICustomerWorkRunAttachment {
   name: string;
   digest: string;
   mimeType: string;
+  coverRole?: TCoverAttachmentRole;
 }
 
 export function customerWorkAttachmentPath(
@@ -263,10 +302,12 @@ export function customerWorkAttachmentPath(
 }
 
 export interface ICustomerWorkReply extends ICustomerWorkRun {
-  resultVersionId?: string;
+  releaseOrderFile?: { paymentId: string; fileId: string };
+  orderResultFileId?: string;
   attemptId: string;
   text: string;
   sourceVersions?: ICustomerWorkSourceVersion[];
   cartSelection?: ICustomerWorkCartSelection;
   imageDraftDigest?: string | null;
+  coverGenerationDigest?: string;
 }

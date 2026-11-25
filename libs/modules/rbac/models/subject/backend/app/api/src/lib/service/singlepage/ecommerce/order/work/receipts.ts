@@ -109,19 +109,8 @@ export class LegacyReceipts {
     const location = oldLocations.values().next().value ?? file.file;
     const [privateFileId] = privateIds;
     const copy = privateFileId
-      ? await this.files.privateFile.findById({ id: privateFileId })
-      : (
-          await this.files.privateFile.find({
-            params: {
-              filters: {
-                and: [
-                  { column: "legacyOriginId", method: "eq", value: fileId },
-                ],
-              },
-              limit: 1,
-            },
-          })
-        )[0];
+      ? await this.files.file.privateContent.findById({ id: privateFileId })
+      : await this.files.file.privateContent.findByLegacyOrigin(fileId);
     const bytes =
       copy?.bytes ??
       (await this.files.file.readBytes(
@@ -157,7 +146,7 @@ export class LegacyReceipts {
       }
       const copy =
         state.copy ??
-        (await this.files.privateFile.write({
+        (await this.files.file.privateContent.write({
           name: `receipt-${state.purchase?.orderId ?? fileId}.${state.file.extension ?? "png"}`,
           mimeType: state.mimeType,
           bytes: state.bytes,

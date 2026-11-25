@@ -1343,6 +1343,109 @@ paths:
               schema:
                 $ref: "rbac-subject.yaml"
 
+  /rbac/subjects/{id}/social-module/profiles/{socialModuleProfileId}/knowledge/sources/personal:
+    parameters:
+      - $ref: "../../../../../../../../../libs/shared/backend/api/src/lib/query-builder/id.yaml"
+      - &personalKnowledgeProfileId
+        name: socialModuleProfileId
+        in: path
+        required: true
+        schema: { type: string, format: uuid }
+    get:
+      tags: [rbac-subject]
+      summary: List the signed-in owner's personal knowledge
+      security: [{ bearerAuth: [] }]
+      responses:
+        "200":
+          description: Linked documents and personal notes with their editing permissions
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items: &personalKnowledgeDocument
+                      type: object
+                      required: [id, title, content, contentHash, editable]
+                      properties:
+                        id: { type: string, format: uuid }
+                        title: { type: string }
+                        content: { type: string }
+                        contentHash: { type: string }
+                        editable: { type: boolean }
+    post:
+      tags: [rbac-subject]
+      summary: Add a private note to the owner's human profile
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [data]
+              properties:
+                data:
+                  type: object
+                  additionalProperties: false
+                  required: [operationKey, title, content]
+                  properties:
+                    operationKey: { type: string, format: uuid }
+                    title: { type: string, minLength: 1 }
+                    content: { type: string, minLength: 1 }
+                    orderIndex: { type: integer, minimum: 0 }
+      responses:
+        "200": &personalKnowledgeSaved
+          description: Saved and indexed source
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data: *personalKnowledgeDocument
+        "503": { description: Source indexing is temporarily unavailable }
+        "409": { description: This operation key belongs to another note }
+
+  /rbac/subjects/{id}/social-module/profiles/{socialModuleProfileId}/knowledge/sources/personal/{knowledgeModuleSourceId}:
+    parameters:
+      - $ref: "../../../../../../../../../libs/shared/backend/api/src/lib/query-builder/id.yaml"
+      - *personalKnowledgeProfileId
+      - name: knowledgeModuleSourceId
+        in: path
+        required: true
+        schema: { type: string, format: uuid }
+    patch:
+      tags: [rbac-subject]
+      summary: Edit an owned note and reindex its updated text
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [data]
+              properties:
+                data:
+                  type: object
+                  additionalProperties: false
+                  required: [title, content, expectedContentHash, expectedTitle]
+                  properties:
+                    title: { type: string, minLength: 1 }
+                    content: { type: string, minLength: 1 }
+                    expectedContentHash:
+                      { type: string, pattern: "^[a-f0-9]{64}$" }
+                    expectedTitle: { type: string }
+      responses:
+        "200": *personalKnowledgeSaved
+        "503": { description: Source indexing is temporarily unavailable }
+        "404": { description: Source unavailable for editing }
+        "409":
+          {
+            description: Source title or text has changed since the supplied revision,
+          }
+
   /rbac/subjects/{id}/social-module/profiles/{socialModuleProfileId}/chats:
     get:
       tags:
@@ -1456,6 +1559,66 @@ paths:
               schema:
                 $ref: "../../../../../../../../../libs/modules/social/models/chat/sdk/model/src/lib/social-chat.yaml"
 
+  /rbac/subjects/{id}/social-module/profiles/{socialModuleProfileId}/chats/{socialModuleChatId}/cover:
+    get:
+      tags: [rbac-subject]
+      summary: Read the current chat cover as a member
+      parameters:
+        - $ref: "../../../../../../../../../libs/shared/backend/api/src/lib/query-builder/id.yaml"
+        - {
+            name: socialModuleProfileId,
+            in: path,
+            required: true,
+            schema: { type: string, format: uuid },
+          }
+        - {
+            name: socialModuleChatId,
+            in: path,
+            required: true,
+            schema: { type: string, format: uuid },
+          }
+      responses:
+        "200":
+          description: Private chat cover
+          content:
+            image/png: { schema: { type: string, format: binary } }
+            image/jpeg: { schema: { type: string, format: binary } }
+            image/webp: { schema: { type: string, format: binary } }
+        "404": { description: Chat has no cover }
+
+  /rbac/subjects/{id}/social-module/chats/{socialModuleChatId}:
+    patch:
+      tags: [rbac-subject]
+      summary: Update chat settings
+      parameters:
+        - $ref: "../../../../../../../../../libs/shared/backend/api/src/lib/query-builder/id.yaml"
+        - {
+            name: socialModuleChatId,
+            in: path,
+            required: true,
+            schema: { type: string, format: uuid },
+          }
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [data]
+              properties:
+                data:
+                  type: string
+                  description: JSON object containing localized title and description, or removeCover set to true. Pass an empty object to upload only a cover.
+                coverFile:
+                  {
+                    type: string,
+                    format: binary,
+                    description: "PNG, JPEG or WebP up to 2 MB",
+                  }
+      responses:
+        "200": { description: Updated chat and current coverFileId }
+        "403": { description: Chat settings cannot be edited by this subject }
+
   /rbac/subjects/{id}/social-module/chats/{socialModuleChatId}/threads:
     get:
       tags:
@@ -1464,6 +1627,10 @@ paths:
       description: Retrieve threads for a chat
       parameters:
         - $ref: "../../../../../../../../../libs/shared/backend/api/src/lib/query-builder/id.yaml"
+        - name: threadId
+          in: query
+          description: Return only this thread if it belongs to the chat.
+          schema: { type: string, format: uuid }
         - name: socialModuleChatId
           in: path
           required: true
@@ -1513,6 +1680,57 @@ paths:
               schema:
                 $ref: "../../../../../../../../../libs/modules/social/models/thread/sdk/model/src/lib/social-thread.yaml"
 
+  /rbac/subjects/{id}/social-module/profiles/{socialModuleProfileId}/chats/{socialModuleChatId}/threads/{socialModuleThreadId}/typing:
+    post:
+      tags:
+        - "rbac-subject"
+      summary: Update typing status in a thread
+      description: Start, renew or stop the acting profile’s typing indicator for this browser session.
+      parameters:
+        - $ref: "../../../../../../../../../libs/shared/backend/api/src/lib/query-builder/id.yaml"
+        - name: socialModuleProfileId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: socialModuleChatId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: socialModuleThreadId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                data:
+                  type: string
+                  description: JSON object containing a UUID sessionId and a boolean active
+              required:
+                - data
+      responses:
+        "200":
+          description: The accepted typing state for this session
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      active:
+                        type: boolean
   /rbac/subjects/{id}/social-module/chats/{socialModuleChatId}/threads/{socialModuleThreadId}/read:
     post:
       tags:
@@ -1606,7 +1824,7 @@ paths:
       tags:
         - "rbac-subject"
       summary: List thread messages
-      description: Retrieve messages for a profile chat thread
+      description: Retrieve messages or the attachment directory for a thread the profile can access.
       parameters:
         - $ref: "../../../../../../../../../libs/shared/backend/api/src/lib/query-builder/id.yaml"
         - name: socialModuleProfileId
@@ -1627,15 +1845,63 @@ paths:
           schema:
             type: string
             format: uuid
+        - name: populate
+          in: query
+          description: Use attachment-index to list files from all messages in this thread.
+          schema:
+            type: string
+            enum: [attachment-index]
+        - name: attachmentMessageId
+          in: query
+          description: Return the message that owns a file when loading its preview.
+          schema:
+            type: string
+            format: uuid
       responses:
         "200":
-          description: List of thread messages
+          description: Thread messages, or attachment descriptors grouped by message when populate is attachment-index.
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: "../../../../../../../../../libs/modules/social/models/message/sdk/model/src/lib/social-message.yaml"
+                type: object
+                required: [data]
+                properties:
+                  data:
+                    type: array
+                    items:
+                      anyOf:
+                        - $ref: "../../../../../../../../../libs/modules/social/models/message/sdk/model/src/lib/social-message.yaml"
+                        - type: object
+                          required:
+                            [
+                              id,
+                              variant,
+                              publicAttachmentRefs,
+                              privateAttachments,
+                            ]
+                          properties:
+                            id:
+                              type: string
+                              format: uuid
+                            variant:
+                              type: string
+                            publicAttachmentRefs:
+                              type: array
+                              items:
+                                type: object
+                                required: [id, name]
+                                properties:
+                                  id: { type: string, format: uuid }
+                                  name: { type: string }
+                            privateAttachments:
+                              type: array
+                              items:
+                                type: object
+                                required: [id, name]
+                                properties:
+                                  id: { type: string, format: uuid }
+                                  name: { type: string }
+                                  mimeType: { type: string }
     post:
       tags:
         - "rbac-subject"
@@ -2279,13 +2545,29 @@ paths:
                 $ref: "../../../../../../../../../libs/modules/billing/models/payment-intent/sdk/model/src/lib/billing-payment-intent.yaml"
   /rbac/subjects/{id}/stores/{storeId}/provider-connections:
     parameters:
-      - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
-      - { name: storeId, in: path, required: true, schema: { type: string, format: uuid } }
+      - {
+          name: id,
+          in: path,
+          required: true,
+          schema: { type: string, format: uuid },
+        }
+      - {
+          name: storeId,
+          in: path,
+          required: true,
+          schema: { type: string, format: uuid },
+        }
     get:
       tags: [rbac-subject]
       summary: Read a store owner's connections, assistants and wallet receipts
       parameters:
-        - { name: before, in: query, required: false, schema: { type: string, format: uuid }, description: Return receipts older than the last ID on the previous page }
+        - {
+            name: before,
+            in: query,
+            required: false,
+            schema: { type: string, format: uuid },
+            description: Return receipts older than the last ID on the previous page,
+          }
       responses:
         "200": { description: Private owner-scoped metadata and charges }
         "403": { description: Store ownership required }
@@ -2305,7 +2587,20 @@ paths:
                   type: object
                   required: [operation, storeId]
                   properties:
-                    operation: { type: string, enum: [connect, rotate, revoke, assign, assign-default, fund, reconcile] }
+                    operation:
+                      {
+                        type: string,
+                        enum:
+                          [
+                            connect,
+                            rotate,
+                            revoke,
+                            assign,
+                            assign-default,
+                            fund,
+                            reconcile,
+                          ],
+                      }
                     storeId: { type: string, format: uuid }
                     secret: { type: string, writeOnly: true }
       responses:
@@ -2313,8 +2608,18 @@ paths:
         "409": { description: Stale version or incompatible financial state }
   /rbac/subjects/{id}/stores/{storeId}/customer-work:
     parameters:
-      - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
-      - { name: storeId, in: path, required: true, schema: { type: string, format: uuid } }
+      - {
+          name: id,
+          in: path,
+          required: true,
+          schema: { type: string, format: uuid },
+        }
+      - {
+          name: storeId,
+          in: path,
+          required: true,
+          schema: { type: string, format: uuid },
+        }
     get:
       tags: [rbac-subject]
       summary: Read the buyer's scoped task or available workflows for an offer
@@ -2323,65 +2628,415 @@ paths:
     post:
       tags: [rbac-subject]
       summary: Start a conversation, send a message or update task consent and customer memory
-      description: The open-cart-discussion operation attaches a task and thread to an existing order using orderId, productId, offerId, storeId and operationKey.
+      description: The open-cart-discussion operation attaches a task and thread to an existing order using orderId, productId, offerId, storeId and operationKey. The enter-order-discussion operation opens an existing task and thread using the order, task and store IDs.
       responses:
         "200": { description: Updated task and thread }
         "409": { description: Operation key conflicts with an earlier request }
   /rbac/subjects/{id}/customer-work/threads/{threadId}:
     parameters:
-      - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
-      - { name: threadId, in: path, required: true, schema: { type: string, format: uuid } }
+      - {
+          name: id,
+          in: path,
+          required: true,
+          schema: { type: string, format: uuid },
+        }
+      - {
+          name: threadId,
+          in: path,
+          required: true,
+          schema: { type: string, format: uuid },
+        }
     get:
       tags: [rbac-subject]
       summary: Read the task conversation available to the signed-in buyer
       responses:
-        "200": { description: "Task, published funnel and current stage names, and current assignment" }
+        "200":
+          {
+            description: "Task, current funnel and stage names, and current assignment",
+          }
   /rbac/subjects/{id}/customer-work/threads/{threadId}/messages/{messageId}/attachments/{attachmentId}:
     parameters:
-      - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
-      - { name: threadId, in: path, required: true, schema: { type: string, format: uuid } }
-      - { name: messageId, in: path, required: true, schema: { type: string, format: uuid } }
-      - { name: attachmentId, in: path, required: true, schema: { type: string, format: uuid } }
+      - {
+          name: id,
+          in: path,
+          required: true,
+          schema: { type: string, format: uuid },
+        }
+      - {
+          name: threadId,
+          in: path,
+          required: true,
+          schema: { type: string, format: uuid },
+        }
+      - {
+          name: messageId,
+          in: path,
+          required: true,
+          schema: { type: string, format: uuid },
+        }
+      - {
+          name: attachmentId,
+          in: path,
+          required: true,
+          schema: { type: string, format: uuid },
+        }
     get:
       tags: [rbac-subject]
-      summary: Download a private attachment from the buyer's thread
+      summary: Download a private attachment from a buyer or employee training thread
       responses:
         "200":
           description: Opaque attachment
           content:
             application/octet-stream:
               schema: { type: string, format: binary }
-        "404": { description: Attachment is outside the requested buyer or message scope }
+        "404":
+          {
+            description: Attachment is outside the authorized thread or message scope,
+          }
     head:
       tags: [rbac-subject]
       summary: Read the private attachment download headers
       responses:
         "200": { description: Attachment headers }
-        "404": { description: Attachment is outside the requested buyer or message scope }
+        "404":
+          {
+            description: Attachment is outside the requested buyer or message scope,
+          }
   /rbac/subjects/{id}/crm-module/workspace/stores:
     parameters:
-      - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+      - {
+          name: id,
+          in: path,
+          required: true,
+          schema: { type: string, format: uuid },
+        }
+      - {
+          name: storeSlug,
+          in: query,
+          required: false,
+          schema: { type: string, minLength: 1 },
+        }
+      - { name: tasks, in: query, required: false, schema: { type: boolean } }
     get:
       tags: [rbac-subject]
       summary: List stores managed by the signed-in subject
       responses:
-        "200": { description: Scoped result }
+        "200":
+          {
+            description: Accessible stores or the result of an exact slug lookup,
+          }
         "401": { description: A signed-in subject is required }
+        "422": { description: The store slug is empty }
   /rbac/subjects/{id}/crm-module/workspace/options:
     parameters:
-      - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
-      - { name: storeId, in: query, required: true, schema: { type: string, format: uuid } }
+      - {
+          name: id,
+          in: path,
+          required: true,
+          schema: { type: string, format: uuid },
+        }
+      - {
+          name: storeId,
+          in: query,
+          required: true,
+          schema: { type: string, format: uuid },
+        }
+      - {
+          name: view,
+          in: query,
+          schema: { type: string, enum: [editor, products] },
+          description: The editor view loads participants and currencies. The products view searches eligible products in this store.,
+        }
+      - {
+          name: search,
+          in: query,
+          schema: { type: string, maxLength: 180 },
+          description: Product name to search for in the products view,
+        }
+      - {
+          name: language,
+          in: query,
+          schema: { type: string, enum: [ru, en], default: ru },
+          description: Preferred language for product names,
+        }
+      - {
+          name: offset,
+          in: query,
+          schema: { type: integer, minimum: 0, default: 0 },
+        }
+      - {
+          name: limit,
+          in: query,
+          schema: { type: integer, minimum: 1, maximum: 100, default: 24 },
+        }
     get:
       tags: [rbac-subject]
-      summary: List participants and currencies for the store
+      summary: Read workspace options or search products for a funnel
       responses:
-        "200": { description: Scoped result }
+        "200":
+          {
+            description: Workspace options or a product page with items and total,
+          }
+        "403": { description: Store CRM access is required }
         "401": { description: A signed-in subject is required }
+  /rbac/subjects/{id}/crm-module/workspace/overview:
+    parameters:
+      - {
+          name: id,
+          in: path,
+          required: true,
+          schema: { type: string, format: uuid },
+        }
+      - {
+          name: storeId,
+          in: query,
+          required: true,
+          schema: { type: string, format: uuid },
+        }
+    get:
+      tags: [rbac-subject]
+      summary: Count products, placed orders and CRM tasks in one managed store
+      responses:
+        "200":
+          description: Store totals visible to the signed-in subject
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data:
+                    type: object
+                    required: [productCount, orderCount, taskCount]
+                    properties:
+                      productCount: { type: integer, minimum: 0 }
+                      orderCount: { type: integer, minimum: 0 }
+                      taskCount: { type: integer, minimum: 0 }
+        "401": { description: A signed-in subject is required }
+        "403": { description: Store CRM access is required }
+  /rbac/subjects/{id}/crm-module/workspace/orders:
+    parameters:
+      - {
+          name: id,
+          in: path,
+          required: true,
+          schema: { type: string, format: uuid },
+        }
+      - {
+          name: storeId,
+          in: query,
+          required: true,
+          schema: { type: string, format: uuid },
+        }
+      - {
+          name: offset,
+          in: query,
+          required: false,
+          schema: { type: integer, minimum: 0 },
+        }
+      - {
+          name: limit,
+          in: query,
+          required: false,
+          schema: { type: integer, minimum: 1, maximum: 100 },
+        }
+      - { name: search, in: query, schema: { type: string } }
+      - {
+          name: customerId,
+          in: query,
+          required: false,
+          schema: { type: string, format: uuid },
+        }
+    get:
+      tags: [rbac-subject]
+      summary: List orders placed at the managed store, newest first
+      responses:
+        "200":
+          {
+            description: "Paginated order IDs, statuses and creation timestamps",
+          }
+        "401": { description: A signed-in subject is required }
+        "403": { description: Store CRM access is required }
+  /rbac/subjects/{id}/crm-module/workspace/order:
+    parameters:
+      - {
+          name: id,
+          in: path,
+          required: true,
+          schema: { type: string, format: uuid },
+        }
+      - {
+          name: storeId,
+          in: query,
+          required: true,
+          schema: { type: string, format: uuid },
+        }
+      - {
+          name: orderId,
+          in: query,
+          required: true,
+          schema: { type: string, format: uuid },
+        }
+    get:
+      tags: [rbac-subject]
+      summary: Read a store order with its customers and linked tasks
+      description: >-
+        Includes the store's line items, quantities, delivery information and attached
+        result files. Managers can open previews and delivered originals.
+        Readers with access to financial data can also see payment intents, invoice
+        statuses, currencies and the confirmed amount paid for this store.
+      responses:
+        "200": { description: Store order details }
+        "401": { description: A signed-in subject is required }
+        "403": { description: Store CRM access is required }
+        "404": { description: Order not found in this store }
+  /rbac/subjects/{id}/crm-module/workspace/customers:
+    parameters:
+      - {
+          name: id,
+          in: path,
+          required: true,
+          schema: { type: string, format: uuid },
+        }
+      - {
+          name: storeId,
+          in: query,
+          required: true,
+          schema: { type: string, format: uuid },
+        }
+      - {
+          name: offset,
+          in: query,
+          required: false,
+          schema: { type: integer, minimum: 0 },
+        }
+      - {
+          name: limit,
+          in: query,
+          required: false,
+          schema: { type: integer, minimum: 1, maximum: 100 },
+        }
+      - { name: search, in: query, schema: { type: string } }
+    get:
+      tags: [rbac-subject]
+      summary: List customers who have placed orders or opened tasks at the store
+      responses:
+        "200":
+          { description: Customer profiles and number of orders in this store }
+        "401": { description: A signed-in subject is required }
+        "403": { description: Store CRM access is required }
+  /rbac/subjects/{id}/crm-module/workspace/customer:
+    parameters:
+      - {
+          name: id,
+          in: path,
+          required: true,
+          schema: { type: string, format: uuid },
+        }
+      - {
+          name: storeId,
+          in: query,
+          required: true,
+          schema: { type: string, format: uuid },
+        }
+      - {
+          name: customerId,
+          in: query,
+          required: true,
+          schema: { type: string, format: uuid },
+        }
+    get:
+      tags: [rbac-subject]
+      summary: Read a customer profile in the managed store
+      responses:
+        "200": { description: Public profile fields and order count }
+        "401": { description: A signed-in subject is required }
+        "403": { description: Store CRM access is required }
+        "404": { description: Customer is outside this store }
+  /rbac/subjects/{id}/crm-module/workspace/employees:
+    parameters:
+      - {
+          name: id,
+          in: path,
+          required: true,
+          schema: { type: string, format: uuid },
+        }
+      - {
+          name: storeId,
+          in: query,
+          required: true,
+          schema: { type: string, format: uuid },
+        }
+      - {
+          name: offset,
+          in: query,
+          required: false,
+          schema: { type: integer, minimum: 0 },
+        }
+      - {
+          name: limit,
+          in: query,
+          required: false,
+          schema: { type: integer, minimum: 1, maximum: 100 },
+        }
+    get:
+      tags: [rbac-subject]
+      summary: List employees of a store
+      responses:
+        "200": { description: Store employees }
+        "401": { description: A signed-in subject is required }
+        "403": { description: Store CRM access is required }
+  /rbac/subjects/{id}/crm-module/workspace/employee:
+    parameters:
+      - {
+          name: id,
+          in: path,
+          required: true,
+          schema: { type: string, format: uuid },
+        }
+      - {
+          name: storeId,
+          in: query,
+          required: true,
+          schema: { type: string, format: uuid },
+        }
+      - {
+          name: subjectId,
+          in: query,
+          required: true,
+          schema: { type: string, format: uuid },
+        }
+    get:
+      tags: [rbac-subject]
+      summary: Read a store employee and the requesting manager's training chat
+      responses:
+        "200":
+          {
+            description: "Store employee profile. When a training chat exists, training.threadId identifies the original conversation and training.threads lists its topics with their IDs and titles.",
+          }
+        "401": { description: A signed-in subject is required }
+        "403": { description: Store CRM access is required }
+        "404": { description: Employee is outside the requested store }
   /rbac/subjects/{id}/crm-module/workspace/funnels:
     parameters:
-      - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
-      - { name: storeId, in: query, required: true, schema: { type: string, format: uuid } }
-      - { name: limit, in: query, required: false, schema: { type: integer, minimum: 1, maximum: 100 } }
+      - {
+          name: id,
+          in: path,
+          required: true,
+          schema: { type: string, format: uuid },
+        }
+      - {
+          name: storeId,
+          in: query,
+          required: true,
+          schema: { type: string, format: uuid },
+        }
+      - {
+          name: limit,
+          in: query,
+          required: false,
+          schema: { type: integer, minimum: 1, maximum: 100 },
+        }
       - { name: cursor, in: query, required: false, schema: { type: string } }
     get:
       tags: [rbac-subject]
@@ -2389,26 +3044,74 @@ paths:
       responses:
         "200": { description: Scoped result }
         "401": { description: A signed-in subject is required }
-  /rbac/subjects/{id}/crm-module/workspace/publications:
+  /rbac/subjects/{id}/crm-module/workspace/funnel:
     parameters:
-      - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
-      - { name: storeId, in: query, required: true, schema: { type: string, format: uuid } }
-      - { name: funnelId, in: query, required: true, schema: { type: string, format: uuid } }
-      - { name: limit, in: query, required: false, schema: { type: integer, minimum: 1, maximum: 100 } }
-      - { name: cursor, in: query, required: false, schema: { type: string } }
+      - {
+          name: id,
+          in: path,
+          required: true,
+          schema: { type: string, format: uuid },
+        }
+      - {
+          name: storeId,
+          in: query,
+          required: true,
+          schema: { type: string, format: uuid },
+        }
+      - {
+          name: funnelSlug,
+          in: query,
+          required: true,
+          schema:
+            {
+              type: string,
+              maxLength: 200,
+              pattern: "^[a-z0-9]+(-[a-z0-9]+)*$",
+            },
+        }
     get:
       tags: [rbac-subject]
-      summary: Read published versions of a funnel
+      summary: Read a store funnel by slug
       responses:
-        "200": { description: Scoped result }
+        "200": { description: Store funnel configuration }
         "401": { description: A signed-in subject is required }
+        "403": { description: Store CRM access is required }
+        "404": { description: The funnel does not exist in the store }
+        "422": { description: The store ID or funnel slug is invalid }
   /rbac/subjects/{id}/crm-module/workspace/tasks:
     parameters:
-      - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
-      - { name: storeId, in: query, required: true, schema: { type: string, format: uuid } }
-      - { name: limit, in: query, required: false, schema: { type: integer, minimum: 1, maximum: 100 } }
+      - {
+          name: id,
+          in: path,
+          required: true,
+          schema: { type: string, format: uuid },
+        }
+      - {
+          name: storeId,
+          in: query,
+          required: true,
+          schema: { type: string, format: uuid },
+        }
+      - {
+          name: limit,
+          in: query,
+          required: false,
+          schema: { type: integer, minimum: 1, maximum: 100 },
+        }
       - { name: cursor, in: query, required: false, schema: { type: string } }
-      - { name: status, in: query, required: false, schema: { type: string, enum: [active, waiting, closed] } }
+      - { name: current, in: query, required: false, schema: { type: boolean } }
+      - {
+          name: includeStageNames,
+          in: query,
+          required: false,
+          schema: { type: boolean },
+        }
+      - {
+          name: status,
+          in: query,
+          required: false,
+          schema: { type: string, enum: [active, waiting, closed] },
+        }
       - { name: stageId, in: query, required: false, schema: { type: string } }
       - { name: search, in: query, required: false, schema: { type: string } }
     get:
@@ -2419,10 +3122,30 @@ paths:
         "401": { description: A signed-in subject is required }
   /rbac/subjects/{id}/crm-module/workspace/detail:
     parameters:
-      - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
-      - { name: storeId, in: query, required: true, schema: { type: string, format: uuid } }
-      - { name: taskId, in: query, required: true, schema: { type: string, format: uuid } }
-      - { name: limit, in: query, required: false, schema: { type: integer, minimum: 1, maximum: 100 } }
+      - {
+          name: id,
+          in: path,
+          required: true,
+          schema: { type: string, format: uuid },
+        }
+      - {
+          name: storeId,
+          in: query,
+          required: true,
+          schema: { type: string, format: uuid },
+        }
+      - {
+          name: taskId,
+          in: query,
+          required: true,
+          schema: { type: string, format: uuid },
+        }
+      - {
+          name: limit,
+          in: query,
+          required: false,
+          schema: { type: integer, minimum: 1, maximum: 100 },
+        }
       - { name: cursor, in: query, required: false, schema: { type: string } }
     get:
       tags: [rbac-subject]
@@ -2430,12 +3153,215 @@ paths:
       responses:
         "200": { description: Scoped result }
         "401": { description: A signed-in subject is required }
-  /rbac/subjects/{id}/crm-module/workspace/command:
+  /rbac/subjects/{id}/crm-module/workspace/intake:
     parameters:
-      - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+      - {
+          name: id,
+          in: path,
+          required: true,
+          schema: { type: string, format: uuid },
+        }
+      - {
+          name: storeId,
+          in: query,
+          required: true,
+          schema: { type: string, format: uuid },
+        }
+    get:
+      tags: [rbac-subject]
+      summary: List eligible store offers for staff intake
+      responses:
+        "200": { description: Eligible store offers }
+        "401": { description: A signed-in subject is required }
+        "403": { description: Store CRM access is required }
+  /rbac/subjects/{id}/crm-module/workspace/thread:
+    parameters:
+      - {
+          name: id,
+          in: path,
+          required: true,
+          schema: { type: string, format: uuid },
+        }
+      - {
+          name: storeId,
+          in: query,
+          required: true,
+          schema: { type: string, format: uuid },
+        }
+      - {
+          name: taskId,
+          in: query,
+          required: true,
+          schema: { type: string, format: uuid },
+        }
+      - {
+          name: chatId,
+          in: query,
+          required: true,
+          schema: { type: string, format: uuid },
+        }
+      - {
+          name: threadId,
+          in: query,
+          required: true,
+          schema: { type: string, format: uuid },
+        }
+    get:
+      tags: [rbac-subject]
+      summary: Read the Social conversation linked to a store task
+      responses:
+        "200":
+          {
+            description: "Messages, actions, participants, and result files in the exact task thread",
+          }
+        "401": { description: A signed-in subject is required }
+        "403": { description: Store CRM access is required }
+        "404": { description: The exact task conversation is unavailable }
     post:
       tags: [rbac-subject]
-      summary: Publish a funnel or update a task as its authorized manager
+      summary: Send a message from the signed-in subject to the task conversation
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [text, operationKey]
+              properties:
+                text: { type: string, maxLength: 8000 }
+                operationKey: { type: string, format: uuid }
+                files:
+                  type: array
+                  items: { type: string, format: binary }
+      responses:
+        "200": { description: Message saved in Social }
+        "401": { description: A signed-in subject is required }
+        "403": { description: The signed-in subject cannot reply }
+        "404": { description: The exact task conversation is unavailable }
+  /rbac/subjects/{id}/crm-module/workspace/attachment:
+    parameters:
+      - {
+          name: id,
+          in: path,
+          required: true,
+          schema: { type: string, format: uuid },
+        }
+      - {
+          name: storeId,
+          in: query,
+          required: true,
+          schema: { type: string, format: uuid },
+        }
+      - {
+          name: taskId,
+          in: query,
+          required: true,
+          schema: { type: string, format: uuid },
+        }
+      - {
+          name: chatId,
+          in: query,
+          required: true,
+          schema: { type: string, format: uuid },
+        }
+      - {
+          name: threadId,
+          in: query,
+          required: true,
+          schema: { type: string, format: uuid },
+        }
+      - {
+          name: messageId,
+          in: query,
+          required: true,
+          schema: { type: string, format: uuid },
+        }
+      - {
+          name: attachmentId,
+          in: query,
+          required: true,
+          schema: { type: string, format: uuid },
+        }
+    get:
+      tags: [rbac-subject]
+      summary: Download a message attachment from the exact task conversation
+      responses:
+        "200": { description: Private attachment }
+        "404": { description: The exact message attachment is unavailable }
+    head:
+      tags: [rbac-subject]
+      summary: Read authorized attachment download headers
+      responses:
+        "200": { description: Private attachment headers }
+        "404": { description: The exact message attachment is unavailable }
+  /rbac/subjects/{id}/crm-module/workspace/artifact:
+    parameters:
+      - {
+          name: id,
+          in: path,
+          required: true,
+          schema: { type: string, format: uuid },
+        }
+      - {
+          name: storeId,
+          in: query,
+          required: true,
+          schema: { type: string, format: uuid },
+        }
+      - {
+          name: taskId,
+          in: query,
+          required: true,
+          schema: { type: string, format: uuid },
+        }
+      - {
+          name: chatId,
+          in: query,
+          required: true,
+          schema: { type: string, format: uuid },
+        }
+      - {
+          name: threadId,
+          in: query,
+          required: true,
+          schema: { type: string, format: uuid },
+        }
+      - {
+          name: artifactId,
+          in: query,
+          required: true,
+          schema: { type: string, format: uuid },
+        }
+    get:
+      tags: [rbac-subject]
+      summary: Download a result preview or delivered original from the exact task conversation
+      responses:
+        "200": { description: Authorized result file }
+        "404": { description: The exact result file is unavailable }
+    head:
+      tags: [rbac-subject]
+      summary: Read authorized result file headers
+      responses:
+        "200": { description: Authorized result file headers }
+        "404": { description: The exact result file is unavailable }
+  /rbac/subjects/{id}/crm-module/workspace/command:
+    parameters:
+      - {
+          name: id,
+          in: path,
+          required: true,
+          schema: { type: string, format: uuid },
+        }
+    post:
+      tags: [rbac-subject]
+      summary: Manage funnels, tasks, and employees for a store
+      description: >-
+        To create a topic in a manager's private employee chat, send create-employee-thread
+        with employee.storeId, employee.subjectId, employee.title (1–120 characters) and a UUID
+        employee.operationKey. Retrying the same request returns the existing chatId and threadId.
+        When opening a task, store managers can include participantIds to invite
+        employees by subject ID. The join-task-chat command opens the existing
+        Social chat for an authorized participant or manager.
       requestBody:
         required: true
         content:
@@ -2448,49 +3374,109 @@ paths:
                   type: object
                   required: [kind]
                   properties:
-                    kind: { type: string, enum: [save, publish, transition, assign, fulfill] }
+                    kind:
+                      {
+                        type: string,
+                        enum:
+                          [
+                            save,
+                            transition,
+                            assign,
+                            create-employee,
+                            open-employee-chat,
+                            create-employee-thread,
+                            fulfill,
+                            start-work,
+                            open-order-work,
+                            join-task-chat,
+                          ],
+                      }
+                    participantIds:
+                      type: array
+                      maxItems: 100
+                      items: { type: string, format: uuid }
       responses:
         "200": { description: Scoped result }
         "401": { description: A signed-in subject is required }
-        "409": { description: The resource changed or the requested action conflicts with its current state }
+        "409":
+          {
+            description: The resource changed or the requested action conflicts with its current state,
+          }
   /rbac/subjects/{id}/ecommerce-module/orders/{orderId}/work:
     parameters:
-      - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
-      - { name: orderId, in: path, required: true, schema: { type: string, format: uuid } }
+      - {
+          name: id,
+          in: path,
+          required: true,
+          schema: { type: string, format: uuid },
+        }
+      - {
+          name: orderId,
+          in: path,
+          required: true,
+          schema: { type: string, format: uuid },
+        }
     get:
       tags: [rbac-subject]
       summary: Read the buyer's order task and available artifacts
       parameters:
-        - { name: storeId, in: query, required: true, schema: { type: string, format: uuid } }
-        - { name: taskId, in: query, required: true, schema: { type: string, format: uuid } }
+        - {
+            name: storeId,
+            in: query,
+            required: true,
+            schema: { type: string, format: uuid },
+          }
+        - {
+            name: taskId,
+            in: query,
+            required: true,
+            schema: { type: string, format: uuid },
+          }
       responses:
         "200": { description: Scoped result }
         "401": { description: A signed-in subject is required }
     post:
       tags: [rbac-subject]
-      summary: Accept a result version or request a revision
+      summary: Accept the current order file or request changes
       requestBody:
         required: true
         content:
           application/json:
             schema:
               type: object
-              required: [operation, storeId, taskId, resultVersionId, operationKey]
+              required: [operation, storeId, taskId, fileId, operationKey]
               properties:
                 storeId: { type: string, format: uuid }
                 taskId: { type: string, format: uuid }
                 operationKey: { type: string }
                 operation: { type: string, enum: [accept, decline] }
-                resultVersionId: { type: string, format: uuid }
-                reason: { type: string, description: Required when declining a version }
+                fileId: { type: string, format: uuid }
+                reason:
+                  {
+                    type: string,
+                    description: Required when requesting changes to a file,
+                  }
       responses:
         "200": { description: Scoped result }
         "401": { description: A signed-in subject is required }
-        "409": { description: The resource changed or the requested action conflicts with its current state }
+        "409":
+          {
+            description: The resource changed or the requested action conflicts with its current state,
+          }
   /rbac/subjects/{id}/ecommerce-module/orders/{orderId}/work/fulfillment:
     parameters:
-      - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
-      - { name: orderId, in: path, required: true, schema: { type: string, format: uuid } }
+      - {
+          name: id,
+          in: path,
+          required: true,
+          schema: { type: string, format: uuid },
+        }
+      - {
+          name: orderId,
+          in: path,
+          required: true,
+          schema: { type: string, format: uuid },
+        }
     post:
       tags: [rbac-subject]
       summary: Record preparation or shipping evidence for the assigned physical order
@@ -2505,18 +3491,41 @@ paths:
                 storeId: { type: string, format: uuid }
                 taskId: { type: string, format: uuid }
                 operationKey: { type: string }
-                stage: { type: string, enum: [preparing, in-transit, delivered] }
+                stage:
+                  { type: string, enum: [preparing, in-transit, delivered] }
                 trackingNumber: { type: string }
                 carrierEvidenceId: { type: string }
       responses:
         "200": { description: Scoped result }
         "401": { description: A signed-in subject is required }
-        "409": { description: The resource changed or the requested action conflicts with its current state }
+        "409":
+          {
+            description: The resource changed or the requested action conflicts with its current state,
+          }
   /rbac/subjects/{id}/ecommerce-module/orders/{orderId}/work/artifacts/{artifactId}:
     parameters:
-      - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
-      - { name: orderId, in: path, required: true, schema: { type: string, format: uuid } }
-      - { name: artifactId, in: path, required: true, schema: { type: string, format: uuid } }
+      - {
+          name: id,
+          in: path,
+          required: true,
+          schema: { type: string, format: uuid },
+        }
+      - {
+          name: orderId,
+          in: path,
+          required: true,
+          schema: { type: string, format: uuid },
+        }
+      - {
+          name: artifactId,
+          in: path,
+          required: true,
+          schema: { type: string, format: uuid },
+        }
+      - name: storeId
+        in: query
+        description: Store whose manager is opening this order file
+        schema: { type: string, format: uuid }
     get:
       tags: [rbac-subject]
       summary: Download an authorized preview, original or receipt
@@ -2529,3 +3538,32 @@ paths:
       responses:
         "200": { description: File headers with private no-store caching }
         "401": { description: A signed-in subject is required }
+
+  /rbac/subjects/{id}/file-storage-module/files/{fileId}/content:
+    parameters:
+      - {
+          name: id,
+          in: path,
+          required: true,
+          schema: { type: string, format: uuid },
+        }
+      - {
+          name: fileId,
+          in: path,
+          required: true,
+          schema: { type: string, format: uuid },
+        }
+    get:
+      tags: [rbac-subject]
+      summary: Download a protected file owned by or granted to this subject
+      responses:
+        "200": { description: File bytes with private no-store caching }
+        "401": { description: Sign in as the subject in the URL }
+        "404": { description: File unavailable to this subject }
+    head:
+      tags: [rbac-subject]
+      summary: Read headers for a protected file owned by or granted to this subject
+      responses:
+        "200": { description: Content type and byte length }
+        "401": { description: Sign in as the subject in the URL }
+        "404": { description: File unavailable to this subject }

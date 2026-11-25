@@ -1,6 +1,9 @@
 import * as pgCore from "drizzle-orm/pg-core";
 
+import type { IOrderWork } from "@sps/ecommerce/models/order/sdk/model/src/lib/work";
+
 export const fields = {
+  fulfillmentWork: pgCore.jsonb("fulfillment_work").$type<IOrderWork>(),
   id: pgCore.uuid("id").primaryKey().defaultRandom(),
   createdAt: pgCore.timestamp("created_at").notNull().defaultNow(),
   updatedAt: pgCore.timestamp("updated_at").notNull().defaultNow(),

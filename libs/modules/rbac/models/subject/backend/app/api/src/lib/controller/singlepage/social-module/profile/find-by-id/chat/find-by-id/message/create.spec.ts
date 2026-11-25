@@ -136,6 +136,7 @@ function createContext(
 
   return {
     req: {
+      header: jest.fn(),
       param: (name: string) => {
         return {
           id: "subject-1",
@@ -157,7 +158,10 @@ function createContext(
 
 function createService() {
   return {
-    customerWork: { messageFromThread: jest.fn().mockResolvedValue(null) },
+    customerWork: {
+      messageFromThread: jest.fn().mockResolvedValue(null),
+      sendEmployeeTraining: jest.fn(),
+    },
     socialModuleChatLifecycleAssertThreadBelongsToChat: jest
       .fn()
       .mockResolvedValue(undefined),
@@ -261,6 +265,47 @@ describe("Given: rbac social message create author relation", () => {
     expect(mockSocialModuleMessageCreate).not.toHaveBeenCalled();
   });
 
+  it.each([
+    [
+      "voice.wav",
+      "audio/wav",
+      "524946462600000057415645666d74201000000001000100401f0000803e00000200100064617461020000000000",
+    ],
+    [
+      "clip.mp4",
+      "video/mp4",
+      "000000186674797069736f6d0000000069736f6d6d703432",
+    ],
+  ])(
+    "accepts a %s attachment in ordinary AI chat and links the uploaded file to its message",
+    async (name, type, hex) => {
+      const context = createContext([], { description: "" });
+      const form = await context.req.formData();
+      const file = new File([Buffer.from(hex, "hex")], name, { type });
+      form.append("files", file);
+      mockFileStorageFileCreate.mockResolvedValueOnce({ id: "media-file" });
+      const handler = new Handler(createService());
+      handler.notifyOtherSubjectsInChat = jest
+        .fn()
+        .mockResolvedValue(undefined);
+
+      await handler.execute(context, jest.fn());
+
+      expect(mockFileStorageFileCreate).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: { adminTitle: name, file },
+        }),
+      );
+      expect(mockSocialModuleMessagesToFilesCreate).toHaveBeenCalledWith({
+        data: {
+          messageId: "message-1",
+          fileStorageModuleFileId: "media-file",
+          orderIndex: 0,
+        },
+      });
+    },
+  );
+
   it("passes the selected text model and reasoning effort to the linked workflow", async () => {
     const service = createService();
     service.customerWork.messageFromThread.mockResolvedValue({
@@ -277,6 +322,68 @@ describe("Given: rbac social message create author relation", () => {
         metadata: { provider: { modelId: "gpt-5.2", reasoning: "high" } },
       }),
     );
+    expect(mockSocialModuleMessageCreate).not.toHaveBeenCalled();
+  });
+
+  it("submits employee training files and returns their private download references", async () => {
+    const service = createService();
+    const chat = { id: "chat-1", variant: "store-employee" };
+    service.modules.social.chat.findById.mockResolvedValue(chat);
+    const attachment = {
+      id: "7e87970f-4675-4a18-a26d-f78ab3237794",
+      name: "notes.txt",
+    };
+    service.customerWork.sendEmployeeTraining.mockResolvedValue({
+      id: "training-message",
+      variant: "customer-work",
+      description: "",
+      metadata: {
+        customerWorkAttachments: [
+          { ...attachment, digest: "a".repeat(64), mimeType: "text/plain" },
+        ],
+      },
+    });
+    const context = createContext([], { description: "", sourceSystemId: "1" });
+    const form = await context.req.formData();
+    const file = new File(["notes"], attachment.name, { type: "text/plain" });
+    form.append("files", file);
+
+    const result = await new Handler(service).execute(context, jest.fn());
+
+    expect(service.customerWork.sendEmployeeTraining).toHaveBeenCalledWith({
+      actorId: "subject-1",
+      actorProfileId: "profile-1",
+      chat,
+      threadId: "thread-1",
+      text: "",
+      sourceSystemId: "1",
+      selection: undefined,
+      attachments: [file],
+    });
+    expect(result).toEqual({
+      data: {
+        id: "training-message",
+        variant: "customer-work",
+        description: "",
+        metadata: {},
+        privateAttachments: [{ ...attachment, mimeType: "text/plain" }],
+        authorProfileIds: ["profile-1"],
+        attachments: [],
+      },
+    });
+    expect(mockFileStorageFileCreate).not.toHaveBeenCalled();
+  });
+
+  it("reserves CRM staff message authorship for the scoped workspace route", async () => {
+    const service = createService();
+    const context = createContext([], {
+      description: "Fake staff reply",
+      sourceSystemId: "workspace-staff:task:staff:operation",
+    });
+    await expect(
+      new Handler(service).execute(context, jest.fn()),
+    ).rejects.toThrow("This message key is reserved");
+    expect(service.customerWork.messageFromThread).not.toHaveBeenCalled();
     expect(mockSocialModuleMessageCreate).not.toHaveBeenCalled();
   });
 

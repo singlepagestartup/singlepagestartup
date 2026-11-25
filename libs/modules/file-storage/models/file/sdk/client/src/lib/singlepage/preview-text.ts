@@ -6,6 +6,7 @@ import {
   FILE_PREVIEW_TEXT_MAX_BYTES,
   NEXT_PUBLIC_API_SERVICE_URL,
   deriveTopicsFromPath,
+  readAttachmentPreviewBytes,
 } from "@sps/shared-utils";
 import { getFilePreviewUrl } from "@sps/shared-frontend-client-utils";
 import { route, type IModel } from "@sps/file-storage/models/file/sdk/model";
@@ -33,48 +34,10 @@ export async function readPreviewText(
   if (!response.ok) {
     throw new Error("This file could not be loaded. Download the original.");
   }
-  if (
-    Number(response.headers.get("content-length")) > FILE_PREVIEW_TEXT_MAX_BYTES
-  ) {
-    await response.body?.cancel();
-    throw new Error(
-      "This file is too large for text preview. Download the original.",
-    );
-  }
-  const reader = response.body?.getReader();
-  if (!reader) {
-    const data = await response.arrayBuffer();
-    if (data.byteLength > FILE_PREVIEW_TEXT_MAX_BYTES) {
-      throw new Error(
-        "This file is too large for text preview. Download the original.",
-      );
-    }
-    return new TextDecoder().decode(data);
-  }
-  let size = 0;
-  const chunks: Uint8Array[] = [];
-  try {
-    let chunk = await reader.read();
-    while (!chunk.done) {
-      size += chunk.value.byteLength;
-      if (size > FILE_PREVIEW_TEXT_MAX_BYTES) {
-        await reader.cancel();
-        throw new Error(
-          "This file is too large for text preview. Download the original.",
-        );
-      }
-      chunks.push(chunk.value);
-      chunk = await reader.read();
-    }
-  } finally {
-    reader.releaseLock();
-  }
-  const bytes = new Uint8Array(size);
-  let offset = 0;
-  for (const chunk of chunks) {
-    bytes.set(chunk, offset);
-    offset += chunk.length;
-  }
+  const bytes = await readAttachmentPreviewBytes(
+    response,
+    FILE_PREVIEW_TEXT_MAX_BYTES,
+  );
   return new TextDecoder().decode(bytes);
 }
 

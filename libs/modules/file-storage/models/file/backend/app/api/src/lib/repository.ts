@@ -4,10 +4,10 @@ import {
   DatabaseRepository,
   consistencyContext,
   trackRepositoryRead,
-  withConsistencyDatabase,
+  withConsistencyTransaction,
 } from "@sps/shared-backend-api";
 import { Table } from "@sps/file-storage/models/file/backend/repository/database";
-import { asc, inArray } from "drizzle-orm";
+import { and, asc, inArray, isNull } from "drizzle-orm";
 
 export type TCommerceReceiptGuard = (
   files: Array<Pick<typeof Table.$inferSelect, "id" | "file">>,
@@ -16,6 +16,10 @@ export type TCommerceReceiptGuard = (
 @injectable()
 @injectFromBase()
 export class Repository extends DatabaseRepository<typeof Table> {
+  protected override get readScope() {
+    return isNull(Table.privateDigest);
+  }
+
   commerceReceiptGuard?: TCommerceReceiptGuard;
 
   async withoutCommerceReceipts(files: (typeof Table.$inferSelect)[]) {
@@ -45,9 +49,7 @@ export class Repository extends DatabaseRepository<typeof Table> {
     if (consistencyContext.getStore()?.database) {
       return run();
     }
-    return this.db.transaction((transaction) =>
-      withConsistencyDatabase(transaction, run),
-    );
+    return withConsistencyTransaction(this.db, run);
   }
 
   async lock(ids: string[], mode: "key share" | "update" = "key share") {
@@ -58,7 +60,7 @@ export class Repository extends DatabaseRepository<typeof Table> {
     return this.db
       .select()
       .from(Table)
-      .where(inArray(Table.id, [...new Set(ids)]))
+      .where(and(this.readScope, inArray(Table.id, [...new Set(ids)])))
       .orderBy(asc(Table.id))
       .for(mode);
   }

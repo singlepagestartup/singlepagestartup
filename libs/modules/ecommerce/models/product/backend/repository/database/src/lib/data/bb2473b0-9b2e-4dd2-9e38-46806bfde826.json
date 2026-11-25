@@ -4,7 +4,9 @@
   "createdAt": "2025-01-24T23:47:55.627Z",
   "updatedAt": "2025-12-13T17:19:31.283Z",
   "variant": "default",
+  "kind": "physical",
   "type": "one_off",
+  "singleUnitPerOrder": false,
   "slug": "startup",
   "title": {
     "en": "Startup",

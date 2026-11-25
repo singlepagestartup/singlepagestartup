@@ -1,5 +1,7 @@
 "use client";
 
+import { TypingIndicator } from "./TypingIndicator";
+
 import { ActionProfileLoader } from "./ActionProfileLoader";
 import { AiExecutionActionRow } from "./AiExecutionActionRow";
 import { areActionRowPropsEqual } from "./action-row-memo";
@@ -8,10 +10,18 @@ import { PrivateMessageAttachments } from "./PrivateMessageAttachments";
 import { CustomerWorkResult } from "./CustomerWorkResult";
 import { Component as SocialModuleAction } from "@sps/social/models/action/frontend/component";
 import { Component as SocialModuleProfile } from "@sps/social/models/profile/frontend/component";
-import type { ISocialModuleMessagesAndActionsQuery } from "../interface";
+import type {
+  IChatAttachmentDownload,
+  IChatProfileOpen,
+  ISocialModuleMessagesAndActionsQuery,
+} from "../interface";
 import type { IModel as ISocialModuleMessage } from "@sps/social/models/message/sdk/model";
 import type { IModel as ISocialModuleProfile } from "@sps/social/models/profile/sdk/model";
 import { AI_EXECUTION_ACTION_VARIANT } from "@sps/rbac/models/subject/sdk/model";
+import {
+  readOrderFileReview,
+  readOrderCheckoutButtons,
+} from "@sps/rbac/models/subject/sdk/model/src/lib/order-work";
 import { MessageSquare } from "lucide-react";
 import { memo, type RefObject } from "react";
 
@@ -20,21 +30,25 @@ type TimelineMessage = Extract<TimelineItem, { type: "message" }>["data"];
 type TimelineAction = Extract<TimelineItem, { type: "action" }>["data"];
 
 interface MessageTimelineProps {
+  reviewMessageId?: string;
+  reviewSlot?: React.ReactNode;
   deletingMessageId: string | null;
   items: ISocialModuleMessagesAndActionsQuery | undefined;
   participants?: ISocialModuleProfile[];
   language: string;
-  socialModuleProfileId: string;
+  socialModuleProfileId?: string;
+  readOnly?: boolean;
   subjectId: string;
   threadId: string;
   messagesContentRef: RefObject<HTMLDivElement | null>;
-  onMessageDelete: (message: ISocialModuleMessage) => void;
-  onMessageEdit: (message: ISocialModuleMessage) => void;
-  onProfileOpen?: (profile: ISocialModuleProfile) => void;
-  onResultReview?: (versionId: string) => void;
+  onMessageDelete?: (message: ISocialModuleMessage) => void;
+  onMessageEdit?: (message: ISocialModuleMessage) => void;
+  onProfileOpen?: IChatProfileOpen;
+  onAttachmentDownload?: IChatAttachmentDownload;
 }
 
 interface MessageRowProps {
+  reviewSlot?: React.ReactNode;
   isDeleting: boolean;
   isOwnMessage: boolean;
   language: string;
@@ -42,10 +56,10 @@ interface MessageRowProps {
   subjectId: string;
   threadId: string;
   participants?: ISocialModuleProfile[];
-  onMessageDelete: (message: ISocialModuleMessage) => void;
-  onMessageEdit: (message: ISocialModuleMessage) => void;
-  onProfileOpen?: (profile: ISocialModuleProfile) => void;
-  onResultReview?: (versionId: string) => void;
+  onMessageDelete?: (message: ISocialModuleMessage) => void;
+  onMessageEdit?: (message: ISocialModuleMessage) => void;
+  onProfileOpen?: IChatProfileOpen;
+  onAttachmentDownload?: IChatAttachmentDownload;
 }
 
 /**
@@ -57,9 +71,10 @@ const MemoizedMessageRow = memo(function MemoizedMessageRow(
   props: MessageRowProps,
 ) {
   const privateAttachments = props.message.privateAttachments;
-  const resultVersionId =
+  const resultFileId =
     props.message.variant === "customer-work"
-      ? props.message.metadata?.customerWorkResultVersionId
+      ? (props.message.metadata?.orderResultFileId ??
+        props.message.metadata?.customerWorkResultVersionId)
       : undefined;
   return (
     <MessageProfileLoader
@@ -77,27 +92,38 @@ const MemoizedMessageRow = memo(function MemoizedMessageRow(
             language={props.language}
             message={props.message}
             isOwnMessage={props.isOwnMessage}
+            attachmentsSlot={
+              privateAttachments?.length ? (
+                <PrivateMessageAttachments
+                  subjectId={props.subjectId}
+                  threadId={props.threadId}
+                  messageId={props.message.id}
+                  language={props.language}
+                  attachments={privateAttachments}
+                  document={Boolean(
+                    props.message.workReplyKey &&
+                    props.message.metadata?.orderDocument,
+                  )}
+                  onDownload={props.onAttachmentDownload}
+                />
+              ) : undefined
+            }
             messageContentSlot={
-              <>
-                {privateAttachments?.length ? (
-                  <PrivateMessageAttachments
-                    subjectId={props.subjectId}
-                    threadId={props.threadId}
-                    messageId={props.message.id}
-                    language={props.language}
-                    attachments={privateAttachments}
-                  />
-                ) : null}
-                {typeof resultVersionId === "string" && (
-                  <CustomerWorkResult
-                    subjectId={props.subjectId}
-                    threadId={props.threadId}
-                    versionId={resultVersionId}
-                    language={props.language}
-                    onReview={props.onResultReview}
-                  />
-                )}
-              </>
+              typeof resultFileId === "string" &&
+              !privateAttachments?.some(({ id }) => id === resultFileId) && (
+                <CustomerWorkResult
+                  subjectId={props.subjectId}
+                  threadId={props.threadId}
+                  fileId={resultFileId}
+                  language={props.language}
+                />
+              )
+            }
+            interactionSlot={
+              readOrderFileReview(props.message) ||
+              readOrderCheckoutButtons(props.message)
+                ? (props.reviewSlot ?? false)
+                : undefined
             }
             isDeleting={props.isDeleting}
             onProfileOpen={props.onProfileOpen}
@@ -129,6 +155,11 @@ const MemoizedActionRow = memo(function MemoizedActionRow(
   return (
     <ActionProfileLoader action={props.action} language={props.language}>
       {(profile) => {
+        if (props.action.variant === "typing") {
+          return (
+            <TypingIndicator language={props.language} name={profile.slug} />
+          );
+        }
         if (props.action.variant === AI_EXECUTION_ACTION_VARIANT) {
           return (
             <AiExecutionActionRow
@@ -170,11 +201,13 @@ export function MessageTimeline(props: MessageTimelineProps) {
           <p className="mb-2 text-xs font-semibold text-muted-foreground">
             {ru ? "Сообщений пока нет" : "No messages yet"}
           </p>
-          <p className="text-sm leading-6">
-            {ru
-              ? "Отправьте первое сообщение."
-              : "Send the first message to start this thread."}
-          </p>
+          {!props.readOnly && (
+            <p className="text-sm leading-6">
+              {ru
+                ? "Отправьте первое сообщение."
+                : "Send the first message to start this thread."}
+            </p>
+          )}
         </div>
       </div>
     );
@@ -183,26 +216,31 @@ export function MessageTimeline(props: MessageTimelineProps) {
   return (
     <div
       ref={props.messagesContentRef}
-      className="flex min-w-0 flex-col gap-3"
+      className="@container/timeline flex min-w-0 flex-col gap-2.5"
       role="log"
       aria-label={ru ? "Сообщения" : "Messages"}
     >
       {props.items.map((socialModuleMessageOrAction) => {
         if (socialModuleMessageOrAction.type === "message") {
           const message = socialModuleMessageOrAction.data;
+          const isOwnMessage = Boolean(
+            props.socialModuleProfileId &&
+            (message.authorProfileIds?.includes(props.socialModuleProfileId) ||
+              message.authorProfiles?.some(
+                ({ id }) => id === props.socialModuleProfileId,
+              )),
+          );
 
           return (
             <MemoizedMessageRow
               key={message.id}
               isDeleting={props.deletingMessageId === message.id}
-              isOwnMessage={Boolean(
-                message.authorProfileIds?.includes(
-                  props.socialModuleProfileId,
-                ) ||
-                message.authorProfiles?.some(
-                  ({ id }) => id === props.socialModuleProfileId,
-                ),
-              )}
+              isOwnMessage={isOwnMessage}
+              reviewSlot={
+                props.reviewMessageId === message.id
+                  ? props.reviewSlot
+                  : undefined
+              }
               language={props.language}
               message={message}
               subjectId={props.subjectId}
@@ -211,7 +249,7 @@ export function MessageTimeline(props: MessageTimelineProps) {
               onMessageDelete={props.onMessageDelete}
               onMessageEdit={props.onMessageEdit}
               onProfileOpen={props.onProfileOpen}
-              onResultReview={props.onResultReview}
+              onAttachmentDownload={props.onAttachmentDownload}
             />
           );
         }

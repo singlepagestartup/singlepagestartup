@@ -1,0 +1,47 @@
+{
+  "metadata": {
+    "seo": {
+      "title": {
+        "en": "Store Settings — SinglePageStartup",
+        "ru": "Настройки магазина — SinglePageStartup"
+      },
+      "description": {
+        "en": "Manage this store’s settings.",
+        "ru": "Управляйте настройками этого магазина."
+      }
+    },
+    "seoDisplay": {
+      "twitterTitle": {
+        "en": "Store Settings — SinglePageStartup",
+        "ru": "Настройки магазина — SinglePageStartup"
+      },
+      "opengraphTitle": {
+        "en": "Store Settings — SinglePageStartup",
+        "ru": "Настройки магазина — SinglePageStartup"
+      },
+      "opengraphLocale": {
+        "en": "en_US",
+        "ru": "ru_RU"
+      },
+      "twitterDescription": {
+        "en": "Manage this store’s settings.",
+        "ru": "Управляйте настройками этого магазина."
+      },
+      "opengraphDescription": {
+        "en": "Manage this store’s settings.",
+        "ru": "Управляйте настройками этого магазина."
+      }
+    }
+  },
+  "id": "b416934a-bbd1-4753-968c-6f0fd3f40fbb",
+  "title": "Store Settings",
+  "url": "/ecommerce/stores/[ecommerce.stores.slug]/settings",
+  "slug": "store-settings",
+  "description": "Manage this store’s settings.",
+  "createdAt": "2026-11-22T19:16:21.860Z",
+  "updatedAt": "2026-11-22T19:16:21.860Z",
+  "variant": "noindex",
+  "className": null,
+  "language": "en",
+  "adminTitle": "Store Settings"
+}

@@ -75,6 +75,16 @@ export function find(props: IFindProps) {
       return data;
     },
     staleTime: STALE_TIME,
+    retry(failureCount, error) {
+      if (
+        error &&
+        "status" in error &&
+        [401, 403, 404].includes(Number(error.status))
+      ) {
+        return false;
+      }
+      return failureCount < 3;
+    },
     ...props.reactQueryOptions,
   });
 }

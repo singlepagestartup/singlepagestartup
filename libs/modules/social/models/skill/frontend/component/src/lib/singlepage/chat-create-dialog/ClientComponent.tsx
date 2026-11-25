@@ -5,17 +5,16 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import {
   Button,
   Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
+  SettingsDialogContent,
+  SettingsDialogHeader,
+  settingsFormStyles,
   Form,
   Input,
   Label,
   Textarea,
 } from "@sps/shared-ui-shadcn";
-import { Pencil, Plus } from "lucide-react";
-import { useEffect, useMemo } from "react";
+import { Icon } from "@sps/ui-adapter";
+import { useEffect, useId, useMemo } from "react";
 import { useForm } from "react-hook-form";
 import slugify from "slugify";
 import { z } from "zod";
@@ -102,6 +101,7 @@ function getSkillFormValues(
 export function Component(props: IClientComponentProps) {
   const ru = props.language === "ru";
   const isEditing = props.mode === "edit" && Boolean(props.data);
+  const id = useId();
   const schema = useMemo(() => skillCreateFormSchema(ru), [ru]);
   const form = useForm<SkillCreateFormValues>({
     resolver: zodResolver(schema),
@@ -109,6 +109,7 @@ export function Component(props: IClientComponentProps) {
   });
   const titleInput = form.register("title");
   const slugInput = form.register("slug");
+  const isSaving = props.isSubmitting || form.formState.isSubmitting;
 
   useEffect(() => {
     if (!props.open) {
@@ -160,40 +161,47 @@ export function Component(props: IClientComponentProps) {
         }
       }}
     >
-      <DialogContent
+      <SettingsDialogContent
         data-module="social"
         data-model="skill"
         data-variant="chat-create-dialog"
         closeLabel={ru ? "Закрыть" : "Close"}
-        className="z-[70] max-h-[calc(100vh-2rem)] overflow-y-auto sm:max-w-2xl"
       >
-        <DialogHeader>
-          <DialogTitle>
-            {isEditing
+        <SettingsDialogHeader
+          title={
+            isEditing
               ? ru
                 ? "Редактировать навык"
                 : "Edit Skill"
               : ru
                 ? "Новый навык"
-                : "Create Skill"}
-          </DialogTitle>
-          <DialogDescription>
-            {isEditing
-              ? ru
-                ? "Измените инструкцию навыка."
-                : "Update instructions for this profile skill."
-              : ru
-                ? "Опишите, как сотрудник должен выполнять этот навык."
-                : "Add instructions and link them to the current profile."}
-          </DialogDescription>
-        </DialogHeader>
+                : "Create Skill"
+          }
+          description={
+            ru
+              ? "Опишите, что сотрудник должен сделать по команде в чате."
+              : "Describe what the assistant should do when someone uses this command in chat."
+          }
+        />
         <Form {...form}>
-          <form className="grid gap-4" onSubmit={form.handleSubmit(onSubmit)}>
-            <div className="grid gap-4 sm:grid-cols-2">
-              <div className="space-y-1.5">
-                <Label htmlFor="skill-title">{ru ? "Название" : "Title"}</Label>
+          <form className="min-w-0" onSubmit={form.handleSubmit(onSubmit)}>
+            <div className="grid items-start gap-5 sm:grid-cols-2">
+              <div className="grid min-w-0 gap-3">
+                <Label
+                  className={settingsFormStyles.label}
+                  htmlFor={`${id}-title`}
+                >
+                  {ru ? "Название" : "Title"}
+                </Label>
                 <Input
-                  id="skill-title"
+                  id={`${id}-title`}
+                  aria-invalid={Boolean(form.formState.errors.title)}
+                  aria-describedby={
+                    form.formState.errors.title
+                      ? `${id}-title-error`
+                      : undefined
+                  }
+                  className={settingsFormStyles.field}
                   {...titleInput}
                   onBlur={(event) => {
                     void titleInput.onBlur(event);
@@ -211,18 +219,32 @@ export function Component(props: IClientComponentProps) {
                   }}
                 />
                 {form.formState.errors.title?.message ? (
-                  <p className="text-xs text-destructive">
+                  <p
+                    id={`${id}-title-error`}
+                    role="alert"
+                    className="text-sm text-destructive"
+                  >
                     {form.formState.errors.title.message}
                   </p>
                 ) : null}
               </div>
-              <div className="space-y-1.5">
-                <Label htmlFor="skill-slug">
+              <div className="grid min-w-0 gap-3">
+                <Label
+                  className={settingsFormStyles.label}
+                  htmlFor={`${id}-slug`}
+                >
                   {ru ? "Команда в чате" : "Slug"}
                 </Label>
                 <Input
-                  id="skill-slug"
-                  aria-describedby={ru ? "skill-slug-hint" : undefined}
+                  id={`${id}-slug`}
+                  aria-invalid={Boolean(form.formState.errors.slug)}
+                  className={settingsFormStyles.field}
+                  aria-describedby={[
+                    `${id}-slug-hint`,
+                    form.formState.errors.slug && `${id}-slug-error`,
+                  ]
+                    .filter(Boolean)
+                    .join(" ")}
                   {...slugInput}
                   onBlur={(event) => {
                     void slugInput.onBlur(event);
@@ -239,54 +261,77 @@ export function Component(props: IClientComponentProps) {
                     }
                   }}
                 />
-                {ru && (
-                  <p
-                    id="skill-slug-hint"
-                    className="text-xs text-muted-foreground"
-                  >
-                    Например, /opisanie-tovara. Команда создаётся из названия,
-                    если оставить поле пустым.
-                  </p>
-                )}
+                <p
+                  id={`${id}-slug-hint`}
+                  className="text-xs text-muted-foreground"
+                >
+                  {ru
+                    ? "Например, /opisanie-tovara. Оставьте поле пустым, чтобы создать команду из названия навыка."
+                    : "For example, /product-description. Leave this field blank to generate the command from the title."}
+                </p>
                 {form.formState.errors.slug?.message ? (
-                  <p className="text-xs text-destructive">
+                  <p
+                    id={`${id}-slug-error`}
+                    role="alert"
+                    className="text-sm text-destructive"
+                  >
                     {form.formState.errors.slug.message}
                   </p>
                 ) : null}
               </div>
-            </div>
-            <div className="space-y-1.5">
-              <Label htmlFor="skill-description">
-                {ru ? "Инструкция" : "Description"}
-              </Label>
-              <Textarea
-                id="skill-description"
-                rows={8}
-                className="min-h-40 resize-y"
-                {...form.register("description")}
-              />
-              {form.formState.errors.description?.message ? (
-                <p className="text-xs text-destructive">
-                  {form.formState.errors.description.message}
+              <div className="grid min-w-0 gap-3 sm:col-span-2">
+                <Label
+                  className={settingsFormStyles.label}
+                  htmlFor={`${id}-description`}
+                >
+                  {ru ? "Инструкция" : "Description"}
+                </Label>
+                <Textarea
+                  id={`${id}-description`}
+                  aria-invalid={Boolean(form.formState.errors.description)}
+                  aria-describedby={
+                    form.formState.errors.description
+                      ? `${id}-description-error`
+                      : undefined
+                  }
+                  rows={6}
+                  className={settingsFormStyles.textarea}
+                  {...form.register("description")}
+                />
+                {form.formState.errors.description?.message ? (
+                  <p
+                    id={`${id}-description-error`}
+                    role="alert"
+                    className="text-sm text-destructive"
+                  >
+                    {form.formState.errors.description.message}
+                  </p>
+                ) : null}
+              </div>
+              {form.formState.errors.root?.message && (
+                <p
+                  role="alert"
+                  className="text-sm text-destructive sm:col-span-2"
+                >
+                  {form.formState.errors.root.message}
                 </p>
-              ) : null}
+              )}
             </div>
-            {form.formState.errors.root?.message && (
-              <p role="alert" className="text-sm text-destructive">
-                {form.formState.errors.root.message}
-              </p>
-            )}
-            <div className="flex justify-end">
+            <div className={settingsFormStyles.actions}>
               <Button
                 type="submit"
                 variant="primary"
-                className="w-auto"
-                disabled={props.isSubmitting || form.formState.isSubmitting}
+                className={settingsFormStyles.primary}
+                aria-busy={isSaving}
+                disabled={isSaving}
               >
-                {isEditing ? (
-                  <Pencil className="mr-2 h-4 w-4" />
+                {isSaving ? (
+                  <Icon
+                    name="spinner-gap"
+                    className="motion-safe:animate-spin"
+                  />
                 ) : (
-                  <Plus className="mr-2 h-4 w-4" />
+                  <Icon name={isEditing ? "floppy-disk" : "plus"} />
                 )}
                 {isEditing
                   ? ru
@@ -299,7 +344,7 @@ export function Component(props: IClientComponentProps) {
             </div>
           </form>
         </Form>
-      </DialogContent>
+      </SettingsDialogContent>
     </Dialog>
   );
 }

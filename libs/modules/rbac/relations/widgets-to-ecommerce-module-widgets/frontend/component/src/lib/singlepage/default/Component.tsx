@@ -38,6 +38,8 @@ export function Component(props: IComponentPropsExtended) {
                 dataSource="props"
                 data={entity}
                 language={props.language}
+                store={props.ecommerceModuleStore}
+                storeId={props.ecommerceModuleStoreId}
               >
                 {props.children}
               </EcommerceModuleWidget>

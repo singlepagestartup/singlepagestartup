@@ -312,7 +312,7 @@ export function registerTools(mcp: McpServer) {
     {
       title: "Find SinglePageStartup model records",
       description:
-        "Find records for one model with filters, order, limit, and offset.",
+        "Find records for one model with filters, order, limit, and offset. For a list of titles, request fields such as id, title, and slug. Omit fields for full content.",
       annotations: {
         readOnlyHint: true,
         destructiveHint: false,

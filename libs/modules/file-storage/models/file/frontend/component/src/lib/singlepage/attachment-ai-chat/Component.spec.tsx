@@ -194,7 +194,8 @@ it("renders PDF pages with zoom through the byte SDK without text or metadata re
   fireEvent.click(screen.getByRole("button", { name: "Zoom in" }));
   expect(screen.getByText("125%")).toBeTruthy();
   await waitFor(() => expect(screen.queryByRole("status")).toBeNull());
-  expect(screen.getByRole("link", { name: "Open original" })).toBeTruthy();
+  expect(screen.queryByRole("link", { name: "Open original" })).toBeNull();
+  expect(screen.getByRole("button", { name: "Download" })).toBeTruthy();
   expect(mockText).not.toHaveBeenCalled();
   expect(mockMetadata).not.toHaveBeenCalled();
 });
@@ -267,7 +268,7 @@ it("downloads a legacy SVG as an opaque file without opening a preview", async (
     );
     expect(mockDownload).toHaveBeenCalledWith({
       src: expect.stringMatching(/\/public\/renamed\.bin$/),
-      signal: undefined,
+      signal: expect.any(AbortSignal),
     });
     expect(create).toHaveBeenCalledWith(
       expect.objectContaining({ type: "application/octet-stream" }),
@@ -312,6 +313,7 @@ it("can move past a PDF page that failed to render", async () => {
         dataSource: "props",
         data: {
           ...file,
+          file: "/guide.pdf",
           adminTitle: "Guide.pdf",
           extension: "pdf",
           mimeType: "application/pdf",
@@ -353,7 +355,8 @@ it("shows a readable error and a retry while keeping the original available", ()
   expect(screen.getByRole("alert").textContent).toBe("File unavailable");
   fireEvent.click(screen.getByRole("button", { name: "Try again" }));
   expect(retry).toHaveBeenCalledTimes(1);
-  expect(screen.getByRole("link", { name: "Open original" })).toBeTruthy();
+  expect(screen.queryByRole("link", { name: "Open original" })).toBeNull();
+  expect(screen.getByRole("button", { name: "Download" })).toBeTruthy();
 });
 
 it("loads stored HTML only after opening and keeps its executable markup outside the chat document", () => {

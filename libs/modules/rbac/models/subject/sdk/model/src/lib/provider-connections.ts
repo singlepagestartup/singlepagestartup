@@ -31,6 +31,9 @@ export const providerTerms = z
     maxOutputTokens: z.number().int().min(1).max(512_000),
     maxCostUsd: money,
     inputUsdPerMillion: money,
+    inputAudioUsdPerMillion: money.optional(),
+    cachedInputUsdPerMillion: money.optional(),
+    cacheWriteUsdPerMillion: money.optional(),
     outputUsdPerMillion: money,
     audioUsdPerMinute: money.optional(),
     usdPerSps: money,
@@ -125,26 +128,52 @@ export const connectionCommand = z.discriminatedUnion("operation", [
 export type IConnectionCommand = z.infer<typeof connectionCommand>;
 export type IProviderType = z.infer<typeof providerType>;
 export type IProviderCapability = z.infer<typeof providerCapability>;
-export type IProviderTerms = z.infer<typeof providerTerms>;
+export interface IProviderTerms extends z.infer<typeof providerTerms> {
+  topupUsd?: string;
+  topupTokens?: string;
+  topupProductId?: string;
+}
+
+export interface IProviderConnection {
+  id: string;
+  identityId: string;
+  subjectId: string;
+  ownerId: string;
+  storeId: string;
+  label: string;
+  externalAccount: string;
+  version: string;
+  active: boolean;
+}
+
+export interface IProviderAssignment {
+  id: string;
+  subjectId: string | null;
+  storeId: string;
+  executorId: string;
+  identityId: string;
+  capability: string;
+  model: string;
+  terms: unknown;
+}
 
 export interface IProviderSettings {
   nextCursor: string | null;
   assistants: Array<{ id: string; label: string }>;
   executorSubjects?: Array<{ id: string; label: string }>;
   connections: Array<
-    Pick<
-      import("@sps/rbac/relations/subjects-to-provider-identities/sdk/model").IModel,
-      | "id"
-      | "identityId"
-      | "subjectId"
-      | "label"
-      | "externalAccount"
-      | "version"
-      | "active"
-    > & { provider: IProviderType }
+    Omit<IProviderConnection, "ownerId" | "storeId"> & {
+      provider: IProviderType;
+    }
   >;
-  assignments: import("@sps/rbac/relations/subjects-to-provider-agents/sdk/model").IModel[];
-  operations: import("@sps/rbac/relations/subjects-to-wallet-operations/sdk/model").IModel[];
+  assignments: IProviderAssignment[];
+  operations: Array<
+    import("@sps/billing/models/transaction/sdk/model").IModel & {
+      senderWalletId: string;
+      recipientWalletId: string;
+      advanceRecipientWalletId: string | null;
+    }
+  >;
 }
 
 export interface IProviderChatModelOption {
@@ -168,6 +197,8 @@ export interface IProviderChatModelGroup {
 }
 
 export interface IProviderChatModelsResult {
+  stageModelFixed?: boolean;
+  stageModelId?: string;
   auto: {
     id: "auto";
     name: string;

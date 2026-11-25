@@ -1,5 +1,5 @@
 import {
-  OPEN_AI_CHAT_REASONING,
+  openAIChatReasoning,
   providerReasoningEffortValues,
   type IProviderModelReasoning,
   type TProviderReasoningEffort,
@@ -24,24 +24,6 @@ export async function providerModelReasoning(
   }
 
   return openRouterReasoning(model.reasoning);
-}
-
-function openAIChatReasoning(modelId: string): IProviderModelReasoning | null {
-  const model = OPEN_AI_CHAT_REASONING.find(({ modelIds }) =>
-    modelIds.includes(modelId),
-  );
-  if (!model) {
-    return null;
-  }
-
-  const mandatory = !model.supportedEfforts.includes("none");
-  return {
-    defaultEffort: model.defaultEffort,
-    defaultEnabled: model.defaultEffort ? model.defaultEffort !== "none" : null,
-    mandatory,
-    supportedEfforts: [...model.supportedEfforts],
-    supportsMaxTokens: false,
-  };
 }
 
 function openRouterReasoning(

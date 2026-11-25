@@ -1,0 +1,47 @@
+{
+  "metadata": {
+    "seo": {
+      "title": {
+        "en": "Create CRM Funnel — SinglePageStartup",
+        "ru": "Новая воронка CRM — SinglePageStartup"
+      },
+      "description": {
+        "en": "Set up a CRM funnel for this store.",
+        "ru": "Настройте новую воронку CRM для этого магазина."
+      }
+    },
+    "seoDisplay": {
+      "twitterTitle": {
+        "en": "Create CRM Funnel — SinglePageStartup",
+        "ru": "Новая воронка CRM — SinglePageStartup"
+      },
+      "opengraphTitle": {
+        "en": "Create CRM Funnel — SinglePageStartup",
+        "ru": "Новая воронка CRM — SinglePageStartup"
+      },
+      "opengraphLocale": {
+        "en": "en_US",
+        "ru": "ru_RU"
+      },
+      "twitterDescription": {
+        "en": "Set up a CRM funnel for this store.",
+        "ru": "Настройте новую воронку CRM для этого магазина."
+      },
+      "opengraphDescription": {
+        "en": "Set up a CRM funnel for this store.",
+        "ru": "Настройте новую воронку CRM для этого магазина."
+      }
+    }
+  },
+  "id": "a7a20718-bfa4-4b9e-8343-07a774061d34",
+  "title": "Create CRM Funnel",
+  "url": "/ecommerce/stores/[ecommerce.stores.slug]/crm/funnels/new",
+  "slug": "crm-store-funnel-create",
+  "description": "Set up a CRM funnel for this store.",
+  "createdAt": "2026-11-22T18:28:59.451Z",
+  "updatedAt": "2026-11-22T18:32:06.639Z",
+  "variant": "noindex",
+  "className": null,
+  "language": "en",
+  "adminTitle": "Create Store CRM Funnel"
+}

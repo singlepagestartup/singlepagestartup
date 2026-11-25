@@ -8,6 +8,41 @@
       "when": 1795077306519,
       "tag": "0000_outstanding_quasimodo",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1795371214358,
+      "tag": "0001_pretty_robbie_robertson",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1795371919658,
+      "tag": "0002_tranquil_luckman",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1795371997020,
+      "tag": "0003_backfill-funnel-slugs",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1795372048136,
+      "tag": "0004_closed_norman_osborn",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1795525106108,
+      "tag": "0005_chemical_madripoor",
+      "breakpoints": true
     }
   ]
 }

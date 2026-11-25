@@ -32,8 +32,8 @@ export function Component(props: IComponentPropsExtended) {
               language={props.language}
             >
               <ClientComponent
+                widgetId={props.data.id}
                 ecommerceModuleStoreSlug={props.ecommerceModuleStoreSlug}
-                crmModuleTaskId={props.crmModuleTaskId}
                 language={props.language || "en"}
               />
             </PresentationLink>

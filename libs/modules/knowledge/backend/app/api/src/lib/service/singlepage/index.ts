@@ -1,4 +1,9 @@
-import { getKnowledgeConfiguration } from "../../configuration";
+import {
+  getKnowledgeConfiguration,
+  knowledgeEmbeddingIndexKey,
+  KNOWLEDGE_SCOPED_MIN_SIMILARITY,
+  type IKnowledgeEmbeddingIdentity,
+} from "../../configuration";
 import {
   createKnowledgeEmbeddingClient,
   IKnowledgeEmbeddingClient,
@@ -22,12 +27,31 @@ export interface IKnowledgePersona {
   description?: unknown;
 }
 
+interface IKnowledgeSearchOptions {
+  query: string;
+  sessionId?: string;
+  topK?: number;
+  neighborWindow?: number;
+  finalTopK?: number;
+  minSimilarity?: number;
+}
+
+export interface IAuthorizedKnowledgeSearch extends IKnowledgeSearchOptions {
+  sourceIds: string[];
+  personalSourceIds?: string[];
+  embedQuery?: (
+    query: string,
+    config: IKnowledgeEmbeddingIdentity,
+  ) => Promise<number[] | undefined>;
+}
+
 export class Service {
   readonly source: SourceService;
   private embeddingClient: IKnowledgeEmbeddingClient;
+  private embeddingIdentity: IKnowledgeEmbeddingIdentity;
+  private embeddingIndex?: string;
   private generationClient: LlmChatClient;
   private modelClient: LlmModelClient;
-  private materialService: MaterialService;
 
   constructor(props?: {
     source?: SourceService;
@@ -37,6 +61,9 @@ export class Service {
     modelClient?: LlmModelClient;
   }) {
     const config = getKnowledgeConfiguration();
+    const { provider, model, dimensions } = config.embedding;
+    this.embeddingIdentity = { provider, model, dimensions };
+    this.embeddingIndex = knowledgeEmbeddingIndexKey(this.embeddingIdentity);
     this.source = props?.source ?? createSource(props?.assembly);
     this.embeddingClient =
       props?.embeddingClient || createKnowledgeEmbeddingClient();
@@ -50,7 +77,6 @@ export class Service {
       new LlmModelClient({
         baseUrl: config.llm.url,
       });
-    this.materialService = new MaterialService({ source: this.source });
   }
 
   async status() {
@@ -108,37 +134,21 @@ export class Service {
     expectedContentHash?: string;
     fileIds?: string[];
   }) {
-    const updated = await this.source.updateSourceWithAttachments(props);
-    const source = updated?.source;
-    if (!source)
-      throw new Error(
-        `Not Found error. Knowledge Source ${props.sourceId} was not found.`,
-      );
-    let processingError: string | undefined;
-    if (updated?.attachmentsChanged) {
-      try {
-        await this.rebuildFiles(source.id);
-      } catch (error) {
-        processingError =
-          error instanceof Error ? error.message : String(error);
+    return this.source.withTransaction(async (source) => {
+      const updated = await source.updateSourceWithAttachments(props);
+      if (!updated) {
+        throw new Error(
+          "Conflict error. Knowledge Source changed. Refresh and retry.",
+        );
       }
-    }
-    let indexError: string | undefined;
-    if (!processingError && source.indexedContentHash !== source.contentHash) {
-      try {
-        await this.index({ sourceId: source.id });
-      } catch (error) {
-        indexError = error instanceof Error ? error.message : String(error);
-        console.error("Knowledge indexing failed", source.id, indexError);
+      if (updated.attachmentsChanged) {
+        await this.rebuildFiles(props.sourceId, source);
+      } else {
+        await this.indexAuthorizedSource({ sourceId: props.sourceId }, source);
       }
-    }
-    const loadedSource = await this.source.findSourceById(source.id);
-
-    return {
-      source: loadedSource,
-      indexError,
-      processingError,
-    };
+      const saved = await source.findSourceById(props.sourceId);
+      return { source: saved! };
+    });
   }
 
   async deleteSource(sourceId: string) {
@@ -179,45 +189,73 @@ export class Service {
     props: Parameters<SourceService["mutateStoredFile"]>[0],
   ) {
     const result = await this.source.mutateStoredFile(props);
-    const results = await Promise.allSettled(
-      result.sourceIds.map((sourceId) => this.rebuildFiles(sourceId)),
-    );
-    for (const [index, rebuild] of results.entries())
-      if (rebuild.status === "rejected")
-        console.error(
-          "Knowledge rebuild after stored file change failed",
-          result.sourceIds[index],
-          rebuild.reason,
-        );
     return result.file;
   }
 
-  async search(props: {
-    query: string;
-    sessionId?: string;
-    topK?: number;
-    neighborWindow?: number;
-    finalTopK?: number;
-    minSimilarity?: number;
-    sourceIds?: string[];
-  }) {
+  search(props: IKnowledgeSearchOptions & { sourceIds?: string[] }) {
+    return this.searchWithScope(props);
+  }
+
+  searchAuthorizedSources(props: IAuthorizedKnowledgeSearch) {
+    if (!Array.isArray(props.sourceIds)) {
+      throw new Error(
+        "Validation error. Authorized knowledge source IDs are required.",
+      );
+    }
+    const { embedQuery, personalSourceIds } = props;
+    return this.searchWithScope(props, { embedQuery, personalSourceIds });
+  }
+
+  indexAuthorizedSource(
+    { sourceId }: { sourceId: string },
+    source = this.source,
+  ) {
+    return this.indexer(source).index({
+      authorizedSourceIds: this.normalizeSourceIds([sourceId]),
+    });
+  }
+
+  private async searchWithScope(
+    props: IKnowledgeSearchOptions & { sourceIds?: string[] },
+    authorized?: Pick<
+      IAuthorizedKnowledgeSearch,
+      "embedQuery" | "personalSourceIds"
+    >,
+  ) {
+    const sourceIds = Array.isArray(props.sourceIds)
+      ? this.normalizeSourceIds(props.sourceIds)
+      : undefined;
+    if (sourceIds?.length === 0) {
+      return [];
+    }
     const query = props.query?.trim();
 
     if (!query) {
       throw new Error("Validation error. Knowledge search query is required.");
     }
 
-    const sourceIds = Array.isArray(props.sourceIds)
-      ? this.normalizeSourceIds(props.sourceIds)
-      : undefined;
-
-    if (Array.isArray(props.sourceIds) && !sourceIds?.length) {
-      return [];
+    if (authorized && sourceIds) {
+      const available = await this.source.hasEmbeddingIndex(
+        sourceIds,
+        this.embeddingIndex,
+        true,
+      );
+      if (!available) {
+        return [];
+      }
     }
 
     const config = getKnowledgeConfiguration();
     let embedding;
-    if (props.sessionId) {
+    if (authorized?.embedQuery) {
+      embedding = await authorized.embedQuery(query, {
+        ...this.embeddingIdentity,
+      });
+      if (!embedding) {
+        return [];
+      }
+      this.embeddingClient.validateEmbedding(embedding);
+    } else if (props.sessionId) {
       embedding = await this.embeddingClient.embed(query, {
         sessionId: props.sessionId,
       });
@@ -232,38 +270,64 @@ export class Service {
       Math.max(Math.floor(Number(props.neighborWindow || 0)), 0),
       5,
     );
-    const seedChunks = await this.source.searchChunks({
-      embedding,
-      topK,
-      minSimilarity: props.minSimilarity,
-      sourceIds,
-    });
-
-    let neighborChunks;
-    if (neighborWindow) {
-      neighborChunks = await this.source.findNeighborChunks({
-        window: neighborWindow,
-        seeds: seedChunks
-          .filter((chunk) => Boolean(chunk.sourceId))
-          .map((chunk) => {
-            return {
-              sourceId: chunk.sourceId as string,
-              chunkIndex: chunk.chunkIndex,
-              distance: chunk.distance,
-              similarity: chunk.similarity,
-            };
-          }),
-      });
-    } else {
-      neighborChunks = [];
-    }
-    const results = this.dedupeSearchResults([
-      ...seedChunks,
-      ...neighborChunks,
-    ]);
     const finalTopK = props.finalTopK
       ? Math.min(Math.max(Number(props.finalTopK), 1), 50)
       : null;
+
+    const indexScope = {
+      ...(authorized && { includeCustomerMemory: true }),
+      ...(this.embeddingIndex && { embeddingIndex: this.embeddingIndex }),
+    };
+    const retrieve = async (ids: string[] | undefined) => {
+      const seedChunks = await this.source.searchChunks({
+        embedding,
+        topK,
+        minSimilarity:
+          props.minSimilarity ??
+          (authorized ? KNOWLEDGE_SCOPED_MIN_SIMILARITY : undefined),
+        sourceIds: ids,
+        ...indexScope,
+      });
+      if (!neighborWindow) {
+        return this.dedupeSearchResults(seedChunks);
+      }
+      const neighborChunks = await this.source.findNeighborChunks({
+        window: neighborWindow,
+        ...indexScope,
+        seeds: seedChunks
+          .filter((chunk) => Boolean(chunk.sourceId))
+          .map((chunk) => ({
+            sourceId: chunk.sourceId as string,
+            ...(chunk.sourceVersion && { sourceVersion: chunk.sourceVersion }),
+            chunkIndex: chunk.chunkIndex,
+            distance: chunk.distance,
+            similarity: chunk.similarity,
+          })),
+      });
+      return this.dedupeSearchResults([...seedChunks, ...neighborChunks]);
+    };
+
+    if (sourceIds && authorized?.personalSourceIds?.length) {
+      const personal = new Set(
+        this.normalizeSourceIds(authorized.personalSourceIds),
+      );
+      const staffIds = sourceIds.filter((id) => !personal.has(id));
+      const personalIds = sourceIds.filter((id) => personal.has(id));
+      if (staffIds.length && personalIds.length) {
+        const [staffResults, personalResults] = await Promise.all([
+          retrieve(staffIds),
+          retrieve(personalIds),
+        ]);
+        const limit = finalTopK ?? topK;
+        const personalReserve = Math.min(
+          Math.floor(limit / 2),
+          personalResults.length,
+        );
+        const staff = staffResults.slice(0, limit - personalReserve);
+        return [...staff, ...personalResults.slice(0, limit - staff.length)];
+      }
+    }
+    const results = await retrieve(sourceIds);
 
     return finalTopK ? results.slice(0, finalTopK) : results;
   }
@@ -328,13 +392,17 @@ export class Service {
     sourceId?: string;
     force?: boolean;
   }) {
-    if (!props?.dryRun) await this.assertEmbeddingModelDimensions();
-    const indexer = new KnowledgeIndexer({
-      source: this.source,
-      embeddingClient: this.embeddingClient,
+    if (!props?.dryRun) {
+      await this.assertEmbeddingModelDimensions();
+    }
+    return this.indexer().index({
+      rootPath: props?.rootPath,
+      limit: props?.limit,
+      dryRun: props?.dryRun,
+      clear: props?.clear,
+      sourceId: props?.sourceId,
+      force: props?.force,
     });
-
-    return indexer.index(props);
   }
 
   async reindexSource(id: string) {
@@ -345,12 +413,7 @@ export class Service {
       throw new Error(`Not Found error. Knowledge source ${id} was not found.`);
     }
 
-    const indexer = new KnowledgeIndexer({
-      source: this.source,
-      embeddingClient: this.embeddingClient,
-    });
-
-    return indexer.index({ sourceId: id, force: true });
+    return this.indexer().index({ sourceId: id, force: true });
   }
 
   async learnContent(props: {
@@ -370,75 +433,64 @@ export class Service {
       );
     if (props.fileIds?.length)
       await this.source.validateAttachments(props.fileIds);
-    const source = await this.source.upsertSourceBySlug(
-      {
-        slug,
-        title: props.title.trim() || "Knowledge",
-        content: props.content,
-        description: props.description,
-      },
-      true,
-    );
-    if (!source) throw new Error("Knowledge Source could not be saved.");
-    await props.onSourceSaved?.(source.id);
-    let processingError: string | undefined;
-    if (props.fileIds?.length) {
-      await this.source.attachFiles(source.id, props.fileIds);
-      try {
-        await this.rebuildFiles(source.id);
-      } catch (error) {
-        processingError =
-          error instanceof Error ? error.message : String(error);
+    return this.source.withTransaction(async (scope) => {
+      const source = await scope.upsertSourceBySlug(
+        {
+          slug,
+          title: props.title.trim() || "Knowledge",
+          content: props.content,
+          description: props.description,
+        },
+        true,
+      );
+      await props.onSourceSaved?.(source.id);
+      if (props.fileIds?.length) {
+        await scope.attachFiles(source.id, props.fileIds);
+        await new MaterialService({ source: scope }).rebuild(source.id);
       }
-    }
-    let index: Awaited<ReturnType<Service["index"]>> | undefined;
-    let indexError: string | undefined;
-    try {
-      if (!processingError) index = await this.index({ sourceId: source.id });
-    } catch (error) {
-      indexError = error instanceof Error ? error.message : String(error);
-      console.error("Knowledge indexing failed", source.id, indexError);
-    }
-    const loadedSource = await this.source.findSourceById(source.id);
-
-    return {
-      source: loadedSource,
-      index,
-      indexError,
-      processingError,
-    };
+      const index = await this.indexAuthorizedSource(
+        { sourceId: source.id },
+        scope,
+      );
+      const saved = await scope.findSourceById(source.id);
+      return { source: saved!, index };
+    });
   }
 
-  async rebuildFiles(sourceId: string) {
-    // File analysis is implemented by the common Source service operation.
-    const source = await this.materialService.rebuild(sourceId);
-    if (!source) return;
-    try {
-      await this.index({ sourceId });
-    } catch (error) {
-      console.error(
-        "Knowledge material saved; indexing failed",
+  async rebuildFiles(sourceId: string, source = this.source) {
+    return source.withTransaction(async (scope) => {
+      const analyzed = await new MaterialService({ source: scope }).rebuild(
         sourceId,
-        error,
       );
-    }
-    return source;
+      if (!analyzed) {
+        throw new Error("Not Found error. Knowledge Source is unavailable.");
+      }
+      await this.indexAuthorizedSource({ sourceId }, scope);
+      return scope.findSourceById(sourceId);
+    });
   }
 
   private async assertEmbeddingModelDimensions() {
-    const config = getKnowledgeConfiguration();
-
-    if (config.embedding.provider === "openrouter") {
+    const embedding = this.embeddingIdentity;
+    if (embedding.provider !== "llm") {
       return;
     }
 
-    const model = await this.modelClient.get(config.embedding.model);
+    const model = await this.modelClient.get(embedding.model);
 
-    if (model.dimensions !== config.embedding.dimensions) {
+    if (model.dimensions !== embedding.dimensions) {
       throw new Error(
-        `Knowledge embedding model ${model.id} must have ${config.embedding.dimensions} dimensions; got ${model.dimensions || "unknown"}.`,
+        `Knowledge embedding model ${model.id} must have ${embedding.dimensions} dimensions; got ${model.dimensions || "unknown"}.`,
       );
     }
+  }
+
+  private indexer(source = this.source) {
+    return new KnowledgeIndexer({
+      source,
+      embeddingClient: this.embeddingClient,
+      embeddingIndex: this.embeddingIndex,
+    });
   }
 
   private normalizeSourceIds(sourceIds: string[]) {

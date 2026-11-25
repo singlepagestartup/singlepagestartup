@@ -2,13 +2,21 @@
 
 import { KnowledgeSource, KnowledgeSourceDraft } from "../types";
 import { Component as KnowledgeModuleSource } from "@sps/knowledge/models/source/frontend/component";
-import { readKnowledgeDocumentContent } from "@sps/shared-utils";
+import { useRef, useState } from "react";
+import Markdown from "markdown-to-jsx";
+import { Icon } from "@sps/ui-adapter";
 import {
+  AI_CHAT_ATTACHMENT_ACCEPT,
+  AI_CHAT_ATTACHMENT_FORMAT_LABEL,
+  assertSupportedAiChatAttachments,
+  readKnowledgeDocumentContent,
+} from "@sps/shared-utils";
+import {
+  Button,
+  settingsFormStyles,
   Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
+  SettingsDialogContent,
+  SettingsDialogHeader,
 } from "@sps/shared-ui-shadcn";
 
 import { KnowledgeSourceFiles } from "./KnowledgeSourceFiles";
@@ -16,107 +24,213 @@ import type { IProps as IFileScope } from "@sps/rbac/models/subject/sdk/server/s
 
 interface KnowledgeSourceDialogProps {
   fileScope?: IFileScope;
-  onFilesUpdated?: (source: KnowledgeSource) => void;
   document: KnowledgeSource | null | undefined;
   draft: KnowledgeSourceDraft;
   isDirty: boolean;
+  saveError?: string;
+  saveBlocked?: boolean;
   isDeleting: boolean;
   isOpen: boolean;
-  isReindexing: boolean;
   isSaving: boolean;
   language: string;
   readOnly?: boolean;
+  personal?: boolean;
   mode: "create" | "edit";
   needsReindex: boolean;
-  onUnlink?: (source: KnowledgeSource) => Promise<void> | void;
-  onDelete: (document: KnowledgeSource) => Promise<void> | void;
+  onDelete?: (document: KnowledgeSource) => Promise<void> | void;
   onDraftChange: (draft: KnowledgeSourceDraft) => void;
   onOpenChange: (open: boolean) => void;
-  onReindex: (document: KnowledgeSource) => Promise<void> | void;
-  onSave: (document: KnowledgeSource) => void;
+  onSave: (
+    document: KnowledgeSource,
+    files?: File[],
+    removeFileIds?: string[],
+    onSaved?: () => void,
+  ) => void;
 }
 
 export function KnowledgeSourceDialog(props: KnowledgeSourceDialogProps) {
+  const picker = useRef<HTMLInputElement>(null);
+  const [files, setFiles] = useState<File[]>([]);
+  const [removed, setRemoved] = useState<string[]>([]);
+  const [fileError, setFileError] = useState("");
   const ru = props.language === "ru";
   const isCreating = props.mode === "create";
   const closeLabel = ru ? "Закрыть" : "Close";
-  if (props.readOnly) {
-    return (
-      <Dialog open={props.isOpen} onOpenChange={props.onOpenChange}>
-        <DialogContent
-          className="max-h-[90vh] max-w-3xl overflow-y-auto"
-          closeLabel={closeLabel}
-        >
-          <DialogHeader>
-            <DialogTitle>{props.document?.title}</DialogTitle>
-            <DialogDescription>
-              {ru ? "Источник знаний профиля" : "Profile knowledge source"}
-            </DialogDescription>
-          </DialogHeader>
-          <p className="whitespace-pre-wrap break-words text-sm">
-            {readKnowledgeDocumentContent(props.document?.content ?? "")}
-          </p>
-        </DialogContent>
-      </Dialog>
-    );
-  }
-
   return (
     <Dialog open={props.isOpen} onOpenChange={props.onOpenChange}>
-      <DialogContent
-        className="max-h-[90vh] max-w-3xl overflow-y-auto p-0"
-        closeLabel={closeLabel}
-      >
-        <DialogHeader className="border-b border-slate-200 px-6 py-4">
-          <DialogTitle>
-            {isCreating
-              ? ru
-                ? "Новый источник знаний"
-                : "Create Knowledge"
-              : ru
-                ? "Редактировать источник знаний"
-                : "Edit Knowledge"}
-          </DialogTitle>
-          <DialogDescription>
-            {isCreating
-              ? ru
-                ? "Добавьте сведения, которыми сотрудник будет пользоваться в работе."
-                : "Create a knowledge source for this profile."
-              : ru
-                ? "Здесь можно изменить текст, прикрепить материалы и обновить поисковый индекс."
-                : "Update and reindex this profile knowledge source."}
-          </DialogDescription>
-        </DialogHeader>
-        {props.document ? (
-          <KnowledgeModuleSource
-            isServer={false}
-            variant="chat-sidebar-detail"
-            dataSource="props"
-            data={props.document}
-            language={props.language}
-            draft={props.draft}
-            isDeleting={props.isDeleting}
-            isDirty={props.isDirty}
-            isSaving={props.isSaving}
-            isReindexing={props.isReindexing}
-            needsReindex={props.needsReindex}
-            mode={props.mode}
-            onUnlink={props.onUnlink}
-            onDelete={props.mode === "edit" ? props.onDelete : undefined}
-            onDraftChange={props.onDraftChange}
-            onSave={props.onSave}
-            onReindex={props.onReindex}
-          />
-        ) : null}
-        {props.mode === "edit" && props.fileScope && props.onFilesUpdated ? (
-          <KnowledgeSourceFiles
-            scope={props.fileScope}
-            language={props.language}
-            disabled={props.isDirty || props.isSaving}
-            onUpdated={props.onFilesUpdated}
-          />
-        ) : null}
-      </DialogContent>
+      <SettingsDialogContent closeLabel={closeLabel}>
+        {props.readOnly ? (
+          <>
+            <SettingsDialogHeader
+              title={
+                props.document?.variant === "customer-memory" &&
+                props.document.title === "Personal note"
+                  ? ru
+                    ? "Личная заметка"
+                    : "Personal note"
+                  : props.document?.title ||
+                    (ru ? "Источник знаний" : "Knowledge source")
+              }
+              description={
+                ru ? "Источник знаний профиля" : "Profile knowledge source"
+              }
+            />
+            <div className="prose max-w-none break-words text-sm">
+              <Markdown options={{ disableParsingRawHTML: true }}>
+                {readKnowledgeDocumentContent(props.document?.content ?? "")}
+              </Markdown>
+            </div>
+          </>
+        ) : (
+          <>
+            <SettingsDialogHeader
+              title={
+                isCreating
+                  ? ru
+                    ? "Новый источник знаний"
+                    : "Create Knowledge"
+                  : ru
+                    ? "Редактировать источник знаний"
+                    : "Edit Knowledge"
+              }
+              description={
+                props.personal
+                  ? ru
+                    ? "Сохраните сведения в своём профиле."
+                    : "Save information in your personal profile."
+                  : isCreating
+                    ? ru
+                      ? "Добавьте заметки и исходные материалы для сотрудника."
+                      : "Add notes and reference files for the employee."
+                    : ru
+                      ? "Обновите текст или прикрепите файлы для ответов сотрудника."
+                      : "Update the text or attach files for the assistant to use in its replies."
+              }
+            />
+            {props.saveError && (
+              <p role="alert" className="text-sm text-destructive">
+                {props.saveError}
+              </p>
+            )}
+            {props.document && (
+              <KnowledgeModuleSource
+                isServer={false}
+                variant="chat-sidebar-detail"
+                dataSource="props"
+                data={props.document}
+                language={props.language}
+                draft={props.draft}
+                isDeleting={props.isDeleting}
+                isDirty={
+                  props.isDirty || files.length > 0 || removed.length > 0
+                }
+                isSaving={props.isSaving}
+                needsReindex={props.needsReindex}
+                retryIndexOnSave
+                saveBlocked={props.saveBlocked}
+                mode={props.mode}
+                onDelete={props.mode === "edit" ? props.onDelete : undefined}
+                onDraftChange={props.onDraftChange}
+                onSave={(document) =>
+                  props.onSave(document, files, removed, () => {
+                    setFiles([]);
+                    setRemoved([]);
+                    setFileError("");
+                  })
+                }
+                attachments={
+                  props.fileScope ? (
+                    <section className="grid gap-2">
+                      <div className="flex flex-wrap items-center justify-between gap-2">
+                        <h3 className={settingsFormStyles.label}>
+                          {ru
+                            ? "Прикреплённые материалы"
+                            : "Attached materials"}
+                        </h3>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          className={`${settingsFormStyles.secondary} justify-self-start`}
+                          disabled={props.isSaving}
+                          onClick={() => picker.current?.click()}
+                        >
+                          <Icon name="paperclip" />
+                          {ru ? "Добавить файлы" : "Add files"}
+                        </Button>
+                      </div>
+                      <p className="text-sm text-muted-foreground">
+                        {AI_CHAT_ATTACHMENT_FORMAT_LABEL}
+                      </p>
+                      <input
+                        ref={picker}
+                        type="file"
+                        className="hidden"
+                        multiple
+                        accept={AI_CHAT_ATTACHMENT_ACCEPT}
+                        aria-label={
+                          ru ? "Файлы источника знаний" : "Knowledge files"
+                        }
+                        onChange={(event) => {
+                          const selected = Array.from(
+                            event.currentTarget.files ?? [],
+                          );
+                          event.currentTarget.value = "";
+                          if (!selected.length) return;
+                          try {
+                            const next = [...files, ...selected];
+                            assertSupportedAiChatAttachments(next);
+                            setFiles(next);
+                            setFileError("");
+                          } catch (error) {
+                            setFileError(
+                              error instanceof Error
+                                ? error.message
+                                : String(error),
+                            );
+                          }
+                        }}
+                      />
+                      {fileError && <p role="alert">{fileError}</p>}
+                      {files.map((file, index) => (
+                        <div
+                          key={index}
+                          className="flex items-center justify-between gap-2 text-sm"
+                        >
+                          <span className="break-all">{file.name}</span>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            disabled={props.isSaving}
+                            aria-label={
+                              ru ? `Убрать ${file.name}` : `Remove ${file.name}`
+                            }
+                            onClick={() =>
+                              setFiles(files.filter((_, i) => i !== index))
+                            }
+                          >
+                            <Icon name="x" />
+                          </Button>
+                        </div>
+                      ))}
+                      {!isCreating && (
+                        <KnowledgeSourceFiles
+                          scope={props.fileScope}
+                          language={props.language}
+                          removedIds={removed}
+                          disabled={props.isSaving}
+                          onRemove={(id) =>
+                            setRemoved((current) => [...current, id])
+                          }
+                        />
+                      )}
+                    </section>
+                  ) : undefined
+                }
+              />
+            )}
+          </>
+        )}
+      </SettingsDialogContent>
     </Dialog>
   );
 }

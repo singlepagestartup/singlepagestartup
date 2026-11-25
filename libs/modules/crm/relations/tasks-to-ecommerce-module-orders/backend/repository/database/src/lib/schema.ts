@@ -24,7 +24,7 @@ export const Table = pgTable(
       .references(() => Order.id, { onDelete: "cascade" }),
   },
   (t) => [
-    pgCore.uniqueIndex("cm_tasks_to_orders_owner").on(t.taskId),
+    pgCore.uniqueIndex("cm_tasks_to_orders_pair").on(t.taskId, t.orderId),
     pgCore.index("cm_tasks_to_orders_target").on(t.orderId),
   ],
 );

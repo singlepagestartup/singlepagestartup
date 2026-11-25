@@ -23,7 +23,9 @@ export class Service {
     };
     const params = { filters: { and: [threadIdFilter] } };
     const [workLinks, productLinks] = await Promise.all([
-      social.threadsToCrmModuleTasks.find({ params }),
+      social.chatsToCrmModuleTasks.channels({
+        threadIds: threadIdFilter.value,
+      }),
       social.threadsToEcommerceModuleProducts.find({
         params: {
           ...params,

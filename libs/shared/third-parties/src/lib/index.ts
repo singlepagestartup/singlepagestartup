@@ -36,18 +36,29 @@ export type {
 export {
   sendWork,
   supportsStrictStageDecision,
+  supportsWorkReplyImage,
   readWorkUsage,
   estimateWork,
+  estimateWorkWithFiles,
   ProviderRejected,
+  WorkInputFileRejected,
   ProviderOutcomeUnknown,
+  type IWorkInputFile,
   type IWorkRequest,
   type ICompletedWork,
 } from "./open-router/work-request";
+export {
+  workResponseState,
+  type TWorkResponseState,
+} from "./open-ai/work-responses";
 export {
   estimateImageWork,
   sendImageWork,
   supportsImageWork,
   IMAGE_WORK_MAX_SOURCE_IMAGES,
+  type IImageWorkCoverArtwork,
+  type IImageWorkStyleReference,
+  OPEN_AI_IMAGE_WORK_MODEL,
   type IImageWorkRequest,
 } from "./open-router/image-work";
 export {

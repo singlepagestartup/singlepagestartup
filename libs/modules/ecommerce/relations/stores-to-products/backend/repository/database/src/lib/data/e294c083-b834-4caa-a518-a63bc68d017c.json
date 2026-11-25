@@ -5,6 +5,8 @@
   "variant": "default",
   "orderIndex": 0,
   "className": null,
+  "configurationKey": "",
+  "settings": {},
   "sku": "ai-chat-tokens-3000-rub",
   "storeId": "92aefa1f-247b-49a9-b1b9-c8029cc840dc",
   "productId": "830b6fb3-8e7f-4e55-aa60-387bbc8b5751"

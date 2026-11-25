@@ -1,0 +1,3 @@
+ALTER TABLE "sps_ee_os_to_fe_se_me_fs_b06" DROP CONSTRAINT "sps_ee_os_to_fe_se_me_fs_b06_private_receipt_file_id_sps_fs_private_file_id_fk";
+--> statement-breakpoint
+ALTER TABLE "sps_ee_os_to_fe_se_me_fs_b06" ADD CONSTRAINT "sps_ee_os_to_fe_se_me_fs_b06_private_receipt_file_id_sps_f_s_file_id_fk" FOREIGN KEY ("private_receipt_file_id") REFERENCES "public"."sps_f_s_file"("id") ON DELETE restrict ON UPDATE no action;

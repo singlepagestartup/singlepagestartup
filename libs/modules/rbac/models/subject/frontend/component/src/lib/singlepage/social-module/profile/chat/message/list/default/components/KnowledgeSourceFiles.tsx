@@ -1,223 +1,139 @@
 "use client";
-import { memo, useCallback, useRef, useState } from "react";
-import { action as useFiles } from "@sps/rbac/models/subject/sdk/client/src/lib/singlepage/social-module/profile/find-by-id/chat/find-by-id/profile/find-by-id/knowledge/source/find-by-id/files/find";
-import { action as useUpdateFiles } from "@sps/rbac/models/subject/sdk/client/src/lib/singlepage/social-module/profile/find-by-id/chat/find-by-id/profile/find-by-id/knowledge/source/find-by-id/files/update";
+import { memo, useCallback } from "react";
+import {
+  action as useFiles,
+  downloadImage,
+} from "@sps/rbac/models/subject/sdk/client/src/lib/singlepage/social-module/profile/find-by-id/chat/find-by-id/profile/find-by-id/knowledge/source/find-by-id/files/find";
 import type { IProps as IScope } from "@sps/rbac/models/subject/sdk/server/src/lib/singlepage/social-module/profile/find-by-id/chat/find-by-id/profile/find-by-id/knowledge/source/find-by-id/files/find";
-import { Button } from "@sps/shared-ui-shadcn";
+import { Button, settingsFormStyles } from "@sps/shared-ui-shadcn";
 import { NEXT_PUBLIC_API_SERVICE_URL } from "@sps/shared-utils";
-import { toast } from "sonner";
-import type { KnowledgeSource } from "../types";
-
+import { FilePreview, Icon } from "@sps/ui-adapter";
 interface IProps {
   scope: IScope;
+  removedIds: string[];
+  onRemove: (id: string) => void;
   language: string;
   disabled?: boolean;
-  onUpdated: (source: KnowledgeSource) => void;
 }
 interface IRowProps {
   id: string;
   title: string;
   fileUrl: string | null;
+  privateScope?: IScope;
+  mimeType?: string | null;
   language: string;
-  busy: boolean;
   disabled: boolean;
-  onReplace: (id: string) => void;
   onRemove: (id: string) => void;
 }
 const Row = memo(function Row(props: IRowProps) {
   const ru = props.language === "ru";
+  const download = useCallback(
+    (signal?: AbortSignal, maxBytes?: number) =>
+      downloadImage(props.privateScope!, props.id, signal, maxBytes),
+    [props.privateScope, props.id],
+  );
   return (
-    <li className="flex flex-wrap items-center gap-2 rounded-md border p-2 text-xs">
-      <span className="min-w-0 flex-1 break-all">{props.title}</span>
-      {props.fileUrl ? (
-        <Button variant="outline" size="sm" className="w-auto" asChild>
-          <a
-            href={props.fileUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            aria-label={ru ? `Открыть ${props.title}` : `Open ${props.title}`}
+    <li className="grid min-w-0 gap-2 py-3 first:pt-0 last:pb-0">
+      {props.privateScope ? (
+        <FilePreview
+          name={props.title}
+          mimeType={props.mimeType}
+          language={props.language}
+          layout="message"
+          onDownload={download}
+        />
+      ) : (
+        <span className="flex min-w-0 items-start gap-2 text-sm font-medium">
+          <Icon name="file-text" className="text-muted-foreground" />
+          <span className="min-w-0 break-words [overflow-wrap:anywhere]">
+            {props.title}
+          </span>
+        </span>
+      )}
+      <div className="flex flex-wrap gap-2">
+        {props.fileUrl ? (
+          <Button
+            variant="outline"
+            className={settingsFormStyles.secondary}
+            asChild
           >
-            {ru ? "Открыть" : "Open"}
-          </a>
+            <a
+              href={props.fileUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label={ru ? `Открыть ${props.title}` : `Open ${props.title}`}
+            >
+              {ru ? "Открыть" : "Open"}
+            </a>
+          </Button>
+        ) : null}
+        <Button
+          type="button"
+          variant="outline"
+          className={settingsFormStyles.secondary}
+          disabled={props.disabled}
+          aria-label={
+            ru ? `Убрать файл «${props.title}»` : `Detach ${props.title}`
+          }
+          onClick={() => props.onRemove(props.id)}
+        >
+          {ru ? "Убрать" : "Detach"}
         </Button>
-      ) : null}
-      <Button
-        type="button"
-        variant="outline"
-        size="sm"
-        className="w-auto"
-        disabled={props.disabled || props.busy}
-        onClick={() => props.onReplace(props.id)}
-      >
-        {ru ? "Заменить" : "Replace"}
-      </Button>
-      <Button
-        type="button"
-        variant="outline"
-        size="sm"
-        className="w-auto"
-        disabled={props.disabled || props.busy}
-        onClick={() => props.onRemove(props.id)}
-      >
-        {ru ? "Убрать" : "Detach"}
-      </Button>
+      </div>
     </li>
   );
 });
 export function KnowledgeSourceFiles(props: IProps) {
   const ru = props.language === "ru";
+
   const files = useFiles(props.scope);
-  const input = useRef<HTMLInputElement>(null);
-  const [replacingId, setReplacingId] = useState<string | null>(null);
-  const [processingId, setProcessingId] = useState<string | null>(null);
-  const update = useUpdateFiles({
-    onSuccess(result) {
-      if (result.source) props.onUpdated(result.source);
-      if (result.processingError) {
-        toast.error(
-          ru ? "Не удалось разобрать материалы." : result.processingError,
-        );
-      } else {
-        toast.success(ru ? "Материалы обработаны" : "Materials analyzed");
-      }
-      void files.refetch();
-    },
-  });
-  const mutate = useCallback(
-    async (
-      data: {
-        files?: File[];
-        removeFileId?: string;
-        replaceFileId?: string;
-        reanalyze?: boolean;
-      },
-      id: string,
-    ) => {
-      setProcessingId(id);
-      try {
-        await update.mutateAsync({ ...props.scope, data });
-      } catch (error) {
-        toast.error(
-          ru
-            ? "Не удалось обновить файлы."
-            : error instanceof Error
-              ? error.message
-              : String(error),
-        );
-        void files.refetch();
-      } finally {
-        setProcessingId(null);
-        setReplacingId(null);
-      }
-    },
-    [update.mutateAsync, props.scope, files.refetch, ru],
-  );
-  const replace = useCallback((id: string) => {
-    setReplacingId(id);
-    input.current?.click();
-  }, []);
-  const remove = useCallback(
-    (id: string) => {
-      void mutate({ removeFileId: id }, id);
-    },
-    [mutate],
+  const visible = files.data?.filter(
+    ({ file }) => !props.removedIds.includes(file.id),
   );
   return (
-    <div className="space-y-2 border-t px-6 py-3">
-      <div className="flex items-center justify-between">
-        <h3 className="text-sm font-medium">
-          {ru ? "Прикреплённые материалы" : "Attached materials"}
-        </h3>
-        <Button
-          type="button"
-          variant="outline"
-          size="sm"
-          className="w-auto"
-          disabled={props.disabled || update.isPending}
-          onClick={() => {
-            setReplacingId(null);
-            input.current?.click();
-          }}
-        >
-          {ru ? "Добавить файлы" : "Add files"}
-        </Button>
-      </div>
-      <input
-        ref={input}
-        className="hidden"
-        type="file"
-        multiple
-        aria-label={ru ? "Файлы источника знаний" : "Knowledge files"}
-        onChange={(event) => {
-          const selected = Array.from(event.target.files || []);
-          event.target.value = "";
-          if (selected.length)
-            void mutate(
-              {
-                files: selected,
-                ...(replacingId ? { replaceFileId: replacingId } : {}),
-              },
-              replacingId || "new",
-            );
-        }}
-      />
-      {files.data?.length ? (
-        <Button
-          type="button"
-          variant="outline"
-          size="sm"
-          className="w-auto"
-          disabled={props.disabled || update.isPending}
-          onClick={() => {
-            void mutate({ reanalyze: true }, "analysis");
-          }}
-        >
-          {ru ? "Разобрать файлы" : "Analyze files"}
-        </Button>
-      ) : null}
+    <section
+      aria-label={ru ? "Прикреплённые материалы" : "Attached materials"}
+      className="grid min-w-0 gap-2"
+    >
       {files.isLoading ? (
-        <p className="text-xs">{ru ? "Загружаем файлы…" : "Loading files…"}</p>
+        <p role="status" className="text-sm text-muted-foreground">
+          {ru ? "Загружаем файлы…" : "Loading files…"}
+        </p>
       ) : null}
       {files.isError ? (
-        <p className="text-xs text-red-600">
+        <p role="alert" className="text-sm text-destructive">
           {ru ? "Не удалось загрузить материалы." : "Could not load materials."}
         </p>
       ) : null}
-      <ul className="space-y-1">
-        {files.data?.map(({ file }) => (
-          <Row
-            key={file.id}
-            id={file.id}
-            title={file.adminTitle || file.alt || file.id}
-            language={props.language}
-            fileUrl={
-              file.file
-                ? /^https?:\/\//i.test(file.file)
-                  ? file.file
-                  : `${NEXT_PUBLIC_API_SERVICE_URL}/public${file.file}`
-                : null
-            }
-            busy={processingId === file.id}
-            disabled={Boolean(props.disabled || update.isPending)}
-            onReplace={replace}
-            onRemove={remove}
-          />
-        ))}
-      </ul>
-      {update.isPending ? (
-        <p className="text-xs text-slate-600">
-          {ru
-            ? "Разбираем прикреплённые материалы…"
-            : "Analyzing all attached materials…"}
-        </p>
+      {visible?.length ? (
+        <ul className="min-w-0 divide-y divide-border">
+          {visible.map(({ file, relation }) => (
+            <Row
+              key={file.id}
+              id={file.id}
+              title={file.adminTitle || file.alt || file.id}
+              language={props.language}
+              privateScope={
+                ["private-image", "private-material"].includes(
+                  relation?.variant,
+                )
+                  ? props.scope
+                  : undefined
+              }
+              mimeType={file.mimeType}
+              fileUrl={
+                file.file
+                  ? /^https?:\/\//i.test(file.file)
+                    ? file.file
+                    : `${NEXT_PUBLIC_API_SERVICE_URL}/public${file.file}`
+                  : null
+              }
+              disabled={Boolean(props.disabled)}
+              onRemove={props.onRemove}
+            />
+          ))}
+        </ul>
       ) : null}
-      {props.disabled ? (
-        <p className="text-xs text-slate-600">
-          {ru
-            ? "Сохраните текст, прежде чем менять файлы."
-            : "Save your text changes before changing files."}
-        </p>
-      ) : null}
-    </div>
+    </section>
   );
 }

@@ -5,6 +5,7 @@ import {
   STORE_EMPLOYEE_CHAT_VARIANT,
   type ICrmWorkspaceEmployee,
   type ICrmWorkspaceEmployeeChat,
+  type ICrmWorkspaceEmployeeTraining,
 } from "@sps/rbac/models/subject/sdk/model/src/lib/crm-workspace";
 import type { Service as Subject } from "../../index";
 import { criteria } from "../../ecommerce/customer-work/utils";
@@ -77,6 +78,27 @@ export class Service {
     return profiles.filter((profile) => profile !== null);
   }
 
+  async human(subjectId: string) {
+    const subject = await this.subject.findById({ id: subjectId });
+    if (!subject || subject.variant === "agent") {
+      return undefined;
+    }
+    const profiles = await this.profiles(subjectId);
+    const profile = profiles.find(
+      ({ variant }) => variant !== "artificial-intelligence",
+    );
+    const name = (profile && this.name(profile)) || subject.slug;
+    if (!name) {
+      return undefined;
+    }
+    return {
+      id: subjectId,
+      name,
+      kind: "human" as const,
+      profile,
+    };
+  }
+
   async agentProfile(subjectId: string) {
     const profiles = await this.profiles(subjectId);
     const aiProfiles = profiles.filter(
@@ -92,7 +114,7 @@ export class Service {
     return profile.title?.ru || profile.title?.en || profile.adminTitle;
   }
 
-  private async employee(storeId: string, subjectId: string) {
+  async employee(storeId: string, subjectId: string) {
     const [agent, grants, profile] = await Promise.all([
       this.subject.findById({ id: subjectId }),
       this.subject.module.subjectsToEcommerceModuleStores.find(
@@ -139,7 +161,7 @@ export class Service {
     return employee;
   }
 
-  private async ensureActorProfile(subjectId: string) {
+  async ensureActorProfile(subjectId: string) {
     const profiles = await this.profiles(subjectId);
     const existing = profiles.find(
       (profile) => profile.variant !== "artificial-intelligence",
@@ -171,6 +193,15 @@ export class Service {
     chat: TChatIdentity,
     requestedThreadId?: string,
   ): Promise<IStoreEmployeeTrainingScope> {
+    const { scope } = await this.scopedChat(actorId, chat, requestedThreadId);
+    return scope;
+  }
+
+  private async scopedChat(
+    actorId: string,
+    chat: TChatIdentity,
+    requestedThreadId?: string,
+  ) {
     const identity = chatIdentitySchema.safeParse(
       chat.sourceSystemId?.split(":"),
     );
@@ -193,13 +224,19 @@ export class Service {
       this.social.profilesToChats.find(criteria({ chatId: chat.id })),
       this.social.chatsToThreads.find(criteria({ chatId: chat.id })),
     ]);
-    if (!employee || members.length !== 2 || threads.length !== 1) {
+    if (!employee || members.length !== 2) {
       this.unavailable();
     }
-    const [chatThread] = threads;
+    const defaults = threads.filter(({ variant }) => variant === "default");
+    const threadIds = threads.map(({ threadId }) => threadId);
     if (
-      chatThread.variant !== "default" ||
-      (requestedThreadId && chatThread.threadId !== requestedThreadId) ||
+      defaults.length !== 1 ||
+      threads.some(
+        ({ variant }) => variant !== "default" && variant !== "custom",
+      ) ||
+      new Set(threadIds).size !== threadIds.length ||
+      (requestedThreadId !== undefined &&
+        !threadIds.includes(requestedThreadId)) ||
       !members.some((member) => member.profileId === employee.profileId)
     ) {
       this.unavailable();
@@ -212,15 +249,74 @@ export class Service {
     if (!actorProfile) {
       this.unavailable();
     }
+    const placements = await this.social.chatsToThreads.find({
+      params: {
+        filters: {
+          and: [{ column: "threadId", method: "inArray", value: threadIds }],
+        },
+      },
+    });
+    if (
+      placements.length !== threadIds.length ||
+      placements.some(({ chatId }) => chatId !== chat.id)
+    ) {
+      this.unavailable();
+    }
 
-    return {
+    const scope = {
       storeId,
       subjectId,
       profileId: employee.profileId,
       actorProfileId: actorProfile.id,
       chatId: chat.id,
-      threadId: chatThread.threadId,
+      threadId: requestedThreadId ?? defaults[0].threadId,
     };
+    return { scope, actorProfile, threadIds };
+  }
+
+  private chatIdentity(actorId: string, storeId: string, employeeId: string) {
+    const identity = [storeId.toLowerCase(), actorId, employeeId];
+    return {
+      slug: `${storeEmployeeChatSlugPrefix}${identity.join("-")}`,
+      sourceSystemId: identity.join(":"),
+    };
+  }
+
+  async currentChat(
+    actorId: string,
+    storeId: string,
+    employeeId: string,
+  ): Promise<ICrmWorkspaceEmployeeTraining | undefined> {
+    const { slug } = this.chatIdentity(actorId, storeId, employeeId);
+    const [chat] = await this.social.chat.find(criteria({ slug }));
+    if (!chat) {
+      return undefined;
+    }
+    const { scope, actorProfile, threadIds } = await this.scopedChat(
+      actorId,
+      chat,
+    );
+    const { chatId, threadId, profileId } = scope;
+    const records = await this.social.thread.find({
+      params: {
+        filters: {
+          and: [{ column: "id", method: "inArray", value: threadIds }],
+        },
+        orderBy: {
+          and: [
+            { column: "createdAt", method: "asc" },
+            { column: "id", method: "asc" },
+          ],
+        },
+      },
+    });
+    if (records.length !== threadIds.length) {
+      this.unavailable();
+    }
+    const threads = records
+      .map(({ id, title, adminTitle }) => ({ id, title: title || adminTitle }))
+      .sort((a, b) => Number(b.id === threadId) - Number(a.id === threadId));
+    return { chatId, threadId, profileId, actorProfile, threads };
   }
 
   private async openChat(
@@ -228,8 +324,11 @@ export class Service {
     storeId: string,
     employee: ICrmWorkspaceEmployee,
   ): Promise<ICrmWorkspaceEmployeeChat> {
-    const identity = [storeId, actorId, employee.id];
-    const slug = `${storeEmployeeChatSlugPrefix}${identity.join("-")}`;
+    const { slug, sourceSystemId } = this.chatIdentity(
+      actorId,
+      storeId,
+      employee.id,
+    );
     const [existing] = await this.social.chat.find(criteria({ slug }));
     if (existing) {
       const { chatId, threadId } = await this.scopeForChat(actorId, existing);
@@ -242,13 +341,11 @@ export class Service {
     }
 
     const actorProfileId = await this.ensureActorProfile(actorId);
-    const chat = await this.social.chat.create({
-      data: {
-        slug,
-        title: employee.name,
-        variant: STORE_EMPLOYEE_CHAT_VARIANT,
-        sourceSystemId: identity.join(":"),
-      },
+    const chat = await this.subject.chatOwnership.create(actorId, {
+      slug,
+      title: employee.name,
+      variant: STORE_EMPLOYEE_CHAT_VARIANT,
+      sourceSystemId,
     });
     const thread = await this.social.thread.create({
       data: { title: employee.name, variant: "default" },
@@ -278,6 +375,53 @@ export class Service {
         input.subjectId,
       );
       return this.openChat(actorId, storeId, employee);
+    });
+  }
+
+  async createThread(
+    actorId: string,
+    input: {
+      storeId: string;
+      subjectId: string;
+      title: string;
+      operationKey: string;
+    },
+  ): Promise<ICrmWorkspaceEmployeeChat> {
+    const storeId = input.storeId.toLowerCase();
+    return this.subject.repository.withStoreEmployeeLock(actorId, async () => {
+      const employee = await this.assertAgent(
+        actorId,
+        storeId,
+        input.subjectId,
+      );
+      const chat = await this.openChat(actorId, storeId, employee);
+      await this.subject.chatOwnership.assertOwner(actorId, chat.chatId);
+      const slug = `store-employee-thread-${chat.chatId}-${input.operationKey.toLowerCase()}`;
+      const [previous] = await this.social.thread.find(criteria({ slug }));
+      if (previous) {
+        const links = await this.social.chatsToThreads.find(
+          criteria({ threadId: previous.id }),
+        );
+        if (
+          previous.title !== input.title ||
+          previous.variant !== "custom" ||
+          links.length !== 1 ||
+          links[0].chatId !== chat.chatId ||
+          links[0].variant !== "custom"
+        ) {
+          throw new Error(
+            "Conflict error. This request key belongs to another thread",
+          );
+        }
+        return { ...chat, threadId: previous.id };
+      }
+      const thread = await this.social.thread.create({
+        data: { slug, title: input.title, variant: "custom" },
+      });
+      await this.social.chatsToThreads.create({
+        data: { chatId: chat.chatId, threadId: thread.id, variant: "custom" },
+      });
+      return { ...chat, threadId: thread.id };
     });
   }
 

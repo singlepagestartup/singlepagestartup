@@ -3,7 +3,7 @@ import { injectFromBase, injectable } from "inversify";
 import {
   DatabaseRepository,
   trackRepositoryRead,
-  withConsistencyDatabase,
+  withConsistencyTransaction,
 } from "@sps/shared-backend-api";
 import {
   and,
@@ -12,6 +12,7 @@ import {
   eq,
   gt,
   isNull,
+  inArray,
   lt,
   lte,
   notLike,
@@ -26,11 +27,16 @@ import {
   type ITaskScope,
 } from "@sps/crm/models/task/sdk/model";
 
+import { Table as TaskOrder } from "@sps/crm/relations/tasks-to-ecommerce-module-orders/backend/repository/database";
+import { Table as TaskOffer } from "@sps/crm/relations/tasks-to-ecommerce-module-stores-to-products/backend/repository/database";
+import { Table as Offer } from "@sps/ecommerce/relations/stores-to-products/backend/repository/database";
+import { Table as TaskStage } from "@sps/crm/relations/tasks-to-stages/backend/repository/database";
+
 @injectable()
 @injectFromBase()
 export class Repository extends DatabaseRepository<typeof Table> {
   transaction<T>(operation: () => Promise<T>) {
-    return this.db.transaction((tx) => withConsistencyDatabase(tx, operation));
+    return withConsistencyTransaction(this.db, operation);
   }
 
   async lockOpening(storeId: string, openingKey: string) {
@@ -47,14 +53,11 @@ export class Repository extends DatabaseRepository<typeof Table> {
     );
   }
 
-  async scoped({ storeId, taskId }: ITaskScope, lock = false) {
+  async scoped({ taskId }: ITaskScope, lock = false) {
     await trackRepositoryRead(Table, this.db, {
       and: [{ column: "id", method: "eq", value: taskId }],
     });
-    const query = this.db
-      .select()
-      .from(Table)
-      .where(and(eq(Table.storeId, storeId), eq(Table.id, taskId)));
+    const query = this.db.select().from(Table).where(eq(Table.id, taskId));
     if (lock) {
       const [row] = await query.for("update");
       return row;
@@ -64,29 +67,24 @@ export class Repository extends DatabaseRepository<typeof Table> {
     return row;
   }
 
-  async list(input: IListTasks, now: Date) {
+  async list(
+    input: IListTasks,
+    now: Date,
+    ids: string[],
+    matchingSearchIds: string[],
+  ) {
     const limit = input.limit ?? 50;
     const predicates = [
-      eq(Table.storeId, input.storeId),
+      inArray(Table.id, ids),
       notLike(Table.openingKey, `${STORE_EMPLOYEE_TRAINING_KEY_PREFIX}%`),
     ];
-    if (input.funnelId) {
-      predicates.push(eq(Table.funnelId, input.funnelId));
-    }
     if (input.stageId) {
       predicates.push(eq(Table.stageId, input.stageId));
     }
-    if (input.customerId) {
-      predicates.push(eq(Table.customerId, input.customerId));
-    }
-    if (input.orderId) {
-      predicates.push(eq(Table.orderId, input.orderId));
-    }
-    if (input.publicationId) {
-      predicates.push(eq(Table.publicationId, input.publicationId));
-    }
-    if (input.assigneeId) {
-      predicates.push(eq(Table.assigneeId, input.assigneeId));
+    if (input.current) {
+      predicates.push(
+        or(eq(Table.status, "active"), eq(Table.status, "waiting"))!,
+      );
     }
     if (input.status) {
       predicates.push(eq(Table.status, input.status));
@@ -97,8 +95,7 @@ export class Repository extends DatabaseRepository<typeof Table> {
         or(
           sql`position(${needle} in lower(${Table.stageId})) > 0`,
           sql`position(${needle} in ${Table.id}::text) > 0`,
-          sql`position(${needle} in ${Table.orderId}::text) > 0`,
-          sql`position(${needle} in ${Table.customerId}::text) > 0`,
+          inArray(Table.id, matchingSearchIds),
         )!,
       );
     }
@@ -121,9 +118,7 @@ export class Repository extends DatabaseRepository<typeof Table> {
       );
     }
 
-    await trackRepositoryRead(Table, this.db, {
-      and: [{ column: "storeId", method: "eq", value: input.storeId }],
-    });
+    await trackRepositoryRead(Table, this.db);
     const rows = await this.db
       .select()
       .from(Table)
@@ -133,16 +128,14 @@ export class Repository extends DatabaseRepository<typeof Table> {
     return updatedPage(rows, limit);
   }
 
-  async due(storeId: string, limit: number, now: Date) {
-    await trackRepositoryRead(Table, this.db, {
-      and: [{ column: "storeId", method: "eq", value: storeId }],
-    });
+  async due(ids: string[], limit: number, now: Date) {
+    await trackRepositoryRead(Table, this.db);
     return this.db
       .select()
       .from(Table)
       .where(
         and(
-          eq(Table.storeId, storeId),
+          inArray(Table.id, ids),
           eq(Table.status, "waiting"),
           lte(Table.nextActionAt, now),
         ),
@@ -159,6 +152,88 @@ export class Repository extends DatabaseRepository<typeof Table> {
       .where(and(eq(Table.status, "waiting"), lte(Table.nextActionAt, now)))
       .orderBy(asc(Table.nextActionAt), asc(Table.id))
       .limit(limit);
+  }
+
+  async commerce(taskIds: string[]) {
+    await Promise.all(
+      [TaskOrder, TaskOffer, TaskStage, Offer].map((t) =>
+        trackRepositoryRead(t, this.db),
+      ),
+    );
+    const [orders, offers, selectionHistory] = await Promise.all([
+      this.db
+        .select()
+        .from(TaskOrder)
+        .where(inArray(TaskOrder.taskId, taskIds))
+        .orderBy(asc(TaskOrder.createdAt), asc(TaskOrder.id)),
+      this.db
+        .select({
+          taskId: TaskOffer.taskId,
+          offerId: Offer.id,
+          productId: Offer.productId,
+        })
+        .from(TaskOffer)
+        .innerJoin(Offer, eq(Offer.id, TaskOffer.offerId))
+        .where(inArray(TaskOffer.taskId, taskIds))
+        .orderBy(asc(TaskOffer.createdAt), asc(TaskOffer.id)),
+      this.db
+        .select({
+          taskId: TaskStage.taskId,
+          kind: TaskStage.kind,
+          detail: TaskStage.detail,
+        })
+        .from(TaskStage)
+        .where(
+          and(
+            inArray(TaskStage.taskId, taskIds),
+            inArray(TaskStage.kind, [
+              "opened",
+              "offer-attached",
+              "order-attached",
+            ]),
+          ),
+        )
+        .orderBy(asc(TaskStage.revision)),
+    ]);
+    return { orders, offers, selectionHistory };
+  }
+
+  async byCommerce(
+    column: "offerId" | "productId" | "orderId",
+    values: string[],
+  ) {
+    if (column === "orderId") {
+      await trackRepositoryRead(TaskOrder, this.db);
+      return this.db
+        .select({ taskId: TaskOrder.taskId })
+        .from(TaskOrder)
+        .where(inArray(TaskOrder.orderId, values));
+    }
+    await Promise.all([
+      trackRepositoryRead(TaskOffer, this.db),
+      trackRepositoryRead(Offer, this.db),
+    ]);
+    return this.db
+      .select({ taskId: TaskOffer.taskId })
+      .from(TaskOffer)
+      .innerJoin(Offer, eq(Offer.id, TaskOffer.offerId))
+      .where(
+        inArray(column === "productId" ? Offer.productId : Offer.id, values),
+      );
+  }
+
+  async attachOffer(taskId: string, offerId: string) {
+    await this.db
+      .insert(TaskOffer)
+      .values({ taskId, offerId })
+      .onConflictDoNothing({ target: [TaskOffer.taskId, TaskOffer.offerId] });
+  }
+
+  async attachOrder(taskId: string, orderId: string) {
+    await this.db
+      .insert(TaskOrder)
+      .values({ taskId, orderId })
+      .onConflictDoNothing({ target: [TaskOrder.taskId, TaskOrder.orderId] });
   }
 
   async open(data: typeof Table.$inferInsert) {

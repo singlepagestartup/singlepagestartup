@@ -3,22 +3,13 @@
 import { IClientComponentProps } from "./interface";
 import { getLocalizedPlainText } from "../plain-text";
 import { cn } from "@sps/shared-frontend-client-utils";
-import { Component as FileStorageModuleFile } from "@sps/file-storage/models/file/frontend/component";
+import { MessageAttachments } from "./MessageAttachments";
 import { Component as Profile } from "@sps/social/models/profile/frontend/component";
-import { Component as SocialModuleMessagesToFileStorageModuleFiles } from "@sps/social/relations/messages-to-file-storage-module-files/frontend/component";
 import { CollapsibleContent, CollapsibleTrigger } from "@sps/shared-ui-shadcn";
 import { Collapsible } from "@radix-ui/react-collapsible";
-import {
-  Bot,
-  Check,
-  ChevronDown,
-  Copy,
-  Pencil,
-  Trash2,
-  User,
-} from "lucide-react";
+import { Bot, Check, ChevronDown, Copy, Pencil, Trash2 } from "lucide-react";
 import Markdown from "markdown-to-jsx";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type MouseEvent } from "react";
 
 const markdownOptions = {
   disableParsingRawHTML: true,
@@ -139,28 +130,39 @@ export function normalizeChatMessageMarkdown(value?: string | null) {
 }
 
 function getProfileDisplayName(props: IClientComponentProps) {
+  const participant =
+    props.profile?.id === props.data.id ? props.profile : undefined;
   return (
     getLocalizedPlainText(props.data.title, props.language) ||
+    getLocalizedPlainText(participant?.title, props.language) ||
+    participant?.adminTitle?.trim() ||
     ("adminTitle" in props.data && typeof props.data.adminTitle === "string"
       ? props.data.adminTitle
       : "") ||
+    participant?.slug ||
     (props.language === "ru" ? "Профиль" : "Profile")
   );
 }
 
 const avatarTriggerClassName =
-  "sticky top-3 grid h-8 w-8 shrink-0 place-items-center self-start rounded-lg";
+  "sticky top-3 grid h-8 w-8 shrink-0 place-items-center self-start rounded-full";
 const actionButtonClassName =
-  "inline-flex size-7 shrink-0 items-center justify-center rounded-md text-muted-foreground hover:bg-muted hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring disabled:opacity-40";
+  "grid size-9 shrink-0 place-items-center rounded-full text-muted-foreground hover:bg-muted hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-ring disabled:opacity-40 pointer-fine:size-8";
 
 export function Component(props: IClientComponentProps) {
   const ru = props.language === "ru";
   const [isCopied, setIsCopied] = useState(false);
   const copyResetTimeoutRef = useRef<number | null>(null);
+  const copyLabel = isCopied
+    ? ru
+      ? "Сообщение скопировано"
+      : "Message copied"
+    : ru
+      ? "Скопировать сообщение"
+      : "Copy message";
   const profileDisplayName = getProfileDisplayName(props);
   const createdAt = formatTimelineDate(props.language, props.message.createdAt);
   const interaction = props.message.interaction;
-  const attachments = props.message.attachments;
   const hasInteraction = interaction && Object.keys(interaction).length > 0;
   const audioTranscription = getAudioTranscriptionStatus(props.message);
   const canOpenProfile = Boolean(
@@ -178,23 +180,14 @@ export function Component(props: IClientComponentProps) {
       data={props.data}
       file={props.avatar ?? null}
       language={props.language}
-      className="rounded-lg bg-muted text-muted-foreground"
+      className="rounded-full bg-muted text-muted-foreground"
       fallback={
-        isAssistant || props.isOwnMessage ? (
+        isAssistant ? (
           <span
-            className={cn(
-              "grid size-8 place-items-center rounded-lg",
-              isAssistant
-                ? "bg-primary text-primary-foreground"
-                : "bg-muted text-foreground",
-            )}
+            className="grid size-8 place-items-center rounded-full bg-primary text-primary-foreground"
             aria-hidden="true"
           >
-            {isAssistant ? (
-              <Bot className="size-4" />
-            ) : (
-              <User className="size-4" />
-            )}
+            <Bot className="size-4" />
           </span>
         ) : undefined
       }
@@ -209,12 +202,18 @@ export function Component(props: IClientComponentProps) {
     };
   }, []);
 
-  function onProfileOpen() {
+  function onProfileOpen(event: MouseEvent<HTMLButtonElement>) {
     if (!canOpenProfile) {
       return;
     }
 
-    if (props.profile) props.onProfileOpen?.(props.profile);
+    if (props.profile)
+      props.onProfileOpen?.(
+        props.profile,
+        event.currentTarget,
+        props.avatar,
+        profileDisplayName,
+      );
   }
 
   async function onCopyMessage() {
@@ -249,16 +248,15 @@ export function Component(props: IClientComponentProps) {
       data-variant="chat-message-row"
       data-chat-message-id={props.message.id}
       className={cn(
-        "group/message flex w-fit min-w-0 max-w-[95%] gap-3 rounded-2xl p-3 sm:p-5",
-        props.isOwnMessage
-          ? "ml-auto rounded-br-sm bg-muted/50"
-          : "mr-auto rounded-bl-sm bg-card",
+        "group/message relative flex w-fit min-w-0 max-w-[94%] items-start gap-1.5 @md/timeline:max-w-[min(75%,42rem)]",
+        props.isOwnMessage ? "ml-auto flex-row-reverse" : "mr-auto",
         props.className,
       )}
     >
       {canOpenProfile ? (
         <button
           type="button"
+          aria-haspopup="dialog"
           onClick={onProfileOpen}
           className={cn(
             avatarTriggerClassName,
@@ -275,20 +273,28 @@ export function Component(props: IClientComponentProps) {
       ) : (
         <span className={avatarTriggerClassName}>{avatar}</span>
       )}
-      <div className="min-w-0 flex-1">
-        <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-muted-foreground">
+      <div
+        className={cn(
+          "min-w-0 rounded-2xl border px-3 py-1.5 text-foreground shadow-sm",
+          props.isOwnMessage
+            ? "rounded-br-sm border-primary/30 bg-primary/20"
+            : "rounded-tl-sm border-border bg-card",
+        )}
+      >
+        <div className="flex min-w-0 flex-wrap items-baseline gap-x-2 text-xs leading-5 text-muted-foreground">
           {canOpenProfile ? (
             <button
               type="button"
+              aria-haspopup="dialog"
               onClick={onProfileOpen}
-              className="max-w-full truncate rounded-sm text-left font-semibold hover:text-foreground hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+              className="max-w-full truncate rounded-sm text-left font-semibold text-foreground hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
               title={profileDisplayName}
             >
               {profileDisplayName}
             </button>
           ) : (
             <span
-              className="max-w-full truncate font-semibold"
+              className="max-w-full truncate font-semibold text-foreground"
               title={profileDisplayName}
             >
               {profileDisplayName}
@@ -303,18 +309,27 @@ export function Component(props: IClientComponentProps) {
               {ru ? "Источник" : "Source"} {props.message.sourceSystemId}
             </span>
           ) : null}
-          {createdAt ? (
-            <time dateTime={new Date(props.message.createdAt).toISOString()}>
-              {createdAt}
-            </time>
-          ) : null}
         </div>
-        <div className="prose mt-1 max-w-none overflow-x-auto text-sm leading-6 wrap-anywhere text-foreground">
-          <Markdown options={markdownOptions}>
-            {normalizeChatMessageMarkdown(props.message.description)}
-          </Markdown>
+        <div className="grid min-w-0 gap-3">
+          {props.message.description && (
+            <div className="prose min-w-0 max-w-none overflow-x-auto text-[0.9375rem] leading-[1.45] wrap-anywhere text-foreground [&_pre]:overflow-x-auto">
+              <Markdown options={markdownOptions}>
+                {normalizeChatMessageMarkdown(props.message.description)}
+              </Markdown>
+            </div>
+          )}
+          {props.attachmentsSlot}
+          {props.message.variant !== "customer-work" &&
+            (props.message.attachments ||
+              !props.message.privateAttachments?.length) && (
+              <MessageAttachments
+                files={props.message.attachments}
+                messageId={props.message.id}
+                language={props.language}
+              />
+            )}
+          {props.messageContentSlot}
         </div>
-        {props.messageContentSlot}
         {audioTranscription?.status &&
         audioTranscription.status !== "completed" ? (
           <div
@@ -334,138 +349,86 @@ export function Component(props: IClientComponentProps) {
                   : "Transcription failed"}
           </div>
         ) : null}
-        {props.message.variant !== "customer-work" && !!attachments?.length && (
-          <ul
-            aria-label={ru ? "Файлы сообщения" : "Message attachments"}
-            tabIndex={0}
-            className="mt-2 flex min-w-0 gap-2 overflow-x-auto pb-2 focus-visible:outline-2 focus-visible:outline-offset-2"
-          >
-            {attachments.map((file) => (
-              <li key={file.id} className="w-36 shrink-0 sm:w-40">
-                <FileStorageModuleFile
-                  isServer={false}
-                  variant="attachment-ai-chat"
-                  data={file}
-                  dataSource="props"
-                  language={props.language}
-                />
-              </li>
-            ))}
-          </ul>
-        )}
-        {props.message.variant !== "customer-work" && !attachments && (
-          <SocialModuleMessagesToFileStorageModuleFiles
-            variant="find"
-            isServer={false}
-            apiProps={{
-              params: {
-                filters: {
-                  and: [
-                    {
-                      column: "messageId",
-                      method: "eq",
-                      value: props.message.id,
-                    },
-                  ],
-                },
-              },
-            }}
-          >
-            {({ data: socialModuleMessagesToFileStorageModuleFiles }) => {
-              if (!socialModuleMessagesToFileStorageModuleFiles?.length) {
-                return null;
-              }
-
-              return (
-                <div className="mt-2 grid grid-cols-1 gap-2 sm:grid-cols-2">
-                  {socialModuleMessagesToFileStorageModuleFiles.map(
-                    (socialModuleMessageToFileStorageModuleFile) => {
-                      return (
-                        <div
-                          key={socialModuleMessageToFileStorageModuleFile.id}
-                          className="overflow-hidden rounded-lg border border-border bg-muted/30 p-2"
-                        >
-                          <SocialModuleMessagesToFileStorageModuleFiles
-                            variant="default"
-                            isServer={false}
-                            data={socialModuleMessageToFileStorageModuleFile}
-                            language={props.language}
-                          />
-                        </div>
-                      );
-                    },
-                  )}
-                </div>
-              );
-            }}
-          </SocialModuleMessagesToFileStorageModuleFiles>
-        )}
-        {hasInteraction ? (
-          <Collapsible className="mt-2">
-            <CollapsibleTrigger className="inline-flex items-center gap-1 rounded-full border border-border px-2.5 py-1 text-xs text-muted-foreground hover:bg-muted">
-              {ru ? "Данные взаимодействия" : "Interaction details"}
-              <ChevronDown className="size-3" aria-hidden="true" />
-            </CollapsibleTrigger>
-            <CollapsibleContent>
-              <pre className="mt-2 max-h-48 overflow-auto rounded-lg bg-muted p-3 text-[11px] leading-5 text-foreground">
-                {JSON.stringify(interaction, null, 2)}
-              </pre>
-            </CollapsibleContent>
-          </Collapsible>
-        ) : null}
-        <div className="mt-1 flex flex-wrap items-center gap-1 sm:opacity-0 sm:group-hover/message:opacity-100 sm:group-focus-within/message:opacity-100 pointer-coarse:opacity-100">
-          <button
-            type="button"
-            className={actionButtonClassName}
-            onClick={() => {
-              void onCopyMessage();
-            }}
-            disabled={!props.message.description}
-            aria-label={
-              isCopied
-                ? ru
-                  ? "Сообщение скопировано"
-                  : "Message copied"
-                : ru
-                  ? "Скопировать сообщение"
-                  : "Copy message"
-            }
-          >
-            {isCopied ? (
-              <Check className="h-3.5 w-3.5" />
-            ) : (
-              <Copy className="h-3.5 w-3.5" />
-            )}
-          </button>
-          {props.onEdit && (
-            <button
-              type="button"
-              className={actionButtonClassName}
-              onClick={() => {
-                props.onEdit?.(props.message);
-              }}
-              aria-label={ru ? "Изменить сообщение" : "Edit message"}
-            >
-              <Pencil className="h-3.5 w-3.5" />
-            </button>
-          )}
-          {props.onDelete && (
-            <button
-              type="button"
+        {props.interactionSlot ??
+          (hasInteraction ? (
+            <Collapsible className="mt-2">
+              <CollapsibleTrigger className="inline-flex items-center gap-1 rounded-full border border-border px-2.5 py-1 text-xs text-muted-foreground hover:bg-muted">
+                {ru ? "Данные взаимодействия" : "Interaction details"}
+                <ChevronDown className="size-3" aria-hidden="true" />
+              </CollapsibleTrigger>
+              <CollapsibleContent>
+                <pre className="mt-2 max-h-48 overflow-auto rounded-lg bg-muted p-3 text-[11px] leading-5 text-foreground">
+                  {JSON.stringify(interaction, null, 2)}
+                </pre>
+              </CollapsibleContent>
+            </Collapsible>
+          ) : null)}
+        <footer className="flex flex-wrap items-center justify-end gap-x-2">
+          {(props.message.description || props.onEdit || props.onDelete) && (
+            <div
               className={cn(
-                actionButtonClassName,
-                "hover:bg-destructive/10 hover:text-destructive",
+                "mr-auto flex flex-wrap items-center @md/timeline:pointer-fine:absolute @md/timeline:pointer-fine:bottom-0 @md/timeline:pointer-fine:w-max @md/timeline:pointer-fine:group-[&:not(:hover):not(:focus-within)]/message:opacity-0",
+                props.isOwnMessage
+                  ? "@md/timeline:pointer-fine:right-full @md/timeline:pointer-fine:pr-1"
+                  : "@md/timeline:pointer-fine:left-full @md/timeline:pointer-fine:pl-1",
               )}
-              onClick={() => {
-                props.onDelete?.(props.message);
-              }}
-              disabled={props.isDeleting}
-              aria-label={ru ? "Удалить сообщение" : "Delete message"}
             >
-              <Trash2 className="h-3.5 w-3.5" />
-            </button>
+              {props.message.description && (
+                <button
+                  type="button"
+                  className={actionButtonClassName}
+                  onClick={onCopyMessage}
+                  title={copyLabel}
+                  aria-label={copyLabel}
+                >
+                  {isCopied ? (
+                    <Check className="size-4" aria-hidden="true" />
+                  ) : (
+                    <Copy className="size-4" aria-hidden="true" />
+                  )}
+                </button>
+              )}
+              {props.onEdit && (
+                <button
+                  type="button"
+                  className={actionButtonClassName}
+                  onClick={() => {
+                    props.onEdit?.(props.message);
+                  }}
+                  title={ru ? "Изменить сообщение" : "Edit message"}
+                  aria-label={ru ? "Изменить сообщение" : "Edit message"}
+                >
+                  <Pencil className="h-3.5 w-3.5" />
+                </button>
+              )}
+              {props.onDelete && (
+                <button
+                  type="button"
+                  className={cn(
+                    actionButtonClassName,
+                    "hover:bg-destructive/10 hover:text-destructive",
+                  )}
+                  onClick={() => {
+                    props.onDelete?.(props.message);
+                  }}
+                  disabled={props.isDeleting}
+                  title={ru ? "Удалить сообщение" : "Delete message"}
+                  aria-label={ru ? "Удалить сообщение" : "Delete message"}
+                >
+                  <Trash2 className="h-3.5 w-3.5" />
+                </button>
+              )}
+            </div>
           )}
-        </div>
+          {createdAt && (
+            <time
+              className="ml-auto text-[0.6875rem] leading-4 whitespace-nowrap tabular-nums text-muted-foreground"
+              dateTime={new Date(props.message.createdAt).toISOString()}
+            >
+              {createdAt}
+            </time>
+          )}
+        </footer>
       </div>
     </article>
   );

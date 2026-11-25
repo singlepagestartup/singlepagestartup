@@ -1,0 +1,15 @@
+{
+  "id": "bf3dac01-e956-4739-b84a-634366048717",
+  "createdAt": "2026-11-17T07:14:50.880Z",
+  "updatedAt": "2026-11-17T07:14:50.880Z",
+  "variant": "default",
+  "number": null,
+  "boolean": null,
+  "date": null,
+  "datetime": null,
+  "string": {
+    "en": "unit_price * quantity"
+  },
+  "adminTitle": "pro-price-formula",
+  "slug": "pro-price-formula"
+}

@@ -19,19 +19,11 @@ export const fields = {
     .timestamp("updated_at", { precision: 3 })
     .notNull()
     .defaultNow(),
-  storeId: pgCore.uuid("store_id").notNull(),
-  funnelId: pgCore.uuid("funnel_id").notNull(),
-  publicationId: pgCore.uuid("publication_id").notNull(),
-  customerId: pgCore.uuid("customer_id").notNull(),
-  productId: pgCore.uuid("product_id"),
-  offerId: pgCore.uuid("offer_id"),
-  orderId: pgCore.uuid("order_id"),
   stageId: pgCore.text("stage_id").notNull(),
   status: pgCore.text("status").$type<TTaskStatus>().notNull(),
   expectedEvent: pgCore.text("expected_event").$type<TEvidenceKind>(),
   outcome: pgCore.text("outcome").$type<TTaskOutcome>(),
   revision: pgCore.integer("revision").notNull().default(1),
-  assigneeId: pgCore.uuid("assignee_id"),
   assigneeKind: pgCore.text("assignee_kind").$type<TTaskAssigneeKind>(),
   assignmentRevision: pgCore
     .integer("assignment_revision")

@@ -18,10 +18,14 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
   Button,
-  ScrollArea,
+  Input,
+  Label,
+  settingsFormStyles,
   Textarea,
 } from "@sps/shared-ui-shadcn";
-import { RefreshCw, Save, Trash2 } from "lucide-react";
+import { Icon } from "@sps/ui-adapter";
+import { useId, useState } from "react";
+import Markdown from "markdown-to-jsx";
 
 function formatKnowledgeDate(language: string, value?: string | Date | null) {
   const date = value ? new Date(value) : undefined;
@@ -38,30 +42,52 @@ function formatKnowledgeDate(language: string, value?: string | Date | null) {
 }
 
 export function Component(props: IClientComponentProps) {
+  const id = useId();
+  const [preview, setPreview] = useState(false);
   const ru = props.language === "ru";
   const isCreating = props.mode === "create";
-  const isBusy = Boolean(
-    props.isSaving || props.isReindexing || props.isDeleting,
-  );
-  const canSave = isCreating
-    ? Boolean(props.draft.title.trim() && props.draft.content.trim() && !isBusy)
-    : Boolean(props.isDirty && !isBusy);
+  const isBusy = Boolean(props.isSaving || props.isDeleting);
+  const retryIndex =
+    !isCreating &&
+    !props.isDirty &&
+    props.needsReindex &&
+    props.retryIndexOnSave;
+  const canSave =
+    !isBusy &&
+    !props.saveBlocked &&
+    (isCreating
+      ? Boolean(props.draft.title.trim() && props.draft.content.trim())
+      : props.isDirty || retryIndex);
+  const saveLabel = isCreating
+    ? ru
+      ? "Создать источник знаний"
+      : "Create knowledge"
+    : ru
+      ? "Сохранить источник знаний"
+      : "Save knowledge";
 
+  const materials = readKnowledgeMaterials(props.draft.content);
   return (
-    <ScrollArea
+    <form
       data-module="knowledge"
       data-model="source"
       data-id={props.data?.id || ""}
       data-variant="chat-sidebar-detail"
-      className={cn("h-full", props.className)}
+      className={cn("min-w-0", props.className)}
+      onSubmit={(event) => {
+        event.preventDefault();
+        if (canSave) props.onSave(props.data);
+      }}
     >
-      <div className="space-y-3 p-4">
-        <div className="space-y-1.5">
-          <label className="text-xs font-medium text-slate-600">
+      <div className="grid gap-5">
+        <div className="space-y-2">
+          <Label htmlFor={`${id}-title`} className={settingsFormStyles.label}>
             {ru ? "Название" : "Title"}
-          </label>
-          <input
+          </Label>
+          <Input
+            id={`${id}-title`}
             aria-label={ru ? "Название источника" : "Knowledge title"}
+            disabled={isBusy}
             value={props.draft.title}
             onChange={(event) => {
               props.onDraftChange({
@@ -69,216 +95,211 @@ export function Component(props: IClientComponentProps) {
                 title: event.target.value,
               });
             }}
-            className="h-9 w-full rounded-md border border-slate-200 bg-white px-3 text-sm text-slate-900 outline-none transition focus:border-slate-300 focus:ring-1 focus:ring-slate-200"
+            className={settingsFormStyles.field}
           />
         </div>
-        <div className="space-y-1.5">
-          <label className="text-xs font-medium text-slate-600">
-            {ru ? "Контекст и заметки" : "Your context and notes"}
-          </label>
-          <Textarea
-            aria-label={ru ? "Контекст и заметки" : "Knowledge content"}
-            value={readKnowledgeUserContext(props.draft.content)}
-            onChange={(event) => {
-              props.onDraftChange({
-                ...props.draft,
-                content: replaceKnowledgeUserContext(
-                  props.draft.content,
-                  event.target.value,
-                ),
-              });
-            }}
-            rows={12}
-            className="min-h-56 resize-none text-sm"
-          />
+        <div className="space-y-2">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <Label
+              htmlFor={`${id}-context`}
+              className={settingsFormStyles.label}
+            >
+              {ru ? "Контекст и заметки" : "Your context and notes"}
+            </Label>
+            <div className="flex rounded-lg bg-muted p-1">
+              {([false, true] as const).map((showPreview) => (
+                <Button
+                  key={String(showPreview)}
+                  type="button"
+                  size="sm"
+                  variant="ghost"
+                  aria-pressed={preview === showPreview}
+                  className={cn(
+                    "min-h-8 px-2 text-xs",
+                    preview === showPreview && "bg-card",
+                  )}
+                  onClick={() => setPreview(showPreview)}
+                >
+                  {showPreview
+                    ? ru
+                      ? "Предпросмотр"
+                      : "Preview"
+                    : ru
+                      ? "Редактор"
+                      : "Editor"}
+                </Button>
+              ))}
+            </div>
+          </div>
+          {preview ? (
+            <div className="prose min-h-44 max-w-none break-words rounded-xl border border-border p-3 text-sm">
+              <Markdown options={{ disableParsingRawHTML: true }}>
+                {readKnowledgeUserContext(props.draft.content) ||
+                  (ru
+                    ? "Введите текст в редакторе."
+                    : "Add text in the editor.")}
+              </Markdown>
+            </div>
+          ) : (
+            <Textarea
+              id={`${id}-context`}
+              aria-label={ru ? "Контекст и заметки" : "Knowledge content"}
+              disabled={isBusy}
+              value={readKnowledgeUserContext(props.draft.content)}
+              onChange={(event) => {
+                props.onDraftChange({
+                  ...props.draft,
+                  content: replaceKnowledgeUserContext(
+                    props.draft.content,
+                    event.target.value,
+                  ),
+                });
+              }}
+              rows={7}
+              className={cn(settingsFormStyles.textarea, "font-mono")}
+            />
+          )}
         </div>
-        {readKnowledgeMaterials(props.draft.content) ? (
-          <details className="rounded-md border p-3 text-sm">
-            <summary>{ru ? "Разбор материалов" : "Analyzed materials"}</summary>
-            <pre className="mt-2 max-h-64 overflow-auto whitespace-pre-wrap text-xs">
-              {readKnowledgeMaterials(props.draft.content)}
-            </pre>
+        {props.attachments}
+        {materials ? (
+          <details className="min-w-0 text-sm">
+            <summary className="cursor-pointer font-semibold text-foreground">
+              {ru ? "Разбор материалов" : "Analyzed materials"}
+            </summary>
+            <div className="prose mt-2 max-h-64 max-w-none overflow-auto break-words text-sm">
+              <Markdown options={{ disableParsingRawHTML: true }}>
+                {materials}
+              </Markdown>
+            </div>
           </details>
         ) : null}
-        <dl className="grid grid-cols-1 gap-2 rounded-lg border border-slate-200 bg-slate-50 p-3 text-xs">
-          <div className="min-w-0">
-            <dt className="text-slate-400">{ru ? "Статус" : "Status"}</dt>
-            <dd className="mt-0.5 truncate text-slate-600">
-              {props.data.contentHash === props.data.indexedContentHash
-                ? ru
-                  ? "Проиндексировано"
-                  : "Indexed"
-                : ru
-                  ? "Нужна индексация"
-                  : "Needs indexing"}
-            </dd>
-          </div>
-          {!isCreating ? (
-            <>
-              <div className="min-w-0">
-                <dt className="text-slate-400">
-                  {ru ? "Последняя индексация" : "Last indexed"}
-                </dt>
-                <dd className="mt-0.5 truncate text-slate-600">
-                  {formatKnowledgeDate(
-                    props.language,
-                    props.data.lastIndexedAt,
-                  )}
-                </dd>
-              </div>
-              <div className="min-w-0">
-                <dt className="text-slate-400">
-                  {ru ? "Идентификатор" : "Slug"}
-                </dt>
-                <dd className="mt-0.5 truncate text-slate-600">
-                  {props.data.slug}
-                </dd>
-              </div>
-            </>
-          ) : null}
-        </dl>
-        {props.needsReindex && !isCreating ? (
-          <p className="rounded-lg bg-amber-50 px-3 py-2 text-xs text-amber-700">
-            {ru
-              ? "Индекс ещё не включает сохранённые изменения."
-              : "Saved changes are not indexed yet."}
-          </p>
-        ) : null}
-        <div className="flex flex-wrap gap-2">
-          <Button
-            type="button"
-            variant="primary"
-            size="sm"
-            className="w-auto"
-            aria-label={
-              isCreating
-                ? ru
-                  ? "Создать источник знаний"
-                  : "Create knowledge"
-                : ru
-                  ? "Сохранить источник знаний"
-                  : "Save knowledge"
-            }
-            onClick={() => {
-              props.onSave(props.data);
-            }}
-            disabled={!canSave}
-          >
-            <Save className="mr-2 h-4 w-4" />
-            {props.isSaving
-              ? ru
-                ? "Сохраняем…"
-                : "Saving"
-              : isCreating
-                ? ru
-                  ? "Создать"
-                  : "Create"
-                : ru
-                  ? "Сохранить"
-                  : "Save"}
-          </Button>
-          {!isCreating ? (
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              className="w-auto"
-              aria-label={
-                ru ? "Обновить индекс источника" : "Reindex knowledge"
-              }
-              onClick={() => {
-                void props.onReindex(props.data);
-              }}
-              disabled={isBusy}
-            >
-              <RefreshCw
-                className={cn(
-                  "mr-2 h-4 w-4",
-                  props.isReindexing && "animate-spin",
-                )}
-              />
-              {props.isReindexing
-                ? ru
-                  ? "Индексируем…"
-                  : "Reindexing"
-                : ru
-                  ? "Обновить индекс"
-                  : "Reindex"}
-            </Button>
-          ) : null}
-          {!isCreating && props.onUnlink ? (
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              className="w-auto"
-              disabled={isBusy}
-              onClick={() => {
-                void props.onUnlink?.(props.data);
-              }}
-            >
-              {ru ? "Убрать из профиля" : "Unlink from profile"}
-            </Button>
-          ) : null}
-          {!isCreating && props.onDelete ? (
-            <AlertDialog>
-              <AlertDialogTrigger asChild>
-                <Button
-                  type="button"
-                  variant="destructive"
-                  size="sm"
-                  className="w-auto"
-                  aria-label={
-                    ru ? "Удалить источник знаний" : "Delete knowledge"
-                  }
-                  disabled={isBusy}
-                >
-                  <Trash2 className="mr-2 h-4 w-4" />
-                  {props.isDeleting
-                    ? ru
-                      ? "Удаляем…"
-                      : "Deleting"
-                    : ru
-                      ? "Удалить"
-                      : "Delete"}
-                </Button>
-              </AlertDialogTrigger>
-              <AlertDialogContent>
-                <AlertDialogHeader>
-                  <AlertDialogTitle>
-                    {ru ? "Удалить источник знаний?" : "Delete Knowledge"}
-                  </AlertDialogTitle>
-                  <AlertDialogDescription>
-                    {ru
-                      ? "Источник и его индекс будут удалены. Материал исчезнет из всех связанных профилей."
-                      : "Delete this knowledge source and its indexed vectors? This removes the source from every linked profile and cannot be undone."}
-                  </AlertDialogDescription>
-                </AlertDialogHeader>
-                <AlertDialogFooter>
-                  <AlertDialogCancel disabled={props.isDeleting}>
-                    {ru ? "Отмена" : "Cancel"}
-                  </AlertDialogCancel>
-                  <AlertDialogAction
-                    disabled={props.isDeleting}
-                    className="bg-red-600 text-white hover:bg-red-500"
-                    onClick={() => {
-                      void props.onDelete?.(props.data);
-                    }}
+        {!isCreating && (
+          <dl className="grid gap-3 border-t border-border pt-4 text-sm sm:grid-cols-2">
+            <div className="min-w-0">
+              <dt className="text-muted-foreground">
+                {ru ? "Статус" : "Status"}
+              </dt>
+              <dd className="mt-1 break-words text-foreground">
+                {props.data.contentHash &&
+                props.data.contentHash === props.data.indexedContentHash
+                  ? ru
+                    ? "Проиндексировано"
+                    : "Indexed"
+                  : ru
+                    ? "Нужна индексация"
+                    : "Needs indexing"}
+              </dd>
+            </div>
+            <div className="min-w-0">
+              <dt className="text-muted-foreground">
+                {ru ? "Последняя индексация" : "Last indexed"}
+              </dt>
+              <dd className="mt-1 break-words text-foreground">
+                {formatKnowledgeDate(props.language, props.data.lastIndexedAt)}
+              </dd>
+            </div>
+            <div className="min-w-0">
+              <dt className="text-muted-foreground">
+                {ru ? "Идентификатор" : "Slug"}
+              </dt>
+              <dd className="mt-1 break-words text-foreground">
+                {props.data.slug}
+              </dd>
+            </div>
+          </dl>
+        )}
+      </div>
+      <div className={settingsFormStyles.actions}>
+        {!isCreating && props.onDelete && (
+          <div className="mr-auto flex flex-wrap items-center gap-2">
+            {props.onDelete ? (
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    className="min-h-11 w-auto gap-2 rounded-xl text-destructive hover:bg-destructive-surface hover:text-destructive"
+                    aria-label={
+                      ru ? "Удалить источник знаний" : "Delete knowledge"
+                    }
+                    disabled={isBusy}
                   >
+                    <Icon name="trash" />
                     {props.isDeleting
                       ? ru
                         ? "Удаляем…"
                         : "Deleting"
                       : ru
-                        ? "Удалить источник"
-                        : "Delete Knowledge"}
-                  </AlertDialogAction>
-                </AlertDialogFooter>
-              </AlertDialogContent>
-            </AlertDialog>
-          ) : null}
-        </div>
+                        ? "Удалить"
+                        : "Delete"}
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent
+                  overlayClassName="z-[75]"
+                  className="z-[80] max-h-[calc(100dvh-2rem)] w-[calc(100%-2rem)] gap-5 overflow-y-auto rounded-2xl bg-card p-5 sm:rounded-2xl sm:p-6"
+                >
+                  <AlertDialogHeader>
+                    <AlertDialogTitle className={settingsFormStyles.title}>
+                      {ru ? "Удалить источник знаний?" : "Delete Knowledge"}
+                    </AlertDialogTitle>
+                    <AlertDialogDescription
+                      className={settingsFormStyles.description}
+                    >
+                      {ru
+                        ? `Источник «${props.data.title}» и его индекс будут удалены из всех связанных профилей. Восстановить их нельзя.`
+                        : `“${props.data.title}” and its search index will be deleted from every linked profile. This cannot be undone.`}
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel
+                      className={settingsFormStyles.secondary}
+                      disabled={props.isDeleting}
+                    >
+                      {ru ? "Отмена" : "Cancel"}
+                    </AlertDialogCancel>
+                    <AlertDialogAction
+                      disabled={props.isDeleting}
+                      className="min-h-11 rounded-xl bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                      onClick={() => {
+                        void props.onDelete?.(props.data);
+                      }}
+                    >
+                      {props.isDeleting
+                        ? ru
+                          ? "Удаляем…"
+                          : "Deleting"
+                        : ru
+                          ? "Удалить источник"
+                          : "Delete Knowledge"}
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            ) : null}
+          </div>
+        )}
+        <Button
+          type="submit"
+          variant="primary"
+          className={settingsFormStyles.primary}
+          aria-busy={props.isSaving}
+          aria-label={saveLabel}
+          disabled={!canSave}
+        >
+          <Icon name="floppy-disk" />
+          {props.isSaving
+            ? ru
+              ? "Сохраняем…"
+              : "Saving"
+            : isCreating
+              ? ru
+                ? "Создать"
+                : "Create"
+              : ru
+                ? "Сохранить"
+                : "Save"}
+        </Button>
       </div>
-    </ScrollArea>
+    </form>
   );
 }

@@ -1,0 +1,1 @@
+ALTER TABLE "sps_f_s_file" ADD COLUMN "private_owner_id" uuid;

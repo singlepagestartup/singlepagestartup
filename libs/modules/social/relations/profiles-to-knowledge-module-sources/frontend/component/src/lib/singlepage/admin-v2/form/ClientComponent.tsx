@@ -2,7 +2,7 @@
 
 import { IComponentPropsExtended, variant, IModel } from "./interface";
 import { api } from "@sps/social/relations/profiles-to-knowledge-module-sources/sdk/client";
-import { useForm, useWatch } from "react-hook-form";
+import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
@@ -14,8 +14,6 @@ import { Component as ParentAdminForm } from "@sps/shared-frontend-components/si
 import { useGetAdminFormState } from "@sps/shared-frontend-client-hooks";
 import { Component as Profile } from "@sps/social/models/profile/frontend/component";
 import { Component as Source } from "@sps/knowledge/models/source/frontend/component";
-import { Component as Store } from "@sps/ecommerce/models/store/frontend/component";
-import { Component as Offer } from "@sps/ecommerce/relations/stores-to-products/frontend/component";
 
 export function Component(props: IComponentPropsExtended) {
   const updateEntity = api.update();
@@ -26,6 +24,9 @@ export function Component(props: IComponentPropsExtended) {
     createEntity,
   });
 
+  const scoped = Boolean(
+    props.data?.storeId || props.data?.offerId || props.data?.projectId,
+  );
   const form = useForm<z.infer<typeof insertSchema>>({
     resolver: zodResolver(insertSchema),
     defaultValues: {
@@ -36,12 +37,18 @@ export function Component(props: IComponentPropsExtended) {
       knowledgeModuleSourceId: props.data?.knowledgeModuleSourceId || "",
       storeId: props.data?.storeId ?? null,
       offerId: props.data?.offerId ?? null,
+      projectId: props.data?.projectId ?? null,
     },
   });
 
   async function onSubmit(data: z.infer<typeof insertSchema>) {
     if (props.data?.id) {
-      updateEntity.mutate({ id: props.data?.id, data });
+      updateEntity.mutate({
+        id: props.data.id,
+        data: scoped
+          ? { orderIndex: data.orderIndex, className: data.className }
+          : data,
+      });
       return;
     }
 
@@ -79,62 +86,32 @@ export function Component(props: IComponentPropsExtended) {
           form={form}
           placeholder="Type class name"
         />
-        <FormField
-          ui="shadcn"
-          type="select"
-          label="Variant"
-          name="variant"
-          form={form}
-          placeholder="Select variant"
-          options={variants.map((variant) => [variant, variant])}
-        />
-        <Profile
-          isServer={props.isServer}
-          variant="admin-v2-select-input"
-          formFieldName="profileId"
-          form={form}
-        />
-        <Source
-          isServer={props.isServer}
-          variant="admin-v2-select-input"
-          formFieldName="knowledgeModuleSourceId"
-          form={form}
-        />
-        <SpecificationScope form={form} />
+        <fieldset disabled={scoped} className="grid min-w-0 gap-6">
+          <FormField
+            ui="shadcn"
+            type="select"
+            label="Variant"
+            name="variant"
+            form={form}
+            placeholder="Select variant"
+            options={(scoped ? [props.data!.variant] : variants).map(
+              (variant) => [variant, variant],
+            )}
+          />
+          <Profile
+            isServer={props.isServer}
+            variant="admin-v2-select-input"
+            formFieldName="profileId"
+            form={form}
+          />
+          <Source
+            isServer={props.isServer}
+            variant="admin-v2-select-input"
+            formFieldName="knowledgeModuleSourceId"
+            form={form}
+          />
+        </fieldset>
       </div>
     </ParentAdminForm>
-  );
-}
-
-function SpecificationScope({
-  form,
-}: {
-  form: ReturnType<typeof useForm<z.infer<typeof insertSchema>>>;
-}) {
-  if (
-    useWatch({ control: form.control, name: "variant" }) !==
-    "product-specification"
-  ) {
-    return null;
-  }
-  return (
-    <>
-      <Store
-        isServer={false}
-        variant="admin-v2-select-input"
-        formFieldName="storeId"
-        form={form}
-      />
-      <Offer
-        isServer={false}
-        variant="admin-v2-select-input"
-        formFieldName="offerId"
-        form={form}
-      />
-      <p className="text-sm text-muted-foreground">
-        Buyers will see a copy of this specification in their order after
-        payment.
-      </p>
-    </>
   );
 }

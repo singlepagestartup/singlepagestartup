@@ -1,0 +1,35 @@
+{
+  "metadata": {
+    "seo": {
+      "title": {
+        "en": "Store customers — SinglePageStartup",
+        "ru": "Клиенты магазина — SinglePageStartup"
+      }
+    },
+    "seoDisplay": {
+      "twitterTitle": {
+        "en": "Store customers — SinglePageStartup",
+        "ru": "Клиенты магазина — SinglePageStartup"
+      },
+      "opengraphTitle": {
+        "en": "Store customers — SinglePageStartup",
+        "ru": "Клиенты магазина — SinglePageStartup"
+      },
+      "opengraphLocale": {
+        "en": "en_US",
+        "ru": "ru_RU"
+      }
+    }
+  },
+  "id": "969c3558-22df-41f5-a131-47cbf2eada07",
+  "title": "Store customers",
+  "url": "/ecommerce/stores/[ecommerce.stores.slug]/customers",
+  "slug": "store-customers",
+  "description": "Description",
+  "createdAt": "2026-11-24T19:55:03.425Z",
+  "updatedAt": "2026-11-24T19:55:03.425Z",
+  "variant": "noindex",
+  "className": null,
+  "language": "en",
+  "adminTitle": "Store customers"
+}

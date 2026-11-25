@@ -47,11 +47,6 @@ import { exit } from "process";
     dumps: [],
   });
 
-  await crmApp.dump({
-    type: "model",
-    dumps: [],
-  });
-
   await blogApp.dump({
     type: "model",
     dumps: [],

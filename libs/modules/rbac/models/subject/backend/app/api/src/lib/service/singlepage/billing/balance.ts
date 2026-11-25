@@ -15,31 +15,19 @@ export class Service {
       },
     });
     const currency = currencies[0];
-    if (!currency) return { amount: "0", currencyId: null };
-    const balances =
-      await this.service.module.subjectsToBillingModuleCurrencies.find({
-        params: {
-          filters: {
-            and: [
-              { column: "subjectId", method: "eq", value: subjectId },
-              {
-                column: "billingModuleCurrencyId",
-                method: "eq",
-                value: currency.id,
-              },
-            ],
-          },
-        },
-      });
-    const amount = balances.reduce(
-      (sum, balance) => sum + Number(balance.amount),
-      0,
-    );
-    if (!Number.isFinite(amount))
-      throw new Error("Data integrity error. Invalid token balance");
-    return {
-      amount: String(amount),
-      currencyId: currency.id,
-    };
+    if (!currency) {
+      return { amount: "0", currencyId: null };
+    }
+    const wallet =
+      await this.service.module.subjectsToBillingModuleWallets.defaultWallet(
+        subjectId,
+      );
+    const amount = wallet
+      ? await this.service.modules.billing.walletsToCurrencies.total(
+          wallet,
+          currency.id,
+        )
+      : "0";
+    return { amount, currencyId: currency.id };
   }
 }

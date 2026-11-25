@@ -11,6 +11,7 @@ import { api as socialModuleMessageApi } from "@sps/social/models/message/sdk/se
 import { api } from "@sps/rbac/models/subject/sdk/server";
 import { IModel as ISocialModuleMessagesToFileStorageModuleFile } from "@sps/social/relations/messages-to-file-storage-module-files/sdk/model";
 import {
+  authorization,
   assertKnowledgeAttachmentBytes,
   getHttpErrorType,
   currentRequestDiagnostics,
@@ -24,6 +25,7 @@ import { api as fileStorageModuleFileApi } from "@sps/file-storage/models/file/s
 import { IModel as IFileStorageModuleFile } from "@sps/file-storage/models/file/sdk/model";
 import { shouldSkipOrdinaryNotificationForAudioTranscription } from "./audio-transcription";
 import {
+  CRM_WORKSPACE_STAFF_MESSAGE_PREFIX,
   normalizeRbacAiReactionRequestMetadata,
   STORE_EMPLOYEE_CHAT_VARIANT,
 } from "@sps/rbac/models/subject/sdk/model";
@@ -169,6 +171,9 @@ export class Handler {
       const incomingId = parsedBody.data?.sourceSystemId;
       const sourceSystemId =
         typeof incomingId === "string" ? incomingId.trim() : "";
+      if (sourceSystemId.startsWith(CRM_WORKSPACE_STAFF_MESSAGE_PREFIX)) {
+        throw new Error("Validation error. This message key is reserved");
+      }
       const chat = await this.service.modules.social.chat.findById({
         id: socialModuleChatId,
       });
@@ -176,18 +181,19 @@ export class Handler {
         operation.stage = "employee-training.message";
         const message = await this.service.customerWork.sendEmployeeTraining({
           actorId: id,
+          senderAccessToken: authorization(c),
           actorProfileId: socialModuleProfileId,
           chat,
           threadId: socialModuleThreadId,
           text: parsedBody.data?.description,
           sourceSystemId: sourceSystemId || undefined,
           selection: providerSelection,
-          hasAttachments: files.length > 0,
+          attachments: files,
         });
         c.header("X-SPS-SKIP-ACTION-LOGGER", "1");
         return c.json({
           data: {
-            ...message,
+            ...projectCustomerWorkAttachments(message),
             authorProfileIds: [socialModuleProfileId],
             attachments: [],
           },
@@ -213,6 +219,7 @@ export class Handler {
         }
       }
       const workMessage = await this.service.customerWork.messageFromThread({
+        senderAccessToken: authorization(c),
         customerId: id,
         chatId: socialModuleChatId,
         threadId: socialModuleThreadId,

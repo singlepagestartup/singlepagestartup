@@ -8,7 +8,7 @@ import {
   Plus,
   RotateCw,
   SlidersHorizontal,
-  Workflow,
+  Workflow as WorkflowIcon,
   X,
 } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -19,12 +19,9 @@ import {
 } from "../../../shared/workflow-ui";
 import {
   newStage,
-  timestampLabel,
-  toDraft,
   workflowEventLabels,
   type RequestMove,
-  type WorkflowDraft,
-  type WorkflowRelease,
+  type Workflow,
   type WorkflowTask,
 } from "../../../shared/workflows";
 import { Component as TaskDetail } from "../task-detail";
@@ -40,21 +37,12 @@ import {
 } from "./TaskMoveDialog";
 
 const workspaceFrame = "mx-auto w-full max-w-[96rem] px-4 sm:px-6 lg:px-8";
-const filterKeys = [
-  "shop",
-  "workflow",
-  "version",
-  "assignee",
-  "state",
-  "search",
-] as const;
+const taskFilterKeys = ["assignee", "state", "search"] as const;
 
 function readLocation(scenario: WorkspaceScenario): Filters {
   const params = new URLSearchParams(window.location.search);
   return {
-    shop: params.get("shop") ?? "",
     workflow: params.get("workflow") ?? "",
-    version: params.get("version") ?? "",
     assignee: params.get("assignee") ?? "",
     state: params.get("state") ?? (scenario === "waiting" ? "waiting" : ""),
     search: params.get("search") ?? "",
@@ -82,17 +70,12 @@ function taskLink(id: string) {
   ).find((element) => element.dataset.taskLink === id);
 }
 
-export function Component({
-  fixture,
-  scenario = "default",
-  canReadCosts = false,
-}: IComponentProps) {
+export function Component({ fixture, scenario = "default" }: IComponentProps) {
   const [filters, setFilters] = useState(() => readLocation(scenario));
-  const [releases, setReleases] = useState(fixture.releases);
+  const [workflows, setWorkflows] = useState(fixture.workflows);
   const [tasks, setTasks] = useState(fixture.tasks);
   const [hasError, setHasError] = useState(scenario === "error");
-  const [editor, setEditor] = useState<WorkflowDraft>();
-  const [drafts, setDrafts] = useState<Record<string, WorkflowDraft>>({});
+  const [editor, setEditor] = useState<Workflow>();
   const [taskId, setTaskId] = useState(
     () => new URLSearchParams(window.location.search).get("task") ?? "",
   );
@@ -110,40 +93,25 @@ export function Component({
     [],
   );
 
-  const shopId =
-    fixture.shops.find((shop) => shop.id === filters.shop)?.id ??
-    fixture.shops[0]?.id;
-  const shopReleases = releases.filter((release) => release.shopId === shopId);
+  const shopId = fixture.shops[0]?.id;
+  const shopWorkflows = workflows.filter(
+    (workflow) => workflow.shopId === shopId,
+  );
   const workflowId =
-    shopReleases.find((release) => release.id === filters.workflow)?.id ??
-    shopReleases[0]?.id;
-  const versions = shopReleases.filter((release) => release.id === workflowId);
-  const latest = versions[0];
-  const current =
-    versions.find(
-      (release) => release.version.toString() === filters.version,
-    ) ?? latest;
+    shopWorkflows.find((workflow) => workflow.id === filters.workflow)?.id ??
+    shopWorkflows[0]?.id;
+  const current = shopWorkflows.find((workflow) => workflow.id === workflowId);
   const moveTask = tasks.find((task) => task.id === move?.taskId);
   const detailTask = tasks.find((task) => task.id === taskId);
-  const moveRelease = releases.find(
-    (release) =>
-      release.shopId === moveTask?.shopId &&
-      release.id === moveTask.workflowId &&
-      release.version === moveTask.version,
+  const moveWorkflow = workflows.find(
+    (workflow) =>
+      workflow.shopId === moveTask?.shopId &&
+      workflow.id === moveTask.workflowId,
   );
-  const detailRelease = releases.find(
-    (release) =>
-      release.shopId === detailTask?.shopId &&
-      release.id === detailTask.workflowId &&
-      release.version === detailTask.version,
-  );
-  const editorRelease = releases.find(
-    (release) => release.id === editor?.id && release.shopId === editor.shopId,
-  );
-  const unpublished = Object.values(drafts).filter(
-    (draft) =>
-      draft.shopId === shopId &&
-      !shopReleases.some((release) => release.id === draft.id),
+  const detailWorkflow = workflows.find(
+    (workflow) =>
+      workflow.shopId === detailTask?.shopId &&
+      workflow.id === detailTask.workflowId,
   );
   const search = filters.search.trim().toLocaleLowerCase("ru");
   const visible =
@@ -153,7 +121,6 @@ export function Component({
           (task) =>
             task.shopId === shopId &&
             task.workflowId === current?.id &&
-            task.version === current.version &&
             (!filters.assignee || task.assignee === filters.assignee) &&
             (!filters.state || task.state === filters.state) &&
             (!search ||
@@ -199,26 +166,20 @@ export function Component({
     });
   }
 
-  function saveDraft(draft: WorkflowDraft) {
-    setDrafts((current) => ({ ...current, [draft.id]: draft }));
-  }
-
-  function publishDraft(draft: WorkflowDraft) {
-    setReleases((previous) => [
-      {
-        ...draft,
-        version: (editorRelease?.version ?? 0) + 1,
-        publishedAt: new Date().toISOString(),
-      },
-      ...previous,
+  function saveWorkflow(workflow: Workflow) {
+    setWorkflows((previous) => [
+      workflow,
+      ...previous.filter(
+        (item) => item.id !== workflow.id || item.shopId !== workflow.shopId,
+      ),
     ]);
-    saveDraft(draft);
-    onChangeFilters({ shop: draft.shopId, workflow: draft.id, version: "" });
+    onChangeFilters({ workflow: workflow.id });
+    setEditor(undefined);
   }
 
   function completeMove(input: MoveInput) {
-    if (!moveTask || !moveRelease) return;
-    const destination = moveRelease.stages.find(
+    if (!moveTask || !moveWorkflow) return;
+    const destination = moveWorkflow.stages.find(
       (stage) => stage.id === input.stageId && !stage.archived,
     );
     if (!destination || moveTask.stageId === destination.id) return;
@@ -230,7 +191,7 @@ export function Component({
       setTimeout(() => {
         const conflict = scenario === "conflict" && !conflictTriggered.current;
         const conflictingStage =
-          moveRelease.stages.find(
+          moveWorkflow.stages.find(
             (stage) =>
               stage.id !== moveTask.stageId &&
               stage.id !== destination.id &&
@@ -318,9 +279,35 @@ export function Component({
     });
   }
 
+  function assignTask(assignee: string) {
+    if (!detailTask?.assignmentCandidateIds?.includes(assignee)) return;
+    const updatedAt = new Date().toISOString();
+    setTasks((previous) =>
+      previous.map((task) =>
+        task.id === detailTask.id && task.revision === detailTask.revision
+          ? {
+              ...task,
+              assignee,
+              updatedAt,
+              revision: task.revision + 1,
+              assignments: [
+                ...task.assignments,
+                {
+                  id: `${task.id}-assignment-r${task.revision + 1}`,
+                  assignee,
+                  at: updatedAt,
+                  reason: "Назначен в карточке задачи.",
+                },
+              ],
+            }
+          : task,
+      ),
+    );
+  }
+
   const forbidden = scenario === "forbidden";
   const showUnavailableTask = Boolean(
-    taskId && (!detailTask || !detailRelease) && !forbidden && !hasError,
+    taskId && (!detailTask || !detailWorkflow) && !forbidden && !hasError,
   );
 
   return (
@@ -339,7 +326,7 @@ export function Component({
         >
           <div className="flex min-w-0 items-center gap-2.5">
             <div className="grid size-8 shrink-0 place-items-center rounded-lg bg-primary text-primary-foreground">
-              <Workflow aria-hidden="true" className="size-4" />
+              <WorkflowIcon aria-hidden="true" className="size-4" />
             </div>
             <span className="font-primary text-sm font-semibold">CRM</span>
             {!forbidden && (
@@ -381,12 +368,10 @@ export function Component({
         ) : editor ? (
           <WorkflowEditor
             key={editor.id}
-            initialDraft={editor}
-            currentRelease={editorRelease}
+            initialWorkflow={editor}
             people={fixture.people}
             payers={fixture.payers}
-            onSave={saveDraft}
-            onPublish={publishDraft}
+            onSave={saveWorkflow}
           />
         ) : (
           <>
@@ -401,19 +386,17 @@ export function Component({
                 </h1>
                 {current && !hasError && (
                   <p className="text-sm text-muted-foreground">
-                    {current.title} · Версия {current.version}
+                    {current.title}
                   </p>
                 )}
               </div>
               {!hasError && (
                 <div className="flex flex-wrap gap-2">
-                  {latest && (
+                  {current && (
                     <button
                       className={secondaryClass}
                       type="button"
-                      onClick={() =>
-                        setEditor(drafts[latest.id] ?? toDraft(latest))
-                      }
+                      onClick={() => setEditor(current)}
                     >
                       <SlidersHorizontal
                         aria-hidden="true"
@@ -432,26 +415,6 @@ export function Component({
                 </div>
               )}
             </header>
-            {!hasError && unpublished.length > 0 && (
-              <section
-                className="flex flex-wrap items-center gap-2"
-                aria-label="Сохранённые черновики"
-              >
-                <span className="text-sm font-medium text-muted-foreground">
-                  Черновики
-                </span>
-                {unpublished.map((draft) => (
-                  <button
-                    key={draft.id}
-                    className={secondaryClass}
-                    type="button"
-                    onClick={() => setEditor(draft)}
-                  >
-                    {draft.title || "Воронка без названия"}
-                  </button>
-                ))}
-              </section>
-            )}
             {hasError ? (
               <section
                 role="alert"
@@ -477,7 +440,7 @@ export function Component({
                 <TaskFilters
                   filters={filters}
                   fixture={fixture}
-                  releases={releases}
+                  workflows={workflows}
                   current={current}
                   onChange={onChangeFilters}
                 />
@@ -521,10 +484,6 @@ export function Component({
                         {visible.length}
                       </span>
                     </p>
-                    <p className="text-xs">
-                      Версия {current.version} опубликована{" "}
-                      {timestampLabel(current.publishedAt)}
-                    </p>
                   </div>
                   {!visible.length && (
                     <div className="grid justify-items-center gap-2 rounded-xl border border-dashed border-border bg-card p-5 text-center">
@@ -535,7 +494,7 @@ export function Component({
                       <h2 className="text-sm font-semibold">
                         Нет задач по выбранным фильтрам
                       </h2>
-                      {filterKeys.slice(3).some((key) => filters[key]) && (
+                      {taskFilterKeys.some((key) => filters[key]) && (
                         <button
                           className={secondaryClass}
                           type="button"
@@ -575,7 +534,7 @@ export function Component({
               </>
             ) : (
               <p className="rounded-xl border border-border bg-card p-5 text-sm text-muted-foreground">
-                У магазина пока нет опубликованных воронок.
+                У магазина пока нет воронок.
               </p>
             )}
           </>
@@ -583,7 +542,7 @@ export function Component({
       </div>
       {!forbidden &&
         !hasError &&
-        ((detailTask && detailRelease) || showUnavailableTask) && (
+        ((detailTask && detailWorkflow) || showUnavailableTask) && (
           <Dialog.Root
             open
             onOpenChange={(open) => {
@@ -613,12 +572,12 @@ export function Component({
                   </Dialog.Close>
                 </div>
                 <div className="min-h-0 overflow-y-auto p-4 sm:p-6">
-                  {detailTask && detailRelease ? (
+                  {detailTask && detailWorkflow ? (
                     <TaskDetail
                       task={detailTask}
-                      release={detailRelease}
+                      workflow={detailWorkflow}
                       people={fixture.people}
-                      canReadCosts={canReadCosts}
+                      onAssign={assignTask}
                     />
                   ) : (
                     <p className="text-sm text-muted-foreground">
@@ -631,11 +590,11 @@ export function Component({
             </Dialog.Portal>
           </Dialog.Root>
         )}
-      {move && moveTask && moveRelease && !forbidden && !hasError && (
+      {move && moveTask && moveWorkflow && !forbidden && !hasError && (
         <TaskMoveDialog
           key={moveTask.id}
           task={moveTask}
-          release={moveRelease}
+          workflow={moveWorkflow}
           initialStageId={move.toStageId}
           onClose={() => setMove(undefined)}
           onRestoreFocus={() => restoreFocus(moveTrigger.current, moveTask.id)}

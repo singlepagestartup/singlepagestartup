@@ -5,8 +5,6 @@ import { createService as createOrdersToBillingModulePaymentIntentsService } fro
 import { createService as createOrdersToFileStorageModuleFilesService } from "@sps/ecommerce/relations/orders-to-file-storage-module-files/backend/app/api/src/lib/bootstrap";
 import { createService as createOrdersToProductsService } from "@sps/ecommerce/relations/orders-to-products/backend/app/api/src/lib/bootstrap";
 import { createService as createProductService } from "@sps/ecommerce/models/product/backend/app/api/src/lib/bootstrap";
-import { createService as createOrderWorkService } from "@sps/ecommerce/models/order-work/backend/app/api/src/lib/bootstrap";
-import { createService as createOrdersToOrderWorksService } from "@sps/ecommerce/relations/orders-to-order-works/backend/app/api/src/lib/bootstrap";
 
 import { createService as createStoresToProductsService } from "@sps/ecommerce/relations/stores-to-products/backend/app/api/src/lib/bootstrap";
 
@@ -14,12 +12,6 @@ export function createModule(assembly: IAppAssembly) {
   return {
     get storesToProducts() {
       return createStoresToProductsService(assembly);
-    },
-    get orderWork() {
-      return createOrderWorkService(assembly);
-    },
-    get ordersToOrderWorks() {
-      return createOrdersToOrderWorksService(assembly);
     },
     get ordersToBillingModuleCurrencies() {
       return createOrdersToBillingModuleCurrenciesService(assembly);

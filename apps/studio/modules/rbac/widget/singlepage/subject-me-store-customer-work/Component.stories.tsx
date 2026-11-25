@@ -9,7 +9,7 @@ import {
   physicalOffer,
   strategyOffer,
 } from "../../../../ecommerce/product/singlepage/overview-customer-work/fixture";
-import { strategyVersions } from "../../../../social/thread/singlepage/customer-work/fixture";
+import { strategyFiles } from "../../../../social/thread/singlepage/customer-work/fixture";
 import { downloadOrderFixture } from "../../../../file-storage/file/singlepage/order-delivery/fixture";
 import type { IOrderDownload } from "../../../../file-storage/file/singlepage/order-delivery/interface";
 import type { IWorkMessage } from "../../../../social/thread/singlepage/customer-work/interface";
@@ -31,7 +31,7 @@ interface IDraft {
   conversationId: string;
   stage: "preparing" | "review" | "accepted" | "declined" | "paid";
   resultCount: number;
-  acceptedVersionId?: string;
+  acceptedFileId?: string;
   payment: "idle" | "pending" | "failed" | "paid";
   delivered: boolean;
 }
@@ -79,8 +79,8 @@ function Preview({ scenario }: IPreviewProps) {
           conversationId: initialConversationId,
           stage: scenario === "declined" ? "declined" : "accepted",
           resultCount: 2,
-          acceptedVersionId:
-            scenario === "payment-error" ? "strategy-v2" : undefined,
+          acceptedFileId:
+            scenario === "payment-error" ? "partnerships-file" : undefined,
           payment: scenario === "payment-error" ? "failed" : "idle",
           delivered: false,
         }
@@ -94,8 +94,8 @@ function Preview({ scenario }: IPreviewProps) {
   );
   const orderConversation =
     draft && activeConversationId === draft.conversationId ? draft : undefined;
-  const acceptedVersion = strategyVersions.find(
-    ({ id }) => id === draft?.acceptedVersionId,
+  const acceptedFile = strategyFiles.find(
+    ({ id }) => id === draft?.acceptedFileId,
   );
 
   function startConversation() {
@@ -179,8 +179,8 @@ function Preview({ scenario }: IPreviewProps) {
         kind: "operator",
         body:
           next === 1
-            ? "Первая версия готова. Проверьте основные рекомендации в превью."
-            : "Подготовили вторую версию. Проверьте раздел о партнёрствах и расходы по каналам.",
+            ? "Файл готов. Проверьте основные рекомендации в превью."
+            : "Прикрепили исправленный файл. Проверьте раздел о партнёрствах и расходы по каналам.",
       });
       return;
     }
@@ -227,19 +227,19 @@ function Preview({ scenario }: IPreviewProps) {
     });
   }
 
-  function accept(versionId: string) {
+  function accept(fileId: string) {
     if (orderConversation?.stage !== "review") return;
-    const version = strategyVersions.find(({ id }) => id === versionId);
-    if (!version || version.number > orderConversation.resultCount) return;
+    const file = strategyFiles.slice(0, orderConversation.resultCount).at(-1);
+    if (!file || file.id !== fileId) return;
     setDraft({
       ...orderConversation,
       stage: "accepted",
-      acceptedVersionId: version.id,
+      acceptedFileId: file.id,
     });
     appendMessage(orderConversation.conversationId, {
       author: "",
       kind: "event",
-      body: `Принята версия ${version.number}.`,
+      body: `Подтверждён файл ${file.filename}.`,
     });
   }
 
@@ -291,13 +291,12 @@ function Preview({ scenario }: IPreviewProps) {
 
   const files: IOrderDownload[] = draft?.delivered
     ? [
-        ...(acceptedVersion
+        ...(acceptedFile
           ? [
               {
-                id: acceptedVersion.id,
+                id: acceptedFile.id,
                 kind: "result" as const,
-                filename: `strategy-sever-v${acceptedVersion.number}.pdf`,
-                versionNumber: acceptedVersion.number,
+                filename: acceptedFile.filename,
               },
             ]
           : []),
@@ -375,12 +374,12 @@ function Preview({ scenario }: IPreviewProps) {
             handoff={activeConversation.handoff}
             messages={activeConversation.messages}
             resultStatus={service ? orderConversation?.stage : undefined}
-            versions={
+            files={
               service
-                ? strategyVersions.slice(0, orderConversation?.resultCount)
+                ? strategyFiles.slice(0, orderConversation?.resultCount)
                 : undefined
             }
-            acceptedVersionId={orderConversation?.acceptedVersionId}
+            acceptedFileId={orderConversation?.acceptedFileId}
             price={offer.price}
             delivery={orderConversation ? delivery : undefined}
             onSend={sendMessage}
@@ -392,7 +391,7 @@ function Preview({ scenario }: IPreviewProps) {
             }
             onRevision={
               orderConversation &&
-              orderConversation.resultCount < strategyVersions.length
+              orderConversation.resultCount < strategyFiles.length
                 ? requestRevision
                 : undefined
             }
@@ -411,11 +410,9 @@ function Preview({ scenario }: IPreviewProps) {
               id: draft.id,
               title: offer.title,
               total: offer.price,
-              resultVersionNumber: acceptedVersion?.number,
+              resultFilename: acceptedFile?.filename,
               invoiceId:
-                draft.payment !== "idle"
-                  ? `INV-${draft.id}${acceptedVersion ? `-V${acceptedVersion.number}` : ""}`
-                  : undefined,
+                draft.payment !== "idle" ? `INV-${draft.id}` : undefined,
               shipment:
                 !service && draft.payment === "paid"
                   ? {

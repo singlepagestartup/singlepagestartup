@@ -5,19 +5,25 @@ import { Workspace } from "./Workspace";
 import { Stores } from "./Stores";
 
 interface IClientProps {
+  widgetId: string;
   ecommerceModuleStoreSlug?: string;
-  crmModuleTaskId?: string;
   language: string;
 }
 
 export function Component({
+  widgetId,
   ecommerceModuleStoreSlug,
-  crmModuleTaskId,
   language,
 }: IClientProps) {
   const fallback = (
     <p className="rounded-lg border border-border bg-card p-5 text-sm">
-      Войдите в аккаунт, чтобы открыть задачи магазина.
+      {language === "ru"
+        ? ecommerceModuleStoreSlug
+          ? "Войдите в аккаунт, чтобы открыть задачи магазина."
+          : "Войдите в аккаунт, чтобы посмотреть свои магазины."
+        : ecommerceModuleStoreSlug
+          ? "Sign in to view store tasks."
+          : "Sign in to view your stores."}
     </p>
   );
 
@@ -30,14 +36,14 @@ export function Component({
       {({ data, authenticated }) =>
         data && authenticated && ecommerceModuleStoreSlug ? (
           <Workspace
-            key={`${data.id}:${ecommerceModuleStoreSlug ?? ""}:${crmModuleTaskId ?? ""}`}
+            widgetId={widgetId}
+            key={`${data.id}:${ecommerceModuleStoreSlug}`}
             subjectId={data.id}
             storeSlug={ecommerceModuleStoreSlug}
-            initialTaskId={crmModuleTaskId}
             language={language}
           />
         ) : data && authenticated ? (
-          <Stores subjectId={data.id} language={language} />
+          <Stores key={data.id} subjectId={data.id} language={language} />
         ) : (
           fallback
         )

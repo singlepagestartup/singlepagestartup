@@ -1,4 +1,6 @@
 export * from "./ecommerce-catalog";
+export * from "./store-catalog-directories";
+export * from "./store-product-relations";
 export {
   articleCreateSchema,
   type IArticleCreateInput,
@@ -65,6 +67,7 @@ export const variants = [
   "me-social-module-profile-create-ai-chat",
   "default",
   "agent",
+  "provider-agent",
 ];
 export const query = {};
 export const options = {
@@ -89,3 +92,4 @@ export * from "./crm-workspace";
 export * from "./customer-work";
 
 export * from "./order-work";
+export * from "./protected-file";

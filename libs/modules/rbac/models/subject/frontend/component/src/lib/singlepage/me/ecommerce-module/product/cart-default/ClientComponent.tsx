@@ -1,6 +1,6 @@
 "use client";
 
-import { memo, useCallback, useState } from "react";
+import { memo, useCallback, useEffect, useRef, useState } from "react";
 import { useIsFetching, useIsMutating } from "@tanstack/react-query";
 import { Component as Subject } from "@sps/rbac/models/subject/frontend/component";
 import { api } from "@sps/rbac/models/subject/sdk/client";
@@ -87,6 +87,7 @@ const SavedOrder = memo(function SavedOrder(props: ISavedOrderProps) {
           ecommerceModuleOrder={order}
           ecommerceModuleProduct={props.ecommerceModuleProduct}
           language={language}
+          canOpenDiscussion={props.canOpenDiscussion}
           buttonVariant={awaitingResult ? "primary" : "outline"}
         />
       )}
@@ -102,6 +103,17 @@ const SavedOrder = memo(function SavedOrder(props: ISavedOrderProps) {
 });
 
 export function Component(props: IComponentPropsExtended) {
+  const currentSubject = useRef<string | null>(null);
+  useEffect(() => {
+    currentSubject.current = props.data.id;
+    return () => {
+      currentSubject.current = null;
+    };
+  }, [props.data.id]);
+  const canOpenDiscussion = useCallback(
+    () => currentSubject.current === props.data.id,
+    [props.data.id],
+  );
   return (
     <div
       data-module="rbac"
@@ -136,6 +148,7 @@ export function Component(props: IComponentPropsExtended) {
                     {orders.map((order) => (
                       <SavedOrder
                         key={order.id}
+                        canOpenDiscussion={canOpenDiscussion}
                         subject={props.data}
                         ecommerceModuleOrder={order}
                         ecommerceModuleProduct={props.ecommerceModuleProduct}

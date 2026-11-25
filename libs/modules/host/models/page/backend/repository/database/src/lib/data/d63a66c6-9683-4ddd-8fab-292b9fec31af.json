@@ -1,0 +1,47 @@
+{
+  "metadata": {
+    "seo": {
+      "title": {
+        "en": "Store Employees — SinglePageStartup",
+        "ru": "Сотрудники магазина — SinglePageStartup"
+      },
+      "description": {
+        "en": "View and manage the store’s employees.",
+        "ru": "Просматривайте и настраивайте список сотрудников магазина."
+      }
+    },
+    "seoDisplay": {
+      "twitterTitle": {
+        "en": "Store Employees — SinglePageStartup",
+        "ru": "Сотрудники магазина — SinglePageStartup"
+      },
+      "opengraphTitle": {
+        "en": "Store Employees — SinglePageStartup",
+        "ru": "Сотрудники магазина — SinglePageStartup"
+      },
+      "opengraphLocale": {
+        "en": "en_US",
+        "ru": "ru_RU"
+      },
+      "twitterDescription": {
+        "en": "View and manage the store’s employees.",
+        "ru": "Просматривайте и настраивайте список сотрудников магазина."
+      },
+      "opengraphDescription": {
+        "en": "View and manage the store’s employees.",
+        "ru": "Просматривайте и настраивайте список сотрудников магазина."
+      }
+    }
+  },
+  "id": "d63a66c6-9683-4ddd-8fab-292b9fec31af",
+  "title": "Store Employees",
+  "url": "/ecommerce/stores/[ecommerce.stores.slug]/employees",
+  "slug": "store-employees",
+  "description": "View and manage the store’s employees.",
+  "createdAt": "2026-11-22T19:16:21.706Z",
+  "updatedAt": "2026-11-22T19:16:21.706Z",
+  "variant": "noindex",
+  "className": null,
+  "language": "en",
+  "adminTitle": "Store Employees"
+}

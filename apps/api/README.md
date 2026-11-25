@@ -17,7 +17,7 @@ after their role check.
 
 Audio transcription runs inside the API/RBAC message flow and uses:
 
-- `OPEN_AI_API_KEY` - required when audio transcription should run.
+- `OPEN_AI_API_KEY` - used by audio transcription and the default Knowledge embedding and file analysis provider.
 - `OPEN_AI_TRANSCRIPTION_MODEL` - optional, defaults to `gpt-4o-transcribe`.
 
 The shared exception filter emits one structured `api.error` record for every

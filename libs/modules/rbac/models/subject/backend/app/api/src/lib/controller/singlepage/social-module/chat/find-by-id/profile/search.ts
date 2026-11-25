@@ -93,6 +93,13 @@ export class Handler {
           }),
       );
       const profilesById = new Map<string, ISocialModuleProfile>();
+      const taskChat = c.get("taskChatScope");
+      const candidates = taskChat
+        ? await this.service.crmWorkspace.taskChatCandidates(taskChat.storeId)
+        : undefined;
+      if (candidates && !candidates.length) {
+        return c.json({ data: [] });
+      }
 
       for (const column of this.profileSearchColumns()) {
         const socialModuleProfiles =
@@ -109,6 +116,15 @@ export class Handler {
               },
               filters: {
                 and: [
+                  ...(candidates
+                    ? [
+                        {
+                          column: "id",
+                          method: "inArray" as const,
+                          value: candidates.map(({ profileId }) => profileId),
+                        },
+                      ]
+                    : []),
                   {
                     column,
                     method: "ilike",

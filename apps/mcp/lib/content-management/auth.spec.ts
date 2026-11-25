@@ -6,6 +6,7 @@
  */
 
 import { getMcpAuthHeaders, type IMcpRequestExtra } from "../auth";
+import { runWithMcpRequestAuthContext } from "../auth-context";
 import { getMcpSdkOptions } from "./auth";
 
 function createExtra(props: {
@@ -39,6 +40,17 @@ function createExtra(props: {
 }
 
 describe("MCP forwarded authentication helper", () => {
+  it("keeps the verified sender when a tool supplies other credentials", () => {
+    const headers = runWithMcpRequestAuthContext(
+      { authorization: "Bearer sender", rbacSecretKey: "operator" },
+      () =>
+        getMcpAuthHeaders(
+          createExtra({ meta: { rbacSecretKey: "different" } }),
+        ),
+    );
+    expect(headers).toEqual({ Authorization: "Bearer sender" });
+  });
+
   /**
    * BDD Scenario: Secret header is forwarded from the MCP request
    * Given an MCP client sends X-RBAC-SECRET-KEY

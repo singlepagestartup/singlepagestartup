@@ -15,6 +15,20 @@
       "when": 1795078453690,
       "tag": "0001_secret_shinko_yamashiro",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1795524317811,
+      "tag": "0002_calm_namor",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1795524565150,
+      "tag": "0003_good_madelyne_pryor",
+      "breakpoints": true
     }
   ]
 }

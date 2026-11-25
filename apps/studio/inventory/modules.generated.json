@@ -4,8 +4,8 @@
   "totals": {
     "modules": 15,
     "entities": 61,
-    "variants": 1086,
-    "coveredVariants": 255,
+    "variants": 1105,
+    "coveredVariants": 253,
     "representedEntities": 61
   },
   "modules": [
@@ -2530,6 +2530,12 @@
               "scope": "singlepage",
               "variantsFile": "libs/modules/ecommerce/models/order/frontend/component/src/lib/singlepage/variants.ts",
               "coveredBy": []
+            },
+            {
+              "variant": "store-list-row",
+              "scope": "singlepage",
+              "variantsFile": "libs/modules/ecommerce/models/order/frontend/component/src/lib/singlepage/variants.ts",
+              "coveredBy": []
             }
           ],
           "storyFiles": [
@@ -2665,6 +2671,12 @@
               "coveredBy": []
             },
             {
+              "variant": "order-line-title",
+              "scope": "singlepage",
+              "variantsFile": "libs/modules/ecommerce/models/product/frontend/component/src/lib/singlepage/variants.ts",
+              "coveredBy": []
+            },
+            {
               "variant": "overview-default",
               "scope": "singlepage",
               "variantsFile": "libs/modules/ecommerce/models/product/frontend/component/src/lib/singlepage/variants.ts",
@@ -2784,6 +2796,12 @@
             },
             {
               "variant": "find",
+              "scope": "singlepage",
+              "variantsFile": "libs/modules/ecommerce/models/store/frontend/component/src/lib/singlepage/variants.ts",
+              "coveredBy": []
+            },
+            {
+              "variant": "header-default",
               "scope": "singlepage",
               "variantsFile": "libs/modules/ecommerce/models/store/frontend/component/src/lib/singlepage/variants.ts",
               "coveredBy": []
@@ -2941,6 +2959,12 @@
               "coveredBy": [
                 "ecommerce.widget.product-overview-default"
               ]
+            },
+            {
+              "variant": "store-header-default",
+              "scope": "singlepage",
+              "variantsFile": "libs/modules/ecommerce/models/widget/frontend/component/src/lib/singlepage/variants.ts",
+              "coveredBy": []
             },
             {
               "variant": "store-list-default",
@@ -5156,46 +5180,6 @@
               "coveredBy": []
             },
             {
-              "variant": "me-social-module-profile-id-chat-id-thread-id-ai-chat",
-              "scope": "singlepage",
-              "variantsFile": "libs/modules/rbac/models/subject/frontend/component/src/lib/singlepage/variants.ts",
-              "coveredBy": []
-            },
-            {
-              "variant": "me-social-module-profile-id-chat-id-thread-id-download-ai-chat",
-              "scope": "singlepage",
-              "variantsFile": "libs/modules/rbac/models/subject/frontend/component/src/lib/singlepage/variants.ts",
-              "coveredBy": []
-            },
-            {
-              "variant": "me-social-module-profile-id-chat-id-thread-id-knowledge-module-source-id-update-ai-chat",
-              "scope": "singlepage",
-              "variantsFile": "libs/modules/rbac/models/subject/frontend/component/src/lib/singlepage/variants.ts",
-              "coveredBy": []
-            },
-            {
-              "variant": "me-social-module-profile-id-chat-id-thread-id-knowledge-module-source-list-document-ai-chat",
-              "scope": "singlepage",
-              "variantsFile": "libs/modules/rbac/models/subject/frontend/component/src/lib/singlepage/variants.ts",
-              "coveredBy": [
-                "rbac.subject.me-social-module-profile-id-chat-id-thread-id-knowledge-module-source-list-document-ai-chat"
-              ]
-            },
-            {
-              "variant": "me-social-module-profile-id-chat-id-thread-id-message-create-ai-chat",
-              "scope": "singlepage",
-              "variantsFile": "libs/modules/rbac/models/subject/frontend/component/src/lib/singlepage/variants.ts",
-              "coveredBy": [
-                "rbac.subject.me-social-module-profile-id-chat-id-thread-id-message-create-ai-chat"
-              ]
-            },
-            {
-              "variant": "me-social-module-profile-id-chat-id-thread-id-message-list-ai-chat",
-              "scope": "singlepage",
-              "variantsFile": "libs/modules/rbac/models/subject/frontend/component/src/lib/singlepage/variants.ts",
-              "coveredBy": []
-            },
-            {
               "variant": "me-social-module-profile-id-navigation-ai-chat",
               "scope": "singlepage",
               "variantsFile": "libs/modules/rbac/models/subject/frontend/component/src/lib/singlepage/variants.ts",
@@ -5540,7 +5524,37 @@
               ]
             },
             {
+              "variant": "subject-me-crm-module-store-funnel-create",
+              "scope": "singlepage",
+              "variantsFile": "libs/modules/rbac/models/widget/frontend/component/src/lib/singlepage/variants.ts",
+              "coveredBy": []
+            },
+            {
+              "variant": "subject-me-crm-module-store-funnel-edit",
+              "scope": "singlepage",
+              "variantsFile": "libs/modules/rbac/models/widget/frontend/component/src/lib/singlepage/variants.ts",
+              "coveredBy": []
+            },
+            {
+              "variant": "subject-me-crm-module-store-funnel-list",
+              "scope": "singlepage",
+              "variantsFile": "libs/modules/rbac/models/widget/frontend/component/src/lib/singlepage/variants.ts",
+              "coveredBy": []
+            },
+            {
               "variant": "subject-me-crm-module-store-workspace",
+              "scope": "singlepage",
+              "variantsFile": "libs/modules/rbac/models/widget/frontend/component/src/lib/singlepage/variants.ts",
+              "coveredBy": []
+            },
+            {
+              "variant": "subject-me-crm-module-task-create",
+              "scope": "singlepage",
+              "variantsFile": "libs/modules/rbac/models/widget/frontend/component/src/lib/singlepage/variants.ts",
+              "coveredBy": []
+            },
+            {
+              "variant": "subject-me-crm-module-task-detail",
               "scope": "singlepage",
               "variantsFile": "libs/modules/rbac/models/widget/frontend/component/src/lib/singlepage/variants.ts",
               "coveredBy": []
@@ -5572,7 +5586,103 @@
               "coveredBy": []
             },
             {
+              "variant": "subject-me-ecommerce-module-store-create",
+              "scope": "singlepage",
+              "variantsFile": "libs/modules/rbac/models/widget/frontend/component/src/lib/singlepage/variants.ts",
+              "coveredBy": []
+            },
+            {
+              "variant": "subject-me-ecommerce-module-store-customer-detail",
+              "scope": "singlepage",
+              "variantsFile": "libs/modules/rbac/models/widget/frontend/component/src/lib/singlepage/variants.ts",
+              "coveredBy": []
+            },
+            {
+              "variant": "subject-me-ecommerce-module-store-customers",
+              "scope": "singlepage",
+              "variantsFile": "libs/modules/rbac/models/widget/frontend/component/src/lib/singlepage/variants.ts",
+              "coveredBy": []
+            },
+            {
+              "variant": "subject-me-ecommerce-module-store-employee-create",
+              "scope": "singlepage",
+              "variantsFile": "libs/modules/rbac/models/widget/frontend/component/src/lib/singlepage/variants.ts",
+              "coveredBy": []
+            },
+            {
+              "variant": "subject-me-ecommerce-module-store-employee-detail",
+              "scope": "singlepage",
+              "variantsFile": "libs/modules/rbac/models/widget/frontend/component/src/lib/singlepage/variants.ts",
+              "coveredBy": []
+            },
+            {
+              "variant": "subject-me-ecommerce-module-store-employees",
+              "scope": "singlepage",
+              "variantsFile": "libs/modules/rbac/models/widget/frontend/component/src/lib/singlepage/variants.ts",
+              "coveredBy": []
+            },
+            {
+              "variant": "subject-me-ecommerce-module-store-order-detail",
+              "scope": "singlepage",
+              "variantsFile": "libs/modules/rbac/models/widget/frontend/component/src/lib/singlepage/variants.ts",
+              "coveredBy": []
+            },
+            {
+              "variant": "subject-me-ecommerce-module-store-orders",
+              "scope": "singlepage",
+              "variantsFile": "libs/modules/rbac/models/widget/frontend/component/src/lib/singlepage/variants.ts",
+              "coveredBy": []
+            },
+            {
               "variant": "subject-me-ecommerce-module-store-overview-default",
+              "scope": "singlepage",
+              "variantsFile": "libs/modules/rbac/models/widget/frontend/component/src/lib/singlepage/variants.ts",
+              "coveredBy": []
+            },
+            {
+              "variant": "subject-me-ecommerce-module-store-product-attribute-keys",
+              "scope": "singlepage",
+              "variantsFile": "libs/modules/rbac/models/widget/frontend/component/src/lib/singlepage/variants.ts",
+              "coveredBy": []
+            },
+            {
+              "variant": "subject-me-ecommerce-module-store-product-attributes",
+              "scope": "singlepage",
+              "variantsFile": "libs/modules/rbac/models/widget/frontend/component/src/lib/singlepage/variants.ts",
+              "coveredBy": []
+            },
+            {
+              "variant": "subject-me-ecommerce-module-store-product-categories",
+              "scope": "singlepage",
+              "variantsFile": "libs/modules/rbac/models/widget/frontend/component/src/lib/singlepage/variants.ts",
+              "coveredBy": []
+            },
+            {
+              "variant": "subject-me-ecommerce-module-store-product-create",
+              "scope": "singlepage",
+              "variantsFile": "libs/modules/rbac/models/widget/frontend/component/src/lib/singlepage/variants.ts",
+              "coveredBy": []
+            },
+            {
+              "variant": "subject-me-ecommerce-module-store-product-detail",
+              "scope": "singlepage",
+              "variantsFile": "libs/modules/rbac/models/widget/frontend/component/src/lib/singlepage/variants.ts",
+              "coveredBy": []
+            },
+            {
+              "variant": "subject-me-ecommerce-module-store-product-edit",
+              "scope": "singlepage",
+              "variantsFile": "libs/modules/rbac/models/widget/frontend/component/src/lib/singlepage/variants.ts",
+              "coveredBy": []
+            },
+            {
+              "variant": "subject-me-ecommerce-module-store-products",
+              "scope": "singlepage",
+              "variantsFile": "libs/modules/rbac/models/widget/frontend/component/src/lib/singlepage/variants.ts",
+              "coveredBy": []
+            },
+            {
+              "variant": "subject-me-ecommerce-module-store-settings",
               "scope": "singlepage",
               "variantsFile": "libs/modules/rbac/models/widget/frontend/component/src/lib/singlepage/variants.ts",
               "coveredBy": []

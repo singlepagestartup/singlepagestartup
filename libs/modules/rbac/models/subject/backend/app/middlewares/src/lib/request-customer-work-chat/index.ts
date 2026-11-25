@@ -9,13 +9,23 @@ interface IService {
     threadId?: string;
     edit: boolean;
     targetProfileId?: string;
-  }): Promise<void>;
+    settingsOperation?: string;
+  }): Promise<
+    | "staff"
+    | void
+    | {
+        staff: boolean;
+        taskChatScope: unknown;
+        readTaskChatSettings?: boolean;
+        sharedTaskThread?: { taskId: string; threadId: string };
+      }
+  >;
 }
 
 export class Middleware {
   constructor(private readonly customerWork: IService) {}
 
-  init(edit: boolean) {
+  init(edit: boolean, settingsOperation?: string) {
     return createMiddleware(async (c, next) => {
       try {
         const subjectId = c.req.param("id");
@@ -23,13 +33,22 @@ export class Middleware {
         if (subjectId && chatId) {
           const threadId = c.req.param("socialModuleThreadId");
           const targetProfileId = c.req.param("targetSocialModuleProfileId");
-          await this.customerWork.assertChatAccess({
+          const access = await this.customerWork.assertChatAccess({
             subjectId,
             chatId,
             threadId,
             edit,
+            ...(settingsOperation ? { settingsOperation } : {}),
             ...(targetProfileId ? { targetProfileId } : {}),
           });
+          if (access === "staff" || access?.staff) {
+            c.set("taskChatStaff", true);
+          }
+          if (access && access !== "staff") {
+            c.set("taskChatScope", access.taskChatScope);
+            c.set("readTaskChatSettings", access.readTaskChatSettings);
+            c.set("sharedTaskThread", access.sharedTaskThread);
+          }
         }
         return next();
       } catch (error) {

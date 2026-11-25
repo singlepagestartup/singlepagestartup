@@ -11,6 +11,8 @@ export function Component(props: IComponentPropsExtended) {
       className={props.className}
       children={props.children}
       pending={props.pending}
+      mode={props.mode}
+      dialogDescription={props.dialogDescription}
       onSave={props.onSave}
     />
   );

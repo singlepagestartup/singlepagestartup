@@ -436,6 +436,7 @@ function createTestContext(props?: {
     }),
   };
   const service = new Service({
+    assertPaymentStage: jest.fn().mockResolvedValue(undefined),
     repository,
     settledOrderIds: jest.fn(
       async ({ orderIds }) =>
@@ -1751,6 +1752,7 @@ it.each([
       return context.json({ data: { ok: true } });
     });
     const check = new OrderCheckHandler({
+      deliverConfirmedWork: jest.fn(),
       findById: async () => ({ ...order, updatedAt: new Date().toISOString() }),
       ordersToBillingModulePaymentIntents: {
         find: async () => [
@@ -1863,6 +1865,7 @@ it("fulfills through the webhook pipeline after an earlier pending check consume
     return context.json({ data: { ok: true } });
   });
   const check = new OrderCheckHandler({
+    deliverConfirmedWork: jest.fn(),
     findById: async () => ({ ...order, updatedAt: new Date().toISOString() }),
     ordersToBillingModulePaymentIntents: {
       find: async () => [{ billingModulePaymentIntentId: "payment-intent-1" }],

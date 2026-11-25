@@ -1,0 +1,129 @@
+{
+  "id": "c0abae37-0a6f-4ac4-be84-42a1c5b71ea8",
+  "prevId": "00000000-0000-0000-0000-000000000000",
+  "version": "7",
+  "dialect": "postgresql",
+  "tables": {
+    "public.sl_cs_to_fe_se_me_fs_d7x": {
+      "name": "sl_cs_to_fe_se_me_fs_d7x",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "variant": {
+          "name": "variant",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'default'"
+        },
+        "order_index": {
+          "name": "order_index",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
+        },
+        "class_name": {
+          "name": "class_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "ct_id": {
+          "name": "ct_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "fe_se_me_fe_id": {
+          "name": "fe_se_me_fe_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {
+        "sl_chat_cover_file": {
+          "name": "sl_chat_cover_file",
+          "columns": [
+            {
+              "expression": "ct_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "where": "\"sl_cs_to_fe_se_me_fs_d7x\".\"variant\" = 'cover'",
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "sl_cs_to_fe_se_me_fs_d7x_ct_id_sl_chat_id_fk": {
+          "name": "sl_cs_to_fe_se_me_fs_d7x_ct_id_sl_chat_id_fk",
+          "tableFrom": "sl_cs_to_fe_se_me_fs_d7x",
+          "tableTo": "sl_chat",
+          "columnsFrom": [
+            "ct_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "sl_cs_to_fe_se_me_fs_d7x_fe_se_me_fe_id_sps_f_s_file_id_fk": {
+          "name": "sl_cs_to_fe_se_me_fs_d7x_fe_se_me_fe_id_sps_f_s_file_id_fk",
+          "tableFrom": "sl_cs_to_fe_se_me_fs_d7x",
+          "tableTo": "sps_f_s_file",
+          "columnsFrom": [
+            "fe_se_me_fe_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    }
+  },
+  "enums": {},
+  "schemas": {},
+  "sequences": {},
+  "roles": {},
+  "policies": {},
+  "views": {},
+  "_meta": {
+    "columns": {},
+    "schemas": {},
+    "tables": {}
+  }
+}

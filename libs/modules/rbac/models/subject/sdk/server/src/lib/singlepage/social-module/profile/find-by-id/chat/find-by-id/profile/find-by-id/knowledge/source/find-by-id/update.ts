@@ -2,6 +2,7 @@ import { serverHost, route } from "@sps/rbac/models/subject/sdk/model";
 import {
   NextRequestOptions,
   responsePipe,
+  prepareFormDataToSend,
   transformResponseItem,
 } from "@sps/shared-utils";
 import { IModel as IKnowledgeModuleSource } from "@sps/knowledge/models/source/sdk/model";
@@ -17,12 +18,16 @@ export interface IProps {
   revalidate?: number;
   options?: Partial<NextRequestOptions>;
   data: {
+    files?: File[];
     title: string;
     content: string;
+    removeFileIds?: string[];
+    expectedContentHash?: string;
+    expectedTitle?: string;
   };
 }
 
-export type IResult = IKnowledgeModuleSource & { indexingError?: string };
+export type IResult = IKnowledgeModuleSource;
 
 export async function action(props: IProps): Promise<IResult> {
   const {
@@ -36,15 +41,21 @@ export async function action(props: IProps): Promise<IResult> {
     data,
   } = props;
 
+  const multipart = Boolean(data.files?.length);
+  const headers = new Headers(options?.headers);
+  if (multipart) {
+    headers.delete("content-type");
+  } else {
+    headers.set("content-type", "application/json");
+  }
   const requestOptions: NextRequestOptions = {
     credentials: "include",
     method: "PATCH",
-    headers: {
-      "content-type": "application/json",
-      ...options?.headers,
-    },
-    body: JSON.stringify({ data }),
     ...options,
+    headers,
+    body: multipart
+      ? prepareFormDataToSend({ data })
+      : JSON.stringify({ data }),
     next: {
       ...options?.next,
     },
@@ -54,12 +65,9 @@ export async function action(props: IProps): Promise<IResult> {
     `${host}${route}/${id}/social-module/profiles/${socialModuleProfileId}/chats/${socialModuleChatId}/profiles/${targetSocialModuleProfileId}/knowledge/sources/${knowledgeModuleSourceId}`,
     requestOptions,
   );
-  const json = await responsePipe<{ data: IResult; indexingError?: string }>({
+  const json = await responsePipe<{ data: IResult }>({
     res,
   });
 
-  return {
-    ...transformResponseItem<IResult>(json),
-    indexingError: json?.indexingError,
-  };
+  return transformResponseItem<IResult>(json);
 }

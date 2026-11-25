@@ -1,0 +1,187 @@
+{
+  "id": "8ae0cb4b-a595-4c4a-805d-ad61beb2e8ca",
+  "prevId": "00000000-0000-0000-0000-000000000000",
+  "version": "7",
+  "dialect": "postgresql",
+  "tables": {
+    "public.sl_chat_to_crm_task": {
+      "name": "sl_chat_to_crm_task",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "variant": {
+          "name": "variant",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'default'"
+        },
+        "order_index": {
+          "name": "order_index",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
+        },
+        "class_name": {
+          "name": "class_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "chat_id": {
+          "name": "chat_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "crm_task_id": {
+          "name": "crm_task_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "consultation_task_id": {
+          "name": "consultation_task_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "memory_project_id": {
+          "name": "memory_project_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {
+        "sl_chat_task_pair": {
+          "name": "sl_chat_task_pair",
+          "columns": [
+            {
+              "expression": "chat_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "crm_task_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "sl_task_chat_lookup": {
+          "name": "sl_task_chat_lookup",
+          "columns": [
+            {
+              "expression": "crm_task_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "sl_chat_to_crm_task_chat_id_sl_chat_id_fk": {
+          "name": "sl_chat_to_crm_task_chat_id_sl_chat_id_fk",
+          "tableFrom": "sl_chat_to_crm_task",
+          "tableTo": "sl_chat",
+          "columnsFrom": [
+            "chat_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "sl_chat_to_crm_task_crm_task_id_sps_cm_task_id_fk": {
+          "name": "sl_chat_to_crm_task_crm_task_id_sps_cm_task_id_fk",
+          "tableFrom": "sl_chat_to_crm_task",
+          "tableTo": "sps_cm_task",
+          "columnsFrom": [
+            "crm_task_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "sl_chat_to_crm_task_consultation_task_id_sps_cm_task_id_fk": {
+          "name": "sl_chat_to_crm_task_consultation_task_id_sps_cm_task_id_fk",
+          "tableFrom": "sl_chat_to_crm_task",
+          "tableTo": "sps_cm_task",
+          "columnsFrom": [
+            "consultation_task_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "set null",
+          "onUpdate": "no action"
+        },
+        "sl_chat_to_crm_task_memory_project_id_sl_thread_id_fk": {
+          "name": "sl_chat_to_crm_task_memory_project_id_sl_thread_id_fk",
+          "tableFrom": "sl_chat_to_crm_task",
+          "tableTo": "sl_thread",
+          "columnsFrom": [
+            "memory_project_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "set null",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    }
+  },
+  "enums": {},
+  "schemas": {},
+  "sequences": {},
+  "roles": {},
+  "policies": {},
+  "views": {},
+  "_meta": {
+    "columns": {},
+    "schemas": {},
+    "tables": {}
+  }
+}

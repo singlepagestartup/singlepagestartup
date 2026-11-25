@@ -2,10 +2,11 @@
   "metadata": {},
   "id": "75a81eab-4af1-43b3-b1a1-83ee0df7e7a2",
   "createdAt": "2026-10-23T21:18:24.658Z",
-  "updatedAt": "2026-11-17T00:05:35.853Z",
+  "updatedAt": "2026-11-17T07:14:51.260Z",
   "variant": "default",
   "kind": "digital",
   "type": "one_off",
+  "singleUnitPerOrder": false,
   "slug": "ai-chat-tokens-1000-rub",
   "title": {
     "en": "Token top-up · 1000 RUB",

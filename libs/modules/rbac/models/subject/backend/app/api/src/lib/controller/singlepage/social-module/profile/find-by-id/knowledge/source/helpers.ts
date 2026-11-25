@@ -1,5 +1,6 @@
 import { Context } from "hono";
 import { Service } from "../../../../../../../service";
+import { STORE_EMPLOYEE_CHAT_VARIANT } from "@sps/rbac/models/subject/sdk/model";
 
 export function requireParam(c: Context, name: string) {
   const value = c.req.param(name);
@@ -14,6 +15,7 @@ export function requireParam(c: Context, name: string) {
 export async function findProfileKnowledgeSourceRelations(props: {
   service: Service;
   socialModuleProfileId: string;
+  includeCustomerMemory?: boolean;
 }) {
   return props.service.modules.social.profilesToKnowledgeModuleSources.find({
     params: {
@@ -24,7 +26,15 @@ export async function findProfileKnowledgeSourceRelations(props: {
             method: "eq",
             value: props.socialModuleProfileId,
           },
-          { column: "variant", method: "ne", value: "customer-memory" },
+          ...(props.includeCustomerMemory
+            ? []
+            : [
+                {
+                  column: "variant",
+                  method: "ne" as const,
+                  value: "customer-memory",
+                },
+              ]),
         ],
       },
       orderBy: {
@@ -43,24 +53,47 @@ export async function findProfileKnowledgeSourceRelations(props: {
   });
 }
 
-export async function resolveKnowledgeSourceProfileId(props: {
+interface IKnowledgeSourceScopeInput {
   service: Service;
   subjectId: string;
   socialModuleProfileId: string;
   targetSocialModuleProfileId?: string;
   socialModuleChatId?: string;
-}) {
+}
+
+export async function resolveKnowledgeSourceScope(
+  props: IKnowledgeSourceScopeInput,
+): Promise<{ profileId: string; storeId?: string }> {
   const targetSocialModuleProfileId =
     props.targetSocialModuleProfileId?.trim() || props.socialModuleProfileId;
 
   if (targetSocialModuleProfileId === props.socialModuleProfileId) {
-    return targetSocialModuleProfileId;
+    return { profileId: targetSocialModuleProfileId };
   }
 
   if (!props.socialModuleChatId) {
     throw new Error(
       "Validation error. socialModuleChatId is required for target profile Knowledge Source access",
     );
+  }
+
+  const chat = await props.service.modules.social.chat.findById({
+    id: props.socialModuleChatId,
+  });
+  if (chat?.variant === STORE_EMPLOYEE_CHAT_VARIANT) {
+    const scope = await props.service.crmWorkspace.employees.scopeForChat(
+      props.subjectId,
+      chat,
+    );
+    if (
+      scope.profileId !== targetSocialModuleProfileId ||
+      scope.actorProfileId !== props.socialModuleProfileId
+    ) {
+      throw new Error(
+        "Not Found error. Employee knowledge profile is unavailable",
+      );
+    }
+    return { profileId: scope.profileId, storeId: scope.storeId };
   }
 
   const [requestingProfileToChat, targetProfileToChat] = await Promise.all([
@@ -121,7 +154,45 @@ export async function resolveKnowledgeSourceProfileId(props: {
     );
   }
 
-  return targetSocialModuleProfileId;
+  const owners = await props.service.module.subjectsToSocialModuleProfiles.find(
+    {
+      params: {
+        filters: {
+          and: [
+            {
+              column: "socialModuleProfileId",
+              method: "eq",
+              value: targetSocialModuleProfileId,
+            },
+          ],
+        },
+      },
+    },
+  );
+  if (owners.length) {
+    const employees =
+      await props.service.module.subjectsToEcommerceModuleStores.find({
+        params: {
+          limit: 1,
+          filters: {
+            and: [
+              {
+                column: "subjectId",
+                method: "inArray",
+                value: owners.map(({ subjectId }) => subjectId),
+              },
+              { column: "variant", method: "eq", value: "crm-agent" },
+            ],
+          },
+        },
+      });
+    if (employees.length) {
+      throw new Error(
+        "Not Found error. Employee knowledge profile is unavailable",
+      );
+    }
+  }
+  return { profileId: targetSocialModuleProfileId };
 }
 
 export function getKnowledgeSourceIds(relations: unknown[]) {
@@ -143,7 +214,7 @@ export async function assertProfileKnowledgeSourceAccess(props: {
   targetSocialModuleProfileId?: string;
   socialModuleChatId?: string;
 }) {
-  const documentProfileId = await resolveKnowledgeSourceProfileId({
+  const scope = await resolveKnowledgeSourceScope({
     service: props.service,
     subjectId: props.subjectId,
     socialModuleProfileId: props.socialModuleProfileId,
@@ -158,7 +229,7 @@ export async function assertProfileKnowledgeSourceAccess(props: {
             {
               column: "profileId",
               method: "eq",
-              value: documentProfileId,
+              value: scope.profileId,
             },
             {
               column: "knowledgeModuleSourceId",
@@ -176,6 +247,43 @@ export async function assertProfileKnowledgeSourceAccess(props: {
     throw new Error(
       "Authorization error. Requested Knowledge Source is not linked to profile",
     );
+  }
+  const source = await props.service.modules.knowledge.source.findById({
+    id: props.knowledgeModuleSourceId,
+  });
+  if (!source || source.variant === "customer-memory") {
+    throw new Error("Not Found error. Knowledge Source is unavailable");
+  }
+
+  if (scope.storeId) {
+    const [relation] = relations;
+    const sourceLinks =
+      await props.service.modules.social.profilesToKnowledgeModuleSources.find({
+        params: {
+          limit: 2,
+          filters: {
+            and: [
+              {
+                column: "knowledgeModuleSourceId",
+                method: "eq",
+                value: props.knowledgeModuleSourceId,
+              },
+            ],
+          },
+        },
+      });
+    if (
+      source?.variant !== "default" ||
+      sourceLinks.length !== 1 ||
+      relation.variant !== "default" ||
+      (relation.storeId && relation.storeId !== scope.storeId) ||
+      relation.offerId ||
+      relation.projectId
+    ) {
+      throw new Error(
+        "Not Found error. Employee knowledge source is unavailable",
+      );
+    }
   }
 
   return relations[0];

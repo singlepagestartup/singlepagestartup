@@ -1,0 +1,9 @@
+{
+  "id": "cc171181-14ca-4d6e-a9ff-45fa7bc4bbaf",
+  "createdAt": "2026-11-17T23:08:18.214Z",
+  "updatedAt": "2026-11-17T23:08:18.214Z",
+  "variant": "default",
+  "type": "HTTP",
+  "method": "POST",
+  "path": "/api/rbac/subjects/[rbac.subjects.id]/ecommerce-module/offers"
+}

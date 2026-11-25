@@ -9,7 +9,21 @@ interface IFind {
 const filter = ({ params }: IFind, column: string) =>
   params.filters.and.find((entry) => entry.column === column)?.value;
 
-it.each(["store", "customer", "employee"])(
+const previousKey = process.env.OPEN_AI_API_KEY;
+
+beforeAll(() => {
+  process.env.OPEN_AI_API_KEY = "offline-provider-unit-key";
+});
+
+afterAll(() => {
+  if (previousKey === undefined) {
+    delete process.env.OPEN_AI_API_KEY;
+  } else {
+    process.env.OPEN_AI_API_KEY = previousKey;
+  }
+});
+
+it.each(["store", "customer", "employee", "fixed-model"])(
   "lists assigned models with shared favorite identities and actual capabilities for a %s-funded stage",
   async (payer) => {
     const model = "gpt-5.2-2025-12-11";
@@ -41,9 +55,7 @@ it.each(["store", "customer", "employee"])(
       storeId: "store",
       subjectId: "agent",
     });
-    const taskLinks = jest
-      .fn()
-      .mockResolvedValue([{ crmModuleTaskId: "task" }]);
+    const taskLinks = jest.fn().mockResolvedValue({ crmModuleTaskId: "task" });
     const service = new ProviderConnections(
       {
         findById: jest.fn().mockResolvedValue({ variant: "agent" }),
@@ -55,29 +67,31 @@ it.each(["store", "customer", "employee"])(
           subjectsToSocialModuleProfiles: {
             find: jest.fn().mockResolvedValue([{ id: "profile-link" }]),
           },
-          subjectsToProviderAgents: {
-            find: jest.fn(async (query: IFind) => {
-              const personal = filter(query, "subjectId");
-              return [
-                {
-                  identityId: personal ? "direct" : "routed",
-                  executorId: "executor",
-                  model: personal ? model : routerModel,
-                  terms,
-                },
-              ];
-            }),
-          },
-          subjectsToProviderIdentities: {
-            find: jest.fn(async (query: IFind) => [
-              {
-                identityId: filter(query, "identityId"),
-                ownerId: "owner",
+          subjectsToIdentities: {
+            providerAssignments: jest.fn(
+              async (_store: string, query: { subjectId: string | null }) => {
+                const personal = query.subjectId;
+                return [
+                  {
+                    identityId: personal ? "direct" : "routed",
+                    executorId: "executor",
+                    model: personal ? model : routerModel,
+                    terms,
+                  },
+                ];
               },
-            ]),
+            ),
+            providerConnections: jest.fn(
+              async (_store: string, query: { identityId: string }) => [
+                {
+                  identityId: query.identityId,
+                  ownerId: "owner",
+                },
+              ],
+            ),
           },
           identity: {
-            findById: jest.fn(async ({ id }: { id: string }) => ({
+            outboundProvider: jest.fn(async (id: string) => ({
               usage: "outbound_api",
               provider: id === "direct" ? "openai" : "openrouter",
             })),
@@ -97,8 +111,8 @@ it.each(["store", "customer", "employee"])(
             chatsToThreads: {
               find: jest.fn().mockResolvedValue([{ threadId: "thread" }]),
             },
-            threadsToCrmModuleTasks: {
-              find: taskLinks,
+            chatsToCrmModuleTasks: {
+              forThread: taskLinks,
             },
           },
           crm: {
@@ -112,10 +126,20 @@ it.each(["store", "customer", "employee"])(
                 assigneeId: "agent",
                 stageId: "stage",
               }),
-              getPublication: jest.fn().mockResolvedValue({
+              getFunnel: jest.fn().mockResolvedValue({
                 definition: {
-                  stages: [{ id: "stage", output: "text" }],
-                  workFunding: { payer },
+                  stages: [
+                    {
+                      id: "stage",
+                      output: "text",
+                      ...(payer === "fixed-model" && {
+                        provider: { modelId: "gpt-4.1-mini" },
+                      }),
+                    },
+                  ],
+                  workFunding: {
+                    payer: payer === "customer" ? "customer" : "store-owner",
+                  },
                 },
               }),
             },
@@ -126,34 +150,30 @@ it.each(["store", "customer", "employee"])(
     );
 
     try {
-      const { groups } = await service.chatModels(
-        "buyer",
-        "profile",
-        "chat",
-        "thread",
-      );
+      const { groups, stageModelFixed, stageModelId } =
+        await service.chatModels("buyer", "profile", "chat", "thread");
+      if (payer === "fixed-model") {
+        expect(stageModelFixed).toBe(true);
+        expect(stageModelId).toBe("gpt-4.1-mini");
+        expect(groups).toEqual([]);
+        expect(vault.read).not.toHaveBeenCalled();
+        return;
+      }
+      expect(stageModelFixed).toBeUndefined();
       const [group] = groups;
       expect(group.id).toBe("text");
+      const expected = payer === "customer" ? model : "gpt-6.2-astra";
       expect(group.models[0]).toMatchObject({
-        id: model,
-        canonicalId: routerModel,
+        id: expected,
         supportsReasoning: true,
         reasoning: {
-          supportedEfforts: ["xhigh", "high", "medium", "low", "none"],
+          supportedEfforts:
+            payer === "customer"
+              ? ["xhigh", "high", "medium", "low", "none"]
+              : ["medium", "high"],
         },
       });
-      if (payer !== "customer") {
-        expect(group.models).toHaveLength(2);
-        expect(group.models[1]).toMatchObject({
-          id: routerModel,
-          canonicalId: routerModel,
-          supportsReasoning: true,
-          reasoning: { supportedEfforts: ["high", "none"] },
-        });
-      } else {
-        expect(group.models).toHaveLength(1);
-        expect(catalog).not.toHaveBeenCalled();
-      }
+      expect(group.models).toHaveLength(1);
       if (payer === "employee") {
         expect(taskLinks).not.toHaveBeenCalled();
         expect(scopeForChat).toHaveBeenCalledWith(
@@ -166,11 +186,98 @@ it.each(["store", "customer", "employee"])(
         ).rejects.toThrow("outside this employee conversation");
       }
       expect(vault.read).not.toHaveBeenCalled();
+      expect(catalog).not.toHaveBeenCalled();
     } finally {
       catalog.mockRestore();
     }
   },
 );
+
+it("requires an explicit payer when owner grants are ambiguous and rejects a revoked payer", async () => {
+  const owners = new Set(["owner-a", "owner-b"]);
+  const find = jest.fn(async (query: IFind) => {
+    if (filter(query, "variant") !== "owner") {
+      return [{ subjectId: "worker" }];
+    }
+    const subjectId = filter(query, "subjectId");
+    return [...owners]
+      .filter((id) => !subjectId || id === subjectId)
+      .map((id) => ({ subjectId: id }));
+  });
+  const vault = { read: jest.fn() };
+  const service = new ProviderConnections(
+    {
+      findById: jest.fn().mockResolvedValue({ variant: "agent" }),
+      module: { subjectsToEcommerceModuleStores: { find } },
+    } as never,
+    vault as never,
+  );
+  await expect(
+    service.resolveWork("store", "worker", "text", {
+      payer: "store-owner",
+    }),
+  ).rejects.toThrow("Select the store owner");
+  const scope = { payer: "store-owner" as const, preferredOwnerId: "owner-b" };
+  await expect(
+    service.resolveWork("store", "worker", "text", scope),
+  ).resolves.toMatchObject({
+    mode: "server",
+    ownerId: "owner-b",
+    provider: "openai",
+    model: "gpt-6.2-astra",
+    reasoning: "high",
+    terms: {
+      inputUsdPerMillion: "8",
+      cachedInputUsdPerMillion: "0.40",
+      outputUsdPerMillion: "40",
+    },
+  });
+  const { terms } = await service.resolveWork("store", "worker", "text", scope);
+  const topup = {
+    topupProductId: "pack",
+    topupUsd: "3",
+    topupTokens: "1000",
+    usdPerSps: "0.003",
+    workMultiplier: "1.5",
+  };
+  const quotes = service.selectableServerRates("text", { ...terms, ...topup });
+  expect(quotes).toEqual(
+    expect.arrayContaining([
+      expect.objectContaining({
+        model: "gpt-5.4-mini-2026-03-17",
+        cachedInputUsdPerMillion: "0.075",
+      }),
+      expect.objectContaining({
+        model: "gpt-4.1-mini",
+        cachedInputUsdPerMillion: "0.10",
+      }),
+    ]),
+  );
+  for (const { model, capability, provider, ...quoted } of quotes) {
+    const actual = await service.resolveWork(
+      "store",
+      "worker",
+      capability,
+      scope,
+      {
+        provider,
+        modelId: model,
+      },
+    );
+    expect(quoted).toEqual({ ...actual.terms, ...topup });
+  }
+  await expect(
+    service.resolveWork("store", "worker", "text", scope, {
+      modelId: "gpt-6.2-astra",
+      reasoning: "low",
+    }),
+  ).rejects.toThrow("reasoning effort is unavailable");
+  owners.delete("owner-b");
+  await expect(
+    service.resolveWork("store", "worker", "text", scope),
+  ).rejects.toThrow("Store ownership required");
+  expect(vault.read).not.toHaveBeenCalled();
+});
 
 it.each(["assistant", "crm-agent"])(
   "resolves the chosen stage model for a store %s and rejects unavailable selections before reading credentials",
@@ -212,27 +319,35 @@ it.each(["assistant", "crm-agent"])(
             : [];
         }),
       },
-      subjectsToProviderAgents: {
-        find: jest.fn(async (query: IFind) => {
-          if (filter(query, "capability") !== "text") {
-            return [];
-          }
-          return filter(query, "subjectId") ? [personal] : [fallback];
-        }),
-      },
-      subjectsToProviderIdentities: {
-        find: jest.fn(async (query: IFind) => [
-          {
-            id: filter(query, "identityId"),
-            identityId: filter(query, "identityId"),
-            subjectId: filter(query, "subjectId"),
-            ownerId: "owner",
-            version: "rotated-version",
+      subjectsToIdentities: {
+        providerAssignments: jest.fn(
+          async (
+            _store: string,
+            query: { capability: string; subjectId: string | null },
+          ) => {
+            if (query.capability !== "text") {
+              return [];
+            }
+            return query.subjectId ? [personal] : [fallback];
           },
-        ]),
+        ),
+        providerConnections: jest.fn(
+          async (
+            _store: string,
+            query: { identityId: string; subjectId: string },
+          ) => [
+            {
+              id: query.identityId,
+              identityId: query.identityId,
+              subjectId: query.subjectId,
+              ownerId: "owner",
+              version: "rotated-version",
+            },
+          ],
+        ),
       },
       identity: {
-        findById: jest
+        outboundProvider: jest
           .fn()
           .mockResolvedValue({ usage: "outbound_api", provider: "openai" }),
       },
@@ -356,10 +471,18 @@ it("lists each eligible agent for the owner and denies ineligible subjects befor
             );
           }),
         },
-        subjectsToProviderAgents: { find: assignments },
-        subjectsToProviderIdentities: { find: connections },
-        subjectsToWalletOperations: {
-          history: jest.fn().mockResolvedValue({ items: [], nextCursor: null }),
+        subjectsToIdentities: {
+          providerAssignments: assignments,
+          providerConnections: connections,
+        },
+      },
+      modules: {
+        billing: {
+          transaction: {
+            history: jest
+              .fn()
+              .mockResolvedValue({ items: [], nextCursor: null }),
+          },
         },
       },
       findById: jest.fn(async ({ id }: { id: string }) =>

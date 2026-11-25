@@ -7,8 +7,11 @@ export function Component(props: IComponentPropsExtended) {
       isServer={props.isServer}
       className={props.className}
       data={props.data}
+      avatar={props.avatar}
+      displayName={props.displayName}
       language={props.language}
       profileCaption={props.profileCaption}
+      summaryOnly={props.summaryOnly}
       skills={props.skills}
       knowledgeSources={props.knowledgeSources}
       selectedKnowledgeSource={props.selectedKnowledgeSource}

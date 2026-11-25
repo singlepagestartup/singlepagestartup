@@ -1,19 +1,14 @@
-import type {
-  WorkflowDraft,
-  WorkflowPerson,
-  WorkflowRelease,
-} from "../../../shared/workflows";
+import type { Workflow, WorkflowPerson } from "../../../shared/workflows";
 
 export const variant = "workflow-editor";
 
 export interface IComponentProps {
   variant?: typeof variant;
-  initialDraft: WorkflowDraft;
-  currentRelease?: WorkflowRelease;
+  initialWorkflow: Workflow;
   people: WorkflowPerson[];
   payers: { id: string; title: string }[];
-  onSave?: (draft: WorkflowDraft) => void;
-  onPublish?: (draft: WorkflowDraft) => void;
+  language?: string;
+  onSave?: (draft: Workflow) => void;
 }
 
 export interface IComponentPropsExtended extends IComponentProps {}

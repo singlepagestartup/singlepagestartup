@@ -293,7 +293,7 @@ export class Handler {
                 generateData,
               );
             const receipt =
-              await this.service.modules.fileStorage.privateFile.write({
+              await this.service.modules.fileStorage.file.privateContent.write({
                 name: `receipt-${uuid}.png`,
                 mimeType: "image/png",
                 bytes,

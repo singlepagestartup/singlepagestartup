@@ -7,6 +7,7 @@
  */
 
 import { Service as ProfileMcpCatalogService } from "./catalog";
+import { WorkMcpSession } from "./work-session";
 
 function createSession() {
   return {
@@ -144,5 +145,49 @@ describe("profile-scoped MCP server catalog", () => {
       }),
     ).rejects.toThrow("catalog unavailable");
     expect(session.close).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe("work agent MCP routing", () => {
+  it("routes identical tool names to their own connection under the assigned identity", async () => {
+    const first = createSession();
+    const second = createSession();
+    const external = {
+      descriptor: { id: "inventory", title: "Inventory", description: "" },
+      openSession: jest.fn().mockResolvedValue(second),
+    };
+    const local = { openSession: jest.fn().mockResolvedValue(first) };
+    const catalog = await new ProfileMcpCatalogService(local as any, [
+      external,
+    ]).open({
+      configuredServerIds: ["inventory", "singlepagestartup", "inventory"],
+      rbacSubjectAuthenticationJwt: "local-only",
+      subjectId: "agent",
+    });
+    expect(external.openSession).toHaveBeenCalledWith({ subjectId: "agent" });
+    const authorize = jest.fn().mockResolvedValue(undefined);
+    const session = new WorkMcpSession(catalog, authorize);
+    const [localName, externalName] = session.tools.map(
+      (tool) => tool.function.name,
+    );
+    expect(localName).not.toBe(externalName);
+    expect(externalName).toMatch(/^[a-zA-Z0-9_-]{1,64}$/);
+    expect(session.tools[1].function.parameters).toEqual({ type: "object" });
+    await session.call(externalName, { query: "item" });
+    expect(authorize).toHaveBeenCalledWith("inventory");
+    expect(second.callTool).toHaveBeenCalledWith({
+      name: "module-list",
+      arguments: { query: "item" },
+    });
+    expect(first.callTool).not.toHaveBeenCalled();
+    await expect(session.call("unpublished", {})).rejects.toThrow("Unknown");
+    authorize.mockRejectedValueOnce(new Error("connection removed"));
+    await expect(session.call(localName, {})).rejects.toThrow(
+      "connection removed",
+    );
+    expect(first.callTool).not.toHaveBeenCalled();
+    await session.close();
+    expect(first.close).toHaveBeenCalledTimes(1);
+    expect(second.close).toHaveBeenCalledTimes(1);
   });
 });

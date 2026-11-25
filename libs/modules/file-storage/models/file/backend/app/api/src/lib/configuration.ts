@@ -9,6 +9,8 @@ import { injectable } from "inversify";
 import { isLegacyOrderReceipt } from "@sps/file-storage/models/file/sdk/model";
 
 const include = (entity: Record<string, unknown>) =>
+  !entity.privateDigest &&
+  !String(entity.file ?? "").startsWith("private:") &&
   !isLegacyOrderReceipt({
     adminTitle:
       typeof entity.adminTitle === "string" ? entity.adminTitle : undefined,

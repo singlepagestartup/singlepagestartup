@@ -205,7 +205,7 @@ describe("paid order atomic fulfillment", () => {
     const keys = [
       scopeDependencyKey("public.sps_ee_order", "id", order.id!),
       scopeDependencyKey("public.sps_rc_ss_to_rs_3nw", "st_id", subject.id!),
-      scopeDependencyKey("public.sps_rc_ss_to_bg_me_cs_vvd", "id", balance.id),
+      scopeDependencyKey("public.sps_bg_wallet_currency", "id", balance.id),
     ];
     const versions = async () => {
       const rows =

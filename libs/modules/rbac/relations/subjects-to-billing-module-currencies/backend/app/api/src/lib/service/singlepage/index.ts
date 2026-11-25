@@ -28,10 +28,6 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     return this.repository.total(subjectId, currencyId);
   }
 
-  applyDelta(subjectId: string, currencyId: string, delta: string) {
-    return this.repository.applyDelta(subjectId, currencyId, delta);
-  }
-
   async updateAmountIfUnchanged(
     props: IUpdateAmountIfUnchangedProps,
   ): Promise<(typeof Table)["$inferSelect"] | undefined> {

@@ -26,10 +26,15 @@ export class Service extends CRUDService<Message> {
   createWorkMessage(
     data: Pick<Message, "description"> & {
       metadata?: Message["metadata"];
+      interaction?: Message["interaction"];
       sourceSystemId?: string;
     },
   ) {
-    return super.insert({ ...data, variant: "customer-work" });
+    return super.insert({
+      ...data,
+      variant: "customer-work",
+      createdAt: new Date(),
+    });
   }
 
   protected override insert(data: Record<string, unknown>) {

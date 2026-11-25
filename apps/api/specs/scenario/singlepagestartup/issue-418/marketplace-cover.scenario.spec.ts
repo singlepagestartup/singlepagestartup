@@ -1,7 +1,5 @@
-import { randomBytes, randomUUID } from "node:crypto";
-import { mkdtemp, readFile, rm } from "node:fs/promises";
-import { tmpdir } from "node:os";
-import { join } from "node:path";
+import { randomUUID } from "node:crypto";
+import { readFile } from "node:fs/promises";
 import { and, eq } from "drizzle-orm";
 import { Hono } from "hono";
 import sharp from "sharp";
@@ -15,6 +13,8 @@ import {
   resetPostgresClient,
 } from "@sps/shared-backend-database-config";
 import { createService } from "@sps/agent/models/work-attempt/backend/app/api/src/lib/bootstrap";
+import { Handler as TypingHandler } from "@sps/rbac/models/subject/backend/app/api/src/lib/controller/singlepage/social-module/chat/find-by-id/thread/typing";
+import { Service as ChatActions } from "@sps/rbac/models/subject/backend/app/api/src/lib/service/singlepage/social-module/chat/actions";
 import { Handler as MessageHandler } from "@sps/rbac/models/subject/backend/app/api/src/lib/controller/singlepage/social-module/profile/find-by-id/chat/find-by-id/message/create";
 import { Table as Wallet } from "@sps/rbac/relations/subjects-to-billing-module-currencies/backend/repository/database";
 import { Table as Task } from "@sps/crm/models/task/backend/repository/database";
@@ -24,32 +24,27 @@ import type { IChatMessage } from "@sps/social/models/message/sdk/model";
 import { Provider as KvProvider } from "@sps/providers-kv";
 import { KV_PROVIDER } from "@sps/shared-utils";
 
-const rollback = new Error("Remove marketplace cover fixtures");
-const previousEnv = {
-  SPS_PROVIDER_SECRET_DIR: process.env.SPS_PROVIDER_SECRET_DIR,
-  SPS_PROVIDER_ACTIVE_MASTER_KEY: process.env.SPS_PROVIDER_ACTIVE_MASTER_KEY,
-  SPS_PROVIDER_MASTER_KEYS: process.env.SPS_PROVIDER_MASTER_KEYS,
-};
-let vault: string;
+import {
+  embeddingResponse,
+  useFixtureEmbeddings,
+} from "../../test-utils/knowledge-embeddings";
 
-beforeAll(async () => {
-  vault = await mkdtemp(join(tmpdir(), "sps-cover-test-"));
-  process.env.SPS_PROVIDER_SECRET_DIR = vault;
-  process.env.SPS_PROVIDER_ACTIVE_MASTER_KEY = "cover-fixture";
-  process.env.SPS_PROVIDER_MASTER_KEYS = JSON.stringify({
-    "cover-fixture": randomBytes(32).toString("base64"),
-  });
+useFixtureEmbeddings();
+
+const rollback = new Error("Remove marketplace cover fixtures");
+const previousKey = process.env.OPEN_AI_API_KEY;
+const legacyTextModel = "gpt-5.4-mini-2026-03-17";
+
+beforeAll(() => {
+  process.env.OPEN_AI_API_KEY = "offline-cover-key";
 });
 
 afterAll(async () => {
-  for (const [key, value] of Object.entries(previousEnv)) {
-    if (value === undefined) {
-      delete process.env[key];
-    } else {
-      process.env[key] = value;
-    }
+  if (previousKey === undefined) {
+    delete process.env.OPEN_AI_API_KEY;
+  } else {
+    process.env.OPEN_AI_API_KEY = previousKey;
   }
-  await rm(vault, { recursive: true, force: true });
   await getPostgresClient().end();
   resetPostgresClient();
   const kv = new KvProvider({ type: KV_PROVIDER }).client;
@@ -58,8 +53,17 @@ afterAll(async () => {
   }
 });
 
-async function verifyCover(provider: "openai" | "openrouter") {
-  const startsInIntake = provider === "openrouter";
+interface ICoverScenario {
+  startsInIntake: boolean;
+  autoGenerate?: boolean;
+  linear?: boolean;
+}
+
+async function verifyCover({
+  startsInIntake,
+  autoGenerate = false,
+  linear = false,
+}: ICoverScenario) {
   const palette = startsInIntake
     ? "кремовый фон #F4EFDF и тёмно-зелёный акцент #183C32"
     : "кремовый и тёмно-зелёный";
@@ -91,7 +95,7 @@ async function verifyCover(provider: "openai" | "openrouter") {
         await tx.insert(Wallet).values({
           subjectId: owner.id,
           billingModuleCurrencyId: credits.id,
-          amount: "25",
+          amount: "100",
         });
         const { product, offer } = await subject.ecommerceCatalog.createOffer({
           subjectId: owner.id,
@@ -133,29 +137,34 @@ async function verifyCover(provider: "openai" | "openrouter") {
           "Стул коллекции «Линия А17» сделан из гнутого ясеня.";
         const composition = "Поставь стул на низкий архитектурный подиум.";
         const route = new Hono();
+        const typingPath =
+          "/subjects/:id/profiles/:socialModuleProfileId/chats/:socialModuleChatId/threads/:socialModuleThreadId/typing";
+        route.post(typingPath, (context) =>
+          new TypingHandler(subject).execute(context),
+        );
+
         route.post(
           "/subjects/:id/profiles/:socialModuleProfileId/chats/:socialModuleChatId/threads/:socialModuleThreadId/messages",
           (context, next) => new MessageHandler(subject).execute(context, next),
         );
-        let employeeId: string | undefined;
-        let stageSkill: string | undefined;
+        const create = {
+          kind: "create-employee" as const,
+          employee: {
+            storeId: store.id,
+            name: "Дизайнер обложек",
+            operationKey: randomUUID(),
+          },
+        };
+        await expect(
+          subject.crmWorkspace.execute(stranger.id, create),
+        ).rejects.toThrow();
+        const created = await subject.crmWorkspace.execute(owner.id, create);
+        if (created.kind !== "create-employee") {
+          throw new Error("Expected an employee");
+        }
+        const employee = created.data;
+        const employeeId = employee.id;
         if (startsInIntake) {
-          const create = {
-            kind: "create-employee" as const,
-            employee: {
-              storeId: store.id,
-              name: "Дизайнер обложек",
-              operationKey: randomUUID(),
-            },
-          };
-          await expect(
-            subject.crmWorkspace.execute(stranger.id, create),
-          ).rejects.toThrow();
-          const created = await subject.crmWorkspace.execute(owner.id, create);
-          if (created.kind !== "create-employee")
-            throw new Error("Expected an employee");
-          const employee = created.data;
-          employeeId = employee.id;
           expect(await subject.crmWorkspace.execute(owner.id, create)).toEqual(
             created,
           );
@@ -188,7 +197,9 @@ async function verifyCover(provider: "openai" | "openrouter") {
               method: "POST",
               body: form,
             });
-            if (!response.ok) throw new Error(await response.text());
+            if (!response.ok) {
+              throw new Error(await response.text());
+            }
           }
           const links = await social.profilesToKnowledgeModuleSources.find({
             params: {
@@ -209,39 +220,89 @@ async function verifyCover(provider: "openai" | "openrouter") {
               id: links[0].knowledgeModuleSourceId,
             }),
           ).toMatchObject({ content: expect.stringContaining(catalogFact) });
-          const skill = await social.skill.create({
-            data: { title: "Предметная съёмка", description: composition },
-          });
-          await social.profilesToSkills.create({
-            data: { profileId: employee.profileId, skillId: skill.id },
-          });
-          stageSkill = skill.id;
-          expect(
-            (await subject.crmWorkspace.options(owner.id, store.id))
-              .skillsByAssignee[employee.id],
-          ).toContainEqual({ id: skill.id, title: skill.title });
         }
-        const funnel = await crm.funnel.saveDraft({
+        const skill = await social.skill.create({
+          data: { title: "Предметная съёмка", description: composition },
+        });
+        await social.profilesToSkills.create({
+          data: { profileId: employee.profileId, skillId: skill.id },
+        });
+        expect(
+          (await subject.crmWorkspace.options(owner.id, store.id))
+            .skillsByAssignee[employee.id],
+        ).toContainEqual({ id: skill.id, title: skill.title });
+        const stageFunding = {
+          payerSubjectId: owner.id,
+          currencyId: credits.id,
+          maxStageAmount: "50",
+          maxRunAmount: "15",
+        };
+        const attachmentStages = autoGenerate
+          ? (
+              [
+                {
+                  id: "source",
+                  name: "Фото товара",
+                  role: "product-photo",
+                  next: "reference",
+                },
+                {
+                  id: "reference",
+                  name: "Референс оформления",
+                  role: "style-reference",
+                  next: "intake",
+                },
+              ] as const
+            ).map(({ id, name, role, next }) => ({
+              id,
+              name,
+              coverAttachmentRole: role,
+              defaultAssigneeSubjectId: employeeId,
+              workFunding: stageFunding,
+              instruction: "Примите изображение покупателя.",
+              actions: [
+                {
+                  id: "advance",
+                  name: "Принять изображение",
+                  actors: ["ai" as const],
+                  evidence: ["model-result" as const],
+                  nextStageId: next,
+                },
+              ],
+            }))
+          : [];
+        const funnel = await crm.funnel.save({
           storeId: store.id,
           name: "Commissioned cover",
           kind: "individual-service",
           bindings: { offerIds: [offer.id] },
           definition: {
-            initialStageId: startsInIntake ? "intake" : "design",
-            workFunding: {
-              payer: "store-owner",
-              currencyId: credits.id,
-              maxTaskAmount: "20",
-              maxRunAmount: "10",
-            },
+            ...(linear && { progression: "linear" as const }),
+            initialStageId:
+              attachmentStages[0]?.id ?? (startsInIntake ? "intake" : "design"),
+            workFunding: startsInIntake
+              ? undefined
+              : {
+                  payer: "store-owner",
+                  currencyId: credits.id,
+                  maxTaskAmount: "50",
+                  maxRunAmount: "15",
+                },
             stages: [
+              ...attachmentStages,
               ...(startsInIntake
                 ? [
                     {
                       id: "intake",
                       name: "Бриф",
+                      workFunding: stageFunding,
                       defaultAssigneeSubjectId: employeeId,
-                      instruction: "Уточните детали для обложки.",
+                      instruction:
+                        "Поприветствуйте покупателя и уточните детали для обложки.",
+                      ...(linear && {
+                        evidenceInstruction:
+                          "Исполнитель подтвердил получение согласованного размера.",
+                      }),
                       actions: [
                         {
                           id: "advance",
@@ -257,11 +318,13 @@ async function verifyCover(provider: "openai" | "openrouter") {
               {
                 id: "design",
                 name: "Обложка",
+                workFunding: startsInIntake ? stageFunding : undefined,
                 defaultAssigneeSubjectId: employeeId,
-                skillIds: stageSkill ? [stageSkill] : [],
+                skillIds: [skill.id],
                 instruction: "Подготовить обложку товара.",
                 output: "image",
                 imageBrief: "marketplace-cover",
+                ...(autoGenerate && { imageBriefAutoGenerate: true }),
                 waiting: startsInIntake
                   ? undefined
                   : {
@@ -285,60 +348,6 @@ async function verifyCover(provider: "openai" | "openrouter") {
             ],
           },
         });
-        await crm.funnel.publish({
-          storeId: store.id,
-          funnelId: funnel.id,
-          actorId: owner.id,
-          operationKey: randomUUID(),
-          expectedRevision: funnel.revision,
-        });
-        const connection = await subject.providerConnections.change(owner.id, {
-          operation: "connect",
-          storeId: store.id,
-          label: "Mock image provider",
-          provider,
-          externalAccount: "cover-mock-account",
-          secret: "offline-cover-key",
-        });
-        await subject.providerConnections.change(owner.id, {
-          operation: "assign-default",
-          storeId: store.id,
-          connectionId: connection.id,
-          capability: "image",
-          model:
-            provider === "openai"
-              ? "gpt-image-2.5-flare-2026-09-08"
-              : "openai/gpt-image-2.5-flare",
-          terms: {
-            maxInputTokens: 32_000,
-            maxOutputTokens: 16_384,
-            maxCostUsd: "1",
-            inputUsdPerMillion: "8",
-            outputUsdPerMillion: provider === "openai" ? "30" : "40",
-            usdPerSps: "0.1",
-            workMultiplier: "1",
-            version: "test-v1",
-          },
-        });
-        if (startsInIntake) {
-          await subject.providerConnections.change(owner.id, {
-            operation: "assign-default",
-            storeId: store.id,
-            connectionId: connection.id,
-            capability: "text",
-            model: "test-intake-model",
-            terms: {
-              maxInputTokens: 32_000,
-              maxOutputTokens: 200,
-              maxCostUsd: "1",
-              inputUsdPerMillion: "1",
-              outputUsdPerMillion: "1",
-              usdPerSps: "0.1",
-              workMultiplier: "1",
-              version: "test-v1",
-            },
-          });
-        }
         const command = existingOrderId
           ? {
               ...offerScope,
@@ -394,6 +403,12 @@ async function verifyCover(provider: "openai" | "openrouter") {
             subjectId: buyer.id,
             orderId: command.orderId,
           });
+          expect(
+            await ecommerce.order.findById({ id: command.orderId }),
+          ).toMatchObject({
+            type: "cart",
+            status: "new",
+          });
           expect(cart.work?.state).toBe("requires-discussion");
           await expect(
             subject.customerWork.execute(stranger.id, command),
@@ -407,7 +422,8 @@ async function verifyCover(provider: "openai" | "openrouter") {
         );
         expect(threadWork.workflow).toEqual({
           title: "Commissioned cover",
-          stageTitle: startsInIntake ? "Бриф" : "Обложка",
+          stageTitle:
+            attachmentStages[0]?.name ?? (startsInIntake ? "Бриф" : "Обложка"),
         });
         await expect(
           subject.customerWork.viewForThread(stranger.id, view.threadId),
@@ -425,6 +441,19 @@ async function verifyCover(provider: "openai" | "openrouter") {
           subjectId: buyer.id,
           orderId: view.orderId!,
         });
+        expect(
+          await ecommerce.order.findById({ id: view.orderId! }),
+        ).toMatchObject({
+          type: "history",
+          status: "delivering",
+        });
+        expect(
+          await subject.ecommerceModuleFindOpenCartOrderWithProduct({
+            subjectId: buyer.id,
+            productId: command.productId,
+            offerId: command.offerId,
+          }),
+        ).toBeFalsy();
         expect(cart.work?.state).toBe("awaiting-result");
         expect(cart.discussion).toEqual({
           storeId: store.id,
@@ -432,6 +461,22 @@ async function verifyCover(provider: "openai" | "openrouter") {
           threadId: view.threadId,
           chatId: view.chatId,
         });
+        const enter = {
+          operation: "enter-order-discussion" as const,
+          storeId: store.id,
+          taskId: view.taskId,
+          orderId: view.orderId!,
+          operationKey: randomUUID(),
+        };
+        await expect(
+          subject.customerWork.execute(buyer.id, enter),
+        ).resolves.toMatchObject({
+          chatId: view.chatId,
+          threadId: view.threadId,
+        });
+        await expect(
+          subject.customerWork.execute(stranger.id, enter),
+        ).rejects.toThrow();
         const [buyerProfile] = await rbac.subjectsToSocialModuleProfiles.find({
           params: {
             filters: {
@@ -442,6 +487,51 @@ async function verifyCover(provider: "openai" | "openrouter") {
             },
           },
         });
+        if (linear) {
+          const tabs = [randomUUID(), randomUUID()];
+          const change = async (sessionId: string, active: boolean) => {
+            const form = new FormData();
+            form.set("data", JSON.stringify({ sessionId, active }));
+            const response = await route.request(
+              `/subjects/${buyer.id}/profiles/${buyerProfile.socialModuleProfileId}/chats/${view.chatId}/threads/${view.threadId}/typing`,
+              { method: "POST", body: form },
+            );
+            if (!response.ok) {
+              throw new Error(await response.text());
+            }
+            const attached = await social.threadsToActions.find({
+              params: {
+                filters: {
+                  and: [
+                    { column: "threadId", method: "eq", value: view.threadId },
+                  ],
+                },
+              },
+            });
+            const records = await Promise.all(
+              attached.map((link) =>
+                social.action.findById({ id: link.actionId }),
+              ),
+            );
+            return new ChatActions(subject).enrich(
+              records.filter(
+                (record): record is NonNullable<typeof record> =>
+                  record?.variant === "typing",
+              ),
+            );
+          };
+          const [first] = await change(tabs[0], true);
+          expect(first).toMatchObject({
+            variant: "typing",
+            actorProfileIds: [buyerProfile.socialModuleProfileId],
+            payload: {},
+          });
+          expect(await change(tabs[1], true)).toHaveLength(1);
+          expect(await change(tabs[0], false)).toMatchObject([
+            { id: first.id },
+          ]);
+          expect(await change(tabs[1], false)).toEqual([]);
+        }
         let sequence = Date.now();
         const setHistoryTime = async (messageId: string, createdAt: Date) => {
           await tx
@@ -482,7 +572,7 @@ async function verifyCover(provider: "openai" | "openrouter") {
           await advanceHistory(message.id);
           return message;
         };
-        const dispatch = async (message: IChatMessage) => {
+        const pending = async (message: IChatMessage) => {
           const request = await subject.customerWork.pendingForMessage({
             threadId: view.threadId,
             messageId: message.id,
@@ -490,6 +580,15 @@ async function verifyCover(provider: "openai" | "openrouter") {
           if (!request) {
             throw new Error("The buyer message did not queue work");
           }
+          return request;
+        };
+        const taskWork = async () =>
+          (await subject.customerWork.listPendingWork()).filter(
+            ({ taskId }) => taskId === view.taskId,
+          );
+        const dispatchRequest = async (
+          request: NonNullable<Awaited<ReturnType<typeof pending>>>,
+        ) => {
           const result = await worker.dispatch(request);
           const [reply] = await social.message.find({
             params: {
@@ -510,7 +609,21 @@ async function verifyCover(provider: "openai" | "openrouter") {
           }
           await advanceHistory(reply.id);
           await subject.customerWork.ack(request);
-          return { ...result, reply, request, message };
+          return { ...result, reply, request };
+        };
+        const dispatch = async (message: IChatMessage) => ({
+          ...(await dispatchRequest(await pending(message))),
+          message,
+        });
+        const dispatchEntry = async () => {
+          const [request] = await taskWork();
+          expect(request).toBeDefined();
+          const event = await crm.tasksToStages.findById({
+            id: request.eventId,
+          });
+          expect(event).toMatchObject({ kind: "stage-entry" });
+          expect(event!.detail.messageId).toBeUndefined();
+          return dispatchRequest(request);
         };
         const submit = async (text: string, file?: File) => {
           const message = await post(text, file);
@@ -532,59 +645,265 @@ async function verifyCover(provider: "openai" | "openrouter") {
         );
         const mockBackground = await sharp({
           create: {
-            width: 1024,
-            height: 1024,
+            width: 864,
+            height: 1152,
             channels: 3,
             background: "#284c36",
           },
         })
           .png()
           .toBuffer();
-        const url =
-          provider === "openai"
-            ? "https://api.openai.com/v1/images/edits"
-            : "https://openrouter.ai/api/v1/images";
+        const url = "https://api.openai.com/v1/images/edits";
+        const receipts = () =>
+          billing.transaction.find({
+            params: {
+              filters: {
+                and: [{ column: "taskId", method: "eq", value: view.taskId }],
+              },
+            },
+          });
         let backgroundsSent = 0;
         let intakeCalls = 0;
+        const reviewed = new Array<{
+          text: string;
+          decision: "generate" | "wait";
+        }>();
+        const finalTitle = "Стул Берёза";
+        const moreInput = "Фон: нейтральный бежевый";
         let previousIntakeReply: string | undefined;
         let beforeIntakeResponse: (() => Promise<void>) | undefined;
         const network = jest
           .spyOn(globalThis, "fetch")
           .mockImplementation(async (destination, init) => {
-            if (String(destination) === "https://openrouter.ai/api/v1/models") {
+            if (String(destination).endsWith("/embeddings")) {
+              return embeddingResponse(destination, init);
+            }
+            expect(
+              new Headers(init?.headers).get("Authorization") ===
+                "Bearer offline-cover-key",
+            ).toBe(true);
+            if (String(destination).endsWith("/responses/input_tokens")) {
               return Response.json({
-                data: [
-                  {
-                    id: "test-intake-model",
-                    supported_parameters: ["reasoning"],
-                    reasoning: { supported_efforts: ["high"] },
-                  },
-                ],
+                object: "response.input_tokens",
+                input_tokens: 600,
               });
             }
-            expect(new Headers(init?.headers).get("Authorization")).toBe(
-              "Bearer offline-cover-key",
-            );
+            if (
+              startsInIntake &&
+              String(destination) === "https://api.openai.com/v1/responses"
+            ) {
+              const body = JSON.parse(String(init?.body));
+              const current = body.input.at(-1);
+              expect(current.role).toBe("user");
+              const file = current.content[1];
+              expect(["input_image", "input_file"]).toContain(file.type);
+              expect(body.input[0].role).toBe("system");
+              const collection = attachmentStages.some(({ id }) =>
+                body.input[0].content.includes(`currently in stage "${id}"`),
+              );
+              let decision;
+              if (collection) {
+                expect(file.type).toBe("input_image");
+                decision = {
+                  kind: "advance",
+                  actionId: "advance",
+                  reply: "Изображение получено.",
+                };
+              } else {
+                intakeCalls++;
+                previousIntakeReply = `Уточняю детали. Ответ ${intakeCalls}.`;
+                decision = {
+                  kind: "clarify",
+                  clarification: previousIntakeReply,
+                };
+              }
+              return Response.json({
+                id: randomUUID(),
+                status: "completed",
+                output: [
+                  {
+                    type: "message",
+                    content: [
+                      {
+                        type: "output_text",
+                        text: JSON.stringify({ decision }),
+                      },
+                    ],
+                  },
+                ],
+                usage: { input_tokens: 60, output_tokens: 20 },
+              });
+            }
             if (
               startsInIntake &&
               String(destination) ===
-                "https://openrouter.ai/api/v1/chat/completions"
+                "https://api.openai.com/v1/chat/completions"
             ) {
               const body = JSON.parse(String(init?.body));
+              if (
+                body.messages.some(
+                  (message: { role: string; content: string }) =>
+                    message.role === "system" &&
+                    message.content.includes(
+                      "The assigned stage has just started",
+                    ),
+                )
+              ) {
+                const first = body.messages[0].content.includes(
+                  'currently in stage "intake"',
+                );
+                if (first) {
+                  expect(body.messages[0].content).toContain(
+                    "Поприветствуйте покупателя",
+                  );
+                }
+                const greeting = "Здравствуйте! Какие детали нужно учесть?";
+                return Response.json({
+                  id: randomUUID(),
+                  choices: [
+                    {
+                      message: {
+                        content: linear
+                          ? greeting
+                          : JSON.stringify({
+                              decision: {
+                                kind: "clarify",
+                                clarification: greeting,
+                              },
+                            }),
+                      },
+                    },
+                  ],
+                  usage: { prompt_tokens: 30, completion_tokens: 5 },
+                });
+              }
+              if (linear) {
+                const checking = body.messages[0].content.startsWith(
+                  "Decide whether the current CRM stage condition",
+                );
+                let text = "Уточните размер.";
+                if (checking) {
+                  const latest = JSON.parse(body.messages.at(-1).content).at(
+                    -1,
+                  );
+                  text = JSON.stringify({
+                    complete:
+                      latest.speaker === "employee" &&
+                      latest.text === "Размер подтверждён.",
+                  });
+                }
+                return Response.json({
+                  id: randomUUID(),
+                  choices: [{ message: { content: text } }],
+                  usage: { prompt_tokens: 30, completion_tokens: 5 },
+                });
+              }
+              if (
+                attachmentStages.some(({ id }) =>
+                  body.messages[0]?.content.includes(
+                    `currently in stage "${id}"`,
+                  ),
+                )
+              ) {
+                return Response.json({
+                  id: "cover-upload-" + body.messages.at(-1).content,
+                  choices: [
+                    {
+                      message: {
+                        content: JSON.stringify({
+                          decision: {
+                            kind: "advance",
+                            actionId: "advance",
+                            reply: "Изображение получено.",
+                          },
+                        }),
+                      },
+                    },
+                  ],
+                  usage: { prompt_tokens: 25, completion_tokens: 20 },
+                });
+              }
+              if (
+                autoGenerate &&
+                body.messages[0]?.content.startsWith(
+                  "Review a complete marketplace cover brief",
+                )
+              ) {
+                expect(body.model).toBe("gpt-4.1-mini");
+                expect(body).not.toHaveProperty("reasoning_effort");
+                const input = JSON.parse(body.messages.at(-1).content);
+                const text = input.latestParticipantText;
+                if (input.replyOnly) {
+                  expect(text).toBe("Результат принимаю");
+                  expect(input.hasPreview).toBe(true);
+                  expect(input.conversation).toContainEqual({
+                    role: "user",
+                    content: "[Store staff] Результат принимаю",
+                  });
+                  return Response.json({
+                    id: "fixture-cover-staff-acceptance",
+                    choices: [
+                      {
+                        message: {
+                          content: JSON.stringify({
+                            decision: "wait",
+                            reply: "Покупатель может принять файл под превью.",
+                          }),
+                        },
+                      },
+                    ],
+                    usage: { prompt_tokens: 25, completion_tokens: 8 },
+                  });
+                }
+                expect(input).toMatchObject({
+                  size: { width: 1200, height: 1600 },
+                  caption: "Стул Берёза",
+                  triggerHasFiles: false,
+                });
+                expect([finalTitle, moreInput]).toContain(text);
+                const decision = text === finalTitle ? "generate" : "wait";
+                const result =
+                  decision === "wait"
+                    ? {
+                        decision,
+                        reply: "Поясните, какую деталь обложки уточнить?",
+                      }
+                    : { decision };
+                expect(input.hasPreview).toBe(decision === "wait");
+                reviewed.push({ text, decision });
+                return Response.json({
+                  id: `fixture-cover-review-${reviewed.length}`,
+                  choices: [{ message: { content: JSON.stringify(result) } }],
+                  usage: { prompt_tokens: 25, completion_tokens: 5 },
+                });
+              }
               // The buyer never supplied this catalog fact. It must come from the trained employee.
               expect(JSON.stringify(body.messages)).toContain(catalogFact);
               expect(JSON.stringify(body.messages)).not.toContain(composition);
               intakeCalls += 1;
-              const ready = body.messages.at(-1)?.content === "Формат: 3:4";
-              if (ready) {
-                expect(body.reasoning).toEqual({ effort: "high" });
+              const readinessMessage = autoGenerate
+                ? finalTitle
+                : "Формат: 3:4";
+              const latest = body.messages.at(-1)?.content;
+              const ready = latest === readinessMessage;
+              const selectedLegacy =
+                !autoGenerate &&
+                (ready || latest === "Первая деталь для брифа");
+              if (selectedLegacy) {
+                expect(body.model).toBe(legacyTextModel);
+                if (ready) {
+                  expect(body.reasoning_effort).toBe("high");
+                }
+              } else {
+                expect(body).toMatchObject({
+                  model: "gpt-6.2-astra",
+                  reasoning_effort: "high",
+                });
               }
               expect(body.messages[0].content).toContain(
-                "include its exact actionId in the same JSON response",
+                'Set decision.kind to "advance"',
               );
-              expect(body.messages[0].content).toContain(
-                "ask only for the missing information in the current stage",
-              );
+              expect(body.response_format.type).toBe("json_schema");
               if (previousIntakeReply) {
                 expect(body.messages).toContainEqual({
                   role: "assistant",
@@ -592,18 +911,23 @@ async function verifyCover(provider: "openai" | "openrouter") {
                 });
               }
               const result = {
-                reply: ready ? "Непривязанный ответ модели" : "",
-                actionId: ready ? "advance" : null,
-                clarification: ready
-                  ? ""
-                  : `Уточняю детали. Ответ ${intakeCalls}.`,
+                decision: ready
+                  ? {
+                      kind: "advance",
+                      actionId: "advance",
+                      reply: "Непривязанный ответ модели",
+                    }
+                  : {
+                      kind: "clarify",
+                      clarification: `Уточняю детали. Ответ ${intakeCalls}.`,
+                    },
               };
               if (beforeIntakeResponse) {
                 const operation = beforeIntakeResponse;
                 beforeIntakeResponse = undefined;
                 await operation();
               } else if (!ready) {
-                previousIntakeReply = result.clarification;
+                previousIntakeReply = `Уточняю детали. Ответ ${intakeCalls}.`;
               }
               return Response.json({
                 id: `cover-intake-${intakeCalls}`,
@@ -611,59 +935,94 @@ async function verifyCover(provider: "openai" | "openrouter") {
                 usage: {
                   prompt_tokens: 25,
                   completion_tokens: 20,
-                  cost: 0.0001,
                 },
               });
             }
             expect(String(destination)).toBe(url);
             backgroundsSent += 1;
-            let prompt: string;
-            if (provider === "openai") {
-              expect(init?.body).toBeInstanceOf(FormData);
-              const form = init?.body as FormData;
-              const images = form.getAll("image[]");
-              expect(images).toHaveLength(1);
-              const source = images[0] as File;
-              expect(source.name).toBe("source.jpg");
-              expect(source.type).toBe("image/jpeg");
+            expect(init?.body).toBeInstanceOf(FormData);
+            const form = init?.body as FormData;
+            expect(form.get("size")).toBe("864x1152");
+            const images = form.getAll("image[]");
+            const source = images[0] as File;
+            if (autoGenerate) {
+              expect(images.map((image) => (image as File).name)).toEqual([
+                "product-photo.jpg",
+                "style-reference.jpg",
+                "caption-font.jpg",
+              ]);
+              const reference = images[1] as File;
               expect(
-                await sharp(Buffer.from(await source.arrayBuffer())).metadata(),
-              ).toMatchObject({
-                width: 140,
-                height: 100,
-              });
-              prompt = String(form.get("prompt"));
-              expect(prompt).toContain("most prominent foreground item");
-              expect(prompt).toContain("Remove the original setting");
-              expect(prompt).toContain(
-                "Do not paste the original rectangular photo",
+                await sharp(
+                  Buffer.from(await reference.arrayBuffer()),
+                ).metadata(),
+              ).toMatchObject({ width: 90, height: 130 });
+            } else {
+              expect(images).toHaveLength(1);
+              expect(source.name).toBe("source.jpg");
+            }
+            expect(source.type).toBe("image/jpeg");
+            expect(
+              await sharp(Buffer.from(await source.arrayBuffer())).metadata(),
+            ).toMatchObject({ width: 140, height: 100 });
+            const prompt = String(form.get("prompt"));
+            if (autoGenerate) {
+              expect(prompt).toContain("sole visual source for the product");
+              expect(prompt).toContain("style-reference.jpg");
+              expect(prompt).toMatch(
+                /do not copy its product, words, numbers/i,
               );
             } else {
-              const request = JSON.parse(String(init?.body));
-              expect(request).not.toHaveProperty("reasoning");
-              expect(request).not.toHaveProperty("reasoning_effort");
-              prompt = request.prompt;
-              expect(prompt).toContain("Create only the background");
+              expect(prompt).toMatch(
+                /(?:product reference|reference product|source product)/i,
+              );
+              expect(prompt).toMatch(/(?:silhouette|shape|outline)/i);
+            }
+            expect(prompt).toMatch(/proportions/i);
+            expect(prompt).toMatch(/(?:materials?|textures?)/i);
+            expect(prompt).toMatch(/(?:preserv|retain|keep)/i);
+            expect(prompt).toMatch(/(?:margin|central|safe area|edge)/i);
+            expect(prompt).toMatch(/(?:fully|wholly|complete|uncropped)/i);
+            if (autoGenerate) {
+              expect(prompt).not.toContain(composition);
+            } else if (startsInIntake) {
+              expect(prompt).toContain(catalogFact);
               expect(prompt).toContain(composition);
             }
+            const imageReservations = (await receipts()).filter(
+              (receipt) =>
+                receipt.providerWork?.model ===
+                "gpt-image-2.5-flare-2026-09-08",
+            );
+            expect(imageReservations.at(-1)).toMatchObject({
+              kind: "reserve",
+              state: "held",
+            });
+            expect(
+              (await receipts()).some(
+                (receipt) =>
+                  receipt.reservationId === imageReservations.at(-1)?.id,
+              ),
+            ).toBe(false);
             expect(prompt).toContain("1200×1600");
             expect(prompt).toContain("чистый студийный");
             expect(prompt).toContain(palette);
             expect(prompt).toContain("мягкая тень у стула");
             expect(prompt).toContain("Оставьте внизу место для подписи.");
             expect(prompt).toContain("минимализм");
-            expect(prompt).not.toContain("Стул Берёза");
+            if (autoGenerate) {
+              expect(prompt).toContain("Стул Берёза");
+            } else {
+              expect(prompt).not.toContain("Стул Берёза");
+            }
             expect(prompt).not.toMatch(
               /Фото стула|buyer-font|offline-cover-key|data:image|"b64_json"\s*:/,
             );
-            const usage =
-              provider === "openai"
-                ? {
-                    input_tokens: 30,
-                    output_tokens: 20,
-                    input_tokens_details: { text_tokens: 10, image_tokens: 20 },
-                  }
-                : { prompt_tokens: 10, completion_tokens: 20, cost: 0.001 };
+            const usage = {
+              input_tokens: 30,
+              output_tokens: 20,
+              input_tokens_details: { text_tokens: 10, image_tokens: 20 },
+            };
             return Response.json({
               id: "fixture-cover-request",
               usage,
@@ -671,6 +1030,307 @@ async function verifyCover(provider: "openai" | "openrouter") {
             });
           });
         try {
+          const [opening] = await taskWork();
+          const entry = await crm.tasksToStages.findById({
+            id: opening.eventId,
+          });
+          const actionId = entry?.detail.replyActionId;
+          expect(actionId).toBeTruthy();
+          expect(await social.action.findById({ id: actionId! })).toMatchObject(
+            {
+              variant: "ai-execution",
+              payload: { phase: "reply_generation", status: "running" },
+            },
+          );
+          expect(
+            await social.threadsToActions.find({
+              params: {
+                filters: {
+                  and: [
+                    { column: "threadId", method: "eq", value: view.threadId },
+                    { column: "actionId", method: "eq", value: actionId! },
+                  ],
+                },
+              },
+            }),
+          ).toHaveLength(1);
+          const greeting = await dispatchEntry();
+          await expect(worker.dispatch(greeting.request)).resolves.toEqual({
+            id: greeting.id,
+            state: "delivered",
+          });
+          const active = await crm.task.get({
+            storeId: store.id,
+            taskId: view.taskId,
+          });
+          expect(
+            await subject.customerWork.queueStageEntry(active),
+          ).toBeUndefined();
+          const reopened = await subject.customerWork.viewForThread(
+            buyer.id,
+            view.threadId,
+          );
+          expect(
+            reopened.messages.filter(
+              ({ body }) => body === greeting.reply.description,
+            ),
+          ).toHaveLength(1);
+          expect(await social.action.findById({ id: actionId! })).toBeFalsy();
+          if (startsInIntake) {
+            expect(greeting.reply.description).toContain("Здравствуйте");
+          }
+          if (linear) {
+            const [openingCheck] = await taskWork();
+            expect(openingCheck).toMatchObject({ purpose: "stage-check" });
+            await worker.dispatch(openingCheck);
+            const scope = { storeId: store.id, taskId: view.taskId };
+            const initial = await crm.task.get(scope);
+            await expect(
+              crm.task.transition({
+                ...scope,
+                actorId: employeeId,
+                actorKind: "ai",
+                expectedRevision: initial.revision,
+                expectedAssignmentRevision: initial.assignmentRevision,
+                actionId: "advance",
+                operationKey: randomUUID(),
+                evidence: { kind: "model-result", resultId: randomUUID() },
+              }),
+            ).rejects.toThrow("requires the current message's stage check");
+            await submit("Какой нужен размер?");
+            for (let index = 0; index < 2; index += 1) {
+              const [check] = await taskWork();
+              expect(check).toMatchObject({ purpose: "stage-check" });
+              await expect(worker.dispatch(check)).resolves.toMatchObject({
+                state: "delivered",
+              });
+              expect((await crm.task.get(scope)).stageId).toBe("intake");
+            }
+            expect(await taskWork()).toHaveLength(0);
+            const writeStaff = async (text: string) => {
+              const message = await subject.crmWorkspace.send(
+                owner.id,
+                { ...scope, chatId: view.chatId, threadId: view.threadId },
+                { operationKey: randomUUID(), text },
+              );
+              await advanceHistory(message.id);
+              const reply = await subject.customerWork.pendingForMessage({
+                messageId: message.id,
+                threadId: view.threadId,
+              });
+              expect(reply).toBeTruthy();
+              await subject.customerWork.ack(reply!);
+            };
+            await writeStaff("Размер подтверждён.");
+            await writeStaff("Исправление: размер ещё нужно проверить.");
+            for (let index = 0; index < 2; index += 1) {
+              const [outdated] = await taskWork();
+              await worker.dispatch(outdated);
+              expect((await crm.task.get(scope)).stageId).toBe("intake");
+            }
+            await writeStaff("Размер подтверждён.");
+            const [check] = await taskWork();
+            expect(check).toMatchObject({ purpose: "stage-check" });
+            const checked = await worker.dispatch(check);
+            expect(checked.state).toBe("delivered");
+            const next = await crm.task.get(scope);
+            expect(next.stageId).toBe("design");
+            expect(await worker.dispatch(check)).toEqual(checked);
+            expect((await crm.task.get(scope)).revision).toBe(next.revision);
+            expect(await crm.tasksToStages.stageStates(next.id)).toMatchObject({
+              intake: "completed",
+              design: "current",
+            });
+            const secondEntry = await dispatchEntry();
+            expect(secondEntry.reply.description).toBeTruthy();
+            expect(secondEntry.request.eventId).not.toBe(
+              greeting.request.eventId,
+            );
+            expect(await taskWork()).toHaveLength(0);
+            expect(await receipts()).toEqual(
+              expect.arrayContaining([
+                expect.objectContaining({
+                  providerWork: expect.objectContaining({
+                    stepKey: "stage-check",
+                  }),
+                }),
+              ]),
+            );
+            throw rollback;
+          }
+          if (autoGenerate) {
+            const referencePixels = await sharp({
+              create: {
+                width: 90,
+                height: 130,
+                channels: 3,
+                background: "#345588",
+              },
+            })
+              .png()
+              .toBuffer();
+            for (const [text, file] of [
+              [
+                "Фото товара",
+                new File([new Uint8Array(pixels)], "Фото стула.png", {
+                  type: "image/png",
+                }),
+              ],
+              [
+                "Референс оформления",
+                new File([new Uint8Array(referencePixels)], "Оформление.png", {
+                  type: "image/png",
+                }),
+              ],
+              [
+                "",
+                new File([new Uint8Array(font)], "buyer-font.ttf", {
+                  type: "font/ttf",
+                }),
+              ],
+              ["Формат: 3:4", undefined],
+              ["Фон: чистый студийный", undefined],
+              [
+                `Цвета: ${palette}. Основной текст тоже тёмно-зелёный.`,
+                undefined,
+              ],
+              ["Что изобразить: мягкая тень у стула", undefined],
+              ["Оставьте внизу место для подписи.", undefined],
+              ["Стиль: минимализм", undefined],
+            ] as const) {
+              await submit(text, file);
+              if ((await taskWork()).length) {
+                await dispatchEntry();
+              }
+            }
+            expect(await taskWork()).toEqual([]);
+            expect(reviewed).toEqual([]);
+            expect(backgroundsSent).toBe(0);
+            const id = view.orderId!;
+            const scope = { storeId: store.id, taskId: view.taskId };
+            expect((await ecommerce.order.work.findByOrder(id))?.files).toEqual(
+              [],
+            );
+
+            const title = await post(finalTitle);
+            const intakeRequest = await pending(title);
+            expect(await taskWork()).toEqual([intakeRequest]);
+            const intakeResult = await worker.dispatch(intakeRequest);
+            expect(intakeResult.state).toBe("delivered");
+            expect((await crm.task.get(scope)).stageId).toBe("design");
+
+            const [imageRequest] = await taskWork();
+            expect(imageRequest.eventId).not.toBe(intakeRequest.eventId);
+            expect(await taskWork()).toEqual([imageRequest]);
+            const resumed = await crm.tasksToStages.findById({
+              id: imageRequest.eventId,
+            });
+            expect(resumed).toMatchObject({
+              kind: "stage-entry",
+              operationKey: expect.stringMatching(/^stage-entry:/),
+              detail: { stageId: "design" },
+            });
+
+            const generated = await dispatchEntry();
+            expect(generated.state).toBe("delivered");
+            expect(generated.reply.description).toContain("Предпросмотр готов");
+            expect(generated.reply.description).not.toContain("Генерируй");
+            expect(reviewed).toEqual([
+              { text: finalTitle, decision: "generate" },
+            ]);
+            expect(backgroundsSent).toBe(1);
+            expect(await taskWork()).toEqual([]);
+            const work = await ecommerce.order.work.findByOrder(id);
+            expect(work?.files).toHaveLength(1);
+            expect(generated.reply.metadata).toMatchObject({
+              orderResultFileId: work?.files[0].id,
+            });
+            const paidReview = (await receipts()).find(
+              (receipt) =>
+                receipt.kind === "reserve" &&
+                receipt.providerWork?.eventId === imageRequest.eventId &&
+                receipt.providerWork.stepKey === "request-routing",
+            );
+            expect(paidReview).toMatchObject({
+              state: "settled",
+              senderId: owner.id,
+              recipientId: employeeId,
+              providerWork: { providerRequestId: "fixture-cover-review-1" },
+            });
+            const decisionTransfer = (await receipts()).find(
+              (receipt) => receipt.reservationId === paidReview?.id,
+            );
+            expect(decisionTransfer).toMatchObject({ state: "posted" });
+            expect(Number(decisionTransfer?.amount)).toBeGreaterThan(0);
+            const attempt = await worker.findById({ id: generated.id });
+            expect(attempt).toMatchObject({
+              eventId: imageRequest.eventId,
+              capability: "image",
+              model: "gpt-image-2.5-flare-2026-09-08",
+            });
+            await expect(worker.dispatch(imageRequest)).resolves.toEqual({
+              id: generated.id,
+              state: "delivered",
+            });
+            expect(reviewed).toHaveLength(1);
+            expect(backgroundsSent).toBe(1);
+
+            const laterMessage = await post(moreInput);
+            const laterRequest = await pending(laterMessage);
+            const waited = await worker.dispatch(laterRequest);
+            expect(await worker.findById({ id: waited.id })).toMatchObject({
+              capability: "decision",
+              stepKey: "request-routing",
+              eventId: laterRequest.eventId,
+              result: {
+                text: JSON.stringify({
+                  decision: "wait",
+                  reply: "Поясните, какую деталь обложки уточнить?",
+                }),
+              },
+            });
+            const shared = await subject.crmWorkspace.thread(owner.id, {
+              ...scope,
+              chatId: view.chatId,
+              threadId: view.threadId,
+            });
+            expect(
+              shared.messages.some(
+                ({ description }) =>
+                  description === "Поясните, какую деталь обложки уточнить?",
+              ),
+            ).toBe(true);
+            expect(reviewed.at(-1)).toEqual({
+              text: moreInput,
+              decision: "wait",
+            });
+            expect(backgroundsSent).toBe(1);
+
+            const staffAcceptance = await subject.crmWorkspace.send(
+              owner.id,
+              { ...scope, chatId: view.chatId, threadId: view.threadId },
+              { operationKey: randomUUID(), text: "Результат принимаю" },
+            );
+            await advanceHistory(staffAcceptance.id);
+            const answered = await dispatch(staffAcceptance);
+            expect(answered.reply.description).toBe(
+              "Покупатель может принять файл под превью.",
+            );
+            expect(
+              (await ecommerce.order.work.findByOrder(id))?.acceptedFileId,
+            ).toBeNull();
+            expect(backgroundsSent).toBe(1);
+
+            const paused = await submit("Пока не рисуй");
+            expect(paused.reply.description).toContain("генерацию на паузу");
+            expect(reviewed).toHaveLength(2);
+            expect(backgroundsSent).toBe(1);
+            expect((await ecommerce.order.work.findByOrder(id))?.files).toEqual(
+              work?.files,
+            );
+            expect(await taskWork()).toEqual([]);
+            throw rollback;
+          }
           if (!startsInIntake) {
             const scope = { storeId: store.id, taskId: view.taskId };
             const opening = await crm.task.get(scope);
@@ -717,7 +1377,7 @@ async function verifyCover(provider: "openai" | "openrouter") {
                   view.threadId,
                 )
               ).messages,
-            ).toHaveLength(0);
+            ).toHaveLength(1);
             await subject.crmWorkspace.execute(owner.id, {
               kind: "assign",
               assignment: {
@@ -736,22 +1396,23 @@ async function verifyCover(provider: "openai" | "openrouter") {
                   view.threadId,
                 )
               ).messages,
-            ).toMatchObject([
-              {
-                author: "Личный ассистент",
-                kind: "operator",
-                body: expect.stringContaining("проверьте последнее обращение"),
-              },
-            ]);
+            ).toEqual(
+              expect.arrayContaining([
+                expect.objectContaining({ body: greeting.reply.description }),
+                expect.objectContaining({
+                  author: "Дизайнер обложек",
+                  kind: "operator",
+                  body: expect.stringContaining(
+                    "проверьте последнее обращение",
+                  ),
+                }),
+              ]),
+            );
           }
           if (startsInIntake) {
             const scope = { storeId: store.id, taskId: view.taskId };
-            const taskWork = async () =>
-              (await subject.customerWork.listPendingWork()).filter(
-                ({ taskId }) => taskId === view.taskId,
-              );
             const metadata = {
-              provider: { modelId: "test-intake-model" },
+              provider: { modelId: legacyTextModel },
               rbacAiReactionRequest: {
                 version: 1,
                 modelId: "auto",
@@ -860,17 +1521,28 @@ async function verifyCover(provider: "openai" | "openrouter") {
 
             const managed = await subject.crmWorkspace.detail(owner.id, scope);
             expect(managed.task.assigneeKind).toBe("human");
-            expect(managed.assistant?.id).toBe(oldWork[0].assigneeId);
+            expect(managed.assignmentCandidates).toEqual(
+              expect.arrayContaining([
+                expect.objectContaining({
+                  id: oldWork[0].assigneeId,
+                  kind: "ai",
+                }),
+              ]),
+            );
             await subject.crmWorkspace.execute(owner.id, {
               kind: "assign",
               assignment: {
                 ...scope,
                 expectedRevision: managed.task.revision,
                 operationKey: randomUUID(),
-                assigneeId: managed.assistant!.id,
+                assigneeId: oldWork[0].assigneeId,
               },
             });
-            await submit("Сообщение после возврата ассистенту");
+            if (!duringHandoff) {
+              throw new Error("Expected the message from the buyer");
+            }
+            await dispatch(duringHandoff);
+            expect(await taskWork()).toHaveLength(0);
             expect(intakeCalls).toBe(4);
           }
           const originalPhoto = new File(
@@ -881,8 +1553,8 @@ async function verifyCover(provider: "openai" | "openrouter") {
           const photoReply = await submit("Фото товара", originalPhoto);
           if (startsInIntake) {
             // Replies persisted before the event metadata remain visible on the next turn.
-            const { customerWorkReplyEvent: _replyEvent, ...legacy } =
-              photoReply.reply.metadata ?? {};
+            const legacy = { ...photoReply.reply.metadata };
+            delete legacy.customerWorkReplyEvent;
             await tx
               .update(SocialMessage)
               .set({ metadata: legacy })
@@ -913,22 +1585,10 @@ async function verifyCover(provider: "openai" | "openrouter") {
               type: "font/ttf",
             }),
           );
-          const previewRequest = startsInIntake
-            ? await dispatch(
-                await post("Формат: 3:4", undefined, randomUUID(), {
-                  provider: { modelId: "test-intake-model", reasoning: "high" },
-                }),
-              )
-            : fontReply;
+          let previewRequest: Awaited<ReturnType<typeof dispatchRequest>> =
+            fontReply;
           if (startsInIntake) {
             expect(intakeCalls).toBeGreaterThan(0);
-            expect(
-              (await crm.task.get({ storeId: store.id, taskId: view.taskId }))
-                .stageId,
-            ).toBe("design");
-            expect(previewRequest.reply.description).not.toContain(
-              "Непривязанный ответ модели",
-            );
             const selectedScope = await subject.customerWork.contextForRun(
               fontReply.request,
             );
@@ -947,13 +1607,22 @@ async function verifyCover(provider: "openai" | "openrouter") {
 
             // The causal event cutoff is authoritative even if placement timestamps tie or drift.
             await setHistoryTime(fontReply.reply.id, new Date(0));
-            await setHistoryTime(previewRequest.reply.id, new Date(0));
+
             const replay = await subject.customerWork.contextForRun(
               fontReply.request,
             );
             expect(replay.messages).toEqual(selectedScope.messages);
             await advanceHistory(fontReply.reply.id);
-            await advanceHistory(previewRequest.reply.id);
+            await dispatch(
+              await post("Формат: 3:4", undefined, randomUUID(), {
+                provider: { modelId: legacyTextModel, reasoning: "high" },
+              }),
+            );
+            expect(
+              (await crm.task.get({ storeId: store.id, taskId: view.taskId }))
+                .stageId,
+            ).toBe("design");
+            previewRequest = await dispatchEntry();
           }
           expect(previewRequest.reply.description).toMatch(
             /1200×1600[\s\S]*Стул Берёза[\s\S]*Генерируй/,
@@ -984,12 +1653,47 @@ async function verifyCover(provider: "openai" | "openrouter") {
           const approval = await submit("Генерируй");
           expect(approval.state).toBe("delivered");
           expect(backgroundsSent).toBe(1);
+          const attempt = await worker.findById({ id: approval.id });
+          expect(attempt).toMatchObject({
+            provider: "openai",
+            providerMode: "server",
+            payerId: owner.id,
+            stageId: "design",
+            connectionId: null,
+            identityId: null,
+            executorId: null,
+            expenseReceiptId: null,
+          });
+          const operations = await receipts();
+          const reservation = operations.find(
+            (receipt) => receipt.operationKey === `work:${approval.id}`,
+          );
+          expect(reservation).toMatchObject({
+            senderId: owner.id,
+            recipientId: attempt?.assigneeId,
+            state: "settled",
+            providerWork: {
+              usd: "0.00081",
+              providerRequestId: "fixture-cover-request",
+            },
+          });
+          const transfers = operations.filter(
+            (receipt) => receipt.reservationId === reservation?.id,
+          );
+          expect(transfers).toHaveLength(1);
+          expect(transfers[0]).toMatchObject({
+            id: attempt?.workReceiptId,
+            senderId: owner.id,
+            recipientId: attempt?.assigneeId,
+            state: "posted",
+            amount: "0.016200000000",
+          });
 
           const work = await ecommerce.order.work.findByOrder(view.orderId!);
-          expect(work?.versions).toHaveLength(1);
-          const [version] = work!.versions;
+          expect(work?.files).toHaveLength(1);
+          const [version] = work!.files;
           expect(approval.reply.metadata).toMatchObject({
-            customerWorkResultVersionId: version.id,
+            orderResultFileId: version.id,
           });
           expect(approval.reply.description).toContain("Предпросмотр готов");
           await expect(worker.dispatch(approval.request)).resolves.toEqual({
@@ -1000,10 +1704,10 @@ async function verifyCover(provider: "openai" | "openrouter") {
           expect(repeated.reply.description).toContain("уже подтвердили");
           expect(backgroundsSent).toBe(1);
           expect(
-            (await ecommerce.order.work.findByOrder(view.orderId!))?.versions,
+            (await ecommerce.order.work.findByOrder(view.orderId!))?.files,
           ).toHaveLength(1);
 
-          const original = await fileStorage.privateFile.findById({
+          const original = await fileStorage.file.privateContent.findById({
             id: version.originalFileId,
           });
           const preview = await subject.orderWork.artifact(
@@ -1046,10 +1750,8 @@ async function verifyCover(provider: "openai" | "openrouter") {
             ...data.subarray(3 * (1200 * y + x), 3 * (1200 * y + x) + 3),
           ];
           expect(rgb(3, 3)).toEqual([0x28, 0x4c, 0x36]);
-          expect(rgb(600, 650)).toEqual(
-            provider === "openai" ? [0x28, 0x4c, 0x36] : [0xc2, 0x57, 0x27],
-          );
-          expect(rgb(200, 1290)).toEqual([0xff, 0xf7, 0xe7]);
+          expect(rgb(600, 650)).toEqual([0x28, 0x4c, 0x36]);
+          expect(rgb(200, 1290)).toEqual([0x28, 0x4c, 0x36]);
           expect(
             data.includes(
               Buffer.from(
@@ -1061,128 +1763,77 @@ async function verifyCover(provider: "openai" | "openrouter") {
         } finally {
           network.mockRestore();
         }
-        if (provider === "openai") {
-          const command = {
-            kind: "start-test" as const,
-            test: {
-              ...offerScope,
-              funnelId: funnel.id,
-              operationKey: randomUUID(),
-            },
-          };
-          await expect(
-            subject.crmWorkspace.execute(stranger.id, command),
-          ).rejects.toThrow("another owner");
-          const opened = await subject.crmWorkspace.execute(owner.id, command);
-          expect(await subject.crmWorkspace.execute(owner.id, command)).toEqual(
-            opened,
-          );
-          if (opened.kind !== "start-test")
-            throw new Error("Expected a store test");
-          const first = await subject.customerWork.viewForThread(
-            owner.id,
-            opened.data.threadId,
-          );
-          expect(first).toMatchObject({
-            taskId: opened.data.id,
-            assignment: "assistant",
-            storeTest: {
-              storeSlug: store.slug,
-              funnelId: funnel.id,
-              version: 1,
-            },
-          });
-          expect(first?.orderId).toBeDefined();
-          expect(
-            await ecommerce.order.findById({ id: first!.orderId! }),
-          ).toMatchObject({
-            status: "new",
-            variant: "store-test",
-          });
-          expect(
-            await subject.ecommerceModuleFindOpenCartOrderWithProduct({
-              subjectId: owner.id,
-              productId: product.id,
-              offerId: offer.id,
-            }),
-          ).toBeNull();
-          const memberships = await social.profilesToChats.find({
-            params: {
-              filters: {
-                and: [
-                  { column: "chatId", method: "eq", value: opened.data.chatId },
-                ],
-              },
-            },
-          });
-          expect(memberships).toHaveLength(2);
-          await expect(
-            subject.customerWork.execute(owner.id, {
-              operation: "handoff",
-              storeId: store.id,
-              taskId: opened.data.id,
-              operationKey: randomUUID(),
-            }),
-          ).rejects.toThrow("no manager handoff");
-          const message = "Уточним параметры тестовой обложки.";
-          await subject.customerWork.execute(owner.id, {
-            operation: "message",
-            storeId: store.id,
-            taskId: opened.data.id,
-            operationKey: randomUUID(),
-            text: message,
-          });
-
+        if (!startsInIntake) {
           const current = await crm.funnel.get(store.id, funnel.id);
           const next = await subject.crmWorkspace.execute(owner.id, {
             kind: "save",
-            draft: {
+            funnel: {
               storeId: store.id,
               funnelId: funnel.id,
               expectedRevision: current.revision,
-              name: "Updated cover test",
+              name: "Updated cover service",
               kind: current.kind,
               productIds: [product.id],
               definition: current.definition,
             },
           });
           if (next.kind !== "save") throw new Error("Expected a saved funnel");
+          const route = { storeId: store.id, funnelSlug: funnel.slug };
+          expect(
+            await subject.crmWorkspace.funnel(owner.id, route),
+          ).toMatchObject({
+            id: funnel.id,
+            name: "Updated cover service",
+            slug: funnel.slug,
+          });
+          await expect(
+            subject.crmWorkspace.funnel(stranger.id, route),
+          ).rejects.toThrow("Store CRM access");
           expect(next.data.bindings).toMatchObject({
             offerIds: [offer.id],
             productIds: [product.id],
           });
-          await subject.crmWorkspace.execute(owner.id, {
-            kind: "publish",
-            publication: {
-              storeId: store.id,
-              funnelId: funnel.id,
-              expectedRevision: next.data.revision,
-              operationKey: randomUUID(),
-            },
-          });
           expect(
-            await subject.customerWork.viewForThread(
-              owner.id,
-              opened.data.threadId,
-            ),
-          ).toMatchObject({ storeTest: { version: 1 } });
-          const continued = await subject.crmWorkspace.execute(owner.id, {
-            kind: "refresh-test",
-            test: {
+            await crm.task.getFunnel({
               storeId: store.id,
-              taskId: opened.data.id,
-              operationKey: randomUUID(),
-            },
-          });
-          expect(continued.data).toEqual(opened.data);
-          expect(
-            await subject.customerWork.viewForThread(
-              owner.id,
-              opened.data.threadId,
-            ),
+              taskId: view.taskId,
+            }),
           ).toMatchObject({
-            storeTest: { version: 2 },
-            messages: [expect.objectContaining({ body: message })],
+            id: funnel.id,
+            name: "Updated cover service",
+          });
+          const created = await subject.crmWorkspace.execute(owner.id, {
+            kind: "save",
+            funnel: {
+              storeId: store.id,
+              operationKey: randomUUID(),
+              name: "Консультация по обложке",
+              kind: "consultation",
+              productIds: [],
+              definition: {
+                initialStageId: "questions",
+                stages: [
+                  {
+                    id: "questions",
+                    name: "Вопросы",
+                    defaultAssigneeSubjectId: owner.id,
+                    actions: [],
+                  },
+                ],
+              },
+            },
+          });
+          if (created.kind !== "save") {
+            throw new Error("Expected a new funnel");
+          }
+          expect(
+            await subject.crmWorkspace.funnel(owner.id, {
+              storeId: store.id,
+              funnelSlug: created.data.slug,
+            }),
+          ).toMatchObject({
+            id: created.data.id,
+            name: "Консультация по обложке",
           });
         }
         throw rollback;
@@ -1195,7 +1846,14 @@ async function verifyCover(provider: "openai" | "openrouter") {
   }
 }
 
-it.each(["openai", "openrouter"] as const)(
-  "uses the confirmed private cover brief, exact size and font with %s background generation",
-  verifyCover,
-);
+it("creates a direct OpenAI cover with legacy task funding and no store provider configuration", () =>
+  verifyCover({ startsInIntake: false }));
+
+it("takes an ordinary cart order through an employee intake and stage-funded cover delivery", () =>
+  verifyCover({ startsInIntake: true }));
+
+it("queues the opted-in cover after the final title on a regular cart order", () =>
+  verifyCover({ startsInIntake: true, autoGenerate: true }));
+
+it("checks buyer and employee messages independently and advances only when the conversation satisfies the stage", () =>
+  verifyCover({ startsInIntake: true, linear: true }));

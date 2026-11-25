@@ -17,9 +17,15 @@ export const fields = {
     .defaultNow(),
   storeId: pgCore.uuid("store_id").notNull(),
   name: pgCore.text("name").notNull(),
+  slug: pgCore.text("slug").notNull(),
   kind: pgCore.text("kind").$type<TFunnelKind>().notNull(),
-  definition: pgCore.jsonb("definition").$type<IFunnelDefinition>().notNull(),
-  bindings: pgCore.jsonb("bindings").$type<IFunnelBindings>().notNull(),
+  definition: pgCore
+    .jsonb("definition")
+    .$type<Omit<IFunnelDefinition, "stages">>()
+    .notNull(),
+  bindings: pgCore
+    .jsonb("bindings")
+    .$type<Pick<IFunnelBindings, "formIds" | "storeWide">>()
+    .notNull(),
   revision: pgCore.integer("revision").notNull().default(1),
-  publishedVersion: pgCore.integer("published_version"),
 };

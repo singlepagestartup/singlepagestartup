@@ -1,0 +1,1 @@
+ALTER TABLE "sps_cm_tasks_to_stages" ADD COLUMN "queued_at" timestamp (3);

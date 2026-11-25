@@ -33,7 +33,7 @@ export function OrderActions({
   async function change(
     operation: "handoff" | "approve-budget" | "confirm-cart",
   ) {
-    const maximum = work.requiredMaximum ?? "";
+    const maximum = work.requiredMaximum;
     const priceKey = work.price?.key ?? "";
     const proposalId = work.cartProposal?.id ?? "";
     const payload = JSON.stringify([operation, maximum, priceKey, proposalId]);
@@ -69,7 +69,7 @@ export function OrderActions({
   if (managerOnly) {
     return (
       <div className="grid min-w-0 gap-2 justify-items-start">
-        {work.status !== "closed" && work.assignment === "assistant" && (
+        {work.canRequestManager && (
           <Button
             type="button"
             variant="outline"
@@ -141,17 +141,24 @@ export function OrderActions({
           }}
         >
           <p className="text-sm font-medium">
-            {ru ? "Максимум за работу" : "Maximum work charge"}{" "}
-            {work.requiredMaximum} {work.fundingCurrency}
+            {work.requiredMaximum
+              ? `${ru ? "Максимум за работу" : "Maximum work charge"} ${work.requiredMaximum} ${work.fundingCurrency ?? ""}`
+              : ru
+                ? "Тариф этапа"
+                : "Stage rate"}
           </p>
           <p className="mt-2 text-sm text-muted-foreground">
-            {work.approvedMaximum
+            {work.rateApproved || work.approvedMaximum
               ? ru
-                ? "Лимит подтверждён."
-                : "You approved this limit."
-              : ru
-                ? "С вашего кошелька спишется стоимость выполненной работы в пределах этой суммы."
-                : "You pay for completed work, up to this amount."}
+                ? "Тариф подтверждён."
+                : "Rate approved."
+              : work.requiredMaximum
+                ? ru
+                  ? "С вашего кошелька спишется стоимость выполненной работы в пределах этой суммы."
+                  : "You pay for completed work, up to this amount."
+                : ru
+                  ? "Стоимость каждого обращения списывается по этому тарифу с вашего кошелька."
+                  : "Your wallet is charged at this rate for each request."}
           </p>
           {work.price ? (
             <details className="mt-2">
@@ -162,7 +169,10 @@ export function OrderActions({
               </summary>
               <ul className="space-y-2 text-sm text-muted-foreground">
                 {work.price.rates.map((rate) => (
-                  <li key={rate.capability} className="break-words">
+                  <li
+                    key={`${rate.capability}:${rate.model}`}
+                    className="break-words"
+                  >
                     <p>
                       {rate.model} · {rate.version}
                     </p>
@@ -173,8 +183,16 @@ export function OrderActions({
                       {rate.inputUsdPerMillion} / {rate.outputUsdPerMillion} USD
                     </p>
                     <p>
-                      {ru ? "Расход в USD × коэффициент" : "Usage in USD ×"}{" "}
-                      {rate.workMultiplier} / {rate.usdPerSps} USD
+                      {rate.topupTokens && rate.topupUsd ? (
+                        <>
+                          {ru ? "Курс пополнения" : "Top-up rate"} ·{" "}
+                          {rate.topupUsd} USD = {rate.topupTokens} Token
+                        </>
+                      ) : (
+                        <>1 Token = {rate.usdPerSps} USD</>
+                      )}
+                      {" · "}
+                      {ru ? "Коэффициент" : "Multiplier"} ×{rate.workMultiplier}
                     </p>
                   </li>
                 ))}
@@ -193,12 +211,17 @@ export function OrderActions({
             className="mt-2 min-h-11"
             disabled={
               mutation.isPending ||
-              Boolean(work.approvedMaximum) ||
-              !work.requiredMaximum ||
+              Boolean(work.rateApproved || work.approvedMaximum) ||
               !work.price
             }
           >
-            {ru ? "Подтвердить лимит" : "Approve limit"}
+            {work.requiredMaximum
+              ? ru
+                ? "Подтвердить лимит"
+                : "Approve limit"
+              : ru
+                ? "Подтвердить тариф"
+                : "Approve rate"}
           </Button>
         </form>
       )}

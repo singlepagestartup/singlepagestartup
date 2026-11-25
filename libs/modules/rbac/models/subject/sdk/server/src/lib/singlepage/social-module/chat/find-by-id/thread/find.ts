@@ -17,6 +17,7 @@ export interface IProps {
   tag?: string;
   revalidate?: number;
   params?: {
+    threadId?: string;
     [key: string]: any;
   };
   options?: Partial<NextRequestOptions>;
@@ -24,6 +25,9 @@ export interface IProps {
 
 export type IResult = (ISocialModuleChatThread & {
   lastMessageAt?: Date | string | null;
+  lastMessagePreview?: string | null;
+  lastMessageAuthorId?: string | null;
+  lastMessageHasFiles?: boolean;
   unreadCount?: number;
 })[];
 

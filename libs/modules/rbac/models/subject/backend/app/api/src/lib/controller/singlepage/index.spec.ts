@@ -101,32 +101,144 @@ describe("Given: the OpenRouter model catalog route of a chat", () => {
     mockSocialModuleProfileFindById.mockResolvedValue({ id: "profile-owned" });
   });
 
-  it("allows a customer to update their favorites with read access to the order chat", async () => {
+  it("publishes typing only for the signed-in profile in an accessible thread", async () => {
+    const thread = {
+      socialModuleChatId: "chat-1",
+      socialModuleThreadId: "thread-1",
+    };
+    const checkThread = jest.fn();
+    const assertChatAccess = jest.fn();
+    const profilesToChats = {
+      find: jest.fn().mockResolvedValue([{ id: "membership" }]),
+    };
+    const threadsToActions = {
+      withTypingAction: jest.fn((_thread, _profile, callback) =>
+        callback(null),
+      ),
+    };
+    const app = createApp({
+      customerWork: { assertChatAccess },
+      isAuthorizedService: {
+        getSubjectId: jest.fn().mockResolvedValue("subject-owner"),
+      },
+      socialModuleChatLifecycleAssertThreadBelongsToChat: checkThread,
+      modules: { social: { profilesToChats, threadsToActions } },
+    });
+    const path = catalogPath.replace(
+      "/openrouter/models",
+      "/threads/thread-1/typing",
+    );
+    const body = new FormData();
+    body.set(
+      "data",
+      JSON.stringify({
+        active: false,
+        sessionId: "123e4567-e89b-42d3-a456-426614174000",
+      }),
+    );
+    const other = await app.request(path, {
+      method: "POST",
+      headers: await createHeaders("other-subject"),
+      body,
+    });
+    expect(other.status).toBe(401);
+    expect(checkThread).not.toHaveBeenCalled();
+    const response = await app.request(path, {
+      method: "POST",
+      headers: await createHeaders("subject-owner"),
+      body,
+    });
+    expect(response.status).toBe(200);
+    expect(await response.json()).toEqual({ data: { active: false } });
+    expect(checkThread).toHaveBeenCalledWith(thread);
+    expect(assertChatAccess).toHaveBeenCalledWith({
+      subjectId: "subject-owner",
+      chatId: "chat-1",
+      threadId: "thread-1",
+      edit: false,
+    });
+  });
+
+  it("persists a customer's favorites with read access to the order chat", async () => {
     const assertChatAccess = jest.fn().mockResolvedValue(undefined);
-    const save = jest
+    let savedValue: string | undefined;
+    const kv = {
+      get: jest.fn(async () => savedValue),
+      set: jest.fn(async ({ value }: { value: string }) => {
+        savedValue = value;
+        return "OK";
+      }),
+    };
+    const execute = ModelFavorites.prototype.execute;
+    const run = jest
       .spyOn(ModelFavorites.prototype, "execute")
-      .mockImplementation(async (context) =>
-        context.json({ data: { favoriteModelIds: [] } }),
+      .mockImplementation((context, next) =>
+        execute.call(
+          new ModelFavorites(
+            {} as ConstructorParameters<typeof ModelFavorites>[0],
+            async () => kv,
+          ),
+          context,
+          next,
+        ),
       );
 
     try {
-      const response = await createApp({
+      const app = createApp({
         customerWork: { assertChatAccess },
-      }).request(catalogPath.replace("/models", "/model-favorites"), {
-        method: "PATCH",
-        headers: await createHeaders("subject-owner"),
+        isAuthorizedService: {
+          getSubjectId: jest.fn().mockResolvedValue("subject-owner"),
+        },
       });
-      expect(response.status).toBe(200);
+      const path = catalogPath.replace("/models", "/model-favorites");
+      const headers = await createHeaders("subject-owner");
+      const data = { favoriteModelIds: ["openai/gpt-5.2"] };
+      const saved = await app.request(path, {
+        method: "PATCH",
+        headers: { ...headers, "Content-Type": "application/json" },
+        body: JSON.stringify({ data }),
+      });
+      expect(saved.status).toBe(200);
+      expect(kv.set).toHaveBeenCalledWith(
+        expect.objectContaining({
+          key: "subject-owner",
+          value: JSON.stringify(data),
+        }),
+      );
+      const restored = await app.request(path, { headers });
+      expect(restored.status).toBe(200);
+      expect(restored.headers.get("Cache-Control")).toBe("private, no-store");
+      await expect(restored.json()).resolves.toEqual({ data });
+      expect(kv.get).toHaveBeenCalledWith(
+        expect.objectContaining({ key: "subject-owner" }),
+      );
       expect(assertChatAccess).toHaveBeenCalledWith({
         subjectId: "subject-owner",
         chatId: "chat-1",
         edit: false,
       });
-      expect(save).toHaveBeenCalledTimes(1);
+      expect(assertChatAccess).not.toHaveBeenCalledWith(
+        expect.objectContaining({ edit: true }),
+      );
     } finally {
-      save.mockRestore();
+      run.mockRestore();
     }
   });
+
+  it.each(["GET", "PATCH"])(
+    "refuses cross-subject model favorites via %s",
+    async (method) => {
+      const assertChatAccess = jest.fn();
+      const response = await createApp({
+        customerWork: { assertChatAccess },
+      }).request(catalogPath.replace("/models", "/model-favorites"), {
+        method,
+        headers: await createHeaders("other-subject"),
+      });
+      expect(response.status).toBe(401);
+      expect(assertChatAccess).not.toHaveBeenCalled();
+    },
+  );
 
   /**
    * BDD Scenario

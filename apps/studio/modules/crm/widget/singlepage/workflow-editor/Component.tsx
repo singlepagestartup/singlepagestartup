@@ -1,6 +1,4 @@
 import {
-  Archive,
-  ArchiveRestore,
   ArrowDown,
   ArrowUp,
   Check,
@@ -15,32 +13,25 @@ import {
   primaryClass,
   secondaryClass,
 } from "../../../shared/workflow-ui";
-import {
-  newStage,
-  timestampLabel,
-  type WorkflowStage,
-} from "../../../shared/workflows";
+import { newStage, type WorkflowStage } from "../../../shared/workflows";
 import type { IComponentProps } from "./interface";
 import { Field } from "./Fields";
 import { StageFields } from "./StageFields";
-import { Preview } from "./Preview";
 import { draftErrors, stageErrors } from "./validation";
 
 const editorCard = "rounded-xl border border-border bg-card p-4 sm:p-5";
 
 export function Component({
-  initialDraft,
-  currentRelease,
+  initialWorkflow,
   people,
   payers,
+  language = "ru",
   onSave,
-  onPublish,
 }: IComponentProps) {
-  const [draft, setDraft] = useState(initialDraft);
-  const [selectedId, setSelectedId] = useState(initialDraft.stages[0]?.id);
+  const [draft, setDraft] = useState(initialWorkflow);
+  const [selectedId, setSelectedId] = useState(initialWorkflow.stages[0]?.id);
   const [message, setMessage] = useState("");
   const [validate, setValidate] = useState(false);
-  const [previewVersion, setPreviewVersion] = useState(currentRelease?.version);
   const [isDirty, setIsDirty] = useState(false);
   const errorRef = useRef<HTMLDivElement>(null);
   const nextId = useRef(0);
@@ -52,7 +43,7 @@ export function Component({
   const invalidStages = validate
     ? draft.stages
         .filter((stage) => !stage.archived)
-        .map((stage) => ({ stage, errors: stageErrors(stage) }))
+        .map((stage) => ({ stage, errors: stageErrors(stage, people) }))
         .filter((item) => item.errors.length)
     : [];
 
@@ -87,16 +78,12 @@ export function Component({
     changeDraft({ stages: reordered });
   }
 
-  function saveDraft() {
-    onSave?.(draft);
-    setIsDirty(false);
-    setMessage("Черновик сохранён.");
-  }
-
-  function publishDraft() {
+  function saveWorkflow() {
     if (
       draftErrors(draft).length ||
-      draft.stages.some((stage) => !stage.archived && stageErrors(stage).length)
+      draft.stages.some(
+        (stage) => !stage.archived && stageErrors(stage, people).length,
+      )
     ) {
       setValidate(true);
       setMessage("");
@@ -104,14 +91,10 @@ export function Component({
       return;
     }
 
-    const version = (previewVersion ?? 0) + 1;
-    onPublish?.(draft);
-    setPreviewVersion(version);
+    onSave?.(draft);
     setValidate(false);
     setIsDirty(false);
-    setMessage(
-      `Версия ${version} опубликована. Новые задачи получат её условия.`,
-    );
+    setMessage("Воронка сохранена.");
   }
 
   return (
@@ -128,23 +111,15 @@ export function Component({
           <h2 className="font-primary text-2xl font-semibold tracking-tight">
             Редактор воронки
           </h2>
-          <p className="text-sm leading-6 text-muted-foreground">
-            {previewVersion
-              ? `Версия ${previewVersion} опубликована`
-              : "Новая воронка"}
-            {currentRelease?.publishedAt &&
-            previewVersion === currentRelease.version
-              ? ` · ${timestampLabel(currentRelease.publishedAt)}`
-              : ""}
-            {isDirty ? " · Есть изменения" : ""}
-          </p>
+          {isDirty && (
+            <p className="text-sm text-muted-foreground">
+              Есть несохранённые изменения
+            </p>
+          )}
         </div>
         <div className="flex flex-wrap gap-2">
-          <button className={secondaryClass} type="button" onClick={saveDraft}>
-            Сохранить черновик
-          </button>
-          <button className={primaryClass} type="button" onClick={publishDraft}>
-            Опубликовать версию
+          <button className={primaryClass} type="button" onClick={saveWorkflow}>
+            Сохранить воронку
           </button>
         </div>
       </header>
@@ -165,7 +140,7 @@ export function Component({
         >
           <p className="flex items-center gap-2 font-semibold">
             <CircleAlert aria-hidden="true" className="size-4 shrink-0" />{" "}
-            Заполните поля перед публикацией
+            Заполните поля перед сохранением
           </p>
           {errors.length > 0 && (
             <ul className="mt-2 list-disc space-y-1 pl-5">
@@ -292,37 +267,18 @@ export function Component({
                   >
                     <ArrowDown aria-hidden="true" className="size-4" />
                   </button>
-                  <button
-                    type="button"
-                    className={secondaryClass}
-                    onClick={() =>
-                      changeStage({ archived: !selected.archived })
-                    }
-                  >
-                    {selected.archived ? (
-                      <ArchiveRestore aria-hidden="true" className="size-4" />
-                    ) : (
-                      <Archive aria-hidden="true" className="size-4" />
-                    )}
-                    {selected.archived ? "Восстановить" : "Архивировать"}
-                  </button>
                 </div>
               </header>
               <StageFields
                 stage={selected}
+                stages={draft.stages}
+                language={language}
+                newEmployeeHref={`/ru/ecommerce/stores/${encodeURIComponent(draft.shopId)}/employees/new`}
                 people={people}
                 payers={payers}
                 onChange={changeStage}
               />
             </section>
-            {!selected.archived && (
-              <Preview
-                stage={selected}
-                nextStage={draft.stages
-                  .slice(selectedIndex + 1)
-                  .find((stage) => !stage.archived)}
-              />
-            )}
           </div>
         ) : (
           <p className={`${editorCard} text-sm text-muted-foreground`}>

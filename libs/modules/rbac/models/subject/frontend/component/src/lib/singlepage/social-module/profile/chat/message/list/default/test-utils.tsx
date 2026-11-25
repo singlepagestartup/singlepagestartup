@@ -8,8 +8,12 @@ export const mockOpenRouterModelFavoriteUpdateMutate = jest.fn();
 export const mockThreadUpdateMutate = jest.fn();
 export const mockProfileSkillFind = jest.fn();
 export const mockProfileUpdateMutate = jest.fn();
+export const mockProfileAvatarUpdateMutateAsync = jest.fn();
+export const mockProfileUpdateMutateAsync = jest.fn();
 export const mockKnowledgeSourceUpdateMutate = jest.fn();
 export const mockKnowledgeSourceCreateMutate = jest.fn();
+export const mockCreateKnowledgeWithFiles = jest.fn();
+export const mockAttachKnowledgeFiles = jest.fn();
 export const mockKnowledgeReindexDocumentMutateAsync = jest.fn();
 export const mockKnowledgeSourceDeleteMutateAsync = jest.fn();
 export const mockKnowledgeSourceFindRefetch = jest.fn();
@@ -25,6 +29,7 @@ jest.mock("client-only", () => ({}), { virtual: true });
 export const mockChatComponentState = {
   favoriteModelIds: [] as string[],
   knowledgeSources: [] as any[],
+  fixedStageModelId: undefined as string | undefined,
   orderModelIds: ["openai/gpt-5.2"] as string[],
   profileMessageRelations: [] as any[],
   profiles: [] as any[],
@@ -102,6 +107,10 @@ jest.mock("sonner", () => {
 
 jest.mock("@sps/social/models/profile/frontend/component", () => {
   return {
+    getLocalizedPlainText: (
+      title: Record<string, string> | undefined,
+      language: string,
+    ) => title?.[language],
     Component: (props: any) => {
       if (props.variant === "find") {
         const idFilter = props.apiProps?.params?.filters?.and?.find(
@@ -118,27 +127,42 @@ jest.mock("@sps/social/models/profile/frontend/component", () => {
           : null;
       }
 
+      if (props.variant === "id-settings-ai-chat") {
+        const { Component: ProfileSettings } = jest.requireActual(
+          "@sps/social/models/profile/frontend/component/src/lib/singlepage/id-settings-ai-chat/ClientComponent",
+        );
+        return <ProfileSettings {...props} />;
+      }
       if (props.variant === "chat-message-row") {
         return (
           <article>
             <button
               type="button"
-              onClick={() => {
-                props.onProfileOpen?.(props.profile ?? props.data);
+              onClick={(event) => {
+                props.onProfileOpen?.(
+                  props.profile ?? props.data,
+                  event.currentTarget,
+                  props.avatar,
+                  props.data.title?.[props.language],
+                );
               }}
             >
               {props.profile?.slug ?? props.data.slug}
             </button>
+            {props.attachmentsSlot}
             <p>{props.message.description}</p>
             {props.messageContentSlot}
+            {props.interactionSlot}
           </article>
         );
       }
 
       if (props.variant === "chat-profile-sidebar") {
         return (
-          <aside>
-            <h2>{props.data.adminTitle || props.data.slug}</h2>
+          <aside data-profile-id={props.data.id}>
+            <h2>
+              {props.displayName || props.data.adminTitle || props.data.slug}
+            </h2>
             {props.onClose && (
               <button type="button" onClick={props.onClose}>
                 Close profile sidebar
@@ -155,6 +179,14 @@ jest.mock("@sps/social/models/profile/frontend/component", () => {
                 Edit profile
               </button>
             ) : null}
+            {props.onMcpServersEdit && (
+              <button
+                type="button"
+                onClick={() => props.onMcpServersEdit(props.data)}
+              >
+                Edit MCP servers for {props.data.slug}
+              </button>
+            )}
             <section>
               <h3>Skills</h3>
               {props.onSkillCreate ? (
@@ -223,6 +255,7 @@ jest.mock("@sps/knowledge/models/source/frontend/component", () => {
     Component: (props: any) => {
       return (
         <div data-testid="knowledge-document-dialog-form">
+          {props.attachments}
           <input
             aria-label="Knowledge title"
             value={props.draft?.title || ""}
@@ -245,13 +278,14 @@ jest.mock("@sps/knowledge/models/source/frontend/component", () => {
           />
           <button
             type="button"
+            disabled={props.saveBlocked}
             onClick={() => {
               props.onSave?.(props.data);
             }}
           >
             {props.mode === "create" ? "Create knowledge" : "Save knowledge"}
           </button>
-          {props.mode !== "create" ? (
+          {props.mode !== "create" && props.onReindex ? (
             <button
               type="button"
               onClick={() => {
@@ -387,6 +421,9 @@ jest.mock("@sps/rbac/models/subject/sdk/client", () => {
         decision: jest.fn(() => ({})),
       },
       changeCustomerWork: jest.fn(() => ({})),
+      socialModuleChatFindByIdThreadTyping: jest
+        .fn()
+        .mockResolvedValue({ active: true }),
       socialModuleChatFindByIdThreadMarkRead: () => ({ mutate: jest.fn() }),
       socialModuleProfileFindByIdChatFindByIdThreadFindByIdMessageFind: jest.fn(
         (request) => {
@@ -483,6 +520,10 @@ jest.mock("@sps/rbac/models/subject/sdk/client", () => {
           );
           return {
             data: {
+              stageModelId: mockChatComponentState.fixedStageModelId,
+              stageModelFixed: Boolean(
+                mockChatComponentState.fixedStageModelId,
+              ),
               auto: {
                 id: "auto",
                 name: "Auto",
@@ -520,6 +561,7 @@ jest.mock("@sps/rbac/models/subject/sdk/client", () => {
         () => {
           return {
             mutate: mockProfileUpdateMutate,
+            mutateAsync: mockProfileUpdateMutateAsync,
             isPending: false,
           };
         },
@@ -527,7 +569,7 @@ jest.mock("@sps/rbac/models/subject/sdk/client", () => {
       socialModuleProfileFindByIdChatFindByIdProfileFindByIdAvatarUpdate:
         jest.fn(() => {
           return {
-            mutate: jest.fn(),
+            mutateAsync: mockProfileAvatarUpdateMutateAsync,
             isPending: false,
           };
         }),
@@ -568,6 +610,7 @@ jest.mock("@sps/rbac/models/subject/sdk/client", () => {
         jest.fn(() => {
           return {
             mutate: mockKnowledgeSourceCreateMutate,
+            mutateAsync: mockCreateKnowledgeWithFiles,
             isPending: false,
           };
         }),
@@ -670,6 +713,7 @@ jest.mock("@uiw/react-md-editor", () => {
 });
 
 interface RenderComponentOptions {
+  canManageChat?: boolean;
   language?: string;
   artificialIntelligenceOpponentProfile?: any | null;
   knowledgeAssistantProfile?: any | null;
@@ -736,6 +780,7 @@ export function renderComponent(
         {
           id: "chat-1",
           variant: chatVariant,
+          canManageChat: options.canManageChat ?? true,
           participants: mockChatComponentState.profiles,
         } as any
       }
@@ -771,8 +816,12 @@ export function resetChatComponentMocks() {
   mockThreadUpdateMutate.mockReset();
   mockProfileSkillFind.mockReset();
   mockProfileUpdateMutate.mockReset();
+  mockProfileAvatarUpdateMutateAsync.mockReset();
+  mockProfileUpdateMutateAsync.mockReset();
   mockKnowledgeSourceUpdateMutate.mockReset();
   mockKnowledgeSourceCreateMutate.mockReset();
+  mockCreateKnowledgeWithFiles.mockReset();
+  mockAttachKnowledgeFiles.mockReset();
   mockKnowledgeReindexDocumentMutateAsync.mockReset();
   mockKnowledgeSourceDeleteMutateAsync.mockReset();
   mockKnowledgeSourceFindRefetch.mockReset();
@@ -782,6 +831,7 @@ export function resetChatComponentMocks() {
   mockToastError.mockReset();
   mockToastSuccess.mockReset();
   mockChatComponentState.favoriteModelIds = [];
+  mockChatComponentState.fixedStageModelId = undefined;
   mockChatComponentState.orderModelIds = ["openai/gpt-5.2"];
   window.localStorage.removeItem("sps.openrouter.modelFavorites.subject-1");
   mockChatComponentState.knowledgeSources = [];
@@ -817,6 +867,8 @@ export function resetChatComponentMocks() {
     options?.onSuccess?.({
       id: "document-created-1",
       title: payload.data.title,
+      content: payload.data.content,
+      editable: payload.personal,
       description: payload.data.description,
       slug: "created-knowledge",
       adminTitle: payload.data.title,
@@ -856,6 +908,13 @@ export function resetChatComponentMocks() {
     disconnect = jest.fn();
   };
 }
+
+jest.mock(
+  "@sps/rbac/models/subject/sdk/client/src/lib/singlepage/social-module/profile/find-by-id/chat/find-by-id/profile/find-by-id/knowledge/source/find-by-id/files/update",
+  () => ({
+    action: () => ({ mutateAsync: mockAttachKnowledgeFiles, isPending: false }),
+  }),
+);
 
 jest.mock("./components/KnowledgeSourceFiles", () => ({
   KnowledgeSourceFiles: () => null,

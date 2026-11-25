@@ -1,13 +1,17 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Markdown from "markdown-to-jsx";
 import {
   FileText,
   FileType2,
   File,
   Download,
-  ExternalLink,
+  Film,
+  Headphones,
+  Maximize,
+  Minimize,
+  Play,
   Eye,
   ImageIcon,
   Minus,
@@ -28,6 +32,7 @@ import {
 import { FILE_PREVIEW_TEXT_MAX_BYTES } from "@sps/shared-utils";
 import { HtmlPreview } from "./html";
 import { PdfPreview } from "./pdf";
+import { usePreviewBlob } from "./use-preview-blob";
 import type {
   IFilePreviewProps,
   IFilePreviewTextProps,
@@ -80,7 +85,7 @@ export function FilePreviewText({
                         children,
                       }: IMarkdownLinkProps) => {
                         const safe = getFilePreviewUrl(href);
-                        return safe ? (
+                        return safe && !safe.startsWith("blob:") ? (
                           <a
                             href={safe}
                             target="_blank"
@@ -178,53 +183,155 @@ function LocalText({ file, kind, language }: ILocalTextProps) {
 }
 
 export function FilePreview(props: IFilePreviewProps) {
-  const [localUrl, setLocalUrl] = useState<string>();
+  const container = useRef<HTMLDivElement>(null);
+  const dialog = useRef<HTMLDivElement>(null);
+  const downloadController = useRef<AbortController | null>(null);
+  const [nearViewport, setNearViewport] = useState(false);
+  const [open, setOpen] = useState(false);
+  const [expanded, setExpanded] = useState(false);
+  const [playInline, setPlayInline] = useState(false);
   const [zoom, setZoom] = useState(1);
-  const [failed, setFailed] = useState(false);
+  const [failedSrc, setFailedSrc] = useState<string>();
   const [downloading, setDownloading] = useState(false);
   const [downloadError, setDownloadError] = useState("");
   const ru = props.language === "ru";
-  const row = props.layout === "row";
-  const availability = props.availability ?? "preview";
-  const kind = getFilePreviewKind({
-    name: props.name,
-    mimeType: props.mimeType,
-    extension: props.extension,
-  });
+  const gallery = props.layout === "gallery";
+  const rail = props.layout === "rail";
+  const message = props.layout === "message";
+  const chat = message || rail;
+  const declaredKind = getFilePreviewKind(props);
+  const kind =
+    props.localFile &&
+    getFilePreviewKind({
+      name: props.localFile.name,
+      extension: props.extension,
+      mimeType: props.localFile.type || props.mimeType,
+    }) !== declaredKind
+      ? "unsupported"
+      : declaredKind;
+  const player = kind === "audio" || kind === "video";
+  const media = player || kind === "image";
+  const text = kind === "text" || kind === "markdown" || kind === "html";
+  const publicSrc = getFilePreviewUrl(props.src || "");
+  // Chat media uses the owning SDK when available so the bytes go through
+  // the same container check for mounted public and private attachments.
+  const directSrc =
+    (media && (chat || gallery) && props.onDownload) || props.localFile
+      ? undefined
+      : publicSrc;
+  const previewable =
+    kind !== "unsupported" && (props.availability ?? "preview") === "preview";
+  const messagePhoto = message && kind === "image" && previewable;
+
   useEffect(() => {
-    if (!props.localFile || kind !== "image" || availability !== "preview") {
+    if (
+      messagePhoto ||
+      !previewable ||
+      kind !== "image" ||
+      directSrc ||
+      !container.current
+    )
+      return;
+    if (typeof IntersectionObserver === "undefined") {
+      setNearViewport(true);
       return;
     }
-    const url = URL.createObjectURL(props.localFile);
-    setLocalUrl(url);
-    return () => URL.revokeObjectURL(url);
-  }, [props.localFile, kind, availability]);
-  const src = getFilePreviewUrl(
-    props.localFile ? localUrl || "" : props.src || "",
-  );
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setNearViewport(true);
+          observer.disconnect();
+        }
+      },
+      { rootMargin: "160px" },
+    );
+    observer.observe(container.current);
+    return () => observer.disconnect();
+  }, [messagePhoto, previewable, kind, directSrc]);
+
+  const needsBlob =
+    (media &&
+      !directSrc &&
+      (open ||
+        playInline ||
+        messagePhoto ||
+        (kind === "image" && nearViewport))) ||
+    (text && open && !props.textContent && !props.localFile);
+  const resource = usePreviewBlob(props, kind, previewable && needsBlob);
+  const src = directSrc || resource?.url;
+  const canDownload = Boolean(props.onDownload || props.localFile);
+  const availability =
+    props.availability === "unavailable"
+      ? "unavailable"
+      : !previewable || resource?.status === "unsupported"
+        ? canDownload
+          ? "download-only"
+          : "unavailable"
+        : "preview";
+  const row =
+    props.layout === "row" ||
+    rail ||
+    (message && (!media || availability !== "preview"));
   const extension =
     (props.extension || props.name.match(/\.([^./]+)$/)?.[1])
       ?.replace(/^\./, "")
       .toUpperCase() || (ru ? "Файл" : "File");
-  const text = kind === "text" || kind === "markdown" || kind === "html";
-  let Glyph = File;
-  if (kind === "pdf") {
-    Glyph = FileType2;
-  } else if (kind === "image" || extension === "SVG" || extension === "SVGZ") {
-    Glyph = ImageIcon;
-  } else if (text) {
-    Glyph = FileText;
-  }
+  const Glyph =
+    kind === "image" || extension === "SVG" || extension === "SVGZ"
+      ? ImageIcon
+      : kind === "video"
+        ? Film
+        : kind === "audio"
+          ? Headphones
+          : kind === "pdf"
+            ? FileType2
+            : text
+              ? FileText
+              : File;
   const downloadLabel = ru ? "Скачать" : "Download";
-  const openOriginal =
-    src && !props.localFile && !src.startsWith("blob:") && kind !== "html";
+  const openLabel = `${ru ? "Открыть" : "Preview"} ${props.name}`;
+  const playLabel = `${ru ? "Воспроизвести" : "Play"} ${props.name}`;
+
+  useEffect(() => {
+    setDownloading(false);
+    setDownloadError("");
+    setPlayInline(false);
+    setFailedSrc(undefined);
+    return () => downloadController.current?.abort();
+  }, [props.onDownload, props.localFile, props.src, props.name]);
+
+  useEffect(() => {
+    if (!open) return;
+    const change = () =>
+      setExpanded(document.fullscreenElement === dialog.current);
+    document.addEventListener("fullscreenchange", change);
+    return () => document.removeEventListener("fullscreenchange", change);
+  }, [open]);
+
+  function toggleExpanded() {
+    if (document.fullscreenElement === dialog.current && dialog.current) {
+      void document.exitFullscreen().catch(() => {});
+    } else if (expanded) {
+      setExpanded(false);
+    } else {
+      // Browsers without element fullscreen can still fill the viewport.
+      setExpanded(true);
+      void dialog.current?.requestFullscreen?.().catch(() => {});
+    }
+  }
 
   async function download() {
+    downloadController.current?.abort();
+    const controller = new AbortController();
+    downloadController.current = controller;
     setDownloading(true);
     setDownloadError("");
     try {
-      const blob = props.localFile || (await props.onDownload?.());
-      if (!blob) return;
+      const blob =
+        props.localFile ||
+        resource?.blob ||
+        (await props.onDownload?.(controller.signal));
+      if (!blob || controller.signal.aborted) return;
       const url = URL.createObjectURL(
         blob.slice(0, blob.size, "application/octet-stream"),
       );
@@ -234,12 +341,57 @@ export function FilePreview(props: IFilePreviewProps) {
       link.click();
       setTimeout(() => URL.revokeObjectURL(url), 1000);
     } catch {
-      setDownloadError(
-        ru ? "Не удалось скачать файл." : "The file could not be downloaded.",
-      );
+      if (!controller.signal.aborted)
+        setDownloadError(
+          ru ? "Не удалось скачать файл." : "The file could not be downloaded.",
+        );
     } finally {
-      setDownloading(false);
+      if (!controller.signal.aborted) setDownloading(false);
     }
+  }
+
+  const busy = ru ? "Загрузка предпросмотра…" : "Loading preview…";
+  const cannotPreview = ru
+    ? "Предпросмотр недоступен. Скачайте оригинал."
+    : "Preview is unavailable. Download the original.";
+  const previewFailed =
+    (Boolean(src) && failedSrc === src) ||
+    resource?.status === "error" ||
+    resource?.status === "unsupported";
+  function renderPlayer(inline: boolean) {
+    if (!src || previewFailed) {
+      return (
+        <p
+          role={previewFailed ? "alert" : "status"}
+          className="p-4 text-sm text-muted-foreground"
+        >
+          {previewFailed ? cannotPreview : busy}
+        </p>
+      );
+    }
+    const attributes = {
+      src,
+      controls: true,
+      autoPlay: inline,
+      preload: "metadata",
+      "aria-label": props.name,
+      onError: () => setFailedSrc(src),
+    };
+    return kind === "video" ? (
+      <video
+        {...attributes}
+        playsInline
+        className={
+          inline
+            ? "max-h-80 w-full rounded-t-xl bg-black object-contain"
+            : "h-full w-full bg-black object-contain"
+        }
+      />
+    ) : (
+      <div className="grid h-full place-items-center p-2">
+        <audio {...attributes} className="w-full min-w-0 max-w-lg" />
+      </div>
+    );
   }
 
   const triggerClassName = cn(
@@ -256,20 +408,46 @@ export function FilePreview(props: IFilePreviewProps) {
         className={cn(
           "flex items-center justify-center overflow-hidden bg-muted",
           row ? "size-8 shrink-0 rounded-md" : "h-24",
+          gallery && "aspect-square h-auto w-full",
+          rail &&
+            kind === "image" &&
+            availability === "preview" &&
+            "size-[4.5rem]",
+          message &&
+            media &&
+            availability === "preview" &&
+            (kind === "audio" ? "h-14" : "min-h-14 h-auto"),
+          message && kind === "video" && "aspect-video",
           props.thumbnailClassName,
         )}
       >
-        {availability === "preview" && kind === "image" && src ? (
+        {availability === "preview" &&
+        kind === "image" &&
+        src &&
+        failedSrc !== src ? (
           <img
             src={src}
             alt=""
-            loading="lazy"
+            loading={messagePhoto ? "eager" : "lazy"}
             draggable={false}
-            className="h-full w-full object-contain"
+            onError={() => setFailedSrc(src)}
+            className={
+              message
+                ? "block h-auto max-h-[min(55dvh,26rem)] w-full object-contain"
+                : "h-full w-full object-contain"
+            }
           />
+        ) : messagePhoto && availability === "preview" ? (
+          <span className="grid aspect-[4/3] w-full place-items-center bg-muted text-xs text-muted-foreground">
+            {previewFailed ? cannotPreview : busy}
+          </span>
         ) : (
           <span className="flex flex-col items-center gap-1">
-            <Glyph className={row ? "size-4" : "size-7"} />
+            {chat && player && availability === "preview" ? (
+              <Play className={rail ? "size-4" : "size-7"} />
+            ) : (
+              <Glyph className={row ? "size-4" : "size-7"} />
+            )}
             {!row && (
               <span className="text-[10px] font-bold tracking-wider">
                 {extension}
@@ -278,12 +456,21 @@ export function FilePreview(props: IFilePreviewProps) {
           </span>
         )}
       </span>
-      <span className={row ? "min-w-0 flex-1" : "block px-3 py-2"}>
+      <span
+        className={
+          messagePhoto && availability === "preview"
+            ? "sr-only"
+            : row
+              ? "min-w-0 flex-1"
+              : "block px-3 py-2"
+        }
+      >
         <span
           title={props.name}
           className={cn(
             "block truncate font-medium",
             row ? "text-sm" : "text-xs",
+            gallery && "whitespace-normal wrap-anywhere line-clamp-2",
           )}
         >
           {props.name}
@@ -298,7 +485,7 @@ export function FilePreview(props: IFilePreviewProps) {
           </span>
         )}
       </span>
-      {row && availability === "preview" && (
+      {row && availability === "preview" && !(rail && player) && (
         <Eye
           aria-hidden="true"
           className="size-4 shrink-0 text-muted-foreground"
@@ -312,11 +499,14 @@ export function FilePreview(props: IFilePreviewProps) {
       )}
     </>
   );
-
-  if (availability === "unavailable") {
+  const errorLabel = downloadError && (
+    <p role="alert" className="mt-1 text-xs text-destructive">
+      {downloadError}
+    </p>
+  );
+  if (availability === "unavailable")
     return <div className={triggerClassName}>{label}</div>;
-  }
-  if (availability === "download-only") {
+  if (availability === "download-only" && !open) {
     return (
       <div className="min-w-0">
         <button
@@ -329,26 +519,31 @@ export function FilePreview(props: IFilePreviewProps) {
         >
           {label}
         </button>
-        {downloadError && (
-          <p role="alert" className="mt-1 text-xs text-destructive">
-            {downloadError}
-          </p>
-        )}
+        {errorLabel}
       </div>
     );
   }
 
   function renderPreview() {
-    if ((!props.localFile && !src) || failed) {
+    if (
+      previewFailed ||
+      (kind === "pdf" && !canDownload) ||
+      (!src && !canDownload && !props.textContent)
+    ) {
       return (
         <p role="alert" className="p-6 text-sm text-muted-foreground">
-          {props.language === "ru"
-            ? "Предпросмотр недоступен. Скачайте оригинал."
-            : "Preview is unavailable. Download the original."}
+          {cannotPreview}
         </p>
       );
     }
+    if (player) return renderPlayer(false);
     if (kind === "image") {
+      if (!src)
+        return (
+          <p role="status" className="p-6 text-sm text-muted-foreground">
+            {busy}
+          </p>
+        );
       return (
         <>
           <div className="flex shrink-0 items-center justify-end gap-2 border-b border-border p-2">
@@ -387,7 +582,7 @@ export function FilePreview(props: IFilePreviewProps) {
               <img
                 src={src}
                 alt={props.name}
-                onError={() => setFailed(true)}
+                onError={() => setFailedSrc(src)}
                 className="h-full w-full object-contain"
               />
             </div>
@@ -406,16 +601,24 @@ export function FilePreview(props: IFilePreviewProps) {
       );
     }
     if (text) {
-      if (props.localFile) {
+      if (props.textContent) return props.textContent;
+      if (resource?.status === "too-large")
         return (
-          <LocalText
-            file={props.localFile}
-            kind={kind}
-            language={props.language}
-          />
+          <p role="alert" className="p-6 text-sm text-muted-foreground">
+            {ru
+              ? "Файл слишком большой для предпросмотра текста. Скачайте оригинал."
+              : "This file is too large for text preview. Download the original."}
+          </p>
         );
+      const file = props.localFile || resource?.blob;
+      if (file) {
+        return <LocalText file={file} kind={kind} language={props.language} />;
       }
-      return props.textContent;
+      return (
+        <p role="status" className="p-6 text-sm text-muted-foreground">
+          {busy}
+        </p>
+      );
     }
     return (
       <p className="p-6 text-sm text-muted-foreground">
@@ -427,81 +630,155 @@ export function FilePreview(props: IFilePreviewProps) {
   }
 
   return (
-    <Dialog
-      onOpenChange={() => {
-        setZoom(1);
-        setFailed(false);
-        setDownloadError("");
-      }}
+    <div
+      ref={container}
+      className={cn(
+        "min-w-0 max-w-full",
+        message && (kind === "image" ? "w-80" : "w-72"),
+      )}
     >
-      <DialogTrigger asChild>
-        <button
-          type="button"
-          aria-label={`${props.language === "ru" ? "Открыть" : "Preview"} ${props.name}`}
-          className={triggerClassName}
-        >
-          {label}
-        </button>
-      </DialogTrigger>
-      <DialogContent
-        closeLabel={props.language === "ru" ? "Закрыть" : "Close"}
-        className="flex h-[min(88dvh,900px)] w-[calc(100%-2rem)] max-w-5xl flex-col gap-0 overflow-hidden rounded-2xl border-border bg-card p-0 text-foreground sm:rounded-2xl"
+      <Dialog
+        open={open}
+        onOpenChange={(next) => {
+          setOpen(next);
+          setPlayInline(false);
+          setExpanded(false);
+          setZoom(1);
+          setFailedSrc(undefined);
+          setDownloadError("");
+        }}
       >
-        <div className="shrink-0 border-b border-border p-4 pr-12">
-          <DialogTitle
-            className="truncate text-base leading-6"
-            title={props.name}
+        {chat && player ? (
+          <div
+            className={cn(
+              "overflow-hidden rounded-xl border border-border bg-card",
+              rail && !playInline && "flex items-center",
+            )}
           >
-            {props.name}
-          </DialogTitle>
-          <DialogDescription className="mt-1 text-xs">
-            {extension} ·{" "}
-            {props.language === "ru" ? "Предпросмотр файла" : "File preview"}
-          </DialogDescription>
-        </div>
-        <div className="flex min-h-0 flex-1 flex-col overflow-hidden bg-background">
-          {renderPreview()}
-        </div>
-        {downloadError && (
-          <p role="alert" className="px-4 py-2 text-xs text-destructive">
-            {downloadError}
-          </p>
+            {playInline && !open ? (
+              renderPlayer(true)
+            ) : (
+              <button
+                type="button"
+                aria-label={playLabel}
+                onClick={() => setPlayInline(true)}
+                className={cn(triggerClassName, "rounded-none border-0")}
+              >
+                {label}
+              </button>
+            )}
+            <DialogTrigger asChild>
+              <button
+                type="button"
+                className={cn(
+                  "flex min-h-10 items-center justify-center gap-2 px-3 text-xs font-medium",
+                  rail && !playInline
+                    ? "mr-1 size-10 shrink-0 rounded-lg hover:bg-muted"
+                    : "w-full border-t border-border",
+                )}
+                title={openLabel}
+                aria-label={openLabel}
+              >
+                <Maximize className="size-4" />{" "}
+                {(!rail || playInline) && (ru ? "Открыть" : "Open")}
+              </button>
+            </DialogTrigger>
+          </div>
+        ) : (
+          <DialogTrigger asChild>
+            <button
+              type="button"
+              aria-label={openLabel}
+              className={triggerClassName}
+            >
+              {label}
+            </button>
+          </DialogTrigger>
         )}
-        <div className="flex shrink-0 flex-wrap justify-end gap-2 border-t border-border p-3">
-          {(props.localFile || src) && (
-            <>
-              {openOriginal && (
-                <a
-                  href={src}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex min-h-10 items-center gap-2 rounded-lg border border-border px-3 text-xs font-semibold"
-                >
-                  <ExternalLink className="size-4" />
-                  {props.language === "ru"
-                    ? "Открыть оригинал"
-                    : "Open original"}
-                </a>
-              )}
-              {(props.localFile || props.onDownload) && (
-                <button
-                  type="button"
-                  disabled={downloading}
-                  onClick={download}
-                  className="inline-flex min-h-10 items-center gap-2 rounded-lg bg-primary px-3 text-xs font-semibold text-primary-foreground"
-                >
-                  <Download className="size-4" />
-                  {downloading
-                    ? ru
-                      ? "Скачивание…"
-                      : "Downloading…"
-                    : downloadLabel}
-                </button>
-              )}
-            </>
+        <DialogContent
+          ref={dialog}
+          overlayClassName={gallery || rail ? "z-[70]" : undefined}
+          closeLabel={ru ? "Закрыть" : "Close"}
+          className={cn(
+            "flex h-[min(90dvh,900px)] w-[calc(100%-1rem)] max-w-5xl flex-col gap-0 overflow-hidden rounded-xl border-border bg-card p-0 text-foreground fullscreen:inset-0 fullscreen:m-0 fullscreen:translate-x-0 fullscreen:translate-y-0 sm:rounded-2xl",
+            (gallery || rail) && "z-[70]",
+            expanded &&
+              "left-0 top-0 h-dvh w-screen max-w-none translate-x-0 translate-y-0 rounded-none border-0 sm:rounded-none",
           )}
-        </div>
-      </DialogContent>
-    </Dialog>
+        >
+          <div className="flex shrink-0 items-center gap-3 border-b border-border p-3 pr-12">
+            <div className="min-w-0 flex-1">
+              <DialogTitle
+                className="truncate text-base leading-6"
+                title={props.name}
+              >
+                {props.name}
+              </DialogTitle>
+              <DialogDescription className="mt-1 text-xs">
+                {extension} · {ru ? "Предпросмотр файла" : "File preview"}
+              </DialogDescription>
+            </div>
+            <button
+              type="button"
+              aria-label={
+                expanded
+                  ? ru
+                    ? "Свернуть"
+                    : "Exit full screen"
+                  : ru
+                    ? "На весь экран"
+                    : "Full screen"
+              }
+              aria-pressed={expanded}
+              className="grid size-10 shrink-0 place-items-center rounded-lg hover:bg-muted"
+              onClick={toggleExpanded}
+            >
+              {expanded ? (
+                <Minimize className="size-4" />
+              ) : (
+                <Maximize className="size-4" />
+              )}
+            </button>
+          </div>
+          <div className="flex min-h-0 flex-1 flex-col overflow-hidden bg-background">
+            {renderPreview()}
+          </div>
+          {errorLabel}
+          {canDownload && (
+            <div className="flex shrink-0 justify-end border-t border-border p-3">
+              <button
+                type="button"
+                disabled={downloading}
+                onClick={download}
+                className="inline-flex min-h-10 items-center gap-2 rounded-lg bg-primary px-3 text-xs font-semibold text-primary-foreground"
+              >
+                <Download className="size-4" />
+                {downloading
+                  ? ru
+                    ? "Скачивание…"
+                    : "Downloading…"
+                  : downloadLabel}
+              </button>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+      {props.showDownload && canDownload && !open && (
+        <>
+          <button
+            type="button"
+            aria-label={`${downloadLabel} ${props.name}`}
+            disabled={downloading}
+            aria-busy={downloading}
+            onClick={download}
+            className="flex min-h-10 w-full items-center gap-2 rounded-lg px-2 text-sm text-foreground hover:bg-muted"
+          >
+            <Download aria-hidden="true" className="size-4 shrink-0" />
+            <span className="truncate">{props.name}</span>
+          </button>
+          {errorLabel}
+        </>
+      )}
+    </div>
   );
 }

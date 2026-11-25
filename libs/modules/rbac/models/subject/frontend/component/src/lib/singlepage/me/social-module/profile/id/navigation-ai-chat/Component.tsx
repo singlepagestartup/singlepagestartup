@@ -5,6 +5,7 @@ export function Component(props: IComponentPropsExtended) {
   return (
     <ClientComponent
       threadsRead={props.threadsRead}
+      canManageChat={props.canManageChat}
       isServer={props.isServer}
       variant={props.variant}
       data={props.data}

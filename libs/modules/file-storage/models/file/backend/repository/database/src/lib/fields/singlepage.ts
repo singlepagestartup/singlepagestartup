@@ -2,6 +2,9 @@ import * as pgCore from "drizzle-orm/pg-core";
 import { randomWordsGenerator } from "@sps/shared-utils";
 
 export const fields = {
+  privateOwnerId: pgCore.uuid("private_owner_id"),
+  privateDigest: pgCore.text("private_digest"),
+  legacyOriginId: pgCore.uuid("legacy_origin_id").unique(),
   id: pgCore.uuid("id").primaryKey().defaultRandom(),
   file: pgCore.text("file").notNull().unique(),
   containerClassName: pgCore.text("container_class_name"),

@@ -1,0 +1,47 @@
+{
+  "metadata": {
+    "seo": {
+      "title": {
+        "en": "New store product — SinglePageStartup",
+        "ru": "Новый товар магазина — SinglePageStartup"
+      },
+      "description": {
+        "en": "Add a product to this store.",
+        "ru": "Добавьте товар в этот магазин."
+      }
+    },
+    "seoDisplay": {
+      "twitterTitle": {
+        "en": "New store product — SinglePageStartup",
+        "ru": "Новый товар магазина — SinglePageStartup"
+      },
+      "opengraphTitle": {
+        "en": "New store product — SinglePageStartup",
+        "ru": "Новый товар магазина — SinglePageStartup"
+      },
+      "opengraphLocale": {
+        "en": "en_US",
+        "ru": "ru_RU"
+      },
+      "twitterDescription": {
+        "en": "Add a product to this store.",
+        "ru": "Добавьте товар в этот магазин."
+      },
+      "opengraphDescription": {
+        "en": "Add a product to this store.",
+        "ru": "Добавьте товар в этот магазин."
+      }
+    }
+  },
+  "id": "c788c954-637e-455a-8cc0-89394e4da2e2",
+  "title": "New store product",
+  "url": "/ecommerce/stores/[ecommerce.stores.slug]/products/new",
+  "slug": "store-product-create",
+  "description": "Add a product to this store.",
+  "createdAt": "2026-11-22T20:22:55.549Z",
+  "updatedAt": "2026-11-22T20:22:55.549Z",
+  "variant": "noindex",
+  "className": null,
+  "language": "en",
+  "adminTitle": "New store product"
+}

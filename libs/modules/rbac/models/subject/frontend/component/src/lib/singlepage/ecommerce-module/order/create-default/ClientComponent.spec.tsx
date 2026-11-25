@@ -12,6 +12,7 @@ const mockCreate = jest.fn();
 const mockChangeWork = jest.fn();
 const mockNavigate = jest.fn();
 let mockConsultationAvailable = false;
+let mockServiceAvailable = false;
 jest.mock("next/navigation", () => ({
   useRouter: () => ({ push: mockNavigate }),
   useSearchParams: () => new URLSearchParams(),
@@ -39,8 +40,8 @@ jest.mock("@sps/rbac/models/subject/sdk/client", () => ({
     customerWorkAvailability: () => ({
       data: {
         consultation: mockConsultationAvailable,
-        order: false,
-        payAfterAcceptance: false,
+        order: mockServiceAvailable,
+        payAfterAcceptance: mockServiceAvailable,
       },
       isPending: false,
     }),
@@ -268,6 +269,7 @@ beforeAll(() => {
 });
 beforeEach(() => {
   mockConsultationAvailable = false;
+  mockServiceAvailable = false;
   mockChangeWork.mockReset();
   mockNavigate.mockReset();
   mockCreate.mockReset().mockResolvedValue({});
@@ -318,6 +320,23 @@ it("submits the exact unique retail offer with a supported currency", async () =
     ),
   );
   expect(await screen.findByText("Товар в корзине.")).toBeTruthy();
+});
+it("adds a postpaid service to the cart before starting its discussion", async () => {
+  mockServiceAvailable = true;
+  mockOffers[0].settings = { standalone: true, requiresResultAcceptance: true };
+  render(
+    <Component
+      {...props}
+      ecommerceModuleProduct={{ id: "product", kind: "service" }}
+    />,
+  );
+  const add = screen.getByRole("button", { name: "Добавить в корзину" });
+  await waitFor(() => expect(add.hasAttribute("disabled")).toBe(false));
+  fireEvent.click(add);
+  expect(await screen.findByText("Товар в корзине.")).toBeTruthy();
+  expect(mockCreate).toHaveBeenCalledTimes(1);
+  expect(mockChangeWork).not.toHaveBeenCalled();
+  expect(mockNavigate).not.toHaveBeenCalled();
 });
 it("keeps quantity fixed after a live quote corrects stale product data", async () => {
   mockOffers.push({

@@ -71,7 +71,9 @@ The helpers are `appendToListQueries`, `patchInListQueries` and
 `removeFromListQueries`. Aggregate mutations use `invalidateRouteQueries` to
 reconcile the route and its child readers, including quantity queries. Append is limited to lists without filters, ordering or
 pagination; an unknown membership receives targeted reconciliation. Patch and
-remove affect only IDs already present. Untouched rows retain their references.
+remove affect only IDs already present. A reader that returns a different record shape sets
+`meta.reconcileOnListPatch: true` to refresh its own projection after an update.
+Untouched rows retain their references.
 The optional exact append mode owns a one-element legacy key and must not be
 used for a parameterized query.
 

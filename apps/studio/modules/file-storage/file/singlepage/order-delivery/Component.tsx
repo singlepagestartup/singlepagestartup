@@ -33,7 +33,7 @@ export function Component({ state, files, onDownload }: IComponentProps) {
                 onClick={() => onDownload(file.id)}
                 aria-label={
                   file.kind === "result"
-                    ? `Скачать оригинал версии ${file.versionNumber}`
+                    ? `Скачать ${file.filename}`
                     : "Скачать чек"
                 }
                 className="group flex min-h-14 w-full items-center gap-3 rounded-xl border border-border bg-background px-3 py-2 text-left hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
@@ -46,9 +46,7 @@ export function Component({ state, files, onDownload }: IComponentProps) {
                 />
                 <span className="min-w-0 flex-1">
                   <span className="block break-words text-sm font-medium">
-                    {file.kind === "result"
-                      ? `Оригинал · версия ${file.versionNumber}`
-                      : "Чек"}
+                    {file.kind === "result" ? "Оригинал" : "Чек"}
                   </span>
                   <span className="mt-0.5 block break-all text-xs text-muted-foreground">
                     {file.filename}

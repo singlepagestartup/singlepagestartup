@@ -1,0 +1,47 @@
+{
+  "metadata": {
+    "seo": {
+      "title": {
+        "en": "CRM Funnels — SinglePageStartup",
+        "ru": "Воронки CRM — SinglePageStartup"
+      },
+      "description": {
+        "en": "View and manage the store’s CRM funnels.",
+        "ru": "Просматривайте и настраивайте воронки CRM магазина."
+      }
+    },
+    "seoDisplay": {
+      "twitterTitle": {
+        "en": "CRM Funnels — SinglePageStartup",
+        "ru": "Воронки CRM — SinglePageStartup"
+      },
+      "opengraphTitle": {
+        "en": "CRM Funnels — SinglePageStartup",
+        "ru": "Воронки CRM — SinglePageStartup"
+      },
+      "opengraphLocale": {
+        "en": "en_US",
+        "ru": "ru_RU"
+      },
+      "twitterDescription": {
+        "en": "View and manage the store’s CRM funnels.",
+        "ru": "Просматривайте и настраивайте воронки CRM магазина."
+      },
+      "opengraphDescription": {
+        "en": "View and manage the store’s CRM funnels.",
+        "ru": "Просматривайте и настраивайте воронки CRM магазина."
+      }
+    }
+  },
+  "id": "bda12908-dc49-48f5-bda4-30e2b7e56fb8",
+  "title": "CRM Funnels",
+  "url": "/ecommerce/stores/[ecommerce.stores.slug]/crm/funnels",
+  "slug": "crm-store-funnel-list",
+  "description": "View and manage the store’s CRM funnels.",
+  "createdAt": "2026-11-22T18:28:59.271Z",
+  "updatedAt": "2026-11-22T18:32:06.454Z",
+  "variant": "noindex",
+  "className": null,
+  "language": "en",
+  "adminTitle": "Store CRM Funnels"
+}

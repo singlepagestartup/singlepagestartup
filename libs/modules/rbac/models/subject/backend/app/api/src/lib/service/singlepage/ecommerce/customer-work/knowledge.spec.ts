@@ -1,6 +1,21 @@
 import type { IModel as Task } from "@sps/crm/models/task/sdk/model";
 import { Service as Projects } from "../../social-module/profile/projects";
-import { Service, StageSkillsUnavailable } from "./knowledge";
+import {
+  customerWorkInputText,
+  isMemoryOnlyMessage,
+  isPersonalMemoryCommand,
+  Service,
+  StageSkillsUnavailable,
+} from "./knowledge";
+
+const mockSearch = jest.fn();
+const mockIndex = jest.fn();
+jest.mock("@sps/knowledge/backend/app/api/src/lib/service", () => ({
+  KnowledgeService: jest.fn(() => ({
+    searchAuthorizedSources: mockSearch,
+    indexAuthorizedSource: mockIndex,
+  })),
+}));
 
 interface ISourceLink {
   profileId: string;
@@ -19,6 +34,7 @@ function fixture() {
     content: "The current battery is 4,000 mAh.",
     contentHash: "version-a",
     updatedAt: new Date(),
+    slug: "product-reference",
   };
   const privateSource = (id: string, content: string) => ({
     id,
@@ -27,6 +43,7 @@ function fixture() {
     content,
     contentHash: id,
     updatedAt: new Date(),
+    slug: id,
   });
   const docs = [
     publicSource,
@@ -37,7 +54,7 @@ function fixture() {
   ];
   const sourceLinks: ISourceLink[] = [
     {
-      profileId: "expert",
+      profileId: "assigned-profile",
       knowledgeModuleSourceId: publicSource.id,
       variant: "product-specification",
       storeId: "store-1",
@@ -99,20 +116,23 @@ function fixture() {
     findSourcesByIds: jest.fn(async (ids: string[]) =>
       docs.filter(({ id }) => ids.includes(id)),
     ),
-    find: jest.fn(
-      async ({
-        params,
-      }: {
-        params: { filters: { and: [{ value: string[] }, { value: string }] } };
-      }) => {
-        const [ids, variant] = params.filters.and;
-        return docs.filter(
-          (row) => ids.value.includes(row.id) && row.variant !== variant.value,
-        );
-      },
-    ),
     updateSource: jest.fn(),
+    upsertSourceBySlug: jest.fn(),
+    lock: jest.fn(),
   };
+  const search = async ({ sourceIds }: { sourceIds: string[] }) =>
+    sourceIds.flatMap((id) => {
+      const doc = docs.find(({ id: docId }) => docId === id);
+      return doc
+        ? [{ sourceId: id, sourceVersion: doc.contentHash, text: doc.content }]
+        : [];
+    });
+  mockSearch.mockReset().mockImplementation(search);
+  mockIndex.mockReset().mockResolvedValue(undefined);
+  const linkSource = jest.fn(async ({ data }: { data: ISourceLink }) => {
+    sourceLinks.push(data);
+  });
+  const authenticate = jest.fn().mockResolvedValue({ authenticated: true });
   const skills = [
     {
       id: "selected",
@@ -150,8 +170,11 @@ function fixture() {
         params.filters.and[1].value.includes(knowledgeModuleSourceId),
       ),
   );
+  const trainingOrigins = jest.fn();
+  const expertDescription =
+    "Offer-specific guidance. ".repeat(600) + "END OF EXPERT ROLE";
   const subject = {
-    authenticationMe: async () => ({ authenticated: true }),
+    authenticationMe: authenticate,
     modules: {
       social: {
         profilesToEcommerceModuleProducts: { resolveStoreExpert },
@@ -159,10 +182,15 @@ function fixture() {
           findById: async () => ({
             id: "expert",
             variant: "artificial-intelligence",
+            description: { en: expertDescription },
           }),
         },
-        profilesToKnowledgeModuleSources: { find: find(sourceLinks) },
+        profilesToKnowledgeModuleSources: {
+          find: find(sourceLinks),
+          create: linkSource,
+        },
         profilesToSkills: { linkedSkills },
+        messagesToKnowledgeModuleSources: { find: trainingOrigins },
         skillsToKnowledgeModuleSources: { find: skillSourceFind },
       },
       knowledge: { source },
@@ -217,7 +245,11 @@ function fixture() {
     linkedSkills,
     skillSources,
     resolveStoreExpert,
+    expertDescription,
     projectRead,
+    trainingOrigins,
+    authenticate,
+    linkSource,
   };
 }
 
@@ -227,6 +259,7 @@ it("reads employee training knowledge for its store and reflects edits or deleti
   const { service, task, sourceLinks, docs } = fixture();
   const taught = {
     id: "employee-source",
+    slug: "employee-source",
     variant: "default",
     title: "Delivery",
     content: "Delivery takes three days.",
@@ -290,6 +323,7 @@ it("uses only the skills selected for the current assignment and keeps attached 
   ]) {
     docs.push({
       id,
+      slug: id,
       variant: "default",
       title: id,
       content: `${id} belongs to its own scope`,
@@ -351,30 +385,32 @@ it("uses only the skills selected for the current assignment and keeps attached 
   await expect(
     service.context(
       { ...assignment, assigneeId: "replacement-agent" },
-      { ...profiles, stage },
+      { ...profiles, agentProfileId: "replacement-profile", stage },
       "cover styling",
     ),
   ).rejects.toBeInstanceOf(StageSkillsUnavailable);
 });
 
-it("uses the current offer expert and only the buyer's selected store and brand memory", async () => {
+it("uses the actual assignee’s authorized source and the buyer’s selected store and brand memory", async () => {
   const { service, task, scope, publicSource, source, resolveStoreExpert } =
     fixture();
   const original = await service.context(
     task,
-    { memory: scope },
+    { agentProfileId: "assigned-profile", memory: scope },
     "How large is the battery?",
   );
   expect(original.content).toContain("4,000 mAh");
   expect(original.content).toContain("Use formal address for North");
   expect(original.content).not.toMatch(/South|Another shop|Another buyer/);
-  expect(source.findSourcesByIds).toHaveBeenCalledWith(["same-brand"]);
-  expect(resolveStoreExpert).toHaveBeenCalledWith({
-    storeId: task.storeId,
-    offerId: task.offerId,
-    productId: task.productId,
-  });
-  expect(original.knowledgeSourceIds).toEqual(["specification"]);
+  expect(source.findSourcesByIds).toHaveBeenCalledWith([
+    "specification",
+    "same-brand",
+  ]);
+  expect(resolveStoreExpert).not.toHaveBeenCalled();
+  expect(original.knowledgeSourceIds).toEqual(["specification", "same-brand"]);
+  expect(original.personalKnowledgeSourceIds).toEqual(["same-brand"]);
+  expect(original.content).toContain("Interlocutor preference");
+  expect(original.content).toContain("Store reference");
   expect(original.sourceVersions).toEqual([
     { id: "specification", version: "version-a" },
     { id: "same-brand", version: "same-brand" },
@@ -384,7 +420,7 @@ it("uses the current offer expert and only the buyer's selected store and brand 
   publicSource.contentHash = "version-b";
   const updated = await service.context(
     task,
-    { memory: scope },
+    { agentProfileId: "assigned-profile", memory: scope },
     "How large is the battery?",
   );
   expect(updated.content).toContain("4,500 mAh");
@@ -393,6 +429,38 @@ it("uses the current offer expert and only the buyer's selected store and brand 
     id: "specification",
     version: "version-b",
   });
+});
+
+it("retrieves profile-wide private notes only for the authenticated sending profile", async () => {
+  const { service, task, scope, sourceLinks, docs } = fixture();
+  for (const profileId of [
+    "buyer-profile",
+    "telegram-profile",
+    "other-profile",
+  ]) {
+    const id = `note-${profileId}`;
+    docs.push({ ...docs[1], id, content: id, contentHash: "current" });
+    sourceLinks.push({
+      profileId,
+      knowledgeModuleSourceId: id,
+      variant: "customer-memory",
+      storeId: null,
+      projectId: null,
+    });
+  }
+  const result = await service.context(
+    task,
+    { memory: scope, senderProfileId: "telegram-profile" },
+    "My usual style",
+  );
+  expect(result.personalKnowledgeSourceIds).toEqual([
+    "same-brand",
+    "note-telegram-profile",
+  ]);
+  expect(result.content).toContain("note-telegram-profile");
+  expect(result.content).not.toMatch(/note-buyer-profile|note-other-profile/);
+  const anonymous = await service.context(task, {}, "My usual style");
+  expect(anonymous.personalKnowledgeSourceIds).toEqual([]);
 });
 
 it("uses the sending and assigned profiles' current sources in the authorized task scope", async () => {
@@ -458,35 +526,43 @@ it("uses the sending and assigned profiles' current sources in the authorized ta
     memory: scope,
   };
   const result = await service.context(task, profiles, "battery");
-  expect(result.knowledgeSourceIds).toEqual([
-    "specification",
+  expect(new Set(result.knowledgeSourceIds)).toEqual(
+    new Set([
+      "specification",
+      "sender-reference",
+      "agent-reference",
+      "project-reference",
+      "same-brand",
+    ]),
+  );
+  expect(result.personalKnowledgeSourceIds).toEqual([
     "sender-reference",
-    "agent-reference",
     "project-reference",
+    "same-brand",
   ]);
   expect(result.content).not.toMatch(
     /different-|default-profile-reference|product-expert-personal-reference|Another buyer/,
   );
-  expect(
-    new Set(source.find.mock.calls[0][0].params.filters.and[0].value),
-  ).toEqual(
+  expect(new Set(source.findSourcesByIds.mock.calls[0][0])).toEqual(
     new Set([
       "specification",
       "sender-reference",
       "agent-reference",
       "project-reference",
       "other-customer",
+      "same-brand",
     ]),
+  );
+  expect(mockSearch).toHaveBeenCalledWith(
+    expect.objectContaining({ sourceIds: result.knowledgeSourceIds }),
   );
 
   projectRead.mockResolvedValue([]);
   const revoked = await service.context(task, profiles, "battery");
   expect(revoked.content).not.toMatch(/project-reference|Use formal address/);
-  expect(revoked.knowledgeSourceIds).toEqual([
-    "specification",
-    "sender-reference",
-    "agent-reference",
-  ]);
+  expect(new Set(revoked.knowledgeSourceIds)).toEqual(
+    new Set(["specification", "sender-reference", "agent-reference"]),
+  );
 });
 
 it("leaves reference context empty when neither participant has available sources", async () => {
@@ -497,12 +573,138 @@ it("leaves reference context empty when neither participant has available source
     { senderProfileId: "no-sources", agentProfileId: "another-empty-profile" },
     "Hello",
   );
-  expect(result).toEqual({
+  expect(result).toMatchObject({
     content: "",
     sourceVersions: [],
+    knowledgeCandidateVersions: [],
     knowledgeSourceIds: [],
+    personalKnowledgeSourceIds: [],
   });
-  expect(source.find).not.toHaveBeenCalled();
+  expect(source.findSourcesByIds).not.toHaveBeenCalled();
+  expect(mockSearch).not.toHaveBeenCalled();
+});
+
+it("gathers eligible versions without reading knowledge and receipts only matching retrieved excerpts", async () => {
+  const { service, task, scope } = fixture();
+  const candidates = await service.context(
+    task,
+    {
+      agentProfileId: "assigned-profile",
+      memory: scope,
+      knowledgeScopeOnly: true,
+    },
+    "Please continue",
+  );
+  expect(mockSearch).not.toHaveBeenCalled();
+  expect(candidates.sourceVersions).toEqual([]);
+  expect(candidates.knowledgeCandidateVersions).toEqual([
+    { id: "specification", version: "version-a" },
+    { id: "same-brand", version: "same-brand" },
+  ]);
+  expect(candidates.content).not.toMatch(/mAh|formal address/);
+
+  mockSearch.mockResolvedValueOnce([
+    {
+      sourceId: "specification",
+      sourceVersion: "newer",
+      text: "Different content",
+    },
+    {
+      sourceId: "same-brand",
+      sourceVersion: "same-brand",
+      text: "Use formal address",
+    },
+    {
+      sourceId: "other-customer",
+      sourceVersion: "other-customer",
+      text: "A different buyer's note",
+    },
+  ]);
+  const retrieved = await service.context(
+    task,
+    { agentProfileId: "assigned-profile", memory: scope },
+    "Please continue",
+    ["What greeting do I prefer for North?"],
+  );
+  expect(mockSearch).toHaveBeenCalledWith({
+    sourceIds: ["specification", "same-brand"],
+    personalSourceIds: ["same-brand"],
+    query: expect.stringContaining("What greeting do I prefer for North?"),
+    topK: 6,
+    finalTopK: 4,
+  });
+  expect(retrieved.content).toContain("Use formal address");
+  expect(retrieved.content).not.toMatch(/Different content|different buyer/);
+  expect(retrieved.sourceVersions).toEqual([
+    { id: "same-brand", version: "same-brand" },
+  ]);
+});
+
+it("learns a natural remember command only in the customer's scoped personal profile", async () => {
+  const { service, scope, source, linkSource, authenticate } = fixture();
+  const thread = { id: "thread", memoryProjectId: "north" };
+  const text = "В заказах для North обращайтесь ко мне на «вы».";
+  const command = {
+    text: `Запомни, что ${text} Какой нужен размер?`,
+    taskId: "task",
+    operationKey: "customer-event",
+  };
+  const saved = {
+    id: "created-note",
+    variant: "customer-memory",
+    content: text,
+  };
+  source.upsertSourceBySlug.mockResolvedValue(saved);
+  source.lock.mockResolvedValue([saved]);
+  expect(isPersonalMemoryCommand(command.text)).toBe(true);
+  expect(isMemoryOnlyMessage(command.text)).toBe(false);
+  expect(customerWorkInputText(command.text)).toBe("Какой нужен размер?");
+  expect(customerWorkInputText(`Что нужно приложить?\nЗапомни: ${text}`)).toBe(
+    "Что нужно приложить?",
+  );
+  expect(customerWorkInputText(`Запомни: ${text}`)).toBe("");
+  expect(isMemoryOnlyMessage(`Запомни: ${text}`)).toBe(true);
+  expect(isPersonalMemoryCommand("Можно запомнить этот цвет?")).toBe(false);
+  expect(isPersonalMemoryCommand("Remember the warranty we discussed?")).toBe(
+    false,
+  );
+  const sourceId = await service.rememberFromMessage(scope, thread, command);
+  expect(sourceId).toBe("created-note");
+  expect(source.upsertSourceBySlug).toHaveBeenCalledWith(
+    {
+      slug: "customer-memory-buyer-profile-customer-event",
+      title: "Personal note",
+      variant: "customer-memory",
+      content: text,
+    },
+    true,
+  );
+  expect(linkSource).toHaveBeenCalledWith({
+    data: {
+      variant: "customer-memory",
+      profileId: "buyer-profile",
+      storeId: "store-1",
+      projectId: "north",
+      knowledgeModuleSourceId: "created-note",
+    },
+  });
+  expect(mockIndex).toHaveBeenCalledWith({ sourceId });
+  await expect(
+    service.rememberFromMessage(scope, thread, command),
+  ).resolves.toBe(sourceId);
+  expect(linkSource).toHaveBeenCalledTimes(1);
+
+  source.lock.mockResolvedValue([{ ...saved, content: "Changed note" }]);
+  await expect(
+    service.rememberFromMessage(scope, thread, command),
+  ).rejects.toThrow("another personal note");
+  expect(linkSource).toHaveBeenCalledTimes(1);
+
+  authenticate.mockResolvedValue({ authenticated: false });
+  await expect(
+    service.rememberFromMessage(scope, thread, command),
+  ).rejects.toThrow("Sign in to save personal notes");
+  expect(linkSource).toHaveBeenCalledTimes(1);
 });
 
 it("rejects direct changes to another project or customer's note", async () => {
@@ -531,16 +733,118 @@ it("rejects direct changes to another project or customer's note", async () => {
   expect(source.updateSource).not.toHaveBeenCalled();
 });
 
-it("withdraws project memory on the next read and rejects competing offer experts", async () => {
-  const { service, task, scope, projectRead, resolveStoreExpert } = fixture();
+it("withdraws project memory on the next read", async () => {
+  const { service, task, scope, projectRead } = fixture();
   projectRead.mockResolvedValue([]);
-  const current = await service.context(task, { memory: scope }, "battery");
+  const current = await service.context(
+    task,
+    { agentProfileId: "assigned-profile", memory: scope },
+    "battery",
+  );
   expect(current.content).not.toContain("Use formal address for North");
   expect(current.sourceVersions).toEqual([
     { id: "specification", version: "version-a" },
   ]);
-  resolveStoreExpert.mockResolvedValue({ conflict: true });
-  await expect(
-    service.context(task, { memory: scope }, "battery"),
-  ).rejects.toThrow("competing expert assignments");
+});
+
+it("gives the painter only the current buyer’s scoped notes and proven training for the assigned employee", async () => {
+  const { service, task, scope, docs, sourceLinks, trainingOrigins } =
+    fixture();
+  const note =
+    "В моих карточках мебели терракотовая надпись должна оставаться целиком на свободном молочном поле под товаром.";
+  docs.find(({ id }) => id === "same-brand")!.content = note;
+  const messageId = "dffa6ed5-8170-4b85-8c8a-faa696f81221";
+  const unverifiedId = "e2d87c39-dc96-47e1-8bf8-916dfac4efc2";
+  const otherEmployeeId = "839f1233-a389-4b1d-a86d-371103e3712d";
+  for (const [id, profileId, slug, content] of [
+    [
+      "trained",
+      "assigned-profile",
+      `store-employee-training-${messageId}`,
+      "Цвет надписи: #BC6148",
+    ],
+    ["ordinary", "assigned-profile", "ordinary", "Цвет надписи: #99CCDD"],
+    [
+      "without-origin",
+      "assigned-profile",
+      `store-employee-training-${unverifiedId}`,
+      "Цвет надписи: #000000",
+    ],
+    [
+      "other-agent",
+      "sender-profile",
+      `store-employee-training-${otherEmployeeId}`,
+      "Цвет надписи: #DD6633",
+    ],
+  ]) {
+    docs.push({
+      id,
+      slug,
+      title: id,
+      variant: "default",
+      content,
+      contentHash: id,
+      updatedAt: new Date(),
+    });
+    sourceLinks.push({
+      variant: "default",
+      profileId,
+      knowledgeModuleSourceId: id,
+      storeId: task.storeId,
+      projectId: null,
+    });
+  }
+  trainingOrigins.mockResolvedValue([
+    { knowledgeModuleSourceId: "trained", messageId },
+    { knowledgeModuleSourceId: "other-agent", messageId: otherEmployeeId },
+  ]);
+  const result = await service.context(
+    { ...task, assigneeKind: "ai", assigneeId: "assigned-agent" },
+    {
+      agentProfileId: "assigned-profile",
+      senderProfileId: "sender-profile",
+      memory: scope,
+      stage: {
+        name: "Обложка",
+        output: "image",
+        defaultAssigneeSubjectId: "assigned-agent",
+        skillIds: ["selected"],
+      },
+    },
+    "Цвет надписи",
+  );
+  expect(result.captionDefaults).toEqual({
+    customer: [note],
+    agent: ["Use an embossed linen texture.", "Цвет надписи: #BC6148"],
+  });
+  expect(result.content).toContain("#99CCDD");
+  expect(result.content).toContain("#000000");
+  expect(trainingOrigins).toHaveBeenCalledWith(
+    expect.objectContaining({
+      params: {
+        filters: {
+          and: [
+            { column: "kind", method: "eq", value: "origin" },
+            {
+              column: "knowledgeModuleSourceId",
+              method: "inArray",
+              value: ["trained", "without-origin"],
+            },
+          ],
+        },
+      },
+    }),
+  );
+});
+
+it("does not load an additional product expert's role or sources for another assignee", async () => {
+  const { service, task, resolveStoreExpert, expertDescription } = fixture();
+  const result = await service.context(
+    task,
+    { agentProfileId: "another-employee" },
+    "Question",
+  );
+  expect(resolveStoreExpert).not.toHaveBeenCalled();
+  expect(result.content).not.toContain(expertDescription);
+  expect(result.knowledgeSourceIds).toEqual([]);
 });

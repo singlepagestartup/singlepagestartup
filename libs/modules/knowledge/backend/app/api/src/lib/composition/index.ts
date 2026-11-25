@@ -72,7 +72,6 @@ export function createKnowledgeServices(
     graph,
     props.processing !== false,
     false,
-    [],
     sourceOwner,
     assembly,
   );

@@ -1,0 +1,1 @@
+ALTER TABLE "sps_cm_funnel" ADD COLUMN "configured_at" timestamp (3);

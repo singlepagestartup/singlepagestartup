@@ -9,7 +9,6 @@ export interface IComponentProps {
   variant?: typeof variant;
   fixture: WorkflowFixture;
   scenario?: WorkspaceScenario;
-  canReadCosts?: boolean;
 }
 
 export interface IComponentPropsExtended extends IComponentProps {}

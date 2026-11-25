@@ -55,6 +55,7 @@ import { Handler } from "./create";
 
 function createContext(data: Record<string, unknown>, chatId = "chat-1") {
   return {
+    get: jest.fn(),
     req: {
       param: (name: string) => {
         return {

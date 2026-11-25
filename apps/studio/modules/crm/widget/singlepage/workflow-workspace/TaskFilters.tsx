@@ -4,15 +4,13 @@ import { fieldClass } from "../../../shared/workflow-ui";
 import {
   taskStateLabels,
   type WorkflowFixture,
-  type WorkflowRelease,
+  type Workflow,
 } from "../../../shared/workflows";
 
 export type ViewMode = "board" | "table";
 
 export interface Filters {
-  shop: string;
   workflow: string;
-  version: string;
   assignee: string;
   state: string;
   search: string;
@@ -22,27 +20,21 @@ export interface Filters {
 interface TaskFiltersProps {
   filters: Filters;
   fixture: WorkflowFixture;
-  releases: WorkflowRelease[];
-  current: WorkflowRelease;
+  workflows: Workflow[];
+  current: Workflow;
   onChange: (change: Partial<Filters>) => void;
 }
 
 export function TaskFilters({
   filters,
   fixture,
-  releases,
+  workflows,
   current,
   onChange,
 }: TaskFiltersProps) {
   const labelPrefix = useId();
-  const releaseOptions = releases.filter(
-    (release) => release.shopId === current.shopId,
-  );
-  const workflows = [
-    ...new Map(releaseOptions.map((release) => [release.id, release])).values(),
-  ];
-  const versions = releaseOptions.filter(
-    (release) => release.id === current.id,
+  const shopWorkflows = workflows.filter(
+    (workflow) => workflow.shopId === current.shopId,
   );
 
   return (
@@ -87,28 +79,7 @@ export function TaskFilters({
           </button>
         </div>
       </div>
-      <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3 xl:grid-cols-[1fr_1.2fr_0.9fr_1fr_1fr]">
-        <label className="grid min-w-0 gap-1.5 text-xs font-medium text-muted-foreground">
-          <span id={`${labelPrefix}-shop`}>Магазин</span>
-          <select
-            aria-labelledby={`${labelPrefix}-shop`}
-            className={fieldClass}
-            value={current.shopId}
-            onChange={(event) =>
-              onChange({
-                shop: event.currentTarget.value,
-                workflow: "",
-                version: "",
-              })
-            }
-          >
-            {fixture.shops.map((shop) => (
-              <option key={shop.id} value={shop.id}>
-                {shop.title}
-              </option>
-            ))}
-          </select>
-        </label>
+      <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3">
         <label className="grid min-w-0 gap-1.5 text-xs font-medium text-muted-foreground">
           <span id={`${labelPrefix}-workflow`}>Воронка</span>
           <select
@@ -116,33 +87,17 @@ export function TaskFilters({
             className={fieldClass}
             value={current.id}
             onChange={(event) =>
-              onChange({ workflow: event.currentTarget.value, version: "" })
+              onChange({ workflow: event.currentTarget.value })
             }
           >
-            {workflows.map((workflow) => (
+            {shopWorkflows.map((workflow) => (
               <option key={workflow.id} value={workflow.id}>
                 {workflow.title}
               </option>
             ))}
           </select>
         </label>
-        <label className="grid min-w-0 gap-1.5 text-xs font-medium text-muted-foreground">
-          <span id={`${labelPrefix}-version`}>Версия</span>
-          <select
-            aria-labelledby={`${labelPrefix}-version`}
-            className={fieldClass}
-            value={current.version}
-            onChange={(event) =>
-              onChange({ version: event.currentTarget.value })
-            }
-          >
-            {versions.map((version, index) => (
-              <option key={version.version} value={version.version}>
-                Версия {version.version} · {index === 0 ? "текущая" : "ранее"}
-              </option>
-            ))}
-          </select>
-        </label>
+
         <label className="grid min-w-0 gap-1.5 text-xs font-medium text-muted-foreground">
           <span id={`${labelPrefix}-assignee`}>Исполнитель</span>
           <select

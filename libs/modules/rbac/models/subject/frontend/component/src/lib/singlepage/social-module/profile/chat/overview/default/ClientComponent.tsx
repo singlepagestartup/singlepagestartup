@@ -2,6 +2,9 @@
 
 import { IComponentPropsExtended } from "./interface";
 import { cn } from "@sps/shared-frontend-client-utils";
+import type { IChatProfileOpen } from "../../message/list/default/interface";
+import { ChatParticipantButton } from "../../message/list/default/components/ChatParticipantButton";
+import { ChatCover } from "./ChatCover";
 import { Component as Subject } from "@sps/rbac/models/subject/frontend/component";
 import { Component as SocialModuleProfile } from "@sps/social/models/profile/frontend/component";
 import { Component as SocialModuleThread } from "@sps/social/models/thread/frontend/component";
@@ -19,7 +22,6 @@ import {
   type IModel as IRbacSubject,
 } from "@sps/rbac/models/subject/sdk/model";
 import {
-  ChatListActivity,
   ChatWorkspace,
   ChatWorkspaceNavigation,
   ChatThreadSkeleton,
@@ -28,7 +30,7 @@ import {
 } from "@sps/ui-adapter";
 import type { IModel as ISocialModuleProfile } from "@sps/social/models/profile/sdk/model";
 import { internationalization } from "@sps/shared-configuration";
-import { Button, Form } from "@sps/shared-ui-shadcn";
+import { Button, Form, ImageUploadField } from "@sps/shared-ui-shadcn";
 import {
   ArrowLeft,
   Edit3,
@@ -40,10 +42,18 @@ import {
   UserPlus,
   X,
 } from "lucide-react";
-import { useCallback, useEffect, useId, useMemo, useState } from "react";
-import { useForm } from "react-hook-form";
+import {
+  useCallback,
+  useEffect,
+  useId,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
+import { useForm, useWatch, type Control } from "react-hook-form";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+import { isChatAccessError } from "../../message/list/default/utils";
 
 type SettingsTab = "general" | "threads" | "members";
 
@@ -216,13 +226,66 @@ function normalizeChatDescription(value: unknown) {
   return normalized;
 }
 
+function useChatThreads(subjectId: string, chatId: string, limit?: number) {
+  return api.socialModuleChatFindByIdThreadFind({
+    id: subjectId,
+    socialModuleChatId: chatId,
+    params: {
+      ...(limit && limit > 100 ? { limit } : {}),
+      orderBy: {
+        and: [{ column: "createdAt", method: "asc" }],
+      },
+    },
+    options: {
+      headers: { "Cache-Control": "no-store" },
+    },
+  });
+}
+
 export function Component(props: IComponentPropsExtended) {
+  if (props.socialModuleEmployeeProfileId) {
+    const chat = props.socialModuleChat;
+    const members = chat.participants ?? [];
+    const employeeIsPresent = members.some(
+      (profile) =>
+        profile.id === props.socialModuleEmployeeProfileId &&
+        profile.variant === "artificial-intelligence",
+    );
+    if (
+      chat.id !== props.socialModuleChatId ||
+      chat.variant !== STORE_EMPLOYEE_CHAT_VARIANT ||
+      !employeeIsPresent ||
+      !members.some((profile) => profile.id === props.socialModuleProfile.id)
+    ) {
+      return (
+        <p role="status" className="rounded-xl border border-border p-4">
+          {props.language === "ru"
+            ? "Служебный чат недоступен."
+            : "The staff chat is unavailable."}
+        </p>
+      );
+    }
+  }
+  return <ChatOverview key={props.socialModuleChat.id} {...props} />;
+}
+
+function ChatOverview(props: IComponentPropsExtended) {
   const router = useRouter();
   const ru = props.language === "ru";
   const chatHref = `/${props.language}/social/chats/${props.socialModuleChat.id}`;
+  const embedded = Boolean(
+    props.getThreadHref || props.socialModuleEmployeeProfileId,
+  );
+  const threadHref = (threadId: string) =>
+    props.getThreadHref?.(threadId) ?? `${chatHref}/threads/${threadId}`;
+  const profileOpenRef = useRef<IChatProfileOpen>(null);
+  const openMemberProfile = useCallback<IChatProfileOpen>(
+    (...args) => profileOpenRef.current?.(...args),
+    [],
+  );
   const mobileNavigationId = useId();
   const navigationHref = props.socialModuleThreadId
-    ? `${chatHref}/threads/${props.socialModuleThreadId}`
+    ? threadHref(props.socialModuleThreadId)
     : chatHref;
   const [mobileNavigation, setMobileNavigation] = useState<{
     href: string;
@@ -234,7 +297,8 @@ export function Component(props: IComponentPropsExtended) {
   }, [navigationHref]);
   const [threadSearch, setThreadSearch] = useState("");
   const [showSettings, setShowSettings] = useState(false);
-  const [settingsTab, setSettingsTab] = useState<SettingsTab>("general");
+  const [selectedSettingsTab, setSettingsTab] =
+    useState<SettingsTab>("general");
   const [memberSearch, setMemberSearch] = useState("");
   const [debouncedMemberSearch, setDebouncedMemberSearch] = useState("");
   const [pendingAddProfileId, setPendingAddProfileId] = useState<string | null>(
@@ -296,29 +360,41 @@ export function Component(props: IComponentPropsExtended) {
       socialModuleChatId: props.socialModuleChat.id,
     });
   const {
-    data: socialModuleThreads,
+    data: loadedThreads,
+    error: threadError,
     isLoading: socialModuleThreadsIsLoading,
     isError: socialModuleThreadsIsError,
     refetch: refetchSocialModuleThreads,
-  } = api.socialModuleChatFindByIdThreadFind({
-    id: props.data.id,
-    socialModuleChatId: props.socialModuleChat.id,
-    params: {
-      orderBy: {
-        and: [
-          {
-            column: "createdAt",
-            method: "asc",
-          },
-        ],
-      },
-    },
-    options: {
-      headers: {
-        "Cache-Control": "no-store",
-      },
-    },
-  });
+  } = useChatThreads(
+    props.data.id,
+    props.socialModuleChat.id,
+    props.threadListLimit,
+  );
+  const accessDenied = isChatAccessError(threadError);
+  const taskChat =
+    props.socialModuleChat.taskChatStaff !== undefined ||
+    Boolean(props.socialModuleChat.mainThreadId) ||
+    Boolean(props.socialModuleChat.taskChatThreadId) ||
+    props.socialModuleChat.variant === "customer-work";
+  const employeeChat =
+    props.socialModuleChat.variant === STORE_EMPLOYEE_CHAT_VARIANT;
+  const standardChat = !taskChat && !employeeChat;
+  const scopedThreadId = props.socialModuleChat.taskChatThreadId;
+  const canManageChat =
+    !accessDenied &&
+    !scopedThreadId &&
+    props.socialModuleChat.canManageChat === true;
+  const canManageMembers = canManageChat && !employeeChat;
+  const settingsTab = canManageChat ? selectedSettingsTab : "members";
+  const mainThreadId =
+    props.socialModuleChat.mainThreadId ?? props.defaultThreadId;
+  const socialModuleThreads = useMemo(() => {
+    if (accessDenied) return undefined;
+    if (scopedThreadId) {
+      return loadedThreads?.filter(({ id }) => id === scopedThreadId);
+    }
+    return loadedThreads;
+  }, [accessDenied, loadedThreads, scopedThreadId]);
   const activeSocialModuleThread = props.socialModuleThreadId
     ? socialModuleThreads?.find(
         (thread) => thread.id === props.socialModuleThreadId,
@@ -327,7 +403,8 @@ export function Component(props: IComponentPropsExtended) {
   const activeSocialModuleThreadId = activeSocialModuleThread?.id;
   const hasMultipleThreads = (socialModuleThreads?.length ?? 0) > 1;
   const showThreads =
-    hasMultipleThreads && chatListChatId !== props.socialModuleChat.id;
+    embedded ||
+    (hasMultipleThreads && chatListChatId !== props.socialModuleChat.id);
   const navigationOpen =
     mobileNavigation?.href === navigationHref
       ? mobileNavigation.open
@@ -346,6 +423,7 @@ export function Component(props: IComponentPropsExtended) {
 
   useEffect(() => {
     if (
+      embedded ||
       !activeSocialModuleThreadId ||
       props.socialModuleThreadId ||
       hasMultipleThreads
@@ -355,6 +433,7 @@ export function Component(props: IComponentPropsExtended) {
 
     router.replace(`${chatHref}/threads/${activeSocialModuleThreadId}`);
   }, [
+    embedded,
     activeSocialModuleThreadId,
     chatHref,
     hasMultipleThreads,
@@ -373,44 +452,63 @@ export function Component(props: IComponentPropsExtended) {
   }, [memberSearch]);
 
   useEffect(() => {
-    chatSettingsForm.reset({
-      title: normalizeLocalizedTextFields(props.socialModuleChat.title),
-      description: normalizeChatDescription(props.socialModuleChat.description),
-    });
-    setShowSettings(false);
-    setSettingsTab("general");
-    setMemberSearch("");
-    setDebouncedMemberSearch("");
-    setPendingAddProfileId(null);
-    setPendingAddAgentSubjectId(null);
-    setProfileRemovalIntent(null);
-    setIsChatDeleteConfirmOpen(false);
-    setThreadDeletionIntent(null);
-    setNewThreadTitle("");
-    setEditingThreadId(null);
-    setEditThreadTitle("");
+    chatSettingsForm.reset(
+      {
+        title: normalizeLocalizedTextFields(props.socialModuleChat.title),
+        description: normalizeChatDescription(
+          props.socialModuleChat.description,
+        ),
+      },
+      { keepDirtyValues: true },
+    );
   }, [
     chatSettingsForm,
-    props.socialModuleChat.description,
-    props.socialModuleChat.id,
     props.socialModuleChat.title,
+    props.socialModuleChat.description,
   ]);
 
   const threadItems = useMemo(() => {
+    const authors = new Map(
+      (props.socialModuleChat.participants ?? []).map((profile) => [
+        profile.id,
+        profileTitle(profile, props.language),
+      ]),
+    );
     return (socialModuleThreads || []).map((socialModuleThread, index) => {
       const title =
-        socialModuleThread.title?.trim() ||
-        `${ru ? "Обсуждение" : "Thread"} ${index + 1}`;
+        socialModuleThread.id === props.defaultThreadId &&
+        (!taskChat || !socialModuleThread.title?.trim())
+          ? ru
+            ? "Основная переписка"
+            : "Main conversation"
+          : socialModuleThread.title?.trim() ||
+            `${ru ? "Обсуждение" : "Thread"} ${index + 1}`;
 
       return {
         data: socialModuleThread,
         title,
+        previewAuthor: socialModuleThread.lastMessageAuthorId
+          ? authors.get(socialModuleThread.lastMessageAuthorId)
+          : undefined,
+        canDelete:
+          (standardChat || socialModuleThread.id !== mainThreadId) &&
+          !(employeeChat && socialModuleThread.hasCustomerWork),
         createdAt: new Date(socialModuleThread.createdAt).toLocaleDateString(
           props.language,
         ),
       };
     });
-  }, [props.language, ru, socialModuleThreads]);
+  }, [
+    props.defaultThreadId,
+    props.socialModuleChat.participants,
+    props.language,
+    ru,
+    socialModuleThreads,
+    taskChat,
+    standardChat,
+    mainThreadId,
+    employeeChat,
+  ]);
   const socialModuleMemberProfiles = props.socialModuleChat.participants;
   const filteredThreadItems = useMemo(() => {
     const normalizedSearch = threadSearch.trim().toLowerCase();
@@ -440,6 +538,7 @@ export function Component(props: IComponentPropsExtended) {
     limit: 20,
     reactQueryOptions: {
       enabled:
+        canManageMembers &&
         showSettings &&
         settingsTab === "members" &&
         debouncedMemberSearch.length >= 2,
@@ -457,6 +556,7 @@ export function Component(props: IComponentPropsExtended) {
     limit: 20,
     reactQueryOptions: {
       enabled:
+        canManageMembers &&
         showSettings &&
         settingsTab === "members" &&
         debouncedMemberSearch.length >= 2,
@@ -488,6 +588,13 @@ export function Component(props: IComponentPropsExtended) {
     [socialModuleMemberProfiles],
   );
   const artificialIntelligenceOpponentProfile = useMemo(() => {
+    if (props.socialModuleEmployeeProfileId) {
+      return (
+        socialModuleMemberProfiles?.find(
+          ({ id }) => id === props.socialModuleEmployeeProfileId,
+        ) ?? null
+      );
+    }
     if (knowledgeAssistantProfile) {
       return knowledgeAssistantProfile;
     }
@@ -502,6 +609,7 @@ export function Component(props: IComponentPropsExtended) {
     );
   }, [
     knowledgeAssistantProfile,
+    props.socialModuleEmployeeProfileId,
     props.socialModuleProfile.id,
     socialModuleMemberProfiles,
   ]);
@@ -548,15 +656,11 @@ export function Component(props: IComponentPropsExtended) {
       };
     });
   }, [searchedAgentSubjects]);
-  const chatTitleValues = chatSettingsForm.watch("title");
   const chatDisplayTitle = getLocalizedText(
-    chatTitleValues,
+    props.socialModuleChat.title,
     props.language,
     ru ? "Чат без названия" : "Untitled chat",
   );
-  const canSaveChatSettings =
-    hasLocalizedText(chatTitleValues) &&
-    !socialModuleChatFindByIdUpdate.isPending;
   const membersCount = memberProfileIds.size;
 
   const refetchChatQueries = () => {
@@ -564,12 +668,6 @@ export function Component(props: IComponentPropsExtended) {
       queryKey: [currentChatQueryKey],
     });
     void queryClient.invalidateQueries({
-      queryKey: [chatListQueryKey],
-    });
-    void queryClient.refetchQueries({
-      queryKey: [currentChatQueryKey],
-    });
-    void queryClient.refetchQueries({
       queryKey: [chatListQueryKey],
     });
   };
@@ -581,7 +679,7 @@ export function Component(props: IComponentPropsExtended) {
   const handleSaveChatSettings = () => {
     const title = chatSettingsForm.getValues("title");
 
-    if (!hasLocalizedText(title)) {
+    if (!canManageChat || !hasLocalizedText(title)) {
       return;
     }
 
@@ -589,6 +687,7 @@ export function Component(props: IComponentPropsExtended) {
       {
         id: props.data.id,
         socialModuleChatId: props.socialModuleChat.id,
+        socialModuleProfileId: props.socialModuleProfile.id,
         data: {
           title,
           description: chatSettingsForm.getValues("description"),
@@ -608,6 +707,7 @@ export function Component(props: IComponentPropsExtended) {
   };
 
   const handleAddProfile = (profileItem: ProfileListItem) => {
+    if (!canManageMembers) return;
     setPendingAddProfileId(profileItem.profile.id);
 
     socialModuleChatFindByIdProfileCreate.mutate(
@@ -622,7 +722,7 @@ export function Component(props: IComponentPropsExtended) {
         onSuccess() {
           refetchMemberQueries();
           void refetchSearchedSocialModuleProfiles();
-          toast.success("Profile added to chat");
+          toast.success(ru ? "Участник добавлен" : "Profile added to chat");
         },
         onSettled() {
           setPendingAddProfileId(null);
@@ -632,6 +732,7 @@ export function Component(props: IComponentPropsExtended) {
   };
 
   const handleAddAgentSubject = (agentSubjectItem: AgentSubjectListItem) => {
+    if (!canManageMembers) return;
     setPendingAddAgentSubjectId(agentSubjectItem.subject.id);
 
     socialModuleChatFindByIdProfileCreate.mutate(
@@ -646,7 +747,7 @@ export function Component(props: IComponentPropsExtended) {
         onSuccess() {
           refetchMemberQueries();
           void refetchSearchedAgentSubjects();
-          toast.success("Agent profile added to chat");
+          toast.success(ru ? "Агент добавлен" : "Agent profile added to chat");
         },
         onSettled() {
           setPendingAddAgentSubjectId(null);
@@ -656,7 +757,13 @@ export function Component(props: IComponentPropsExtended) {
   };
 
   const handleConfirmRemoveProfile = () => {
-    if (!profileRemovalIntent) {
+    if (
+      !canManageMembers ||
+      !profileRemovalIntent ||
+      props.socialModuleChat.protectedProfileIds?.includes(
+        profileRemovalIntent.item.profile.id,
+      )
+    ) {
       return;
     }
 
@@ -675,10 +782,10 @@ export function Component(props: IComponentPropsExtended) {
 
           if (removalIntent.mode === "leave") {
             setShowSettings(false);
-            toast.success("You left the chat");
+            toast.success(ru ? "Вы вышли из чата" : "You left the chat");
             router.push(`/${props.language}/social/chats`);
           } else {
-            toast.success("Profile removed from chat");
+            toast.success(ru ? "Участник удалён" : "Profile removed from chat");
           }
         },
       },
@@ -686,6 +793,7 @@ export function Component(props: IComponentPropsExtended) {
   };
 
   const handleConfirmDeleteChat = () => {
+    if (!canManageChat || !standardChat) return;
     socialModuleProfileFindByIdChatFindByIdDelete.mutate(
       {
         id: props.data.id,
@@ -704,41 +812,48 @@ export function Component(props: IComponentPropsExtended) {
     );
   };
 
-  const handleCreateThread = () => {
+  const creatingThread =
+    socialModuleChatFindByIdThreadCreate.isPending || props.isCreatingThread;
+  const handleCreateThread = async () => {
     const title = newThreadTitle.trim();
-
-    if (!title) {
+    if (!canManageChat || !title || creatingThread) return;
+    function opened(id?: string) {
+      setNewThreadTitle("");
+      setShowSettings(false);
+      closeNavigation();
+      toast.success(ru ? "Обсуждение создано" : "Thread created");
+      if (id)
+        router.push(threadHref(id), embedded ? { scroll: false } : undefined);
+    }
+    if (embedded && props.onCreateThread) {
+      try {
+        opened(await props.onCreateThread(title));
+      } catch {
+        toast.error(
+          ru
+            ? "Не удалось создать обсуждение. Попробуйте ещё раз."
+            : "Could not create the thread. Try again.",
+        );
+      }
       return;
     }
-
     socialModuleChatFindByIdThreadCreate.mutate(
       {
         id: props.data.id,
         socialModuleChatId: props.socialModuleChat.id,
-        data: {
-          title,
-        },
+        data: { title },
       },
       {
         onSuccess(data) {
-          setNewThreadTitle("");
-          setShowSettings(false);
-          closeNavigation();
           void refetchSocialModuleThreads();
-          toast.success(ru ? "Обсуждение создано" : "Thread created");
-
-          if (data?.id) {
-            router.push(
-              `/${props.language}/social/chats/${props.socialModuleChat.id}/threads/${data.id}`,
-            );
-          }
+          opened(data?.id);
         },
       },
     );
   };
 
   const handleSaveThread = () => {
-    if (!editingThreadId) {
+    if (!canManageChat || !editingThreadId) {
       return;
     }
 
@@ -769,7 +884,13 @@ export function Component(props: IComponentPropsExtended) {
   };
 
   const handleConfirmDeleteThread = () => {
-    if (!threadDeletionIntent) {
+    if (
+      !canManageChat ||
+      !threadDeletionIntent ||
+      !threadItems.some(
+        (item) => item.data.id === threadDeletionIntent.id && item.canDelete,
+      )
+    ) {
       return;
     }
 
@@ -796,9 +917,9 @@ export function Component(props: IComponentPropsExtended) {
             const nextThread = remainingThreadItems[0];
 
             if (nextThread?.data.id) {
-              router.push(
-                `/${props.language}/social/chats/${props.socialModuleChat.id}/threads/${nextThread.data.id}`,
-              );
+              router.push(threadHref(nextThread.data.id), {
+                scroll: !embedded,
+              });
             } else {
               router.push(
                 `/${props.language}/social/chats/${props.socialModuleChat.id}`,
@@ -810,9 +931,6 @@ export function Component(props: IComponentPropsExtended) {
     );
   };
 
-  const canManageChat =
-    props.socialModuleChat.variant !== "customer-work" &&
-    props.socialModuleChat.variant !== STORE_EMPLOYEE_CHAT_VARIANT;
   const backToChats = ru ? "К списку чатов" : "Back to chats";
   const threadListLabel = ru ? "Обсуждения" : "Threads";
   const threadSearchLabel = ru ? "Поиск обсуждений" : "Search threads";
@@ -828,17 +946,36 @@ export function Component(props: IComponentPropsExtended) {
     setSettingsTab(tab);
     setShowSettings(true);
   };
-  const settingsButton = canManageChat && (
+  const settingsButton = !accessDenied && (
     <button
       type="button"
       aria-label={settingsLabel}
       title={settingsLabel}
-      onClick={() => openSettings("general")}
+      onClick={() => openSettings(canManageChat ? "general" : "members")}
       className={navigationButtonClassName}
     >
       <Icon name="gear-six" className="size-5" />
     </button>
   );
+  const coverProps = props.socialModuleChat.coverFileId
+    ? {
+        subjectId: props.data.id,
+        profileId: props.socialModuleProfile.id,
+        chatId: props.socialModuleChat.id,
+        fileId: props.socialModuleChat.coverFileId,
+        language: props.language,
+      }
+    : null;
+  const saveCover = async (data: { file: File } | { reset: true }) => {
+    if (!canManageChat)
+      throw new Error(ru ? "Доступ изменился." : "Your access has changed.");
+    return socialModuleChatFindByIdUpdate.mutateAsync({
+      id: props.data.id,
+      socialModuleChatId: props.socialModuleChat.id,
+      socialModuleProfileId: props.socialModuleProfile.id,
+      data: "file" in data ? { coverFile: data.file } : { removeCover: true },
+    });
+  };
   const navigation = showThreads ? (
     <ChatWorkspaceNavigation
       label={threadListLabel}
@@ -849,18 +986,23 @@ export function Component(props: IComponentPropsExtended) {
         onChange: setThreadSearch,
       }}
       leading={
-        <button
-          type="button"
-          aria-label={backToChats}
-          title={backToChats}
-          onClick={() => {
-            setChatListChatId(props.socialModuleChat.id);
-            setThreadSearch("");
-          }}
-          className={navigationButtonClassName}
-        >
-          <ArrowLeft className="size-5" aria-hidden="true" />
-        </button>
+        <>
+          {!embedded && (
+            <button
+              type="button"
+              aria-label={backToChats}
+              title={backToChats}
+              onClick={() => {
+                setChatListChatId(props.socialModuleChat.id);
+                setThreadSearch("");
+              }}
+              className={navigationButtonClassName}
+            >
+              <ArrowLeft className="size-5" aria-hidden="true" />
+            </button>
+          )}
+          {coverProps && <ChatCover {...coverProps} compact />}
+        </>
       }
       actions={settingsButton}
       footer={
@@ -880,7 +1022,7 @@ export function Component(props: IComponentPropsExtended) {
     >
       {filteredThreadItems.length ? (
         <ul className="grid min-w-0 grid-cols-[minmax(0,1fr)] gap-1">
-          {filteredThreadItems.map(({ data, title }) => (
+          {filteredThreadItems.map(({ data, title, previewAuthor }) => (
             <li key={data.id} className="min-w-0">
               <SocialModuleThread
                 isServer={false}
@@ -889,8 +1031,19 @@ export function Component(props: IComponentPropsExtended) {
                 data={data}
                 dataSource="props"
                 topic
-                href={`${chatHref}/threads/${data.id}`}
+                href={threadHref(data.id)}
                 title={title}
+                activityAt={data.lastMessageAt ?? data.createdAt}
+                unreadCount={data.unreadCount}
+                previewAuthor={previewAuthor}
+                preview={
+                  data.lastMessagePreview ||
+                  (data.lastMessageHasFiles
+                    ? ru
+                      ? "Вложение"
+                      : "Attachment"
+                    : undefined)
+                }
                 selected={data.id === activeSocialModuleThreadId}
                 onNavigate={closeNavigation}
                 className={cn(
@@ -898,13 +1051,7 @@ export function Component(props: IComponentPropsExtended) {
                   data.id === activeSocialModuleThreadId &&
                     "bg-muted text-foreground",
                 )}
-              >
-                <ChatListActivity
-                  language={props.language}
-                  timestamp={data.lastMessageAt ?? data.createdAt}
-                  unreadCount={data.unreadCount}
-                />
-              </SocialModuleThread>
+              />
             </li>
           ))}
         </ul>
@@ -950,6 +1097,7 @@ export function Component(props: IComponentPropsExtended) {
     >
       <ChatWorkspace
         siteLayout
+        className={embedded ? "h-[clamp(32rem,70dvh,48rem)]" : undefined}
         navigation={navigation}
         navigationId={mobileNavigationId}
         navigationClassName={cn(
@@ -965,6 +1113,7 @@ export function Component(props: IComponentPropsExtended) {
         >
           {activeSocialModuleThreadId && activeSocialModuleThread ? (
             <Subject
+              key={activeSocialModuleThreadId}
               isServer={false}
               data={props.data}
               language={props.language}
@@ -978,6 +1127,7 @@ export function Component(props: IComponentPropsExtended) {
               socialModuleThreadId={activeSocialModuleThreadId}
               variant="social-module-profile-chat-message-list-default"
               navigation={navigationTrigger}
+              profileOpenRef={profileOpenRef}
             />
           ) : socialModuleThreadsIsLoading ? (
             <ChatThreadSkeleton />
@@ -1019,7 +1169,7 @@ export function Component(props: IComponentPropsExtended) {
           )}
         </div>
       </ChatWorkspace>
-      {showSettings && canManageChat ? (
+      {showSettings && !accessDenied ? (
         <div
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/40"
           onClick={() => {
@@ -1027,6 +1177,9 @@ export function Component(props: IComponentPropsExtended) {
           }}
         >
           <div
+            role="dialog"
+            aria-modal="true"
+            aria-label={settingsLabel}
             className="mx-4 flex max-h-[86vh] w-full max-w-3xl flex-col overflow-hidden rounded-xl bg-white shadow-xl"
             onClick={(event) => {
               event.stopPropagation();
@@ -1056,9 +1209,12 @@ export function Component(props: IComponentPropsExtended) {
                 </span>
               </button>
             </div>
-            <div className="flex shrink-0 border-b border-slate-200">
+            <div className="flex shrink-0 border-b border-border">
               {[
-                { key: "general" as const, label: ru ? "Основное" : "General" },
+                {
+                  key: "general" as const,
+                  label: ru ? "Основное" : "General",
+                },
                 {
                   key: "threads" as const,
                   label: `${ru ? "Обсуждения" : "Threads"} (${threadItems.length})`,
@@ -1067,31 +1223,45 @@ export function Component(props: IComponentPropsExtended) {
                   key: "members" as const,
                   label: `${ru ? "Участники" : "Members"} (${membersCount})`,
                 },
-              ].map((tab) => {
-                return (
-                  <button
-                    key={tab.key}
-                    type="button"
-                    aria-pressed={settingsTab === tab.key}
-                    onClick={() => {
-                      setSettingsTab(tab.key);
-                    }}
-                    className={cn(
-                      "flex-1 px-3 py-2.5 text-xs transition",
-                      settingsTab === tab.key
-                        ? "border-b-2 border-slate-900 text-slate-900"
-                        : "text-slate-400 hover:text-slate-600",
-                    )}
-                  >
-                    {tab.label}
-                  </button>
-                );
-              })}
+              ]
+                .filter((tab) => canManageChat || tab.key === "members")
+                .map((tab) => {
+                  return (
+                    <button
+                      key={tab.key}
+                      type="button"
+                      aria-pressed={settingsTab === tab.key}
+                      onClick={() => {
+                        setSettingsTab(tab.key);
+                      }}
+                      className={cn(
+                        "flex-1 px-3 py-2.5 text-xs transition",
+                        settingsTab === tab.key
+                          ? "border-b-2 border-slate-900 text-slate-900"
+                          : "text-slate-400 hover:text-slate-600",
+                      )}
+                    >
+                      {tab.label}
+                    </button>
+                  );
+                })}
             </div>
             <div className="min-h-0 flex-1 overflow-y-auto overflow-x-hidden px-5 py-4">
-              {settingsTab === "general" ? (
+              {canManageChat && settingsTab === "general" ? (
                 <Form {...chatSettingsForm}>
                   <div className="space-y-5">
+                    <ImageUploadField
+                      language={props.language}
+                      label={ru ? "Обложка" : "Cover"}
+                      chooseLabel={
+                        ru ? "Выбрать обложку чата" : "Choose chat cover"
+                      }
+                      savedLabel={ru ? "Обложка сохранена" : "Cover saved"}
+                      pending={socialModuleChatFindByIdUpdate.isPending}
+                      canRemove={Boolean(coverProps)}
+                      preview={coverProps && <ChatCover {...coverProps} />}
+                      onSave={saveCover}
+                    />
                     <div>
                       <label className="mb-1 block text-[11px] text-slate-500">
                         {ru ? "Название" : "Name"}
@@ -1137,12 +1307,14 @@ export function Component(props: IComponentPropsExtended) {
                   </div>
                 </Form>
               ) : null}
-              {settingsTab === "threads" ? (
+              {canManageChat && settingsTab === "threads" ? (
                 <div className="space-y-3">
                   <div className="flex items-center gap-2">
                     <input
                       type="text"
                       value={newThreadTitle}
+                      maxLength={embedded ? 120 : undefined}
+                      disabled={creatingThread}
                       onChange={(event) => {
                         setNewThreadTitle(event.target.value);
                       }}
@@ -1158,10 +1330,7 @@ export function Component(props: IComponentPropsExtended) {
                     <button
                       type="button"
                       onClick={handleCreateThread}
-                      disabled={
-                        !newThreadTitle.trim() ||
-                        socialModuleChatFindByIdThreadCreate.isPending
-                      }
+                      disabled={!newThreadTitle.trim() || creatingThread}
                       className="flex h-7 shrink-0 items-center gap-1 rounded-md bg-slate-900 px-2.5 text-[11px] text-white transition hover:bg-slate-800 disabled:opacity-40 disabled:hover:bg-slate-900"
                     >
                       <Plus className="h-3 w-3" />
@@ -1193,43 +1362,55 @@ export function Component(props: IComponentPropsExtended) {
                                 {threadItem.createdAt}
                               </p>
                             </div>
-                            <Button
-                              type="button"
-                              variant="ghost"
-                              size="icon"
-                              onClick={() => {
-                                setEditThreadTitle(threadItem.title);
-                                setEditingThreadId(threadItem.data.id);
-                              }}
-                              aria-label={renameLabel}
-                              title={renameLabel}
-                              className="size-10 shrink-0 rounded-xl text-muted-foreground active:bg-accent/80 active:text-accent-foreground"
-                            >
-                              <Edit3 className="size-4" aria-hidden="true" />
-                            </Button>
-                            <Button
-                              type="button"
-                              variant="ghost"
-                              size="icon"
-                              onClick={() => {
-                                if (
-                                  socialModuleChatFindByIdThreadDelete.isPending
-                                ) {
-                                  return;
-                                }
-                                setThreadDeletionIntent({
-                                  id: threadItem.data.id,
-                                  title: threadItem.title,
-                                });
-                              }}
-                              aria-label={deleteLabel}
-                              title={deleteLabel}
-                              disabled={isDeletingThread}
-                              aria-busy={isDeletingThread}
-                              className="size-10 shrink-0 rounded-xl text-muted-foreground hover:bg-destructive/10 hover:text-destructive active:bg-destructive/20 active:text-destructive"
-                            >
-                              <Trash2 className="size-4" aria-hidden="true" />
-                            </Button>
+                            {canManageChat && (
+                              <>
+                                <Button
+                                  type="button"
+                                  variant="ghost"
+                                  size="icon"
+                                  onClick={() => {
+                                    setEditThreadTitle(threadItem.title);
+                                    setEditingThreadId(threadItem.data.id);
+                                  }}
+                                  aria-label={renameLabel}
+                                  title={renameLabel}
+                                  className="size-10 shrink-0 rounded-xl text-muted-foreground active:bg-accent/80 active:text-accent-foreground"
+                                >
+                                  <Edit3
+                                    className="size-4"
+                                    aria-hidden="true"
+                                  />
+                                </Button>
+                                {threadItem.canDelete && (
+                                  <Button
+                                    type="button"
+                                    variant="ghost"
+                                    size="icon"
+                                    onClick={() => {
+                                      if (
+                                        socialModuleChatFindByIdThreadDelete.isPending
+                                      ) {
+                                        return;
+                                      }
+                                      setThreadDeletionIntent({
+                                        id: threadItem.data.id,
+                                        title: threadItem.title,
+                                      });
+                                    }}
+                                    aria-label={deleteLabel}
+                                    title={deleteLabel}
+                                    disabled={isDeletingThread}
+                                    aria-busy={isDeletingThread}
+                                    className="size-10 shrink-0 rounded-xl text-muted-foreground hover:bg-destructive/10 hover:text-destructive active:bg-destructive/20 active:text-destructive"
+                                  >
+                                    <Trash2
+                                      className="size-4"
+                                      aria-hidden="true"
+                                    />
+                                  </Button>
+                                )}
+                              </>
+                            )}
                           </div>
                         );
                       })
@@ -1251,7 +1432,7 @@ export function Component(props: IComponentPropsExtended) {
                       onChange={(event) => {
                         setMemberSearch(event.target.value);
                       }}
-                      placeholder="Search users..."
+                      placeholder={ru ? "Поиск участников" : "Search users..."}
                       className="w-full rounded-md border border-slate-200 bg-slate-50 py-1.5 pl-8 pr-8 text-xs text-slate-700 outline-none placeholder:text-slate-400 focus:border-slate-300 focus:ring-1 focus:ring-slate-200"
                     />
                     {memberSearch ? (
@@ -1263,13 +1444,17 @@ export function Component(props: IComponentPropsExtended) {
                         className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 transition hover:text-slate-600"
                       >
                         <X className="h-3 w-3" />
-                        <span className="sr-only">Clear member search</span>
+                        <span className="sr-only">
+                          {ru
+                            ? "Очистить поиск участников"
+                            : "Clear member search"}
+                        </span>
                       </button>
                     ) : null}
                   </div>
                   <div>
                     <h4 className="mb-1.5 text-[11px] text-slate-400">
-                      Members ({membersCount})
+                      {ru ? "Участники" : "Members"} ({membersCount})
                     </h4>
                     <div className="space-y-1">
                       {filteredMemberItems.length ? (
@@ -1278,55 +1463,65 @@ export function Component(props: IComponentPropsExtended) {
                             profileItem.profile.id ===
                             props.socialModuleProfile.id;
 
+                          const canRemove =
+                            canManageMembers &&
+                            membersCount > 1 &&
+                            !props.socialModuleChat.protectedProfileIds?.includes(
+                              profileItem.profile.id,
+                            );
                           return (
                             <div
                               key={profileItem.profile.id}
                               className="flex items-center gap-2 rounded-md px-2 py-2 transition hover:bg-slate-50"
                             >
-                              <SocialModuleProfile
-                                isServer={false}
-                                variant="chat-profile-avatar"
-                                data={profileItem.profile}
-                                language={props.language}
-                                className="h-7 w-7 text-[11px]"
-                              />
                               <div className="min-w-0 flex-1">
-                                <p className="truncate text-xs text-slate-700">
-                                  {profileItem.title}
-                                </p>
-                                <p className="truncate text-[10px] text-slate-400">
-                                  {profileItem.subtitle}
-                                </p>
+                                {activeSocialModuleThread ? (
+                                  <ChatParticipantButton
+                                    language={props.language}
+                                    profile={profileItem.profile}
+                                    presentation={props.socialModuleChat.participantPresentations?.find(
+                                      ({ id }) => id === profileItem.profile.id,
+                                    )}
+                                    subtitle={profileItem.subtitle}
+                                    onProfileOpen={openMemberProfile}
+                                  />
+                                ) : (
+                                  <span>{profileItem.title}</span>
+                                )}
                               </div>
                               {isCurrentProfile ? (
                                 <div className="flex shrink-0 items-center gap-1.5">
                                   <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[10px] text-slate-500">
-                                    You
+                                    {ru ? "Вы" : "You"}
                                   </span>
-                                  <button
-                                    type="button"
-                                    onClick={() => {
-                                      setProfileRemovalIntent({
-                                        item: profileItem,
-                                        mode: "leave",
-                                      });
-                                    }}
-                                    title={
-                                      membersCount > 1
-                                        ? "Leave chat"
-                                        : "Cannot leave the last member chat"
-                                    }
-                                    disabled={
-                                      membersCount <= 1 ||
-                                      socialModuleChatFindByIdProfileDelete.isPending
-                                    }
-                                    className="flex h-6 w-6 items-center justify-center rounded-md text-slate-300 transition hover:bg-red-50 hover:text-red-500 disabled:cursor-not-allowed disabled:opacity-40"
-                                  >
-                                    <LogOut className="h-3.5 w-3.5" />
-                                    <span className="sr-only">Leave chat</span>
-                                  </button>
+                                  {canRemove && (
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        setProfileRemovalIntent({
+                                          item: profileItem,
+                                          mode: "leave",
+                                        });
+                                      }}
+                                      title={
+                                        membersCount > 1
+                                          ? "Leave chat"
+                                          : "Cannot leave the last member chat"
+                                      }
+                                      disabled={
+                                        membersCount <= 1 ||
+                                        socialModuleChatFindByIdProfileDelete.isPending
+                                      }
+                                      className="flex h-6 w-6 items-center justify-center rounded-md text-slate-300 transition hover:bg-red-50 hover:text-red-500 disabled:cursor-not-allowed disabled:opacity-40"
+                                    >
+                                      <LogOut className="h-3.5 w-3.5" />
+                                      <span className="sr-only">
+                                        {ru ? "Выйти из чата" : "Leave chat"}
+                                      </span>
+                                    </button>
+                                  )}
                                 </div>
-                              ) : membersCount > 1 ? (
+                              ) : canRemove ? (
                                 <button
                                   type="button"
                                   onClick={() => {
@@ -1335,14 +1530,18 @@ export function Component(props: IComponentPropsExtended) {
                                       mode: "remove",
                                     });
                                   }}
-                                  title="Remove member"
+                                  title={
+                                    ru ? "Удалить участника" : "Remove member"
+                                  }
                                   disabled={
                                     socialModuleChatFindByIdProfileDelete.isPending
                                   }
                                   className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md text-slate-300 transition hover:bg-red-50 hover:text-red-500 disabled:cursor-not-allowed disabled:opacity-40"
                                 >
                                   <UserMinus className="h-3.5 w-3.5" />
-                                  <span className="sr-only">Remove member</span>
+                                  <span className="sr-only">
+                                    {ru ? "Удалить участника" : "Remove member"}
+                                  </span>
                                 </button>
                               ) : null}
                             </div>
@@ -1351,25 +1550,31 @@ export function Component(props: IComponentPropsExtended) {
                       ) : (
                         <p className="py-4 text-center text-xs text-slate-400">
                           {memberSearch
-                            ? "No matching members"
-                            : "No members found"}
+                            ? ru
+                              ? "Участники не найдены"
+                              : "No matching members"
+                            : ru
+                              ? "Участников пока нет"
+                              : "No members found"}
                         </p>
                       )}
                     </div>
                   </div>
-                  {memberSearch.trim() ? (
+                  {canManageMembers && memberSearch.trim() ? (
                     <div className="border-t border-slate-200 pt-3">
                       <h4 className="mb-1.5 text-[11px] text-slate-400">
-                        User profiles
+                        {ru ? "Профили" : "User profiles"}
                       </h4>
                       {!canSearchProfiles ? (
                         <p className="py-4 text-center text-xs text-slate-400">
-                          Type at least 2 characters to search users.
+                          {ru
+                            ? "Введите не меньше двух символов для поиска."
+                            : "Type at least 2 characters to search users."}
                         </p>
                       ) : searchedSocialModuleProfilesIsLoading ||
                         searchedSocialModuleProfilesIsFetching ? (
                         <p className="py-4 text-center text-xs text-slate-400">
-                          Searching users...
+                          {ru ? "Ищем профили…" : "Searching users..."}
                         </p>
                       ) : searchedProfileItems.length ? (
                         <div className="space-y-1">
@@ -1402,7 +1607,9 @@ export function Component(props: IComponentPropsExtended) {
                                   onClick={() => {
                                     handleAddProfile(profileItem);
                                   }}
-                                  title="Add member"
+                                  title={
+                                    ru ? "Добавить участника" : "Add member"
+                                  }
                                   disabled={
                                     isAdding ||
                                     socialModuleChatFindByIdProfileCreate.isPending
@@ -1410,7 +1617,9 @@ export function Component(props: IComponentPropsExtended) {
                                   className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md text-slate-300 transition hover:bg-green-50 hover:text-green-600 disabled:cursor-not-allowed disabled:opacity-40"
                                 >
                                   <UserPlus className="h-3.5 w-3.5" />
-                                  <span className="sr-only">Add member</span>
+                                  <span className="sr-only">
+                                    {ru ? "Добавить участника" : "Add member"}
+                                  </span>
                                 </button>
                               </div>
                             );
@@ -1418,20 +1627,22 @@ export function Component(props: IComponentPropsExtended) {
                         </div>
                       ) : (
                         <p className="py-4 text-center text-xs text-slate-400">
-                          No users found
+                          {ru ? "Профили не найдены" : "No users found"}
                         </p>
                       )}
                       <h4 className="mb-1.5 mt-3 text-[11px] text-slate-400">
-                        Agents
+                        {ru ? "Агенты" : "Agents"}
                       </h4>
                       {!canSearchProfiles ? (
                         <p className="py-4 text-center text-xs text-slate-400">
-                          Type at least 2 characters to search agents.
+                          {ru
+                            ? "Введите не меньше двух символов для поиска."
+                            : "Type at least 2 characters to search agents."}
                         </p>
                       ) : searchedAgentSubjectsIsLoading ||
                         searchedAgentSubjectsIsFetching ? (
                         <p className="py-4 text-center text-xs text-slate-400">
-                          Searching agents...
+                          {ru ? "Ищем агентов…" : "Searching agents..."}
                         </p>
                       ) : searchedAgentSubjectItems.length ? (
                         <div className="space-y-1">
@@ -1453,7 +1664,7 @@ export function Component(props: IComponentPropsExtended) {
                                     {agentSubjectItem.title}
                                   </p>
                                   <p className="truncate text-[10px] text-slate-400">
-                                    Agent subject
+                                    {ru ? "Агент" : "Agent subject"}
                                   </p>
                                 </div>
                                 <button
@@ -1461,7 +1672,7 @@ export function Component(props: IComponentPropsExtended) {
                                   onClick={() => {
                                     handleAddAgentSubject(agentSubjectItem);
                                   }}
-                                  title="Add agent"
+                                  title={ru ? "Добавить агента" : "Add agent"}
                                   disabled={
                                     isAdding ||
                                     socialModuleChatFindByIdProfileCreate.isPending
@@ -1469,7 +1680,9 @@ export function Component(props: IComponentPropsExtended) {
                                   className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md text-slate-300 transition hover:bg-green-50 hover:text-green-600 disabled:cursor-not-allowed disabled:opacity-40"
                                 >
                                   <UserPlus className="h-3.5 w-3.5" />
-                                  <span className="sr-only">Add agent</span>
+                                  <span className="sr-only">
+                                    {ru ? "Добавить агента" : "Add agent"}
+                                  </span>
                                 </button>
                               </div>
                             );
@@ -1477,7 +1690,7 @@ export function Component(props: IComponentPropsExtended) {
                         </div>
                       ) : (
                         <p className="py-4 text-center text-xs text-slate-400">
-                          No agents found
+                          {ru ? "Агенты не найдены" : "No agents found"}
                         </p>
                       )}
                     </div>
@@ -1485,37 +1698,35 @@ export function Component(props: IComponentPropsExtended) {
                 </div>
               ) : null}
             </div>
-            {settingsTab === "general" ? (
+            {canManageChat && settingsTab === "general" ? (
               <div className="flex shrink-0 items-center justify-between gap-3 border-t border-slate-200 px-5 py-3">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setIsChatDeleteConfirmOpen(true);
-                  }}
-                  disabled={
-                    socialModuleProfileFindByIdChatFindByIdDelete.isPending
-                  }
-                  className="inline-flex h-9 items-center gap-2 rounded-md px-3 text-xs text-red-600 transition hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-40"
-                >
-                  <Trash2 className="h-3.5 w-3.5" />
-                  Delete chat
-                </button>
-                <button
-                  type="button"
-                  onClick={handleSaveChatSettings}
-                  disabled={!canSaveChatSettings}
-                  className="h-9 rounded-md bg-slate-900 px-4 text-xs text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-slate-900"
-                >
-                  {socialModuleChatFindByIdUpdate.isPending
-                    ? "Saving..."
-                    : "Save"}
-                </button>
+                {standardChat && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsChatDeleteConfirmOpen(true);
+                    }}
+                    disabled={
+                      socialModuleProfileFindByIdChatFindByIdDelete.isPending
+                    }
+                    className="inline-flex h-9 items-center gap-2 rounded-md px-3 text-xs text-red-600 transition hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-40"
+                  >
+                    <Trash2 className="h-3.5 w-3.5" />
+                    {ru ? "Удалить чат" : "Delete chat"}
+                  </button>
+                )}
+                <SaveChatSettings
+                  control={chatSettingsForm.control}
+                  pending={socialModuleChatFindByIdUpdate.isPending}
+                  onSave={handleSaveChatSettings}
+                  language={props.language}
+                />
               </div>
             ) : null}
           </div>
         </div>
       ) : null}
-      {isChatDeleteConfirmOpen ? (
+      {canManageChat && standardChat && isChatDeleteConfirmOpen ? (
         <div
           className="fixed inset-0 z-[60] flex items-center justify-center bg-black/40"
           onClick={() => {
@@ -1545,7 +1756,9 @@ export function Component(props: IComponentPropsExtended) {
                 className="text-slate-400 transition hover:text-slate-600 disabled:cursor-not-allowed disabled:opacity-40"
               >
                 <X className="h-4 w-4" />
-                <span className="sr-only">Close confirmation</span>
+                <span className="sr-only">
+                  {ru ? "Закрыть подтверждение" : "Close confirmation"}
+                </span>
               </button>
             </div>
             <p className="text-sm leading-6 text-slate-600">
@@ -1567,7 +1780,7 @@ export function Component(props: IComponentPropsExtended) {
                 }
                 className="rounded-md px-3 py-1.5 text-xs text-slate-500 transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-40"
               >
-                Cancel
+                {ru ? "Отмена" : "Cancel"}
               </button>
               <button
                 type="button"
@@ -1585,7 +1798,7 @@ export function Component(props: IComponentPropsExtended) {
           </div>
         </div>
       ) : null}
-      {profileRemovalIntent ? (
+      {canManageMembers && profileRemovalIntent ? (
         <div
           className="fixed inset-0 z-[60] flex items-center justify-center bg-black/40"
           onClick={() => {
@@ -1603,8 +1816,12 @@ export function Component(props: IComponentPropsExtended) {
             <div className="mb-4 flex items-center justify-between">
               <h3 className="text-sm font-medium text-slate-900">
                 {profileRemovalIntent.mode === "leave"
-                  ? "Leave chat"
-                  : "Remove member"}
+                  ? ru
+                    ? "Выйти из чата"
+                    : "Leave chat"
+                  : ru
+                    ? "Удалить участника"
+                    : "Remove member"}
               </h3>
               <button
                 type="button"
@@ -1615,26 +1832,20 @@ export function Component(props: IComponentPropsExtended) {
                 className="text-slate-400 transition hover:text-slate-600 disabled:cursor-not-allowed disabled:opacity-40"
               >
                 <X className="h-4 w-4" />
-                <span className="sr-only">Close confirmation</span>
+                <span className="sr-only">
+                  {ru ? "Закрыть подтверждение" : "Close confirmation"}
+                </span>
               </button>
             </div>
-            {profileRemovalIntent.mode === "leave" ? (
-              <p className="text-sm leading-6 text-slate-600">
-                Leave{" "}
-                <span className="font-medium text-slate-900">
-                  {chatDisplayTitle}
-                </span>
-                ? You will no longer see this chat in your chat list.
-              </p>
-            ) : (
-              <p className="text-sm leading-6 text-slate-600">
-                Remove{" "}
-                <span className="font-medium text-slate-900">
-                  {profileRemovalIntent.item.title}
-                </span>{" "}
-                from this chat?
-              </p>
-            )}
+            <p className="text-sm leading-6 text-muted-foreground">
+              {profileRemovalIntent.mode === "leave"
+                ? ru
+                  ? `Выйти из чата «${chatDisplayTitle}»?`
+                  : `Leave ${chatDisplayTitle}?`
+                : ru
+                  ? `Удалить ${profileRemovalIntent.item.title} из чата?`
+                  : `Remove ${profileRemovalIntent.item.title} from this chat?`}
+            </p>
             <div className="mt-4 flex justify-end gap-2">
               <button
                 type="button"
@@ -1644,7 +1855,7 @@ export function Component(props: IComponentPropsExtended) {
                 disabled={socialModuleChatFindByIdProfileDelete.isPending}
                 className="rounded-md px-3 py-1.5 text-xs text-slate-500 transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-40"
               >
-                Cancel
+                {ru ? "Отмена" : "Cancel"}
               </button>
               <button
                 type="button"
@@ -1653,18 +1864,22 @@ export function Component(props: IComponentPropsExtended) {
                 className="rounded-md bg-red-600 px-3 py-1.5 text-xs text-white transition hover:bg-red-500 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-red-600"
               >
                 {socialModuleChatFindByIdProfileDelete.isPending
-                  ? profileRemovalIntent.mode === "leave"
-                    ? "Leaving..."
-                    : "Removing..."
+                  ? ru
+                    ? "Сохранение…"
+                    : "Saving…"
                   : profileRemovalIntent.mode === "leave"
-                    ? "Leave chat"
-                    : "Remove"}
+                    ? ru
+                      ? "Выйти"
+                      : "Leave chat"
+                    : ru
+                      ? "Удалить"
+                      : "Remove"}
               </button>
             </div>
           </div>
         </div>
       ) : null}
-      {threadDeletionIntent ? (
+      {canManageChat && threadDeletionIntent ? (
         <div
           className="fixed inset-0 z-[60] flex items-center justify-center bg-black/40"
           onClick={() => {
@@ -1681,7 +1896,7 @@ export function Component(props: IComponentPropsExtended) {
           >
             <div className="mb-4 flex items-center justify-between">
               <h3 className="text-sm font-medium text-slate-900">
-                Delete thread
+                {ru ? "Удалить обсуждение" : "Delete thread"}
               </h3>
               <button
                 type="button"
@@ -1692,16 +1907,19 @@ export function Component(props: IComponentPropsExtended) {
                 className="text-slate-400 transition hover:text-slate-600 disabled:cursor-not-allowed disabled:opacity-40"
               >
                 <X className="h-4 w-4" />
-                <span className="sr-only">Close confirmation</span>
+                <span className="sr-only">
+                  {ru ? "Закрыть подтверждение" : "Close confirmation"}
+                </span>
               </button>
             </div>
             <p className="text-sm leading-6 text-slate-600">
-              Delete{" "}
-              <span className="font-medium text-slate-900">
-                {threadDeletionIntent.title}
-              </span>
-              ? Messages in this thread will be removed from this chat. If it is
-              linked to a Telegram topic, the topic will also be deleted.
+              {ru
+                ? `Удалить обсуждение «${threadDeletionIntent.title}» и его сообщения?`
+                : `Delete ${threadDeletionIntent.title} and its messages?`}
+              {props.socialModuleChat.variant === "telegram" &&
+                (ru
+                  ? " Связанная тема Telegram тоже будет удалена."
+                  : " The linked Telegram topic will also be deleted.")}
             </p>
             <div className="mt-4 flex justify-end gap-2">
               <button
@@ -1712,7 +1930,7 @@ export function Component(props: IComponentPropsExtended) {
                 disabled={socialModuleChatFindByIdThreadDelete.isPending}
                 className="rounded-md px-3 py-1.5 text-xs text-slate-500 transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-40"
               >
-                Cancel
+                {ru ? "Отмена" : "Cancel"}
               </button>
               <button
                 type="button"
@@ -1721,14 +1939,18 @@ export function Component(props: IComponentPropsExtended) {
                 className="rounded-md bg-red-600 px-3 py-1.5 text-xs text-white transition hover:bg-red-500 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-red-600"
               >
                 {socialModuleChatFindByIdThreadDelete.isPending
-                  ? "Deleting..."
-                  : "Delete thread"}
+                  ? ru
+                    ? "Удаление…"
+                    : "Deleting..."
+                  : ru
+                    ? "Удалить обсуждение"
+                    : "Delete thread"}
               </button>
             </div>
           </div>
         </div>
       ) : null}
-      {editingThreadId ? (
+      {canManageChat && editingThreadId ? (
         <div
           className="fixed inset-0 z-[60] flex items-center justify-center bg-black/40"
           onClick={() => {
@@ -1743,7 +1965,7 @@ export function Component(props: IComponentPropsExtended) {
           >
             <div className="mb-4 flex items-center justify-between">
               <h3 className="text-sm font-medium text-slate-900">
-                Edit Thread
+                {ru ? "Переименовать обсуждение" : "Edit Thread"}
               </h3>
               <button
                 type="button"
@@ -1753,12 +1975,14 @@ export function Component(props: IComponentPropsExtended) {
                 className="text-slate-400 hover:text-slate-600"
               >
                 <X className="h-4 w-4" />
-                <span className="sr-only">Close editor</span>
+                <span className="sr-only">
+                  {ru ? "Закрыть" : "Close editor"}
+                </span>
               </button>
             </div>
             <div>
               <label className="mb-1 block text-[11px] text-slate-500">
-                Title
+                {ru ? "Название" : "Title"}
               </label>
               <input
                 type="text"
@@ -1783,7 +2007,7 @@ export function Component(props: IComponentPropsExtended) {
                 }}
                 className="rounded-md px-3 py-1.5 text-xs text-slate-500 transition hover:bg-slate-100"
               >
-                Cancel
+                {ru ? "Отмена" : "Cancel"}
               </button>
               <button
                 type="button"
@@ -1794,12 +2018,37 @@ export function Component(props: IComponentPropsExtended) {
                 }
                 className="rounded-md bg-slate-900 px-3 py-1.5 text-xs text-white transition hover:bg-slate-800 disabled:opacity-40 disabled:hover:bg-slate-900"
               >
-                Save
+                {ru ? "Сохранить" : "Save"}
               </button>
             </div>
           </div>
         </div>
       ) : null}
     </div>
+  );
+}
+
+function SaveChatSettings({
+  control,
+  pending,
+  onSave,
+  language,
+}: {
+  control: Control<ChatSettingsFormValues>;
+  pending: boolean;
+  onSave: () => void;
+  language: string;
+}) {
+  const title = useWatch({ control, name: "title" });
+  const ru = language === "ru";
+  return (
+    <Button
+      type="button"
+      onClick={onSave}
+      className="ml-auto"
+      disabled={pending || !hasLocalizedText(title)}
+    >
+      {pending ? (ru ? "Сохранение…" : "Saving…") : ru ? "Сохранить" : "Save"}
+    </Button>
   );
 }

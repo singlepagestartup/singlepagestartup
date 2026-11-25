@@ -15,6 +15,10 @@ import {
   type IResult as IParentResult,
 } from "@sps/rbac/models/subject/sdk/server";
 import { saturateHeaders } from "@sps/shared-frontend-client-utils";
+import {
+  invalidateRouteQueries,
+  queryClient,
+} from "@sps/shared-frontend-client-api";
 
 export type IProps = {
   reactQueryOptions?: Partial<UseMutationOptions<any, DefaultError, any>>;
@@ -28,7 +32,9 @@ export type IResult =
   IParentResult["ISocialModuleProfileFindByIdChatFindByIdProfileFindByIdUpdateResult"];
 
 export function action(props: IProps) {
-  const mutationKey = `${route}/${props.id}/social-module/profiles/${props.socialModuleProfileId}/chats/${props.socialModuleChatId}/profiles/${props.targetSocialModuleProfileId}`;
+  const chatRoute = `${route}/${props.id}/social-module/profiles/${props.socialModuleProfileId}/chats/${props.socialModuleChatId}`;
+  const mutationKey = `${chatRoute}/profiles/${props.targetSocialModuleProfileId}`;
+  const { onSuccess, ...options } = props.reactQueryOptions ?? {};
 
   return useMutation<
     IResult,
@@ -55,7 +61,8 @@ export function action(props: IProps) {
         throw error;
       }
     },
-    onSuccess(data) {
+    ...options,
+    async onSuccess(data, variables, result, context) {
       globalActionsStore.getState().addAction({
         type: "mutation",
         name: mutationKey,
@@ -65,8 +72,14 @@ export function action(props: IProps) {
         requestId: createId(),
       });
 
-      return data;
+      await Promise.all([
+        invalidateRouteQueries(queryClient, chatRoute),
+        invalidateRouteQueries(
+          queryClient,
+          `${route}/${props.id}/crm-module/workspace/employee`,
+        ),
+      ]);
+      return onSuccess?.(data, variables, result, context);
     },
-    ...props.reactQueryOptions,
   });
 }

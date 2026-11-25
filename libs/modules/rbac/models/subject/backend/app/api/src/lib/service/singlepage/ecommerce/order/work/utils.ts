@@ -8,7 +8,7 @@ import type { IFunnelStage } from "@sps/crm/models/funnel/sdk/model";
 import type {
   IOrderWorkPurchaseQuote,
   TOrderWorkPriceBasis,
-} from "@sps/ecommerce/models/order-work/sdk/model";
+} from "@sps/ecommerce/models/order/sdk/model";
 
 const Money = Decimal.clone({ precision: 64 });
 type TConfirmedCostPricing = Extract<
@@ -168,6 +168,14 @@ function makePdf(
     document.text(line, 15, y);
     y += 6;
   }
+  if (preview) {
+    for (let page = 1; page <= document.getNumberOfPages(); page += 1) {
+      document.setPage(page);
+      document.setFontSize(40);
+      document.setTextColor(175);
+      document.text("ПРЕДПРОСМОТР", 65, 180, { angle: 35 });
+    }
+  }
   return new Uint8Array(document.output("arraybuffer"));
 }
 
@@ -203,10 +211,18 @@ export async function pdfOrderResult(attemptId: string, text: string) {
   };
 }
 
-export async function imageOrderResult(bytes: Uint8Array) {
-  const original = await sharp(bytes).rotate().png().toBuffer();
+export async function imageOrderResult(
+  bytes: Uint8Array,
+  { preserveOriginal = false }: { preserveOriginal?: boolean } = {},
+) {
+  const original = preserveOriginal
+    ? bytes
+    : await sharp(bytes).rotate().png().toBuffer();
   const image = sharp(original);
   const size = await image.metadata();
+  if (preserveOriginal && size.format !== "png") {
+    throw new Error("Validation error. The original image must be a PNG");
+  }
   if (!size.width || !size.height || Math.max(size.width, size.height) < 16) {
     throw new Error(
       "Validation error. Result image is too small for a separate preview",
@@ -216,8 +232,20 @@ export async function imageOrderResult(bytes: Uint8Array) {
     640,
     Math.floor(Math.max(size.width, size.height) / 2),
   );
-  const preview = await image
+  const thumbnail = await image
     .resize({ width: longestSide, height: longestSide, fit: "inside" })
+    .png()
+    .toBuffer({ resolveWithObject: true });
+  const { width, height } = thumbnail.info;
+  const fontSize = Math.min(width / 6, height / 2, 64);
+  const mark =
+    Buffer.from(`<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}">
+    <g transform="translate(${width / 2} ${height / 2}) rotate(-16)" opacity=".68">
+      <rect x="${-fontSize * 2.5}" y="${-fontSize * 0.72}" width="${fontSize * 5}" height="${fontSize * 1.44}" rx="${fontSize / 6}" fill="#222"/>
+      <text text-anchor="middle" y="${fontSize * 0.36}" font-family="sans-serif" font-size="${fontSize}" font-weight="bold" fill="white">PREVIEW</text>
+    </g></svg>`);
+  const preview = await sharp(thumbnail.data)
+    .composite([{ input: mark }])
     .jpeg({ quality: 65 })
     .toBuffer();
   return {

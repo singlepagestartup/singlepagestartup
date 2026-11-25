@@ -44,8 +44,14 @@ The message shows each filename with a download button. The download requires
 an active buyer session and checks the task, thread, message and file together.
 After guest transfer, the registered buyer can still download files from
 the transferred conversation. The response is an attachment with an opaque
-media type and private cache headers. Vision and transcription retain their
-own stage, signature and size checks for files they process.
+media type and private cache headers.
+
+For a stage reply, the worker reads the private originals attached to the
+triggering message and supplies them to the chosen model in its request.
+A reply can use multiple files and an empty caption. The provider adapter
+encodes attachments in its native input format and reports incompatible
+files to the conversation. File generation and order delivery have their
+own stages.
 
 The workflow owns conversation membership and history. The standard Social
 composer can add a message to a customer thread. The workflow controls
@@ -188,7 +194,7 @@ to calculate against the saved Order currency and current server offer quotes.
 - For concrete subject routes, add the route to `rbac.permissions` first, then enforce resource ownership with route-level middleware from `backend/app/middlewares/src/lib/*`.
 - Subject-owned routes must keep `RequestSubjectIdOwner` or `RequestProfileSubjectIdOwner` as the first ownership guard.
 - Domain-specific guards must live in the module middleware package and be exported from `backend/app/middlewares/src/index.ts`; do not define middleware bodies inside controllers.
-- For example, chat thread routes use `RequestSubjectOwnsSocialModuleChat` and `RequestSocialModuleThreadBelongsToChat`, which call `socialModuleChatLifecycleAssertSubjectOwnsChat` and `socialModuleChatLifecycleAssertThreadBelongsToChat`.
+- Thread reads check the caller’s access to the chat and the thread’s membership in it. Chat settings, participant management and thread mutations also require the calling Subject’s `subjects-to-social-module-chats` relation with `variant="owner"`. The creation service writes this relation in the same transaction as the chat.
 - Handlers may keep the same assertions as a defense-in-depth check, but the access model must not depend on custom route exceptions inside the global authorization service.
 
 ### Reading the current Subject
@@ -915,7 +921,7 @@ Agent persists an insufficient-tokens reply in the requesting Chat or Thread,
 marked as system traffic excluded from model context. Web AI Chat receives the
 reply without a Telegram premium keyboard. Telegram retains its premium flow.
 
-The store owner configures OpenRouter or OpenAI on a technical Subject. The chat reads the model bindings for its active CRM task. The worker reserves the published maximum, records the provider and model on an attempt, and stores metered usage. The OpenAI text adapter calculates USD using the rates saved with the attempt. OpenRouter reports a generation cost. Customer memory and expertise are selected using the task's store, product, customer and project.
+The store owner configures OpenRouter or OpenAI on a technical Subject. The chat reads the model bindings for its active CRM task. The worker reserves the published maximum, records the provider and model on an attempt, and stores metered usage. The OpenAI text adapter calculates USD using the rates saved with the attempt. OpenRouter reports a generation cost. The assigned employee contributes its profile and knowledge. The buyer contributes authorized personal memory scoped to the customer, store and project.
 
 ### Thread context and exact working drafts
 
@@ -1164,6 +1170,14 @@ shown only after checkout returns them.
 
 Order processing resolves its service through `service/startup/ecommerce/order/proceed`. Override protected `getAdminNotificationSubjectIds()` there to select a project channel; the shared default selects unique admin subjects. A dedicated notification recipient does not need an admin role. Configure service actors with `variant="agent"` and an identity through runtime SDKs.
 
+## Store overview
+
+A store owner, CRM manager or administrator can read the store totals with
+`crmWorkspace.overview({ id, params: { storeId } })`. The API counts each
+visible product once and uses the same placed-order rule as the store’s order
+list. The task total includes open and closed tasks whose primary funnel belongs
+to the store. Employee training tasks are excluded.
+
 ## Seller catalogue
 
 The Subject catalogue service supplies the seller’s editing form with the stores,
@@ -1177,6 +1191,12 @@ new ownership from the caller and writes the graph in one transaction. A Store
 owner can sell another owner's Product. The Product owner and administrators
 manage its shared description, formula, delivery methods and add-ons. The
 service offer's Store owner controls its price and provider.
+
+The store product form links each selected directory attribute to the new
+offer through `stores-to-products-to-attributes`. The editor uses the offer ID
+when adding, editing or removing a characteristic. Editing a value shared with
+the directory or another offer creates a copy for the selected offer. Existing
+Product characteristics remain visible under shared product attributes.
 
 `ecommerceModuleCatalogAttributeSet` creates or updates one owned Store rate,
 Product formula or offer price/stock. Stock values are exact non-negative

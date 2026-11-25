@@ -1,2 +1,0 @@
-ALTER TABLE "sl_thread_to_crm_task" ADD COLUMN "memory_project_id" uuid;--> statement-breakpoint
-ALTER TABLE "sl_thread_to_crm_task" ADD CONSTRAINT "sl_thread_to_crm_task_memory_project_id_sl_thread_id_fk" FOREIGN KEY ("memory_project_id") REFERENCES "public"."sl_thread"("id") ON DELETE set null ON UPDATE no action;

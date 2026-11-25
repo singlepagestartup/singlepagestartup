@@ -2,6 +2,8 @@
 @import "./theme.css";
 
 @source "../../../libs/shared/ui/adapter/src/lib/toast/**/*.{ts,tsx}";
+@source "../../../libs/shared/ui/adapter/src/lib/model-picker/*.{ts,tsx}";
+@source "../../../libs/shared/ui/shadcn/src/lib/{button,dropdown-menu,input,popover}/index.tsx";
 
 @source "../modules/**/*.{js,ts,jsx,tsx,html}";
 @source "../workspace/**/*.{js,ts,jsx,tsx,html}";

@@ -1,0 +1,15 @@
+{
+  "id": "1b5f1dff-dcf9-4918-af55-09d530c0ea10",
+  "createdAt": "2026-11-17T07:14:50.287Z",
+  "updatedAt": "2026-11-17T07:14:50.287Z",
+  "variant": "default",
+  "number": null,
+  "boolean": null,
+  "date": null,
+  "datetime": null,
+  "string": {
+    "en": "1"
+  },
+  "adminTitle": "ai-chat-tokens-3000-rub-formula-version",
+  "slug": "ai-chat-tokens-3000-rub-formula-version"
+}

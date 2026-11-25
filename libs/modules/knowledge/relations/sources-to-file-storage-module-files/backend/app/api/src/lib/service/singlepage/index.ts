@@ -150,6 +150,26 @@ export class Service extends CRUDService<Relation> {
         });
       }
     }
+    const privateIds = links
+      .filter((link) =>
+        ["private-image", "private-material"].includes(link.variant),
+      )
+      .map((link) => link.fileStorageModuleFileId);
+    if (privateIds.length) {
+      const metadata =
+        await this.modules.fileStorage.file.privateContent.metadataByIds(
+          privateIds,
+        );
+      for (const file of metadata) {
+        safeFiles.push({
+          ...file,
+          file: "",
+          privateDigest: null,
+          privateOwnerId: null,
+          legacyOriginId: null,
+        });
+      }
+    }
     const byId = new Map(safeFiles.map((file) => [file.id, file]));
     return links.flatMap((relation) => {
       const file = byId.get(relation.fileStorageModuleFileId);

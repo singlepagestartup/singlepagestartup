@@ -14,7 +14,7 @@ import {
 export const serverHost = API_SERVICE_URL;
 export const clientHost = NEXT_PUBLIC_API_SERVICE_URL;
 export const route = "/api/rbac/subjects-to-ecommerce-module-products";
-export const variants = ["default", "owner", "hidden"];
+export const variants = ["default", "owner", "store-expert", "hidden"];
 export const query = {};
 export const options = {
   next: {

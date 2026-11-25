@@ -8,7 +8,6 @@ const files: IOrderDownload[] = [
     id: "strategy-v2-pdf",
     kind: "result",
     filename: "strategy-sever-v2.pdf",
-    versionNumber: 2,
   },
   { id: "receipt-418-02", kind: "receipt", filename: "receipt-418-02.pdf" },
 ];

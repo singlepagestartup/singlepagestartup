@@ -14,7 +14,7 @@ export function Component(props: IComponentPropsExtended) {
       data-id={props.data.id}
       data-variant={props.variant}
       className={cn(
-        "mx-auto w-full min-w-0 max-w-7xl space-y-6 px-6 py-8 lg:px-8",
+        "mx-auto w-full min-w-0 max-w-7xl space-y-6 px-4 py-8 sm:px-6 lg:px-8",
         props.data.className,
         props.className,
       )}

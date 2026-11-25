@@ -79,7 +79,9 @@ export class Service {
       props.subjectId,
       candidates ?? [],
     );
-    const allowedChats = (candidates ?? []).filter(({ id }) => access.has(id));
+    const allowedChats = (candidates ?? []).filter(
+      ({ id }) => typeof access.get(id) === "string",
+    );
     const chats = await new ChatActivity(this.service).forChats(
       props.subjectId,
       allowedChats,

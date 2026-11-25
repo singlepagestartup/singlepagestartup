@@ -15,10 +15,7 @@ export const options = {
 } as NextRequestOptions;
 
 export type KnowledgeModelProvider =
-  | "ollama"
-  | "anthropic"
-  | "openai"
-  | "huggingface";
+  "ollama" | "anthropic" | "openai" | "huggingface";
 
 export type KnowledgeModelTask = "chat" | "embedding" | "audio";
 
@@ -51,6 +48,7 @@ export interface IKnowledgeSourceReference {
   chunkIndex: number;
   sourceId: string | null;
   sourceTitle: string | null;
+  sourceVersion?: string;
   distance: number;
   similarity: number;
   metadata: Record<string, unknown>;

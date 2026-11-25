@@ -77,6 +77,25 @@ describe("MCP outbound credential forwarding", () => {
    * When code calls the API
    * Then the API request carries the operator secret from the environment
    */
+  it("uses only the verified sender's credentials on bearer-authenticated API calls", async () => {
+    await runWithMcpRequestAuthContext({ authorization: "Bearer sender" }, () =>
+      fetch(
+        new Request(apiUrl, {
+          headers: {
+            Authorization: "Bearer unrelated",
+            "X-RBAC-SECRET-KEY": "operator-fixture",
+            Cookie: "rbac.subject.jwt=another-account",
+            "Content-Type": "application/json",
+          },
+        }),
+      ),
+    );
+    expect(sent[0].headers.get("authorization")).toBe("Bearer sender");
+    expect(sent[0].headers.has("x-rbac-secret-key")).toBe(false);
+    expect(sent[0].headers.has("cookie")).toBe(false);
+    expect(sent[0].headers.get("content-type")).toBe("application/json");
+  });
+
   it("sends the local operator secret to the API without a request context", async () => {
     await fetch(apiUrl);
 

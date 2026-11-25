@@ -4,8 +4,23 @@ import { type IRouteRule, UUID_PATH_SUFFIX_REGEX } from "@sps/shared-utils";
 export const controllerGuardedRoutes: IRouteRule[] = [
   {
     regexPath:
+      /^\/api\/rbac\/subjects\/[0-9a-f-]+\/file-storage-module\/files\/[0-9a-f-]+\/content\/?$/i,
+    methods: ["GET", "HEAD"],
+  },
+  {
+    regexPath:
       /^\/api\/rbac\/subjects\/[0-9a-f-]+\/social-module\/chats\/[0-9a-f-]+\/threads\/[0-9a-f-]+\/read\/?$/i,
     methods: ["POST"],
+  },
+  {
+    regexPath:
+      /^\/api\/rbac\/subjects\/[0-9a-f-]+\/social-module\/profiles\/[0-9a-f-]+\/chats\/[0-9a-f-]+\/threads\/[0-9a-f-]+\/typing\/?$/i,
+    methods: ["POST"],
+  },
+  {
+    regexPath:
+      /^\/api\/rbac\/subjects\/[^/]+\/social-module\/profiles\/[^/]+\/chats\/[^/]+\/openrouter\/model-favorites\/?$/i,
+    methods: ["GET", "PATCH"],
   },
   {
     regexPath: /^\/api\/agent\/work-attempts\/[^/]+\/knowledge-index\/?$/,
@@ -43,18 +58,48 @@ export const controllerGuardedRoutes: IRouteRule[] = [
   },
   {
     regexPath:
-      /^\/api\/rbac\/subjects\/[^/]+\/crm-module\/workspace\/(stores|options|funnels|publications|tasks|detail)\/?$/,
+      /^\/api\/rbac\/subjects\/[^/]+\/crm-module\/workspace\/(stores|overview|options|orders|order|customers|customer|employees|employee|funnels|funnel|tasks|detail|intake|thread)\/?$/,
     methods: ["GET"],
   },
   {
     regexPath:
-      /^\/api\/rbac\/subjects\/[^/]+\/crm-module\/workspace\/command\/?$/,
+      /^\/api\/rbac\/subjects\/[^/]+\/crm-module\/workspace\/(command|thread)\/?$/,
     methods: ["POST"],
+  },
+  {
+    regexPath:
+      /^\/api\/rbac\/subjects\/[^/]+\/crm-module\/workspace\/(attachment|artifact)\/?$/,
+    methods: ["GET", "HEAD"],
   },
   {
     regexPath:
       /^\/api\/rbac\/subjects\/[^/]+\/stores\/[^/]+\/provider-connections\/?$/,
     methods: ["GET", "POST"],
+  },
+  {
+    regexPath:
+      /^\/api\/rbac\/subjects\/[^/]+\/ecommerce-module\/stores\/[^/]+\/products(?:\/[^/]+)?\/?$/,
+    methods: ["GET"],
+  },
+  {
+    regexPath:
+      /^\/api\/rbac\/subjects\/[^/]+\/ecommerce-module\/stores\/[^/]+\/products\/[^/]+\/?$/,
+    methods: ["PATCH"],
+  },
+  {
+    regexPath:
+      /^\/api\/rbac\/subjects\/[^/]+\/ecommerce-module\/stores\/[^/]+\/products\/[^/]+\/images\/?$/,
+    methods: ["POST"],
+  },
+  {
+    regexPath:
+      /^\/api\/rbac\/subjects\/[^/]+\/ecommerce-module\/stores\/[^/]+\/directories\/(categories|attribute-keys|attributes)\/?$/,
+    methods: ["GET", "POST"],
+  },
+  {
+    regexPath:
+      /^\/api\/rbac\/subjects\/[^/]+\/ecommerce-module\/stores\/[^/]+\/directories\/(categories|attribute-keys|attributes)\/[0-9a-f-]+\/?$/i,
+    methods: ["GET", "PATCH"],
   },
   {
     regexPath: /^\/api\/rbac\/subjects\/host-cache\/revalidate\/?$/,
@@ -111,8 +156,10 @@ const catalogueWriteRoutes: IRouteRule[] = [
 /** End-user permissions cannot grant these infrastructure operations. */
 export const operatorOnlyRoutes: IRouteRule[] = [
   {
+    // Chat edits from a Subject use the owner-checked Social operations.
     regexPath:
-      /^\/api\/ecommerce\/(?:order-works|orders-to-order-works)(?:\/.*)?$/i,
+      /^\/api\/(?:social\/(?:chats|threads|chats-to-threads|profiles-to-chats|chats-to-file-storage-module-files)|rbac\/subjects-to-social-module-chats)(?:\/(?:bulk|find-or-create|[0-9a-f-]{36}))?\/?$/i,
+    methods: ["POST", "PATCH", "PUT", "DELETE"],
   },
   {
     regexPath:
@@ -140,14 +187,24 @@ export const operatorOnlyRoutes: IRouteRule[] = [
  * identity rows. The other subject-scoped routes — cart, CRM form and chat —
  * are legitimately anonymous and stay open.
  */
+export const crmAdminListRoute: IRouteRule = {
+  regexPath: /^\/api\/crm\/[^/]+\/admin-records\/?$/i,
+  methods: ["GET", "HEAD"],
+};
+
 export const sensitiveRoutes: IRouteRule[] = [
+  crmAdminListRoute,
   ...privateCommerceRoutes,
+  {
+    regexPath:
+      /^\/api\/(?:social\/chats-to-file-storage-module-files|rbac\/subjects-to-social-module-chats)(?:\/.*)?$/i,
+  },
   {
     regexPath: /^\/api\/social\/chats(?:\/.*)?$/i,
   },
   {
     regexPath:
-      /^\/api\/social\/(?:messages|threads|(?:chats|threads|profiles)-to-messages|profiles-to-chats|chats-to-threads|threads-to-(?:crm-module-tasks|ecommerce-module-products)|messages-to-crm-module-task-events|profiles-to-knowledge-module-sources|profiles-to-ecommerce-module-products)(?:\/.*)?$/i,
+      /^\/api\/social\/(?:messages|threads|(?:chats|threads|profiles)-to-messages|profiles-to-chats|chats-to-threads|chats-to-crm-module-tasks|threads-to-ecommerce-module-products|profiles-to-knowledge-module-sources|profiles-to-ecommerce-module-products)(?:\/.*)?$/i,
   },
   {
     regexPath:
@@ -171,7 +228,8 @@ export const sensitiveRoutes: IRouteRule[] = [
     methods: ["GET"],
   },
   {
-    regexPath: /^\/api\/rbac\/subjects-to-identities(\/.*)?$/i,
+    regexPath:
+      /^\/api\/rbac\/(?:subjects-to-identities|subjects-to-crm-module-tasks)(\/.*)?$/i,
     methods: ["GET"],
   },
   {

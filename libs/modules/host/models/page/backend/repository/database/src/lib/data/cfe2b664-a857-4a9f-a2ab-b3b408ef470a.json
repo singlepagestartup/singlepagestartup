@@ -1,0 +1,47 @@
+{
+  "metadata": {
+    "seo": {
+      "title": {
+        "en": "New store employee — SinglePageStartup",
+        "ru": "Новый сотрудник магазина — SinglePageStartup"
+      },
+      "description": {
+        "en": "Add an employee to this store.",
+        "ru": "Добавьте сотрудника в этот магазин."
+      }
+    },
+    "seoDisplay": {
+      "twitterTitle": {
+        "en": "New store employee — SinglePageStartup",
+        "ru": "Новый сотрудник магазина — SinglePageStartup"
+      },
+      "opengraphTitle": {
+        "en": "New store employee — SinglePageStartup",
+        "ru": "Новый сотрудник магазина — SinglePageStartup"
+      },
+      "opengraphLocale": {
+        "en": "en_US",
+        "ru": "ru_RU"
+      },
+      "twitterDescription": {
+        "en": "Add an employee to this store.",
+        "ru": "Добавьте сотрудника в этот магазин."
+      },
+      "opengraphDescription": {
+        "en": "Add an employee to this store.",
+        "ru": "Добавьте сотрудника в этот магазин."
+      }
+    }
+  },
+  "id": "cfe2b664-a857-4a9f-a2ab-b3b408ef470a",
+  "title": "New store employee",
+  "url": "/ecommerce/stores/[ecommerce.stores.slug]/employees/new",
+  "slug": "store-employee-create",
+  "description": "Add an employee to this store.",
+  "createdAt": "2026-11-22T20:22:57.530Z",
+  "updatedAt": "2026-11-22T20:22:57.530Z",
+  "variant": "noindex",
+  "className": null,
+  "language": "en",
+  "adminTitle": "New store employee"
+}

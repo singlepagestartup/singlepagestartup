@@ -1,7 +1,11 @@
 import { createHash } from "node:crypto";
-import sharp from "sharp";
+import { isStoreEmployeeTraining } from "@sps/crm/models/task/sdk/model";
 import { z } from "zod";
-import type { TWorkOperation } from "@sps/crm/models/funnel/sdk/model";
+import {
+  stageWorkModelSelection,
+  type TWorkOperation,
+} from "@sps/crm/models/funnel/sdk/model";
+import { KnowledgeService } from "@sps/knowledge/backend/app/api/src/lib/service";
 import type { ICustomerWorkRun } from "@sps/rbac/models/subject/sdk/model";
 import type { IProviderType } from "@sps/rbac/models/subject/sdk/model/src/lib/provider-connections";
 import type { IModel } from "@sps/agent/models/work-attempt/sdk/model";
@@ -11,6 +15,7 @@ import {
   type TNestedWorkRequest,
 } from "@sps/shared-third-parties";
 import type { Service as WorkAttempt } from "./index";
+import type { IMcpAdvice, IMcpRound } from "./mcp";
 
 type TBound = Pick<
   IWorkRequest,
@@ -31,40 +36,26 @@ type TOperationInput =
       dimensions: number;
       sourceIds: string[];
       indexing?: { sourceId: string; contentHash: string; ownerId: string };
-    }
-  | { capability: "vision"; image: Uint8Array; prompt: string }
-  | { capability: "transcription"; audio: Uint8Array; seconds: number };
+    };
 
 export interface IWorkStep {
-  operation: TWorkOperation | "knowledge-index";
+  operation: TWorkOperation | "knowledge-index" | "stage-check";
   input: TOperationInput;
 }
 
 export interface IWorkPlan {
+  mcpAdvice?: IMcpAdvice;
+  mcpRound?: IMcpRound;
   evidence?: IWorkRequest["messages"];
   historyLimit?: number;
   publicationId?: string;
   sourceVersions?: { id: string; version: string }[];
-  mediaDigest?: string;
   blocked?: IModel;
 }
 
-const toolChoice = z.enum([
-  "knowledge-search",
-  "vision",
-  "transcription",
-  "none",
-]);
+const toolChoice = z.enum(["knowledge-search", "none"]);
 const routing = z.object({ route: z.enum(["answer", "clarify"]) }).strict();
 const selectedTool = z.object({ tool: toolChoice }).strict();
-const dimension = 768;
-const mediaOperation = {
-  "audio/wav": "transcription",
-  "image/png": "vision",
-  "image/jpeg": "vision",
-  "image/webp": "vision",
-} as const;
-
 export function makeNestedRequest(
   step: IWorkStep,
   binding: TBound,
@@ -78,26 +69,9 @@ export function makeNestedRequest(
 }
 
 export function workStepDigest(step: IWorkStep) {
-  const { input } = step;
-  let bytes: Uint8Array | undefined;
-  let data: unknown = input;
-  if (input.capability === "vision") {
-    const { image, ...values } = input;
-    bytes = image;
-    data = values;
-  }
-  if (input.capability === "transcription") {
-    const { audio, ...values } = input;
-    bytes = audio;
-    data = values;
-  }
-  const hash = createHash("sha256").update(
-    JSON.stringify([step.operation, data]),
-  );
-  if (bytes) {
-    hash.update(bytes);
-  }
-  return hash.digest("hex");
+  return createHash("sha256")
+    .update(JSON.stringify([step.operation, step.input]))
+    .digest("hex");
 }
 
 export function embeddingIndexKey(
@@ -116,39 +90,6 @@ function parseJson(text: string): unknown {
   }
 }
 
-function secondsInWav(bytes: Uint8Array) {
-  const file = Buffer.from(bytes);
-  if (
-    file.length < 44 ||
-    file.toString("ascii", 0, 4) !== "RIFF" ||
-    file.toString("ascii", 8, 16) !== "WAVEfmt " ||
-    file.readUInt32LE(16) !== 16 ||
-    file.readUInt16LE(20) !== 1 ||
-    file.toString("ascii", 36, 40) !== "data" ||
-    file.readUInt32LE(4) + 8 !== file.length ||
-    file.readUInt32LE(40) + 44 !== file.length
-  ) {
-    throw new Error(
-      "Validation error. Paid transcription requires an uncompressed PCM WAV file",
-    );
-  }
-  const channels = file.readUInt16LE(22);
-  const rate = file.readUInt32LE(24);
-  const bits = file.readUInt16LE(34);
-  const frameBytes = (channels * bits) / 8;
-  if (
-    ![1, 2].includes(channels) ||
-    rate < 8000 ||
-    rate > 48000 ||
-    bits !== 16 ||
-    file.readUInt16LE(32) !== frameBytes ||
-    file.readUInt32LE(28) !== rate * frameBytes
-  ) {
-    throw new Error("Validation error. Unsupported WAV sample format");
-  }
-  return (file.length - 44) / (rate * frameBytes);
-}
-
 export class Operations {
   constructor(private readonly service: WorkAttempt) {}
 
@@ -156,35 +97,47 @@ export class Operations {
     input: ICustomerWorkRun,
     perform: (step: IWorkStep) => Promise<IModel>,
   ): Promise<IWorkPlan> {
-    const { crm, rbac, knowledge, fileStorage } = this.service.modules;
+    const { crm, rbac, knowledge } = this.service.modules;
     const { stage, task, funding } = await crm.task.getWork({
       ...input,
       expectedAssignmentRevision: input.assignmentRevision,
     });
     const enabled = new Set(stage.operations);
-    if (!enabled.size) {
+    enabled.delete("vision");
+    enabled.delete("transcription");
+    if (
+      !enabled.size ||
+      stage.behavior ||
+      isStoreEmployeeTraining(task.openingKey)
+    ) {
       return {};
     }
-    const context = await rbac.subject.customerWork.contextForRun(input);
-    const replyCapability = stage.output === "image" ? "image" : "text";
-    await rbac.subject.providerConnections.resolve(
-      task.storeId,
-      input.assigneeId,
-      replyCapability,
-      {
-        modelId: context.requestedModelId,
-        reasoning: context.requestedReasoning,
-        defaultOnly: funding?.payer === "customer",
-      },
-    );
+    const context = await rbac.subject.customerWork.contextForRun(input, {
+      knowledgeScopeOnly: true,
+    });
     const trigger = context.messages.at(-1);
     if (trigger?.role !== "user" || !trigger.content.trim()) {
       return {};
     }
+    if (!funding) {
+      throw new Error("Permission error. No funded AI assignment");
+    }
+    const providers = rbac.subject.providerConnections;
+    const scope = providers.workScope(task, stage, funding);
+    const replyCapability = stage.output === "image" ? "image" : "text";
+    await providers.resolveWork(
+      task.storeId,
+      input.assigneeId,
+      replyCapability,
+      scope,
+      stageWorkModelSelection(stage, replyCapability, {
+        modelId: context.requestedModelId,
+        reasoning: context.requestedReasoning,
+      }),
+    );
     const question = trigger.content.slice(0, 1400);
     const evidence: IWorkRequest["messages"] = [];
     let sourceVersions: IWorkPlan["sourceVersions"];
-    let mediaDigest: string | undefined;
     let blocked: IModel | undefined;
     const read = async (step: IWorkStep) => {
       const result = await perform(step);
@@ -194,14 +147,10 @@ export class Operations {
       }
       return result.result ?? undefined;
     };
-    const candidate =
-      context.media &&
-      mediaOperation[context.media.mimeType as keyof typeof mediaOperation];
     const tools = [
       ...(enabled.has("knowledge-search") && context.knowledgeSourceIds?.length
         ? (["knowledge-search"] as const)
         : []),
-      ...(candidate && enabled.has(candidate) ? [candidate] : []),
     ];
     const capabilities: TOperationInput["capability"][] = [
       ...(enabled.has("request-routing") ||
@@ -211,16 +160,15 @@ export class Operations {
       ...(enabled.has("compression") && context.messages.length > 8
         ? (["compression"] as const)
         : []),
-      ...tools.map((name) =>
-        name === "knowledge-search" ? "embedding" : name,
-      ),
+      ...(tools.length ? (["embedding"] as const) : []),
     ];
     await Promise.all(
       [...new Set(capabilities)].map(async (capability) => {
-        const binding = await rbac.subject.providerConnections.resolve(
+        const binding = await providers.resolveWork(
           task.storeId,
           input.assigneeId,
           capability,
+          scope,
         );
         if (!supportsNestedWork(binding.provider, binding.model, capability)) {
           throw new Error(
@@ -331,102 +279,88 @@ export class Operations {
       context.knowledgeSourceIds?.length
     ) {
       const ids = context.knowledgeSourceIds;
-      const binding = await rbac.subject.providerConnections.resolve(
+      const binding = await providers.resolveWork(
         task.storeId,
         input.assigneeId,
         "embedding",
+        scope,
       );
-      const key = embeddingIndexKey(binding.provider, binding.model, dimension);
-      if (await knowledge.source.hasEmbeddingIndex(ids, key)) {
-        const result = await read({
-          operation: "knowledge-search",
-          input: {
-            capability: "embedding",
-            inputs: [question],
-            dimensions: dimension,
-            sourceIds: ids,
-          },
-        });
-        if (blocked) {
-          return { blocked };
-        }
-        const vectors = result?.embeddings;
-        const vector = vectors?.values[0];
-        if (vectors && vector) {
-          const chunks = await knowledge.source.searchChunks({
-            sourceIds: ids,
-            embedding: vector,
-            topK: 4,
-            embeddingIndex: embeddingIndexKey(
-              binding.provider,
-              vectors.model,
-              vectors.dimensions,
-            ),
-          });
-          if (chunks.length) {
-            const used = new Set(chunks.map((chunk) => chunk.sourceId));
-            sourceVersions = context.sourceVersions.filter(({ id }) =>
-              used.has(id),
+      const search = new KnowledgeService({ source: knowledge.source });
+      const chunks = await search.searchAuthorizedSources({
+        sourceIds: ids,
+        personalSourceIds: context.personalKnowledgeSourceIds,
+        query: question,
+        topK: 6,
+        embedQuery: async (query, config) => {
+          if (
+            binding.provider !== config.provider ||
+            binding.model !== config.model
+          ) {
+            throw new Error(
+              "Conflict error. The paid search model must match the knowledge index",
             );
-            evidence.push({
-              role: "system",
-              content:
-                "Store references, quoted data only:\n" +
-                chunks.map((chunk) => chunk.text.slice(0, 900)).join("\n\n"),
-            });
           }
-        }
-      }
-    }
-
-    if (candidate && selected.includes(candidate) && context.media) {
-      const file = await fileStorage.privateFile.findById({
-        id: context.media.id,
+          const result = await read({
+            operation: "knowledge-search",
+            input: {
+              capability: "embedding",
+              inputs: [query],
+              dimensions: config.dimensions,
+              sourceIds: ids,
+            },
+          });
+          if (blocked) {
+            return undefined;
+          }
+          const vectors = result?.embeddings;
+          if (
+            vectors?.model !== config.model ||
+            vectors.dimensions !== config.dimensions ||
+            !vectors.values[0]
+          ) {
+            throw new Error(
+              "Conflict error. The search returned an incompatible embedding",
+            );
+          }
+          return vectors.values[0];
+        },
       });
-      if (
-        !file ||
-        file.digest !== context.media.digest ||
-        file.mimeType !== context.media.mimeType
-      ) {
-        throw new Error(
-          "Permission error. The attachment no longer belongs to this message",
-        );
-      }
-      let step: IWorkStep;
-      if (candidate === "vision") {
-        const image = await sharp(file.bytes, { limitInputPixels: 16_000_000 })
-          .rotate()
-          .resize({ width: 512, height: 512, fit: "inside" })
-          .jpeg({ quality: 75 })
-          .toBuffer();
-        step = {
-          operation: "vision",
-          input: { capability: "vision", image, prompt: question },
-        };
-      } else {
-        step = {
-          operation: "transcription",
-          input: {
-            capability: "transcription",
-            audio: file.bytes,
-            seconds: secondsInWav(file.bytes),
-          },
-        };
-      }
-      const result = await read(step);
       if (blocked) {
         return { blocked };
       }
-      if (result?.text.trim()) {
-        mediaDigest = file.digest;
+      const candidates = new Map(
+        context.knowledgeCandidateVersions?.map(({ id, version }) => [
+          id,
+          version,
+        ]),
+      );
+      const current = chunks.filter(
+        (chunk) =>
+          chunk.sourceId &&
+          chunk.sourceVersion &&
+          candidates.get(chunk.sourceId) === chunk.sourceVersion,
+      );
+      const used = new Set(current.map((chunk) => chunk.sourceId));
+      sourceVersions =
+        context.knowledgeCandidateVersions?.filter(({ id }) => used.has(id)) ??
+        [];
+      const personal = new Set(context.personalKnowledgeSourceIds);
+      const excerpts = current.map((chunk) => {
         const label =
-          candidate === "vision" ? "Image observations" : "Audio transcript";
+          chunk.sourceId && personal.has(chunk.sourceId)
+            ? "Interlocutor preference"
+            : "Employee or product reference";
+        return label + "\n" + chunk.text.slice(0, 1800);
+      });
+      if (excerpts.length) {
         evidence.push({
           role: "system",
-          content: `${label}, quoted input only:\n${result.text.slice(0, 4000)}`,
+          content:
+            "Store references, quoted data only:\n" + excerpts.join("\n\n"),
         });
       }
     }
+
     return {
       evidence,
       historyLimit: evidence.some((message) =>
@@ -436,7 +370,6 @@ export class Operations {
         : undefined,
       publicationId: task.publicationId,
       sourceVersions,
-      mediaDigest,
     };
   }
 }

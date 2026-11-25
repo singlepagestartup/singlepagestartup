@@ -2,9 +2,9 @@ import type { Meta, StoryObj } from "@storybook/react";
 import { Component as Widget } from "../..";
 import { demoWorkflows } from "../../../shared/demo-workflows";
 
-const release = demoWorkflows.releases[0];
+const workflow = demoWorkflows.workflows[0];
 const tasks = demoWorkflows.tasks.filter(
-  (task) => task.workflowId === release.id && task.version === release.version,
+  (task) => task.workflowId === workflow.id,
 );
 
 const meta = {
@@ -14,7 +14,7 @@ const meta = {
   parameters: { layout: "padded" },
   args: {
     variant: "task-kanban",
-    stages: release.stages,
+    stages: workflow.stages,
     tasks,
     people: demoWorkflows.people,
   },
@@ -27,9 +27,3 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 export const Default: Story = { name: "default" };
-export const PreviousVersion: Story = {
-  args: {
-    stages: demoWorkflows.releases[1].stages,
-    tasks: demoWorkflows.tasks.filter((task) => task.version === 2),
-  },
-};

@@ -43,16 +43,15 @@ effective Offer service when `find` is called.
 
 ## 2. Models
 
-| Model                                             | Purpose                                                          |
-| ------------------------------------------------- | ---------------------------------------------------------------- |
-| [attribute](./models/attribute/README.md)         | Typed attribute values for products/stores                       |
-| [attribute-key](./models/attribute-key/README.md) | Attribute definitions and display metadata                       |
-| [category](./models/category/README.md)           | Product categories with localized content                        |
-| [order](./models/order/README.md)                 | Orders and cart state                                            |
-| [order-work](./models/order-work/README.md)       | Accepted result, payment evidence and delivery for a store order |
-| [product](./models/product/README.md)             | Products with attributes and media                               |
-| [store](./models/store/README.md)                 | Stores and their catalogs                                        |
-| [widget](./models/widget/README.md)               | Ecommerce list/overview widgets                                  |
+| Model                                             | Purpose                                    |
+| ------------------------------------------------- | ------------------------------------------ |
+| [attribute](./models/attribute/README.md)         | Typed attribute values for products/stores |
+| [attribute-key](./models/attribute-key/README.md) | Attribute definitions and display metadata |
+| [category](./models/category/README.md)           | Product categories with localized content  |
+| [order](./models/order/README.md)                 | Orders and cart state                      |
+| [product](./models/product/README.md)             | Products with attributes and media         |
+| [store](./models/store/README.md)                 | Stores and their catalogs                  |
+| [widget](./models/widget/README.md)               | Ecommerce list/overview widgets            |
 
 ---
 

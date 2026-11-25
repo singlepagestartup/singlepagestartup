@@ -6,7 +6,11 @@ import {
   type IOrderWorkView,
   type TOrderWorkDecision,
 } from "@sps/rbac/models/subject/sdk/model";
-import { responsePipe, type NextRequestOptions } from "@sps/shared-utils";
+import {
+  readChatAttachmentBlob,
+  responsePipe,
+  type NextRequestOptions,
+} from "@sps/shared-utils";
 
 interface IRequest {
   id: string;
@@ -21,6 +25,8 @@ export interface IDecisionProps extends IRequest {
 }
 export interface IContentProps extends IRequest {
   artifactId: string;
+  maxBytes?: number;
+  storeId?: string;
 }
 
 async function read({
@@ -74,11 +80,13 @@ async function content({
   id,
   orderId,
   artifactId,
+  maxBytes,
+  storeId,
   host = serverHost,
   options,
 }: IContentProps) {
   const res = await fetch(
-    `${host}${orderArtifactPath(id, orderId, artifactId)}`,
+    `${host}${orderArtifactPath(id, orderId, artifactId)}${storeId ? "?" + new URLSearchParams({ storeId }) : ""}`,
     {
       ...options,
       credentials: "include",
@@ -90,7 +98,7 @@ async function content({
     await responsePipe({ res });
     throw new Error("Order artifact could not be read");
   }
-  return res.blob();
+  return readChatAttachmentBlob(res, maxBytes);
 }
 
 export const orderWork = { read, decision, content };

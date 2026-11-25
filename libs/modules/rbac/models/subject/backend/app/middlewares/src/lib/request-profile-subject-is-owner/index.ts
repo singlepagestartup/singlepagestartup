@@ -7,15 +7,19 @@ import { api as subjectsToSocialModuleProfilesApi } from "@sps/rbac/relations/su
 import { api as socialModuleProfileApi } from "@sps/social/models/profile/sdk/server";
 import { getHttpErrorType } from "@sps/backend-utils";
 
-export interface IMiddlewareGeneric {}
+export interface IMiddlewareGeneric {
+  requireJwt?: boolean;
+  personalProfileOnly?: boolean;
+  activeSubjectId?: (token: string) => Promise<string | undefined | null>;
+}
 
 export class Middleware {
-  init(): MiddlewareHandler<any, any, {}> {
+  init(options?: IMiddlewareGeneric): MiddlewareHandler<any, any, {}> {
+    const checkOwner = new RbacModuleRequestSubjectIsOwnerMiddleware().init(
+      options,
+    );
     return createMiddleware(async (c, next) => {
-      const rbacModuleRequestSubjectIsOwnerMiddleware =
-        new RbacModuleRequestSubjectIsOwnerMiddleware();
-
-      await rbacModuleRequestSubjectIsOwnerMiddleware.init()(c, async () => {
+      await checkOwner(c, async () => {
         try {
           if (!RBAC_SECRET_KEY) {
             throw new Error("Configuration error. RBAC_SECRET_KEY not set");
@@ -40,11 +44,15 @@ export class Middleware {
               params: {
                 filters: {
                   and: [
-                    {
-                      column: "subjectId",
-                      method: "eq",
-                      value: id,
-                    },
+                    ...(!options?.personalProfileOnly
+                      ? [
+                          {
+                            column: "subjectId",
+                            method: "eq" as const,
+                            value: id,
+                          },
+                        ]
+                      : []),
                     {
                       column: "socialModuleProfileId",
                       method: "eq",
@@ -89,6 +97,14 @@ export class Middleware {
             );
           }
 
+          if (
+            options?.personalProfileOnly &&
+            (subjectsToSocialModuleProfiles[0].subjectId !== id ||
+              subjectsToSocialModuleProfiles[0].variant !== "default" ||
+              !["default", "telegram"].includes(socialModuleProfile.variant))
+          ) {
+            throw new Error("Not found error. Personal profile is unavailable");
+          }
           return next();
         } catch (error: any) {
           const { status, message, details } = getHttpErrorType(error);

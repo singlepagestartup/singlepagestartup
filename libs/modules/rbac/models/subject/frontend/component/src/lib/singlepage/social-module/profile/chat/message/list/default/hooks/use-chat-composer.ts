@@ -10,7 +10,6 @@ import { RBAC_AI_REACTION_REQUEST_METADATA_KEY } from "@sps/rbac/models/subject/
 import { PROVIDER_MODEL_SELECTION_METADATA_KEY } from "@sps/rbac/models/subject/sdk/model/src/lib/provider-connections";
 import { useCallback, useRef } from "react";
 import { useForm } from "react-hook-form";
-import { toast } from "sonner";
 
 interface UseChatComposerProps {
   isEmployeeChat?: boolean;
@@ -27,7 +26,7 @@ interface UseChatComposerProps {
   socialModuleProfileId: string;
   socialModuleThreadId: string;
   subjectId: string;
-  threadMessagesCache: ThreadMessagesCache;
+  threadMessagesCache?: ThreadMessagesCache;
 }
 
 export function useChatComposer(props: UseChatComposerProps) {
@@ -50,7 +49,7 @@ export function useChatComposer(props: UseChatComposerProps) {
       description: "",
     },
   });
-  const createMessage =
+  const socialCreateMessage =
     api.socialModuleProfileFindByIdChatFindByIdThreadFindByIdMessageCreate({
       id: props.subjectId,
       socialModuleProfileId: props.socialModuleProfileId,
@@ -123,7 +122,7 @@ export function useChatComposer(props: UseChatComposerProps) {
     };
     const hasMessageMetadata = Object.keys(messageMetadata).length > 0;
 
-    if (createMessage.isPending) return;
+    if (socialCreateMessage.isPending) return;
     const deduplicate = props.isCustomerWork || props.isEmployeeChat;
     if (
       deduplicate &&
@@ -146,7 +145,7 @@ export function useChatComposer(props: UseChatComposerProps) {
       };
     }
 
-    createMessage.mutate(
+    socialCreateMessage.mutate(
       {
         id: props.subjectId,
         socialModuleProfileId: props.socialModuleProfileId,
@@ -167,14 +166,13 @@ export function useChatComposer(props: UseChatComposerProps) {
       },
       {
         onSuccess(createdMessage) {
-          toast.success("Message created successfully");
           // Targeted append (exact server response) instead of a full
           // invalidation - the timeline gains one row without refetching.
           // WS topic invalidation remains the background consistency check.
           if (createdMessage?.id) {
-            props.threadMessagesCache.append(createdMessage);
+            props.threadMessagesCache?.append(createdMessage);
           } else {
-            props.threadMessagesCache.refetch();
+            props.threadMessagesCache?.refetch();
           }
           props.onEmployeeMessageSaved?.();
           lastSend.current = undefined;
@@ -197,7 +195,7 @@ export function useChatComposer(props: UseChatComposerProps) {
   }
 
   return {
-    createMessage,
+    createMessage: socialCreateMessage,
     fileInputRef,
     focusComposerTextArea,
     form,

@@ -1,9 +1,10 @@
 import { createModules } from "@sps/file-storage/backend/app/api/src/lib/modules";
 import "reflect-metadata";
+import { PrivateContent } from "./private-content";
 import { injectFromBase, injectable } from "inversify";
 import { CRUDService, type FindServiceProps } from "@sps/shared-backend-api";
-import { fetchOutboundUrl } from "@sps/backend-utils";
-import { createHash } from "node:crypto";
+import { fetchOutboundUrl, logger } from "@sps/backend-utils";
+import { createHash, randomUUID } from "node:crypto";
 import { deflate } from "pako";
 import QueryString from "qs";
 import { Table } from "@sps/file-storage/models/file/backend/repository/database";
@@ -24,6 +25,10 @@ import { isLegacyOrderReceipt } from "@sps/file-storage/models/file/sdk/model";
 @injectFromBase()
 export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
   declare repository: Repository;
+
+  get privateContent() {
+    return new PrivateContent(this.repository);
+  }
 
   configureCommerceReceiptGuard(guard: TCommerceReceiptGuard) {
     this.repository.commerceReceiptGuard = guard;
@@ -328,6 +333,78 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
         ...dimensions,
       },
     });
+  }
+
+  async storePublicImage(file: File) {
+    if (!file.size || file.size > FILE_STORAGE_MAX_UPLOAD_BYTES) {
+      throw new Error(
+        "Validation error. Image exceeds the file upload limit or is empty",
+      );
+    }
+    const bytes = await file.arrayBuffer();
+    const { fileTypeFromBuffer } = await import("file-type");
+    const detected = await fileTypeFromBuffer(bytes).catch(() => undefined);
+    const formats = [
+      "image/png",
+      "image/jpeg",
+      "image/webp",
+      "image/gif",
+      "image/avif",
+    ];
+    if (!detected || !formats.includes(detected.mime)) {
+      throw new Error(
+        "Validation error. Upload a PNG, JPEG, WebP, GIF or AVIF image",
+      );
+    }
+    const { imageSize } = await import("image-size");
+    let dimensions: ReturnType<typeof imageSize>;
+    try {
+      dimensions = imageSize(new Uint8Array(bytes));
+    } catch {
+      throw new Error("Validation error. Image dimensions could not be read");
+    }
+    const filename = randomUUID();
+    const name =
+      file.name
+        .replace(/[\x00-\x1f\x7f/\\]/g, "_")
+        .trim()
+        .slice(0, 180) || `image.${detected.ext}`;
+    const storage = new Provider({
+      type: FILE_STORAGE_PROVIDER,
+      folder: FILE_STORAGE_FOLDER,
+    });
+    const upload = new File([bytes], `${filename}.${detected.ext}`, {
+      type: detected.mime,
+    });
+    const location = await storage.uploadFile({
+      file: upload,
+      options: { fileName: filename },
+    });
+    const key = location.split("/").pop()!;
+    const discard = () => storage.deleteFile({ name: key });
+    try {
+      const entity = await this.create({
+        data: {
+          file: location,
+          adminTitle: name,
+          alt: name,
+          size: file.size,
+          extension: detected.ext,
+          mimeType: detected.mime,
+          width: dimensions.width,
+          height: dimensions.height,
+        },
+      });
+      return { entity, discard };
+    } catch (error) {
+      await discard().catch((cleanupError) => {
+        logger.error(
+          "Failed to discard a public image after its File record could not be created",
+          cleanupError,
+        );
+      });
+      throw error;
+    }
   }
 
   async delete(props: { id: string }): Promise<typeof Table.$inferSelect> {

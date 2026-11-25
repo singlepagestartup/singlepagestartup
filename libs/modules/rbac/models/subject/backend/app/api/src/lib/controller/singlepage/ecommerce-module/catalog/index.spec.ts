@@ -18,10 +18,13 @@ import { Middleware as IsAuthorizedMiddleware } from "../../../../../../../../..
 import { Middleware as SubjectOwner } from "../../../../../../../middlewares/src/lib/request-subject-is-owner";
 import type { Service } from "../../../../service";
 import { Handler } from ".";
+import { offerCreate } from "@sps/rbac/models/subject/sdk/server/src/lib/singlepage/ecommerce-module/catalog";
+import { route } from "@sps/rbac/models/subject/sdk/model";
 
 const subjectId = randomUUID();
 const mutation = jest.fn().mockResolvedValue({ id: randomUUID() });
 const authenticationMe = jest.fn();
+const createOffer = jest.fn();
 const service = {
   isAuthorizedService: {
     async getSubjectId(token: string) {
@@ -33,6 +36,7 @@ const service = {
   },
   authenticationMe,
   ecommerceCatalog: { mutation },
+  storeProducts: { createOffer },
 } as unknown as Service;
 
 async function request(
@@ -110,4 +114,77 @@ test("a permitted signed-in caller reaches the Subject catalogue service with se
       data: { title: { en: "My store" } },
     },
   });
+});
+
+test("the SDK sends a legacy JSON offer and a multipart offer with ordered images to the same authenticated route", async () => {
+  const app = new Hono();
+  app.post(`${route}/:id/ecommerce-module/offers`, (c) =>
+    new Handler(service, "offer").execute(c),
+  );
+  const token = await signJwt(
+    { subjectId, type: "access", lifetimeInSeconds: 60 },
+    "catalogue-route-test",
+  );
+  const fetch = jest
+    .spyOn(globalThis, "fetch")
+    .mockImplementation((input, init) =>
+      Promise.resolve(app.request(String(input), init)),
+    );
+  const data = {
+    storeId: randomUUID(),
+    product: {
+      title: { en: "Desk" },
+      kind: "physical",
+      formula: "unit_price * quantity",
+    },
+    prices: [{ currencyId: randomUUID(), amount: "10" }],
+  };
+  const props = {
+    id: subjectId,
+    host: "http://localhost",
+    data,
+    options: {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+    },
+  };
+  const result = { product: { id: randomUUID() }, offer: { id: randomUUID() } };
+  createOffer.mockResolvedValue(result);
+  try {
+    await expect(offerCreate(props)).resolves.toEqual(result);
+    expect(createOffer).toHaveBeenLastCalledWith(
+      subjectId,
+      expect.objectContaining({
+        ...data,
+        product: expect.objectContaining(data.product),
+      }),
+      [],
+    );
+    const selected = {
+      ...data,
+      categoryIds: [randomUUID()],
+      attributeIds: [randomUUID()],
+    };
+    const images = [
+      new File(["front"], "front.png"),
+      new File(["side"], "side.png"),
+    ];
+    await expect(
+      offerCreate({ ...props, data: selected, images }),
+    ).resolves.toEqual(result);
+    const [actor, received, uploaded] = createOffer.mock.lastCall!;
+    expect(actor).toBe(subjectId);
+    expect(received).toMatchObject(selected);
+    expect(uploaded.map((file: File) => file.name)).toEqual([
+      "front.png",
+      "side.png",
+    ]);
+    expect(
+      await Promise.all(uploaded.map((file: File) => file.text())),
+    ).toEqual(["front", "side"]);
+  } finally {
+    fetch.mockRestore();
+  }
 });

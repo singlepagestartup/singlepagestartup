@@ -10,6 +10,7 @@ export class Service {
     chatId: string;
     threadId: string;
     message: Message;
+    documentId?: string;
   }) {
     const { social, notification } = this.subject.modules;
     const chat = await social.chat.findById({ id: input.chatId });
@@ -46,22 +47,39 @@ export class Service {
       return;
     }
     const thread = await social.thread.findById({ id: input.threadId });
-    const queued = await notification.notification.create({
+    const notificationId = input.message.id;
+    const attachments = input.documentId
+      ? [
+          notification.notification.telegramDocument(
+            notificationId,
+            chat.sourceSystemId,
+            input.documentId,
+          ),
+        ]
+      : [];
+    const queued = await notification.notification.createDelivery({
+      id: notificationId,
+      reciever: chat.sourceSystemId,
+      attachments,
       data: {
-        id: input.message.id,
-        reciever: chat.sourceSystemId,
-        data: {
-          socialModule: {
-            message: { description: input.message.description },
-            thread,
+        socialModule: {
+          message: {
+            description: input.message.description,
+            interaction: input.message.interaction,
           },
+          thread,
         },
       },
     });
-    await notification.notificationsToTemplates.create({
+    if (!queued) {
+      throw new Error(
+        "Conflict error. The chat notification could not be queued",
+      );
+    }
+    await notification.notificationsToTemplates.findOrCreate({
       data: { notificationId: queued.id, templateId: templates[0].id },
     });
-    await notification.topicsToNotifications.create({
+    await notification.topicsToNotifications.findOrCreate({
       data: { notificationId: queued.id, topicId: topics[0].id },
     });
   }

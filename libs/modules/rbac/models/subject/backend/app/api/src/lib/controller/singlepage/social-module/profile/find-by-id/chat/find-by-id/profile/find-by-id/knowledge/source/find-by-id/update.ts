@@ -1,17 +1,17 @@
 import { getHttpErrorType } from "@sps/backend-utils";
-import { Service as KnowledgeService } from "@sps/knowledge/backend/app/api/src/lib/service";
+import { Service as ProfileSources } from "../../../../../../../../../../../../service/singlepage/social-module/profile/knowledge/sources";
 import { Context } from "hono";
 import { HTTPException } from "hono/http-exception";
 import { Service } from "../../../../../../../../../../../../service";
-import { toText } from "../helpers";
+import { readSourceDraft } from "../helpers";
 
 export class Handler {
   service: Service;
-  knowledgeService: KnowledgeService;
+  knowledgeService: ProfileSources;
 
   constructor(service: Service) {
     this.service = service;
-    this.knowledgeService = new KnowledgeService();
+    this.knowledgeService = new ProfileSources(service);
   }
 
   async execute(c: Context, next: any): Promise<Response> {
@@ -24,31 +24,13 @@ export class Handler {
         );
       }
 
-      const body = (await c.req.json()) as {
-        data?: {
-          title?: unknown;
-          content?: unknown;
-        };
-        title?: unknown;
-        content?: unknown;
-      };
-      const data = body.data || body;
-      const title = toText(data.title).trim();
-      const content = toText(data.content);
-
-      if (!title) {
-        throw new Error("Validation error. Knowledge Source title is required");
-      }
-
-      const document = await this.knowledgeService.updateSource({
+      const data = await readSourceDraft(c);
+      const document = await this.knowledgeService.edit({
+        ...data,
         sourceId: knowledgeModuleSourceId,
-        title,
-        content,
       });
-
       return c.json({
         data: document.source,
-        indexingError: document.indexError,
       });
     } catch (error: unknown) {
       const { status, message, details } = getHttpErrorType(error);

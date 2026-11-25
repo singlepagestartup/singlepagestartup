@@ -196,6 +196,7 @@ function Checkout(props: IComponentPropsExtended) {
     [],
   );
   const lifecycle = useRef<symbol | null>(null);
+  const canOpenDiscussion = useCallback(() => lifecycle.current !== null, []);
   useEffect(() => {
     const current = Symbol();
     lifecycle.current = current;
@@ -357,12 +358,8 @@ function Checkout(props: IComponentPropsExtended) {
               (order) => order.cartDetails?.work?.state === "awaiting-payment",
             );
             const paymentOrders = prepayment.filter(isOrderSelected);
-            const discussionOrders = postpayment.filter(isOrderSelected);
-            const hasAcceptedSelection = accepted.some(isOrderSelected);
             const shouldSelectItems =
-              !paymentOrders.length &&
-              !discussionOrders.length &&
-              !hasAcceptedSelection;
+              prepayment.length > 0 && !paymentOrders.length;
             const hasUnpriced = paymentOrders.some(
               (order) => order.cartDetails?.unpriced?.length,
             );
@@ -471,8 +468,15 @@ function Checkout(props: IComponentPropsExtended) {
                             subject={props.data}
                             ecommerceModuleOrder={order}
                             language={props.language}
-                            selected={isOrderSelected(order)}
-                            onCartItemSelectionChange={changeCartItemSelection}
+                            headerSlot={
+                              <DiscussionAction
+                                subjectId={props.data.id}
+                                ecommerceModuleOrder={order}
+                                language={props.language}
+                                canOpenDiscussion={canOpenDiscussion}
+                                onDiscussionOpen={props.onDiscussionOpen}
+                              />
+                            }
                             onOrderSelectionPendingChange={
                               onOrderSelectionPendingChange
                             }
@@ -531,23 +535,8 @@ function Checkout(props: IComponentPropsExtended) {
                     </section>
                   )}
                 </div>
-                {(prepayment.length > 0 ||
-                  postpayment.length > 0 ||
-                  shouldSelectItems) && (
+                {prepayment.length > 0 && (
                   <div className="shrink-0 space-y-4 border-t border-border bg-card px-4 py-4 sm:px-6 sm:py-5">
-                    {discussionOrders.map((order) => (
-                      <DiscussionAction
-                        key={order.id}
-                        subjectId={props.data.id}
-                        ecommerceModuleOrder={order}
-                        language={props.language}
-                        showTitle={discussionOrders.length > 1}
-                        buttonVariant={
-                          paymentOrders.length ? "outline" : "primary"
-                        }
-                        onDiscussionOpen={props.onDiscussionOpen}
-                      />
-                    ))}
                     {shouldSelectItems && (
                       <p
                         role="status"

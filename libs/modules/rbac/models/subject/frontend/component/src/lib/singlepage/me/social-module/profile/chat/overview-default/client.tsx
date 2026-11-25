@@ -52,6 +52,8 @@ export default function Client(props: IComponentProps) {
             skeleton={props.skeleton}
             socialModuleChatId={props.socialModuleChatId}
             socialModuleThreadId={props.socialModuleThreadId}
+            defaultThreadId={props.defaultThreadId}
+            getThreadHref={props.getThreadHref}
             data={data}
           />
         );

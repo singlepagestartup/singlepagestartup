@@ -8,7 +8,10 @@ import type {
 import { isChatAccessError } from "../utils";
 import { api } from "@sps/rbac/models/subject/sdk/client";
 import { parseRbacAiThreadPreferences } from "@sps/rbac/models/subject/sdk/model";
-import { providerModelFavoriteId } from "@sps/shared-utils";
+import {
+  providerModelDisplayName,
+  providerModelFavoriteId,
+} from "@sps/shared-utils";
 import type { IModel as SocialModuleThread } from "@sps/social/models/thread/sdk/model";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
@@ -183,8 +186,11 @@ export function useChatModelControls(
       })) ?? emptyModelGroups,
     [eligibleGroups],
   );
+  const orderModelId = modelsQuery.data?.stageModelFixed
+    ? "auto"
+    : activeOrderSelection?.modelId || "auto";
   const selectedModelId = order
-    ? activeOrderSelection?.modelId || "auto"
+    ? orderModelId
     : assistantOverride?.scope === scope
       ? assistantOverride.modelId
       : persistedModelId;
@@ -312,6 +318,12 @@ export function useChatModelControls(
 
   return {
     mode,
+    fixedModelLabel:
+      order &&
+      modelsQuery.data?.stageModelId &&
+      !isChatAccessError(modelsQuery.error)
+        ? providerModelDisplayName(modelsQuery.data.stageModelId)
+        : undefined,
     favoriteModelIds,
     isLoadingModels: modelsQuery.isLoading,
     isSelectionUnavailable,

@@ -82,6 +82,7 @@ jest.mock("./Row", () => ({
     onOrderSelectionPendingChange,
     onCartItemSelectionChange,
     selected,
+    headerSlot,
     children,
   }: any) => {
     selectionCallbacks.set(ecommerceModuleOrder.id, (lineId, blocked) =>
@@ -92,19 +93,21 @@ jest.mock("./Row", () => ({
     );
     return (
       <li data-testid={`order-${ecommerceModuleOrder.id}`}>
-        <label>
-          <input
-            type="checkbox"
-            checked={selected ?? true}
-            onChange={(e) =>
-              onCartItemSelectionChange(
-                ecommerceModuleOrder.id,
-                e.target.checked,
-              )
-            }
-          />
-          {ecommerceModuleOrder.id}
-        </label>
+        {headerSlot ?? (
+          <label>
+            <input
+              type="checkbox"
+              checked={selected ?? true}
+              onChange={(e) =>
+                onCartItemSelectionChange(
+                  ecommerceModuleOrder.id,
+                  e.target.checked,
+                )
+              }
+            />
+            {ecommerceModuleOrder.id}
+          </label>
+        )}
         {children}
       </li>
     );
@@ -200,9 +203,20 @@ it("opens the service discussion and charges only the selected prepaid product i
   };
   checkout.mockResolvedValue({ billingModule: { invoices: [] } });
   render(<Component {...props} />);
-  const discussion = screen.getByRole("link", { name: /Открыть обсуждение/ });
-  expect(discussion.getAttribute("href")).toBe(
-    "/ru/social/chats/chat/threads/thread",
+  const discussion = screen.getByRole("button", { name: "Перейти в чат" });
+  openWork.mockResolvedValue({ chatId: "chat", threadId: "thread" });
+  fireEvent.click(discussion);
+  await waitFor(() =>
+    expect(openWork).toHaveBeenCalledWith({
+      id: "subject",
+      data: {
+        operation: "enter-order-discussion",
+        orderId: "cover",
+        storeId: "store",
+        taskId: "task",
+        operationKey: expect.any(String),
+      },
+    }),
   );
   fireEvent.click(screen.getByRole("checkbox", { name: "lamp" }));
   expect(screen.getByText("100 ₽")).toBeTruthy();
@@ -220,9 +234,9 @@ it("opens the service discussion and charges only the selected prepaid product i
   );
   fireEvent.click(screen.getByRole("checkbox", { name: "chair" }));
   expect(screen.queryByRole("textbox", { name: "Email для чека" })).toBeNull();
-  expect(screen.getByRole("link", { name: /Открыть обсуждение/ })).toBeTruthy();
-  fireEvent.click(screen.getByRole("checkbox", { name: "cover" }));
-  expect(screen.queryByRole("link", { name: /Открыть обсуждение/ })).toBeNull();
+  expect(screen.getByRole("button", { name: "Перейти в чат" })).toBeTruthy();
+  expect(screen.queryByRole("checkbox", { name: "cover" })).toBeNull();
+  expect(screen.getByTestId("order-cover").contains(discussion)).toBe(true);
   expect(screen.queryByRole("button", { name: /оплат/i })).toBeNull();
   expect(checkout).toHaveBeenCalledTimes(1);
 });
@@ -321,10 +335,18 @@ it("starts the discussion for the exact saved service order after an explicit cl
       state: "requires-discussion",
     },
   };
-  openWork.mockResolvedValue({ chatId: "chat", threadId: "thread" });
-  render(<Component {...props} />);
+  let resolve!: (result: { chatId: string; threadId: string }) => void;
+  openWork.mockReturnValue(
+    new Promise((done) => {
+      resolve = done;
+    }),
+  );
+  const { rerender } = render(<Component {...props} />);
   expect(openWork).not.toHaveBeenCalled();
-  fireEvent.click(screen.getByRole("button", { name: "Открыть обсуждение" }));
+  fireEvent.click(screen.getByRole("button", { name: "Перейти в чат" }));
+  orderIds = [];
+  rerender(<Component {...props} />);
+  await act(async () => resolve({ chatId: "chat", threadId: "thread" }));
   await waitFor(() =>
     expect(push).toHaveBeenCalledWith("/ru/social/chats/chat/threads/thread"),
   );
@@ -342,7 +364,7 @@ it("starts the discussion for the exact saved service order after an explicit cl
   expect(checkout).not.toHaveBeenCalled();
 });
 
-it("offers no payment or unrelated chat when the store has no published service funnel", () => {
+it("offers no payment or unrelated chat when the store has no service funnel", () => {
   orderIds = ["cover"];
   extraDetails.cover = {
     lines: [{ id: "line", productId: "item", offerId: "offer" }],

@@ -1,5 +1,6 @@
 import { RBAC_JWT_SECRET } from "@sps/shared-utils";
 import { Context } from "hono";
+import { z } from "zod";
 import { HTTPException } from "hono/http-exception";
 import { Service } from "../../../../../../service";
 import { getHttpErrorType } from "@sps/backend-utils";
@@ -38,6 +39,19 @@ export class Handler {
       });
 
       const parsedQuery = c.get("parsedQuery");
+      const requestedThread = c.req.query("threadId");
+      const sharedThread = c.get("sharedTaskThread");
+      if (
+        requestedThread &&
+        sharedThread &&
+        requestedThread !== sharedThread.threadId
+      ) {
+        throw new Error("Not Found error. This discussion is unavailable");
+      }
+      const threadId = sharedThread?.threadId ?? requestedThread;
+      if (threadId !== undefined && !z.uuid().safeParse(threadId).success) {
+        throw new Error("Validation error. Invalid thread ID");
+      }
       const limit = parsedQuery?.limit || 100;
       const offset = parsedQuery?.offset || 0;
       const orderBy = parsedQuery?.orderBy;
@@ -53,6 +67,15 @@ export class Handler {
                     method: "eq",
                     value: socialModuleChatId,
                   },
+                  ...(threadId
+                    ? [
+                        {
+                          column: "threadId",
+                          method: "eq" as const,
+                          value: threadId,
+                        },
+                      ]
+                    : []),
                 ],
               },
               limit,

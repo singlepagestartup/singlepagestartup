@@ -1,8 +1,4 @@
-import { getHttpErrorType, signJwt } from "@sps/backend-utils";
-import {
-  RBAC_JWT_SECRET,
-  RBAC_JWT_TOKEN_LIFETIME_IN_SECONDS,
-} from "@sps/shared-utils";
+import { authorization, getHttpErrorType } from "@sps/backend-utils";
 import { Context } from "hono";
 import { HTTPException } from "hono/http-exception";
 import { Service } from "../../../../../../../service";
@@ -33,52 +29,25 @@ export class Handler {
         );
       }
 
-      if (!RBAC_JWT_SECRET) {
-        throw new Error("Configuration error. RBAC_JWT_SECRET not set");
+      const rbacSubjectAuthenticationJwt = authorization(c);
+      if (!rbacSubjectAuthenticationJwt) {
+        throw new Error("Authentication error. Sign in to view MCP tools");
       }
-
-      const rbacSubjectRelations =
-        await this.service.module.subjectsToSocialModuleProfiles.find({
-          params: {
-            filters: {
-              and: [
-                {
-                  column: "socialModuleProfileId",
-                  method: "eq",
-                  value: socialModuleProfileId,
-                },
-              ],
-            },
-          },
-        });
-
+      const sender = await this.service.me({
+        token: rbacSubjectAuthenticationJwt,
+      });
       if (
-        rbacSubjectRelations?.length !== 1 ||
-        !rbacSubjectRelations[0]?.subjectId
+        !sender ||
+        sender.variant !== "default" ||
+        sender.id !== c.req.param("id")
       ) {
         throw new Error(
-          "Validation error. social.profile must have exactly one linked rbac.subject.",
+          "Forbidden error. The MCP catalog requires the caller's session",
         );
       }
-
-      const rbacSubject = await this.service.findById({
-        id: rbacSubjectRelations[0].subjectId,
-      });
-
-      if (!rbacSubject) {
-        throw new Error("Not found error. Linked rbac.subject not found");
-      }
-
-      const rbacSubjectAuthenticationJwt = await signJwt(
-        {
-          subjectId: rbacSubject.id,
-          type: "access",
-          lifetimeInSeconds: RBAC_JWT_TOKEN_LIFETIME_IN_SECONDS,
-        },
-        RBAC_JWT_SECRET,
-      );
       const catalogSession =
         await this.service.socialModuleProfileMcpCatalogOpen({
+          subjectId: sender.id,
           configuredServerIds: Array.isArray(
             socialModuleProfile.allowedMcpServerIds,
           )

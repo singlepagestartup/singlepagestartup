@@ -8,7 +8,6 @@ export const variant = "subject-me-crm-module-store-workspace" as const;
 
 export interface IComponentProps extends IParent<IModel, typeof variant> {
   ecommerceModuleStoreSlug?: string;
-  crmModuleTaskId?: string;
   language?: string;
 }
 export interface IComponentPropsExtended extends IParentExtended<

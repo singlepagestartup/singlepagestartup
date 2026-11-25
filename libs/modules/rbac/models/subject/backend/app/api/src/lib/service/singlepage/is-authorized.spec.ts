@@ -782,7 +782,39 @@ describe("catalogue write permissions", () => {
         authorization: { value: "catalogue-admin-allowed-jwt" },
       }),
     ).rejects.toThrow("This operation requires the operator credential");
+    for (const collection of [
+      "social/chats",
+      "social/threads",
+      "social/chats-to-threads",
+      "social/profiles-to-chats",
+      "social/chats-to-file-storage-module-files",
+      "rbac/subjects-to-social-module-chats",
+    ]) {
+      for (const [method, suffix] of [
+        ["POST", ""],
+        ["POST", "/bulk"],
+        ["PATCH", "/bulk"],
+        ["POST", "/find-or-create"],
+        ["PATCH", "/" + id],
+        ["DELETE", "/" + id],
+      ]) {
+        await expect(
+          service.execute({
+            permission: {
+              type: "HTTP",
+              method,
+              route: "/api/" + collection + suffix,
+            },
+            authorization: { value: "catalogue-admin-allowed-jwt" },
+          }),
+        ).rejects.toThrow("operator credential");
+      }
+    }
     for (const [method, route] of [
+      ["PATCH", `/api/rbac/subjects/${id}/social-module/chats/${id}`],
+      ["POST", `/api/rbac/subjects/${id}/social-module/chats/${id}/threads`],
+      ["GET", `/api/social/chats/${id}`],
+      ["DELETE", `/api/social/profiles/${id}`],
       [
         "POST",
         "/api/rbac/subjects/ecommerce-module/orders/payment-intents/dummy/webhook",

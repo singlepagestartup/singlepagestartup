@@ -16,8 +16,7 @@ jest.mock("@sps/social/models/profile/sdk/server", () => ({
   },
 }));
 jest.mock("@sps/shared-utils", () => ({
-  entityMetadataSchema:
-    jest.requireActual("@sps/shared-utils").entityMetadataSchema,
+  ...jest.requireActual("@sps/shared-utils"),
   RBAC_SECRET_KEY: "rbac-secret",
 }));
 
@@ -70,11 +69,7 @@ describe("GIVEN: an authorized chat-local AI profile update", () => {
     expect(socialModuleProfileUpdate).toHaveBeenCalledWith({
       id: "profile-1",
       data: {
-        adminTitle: "Assistant profile",
         allowedMcpServerIds: ["retired-server", "singlepagestartup"],
-        title: { en: "Assistant" },
-        subtitle: { en: "Helper" },
-        description: { en: "Description" },
       },
       options: {
         headers: {
@@ -107,7 +102,7 @@ describe("GIVEN: an authorized chat-local AI profile update", () => {
    *
    * Given: an AI profile has an enabled MCP server and localized content.
    * When: only the Russian title is submitted through the profile editor.
-   * Then: the update carries the existing MCP selection and all omitted fields.
+   * Then: only the title is updated, retaining its English translation.
    */
   test("When: profile text is edited Then: omitted configuration is preserved", async () => {
     socialModuleProfileFindById.mockResolvedValue({
@@ -119,7 +114,7 @@ describe("GIVEN: an authorized chat-local AI profile update", () => {
       description: {},
     });
     const context = createContext({
-      title: { en: "Assistant", ru: "Новый ассистент" },
+      title: { ru: "Новый ассистент" },
     });
 
     await new Handler({} as any).execute(context, jest.fn());
@@ -127,11 +122,7 @@ describe("GIVEN: an authorized chat-local AI profile update", () => {
     expect(socialModuleProfileUpdate).toHaveBeenCalledWith({
       id: "profile-1",
       data: {
-        adminTitle: "Assistant profile",
-        allowedMcpServerIds: ["singlepagestartup"],
         title: { en: "Assistant", ru: "Новый ассистент" },
-        subtitle: {},
-        description: {},
       },
       options: {
         headers: {
@@ -139,5 +130,49 @@ describe("GIVEN: an authorized chat-local AI profile update", () => {
         },
       },
     });
+  });
+  test("preserves legacy localized JSON and stored rich text when adding an English translation", async () => {
+    const richDescription = {
+      type: "doc",
+      content: [{ type: "paragraph", content: [{ text: "Описание" }] }],
+    };
+    socialModuleProfileFindById.mockResolvedValue({
+      adminTitle: "Internal label",
+      allowedMcpServerIds: ["retired-server"],
+      title: JSON.stringify({ ru: "Агент", de: "Agent" }),
+      description: richDescription,
+    });
+    await new Handler({} as any).execute(
+      createContext({ title: { en: "Assistant" } }),
+      jest.fn(),
+    );
+    expect(socialModuleProfileUpdate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: { title: { ru: "Агент", de: "Agent", en: "Assistant" } },
+      }),
+    );
+  });
+  it("rejects only edited translations over the role limit, preserving historic translations", async () => {
+    const old = "a".repeat(12001);
+    socialModuleProfileFindById.mockResolvedValue({
+      description: { en: old, ru: "previous" },
+    });
+    await expect(
+      new Handler({} as any).execute(
+        createContext({ description: { ru: old } }),
+        jest.fn(),
+      ),
+    ).rejects.toThrow("12000");
+    expect(socialModuleProfileUpdate).not.toHaveBeenCalled();
+    const edited = old.slice(1);
+    await new Handler({} as any).execute(
+      createContext({ description: { en: old, ru: edited } }),
+      jest.fn(),
+    );
+    expect(socialModuleProfileUpdate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: { description: { en: old, ru: edited } },
+      }),
+    );
   });
 });

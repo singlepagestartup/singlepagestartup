@@ -29,12 +29,15 @@ export function Component(props: IComponentPropsExtended) {
   let availability: "preview" | "download-only" | "unavailable" = "preview";
   if (mimeType === "application/x-knowledge-unavailable") {
     availability = "unavailable";
-  } else if (svg) {
+  } else if (
+    svg ||
+    getFilePreviewKind({ name: title, mimeType, extension }) ===
+      "unsupported" ||
+    (pathExtension &&
+      getFilePreviewKind({ name: path, mimeType, extension }) === "unsupported")
+  ) {
     availability = "download-only";
   }
-  const canPreview =
-    availability === "preview" &&
-    getFilePreviewKind({ name: title, mimeType, extension }) !== "unsupported";
   return (
     <ClientComponent
       language={props.language}
@@ -44,7 +47,11 @@ export function Component(props: IComponentPropsExtended) {
       src={src}
       mimeType={file.mimeType}
       extension={svg ? svgExtension || "svg" : extension}
-      layout={canPreview ? props.layout : "row"}
+      layout={
+        availability === "preview" || props.layout === "gallery"
+          ? props.layout
+          : "row"
+      }
       availability={availability}
       textContent={props.textContent}
     />

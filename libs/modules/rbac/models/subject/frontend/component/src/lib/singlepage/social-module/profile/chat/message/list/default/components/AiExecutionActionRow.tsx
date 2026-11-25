@@ -1,4 +1,5 @@
 "use client";
+import { TypingIndicator } from "./TypingIndicator";
 
 import type { ProfileSummary } from "../types";
 import {
@@ -84,6 +85,58 @@ function SourceIcon(props: { kind: IAiExecutionActionStep["kind"] }) {
   return <Wrench className="size-3.5" />;
 }
 
+function McpStepDetails({
+  step,
+  russian,
+}: {
+  step: IAiExecutionActionStep;
+  russian: boolean;
+}) {
+  const parameters = Object.entries(step.parameters ?? {});
+  const result = Object.entries(step.resultSummary ?? {});
+  const fields = step.schemaFields ?? [];
+  let outcome;
+  if (step.status === "failed") {
+    if (step.errorCode === "result_too_large") {
+      outcome = russian
+        ? "Ответ инструмента превышает лимит размера"
+        : "The tool response exceeds the size limit";
+    } else if (step.errorCode === "tool_unavailable") {
+      outcome = russian
+        ? "Не удалось вызвать инструмент"
+        : "The tool call failed";
+    } else {
+      outcome = russian
+        ? "Инструмент вернул ошибку"
+        : "The tool returned an error";
+    }
+  } else if (step.status === "succeeded") {
+    outcome =
+      [
+        ...result.map(([key, value]) => `${key} = ${value}`),
+        ...fields.map(({ name, type }) => `${name} (${type})`),
+      ].join(", ") || (russian ? "Вызов выполнен" : "Call completed");
+  }
+  return (
+    <span className="mt-1 block space-y-0.5 break-words">
+      {parameters.length > 0 && (
+        <span className="block">
+          <strong>{russian ? "Параметры" : "Parameters"}</strong>
+          {" · "}
+          {parameters.map(([key, value]) => `${key} = ${value}`).join(", ")}
+        </span>
+      )}
+      {outcome && (
+        <span className="block">
+          <strong>{russian ? "Результат" : "Result"}</strong>
+          {" · "}
+          {outcome}
+        </span>
+      )}
+    </span>
+  );
+}
+
 function runningTitle(step: IAiExecutionActionStep, isRussian: boolean) {
   if (step.kind === "mcp") {
     return isRussian
@@ -123,6 +176,33 @@ export function AiExecutionActionRow(props: AiExecutionActionRowProps) {
     );
   }
 
+  if (payload.phase === "reply_generation") {
+    const failed = payload.status === "failed";
+    if (!failed) {
+      return payload.status === "running" ? (
+        <TypingIndicator language={props.language} name={props.profile.slug} />
+      ) : null;
+    }
+    let label = isRussian
+      ? "Не удалось сгенерировать ответ. Отправьте сообщение ещё раз."
+      : "The reply could not be generated. Please send your message again.";
+    if (failed && payload.rejectedFileName && payload.selectedModelId) {
+      label = isRussian
+        ? `Модель ${payload.selectedModelId} не смогла прочитать «${payload.rejectedFileName}». Отправьте файл в другом формате или выберите другую модель.`
+        : `Model ${payload.selectedModelId} could not read “${payload.rejectedFileName}”. Send the file in another format or choose another model.`;
+    }
+    return (
+      <div
+        role="alert"
+        data-id={props.action.id}
+        className="flex items-center gap-2 rounded-xl border border-destructive/30 px-3 py-2 text-sm text-destructive"
+      >
+        <CircleAlert aria-hidden="true" className="size-4 shrink-0" />
+        {label}
+      </div>
+    );
+  }
+
   const currentStep =
     [...payload.steps].reverse().find((step) => {
       return step.status === "running" || step.status === "requested";
@@ -139,15 +219,19 @@ export function AiExecutionActionRow(props: AiExecutionActionRowProps) {
         : "Preparing tools"
     : payload.status === "completed"
       ? isRussian
-        ? `Завершил работу с инструментами · ${completedSteps}`
+        ? `Работа с инструментами завершена · ${completedSteps}`
         : `Finished tool work · ${completedSteps}`
       : payload.status === "stopped"
         ? isRussian
           ? "Работа с инструментами остановлена"
           : "Tool work stopped"
-        : isRussian
-          ? "Не получилось завершить задачу"
-          : "The task could not be completed";
+        : payload.phase === "tool_completed"
+          ? isRussian
+            ? "Ошибка при вызове инструмента"
+            : "A tool call failed"
+          : isRussian
+            ? "Не получилось завершить задачу"
+            : "The task could not be completed";
 
   return (
     <Collapsible
@@ -199,6 +283,19 @@ export function AiExecutionActionRow(props: AiExecutionActionRowProps) {
       <CollapsibleContent>
         <div className="space-y-1 border-t border-border px-3 py-2.5">
           {payload.steps.map((step) => {
+            const toolName = formatAiExecutionActionStepToolName(step);
+            const source =
+              step.kind === "mcp" && step.serverId
+                ? serverLabel(step.serverId)
+                : undefined;
+            const subtitle = [
+              source,
+              step.label !== step.toolName && step.label !== toolName
+                ? toolName
+                : undefined,
+            ]
+              .filter(Boolean)
+              .join(" · ");
             return (
               <div
                 key={step.id}
@@ -210,12 +307,14 @@ export function AiExecutionActionRow(props: AiExecutionActionRowProps) {
                     <SourceIcon kind={step.kind} />
                     <span className="truncate">{step.label}</span>
                   </span>
-                  <span className="mt-0.5 block truncate font-mono text-[10px] text-muted-foreground">
-                    {step.kind === "mcp" && step.serverId
-                      ? `${serverLabel(step.serverId)} · `
-                      : ""}
-                    {formatAiExecutionActionStepToolName(step)}
-                  </span>
+                  {subtitle && (
+                    <span className="mt-0.5 block truncate font-mono text-[10px] text-muted-foreground">
+                      {subtitle}
+                    </span>
+                  )}
+                  {step.kind === "mcp" && (
+                    <McpStepDetails step={step} russian={isRussian} />
+                  )}
                 </span>
               </div>
             );

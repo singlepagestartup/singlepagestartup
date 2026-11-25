@@ -149,6 +149,7 @@ describe("Given: a paying order is waiting for payment initialization", () => {
       findById: jest.fn().mockResolvedValue(order),
       completePaymentStatus: mockOrderComplete,
       transitionPaymentStatus: mockOrderUpdate,
+      deliverConfirmedWork: jest.fn().mockResolvedValue(undefined),
       expireSubscriptionPeriod: mockOrderExpire,
       findByIdCheckoutAttributesByCurrency: jest.fn(),
       ordersToBillingModuleCurrencies: {

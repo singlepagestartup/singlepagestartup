@@ -10,6 +10,7 @@ import {
   trackRepositoryRead,
   invalidateConsistencyMemory,
   withConsistencyDatabase,
+  withConsistencyTransaction,
   type IConsistencyReadContext,
 } from "./context";
 
@@ -102,6 +103,34 @@ describe("automatic repository dependencies", () => {
     expect(scope.complete).toBe(false);
     expect(scope.database).toBeUndefined();
   });
+  it("removes files from a successful savepoint when the outer commit fails", async () => {
+    const remove = jest.fn(async () => {});
+    const savepoint = {};
+    const outer = {
+      transaction: (operation: (tx: unknown) => Promise<void>) =>
+        operation(savepoint),
+    };
+    const database = {
+      transaction: async (operation: (tx: unknown) => Promise<void>) => {
+        await operation(outer);
+        throw new Error("commit failed");
+      },
+    };
+    const run = (db: unknown, operation: () => Promise<void>) =>
+      withConsistencyTransaction(
+        db as Parameters<typeof withConsistencyTransaction>[0],
+        operation,
+      );
+    await expect(
+      run(database, () =>
+        run(outer, async () => {
+          consistencyContext.getStore()?.rollbackEffects?.push(remove);
+        }),
+      ),
+    ).rejects.toThrow("commit failed");
+    expect(remove).toHaveBeenCalledTimes(1);
+  });
+
   it("records membership even when a read has no results", async () => {
     const scope = context();
     const db = { execute: jest.fn(async () => []) };

@@ -170,6 +170,7 @@ describe("rbac.subject-authenticated SinglePageStartup MCP client", () => {
       ),
       expect.objectContaining({
         method: "POST",
+        redirect: "error",
         headers: {
           "content-type": "application/json",
           "x-mcp-internal-token-exchange-secret": "internal-secret",
@@ -249,6 +250,47 @@ describe("rbac.subject-authenticated SinglePageStartup MCP client", () => {
         arguments: { model: "social.profiles" },
       }),
     ).rejects.toThrow("exceeds 64 byte limit");
+    await session.close();
+  });
+
+  it("returns complete authorized records across both former byte thresholds", async () => {
+    const rows = Array.from({ length: 21 }, (_, index) => ({
+      id: String(index),
+      title: { ru: `Статья ${index}` },
+      slug: `article-${index}`,
+      description: "Long article body ".repeat(400),
+    }));
+    const response = (data: typeof rows) => ({
+      content: [
+        {
+          type: "text",
+          text: JSON.stringify({ ok: true, type: "model-record-find", data }),
+        },
+      ],
+    });
+    const callTool = jest.fn().mockResolvedValue(response(rows));
+    const harness = createHarness({
+      listTools: jest.fn().mockResolvedValue({
+        tools: [
+          createTool({
+            name: "model-record-find",
+            inputSchema: { type: "object" },
+          }),
+        ],
+      }),
+      callTool,
+    });
+    const session = await harness.service.openSession({
+      rbacSubjectAuthenticationJwt: "rbac-subject-authentication-jwt",
+    });
+    const request = {
+      name: "model-record-find",
+      arguments: { module: "blog", model: "article", limit: 100, offset: 7 },
+    };
+    const result = await session.callTool(request);
+    expect(Buffer.byteLength(result.text)).toBeGreaterThan(100_000);
+    expect(JSON.parse(result.text).data).toEqual(rows);
+    expect(callTool).toHaveBeenCalledTimes(1);
     await session.close();
   });
 

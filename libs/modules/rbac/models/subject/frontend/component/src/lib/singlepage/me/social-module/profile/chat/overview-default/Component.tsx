@@ -23,6 +23,8 @@ export function Component(props: IComponentPropsExtended) {
             socialModuleProfile={profile}
             socialModuleChatId={props.socialModuleChatId}
             socialModuleThreadId={props.socialModuleThreadId}
+            defaultThreadId={props.defaultThreadId}
+            getThreadHref={props.getThreadHref}
           />
         ) : (
           <p role="status">

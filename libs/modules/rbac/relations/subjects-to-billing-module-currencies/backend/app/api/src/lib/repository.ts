@@ -1,12 +1,32 @@
 import "reflect-metadata";
-import { and, asc, eq, sql } from "drizzle-orm";
+import { and, eq, sql } from "drizzle-orm";
 import { injectFromBase, injectable } from "inversify";
-import { DatabaseRepository } from "@sps/shared-backend-api";
+import { Table as Balance } from "@sps/billing/relations/wallets-to-currencies/backend/repository/database";
+import { Table as Owner } from "@sps/rbac/relations/subjects-to-billing-module-wallets/backend/repository/database";
+import {
+  DatabaseRepository,
+  trackRepositoryRead,
+} from "@sps/shared-backend-api";
 import { Table } from "@sps/rbac/relations/subjects-to-billing-module-currencies/backend/repository/database";
 
 @injectable()
 @injectFromBase()
 export class Repository extends DatabaseRepository<typeof Table> {
+  protected override async trackRead(
+    filters?: Parameters<typeof trackRepositoryRead>[2],
+  ) {
+    const id = filters?.and?.find((filter) => filter.column === "id");
+    const subject = filters?.and?.find(
+      (filter) => filter.column === "subjectId",
+    );
+    await trackRepositoryRead(
+      Owner,
+      this.db,
+      subject ? { and: [subject] } : undefined,
+    );
+    await trackRepositoryRead(Balance, this.db, id ? { and: [id] } : undefined);
+  }
+
   async total(subjectId: string, currencyId: string) {
     const [row] = await this.db
       .select({
@@ -20,38 +40,5 @@ export class Repository extends DatabaseRepository<typeof Table> {
         ),
       );
     return row.amount;
-  }
-
-  // Caller holds the logical subject/currency lock, including on first use.
-  async applyDelta(subjectId: string, currencyId: string, delta: string) {
-    const [row] = await this.db
-      .select({ id: Table.id })
-      .from(Table)
-      .where(
-        and(
-          eq(Table.subjectId, subjectId),
-          eq(Table.billingModuleCurrencyId, currencyId),
-        ),
-      )
-      .orderBy(asc(Table.id))
-      .limit(1)
-      .for("update");
-    if (!row) {
-      await this.db
-        .insert(Table)
-        .values({
-          subjectId,
-          billingModuleCurrencyId: currencyId,
-          amount: delta,
-        });
-      return;
-    }
-    await this.db
-      .update(Table)
-      .set({
-        amount: sql`(${Table.amount}::numeric + ${delta}::numeric)::text`,
-        updatedAt: new Date(),
-      })
-      .where(eq(Table.id, row.id));
   }
 }

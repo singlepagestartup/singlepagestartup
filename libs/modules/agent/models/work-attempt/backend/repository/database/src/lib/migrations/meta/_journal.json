@@ -22,6 +22,13 @@
       "when": 1795083690351,
       "tag": "0002_furry_reavers",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1795378879358,
+      "tag": "0003_flashy_shriek",
+      "breakpoints": true
     }
   ]
 }

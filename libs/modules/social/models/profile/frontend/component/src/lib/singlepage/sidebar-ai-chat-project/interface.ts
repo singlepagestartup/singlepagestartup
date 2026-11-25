@@ -12,11 +12,14 @@ export interface IComponentProps extends IParent<IModel, typeof variant> {
   };
   language?: string;
   settingsHref: string;
-  newThreadHref: string;
+  newThreadHref?: string;
   settingsSelected?: boolean;
   creatingThread?: boolean;
   children?: React.ReactNode;
   threads?: React.ReactNode;
 }
-export interface IComponentPropsExtended
-  extends IParentExtended<IModel, typeof variant, IComponentProps> {}
+export interface IComponentPropsExtended extends IParentExtended<
+  IModel,
+  typeof variant,
+  IComponentProps
+> {}

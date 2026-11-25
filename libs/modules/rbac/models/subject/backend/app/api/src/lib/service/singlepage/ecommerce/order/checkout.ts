@@ -31,7 +31,7 @@ import type {
   IOfferQuoteInput,
 } from "@sps/ecommerce/relations/stores-to-products/sdk/model";
 import type { IReservationLine } from "@sps/ecommerce/relations/orders-to-billing-module-payment-intents/backend/app/api/src/lib/service/singlepage/reservation";
-import type { IAcceptedOrderWorkCheckout } from "@sps/ecommerce/models/order-work/sdk/model";
+import type { IAcceptedOrderWorkCheckout } from "@sps/ecommerce/models/order/sdk/model";
 import type { IModel as IOrderLine } from "@sps/ecommerce/relations/orders-to-products/sdk/model";
 
 export const ACTIVE_SUBSCRIPTION_ORDER_STATUSES = [
@@ -82,6 +82,7 @@ export interface IConstructorProps {
   modules: Pick<SubjectServiceDependencies["modules"], "billing" | "ecommerce">;
   repository: Pick<Repository, "withSubjectLock">;
   settledOrderIds: (props: { orderIds: string[] }) => Promise<Set<string>>;
+  assertPaymentStage: (customerId: string, orderId: string) => Promise<void>;
   findById: ({ id }: { id: string }) => Promise<any>;
 }
 
@@ -202,6 +203,11 @@ export class Service {
         "Validation error. Every checkout order must have products",
       );
     }
+    await Promise.all(
+      ecommerceModuleOrders.map((order) =>
+        this.dependencies.assertPaymentStage(props.id, order.id),
+      ),
+    );
     const existingPaymentLinks =
       await this.modules.ecommerce.order.ordersToBillingModulePaymentIntents.find(
         {
@@ -943,7 +949,7 @@ export class Service {
             interval: checkoutAttributesByOrderId.get(orderId)!.interval,
             parentLineId: line.parentLineId ?? null,
             quoteVersion: accepted
-              ? `result:${accepted.checkout.resultVersionId}`
+              ? `result:${accepted.checkout.fileId}`
               : quote.version,
             quoteExpiresAt,
             charge: {
@@ -1076,8 +1082,7 @@ export class Service {
               ),
             });
           if (
-            initialResult?.checkout.resultVersionId !==
-            currentResult?.checkout.resultVersionId
+            initialResult?.checkout.fileId !== currentResult?.checkout.fileId
           ) {
             throw new Error(
               "Conflict error. The accepted result changed before checkout",
@@ -1122,7 +1127,7 @@ export class Service {
             );
           }
           if (
-            work?.resultVersionId &&
+            work?.fileId &&
             (ecommerceModuleOrders.length !== 1 || type !== "one_off")
           ) {
             throw new Error(

@@ -281,6 +281,18 @@ export class Service {
       { method: "PATCH", path: `${path}/${profile.id}` },
       { method: "POST", path: `${path}/${profile.id}/avatar` },
       { method: "GET", path: `${path}/${profile.id}/avatar` },
+      {
+        method: "GET",
+        path: `${path}/${profile.id}/knowledge/sources/personal`,
+      },
+      {
+        method: "POST",
+        path: `${path}/${profile.id}/knowledge/sources/personal`,
+      },
+      {
+        method: "PATCH",
+        path: `${path}/${profile.id}/knowledge/sources/personal/[knowledge.sources.id]`,
+      },
       ...identities.flatMap((identity) => [
         {
           method: "PATCH",

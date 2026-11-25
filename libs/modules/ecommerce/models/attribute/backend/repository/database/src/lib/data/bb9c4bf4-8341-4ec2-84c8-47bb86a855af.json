@@ -1,0 +1,15 @@
+{
+  "id": "bb9c4bf4-8341-4ec2-84c8-47bb86a855af",
+  "createdAt": "2026-11-17T07:14:50.844Z",
+  "updatedAt": "2026-11-17T07:14:50.844Z",
+  "variant": "default",
+  "number": null,
+  "boolean": null,
+  "date": null,
+  "datetime": null,
+  "string": {
+    "en": "1"
+  },
+  "adminTitle": "ai-chat-tokens-100-rub-formula-version",
+  "slug": "ai-chat-tokens-100-rub-formula-version"
+}

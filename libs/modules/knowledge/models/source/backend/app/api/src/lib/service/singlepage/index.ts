@@ -5,6 +5,10 @@ import { injectFromBase, injectable } from "inversify";
 import { CRUDService } from "@sps/shared-backend-api";
 import { assertKnowledgeAttachmentBytes } from "@sps/backend-utils";
 import { Table } from "@sps/knowledge/models/source/backend/repository/database";
+import {
+  AI_CHAT_ATTACHMENT_FORMATS,
+  assertSupportedAiChatAttachments,
+} from "@sps/shared-utils";
 import type { Repository } from "../../repository";
 import type { Service as ChunkService } from "@sps/knowledge/models/chunk/backend/app/api/src/lib/service";
 import type { IFileRelationMutation } from "@sps/knowledge/relations/sources-to-file-storage-module-files/backend/app/api/src/lib/service";
@@ -32,8 +36,7 @@ export interface ISourceServices {
   inTransaction: boolean;
   transaction: <T>(operation: (source: Service) => Promise<T>) => Promise<T>;
   readSnapshot: <T>(operation: (source: Service) => Promise<T>) => Promise<T>;
-  afterCommit: (operation: () => Promise<unknown>) => void;
-  process: (sourceId: string, material: boolean) => Promise<unknown>;
+  rebuildStoredFileSource: (sourceId: string) => Promise<void>;
 }
 
 @injectable()
@@ -61,7 +64,7 @@ export class Service extends CRUDService<Source> {
   private owner() {
     return this.repository as Repository;
   }
-  private run<T>(operation: (source: Service) => Promise<T>) {
+  withTransaction<T>(operation: (source: Service) => Promise<T>) {
     const services = this.dependencies();
     return services.inTransaction
       ? operation(this)
@@ -77,7 +80,7 @@ export class Service extends CRUDService<Source> {
     return source;
   }
   async create(props: { data: any }): Promise<Source> {
-    const source = await this.run(async (scope) => {
+    return this.withTransaction(async (scope) => {
       const source = (await scope.saveRecord({
         data: {
           ...props.data,
@@ -86,17 +89,11 @@ export class Service extends CRUDService<Source> {
           lastIndexedAt: null,
         },
       }))!;
-      scope
-        .dependencies()
-        .afterCommit(() => scope.dependencies().process(source.id, false));
       return source;
     });
-    const loadedSource = await this.findById({ id: source.id });
-
-    return loadedSource!;
   }
   async findOrCreate(props: { data: any }) {
-    return this.run(async (scope) => {
+    return this.withTransaction(async (scope) => {
       await scope.owner().lockSlug(props.data.slug);
       const [existing] = await scope.find({
         params: {
@@ -112,12 +109,7 @@ export class Service extends CRUDService<Source> {
     });
   }
   async update(props: { id: string; data: any }): Promise<Source | null> {
-    const source = await this.updateSource({
-      sourceId: props.id,
-      data: props.data,
-    });
-    if (source) await this.dependencies().process(source.id, false);
-    return this.findById({ id: props.id });
+    return this.updateSource({ sourceId: props.id, data: props.data });
   }
   async delete(props: { id: string }): Promise<Source> {
     const source = await this.deleteSourceWithDerivedData(props.id);
@@ -128,6 +120,9 @@ export class Service extends CRUDService<Source> {
   findSourceById(id: string) {
     return this.findById({ id });
   }
+  lock(ids: string[]) {
+    return this.owner().lock(ids);
+  }
   async findSourcesByIds(ids: string[]) {
     if (!ids.length) return [];
     return this.find({
@@ -136,10 +131,11 @@ export class Service extends CRUDService<Source> {
       },
     });
   }
-  specificationSnapshots(ids: string[]) {
-    return this.owner().specificationSnapshots(ids);
-  }
-  listSourcesForIndex(props?: { sourceId?: string; limit?: number }) {
+  listSourcesForIndex(props?: {
+    sourceId?: string;
+    limit?: number;
+    afterId?: string;
+  }) {
     return this.find({
       params: {
         filters: {
@@ -148,9 +144,13 @@ export class Service extends CRUDService<Source> {
             ...(props?.sourceId
               ? [{ column: "id", method: "eq" as const, value: props.sourceId }]
               : []),
+            ...(props?.afterId
+              ? [{ column: "id", method: "gt" as const, value: props.afterId }]
+              : []),
           ],
         },
         limit: props?.limit,
+        orderBy: { and: [{ column: "id", method: "asc" }] },
       },
     });
   }
@@ -167,7 +167,7 @@ export class Service extends CRUDService<Source> {
     input: KnowledgeSourceInput,
     preserveExisting = false,
   ): Promise<Source> {
-    return this.run(async (scope) => {
+    return this.withTransaction(async (scope) => {
       await scope.owner().lockSlug(input.slug);
       const [existing] = await scope.find({
         params: {
@@ -257,7 +257,7 @@ export class Service extends CRUDService<Source> {
   async updateSourceWithAttachments(
     props: IUpdateSourceProps,
   ): Promise<{ source: Source; attachmentsChanged: boolean } | null> {
-    return this.run(async (scope) => {
+    return this.withTransaction(async (scope) => {
       await scope.lockFiles(props.fileIds || []);
       const [source] = await scope.owner().lock([props.sourceId]);
       if (!source)
@@ -301,16 +301,18 @@ export class Service extends CRUDService<Source> {
     });
   }
   async deleteSourceWithDerivedData(sourceId: string): Promise<Source | null> {
-    return this.run(async (scope) => {
+    return this.withTransaction(async (scope) => {
       const [source] = await scope.owner().lock([sourceId]);
       if (!source) return null;
       await scope.clearSourceChunks([sourceId]);
       for (const link of await scope.module.sourcesToFileStorageModuleFiles.forSource(
         sourceId,
-      ))
+      )) {
         await scope.module.sourcesToFileStorageModuleFiles.delete({
           id: link.id,
         });
+        await scope.deleteOwnedMaterial(link);
+      }
       const deleted = await scope.deleteRecord(sourceId);
       return deleted;
     });
@@ -324,7 +326,7 @@ export class Service extends CRUDService<Source> {
     await this.module.chunk.removeIds(ids);
   }
   async clearDerivedData() {
-    return this.run(async (scope) => {
+    return this.withTransaction(async (scope) => {
       const candidates = await scope.find();
       const sources = await scope
         .owner()
@@ -345,7 +347,7 @@ export class Service extends CRUDService<Source> {
     userContext: string,
     expectedContentHash: string,
   ): Promise<Source | null> {
-    return this.run(async (scope) => {
+    return this.withTransaction(async (scope) => {
       const [source] = await scope.owner().lock([sourceId]);
       if (!source || source.contentHash !== expectedContentHash) return null;
       await scope.clearSourceChunks([sourceId]);
@@ -368,7 +370,7 @@ export class Service extends CRUDService<Source> {
     contentHash: string,
     chunks: KnowledgeChunkInput[],
   ): Promise<boolean> {
-    return this.run(async (scope) => {
+    return this.withTransaction(async (scope) => {
       const [source] = await scope.owner().lock([sourceId]);
       if (!source || source.contentHash !== contentHash) return false;
       await scope.clearSourceChunks([sourceId]);
@@ -397,7 +399,7 @@ export class Service extends CRUDService<Source> {
     fileSnapshot: string;
     content: string;
   }): Promise<Source | null> {
-    return this.run(async (scope) => {
+    return this.withTransaction(async (scope) => {
       const [source] = await scope.owner().lock([props.sourceId]);
       if (!source || source.contentHash !== props.expectedContentHash)
         return null;
@@ -451,7 +453,14 @@ export class Service extends CRUDService<Source> {
     }
   }
   async mutateFileRelation(props: IFileRelationMutation) {
-    return this.run(async (scope) => {
+    if (
+      ["private-image", "private-material"].includes(props.data?.variant ?? "")
+    ) {
+      throw new Error(
+        "Validation error. Attach private images from the authorized conversation.",
+      );
+    }
+    return this.withTransaction(async (scope) => {
       const relationService = scope.module.sourcesToFileStorageModuleFiles;
       let previous;
       if (props.id) {
@@ -495,10 +504,6 @@ export class Service extends CRUDService<Source> {
         });
       }
       await scope.invalidateSources(sources);
-      for (const id of sourceIds)
-        scope
-          .dependencies()
-          .afterCommit(() => scope.dependencies().process(id, true));
       return { relation, sourceIds };
     });
   }
@@ -507,7 +512,7 @@ export class Service extends CRUDService<Source> {
     id: string;
     data?: any;
   }) {
-    return this.run(async (scope) => {
+    return this.withTransaction(async (scope) => {
       await scope.lockFiles([props.id], "update", false);
       const fileLinks = await scope.module.sourcesToFileStorageModuleFiles.find(
         {
@@ -546,19 +551,30 @@ export class Service extends CRUDService<Source> {
       await scope.invalidateSources(sources);
       let file;
       if (props.action === "delete") {
-        file = await fileService.delete({ id: props.id });
+        for (const link of fileLinks) {
+          await scope.module.sourcesToFileStorageModuleFiles.delete({
+            id: link.id,
+          });
+        }
       } else {
         file = await fileService.update({
           id: props.id,
           data: { ...previous, ...props.data },
         });
       }
+      for (const id of sourceIds) {
+        await scope.dependencies().rebuildStoredFileSource(id);
+      }
+      if (props.action === "delete") {
+        // Delete stored bytes only after every affected index has been rebuilt.
+        file = await fileService.delete({ id: props.id });
+      }
       return { file, sourceIds };
     });
   }
   async attachFiles(sourceId: string, fileIds: string[]) {
     if (!fileIds.length) return;
-    return this.run(async (scope) => {
+    return this.withTransaction(async (scope) => {
       await scope.lockFiles(fileIds);
       const sources = await scope.owner().lock([sourceId]);
       if (!sources.length)
@@ -573,6 +589,134 @@ export class Service extends CRUDService<Source> {
       }
     });
   }
+  // Called by the employee conversation after resolving the attachment in its authorized thread.
+  async attachPrivateImage(
+    sourceId: string,
+    image: { id: string; digest: string },
+  ) {
+    return this.withTransaction(async (scope) => {
+      const [source] = await scope.owner().lock([sourceId]);
+      if (!source) {
+        throw new Error("Not Found error. Knowledge Source was not found.");
+      }
+      const file =
+        await scope.modules.fileStorage.file.privateContent.findById(image);
+      if (
+        !file ||
+        !["image/jpeg", "image/png", "image/webp"].includes(file.mimeType)
+      ) {
+        throw new Error("Validation error. The training image is unavailable.");
+      }
+      assertKnowledgeAttachmentBytes({
+        name: file.name,
+        mimeType: file.mimeType,
+        bytes: file.bytes,
+      });
+      const relations = scope.module.sourcesToFileStorageModuleFiles;
+      const links = await relations.forSource(sourceId);
+      if (links.some((link) => link.fileStorageModuleFileId === image.id)) {
+        return;
+      }
+      await relations.create({
+        data: {
+          sourceId,
+          fileStorageModuleFileId: image.id,
+          variant: "private-image",
+          orderIndex: (links.at(-1)?.orderIndex ?? -1) + 1,
+        },
+      });
+      await scope.invalidateSources([source]);
+    });
+  }
+
+  async editMaterials(
+    sourceId: string,
+    uploads: File[],
+    removeFileIds: string[],
+  ) {
+    const relations = this.module.sourcesToFileStorageModuleFiles;
+    const current = await relations.forSource(sourceId);
+    if (
+      removeFileIds.some(
+        (id) => !current.some((link) => link.fileStorageModuleFileId === id),
+      )
+    ) {
+      throw new Error("Conflict error. The source attachments have changed.");
+    }
+    for (const link of current) {
+      if (removeFileIds.includes(link.fileStorageModuleFileId)) {
+        await relations.delete({ id: link.id });
+        await this.deleteOwnedMaterial(link);
+      }
+    }
+    assertSupportedAiChatAttachments(uploads);
+    let orderIndex =
+      Math.max(-1, ...current.map((link) => link.orderIndex)) + 1;
+    for (const upload of uploads) {
+      const extension = upload.name
+        .split(".")
+        .pop()!
+        .toLowerCase() as keyof typeof AI_CHAT_ATTACHMENT_FORMATS;
+      const mimeType = AI_CHAT_ATTACHMENT_FORMATS[extension][0];
+      const bytes = new Uint8Array(await upload.arrayBuffer());
+      assertKnowledgeAttachmentBytes({ bytes, name: upload.name, mimeType });
+      const file =
+        await this.modules.fileStorage.file.privateContent.writeKnowledgeMaterial(
+          { bytes, name: upload.name, mimeType },
+        );
+      await relations.create({
+        data: {
+          sourceId,
+          fileStorageModuleFileId: file.id,
+          variant: "private-material",
+          orderIndex,
+        },
+      });
+      orderIndex++;
+    }
+  }
+
+  private async deleteOwnedMaterial(link: {
+    variant: string;
+    fileStorageModuleFileId: string;
+  }) {
+    if (
+      link.variant === "private-material" &&
+      !(await this.fileSourceIds(link.fileStorageModuleFileId)).length
+    ) {
+      await this.modules.fileStorage.file.privateContent.delete({
+        id: link.fileStorageModuleFileId,
+        variant: "knowledge-material",
+      });
+    }
+  }
+
+  async readPrivateMaterial(sourceId: string, fileId: string) {
+    const links =
+      await this.module.sourcesToFileStorageModuleFiles.forSource(sourceId);
+    const link = links.find((item) => item.fileStorageModuleFileId === fileId);
+    if (
+      !link ||
+      !["private-image", "private-material"].includes(link.variant)
+    ) {
+      throw new Error("Not Found error. File is not attached to this source.");
+    }
+    const file = await this.modules.fileStorage.file.privateContent.findById({
+      id: fileId,
+      ...(link.variant === "private-material" && {
+        variant: "knowledge-material",
+      }),
+    });
+    if (
+      !file ||
+      (link.variant === "private-image" &&
+        !["image/jpeg", "image/png", "image/webp"].includes(file.mimeType))
+    ) {
+      throw new Error("Not Found error. The attached file is unavailable.");
+    }
+    return file;
+  }
+
   fileSourceIds(fileId: string) {
     return this.module.sourcesToFileStorageModuleFiles.fileSourceIds(fileId);
   }
@@ -582,11 +726,22 @@ export class Service extends CRUDService<Source> {
     expectedFileIds?: string[],
     expectedContentHash?: string,
   ) {
-    return this.run(async (scope) => {
+    return this.withTransaction(async (scope) => {
       const previous = await scope.sourceFiles(sourceId);
       // Legacy unsupported files can be detached; only newly attached bytes are validated.
       const existingIds = new Set(previous.map(({ file }) => file.id));
-      await scope.lockFiles(fileIds, "key share", false);
+      const retainedPrivateIds = new Set(
+        previous
+          .filter(({ relation }) =>
+            ["private-image", "private-material"].includes(relation.variant),
+          )
+          .map(({ file }) => file.id),
+      );
+      await scope.lockFiles(
+        fileIds.filter((id) => !retainedPrivateIds.has(id)),
+        "key share",
+        false,
+      );
       await scope.lockFiles(fileIds.filter((id) => !existingIds.has(id)));
       const sources = await scope.owner().lock([sourceId]);
       if (!sources.length)
@@ -603,6 +758,11 @@ export class Service extends CRUDService<Source> {
         fileIds,
         expectedFileIds,
       );
+      for (const { relation, file } of previous) {
+        if (!fileIds.includes(file.id)) {
+          await scope.deleteOwnedMaterial(relation);
+        }
+      }
       await scope.invalidateSources(sources);
     });
   }
@@ -625,14 +785,18 @@ export class Service extends CRUDService<Source> {
     await this.attachFiles(props.sourceId, [file.id]);
     return file;
   }
-  freshHeaders(ids: string[]) {
-    return this.owner().freshHeaders(ids);
+  freshHeaders(ids: string[], includeCustomerMemory = false) {
+    return this.owner().freshHeaders(ids, includeCustomerMemory);
   }
-  async hasEmbeddingIndex(sourceIds: string[], embeddingIndex: string) {
+  async hasEmbeddingIndex(
+    sourceIds: string[],
+    embeddingIndex?: string,
+    includeCustomerMemory = false,
+  ) {
     if (!sourceIds.length) {
       return false;
     }
-    const headers = await this.freshHeaders(sourceIds);
+    const headers = await this.freshHeaders(sourceIds, includeCustomerMemory);
     const links = await this.module.sourcesToChunks.forSources(
       headers.map((source) => source.id),
     );
@@ -648,12 +812,13 @@ export class Service extends CRUDService<Source> {
     minSimilarity?: number;
     sourceIds?: string[];
     embeddingIndex?: string;
+    includeCustomerMemory?: boolean;
   }): Promise<KnowledgeSearchResult[]> {
     if (
-      props.embeddingIndex &&
-      (!props.sourceIds ||
-        props.embedding.length !== 768 ||
-        props.embedding.some((value) => !Number.isFinite(value)))
+      (props.includeCustomerMemory && !props.sourceIds) ||
+      (props.embeddingIndex &&
+        (props.embedding.length !== 768 ||
+          props.embedding.some((value) => !Number.isFinite(value))))
     ) {
       throw new Error(
         "Validation error. A scoped query requires the index dimensions and source IDs",
@@ -685,13 +850,17 @@ export class Service extends CRUDService<Source> {
             ...chunk,
             sourceId: source.id,
             sourceTitle: source.title,
+            sourceVersion: source.contentHash,
             retrievalRole: "seed" as const,
           },
         ];
       });
     };
     if (props.sourceIds) {
-      const sources = await this.freshHeaders(props.sourceIds);
+      const sources = await this.freshHeaders(
+        props.sourceIds,
+        props.includeCustomerMemory,
+      );
       const links = await this.module.sourcesToChunks.forSources(
         sources.map((source) => source.id),
       );
@@ -709,13 +878,20 @@ export class Service extends CRUDService<Source> {
     let limit = Math.min(total, Math.max(64, props.topK * 4));
     let result: KnowledgeSearchResult[];
     let needsMoreCandidates: boolean;
+    const privateIds = await this.owner().privateSourceIds();
+    const privateLinks = privateIds.length
+      ? await this.module.sourcesToChunks.forSources(privateIds)
+      : [];
+    const excludeIds = privateLinks.map(({ chunkId }) => chunkId);
     do {
-      // Keep the unfiltered global vector scan eligible for HNSW. Only ranked
-      // candidates cross service boundaries; Source content is never loaded.
+      // Keep the global vector scan HNSW-eligible and exclude personal chunks
+      // before reading results. Source content is never loaded here.
       const chunks = await this.module.chunk.search({
         embedding: props.embedding,
         minSimilarity: props.minSimilarity,
         topK: limit,
+        ...(props.embeddingIndex && { embeddingIndex: props.embeddingIndex }),
+        ...(excludeIds.length && { excludeIds }),
       });
       const links = await this.module.sourcesToChunks.forChunkIds(
         chunks.map((chunk) => chunk.id),
@@ -736,11 +912,14 @@ export class Service extends CRUDService<Source> {
   async findNeighborChunks(props: {
     seeds: {
       sourceId: string;
+      sourceVersion?: string;
       chunkIndex: number;
       distance?: number | null;
       similarity?: number | null;
     }[];
     window: number;
+    embeddingIndex?: string;
+    includeCustomerMemory?: boolean;
   }): Promise<KnowledgeSearchResult[]> {
     if (!this.dependencies().inTransaction)
       return this.dependencies().readSnapshot((source) =>
@@ -748,8 +927,16 @@ export class Service extends CRUDService<Source> {
       );
     const result: KnowledgeSearchResult[] = [];
     for (const seed of props.seeds) {
-      const [source] = await this.freshHeaders([seed.sourceId]);
-      if (!source) continue;
+      const [source] = await this.freshHeaders(
+        [seed.sourceId],
+        props.includeCustomerMemory,
+      );
+      if (
+        !source ||
+        (seed.sourceVersion && source.contentHash !== seed.sourceVersion)
+      ) {
+        continue;
+      }
       const links = await this.module.sourcesToChunks.forSources([source.id]);
       if (!links.length) continue;
       const chunks = await this.module.chunk.find({
@@ -775,7 +962,12 @@ export class Service extends CRUDService<Source> {
           },
         },
       });
-      for (const chunk of chunks.sort((a, b) => a.chunkIndex - b.chunkIndex))
+      for (const chunk of chunks.sort((a, b) => a.chunkIndex - b.chunkIndex)) {
+        if (
+          (chunk.metadata?.embeddingIndex ?? undefined) !== props.embeddingIndex
+        ) {
+          continue;
+        }
         result.push({
           id: chunk.id,
           text: chunk.text,
@@ -783,10 +975,12 @@ export class Service extends CRUDService<Source> {
           metadata: chunk.metadata,
           sourceId: source.id,
           sourceTitle: source.title,
+          sourceVersion: source.contentHash,
           distance: seed.distance ?? null,
           similarity: seed.similarity ?? null,
           retrievalRole: "neighbor",
         });
+      }
     }
     return result;
   }

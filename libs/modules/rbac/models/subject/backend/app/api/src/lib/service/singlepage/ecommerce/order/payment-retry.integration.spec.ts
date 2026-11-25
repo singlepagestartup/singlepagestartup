@@ -514,6 +514,7 @@ async function freshCheckout() {
   const paymentRecords = new RetryableIds({ module, modules });
   return new Checkout({
     repository: subjectRepository,
+    assertPaymentStage: async () => {},
     findById: ({ id }) => subjects.findById({ id }),
     settledOrderIds: (input) => paymentRecords.settledIds(input),
     module,

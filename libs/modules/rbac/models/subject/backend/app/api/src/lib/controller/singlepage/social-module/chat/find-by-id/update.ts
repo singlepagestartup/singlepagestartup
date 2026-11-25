@@ -2,12 +2,7 @@ import { RBAC_JWT_SECRET, RBAC_SECRET_KEY } from "@sps/shared-utils";
 import { Context } from "hono";
 import { HTTPException } from "hono/http-exception";
 import { Service } from "../../../../../service";
-import {
-  getHttpErrorType,
-  localizedFieldHasValue,
-  normalizeLocalizedField,
-} from "@sps/backend-utils";
-import { api as socialModuleChatApi } from "@sps/social/models/chat/sdk/server";
+import { getHttpErrorType } from "@sps/backend-utils";
 
 export class Handler {
   service: Service;
@@ -66,38 +61,25 @@ export class Handler {
         throw new Error("Validation error. Invalid chat payload");
       }
 
-      const title = normalizeLocalizedField(data.title, "title", {
-        entityName: "Chat",
-      });
-
-      if (!title || !localizedFieldHasValue(title)) {
-        throw new Error("Validation error. Chat title is required");
+      const coverFile = body["coverFile"];
+      if (coverFile !== undefined && !(coverFile instanceof File)) {
+        throw new Error("Validation error. Invalid cover upload");
       }
-
-      const description = normalizeLocalizedField(
-        data.description,
-        "description",
+      if (
+        data.removeCover !== undefined &&
+        typeof data.removeCover !== "boolean"
+      ) {
+        throw new Error("Validation error. Invalid removeCover flag");
+      }
+      const socialModuleChat = await this.service.socialChatSettings.update(
+        socialModuleChatId,
         {
-          entityName: "Chat",
+          title: data.title,
+          description: data.description,
+          removeCover: data.removeCover,
+          coverFile,
         },
       );
-
-      const socialModuleChat = await socialModuleChatApi.update({
-        id: socialModuleChatId,
-        data: {
-          title: JSON.stringify(title),
-          ...(description
-            ? {
-                description: JSON.stringify(description),
-              }
-            : {}),
-        },
-        options: {
-          headers: {
-            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-          },
-        },
-      });
 
       return c.json({
         data: socialModuleChat,

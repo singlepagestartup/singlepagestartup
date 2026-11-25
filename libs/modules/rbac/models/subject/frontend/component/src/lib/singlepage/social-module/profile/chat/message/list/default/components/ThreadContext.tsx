@@ -1,6 +1,6 @@
 "use client";
 
-import { memo, type Ref } from "react";
+import { memo } from "react";
 import Link from "next/link";
 import { Package } from "lucide-react";
 import type {
@@ -17,9 +17,6 @@ interface IProps extends IThreadMessagesScope {
   work?: ICustomerWorkView;
   products?: ILinkedChatProduct[];
   language: string;
-  resultSectionRef: Ref<HTMLElement>;
-  selectedVersionId?: string;
-  onVersionSelect: (id: string) => void;
 }
 
 export const ThreadContext = memo(function ThreadContext(props: IProps) {
@@ -53,9 +50,6 @@ export const ThreadContext = memo(function ThreadContext(props: IProps) {
             props.work.productSlug
           }
           language={props.language}
-          resultSectionRef={props.resultSectionRef}
-          selectedVersionId={props.selectedVersionId}
-          onVersionSelect={props.onVersionSelect}
         />
       )}
       {!!products?.length && (

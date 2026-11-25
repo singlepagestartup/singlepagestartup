@@ -31,13 +31,17 @@ it("projects only visible linked products and work for each authorized thread", 
     { id: "hidden-product", slug: "hidden", title: {}, variant: "hidden" },
     { id: "carrier", slug: "carrier-service", title: { ru: "Доставка" } },
   ];
-  const findWorkLinks = jest.fn().mockResolvedValue([{ threadId: "two" }]);
+  const findWorkLinks = jest
+    .fn()
+    .mockResolvedValue([
+      { chatId: "chat", threadId: "two", crmModuleTaskId: "task" },
+    ]);
   const findProductLinks = jest.fn().mockResolvedValue(productLinks);
   const findProducts = jest.fn().mockResolvedValue(products);
   const reader = new Service({
     modules: {
       social: {
-        threadsToCrmModuleTasks: { find: findWorkLinks },
+        chatsToCrmModuleTasks: { channels: findWorkLinks },
         threadsToEcommerceModuleProducts: { find: findProductLinks },
       },
       ecommerce: { product: { find: findProducts } },
@@ -67,7 +71,7 @@ it("projects only visible linked products and work for each authorized thread", 
     method: "inArray",
     value: ["one", "two"],
   };
-  expect(findWorkLinks.mock.calls[0][0].params.filters.and).toEqual([filter]);
+  expect(findWorkLinks).toHaveBeenCalledWith({ threadIds: ["one", "two"] });
   expect(findProductLinks.mock.calls[0][0].params.filters.and).toEqual([
     filter,
   ]);

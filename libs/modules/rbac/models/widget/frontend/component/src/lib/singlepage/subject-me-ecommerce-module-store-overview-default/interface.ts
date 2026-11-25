@@ -10,11 +10,8 @@ export interface IComponentProps extends IParent<IModel, typeof variant> {
   language?: string;
   ecommerceModuleStoreSlug?: string;
 }
-export interface IComponentPropsExtended
-  extends IParentExtended<IModel, typeof variant, IComponentProps> {}
-
-export interface IContentProps {
-  isServer: boolean;
-  language: string;
-  ecommerceModuleStoreSlug?: string;
-}
+export interface IComponentPropsExtended extends IParentExtended<
+  IModel,
+  typeof variant,
+  IComponentProps
+> {}

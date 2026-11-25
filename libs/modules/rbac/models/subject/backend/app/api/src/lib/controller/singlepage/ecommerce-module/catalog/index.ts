@@ -2,11 +2,12 @@ import { HTTPException } from "hono/http-exception";
 import type { Context } from "hono";
 import { getHttpErrorType } from "@sps/backend-utils";
 import {
-  catalogCreateOfferSchema,
+  storeProductCreateOfferSchema,
   catalogMutationSchema,
   catalogSetAttributeSchema,
 } from "@sps/rbac/models/subject/sdk/model/src/lib/ecommerce-catalog";
 import type { Service } from "../../../../service";
+import { STORE_PRODUCT_CREATE_MAX_IMAGES } from "@sps/shared-utils";
 
 export class Handler {
   constructor(
@@ -41,7 +42,41 @@ export class Handler {
         const data = await this.service.ecommerceCatalog.context(subjectId);
         return c.json({ data });
       }
-      const body: unknown = await c.req.json();
+      const images: File[] = [];
+      let body: unknown;
+      if (
+        this.operation === "offer" &&
+        c.req
+          .header("Content-Type")
+          ?.toLowerCase()
+          .startsWith("multipart/form-data")
+      ) {
+        const form = await c.req.formData().catch(() => undefined);
+        const fields = form?.getAll("data");
+        if (!form || fields?.length !== 1 || typeof fields[0] !== "string") {
+          throw new Error("Validation error. Expected one offer data field");
+        }
+        for (const [name, field] of form.entries()) {
+          if (name === "data") {
+            continue;
+          }
+          if (
+            name !== "images" ||
+            typeof field === "string" ||
+            images.length >= STORE_PRODUCT_CREATE_MAX_IMAGES
+          ) {
+            throw new Error("Validation error. Invalid offer image selection");
+          }
+          images.push(field);
+        }
+        try {
+          body = { data: JSON.parse(fields[0]) };
+        } catch {
+          throw new Error("Validation error. Invalid offer creation data");
+        }
+      } else {
+        body = await c.req.json().catch(() => undefined);
+      }
       if (
         !body ||
         typeof body !== "object" ||
@@ -63,14 +98,15 @@ export class Handler {
         return c.json({ data }, parsed.data.method === "POST" ? 201 : 200);
       }
       if (this.operation === "offer") {
-        const parsed = catalogCreateOfferSchema.safeParse(body.data);
+        const parsed = storeProductCreateOfferSchema.safeParse(body.data);
         if (!parsed.success) {
           throw new Error("Validation error. Invalid offer creation values");
         }
-        const data = await this.service.ecommerceCatalog.createOffer({
+        const data = await this.service.storeProducts.createOffer(
           subjectId,
-          data: parsed.data,
-        });
+          parsed.data,
+          images,
+        );
         return c.json({ data }, 201);
       }
       const parsed = catalogSetAttributeSchema.safeParse(body.data);

@@ -13,6 +13,23 @@ import type { IModel as IBillingModuleCurrency } from "@sps/billing/models/curre
 import type { IModel as IFileStorageModuleFile } from "@sps/file-storage/models/file/sdk/model";
 
 export const STORE_TEST_ORDER_VARIANT = "store-test";
+export * from "./work";
+export { orderStatusLabel } from "./status";
+
+export interface IStoreOrderRow {
+  id: string;
+  status: string;
+  createdAt: string;
+  items?: Array<{
+    id: string;
+    quantity: number;
+    product: Pick<IProduct, "id"> & {
+      title: IProduct["title"] | null;
+      name: string;
+    };
+  }>;
+  total?: { amount: number; symbol: string; precision: number } | null;
+}
 
 export interface ICartDetails {
   fixedResultPrice?: boolean;

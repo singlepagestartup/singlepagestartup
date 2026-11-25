@@ -17,7 +17,11 @@ export function Component(props: IComponentPropsExtended) {
       data={project.profile}
       dataSource="props"
       settingsHref={`${projectBaseHref(project)}/settings`}
-      newThreadHref={`${projectBaseHref(project)}/threads/create`}
+      newThreadHref={
+        props.canManageChat
+          ? `${projectBaseHref(project)}/threads/create`
+          : undefined
+      }
       settingsSelected={props.selected === "settings"}
       creatingThread={props.selected === "create"}
       threads={

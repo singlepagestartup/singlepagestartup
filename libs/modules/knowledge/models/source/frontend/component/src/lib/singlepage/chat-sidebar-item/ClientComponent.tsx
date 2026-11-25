@@ -2,6 +2,7 @@
 
 import { IClientComponentProps } from "./interface";
 import { cn } from "@sps/shared-frontend-client-utils";
+import { readKnowledgeDocumentContent } from "@sps/shared-utils";
 import { FileText } from "lucide-react";
 
 function formatKnowledgeDate(language: string, value?: string | Date | null) {
@@ -20,6 +21,16 @@ function formatKnowledgeDate(language: string, value?: string | Date | null) {
 
 export function Component(props: IClientComponentProps) {
   const ru = props.language === "ru";
+  const personalNote = props.data.variant === "customer-memory";
+  const title =
+    personalNote && props.data.title === "Personal note"
+      ? ru
+        ? "Личная заметка"
+        : "Personal note"
+      : props.data.title;
+  const detail = personalNote
+    ? readKnowledgeDocumentContent(props.data.content)
+    : formatKnowledgeDate(props.language, props.data.lastIndexedAt);
   return (
     <button
       type="button"
@@ -42,12 +53,12 @@ export function Component(props: IClientComponentProps) {
       <span className="w-0 min-w-0 flex-1 overflow-hidden">
         <span
           className="block max-w-full truncate text-xs font-medium text-slate-700"
-          title={props.data.title}
+          title={title}
         >
-          {props.data.title}
+          {title}
         </span>
         <span className="mt-0.5 block max-w-full truncate text-[11px] text-slate-400">
-          {formatKnowledgeDate(props.language, props.data.lastIndexedAt)}
+          {detail}
         </span>
       </span>
       {props.needsReindex ? (

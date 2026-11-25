@@ -1,0 +1,47 @@
+{
+  "metadata": {
+    "seo": {
+      "title": {
+        "en": "Store Products — SinglePageStartup",
+        "ru": "Товары магазина — SinglePageStartup"
+      },
+      "description": {
+        "en": "Browse products available from this store.",
+        "ru": "Откройте каталог товаров этого магазина."
+      }
+    },
+    "seoDisplay": {
+      "twitterTitle": {
+        "en": "Store Products — SinglePageStartup",
+        "ru": "Товары магазина — SinglePageStartup"
+      },
+      "opengraphTitle": {
+        "en": "Store Products — SinglePageStartup",
+        "ru": "Товары магазина — SinglePageStartup"
+      },
+      "opengraphLocale": {
+        "en": "en_US",
+        "ru": "ru_RU"
+      },
+      "twitterDescription": {
+        "en": "Browse products available from this store.",
+        "ru": "Откройте каталог товаров этого магазина."
+      },
+      "opengraphDescription": {
+        "en": "Browse products available from this store.",
+        "ru": "Откройте каталог товаров этого магазина."
+      }
+    }
+  },
+  "id": "45078895-891b-4f7d-b395-9a14414b841e",
+  "title": "Store Products",
+  "url": "/ecommerce/stores/[ecommerce.stores.slug]/products",
+  "slug": "store-products",
+  "description": "Browse products available from this store.",
+  "createdAt": "2026-11-22T19:16:21.529Z",
+  "updatedAt": "2026-11-22T19:16:21.529Z",
+  "variant": "noindex",
+  "className": null,
+  "language": "en",
+  "adminTitle": "Store Products"
+}

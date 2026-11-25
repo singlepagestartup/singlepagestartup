@@ -1,8 +1,7 @@
 import { Hono } from "hono";
 import { sign } from "hono/jwt";
 jest.mock("@sps/shared-utils", () => ({
-  entityMetadataSchema:
-    jest.requireActual("@sps/shared-utils").entityMetadataSchema,
+  ...jest.requireActual("@sps/shared-utils"),
   RBAC_JWT_SECRET: "balance-test-secret",
   RBAC_SECRET_KEY: "internal",
 }));
@@ -11,13 +10,16 @@ import { Handler } from "./balance";
 import { Service as StartupBalance } from "../../../service/startup/billing/balance";
 
 it("serves the project balance to its owner and rejects another Subject", async () => {
-  const balances = { find: jest.fn().mockResolvedValue([{ amount: "3000" }]) };
+  const balances = { total: jest.fn().mockResolvedValue("3000") };
   const handler = new Handler({
     module: {
-      subjectsToBillingModuleCurrencies: balances,
+      subjectsToBillingModuleWallets: {
+        defaultWallet: jest.fn().mockResolvedValue("wallet"),
+      },
     },
     modules: {
       billing: {
+        walletsToCurrencies: balances,
         currency: {
           find: jest.fn().mockResolvedValue([{ id: "token-currency" }]),
         },
@@ -37,12 +39,12 @@ it("serves the project balance to its owner and rejects another Subject", async 
   expect(await own.json()).toEqual({
     data: { amount: "3000", currencyId: "token-currency" },
   });
-  balances.find.mockClear();
+  balances.total.mockClear();
   const foreign = await app.request("/subjects/other/billing-module/balance", {
     headers: { Authorization: `Bearer ${token}` },
   });
   expect(foreign.status).toBe(401);
-  expect(balances.find).not.toHaveBeenCalled();
+  expect(balances.total).not.toHaveBeenCalled();
 
   const projectBalance = { amount: "7300", currencyId: "project-currency" };
   const override = jest

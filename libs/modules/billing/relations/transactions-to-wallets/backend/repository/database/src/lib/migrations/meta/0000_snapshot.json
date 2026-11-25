@@ -1,0 +1,179 @@
+{
+  "id": "b2f6961a-1348-4449-8c9e-292ae65825a4",
+  "prevId": "00000000-0000-0000-0000-000000000000",
+  "version": "7",
+  "dialect": "postgresql",
+  "tables": {
+    "public.sps_bg_transaction_wallet": {
+      "name": "sps_bg_transaction_wallet",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "transaction_id": {
+          "name": "transaction_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "sender_wallet_id": {
+          "name": "sender_wallet_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "recipient_wallet_id": {
+          "name": "recipient_wallet_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "advance_recipient_wallet_id": {
+          "name": "advance_recipient_wallet_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "currency_id": {
+          "name": "currency_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {
+        "sps_bg_transaction_sending_wallet": {
+          "name": "sps_bg_transaction_sending_wallet",
+          "columns": [
+            {
+              "expression": "sender_wallet_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "currency_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "sps_bg_transaction_wallet_transaction_id_sps_bg_transaction_id_fk": {
+          "name": "sps_bg_transaction_wallet_transaction_id_sps_bg_transaction_id_fk",
+          "tableFrom": "sps_bg_transaction_wallet",
+          "tableTo": "sps_bg_transaction",
+          "columnsFrom": [
+            "transaction_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "sps_bg_transaction_wallet_sender_wallet_id_sps_bg_wallet_id_fk": {
+          "name": "sps_bg_transaction_wallet_sender_wallet_id_sps_bg_wallet_id_fk",
+          "tableFrom": "sps_bg_transaction_wallet",
+          "tableTo": "sps_bg_wallet",
+          "columnsFrom": [
+            "sender_wallet_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "sps_bg_transaction_wallet_recipient_wallet_id_sps_bg_wallet_id_fk": {
+          "name": "sps_bg_transaction_wallet_recipient_wallet_id_sps_bg_wallet_id_fk",
+          "tableFrom": "sps_bg_transaction_wallet",
+          "tableTo": "sps_bg_wallet",
+          "columnsFrom": [
+            "recipient_wallet_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "sps_bg_transaction_wallet_advance_recipient_wallet_id_sps_bg_wallet_id_fk": {
+          "name": "sps_bg_transaction_wallet_advance_recipient_wallet_id_sps_bg_wallet_id_fk",
+          "tableFrom": "sps_bg_transaction_wallet",
+          "tableTo": "sps_bg_wallet",
+          "columnsFrom": [
+            "advance_recipient_wallet_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "sps_bg_transaction_wallet_currency_id_sps_bg_currency_id_fk": {
+          "name": "sps_bg_transaction_wallet_currency_id_sps_bg_currency_id_fk",
+          "tableFrom": "sps_bg_transaction_wallet",
+          "tableTo": "sps_bg_currency",
+          "columnsFrom": [
+            "currency_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "sps_bg_transaction_wallet_transaction_id_unique": {
+          "name": "sps_bg_transaction_wallet_transaction_id_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "transaction_id"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    }
+  },
+  "enums": {},
+  "schemas": {},
+  "sequences": {},
+  "roles": {},
+  "policies": {},
+  "views": {},
+  "_meta": {
+    "columns": {},
+    "schemas": {},
+    "tables": {}
+  }
+}

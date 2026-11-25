@@ -22,7 +22,7 @@ export function PaymentTiming({
         <option value="after-acceptance">After accepting the result</option>
       </select>
       <span className="text-xs font-normal text-muted-foreground">
-        The customer orders a postpaid service separately. Publish an
+        The customer orders a postpaid service separately. Set up an
         individual-service funnel for this offer to open the order discussion.
       </span>
     </label>

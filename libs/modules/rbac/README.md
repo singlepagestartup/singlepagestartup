@@ -39,31 +39,56 @@ The RBAC module defines authentication subjects, identities, roles, permissions,
 
 ### Store work in Social conversations
 
-The **Employees** section on a store page lets an owner or administrator create a named AI Subject and open a private conversation with its Social profile. Reopening the employee returns to the same conversation for that operator. Send “Remember…” or “Запомни…” to save a source in the employee’s profile. The sidebar also lets the operator edit sources, upload reference files and manage the employee’s skills.
+Open **Funnels** on a store page to see its CRM funnels. The list lives at `/:language/ecommerce/stores/:storeSlug/crm/funnels`. Open `/new` under that path to create a funnel, or open `/:funnelSlug` to edit its stages and run a store test. Renaming a funnel preserves its address. The link in a test chat returns to the editor for that funnel.
+
+Stores link to their catalog at `/products`, employees at `/employees`, tasks at `/crm` and funnels at `/crm/funnels`, relative to the store URL. Owners can open `/settings` to connect a provider, assign it to an agent and inspect token reservations and transfers for tasks. Set the payer and spending limits in the funnel editor.
+
+The **Employees** page lets an owner or administrator create a named AI Subject and open a private conversation with its Social profile. Reopening the employee returns to the same conversation for that operator. Send “Remember…” or “Запомни…” to save a source in the employee’s profile. The sidebar also lets the operator edit sources, upload reference files and manage the employee’s skills.
+
+Attach files to a message or send them on their own. The operator can download
+them from the conversation. A file-only message is saved without requesting
+an AI reply. When the operator includes a message, the employee can read
+excerpts from up to three UTF-8 TXT, Markdown, CSV, or JSON files of up to
+128 KiB each. Attach a JPEG, PNG or WebP with a question, or ask about the
+last picture you sent in this conversation. A supported text model receives
+one image in the same paid reply. The worker checks the original (up to 8 MiB
+and 16 megapixels) and sends a JPEG copy with a longest side of 512 pixels.
+The question keeps its selected image if another upload arrives before the reply.
+Operators can preview images and PDFs, play supported audio or
+video, and download the original upload. To add a reference to the employee’s
+Knowledge, use the sidebar.
 
 Choose the employee as the assignee in a funnel stage and select the skills that stage needs. An operator can also assign an existing task from its details. Customer replies use the assigned employee’s knowledge. The worker includes the chosen skills for the current stage. Private training messages stay in the operator’s conversation.
 
-A customer's message belongs to a Social thread linked to a CRM task. RBAC verifies the customer and the current assignment. The Agent worker claims the message event and calls the provider connection assigned to that assistant and capability. The store owner's published funnel determines who funds the task and its spending limit. A task funded by the customer also requires the customer's approval.
+A customer's message belongs to a Social thread linked to a CRM task. RBAC verifies the customer and the current assignment. The Agent worker claims the message event and calls the provider connection assigned to that assistant and capability. The store's current funnel determines who funds the task and its spending limit. A task funded by the customer also requires the customer's approval.
 
 Store owners can assign provider capabilities to AI Subjects with an `assistant` or `crm-agent` grant in that store. The same grant check applies when the worker resolves a model for the current assignee.
 
-The worker processes each CRM task’s pending messages in order for the current assignment, and a manager can take over in the same thread. Knowledge draws on permitted sources linked to the customer’s sending profile and the assigned assistant’s profile, along with the store’s applicable expertise. The composer saves the model choice on each message, and RBAC resolves it through an active provider connection allowed for the current stage.
+The worker processes each CRM task’s pending messages in order for the current assignment, and a manager can take over in the same thread. Knowledge draws on permitted sources linked to the customer’s sending profile and the assigned product expert’s profile. The composer saves the model choice on each message, and RBAC resolves it through an active provider connection allowed for the current stage.
 
-Each external call has an attempt ID and a reserved maximum. Settlement records the provider's charge or a rate-card estimate, the internal currency transfers and the released amount. The technical provider Subject identifies the external account. Replies use the assigned executor and the current stage. The customer can read the result from the original conversation. [Wallet operations](relations/subjects-to-wallet-operations/README.md)
+Each external call has an attempt ID and a reserved maximum. Settlement records the provider's charge or a rate-card estimate, the internal currency transfers and the released amount. The technical provider Subject identifies the external account. Replies use the assigned executor and the current stage. The customer can read the result from the original conversation. [Billing transactions](../billing/models/transaction/README.md)
 
 AI Chat composers accumulate file selections in one horizontally scrolling row
 above the text field. Cards have previews, removal, drag reordering and arrow
 controls. Enter submits the message. Shift+Enter inserts a line.
-New message and Knowledge uploads accept PNG, JPG, WebP, GIF,
-PDF, TXT, MD, CSV and JSON. Both pickers and RBAC endpoints reject other formats,
-including SVG. Previously stored SVG images remain readable and are rendered
-as PNG for model input without changing their originals.
+AI Chat messages and Knowledge uploads accept PNG, JPG, WebP, GIF, PDF, TXT,
+MD, CSV and JSON. Messages also accept AVIF, HTML, audio and video. The AI Chat
+message endpoint rejects new standalone SVG uploads. Private customer work and
+employee chats accept SVG and scripts as downloadable files. Previously stored
+SVG images remain readable and are rendered as PNG for model input without
+changing their originals.
 The Knowledge sidebar shows two file cards in two columns. Show more expands
 all remaining rows vertically. Each card opens the original File and can
 unlink it from that Source; its pending state is scoped to the selected file.
-Sent messages show attachments in a horizontally scrolling gallery in
-submission order. Each card opens the original File. Background
-refetches retain mounted chat records. New replies scroll to the latest message;
+Messages show attachments in submission order. Images open at a larger size.
+Supported audio and video play in the message or in the discussion’s Files
+sidebar. Files shows the first three distinct attachments in message order.
+With four or more, More opens the full gallery. Escape returns from a preview to
+its tile. For discussions longer than the timeline page, the sidebar reads a
+scoped index of filenames and fetches checked public File records as their
+tiles come into view. Private attachments use the buyer’s or employee’s authorized message
+route, or the manager’s CRM task route. Background refetches retain mounted
+chat records. New replies scroll to the latest message;
 loading previews keeps that position unless the user has scrolled to older messages.
 The text field starts at 128 px and can be resized vertically from its bottom
 right corner, between 96 px and the smaller of half the viewport or 480 px.
@@ -72,18 +97,16 @@ composer can scroll within three quarters of the conversation pane, leaving
 the message history accessible when the input and attachment strip are tall.
 The submitted order is preserved in message-file relations.
 
-When the replying `social.profile` invokes a linked skill, profile Knowledge search, or MCP tool, the bounded tool loop emits presentation-safe lifecycle events. RBAC lazily creates one `social.action` with `variant="ai-execution"` for that run, relates it to the current chat, thread, and replying profile, and updates the same action through requested, running, succeeded/failed, and terminal states. The typed action payload contains only safe labels, tool/server identifiers, normalized status, timestamps, result byte counts, and message/profile/run ids; it never contains tool arguments/results, bearer credentials, prompts, hidden reasoning, or stack traces. Existing WebSocket invalidation updates the specialized conversation row in place. Runs without tool calls create no execution action, and progress persistence cannot prevent the final `social.profile` reply.
+The chat renders tool activity from a Social Action with `variant="ai-execution"`, linked to the current chat, thread and replying profile. For employee and order MCP calls, the worker adds one step per call to the action for the triggering event. Its public fields include the server, tool, status and timing. The chat can show supported parameters and results, such as a model name and its schema fields, or a failure code. Message and run IDs associate the trace with the conversation.
+
+The employee profile selects which MCP servers the model can use. Tools run with the original access JWT of the person who sent the message. Queued work retrieves that JWT from an encrypted, message-bound KV entry that expires with the token. The worker checks the sender's session again before each call.
 
 `profile_knowledge_files` lists a linked Source's attachment IDs and current
 content hash in pages. An explicit current request to remove an attachment
 exposes `profile_knowledge_file_detach`. The tool uses the scoped RBAC Files SDK
 and checks the Source hash and attachment list inside the database transaction. Detachment retains the stored
 File and chat attachments, preserves human notes, and rebuilds materials and
-the index. Detachment returns after the database write with `analysisPending`
-when rebuilding remains unfinished. A separate scoped reanalysis request
-publishes completion through the existing cache and WebSocket middleware.
-The model reports the unlink separately from index readiness; analysis errors
-leave the Source unindexed and are logged without retrying the removal.
+the index. If indexing fails, the request returns an error and the transaction restores the prior attachment list and searchable content.
 
 RBAC owns the profile-scoped Knowledge routes used by the Social chat sidebar.
 
@@ -249,6 +272,7 @@ may share the `default` variant and remain separate records.
 | [subjects-to-identities](./relations/subjects-to-identities/README.md)                                         | Link subjects to identities      |
 | [subjects-to-notification-module-topics](./relations/subjects-to-notification-module-topics/README.md)         | Link subjects to topics          |
 | [subjects-to-roles](./relations/subjects-to-roles/README.md)                                                   | Link subjects to roles           |
+| [subjects-to-social-module-chats](./relations/subjects-to-social-module-chats/README.md)                       | Record the creator of a chat     |
 | [subjects-to-social-module-profiles](./relations/subjects-to-social-module-profiles/README.md)                 | Link subjects to social profiles |
 
 ---
@@ -266,7 +290,7 @@ and [CRM links](./relations/widgets-to-crm-module-widgets/README.md).
 
 ## Store provider credentials
 
-An authenticated store owner manages connections in the store settings. A connection identifies an outbound Identity and the technical Subject that receives internal computation charges. Assign a provider, model and rate card to a capability on an individual assistant or as the store default. A direct assignment takes precedence. Revocation stops dispatch through that connection. Confirmed external charges remain attributed to the original account and version.
+An authenticated store owner manages connections in the store settings. A provider connection links an outbound Identity to a Subject with the `provider-agent` variant. The store owner manages this link and its capability assignments through `subjects-to-identities`. The Subject receives computation charges in its Billing wallet. Assign a provider, model and rate card to a capability on an individual assistant or as the store default. A direct assignment takes precedence. Revocation stops dispatch through that connection. Confirmed external charges remain attributed to the original account and version.
 
 Set `SPS_PROVIDER_SECRET_DIR` to an absolute private directory on persistent storage shared by API workers. `SPS_PROVIDER_MASTER_KEYS` is a JSON object mapping key IDs to base64-encoded 32-byte keys. `SPS_PROVIDER_ACTIVE_MASTER_KEY` selects the encryption key for new credentials. The service stores each credential version in an authenticated ciphertext file with owner-only permissions. Keep the key ring in deployment secrets and retain keys needed to read stored versions. A user supplies a provider key over HTTPS when connecting or rotating a credential. The settings API returns metadata and the affected record ID.
 

@@ -80,17 +80,12 @@ export class Provider implements IProvider {
   }
 
   async deleteFile(props: { name: string }): Promise<void> {
+    const pathname = `${this.folder}/${props.name}`;
     const result = await this.client.get({
-      prefix: this.folder + "/",
+      prefix: pathname,
     });
 
-    const blob = result.blobs.find(async (blob) => {
-      if (blob.pathname.includes(props.name)) {
-        return blob;
-      }
-
-      return;
-    });
+    const blob = result.blobs.find((blob) => blob.pathname === pathname);
 
     if (!blob) {
       return;

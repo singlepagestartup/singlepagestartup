@@ -98,8 +98,15 @@ function sourceFixture() {
     indexedContentHash: "v1",
   };
   const find = jest.fn(async () => [fresh, stale]);
-  const freshHeaders = jest.fn(async () => [fresh]);
-  const source = new SourceService({ find, freshHeaders } as any);
+  const freshHeaders = jest.fn(
+    async (_ids: string[], _includeCustomerMemory = false) => [fresh],
+  );
+  const privateSourceIds = jest.fn(async (): Promise<string[]> => []);
+  const source = new SourceService({
+    find,
+    freshHeaders,
+    privateSourceIds,
+  } as any);
   const chunk = Object.assign(new ChunkService({} as never), {
     search: jest.fn(async () => [
       {
@@ -130,13 +137,13 @@ function sourceFixture() {
     inTransaction: true,
     readSnapshot: (operation) => operation(source),
     transaction: (operation) => operation(source),
-    afterCommit: jest.fn(),
-    process: jest.fn(),
+    rebuildStoredFileSource: jest.fn(),
   });
   return {
     source,
     find,
     freshHeaders,
+    privateSourceIds,
     chunk,
     sourcesToChunks,
     sourcesToFileStorageModuleFiles,
@@ -171,7 +178,7 @@ it("passes only fresh scoped chunk IDs to the owning vector service", async () =
   expect(f.chunk.search).toHaveBeenCalledWith(
     expect.objectContaining({ ids: ["chunk"], embedding: [1] }),
   );
-  expect(f.freshHeaders).toHaveBeenCalledWith(["allowed", "stale"]);
+  expect(f.freshHeaders).toHaveBeenCalledWith(["allowed", "stale"], false);
   expect(f.find).not.toHaveBeenCalled();
 });
 it("reads scoped retrieval inside the shared snapshot capability", async () => {
@@ -187,6 +194,84 @@ it("reads scoped retrieval inside the shared snapshot capability", async () => {
     }),
   ).toEqual([expect.objectContaining({ sourceId: "allowed" })]);
   expect(readSnapshot).toHaveBeenCalledTimes(1);
+});
+
+it("filters personal Source headers before reading scoped chunks and neighbors", async () => {
+  const f = sourceFixture();
+  const personal = {
+    ...f.fresh,
+    id: "personal",
+    contentHash: "personal-version",
+  };
+  f.freshHeaders.mockImplementation(async (ids, includeCustomerMemory) =>
+    [f.fresh, ...(includeCustomerMemory ? [personal] : [])].filter(({ id }) =>
+      ids.includes(id),
+    ),
+  );
+  const rows = [
+    {
+      id: "private-chunk",
+      text: "Private detail",
+      metadata: {},
+      chunkIndex: 0,
+      distance: 0.1,
+      similarity: 0.9,
+    },
+  ];
+  const forSources = jest.spyOn(f.sourcesToChunks, "forSources");
+  forSources.mockImplementation(
+    async (...[ids]: Parameters<LinkService["forSources"]>) =>
+      ids.includes("personal")
+        ? ([{ sourceId: "personal", chunkId: "private-chunk" }] as never)
+        : [],
+  );
+  const search = jest.spyOn(f.chunk, "search");
+  search.mockImplementation(
+    async (...[props]: Parameters<ChunkService["search"]>) =>
+      props.ids?.includes("private-chunk") ? rows : [],
+  );
+  const findNeighbors = jest
+    .spyOn(f.chunk, "find")
+    .mockResolvedValue(rows as never);
+  const searchProps = { embedding: [1], topK: 1, sourceIds: ["personal"] };
+  const seeds = [
+    { sourceId: "personal", sourceVersion: "personal-version", chunkIndex: 0 },
+  ];
+  await expect(f.source.searchChunks(searchProps)).resolves.toEqual([]);
+  expect(search).toHaveBeenCalledWith(expect.objectContaining({ ids: [] }));
+  await expect(
+    f.source.findNeighborChunks({ seeds, window: 1 }),
+  ).resolves.toEqual([]);
+  expect(findNeighbors).not.toHaveBeenCalled();
+
+  await expect(
+    f.source.searchChunks({ ...searchProps, includeCustomerMemory: true }),
+  ).resolves.toEqual([
+    expect.objectContaining({
+      sourceId: "personal",
+      sourceVersion: "personal-version",
+      text: "Private detail",
+    }),
+  ]);
+  await expect(
+    f.source.findNeighborChunks({
+      seeds,
+      window: 1,
+      includeCustomerMemory: true,
+    }),
+  ).resolves.toEqual([
+    expect.objectContaining({
+      sourceId: "personal",
+      sourceVersion: "personal-version",
+    }),
+  ]);
+  await expect(
+    f.source.findNeighborChunks({
+      seeds: [{ ...seeds[0], sourceVersion: "stale" }],
+      window: 1,
+      includeCustomerMemory: true,
+    }),
+  ).resolves.toEqual([]);
 });
 
 it("resolves the transaction File and the parent override through a Chunk startup method", async () => {
@@ -300,7 +385,7 @@ it("commits without application-level publisher wiring", async () => {
   expect(transaction).toHaveBeenCalledTimes(1);
 });
 
-it("processes a saved Source once after commit and skips processing on rollback", async () => {
+it("saves an admin Source without indexing and propagates a failed database commit", async () => {
   const events: string[] = [];
   let rollBack = false;
   const record = {
@@ -330,14 +415,14 @@ it("processes a saved Source once after commit and skips processing on rollback"
   try {
     createKnowledgeServices({ source });
     await expect(source.create({ data: record })).resolves.toEqual(record);
-    expect(events).toEqual(["commit", "index"]);
+    expect(events).toEqual(["commit"]);
 
     rollBack = true;
     await expect(source.create({ data: record })).rejects.toThrow(
       "commit failed",
     );
-    expect(events).toEqual(["commit", "index", "rollback"]);
-    expect(index).toHaveBeenCalledTimes(1);
+    expect(events).toEqual(["commit", "rollback"]);
+    expect(index).not.toHaveBeenCalled();
   } finally {
     index.mockRestore();
   }

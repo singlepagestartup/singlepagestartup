@@ -1,122 +1,139 @@
 "use client";
 
 import { api } from "@sps/rbac/models/subject/sdk/client";
-import { ArrowRight, Plus, Store } from "lucide-react";
+import type { ICrmWorkspaceStoreListItem } from "@sps/rbac/models/subject/sdk/model";
+import { ChevronRight, Plus, Store } from "lucide-react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useState, type FormEvent } from "react";
-import { fieldClass, primaryClass } from "./primitives";
-import { storeHref } from "./view-model";
+import { memo } from "react";
+
+import { primaryClass, secondaryClass, storeList } from "./primitives";
+import { storeHref, workspaceHref } from "./view-model";
 
 interface IStoresProps {
   language: string;
   subjectId: string;
 }
 
-export function Stores({ language, subjectId }: IStoresProps) {
-  const ru = language === "ru";
-  const router = useRouter();
-  const stores = api.crmWorkspace.useStores(subjectId);
-  const create = api.ecommerceModuleCatalogMutation();
-  const [name, setName] = useState("");
-  const [error, setError] = useState("");
+interface IStoreRowProps {
+  language: string;
+  store: ICrmWorkspaceStoreListItem;
+}
 
-  async function submit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    const title = name.trim();
-    if (!title || create.isPending) return;
-    setError("");
-    try {
-      const store = await create.mutateAsync({
-        id: subjectId,
-        data: {
-          method: "POST",
-          entity: "stores",
-          data: { title: { [language]: title }, adminTitle: title },
-        },
-      });
-      await stores.refetch();
-      router.push(storeHref(language, String(store.slug)));
-    } catch (failure) {
-      setError(
-        failure instanceof Error
-          ? failure.message
-          : ru
-            ? "Не удалось создать магазин."
-            : "Could not create the store.",
-      );
-    }
-  }
+const columns =
+  "sm:grid-cols-[minmax(0,3fr)_minmax(5rem,1fr)_minmax(6rem,1fr)_1rem]";
+
+const StoreRow = memo(function StoreRow({ store, language }: IStoreRowProps) {
+  const ru = language === "ru";
+  const productsId = `store-products-${store.id}`;
+  const employeesId = `store-employees-${store.id}`;
 
   return (
-    <section className="grid gap-5">
-      <h1 className="text-3xl font-semibold tracking-tight">
-        {ru ? "Мои магазины" : "My stores"}
-      </h1>
-      <form
-        onSubmit={submit}
-        className="flex flex-wrap items-end gap-3 rounded-xl border border-border bg-card p-4"
+    <li>
+      <Link
+        href={storeHref(language, store.slug)}
+        aria-label={store.title}
+        aria-describedby={`${productsId} ${employeesId}`}
+        className={`${storeList.row} ${columns} grid grid-cols-[auto_minmax(0,1fr)_1rem] items-center gap-x-4 gap-y-2 px-4 py-3 text-sm`}
       >
-        <label className="grid min-w-0 flex-1 gap-1.5 text-sm font-medium">
-          {ru ? "Название магазина" : "Store name"}
-          <input
-            value={name}
-            onChange={(event) => setName(event.currentTarget.value)}
-            required
-            maxLength={180}
-            className={fieldClass}
-          />
-        </label>
-        <button
-          type="submit"
-          disabled={create.isPending || !name.trim()}
-          className={primaryClass}
+        <span className="col-span-2 flex min-w-0 items-center gap-3 sm:col-span-1">
+          <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-muted">
+            <Store aria-hidden="true" className="size-5" />
+          </span>
+          <span className="grid min-w-0 gap-0.5">
+            <span className="wrap-anywhere font-semibold">{store.title}</span>
+            <span className="wrap-anywhere text-xs text-muted-foreground">
+              {store.slug}
+            </span>
+          </span>
+        </span>
+        <span
+          id={productsId}
+          className="col-start-1 row-start-2 text-xs tabular-nums sm:col-start-2 sm:row-start-1 sm:text-sm"
         >
+          <span className="text-muted-foreground sm:sr-only">
+            {ru ? "Товары" : "Products"}{" "}
+          </span>
+          {store.productCount ?? "—"}
+        </span>
+        <span
+          id={employeesId}
+          className="col-start-2 row-start-2 text-xs tabular-nums sm:col-start-3 sm:row-start-1 sm:text-sm"
+        >
+          <span className="text-muted-foreground sm:sr-only">
+            {ru ? "Сотрудники" : "Employees"}{" "}
+          </span>
+          {store.employeeCount ?? "—"}
+        </span>
+        <ChevronRight
+          aria-hidden="true"
+          className={`${storeList.arrow} col-start-3 row-start-1 sm:col-start-4`}
+        />
+      </Link>
+    </li>
+  );
+});
+
+export function Stores({ language, subjectId }: IStoresProps) {
+  const ru = language === "ru";
+  const stores = api.crmWorkspace.useStores(subjectId);
+
+  return (
+    <section
+      className={storeList.panel}
+      aria-labelledby="workspace-stores-title"
+    >
+      <header className={storeList.heading}>
+        <h1 id="workspace-stores-title" className={storeList.title}>
+          {ru ? "Мои магазины" : "My stores"}
+        </h1>
+        <Link href={`${workspaceHref(language)}/new`} className={primaryClass}>
           <Plus aria-hidden="true" className="size-4" />
           {ru ? "Создать магазин" : "Create store"}
-        </button>
-        {error && (
-          <p role="alert" className="w-full text-sm text-destructive">
-            {error}
-          </p>
-        )}
-      </form>
+        </Link>
+      </header>
       {stores.isPending && (
-        <p role="status">{ru ? "Загружаем магазины…" : "Loading stores…"}</p>
+        <p role="status" className="text-sm text-muted-foreground">
+          {ru ? "Загружаем магазины…" : "Loading stores…"}
+        </p>
       )}
       {stores.isError && (
-        <p role="alert">
-          {ru ? "Не удалось загрузить магазины." : "Could not load stores."}
-        </p>
+        <div role="alert" className="flex flex-wrap items-center gap-3 text-sm">
+          <span>
+            {ru ? "Не удалось загрузить магазины." : "Could not load stores."}
+          </span>
+          <button
+            type="button"
+            className={secondaryClass}
+            onClick={() => void stores.refetch()}
+          >
+            {ru ? "Повторить" : "Retry"}
+          </button>
+        </div>
       )}
-      {stores.data?.length === 0 && (
-        <p className="text-sm text-muted-foreground">
-          {ru
-            ? "Здесь появятся ваши магазины."
-            : "Your stores will appear here."}
-        </p>
-      )}
-      {Boolean(stores.data?.length) && (
-        <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-          {stores.data?.map((store) => (
-            <li key={store.id}>
-              <Link
-                href={storeHref(language, store.slug)}
-                className="flex h-full items-center gap-3 rounded-xl border border-border bg-card p-4 text-sm font-semibold hover:bg-muted"
-              >
-                <Store
-                  aria-hidden="true"
-                  className="size-5 shrink-0 text-muted-foreground"
-                />
-                <span className="min-w-0 flex-1 break-words">
-                  {store.title}
-                </span>
-                <ArrowRight aria-hidden="true" className="size-4 shrink-0" />
-              </Link>
-            </li>
-          ))}
-        </ul>
-      )}
+      {stores.isSuccess &&
+        (stores.data.length ? (
+          <div className="grid min-w-0 gap-2">
+            <div
+              aria-hidden="true"
+              className={`${columns} hidden items-center gap-x-4 px-4 text-xs font-medium text-muted-foreground sm:grid`}
+            >
+              <span>{ru ? "Магазин" : "Store"}</span>
+              <span>{ru ? "Товары" : "Products"}</span>
+              <span>{ru ? "Сотрудники" : "Employees"}</span>
+            </div>
+            <ul className="grid gap-2" aria-labelledby="workspace-stores-title">
+              {stores.data.map((store) => (
+                <StoreRow key={store.id} store={store} language={language} />
+              ))}
+            </ul>
+          </div>
+        ) : (
+          <p className="text-sm text-muted-foreground">
+            {ru
+              ? "У вас пока нет магазинов."
+              : "You do not have any stores yet."}
+          </p>
+        ))}
     </section>
   );
 }

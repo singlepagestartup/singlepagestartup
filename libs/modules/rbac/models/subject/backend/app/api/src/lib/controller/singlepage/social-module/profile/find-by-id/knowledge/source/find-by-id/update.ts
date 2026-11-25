@@ -54,7 +54,6 @@ export class Handler {
 
       return c.json({
         data: document.source,
-        indexingError: document.indexError,
       });
     } catch (error: unknown) {
       const { status, message, details } = getHttpErrorType(error);

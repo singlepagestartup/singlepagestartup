@@ -49,18 +49,46 @@ export class Configuration extends ParentConfiguration {
               column: "widgetId",
               method: "eq",
               value: (data) => {
-                const widgetSeed = data.seeds.find(
+                const widgets = data.seeds.find(
                   (seed) =>
                     seed.name === "widget" &&
                     seed.type === "model" &&
                     seed.module === "host",
-                );
-
-                const widgetEntity = widgetSeed?.seeds.find(
+                )?.seeds;
+                const widget = widgets?.find(
                   (seed) => seed.dump.id === data.entity.dump.widgetId,
                 );
+                const widgetId = widget?.new?.id || data.entity.dump.widgetId;
 
-                return widgetEntity?.new?.id || data.entity.dump.widgetId;
+                // Upgrade the task page's original board link in place.
+                if (widget?.dump.slug === "crm-workspace-task-host") {
+                  const pages = data.seeds.find(
+                    (seed) =>
+                      seed.name === "page" &&
+                      seed.type === "model" &&
+                      seed.module === "host",
+                  )?.seeds;
+                  const page = pages?.find(
+                    (seed) => seed.dump.id === data.entity.dump.pageId,
+                  );
+                  const boardId = widgets?.find(
+                    (seed) => seed.dump.slug === "crm-workspace-host",
+                  )?.new?.id;
+                  const existing = data.entity.db?.filter(
+                    (link) => link.pageId === page?.new?.id,
+                  );
+
+                  if (
+                    page?.dump.slug === "crm-workspace-task" &&
+                    boardId &&
+                    existing?.length === 1 &&
+                    existing[0].widgetId === boardId
+                  ) {
+                    return boardId;
+                  }
+                }
+
+                return widgetId;
               },
             },
           ],

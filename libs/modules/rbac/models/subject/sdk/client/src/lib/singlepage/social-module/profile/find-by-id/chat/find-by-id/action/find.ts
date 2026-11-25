@@ -29,6 +29,9 @@ export function action(props: IProps) {
   const topics = [
     `social.chats.${props.socialModuleChatId}.actions`,
     "social.actions",
+    ...(props.params?.socialModuleThreadId
+      ? [`social.threads.${props.params.socialModuleThreadId}.actions`]
+      : []),
   ];
   // Merge caller meta last but never let it clobber topics (issue #195): a
   // project passing reactQueryOptions.meta must not silently drop the realtime
@@ -44,8 +47,8 @@ export function action(props: IProps) {
   return useQuery<IResult>({
     queryKey: [queryKey],
     meta: {
-      topics,
       ...(userMeta ?? {}),
+      topics,
     },
     queryFn: async () => {
       const result =

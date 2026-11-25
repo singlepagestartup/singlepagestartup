@@ -17,6 +17,7 @@ export interface IComponentProps extends SelectPrimitive.SelectProps {
   className?: string;
   contentClassName?: string;
   placeholder?: string;
+  search?: { placeholder: string; empty: string };
   "aria-label"?: string;
   "aria-invalid"?: boolean;
   "aria-describedby"?: string;

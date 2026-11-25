@@ -1,3 +1,22 @@
+import type { IComponentProps as IStoreCustomers } from "./subject/me/ecommerce-module/store/customers/interface";
+import type { IComponentProps as IStoreCustomerDetail } from "./subject/me/ecommerce-module/store/customers/detail/interface";
+import type { IComponentProps as IStoreOrderDetail } from "./subject/me/ecommerce-module/store/orders/detail/interface";
+import type { IComponentProps as ISubjectMeTaskDetail } from "./subject/me/crm-module/task/detail/interface";
+import type { IComponentProps as ISubjectMeTaskCreate } from "./subject/me/crm-module/task/create/interface";
+import type { IComponentProps as ISubjectMeStoreEmployeeDetail } from "./subject/me/ecommerce-module/store/employees/detail/interface";
+import type { IComponentProps as ISubjectMeStoreEmployeeCreate } from "./subject/me/ecommerce-module/store/employees/create/interface";
+import type { IComponentProps as ISubjectMeStoreProductDetail } from "./subject/me/ecommerce-module/store/products/detail/interface";
+import type { IComponentProps as ISubjectMeStoreProductEdit } from "./subject/me/ecommerce-module/store/products/edit/interface";
+import type { IComponentProps as ISubjectMeStoreProductCreate } from "./subject/me/ecommerce-module/store/products/create/interface";
+import type { IComponentProps as ISubjectMeEcommerceModuleStoreSettings } from "./subject/me/ecommerce-module/store/settings/interface";
+import type { IComponentProps as ISubjectMeEcommerceModuleStoreCreate } from "./subject/me/ecommerce-module/store/create/interface";
+import type { IComponentProps as ISubjectMeEcommerceModuleStoreOrders } from "./subject/me/ecommerce-module/store/orders/interface";
+import type { IComponentProps as ISubjectMeEcommerceModuleStoreEmployees } from "./subject/me/ecommerce-module/store/employees/interface";
+import type { IComponentProps as IStoreProductDirectory } from "./subject/me/ecommerce-module/store/products/directories/interface";
+import type { IComponentProps as ISubjectMeEcommerceModuleStoreProducts } from "./subject/me/ecommerce-module/store/products/interface";
+import type { IComponentProps as ISubjectMeCrmModuleStoreFunnelEdit } from "./subject/me/crm-module/funnel/edit/interface";
+import type { IComponentProps as ISubjectMeCrmModuleStoreFunnelCreate } from "./subject/me/crm-module/funnel/create/interface";
+import type { IComponentProps as ISubjectMeCrmModuleStoreFunnelList } from "./subject/me/crm-module/funnel/list/interface";
 import type { IComponentProps as ISubjectMeCrmModuleStoreWorkspace } from "./subject-me-crm-module-store-workspace/interface";
 import type { IComponentProps as ISubjectMeEcommerceModuleOfferCreateProps } from "./subject/me/ecommerce-module/offer/create/interface";
 import { IComponentProps as IHiddenComponentProps } from "@sps/shared-frontend-components/singlepage/hidden/interface";
@@ -47,6 +66,16 @@ import { IComponentProps as ISubjectOverviewDefaultComponentProps } from "./subj
 import { IComponentProps as ISubjectListDefaultComponentProps } from "./subject/list/default/interface";
 
 export type IComponentProps =
+  | ISubjectMeTaskDetail
+  | ISubjectMeTaskCreate
+  | ISubjectMeStoreEmployeeDetail
+  | ISubjectMeStoreEmployeeCreate
+  | ISubjectMeStoreProductDetail
+  | ISubjectMeStoreProductEdit
+  | ISubjectMeStoreProductCreate
+  | ISubjectMeCrmModuleStoreFunnelList
+  | ISubjectMeCrmModuleStoreFunnelCreate
+  | ISubjectMeCrmModuleStoreFunnelEdit
   | ISubjectMeCrmModuleStoreWorkspace
   | ISubjectMeEcommerceModuleOfferCreateProps
   | IHiddenComponentProps
@@ -54,6 +83,15 @@ export type IComponentProps =
   | ISubjectMeCrmModuleFormRequestCreate
   | ISubjectMeSocialModuleProfileChatOverviewDefault
   | ISubjectMeSocialModuleProfileChatListDefault
+  | IStoreProductDirectory
+  | ISubjectMeEcommerceModuleStoreProducts
+  | ISubjectMeEcommerceModuleStoreCreate
+  | IStoreCustomers
+  | IStoreCustomerDetail
+  | IStoreOrderDetail
+  | ISubjectMeEcommerceModuleStoreOrders
+  | ISubjectMeEcommerceModuleStoreEmployees
+  | ISubjectMeEcommerceModuleStoreSettings
   | ISubjectMeEcommerceModuleStoreOverviewDefault
   | ISubjectMeEcommerceModuleCategoryOverviewDefault
   | ISubjectMeEcommerceModuleProductOverviewDefault

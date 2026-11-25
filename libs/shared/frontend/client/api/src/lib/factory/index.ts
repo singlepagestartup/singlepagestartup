@@ -46,6 +46,7 @@ import {
   patchInListQueries,
   removeFromListQueries,
 } from "../cache";
+import { reconcileQueries } from "../cache/reconcile";
 
 export interface IFactoryProps<T> {
   route: string;
@@ -130,7 +131,7 @@ const invalidateByTopics = (topics: string[], queryClient: QueryClient) => {
     return;
   }
 
-  queryClient.invalidateQueries({
+  void reconcileQueries(queryClient, {
     predicate: (query) => {
       if (queryConsistency(queryClient).covered(query)) return false;
       const meta = query.meta as { topics?: string[] } | undefined;
@@ -279,7 +280,7 @@ export function subscription(route: string, queryClient: QueryClient) {
               isMatchingRoute(route, message.result["payload"])
             ) {
               setTimeout(() => {
-                queryClient.invalidateQueries({
+                void reconcileQueries(queryClient, {
                   queryKey: [route],
                   predicate: (query) =>
                     !queryConsistency(queryClient).covered(query),

@@ -28,6 +28,7 @@ import {
   mockMessageDeleteMutate,
   mockMessageUpdateMutate,
   mockSharedApiQueryClient,
+  mockToastSuccess,
   renderComponent,
   resetChatComponentMocks,
 } from "./test-utils";
@@ -112,6 +113,7 @@ describe("Given: chat targeted cache patching", () => {
       ]);
     });
     expect(mockSharedApiQueryClient.invalidateQueries).not.toHaveBeenCalled();
+    expect(mockToastSuccess).not.toHaveBeenCalled();
   });
 
   /**

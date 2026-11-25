@@ -1,0 +1,9 @@
+{
+  "id": "6f5e34b3-fbb0-48d3-9d63-31e15155a833",
+  "createdAt": "2026-11-17T23:08:18.117Z",
+  "updatedAt": "2026-11-17T23:08:18.117Z",
+  "variant": "default",
+  "type": "HTTP",
+  "method": "GET",
+  "path": "/api/rbac/subjects/[rbac.subjects.id]/ecommerce-module/catalogue-context"
+}

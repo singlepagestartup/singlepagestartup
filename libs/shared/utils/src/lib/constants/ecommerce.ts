@@ -1,4 +1,5 @@
 export const REGISTRATION_GRANT_VARIANT = "registration-grant";
+export const STORE_PRODUCT_CREATE_MAX_IMAGES = 20;
 export const CUSTOMER_WORK_OFFER_CHOICE_REQUIRED =
   "Conflict error. Choose a store offer to start this conversation";
 export const SINGLE_UNIT_PER_ORDER_MESSAGE =

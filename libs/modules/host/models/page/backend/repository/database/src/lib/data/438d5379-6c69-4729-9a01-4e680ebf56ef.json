@@ -1,0 +1,35 @@
+{
+  "metadata": {
+    "seo": {
+      "title": {
+        "en": "Product categories — SinglePageStartup",
+        "ru": "Категории товаров — SinglePageStartup"
+      }
+    },
+    "seoDisplay": {
+      "twitterTitle": {
+        "en": "Product categories — SinglePageStartup",
+        "ru": "Категории товаров — SinglePageStartup"
+      },
+      "opengraphTitle": {
+        "en": "Product categories — SinglePageStartup",
+        "ru": "Категории товаров — SinglePageStartup"
+      },
+      "opengraphLocale": {
+        "en": "en_US",
+        "ru": "ru_RU"
+      }
+    }
+  },
+  "id": "438d5379-6c69-4729-9a01-4e680ebf56ef",
+  "title": "Product categories",
+  "url": "/ecommerce/stores/[ecommerce.stores.slug]/products/categories",
+  "slug": "store-product-categories",
+  "description": "Description",
+  "createdAt": "2026-11-24T18:57:56.856Z",
+  "updatedAt": "2026-11-24T18:57:56.856Z",
+  "variant": "noindex",
+  "className": null,
+  "language": "en",
+  "adminTitle": "Product categories"
+}

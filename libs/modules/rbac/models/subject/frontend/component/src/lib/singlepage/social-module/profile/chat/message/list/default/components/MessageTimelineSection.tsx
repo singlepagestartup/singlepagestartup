@@ -1,6 +1,15 @@
 "use client";
 
+import type { IChatProfileOpen } from "../interface";
+
 import { MessageEditDialog } from "./MessageEditDialog";
+import { ThreadOrderStage } from "./ThreadCustomerWork";
+import type { ICustomerWorkView } from "@sps/rbac/models/subject/sdk/model";
+import { OrderPaymentButtons } from "./OrderPaymentButtons";
+import {
+  readOrderFileReview,
+  readOrderCheckoutButtons,
+} from "@sps/rbac/models/subject/sdk/model/src/lib/order-work";
 import { MessageTimeline } from "./MessageTimeline";
 import { useMessageActions } from "../hooks/use-message-actions";
 import { useMarkThreadRead } from "../hooks/use-mark-thread-read";
@@ -11,9 +20,16 @@ import { createSocialModuleMessagesAndActionsQuery } from "../timeline";
 import { getTimelineSignature, isChatAccessError } from "../utils";
 import { api } from "@sps/rbac/models/subject/sdk/client";
 import type { IModel as ISocialModuleProfile } from "@sps/social/models/profile/sdk/model";
-import { memo, useEffect, useMemo, type MutableRefObject } from "react";
+import {
+  memo,
+  useEffect,
+  useMemo,
+  useState,
+  type MutableRefObject,
+} from "react";
 
 interface MessageTimelineSectionProps {
+  orderWork?: ICustomerWorkView;
   isCustomerWork: boolean;
   isEmployeeChat?: boolean;
   language: string;
@@ -24,8 +40,7 @@ interface MessageTimelineSectionProps {
    * timeline communication free of message-array props.
    */
   markShouldScrollToBottomRef: MutableRefObject<() => void>;
-  onProfileOpen?: (profile: ISocialModuleProfile) => void;
-  onResultReview?: (versionId: string) => void;
+  onProfileOpen?: IChatProfileOpen;
   socialModuleChatId: string;
   socialModuleProfileId: string;
   socialModuleThreadId: string;
@@ -53,14 +68,13 @@ interface MessageTimelineSectionProps {
 export const MessageTimelineSection = memo(function MessageTimelineSection(
   props: MessageTimelineSectionProps,
 ) {
+  const workRefreshInterval =
+    props.isCustomerWork || props.isEmployeeChat ? 3000 : false;
   const {
     data: loadedMessages,
     error: messagesError,
     isLoading: socialModuleMessagesIsLoading,
-  } = useThreadMessages(
-    props,
-    props.isCustomerWork || props.isEmployeeChat ? 3000 : false,
-  );
+  } = useThreadMessages(props, workRefreshInterval);
   const {
     data: loadedActions,
     error: actionsError,
@@ -75,7 +89,7 @@ export const MessageTimelineSection = memo(function MessageTimelineSection(
         and: [
           {
             column: "createdAt",
-            method: "asc",
+            method: "desc",
           },
         ],
       },
@@ -85,6 +99,7 @@ export const MessageTimelineSection = memo(function MessageTimelineSection(
         "Cache-Control": "no-store",
       },
     },
+    reactQueryOptions: { refetchInterval: workRefreshInterval },
   });
 
   const socialModuleMessages = isChatAccessError(messagesError)
@@ -93,12 +108,34 @@ export const MessageTimelineSection = memo(function MessageTimelineSection(
   const socialModuleActions = isChatAccessError(actionsError)
     ? undefined
     : loadedActions;
+  const [expiryTick, setExpiryTick] = useState(0);
+  const visibleActions = useMemo(() => {
+    const now = Date.now();
+    return socialModuleActions?.filter((action) => {
+      if (action.variant !== "typing") return true;
+      return (
+        !action.actorProfileIds?.includes(props.socialModuleProfileId) &&
+        new Date(action.expiresAt).getTime() > now
+      );
+    });
+  }, [socialModuleActions, props.socialModuleProfileId, expiryTick]);
+  useEffect(() => {
+    const expiries = visibleActions
+      ?.filter((action) => action.variant === "typing")
+      .map((action) => new Date(action.expiresAt).getTime());
+    if (!expiries?.length) return;
+    const timer = setTimeout(
+      () => setExpiryTick((tick) => tick + 1),
+      Math.max(0, Math.min(...expiries) - Date.now()),
+    );
+    return () => clearTimeout(timer);
+  }, [visibleActions]);
   const socialModuleMessagesAndActionsQuery = useMemo(() => {
     return createSocialModuleMessagesAndActionsQuery({
       socialModuleMessages,
-      socialModuleActions,
+      socialModuleActions: visibleActions,
     });
-  }, [socialModuleMessages, socialModuleActions]);
+  }, [socialModuleMessages, visibleActions]);
 
   const messageActions = useMessageActions({
     subjectId: props.subjectId,
@@ -113,6 +150,57 @@ export const MessageTimelineSection = memo(function MessageTimelineSection(
       socialModuleMessagesAndActionsQuery,
     );
   }, [props.socialModuleThreadId, socialModuleMessagesAndActionsQuery]);
+  const review = useMemo(() => {
+    if (props.orderWork?.workflow?.orderStep !== "review") return;
+    const latest = socialModuleMessagesAndActionsQuery.findLast(
+      (item) =>
+        item.type === "message" &&
+        item.data.variant === "customer-work" &&
+        typeof item.data.metadata?.orderResultFileId === "string",
+    );
+    if (latest?.type !== "message") return;
+    const prompt = readOrderFileReview(latest.data);
+    return prompt ? { messageId: latest.data.id, prompt } : undefined;
+  }, [
+    props.orderWork?.workflow?.orderStep,
+    socialModuleMessagesAndActionsQuery,
+  ]);
+  const orderStage = useMemo(
+    () =>
+      props.orderWork?.workflow?.orderStep ? (
+        <ThreadOrderStage
+          subjectId={props.subjectId}
+          work={props.orderWork}
+          language={props.language}
+          prompt={review?.prompt}
+        />
+      ) : undefined,
+    [props.subjectId, props.orderWork, props.language, review],
+  );
+  const payment = useMemo(() => {
+    const work = props.orderWork;
+    const promptId = work?.workflow?.checkoutPromptId;
+    if (!work || !promptId) return;
+    const current = socialModuleMessagesAndActionsQuery.find(
+      (item) => item.type === "message" && item.data.id === promptId,
+    );
+    const rows =
+      current?.type === "message" && readOrderCheckoutButtons(current.data);
+    return rows ? (
+      <OrderPaymentButtons
+        subjectId={props.subjectId}
+        language={props.language}
+        work={work}
+        messageId={promptId}
+        rows={rows}
+      />
+    ) : undefined;
+  }, [
+    props.orderWork,
+    props.subjectId,
+    props.language,
+    socialModuleMessagesAndActionsQuery,
+  ]);
   const timelineItemCount = socialModuleMessagesAndActionsQuery.length;
   const messageThreadScroll = useMessageThreadScroll({
     socialModuleThreadId: props.socialModuleThreadId,
@@ -172,6 +260,10 @@ export const MessageTimelineSection = memo(function MessageTimelineSection(
         <MessageTimeline
           deletingMessageId={messageActions.deletingMessageId}
           items={socialModuleMessagesAndActionsQuery}
+          reviewMessageId={
+            review?.messageId ?? props.orderWork?.workflow?.checkoutPromptId
+          }
+          reviewSlot={review ? orderStage : payment}
           subjectId={props.subjectId}
           socialModuleProfileId={props.socialModuleProfileId}
           threadId={props.socialModuleThreadId}
@@ -181,8 +273,8 @@ export const MessageTimelineSection = memo(function MessageTimelineSection(
           onMessageDelete={messageActions.onMessageRowDelete}
           onMessageEdit={messageActions.onMessageRowEdit}
           onProfileOpen={props.onProfileOpen}
-          onResultReview={props.onResultReview}
         />
+        {!review && orderStage}
         <div
           ref={messageThreadScroll.messagesEndRef}
           className="h-px"

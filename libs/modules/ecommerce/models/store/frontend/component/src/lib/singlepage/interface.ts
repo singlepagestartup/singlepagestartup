@@ -16,7 +16,10 @@ import { IComponentProps as IAdminV2SidebarItem } from "./admin-v2/sidebar-item/
 import { IComponentProps as IDefaultComponentProps } from "./default/interface";
 import { IComponentProps as IOverviewDefaultComponentProps } from "./overview-default/interface";
 
+import type { IComponentProps as IHeaderDefaultProps } from "./header-default/interface";
+
 export type IComponentProps =
+  | IHeaderDefaultProps
   | IProductPriceDefaultProps
   | IServiceProps
   | IDeliveryProps

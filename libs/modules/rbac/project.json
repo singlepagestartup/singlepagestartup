@@ -36,6 +36,12 @@
           },
           {
             "command": "nx run @sps/rbac:relations:repository-generate"
+          },
+          {
+            "command": "nx run @sps/rbac:relations:subjects-to-crm-module-tasks:repository-generate"
+          },
+          {
+            "command": "nx run @sps/rbac:relations:subjects-to-social-module-chats:repository-generate"
           }
         ]
       }
@@ -54,6 +60,12 @@
           },
           {
             "command": "nx run @sps/rbac:repository-natural-key-repair-apply"
+          },
+          {
+            "command": "nx run @sps/rbac:relations:subjects-to-crm-module-tasks:repository-migrate"
+          },
+          {
+            "command": "nx run @sps/rbac:relations:subjects-to-social-module-chats:repository-migrate"
           }
         ]
       }
@@ -141,9 +153,6 @@
             "command": "nx run @sps/rbac:relations:subjects-to-blog-module-articles:repository-generate"
           },
           {
-            "command": "nx run @sps/rbac:relations:subjects-to-billing-module-currencies:repository-generate"
-          },
-          {
             "command": "nx run @sps/rbac:relations:permissions-to-billing-module-currencies:repository-generate"
           },
           {
@@ -159,13 +168,7 @@
             "command": "nx run @sps/rbac:relations:subjects-to-ecommerce-module-stores:repository-generate"
           },
           {
-            "command": "nx run @sps/rbac:relations:subjects-to-wallet-operations:repository-generate"
-          },
-          {
-            "command": "nx run @sps/rbac:relations:subjects-to-provider-identities:repository-generate"
-          },
-          {
-            "command": "nx run @sps/rbac:relations:subjects-to-provider-agents:repository-generate"
+            "command": "nx run @sps/rbac:relations:subjects-to-billing-module-wallets:repository-generate"
           }
         ]
       }
@@ -237,9 +240,6 @@
             "command": "nx run @sps/rbac:relations:subjects-to-blog-module-articles:repository-migrate"
           },
           {
-            "command": "nx run @sps/rbac:relations:subjects-to-billing-module-currencies:repository-migrate"
-          },
-          {
             "command": "nx run @sps/rbac:relations:permissions-to-billing-module-currencies:repository-migrate"
           },
           {
@@ -255,13 +255,7 @@
             "command": "nx run @sps/rbac:relations:subjects-to-ecommerce-module-stores:repository-migrate"
           },
           {
-            "command": "nx run @sps/rbac:relations:subjects-to-wallet-operations:repository-migrate"
-          },
-          {
-            "command": "nx run @sps/rbac:relations:subjects-to-provider-identities:repository-migrate"
-          },
-          {
-            "command": "nx run @sps/rbac:relations:subjects-to-provider-agents:repository-migrate"
+            "command": "nx run @sps/rbac:relations:subjects-to-billing-module-wallets:repository-migrate"
           }
         ]
       }
@@ -776,36 +770,6 @@
         ]
       }
     },
-    "relations:subjects-to-billing-module-currencies:repository-generate": {
-      "executor": "nx:run-commands",
-      "cache": false,
-      "options": {
-        "parallel": false,
-        "cwd": "libs/modules/rbac/relations/subjects-to-billing-module-currencies/backend/repository/database",
-        "commands": [
-          {
-            "command": "drizzle-kit up --config=./src/lib/config.ts"
-          },
-          {
-            "command": "drizzle-kit generate --config=./src/lib/config.ts"
-          }
-        ]
-      }
-    },
-    "relations:subjects-to-billing-module-currencies:repository-migrate": {
-      "executor": "nx:run-commands",
-      "cache": false,
-      "options": {
-        "parallel": false,
-        "envFile": "apps/api/.env",
-        "cwd": "libs/modules/rbac/relations/subjects-to-billing-module-currencies/backend/repository/database",
-        "commands": [
-          {
-            "command": "bun run ./src/lib/migrate.ts"
-          }
-        ]
-      }
-    },
     "relations:permissions-to-billing-module-currencies:repository-generate": {
       "executor": "nx:run-commands",
       "cache": false,
@@ -956,12 +920,12 @@
         ]
       }
     },
-    "relations:subjects-to-wallet-operations:repository-generate": {
+    "relations:subjects-to-billing-module-wallets:repository-generate": {
       "executor": "nx:run-commands",
       "cache": false,
       "options": {
         "parallel": false,
-        "cwd": "libs/modules/rbac/relations/subjects-to-wallet-operations/backend/repository/database",
+        "cwd": "libs/modules/rbac/relations/subjects-to-billing-module-wallets/backend/repository/database",
         "commands": [
           {
             "command": "drizzle-kit up --config=./src/lib/config.ts"
@@ -972,13 +936,13 @@
         ]
       }
     },
-    "relations:subjects-to-wallet-operations:repository-migrate": {
+    "relations:subjects-to-billing-module-wallets:repository-migrate": {
       "executor": "nx:run-commands",
       "cache": false,
       "options": {
         "parallel": false,
         "envFile": "apps/api/.env",
-        "cwd": "libs/modules/rbac/relations/subjects-to-wallet-operations/backend/repository/database",
+        "cwd": "libs/modules/rbac/relations/subjects-to-billing-module-wallets/backend/repository/database",
         "commands": [
           {
             "command": "bun run ./src/lib/migrate.ts"
@@ -986,12 +950,12 @@
         ]
       }
     },
-    "relations:subjects-to-provider-identities:repository-generate": {
+    "relations:subjects-to-crm-module-tasks:repository-generate": {
       "executor": "nx:run-commands",
       "cache": false,
       "options": {
         "parallel": false,
-        "cwd": "libs/modules/rbac/relations/subjects-to-provider-identities/backend/repository/database",
+        "cwd": "libs/modules/rbac/relations/subjects-to-crm-module-tasks/backend/repository/database",
         "commands": [
           {
             "command": "drizzle-kit up --config=./src/lib/config.ts"
@@ -1002,13 +966,29 @@
         ]
       }
     },
-    "relations:subjects-to-provider-identities:repository-migrate": {
+    "relations:subjects-to-social-module-chats:repository-generate": {
+      "executor": "nx:run-commands",
+      "cache": false,
+      "options": {
+        "parallel": false,
+        "cwd": "libs/modules/rbac/relations/subjects-to-social-module-chats/backend/repository/database",
+        "commands": [
+          {
+            "command": "drizzle-kit up --config=./src/lib/config.ts"
+          },
+          {
+            "command": "drizzle-kit generate --config=./src/lib/config.ts"
+          }
+        ]
+      }
+    },
+    "relations:subjects-to-crm-module-tasks:repository-migrate": {
       "executor": "nx:run-commands",
       "cache": false,
       "options": {
         "parallel": false,
         "envFile": "apps/api/.env",
-        "cwd": "libs/modules/rbac/relations/subjects-to-provider-identities/backend/repository/database",
+        "cwd": "libs/modules/rbac/relations/subjects-to-crm-module-tasks/backend/repository/database",
         "commands": [
           {
             "command": "bun run ./src/lib/migrate.ts"
@@ -1016,29 +996,13 @@
         ]
       }
     },
-    "relations:subjects-to-provider-agents:repository-generate": {
-      "executor": "nx:run-commands",
-      "cache": false,
-      "options": {
-        "parallel": false,
-        "cwd": "libs/modules/rbac/relations/subjects-to-provider-agents/backend/repository/database",
-        "commands": [
-          {
-            "command": "drizzle-kit up --config=./src/lib/config.ts"
-          },
-          {
-            "command": "drizzle-kit generate --config=./src/lib/config.ts"
-          }
-        ]
-      }
-    },
-    "relations:subjects-to-provider-agents:repository-migrate": {
+    "relations:subjects-to-social-module-chats:repository-migrate": {
       "executor": "nx:run-commands",
       "cache": false,
       "options": {
         "parallel": false,
         "envFile": "apps/api/.env",
-        "cwd": "libs/modules/rbac/relations/subjects-to-provider-agents/backend/repository/database",
+        "cwd": "libs/modules/rbac/relations/subjects-to-social-module-chats/backend/repository/database",
         "commands": [
           {
             "command": "bun run ./src/lib/migrate.ts"

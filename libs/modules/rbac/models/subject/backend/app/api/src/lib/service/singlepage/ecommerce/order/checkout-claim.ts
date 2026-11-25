@@ -68,6 +68,7 @@ export class Service {
           },
         });
         const lockedOrders: IOrder[] = [];
+        const acceptedServiceOrders = new Set<string>();
         for (const id of orderIds) {
           const ownership = owners.filter(
             (link) => link.ecommerceModuleOrderId === id,
@@ -82,6 +83,18 @@ export class Service {
           }
           const order = await ecommerce.order.findById({ id });
           const openCart = order?.type === "cart" && order.status === "new";
+          if (order?.type === "history" && order.status === "delivering") {
+            const work = await ecommerce.order.work?.findByOrder(id);
+            if (
+              work?.kind === "individual-service" &&
+              work.customerId === props.subjectId &&
+              work.acceptedFileId &&
+              !work.paid &&
+              work.state === "awaiting-payment"
+            ) {
+              acceptedServiceOrders.add(id);
+            }
+          }
           const payingHistory =
             props.resumeExisting &&
             order?.type === "history" &&
@@ -96,7 +109,7 @@ export class Service {
           if (
             !order ||
             order.variant === STORE_TEST_ORDER_VARIANT ||
-            (!openCart && !payingHistory)
+            (!openCart && !payingHistory && !acceptedServiceOrders.has(id))
           ) {
             throw new Error(
               "Conflict error. Checkout order is no longer an open cart",
@@ -364,7 +377,10 @@ export class Service {
         }
         // Every order has been rechecked before the first claim is written.
         if (
-          lockedOrders.some((order) => order.type === "history") &&
+          lockedOrders.some(
+            (order) =>
+              order.type === "history" && !acceptedServiceOrders.has(order.id),
+          ) &&
           !existingInvoices
         ) {
           throw new Error(
@@ -372,7 +388,10 @@ export class Service {
           );
         }
         for (const order of lockedOrders) {
-          if (order.type === "history") {
+          if (
+            order.type === "history" &&
+            !acceptedServiceOrders.has(order.id)
+          ) {
             continue;
           }
           await ecommerce.order.update({

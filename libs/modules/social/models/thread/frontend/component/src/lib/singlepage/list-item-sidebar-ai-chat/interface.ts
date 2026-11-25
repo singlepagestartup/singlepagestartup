@@ -16,6 +16,10 @@ export interface IComponentProps extends IParent<IModel, typeof variant> {
   selected: boolean;
   topic?: boolean;
   title?: string;
+  activityAt?: Date | string;
+  unreadCount?: number;
+  preview?: string;
+  previewAuthor?: string;
   onNavigate?: () => void;
 }
 export interface IComponentPropsExtended extends IParentExtended<

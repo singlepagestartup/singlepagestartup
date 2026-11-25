@@ -15,6 +15,7 @@ export const serverHost = API_SERVICE_URL;
 export const clientHost = NEXT_PUBLIC_API_SERVICE_URL;
 export const route = "/api/ecommerce/widgets";
 export const variants = [
+  "store-header-default",
   "hidden",
   "category-list-default",
   "category-overview-default",

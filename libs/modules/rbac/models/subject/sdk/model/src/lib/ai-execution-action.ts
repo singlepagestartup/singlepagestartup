@@ -10,6 +10,7 @@ export const aiExecutionActionRunStatuses = [
 ] as const;
 
 export const aiExecutionActionPhases = [
+  "reply_generation",
   "tool_requested",
   "tool_running",
   "tool_completed",
@@ -49,16 +50,135 @@ export interface IAiExecutionActionStep {
   completedAt?: string;
   resultBytes?: number;
   errorCode?: string;
+  parameters?: Record<string, string | number | boolean>;
+  resultSummary?: Record<string, number | boolean>;
+  schemaFields?: { name: string; type: string }[];
+}
+
+/** The timeline can be shared with other participants. Only project explicitly public scalar fields. */
+export function publicMcpParameters(input: unknown) {
+  if (!isRecord(input)) return undefined;
+  const result: NonNullable<IAiExecutionActionStep["parameters"]> = {};
+  for (const key of [
+    "module",
+    "model",
+    "relation",
+    "moduleName",
+    "modelName",
+    "relationName",
+    "sku",
+    "locale",
+  ]) {
+    const value = input[key];
+    if (
+      typeof value === "string" &&
+      /^[\p{L}\d_-]{1,40}$/u.test(value) &&
+      !/^(?:sk-|gh[pousr]_|github_pat_|xox[baprs]-|AKIA|eyJ|Bearer)/i.test(
+        value,
+      )
+    ) {
+      result[key] = value;
+    }
+  }
+  for (const key of ["limit", "offset", "page", "pageSize"]) {
+    const value = input[key];
+    if (typeof value === "number" && Number.isSafeInteger(value) && value >= 0)
+      result[key] = value;
+  }
+  if (typeof input.dryRun === "boolean") result.dryRun = input.dryRun;
+  return Object.keys(result).length ? result : undefined;
+}
+
+export function publicMcpResult(input: unknown) {
+  if (Array.isArray(input)) return { count: input.length };
+  if (!isRecord(input)) return undefined;
+  const result: NonNullable<IAiExecutionActionStep["resultSummary"]> = {};
+  for (const key of [
+    "count",
+    "total",
+    "available",
+    "quantity",
+    "created",
+    "updated",
+    "deleted",
+    "ok",
+    "success",
+    "hasMore",
+  ]) {
+    const value = input[key];
+    if (
+      typeof value === "boolean" ||
+      (typeof value === "number" && Number.isFinite(value))
+    )
+      result[key] = value;
+  }
+  for (const key of [
+    "items",
+    "records",
+    "results",
+    "modules",
+    "models",
+    "relations",
+  ]) {
+    const values = input[key];
+    if (Array.isArray(values) && result.count === undefined)
+      result.count = values.length;
+  }
+  return Object.keys(result).length ? result : undefined;
+}
+
+export function publicMcpSchemaFields(
+  server: unknown,
+  tool: unknown,
+  input: unknown,
+) {
+  if (
+    server !== "singlepagestartup" ||
+    (tool !== "model-schema" && tool !== "relation-schema") ||
+    !isRecord(input) ||
+    !Array.isArray(input.fields)
+  ) {
+    return undefined;
+  }
+  const fields: NonNullable<IAiExecutionActionStep["schemaFields"]> = [];
+  for (const field of input.fields.slice(0, 24)) {
+    if (
+      isRecord(field) &&
+      typeof field.name === "string" &&
+      /^[a-z][A-Za-z0-9_]{0,63}$/.test(field.name) &&
+      typeof field.type === "string" &&
+      [
+        "string",
+        "number",
+        "boolean",
+        "date",
+        "array",
+        "record",
+        "object",
+        "enum",
+        "literal",
+        "unknown",
+        "uuid",
+        "text",
+        "timestamp",
+        "json",
+      ].includes(field.type)
+    ) {
+      fields.push({ name: field.name, type: field.type });
+    }
+  }
+  return fields.length ? fields : undefined;
 }
 
 export interface IAiExecutionActionPayload {
   version: typeof AI_EXECUTION_ACTION_VERSION;
   runId: string;
-  triggerMessageId: string;
+  triggerMessageId?: string;
   replySocialProfileId: string;
   status: TAiExecutionActionRunStatus;
   phase: TAiExecutionActionPhase;
   selectedModelId?: string;
+  rejectedFileName?: string;
   startedAt: string;
   completedAt?: string;
   steps: IAiExecutionActionStep[];
@@ -173,6 +293,19 @@ function parseStep(value: unknown): IAiExecutionActionStep | null {
       ? { resultBytes: value.resultBytes }
       : {}),
     ...(value.errorCode ? { errorCode: value.errorCode } : {}),
+    ...(value.kind === "mcp" && {
+      ...(value.parameters !== undefined && {
+        parameters: publicMcpParameters(value.parameters),
+      }),
+      ...(value.resultSummary !== undefined && {
+        resultSummary: publicMcpResult(value.resultSummary),
+      }),
+      ...(value.schemaFields !== undefined && {
+        schemaFields: publicMcpSchemaFields(value.serverId, value.toolName, {
+          fields: value.schemaFields,
+        }),
+      }),
+    }),
   };
 }
 
@@ -194,11 +327,15 @@ export function parseAiExecutionActionPayload(
     !isRecord(value) ||
     value.version !== AI_EXECUTION_ACTION_VERSION ||
     !isBoundedString(value.runId) ||
-    !isBoundedString(value.triggerMessageId) ||
+    (!(
+      value.phase === "reply_generation" && value.triggerMessageId === undefined
+    ) &&
+      !isBoundedString(value.triggerMessageId)) ||
     !isBoundedString(value.replySocialProfileId) ||
     !includes(aiExecutionActionRunStatuses, value.status) ||
     !includes(aiExecutionActionPhases, value.phase) ||
     !isOptionalBoundedString(value.selectedModelId) ||
+    !isOptionalBoundedString(value.rejectedFileName) ||
     !isIsoDate(value.startedAt) ||
     !isOptionalIsoDate(value.completedAt) ||
     !Array.isArray(value.steps) ||
@@ -216,10 +353,15 @@ export function parseAiExecutionActionPayload(
   return {
     version: AI_EXECUTION_ACTION_VERSION,
     runId: value.runId,
-    triggerMessageId: value.triggerMessageId,
+    ...(typeof value.triggerMessageId === "string" && {
+      triggerMessageId: value.triggerMessageId,
+    }),
     replySocialProfileId: value.replySocialProfileId,
     status: value.status as TAiExecutionActionRunStatus,
     phase: value.phase as TAiExecutionActionPhase,
+    ...(value.rejectedFileName
+      ? { rejectedFileName: value.rejectedFileName }
+      : {}),
     ...(value.selectedModelId
       ? { selectedModelId: value.selectedModelId }
       : {}),

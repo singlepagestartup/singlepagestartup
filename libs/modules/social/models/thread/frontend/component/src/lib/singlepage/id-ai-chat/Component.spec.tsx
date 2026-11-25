@@ -17,7 +17,7 @@ it("fills the available width when a thread has no context", () => {
   expect(screen.getByText("Message form")).toBeTruthy();
 });
 
-it("stacks the thread title below its label in a fixed-height desktop header", () => {
+it("shows the thread title without a separate thread label", () => {
   render(
     <Component
       {...({
@@ -30,35 +30,41 @@ it("stacks the thread title below its label in a fixed-height desktop header", (
   );
 
   const title = screen.getByRole("heading", { name: "Заказ на обложку" });
-  const label = screen.getByText("Обсуждение");
-  expect(title.previousElementSibling).toBe(label);
-  expect(title.parentElement?.classList).not.toContain("lg:flex");
-  expect(title.closest("header")?.classList).toContain("lg:h-16");
+  expect(title.closest("header")).toBeTruthy();
+  expect(screen.queryByText("Обсуждение")).toBeNull();
 });
 
 it("lets the desktop composer use the sidebar width when the sidebar is closed", () => {
   const matchMedia = window.matchMedia;
   window.matchMedia = jest.fn().mockReturnValue({ matches: true });
   try {
-    render(
+    const conversation = (message: string, hasFiles: boolean) => (
       <Component
         {...({
           data: { id: "topic", title: "Pickup and booking checks" },
-          messages: <p>Conversation</p>,
+          messages: <p>{message}</p>,
           composer: <textarea aria-label="Message" />,
-          context: <p>Order preview</p>,
+          context: hasFiles ? <p>Order preview</p> : undefined,
         } as any)}
-      />,
+      />
     );
-
+    const view = render(conversation("Conversation", false));
+    const composer = screen.getByRole("textbox", { name: "Message" });
+    fireEvent.change(composer, { target: { value: "Draft" } });
+    view.rerender(conversation("Incoming attachment", true));
+    expect(screen.queryByRole("complementary")).toBeNull();
+    fireEvent.click(
+      screen.getByRole("button", {
+        name: "Show right sidebar",
+        expanded: false,
+      }),
+    );
+    view.rerender(conversation("Next reply", true));
     const sidebar = screen.getByRole("complementary", { name: "Context" });
     expect(screen.queryByRole("heading", { name: "Context" })).toBeNull();
     expect(sidebar.parentElement?.classList).toContain(
       "xl:grid-cols-[minmax(0,1fr)_360px]",
     );
-    fireEvent.change(screen.getByRole("textbox", { name: "Message" }), {
-      target: { value: "Draft" },
-    });
 
     fireEvent.click(
       screen.getByRole("button", {
@@ -67,6 +73,8 @@ it("lets the desktop composer use the sidebar width when the sidebar is closed",
       }),
     );
 
+    view.rerender(conversation("Another reply", true));
+    expect(screen.getByRole("textbox", { name: "Message" })).toBe(composer);
     expect(sidebar.hidden).toBe(true);
     expect(sidebar.parentElement?.classList).not.toContain(
       "xl:grid-cols-[minmax(0,1fr)_360px]",
@@ -104,11 +112,10 @@ it("keeps messages visible by default on mobile and switches to the sidebar on r
       />,
     );
 
-    const sidebar = screen.getByRole("complementary", { name: "Context" });
+    expect(screen.queryByRole("complementary", { name: "Context" })).toBeNull();
     const messages = screen
       .getByText("Conversation")
       .closest("[data-ai-chat-messages]")?.parentElement;
-    expect(sidebar.classList).toContain("hidden");
     expect(messages?.classList).toContain("flex");
 
     fireEvent.click(
@@ -118,7 +125,7 @@ it("keeps messages visible by default on mobile and switches to the sidebar on r
       }),
     );
 
-    expect(sidebar.classList).toContain("block");
+    expect(screen.getByRole("complementary", { name: "Context" })).toBeTruthy();
     expect(messages?.classList).toContain("hidden");
     fireEvent.click(
       screen.getByRole("button", {

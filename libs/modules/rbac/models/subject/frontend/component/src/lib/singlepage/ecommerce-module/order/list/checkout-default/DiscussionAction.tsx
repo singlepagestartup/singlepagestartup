@@ -1,6 +1,6 @@
 "use client";
 
-import { memo, useCallback, useEffect, useRef, useState } from "react";
+import { memo, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { api } from "@sps/rbac/models/subject/sdk/client";
@@ -12,13 +12,14 @@ interface IOpenDiscussionProps {
   subjectId: string;
   orderId: string;
   storeId: string;
-  productId: string;
-  offerId: string;
+  target:
+    | { operation: "enter-order-discussion"; taskId: string }
+    | { operation: "open-cart-discussion"; productId: string; offerId: string };
   language: string;
   label: string;
-  title?: string;
   buttonVariant: "primary" | "outline";
-  onDiscussionOpen: () => boolean;
+  canOpenDiscussion: () => boolean;
+  onDiscussionOpen?: () => void;
 }
 
 function discussionPath(language: string, chatId: string, threadId: string) {
@@ -40,15 +41,14 @@ function OpenDiscussion(props: IOpenDiscussionProps) {
       const result = await mutation.mutateAsync({
         id: props.subjectId,
         data: {
-          operation: "open-cart-discussion",
+          ...props.target,
           operationKey: operationKey.current,
           orderId: props.orderId,
           storeId: props.storeId,
-          productId: props.productId,
-          offerId: props.offerId,
         },
       });
-      if (props.onDiscussionOpen()) {
+      if (props.canOpenDiscussion()) {
+        props.onDiscussionOpen?.();
         router.push(
           discussionPath(props.language, result.chatId, result.threadId),
         );
@@ -72,7 +72,6 @@ function OpenDiscussion(props: IOpenDiscussionProps) {
             ? "Открываем обсуждение…"
             : "Opening discussion…"
           : props.label}
-        {props.title && <span className="sr-only"> {props.title}</span>}
       </Button>
       {error && (
         <p role="alert" className="text-sm text-destructive">
@@ -94,30 +93,24 @@ export const DiscussionAction = memo(function DiscussionAction(
   const discussion = details?.discussion;
   const work = details?.work;
   const ru = props.language === "ru";
-  const label = ru ? "Открыть обсуждение" : "Open discussion";
-  const title = props.showTitle
-    ? line?.product?.title?.[props.language] ||
-      line?.product?.title?.en ||
-      line?.product?.slug
-    : undefined;
-  const mounted = useRef(false);
-  useEffect(() => {
-    mounted.current = true;
-    return () => {
-      mounted.current = false;
-    };
-  }, []);
-  const onDiscussionOpen = useCallback(() => {
-    if (!mounted.current) return false;
-    props.onDiscussionOpen?.();
-    return true;
-  }, [props.onDiscussionOpen]);
+  const label = ru ? "Перейти в чат" : "Go to chat";
+  const target = discussion
+    ? {
+        operation: "enter-order-discussion" as const,
+        taskId: discussion.taskId,
+      }
+    : work?.state === "requires-discussion" && line?.offerId
+      ? {
+          operation: "open-cart-discussion" as const,
+          productId: line.productId,
+          offerId: line.offerId,
+        }
+      : undefined;
   const buttonVariant = props.buttonVariant ?? "outline";
 
   return (
     <div className="space-y-1.5">
-      {title && <p className="text-sm font-medium">{title}</p>}
-      {discussion ? (
+      {discussion && !work ? (
         <Button
           variant={buttonVariant}
           className="min-h-11 w-full rounded-xl"
@@ -132,7 +125,6 @@ export const DiscussionAction = memo(function DiscussionAction(
             onClick={props.onDiscussionOpen}
           >
             {label}
-            {title && <span className="sr-only"> {title}</span>}
           </Link>
         </Button>
       ) : work?.state === "requires-discussion" &&
@@ -143,18 +135,17 @@ export const DiscussionAction = memo(function DiscussionAction(
             ? "Установите количество 1, чтобы открыть обсуждение."
             : "Set the quantity to 1 to open the discussion."}
         </p>
-      ) : work?.state === "requires-discussion" && line?.offerId ? (
+      ) : work && target ? (
         <OpenDiscussion
           subjectId={props.subjectId}
           orderId={work.orderId}
           storeId={work.storeId}
-          productId={line.productId}
-          offerId={line.offerId}
+          target={target}
           language={props.language}
-          title={title}
           label={label}
           buttonVariant={buttonVariant}
-          onDiscussionOpen={onDiscussionOpen}
+          canOpenDiscussion={props.canOpenDiscussion}
+          onDiscussionOpen={props.onDiscussionOpen}
         />
       ) : (
         <p role="status" className="text-sm text-muted-foreground">

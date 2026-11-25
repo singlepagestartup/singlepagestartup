@@ -73,6 +73,14 @@ describe("is-authorized allowed routes", () => {
     }
   });
 
+  it("delegates the buyer's model favorites to the controller for GET and PATCH", () => {
+    const path = `/api/rbac/subjects/${uuid}/social-module/profiles/${uuid}/chats/${uuid}/openrouter/model-favorites`;
+    expect(matcher.matches(path, "GET")).toBe(true);
+    expect(matcher.matches(path, "PATCH")).toBe(true);
+    expect(matcher.matches(path, "POST")).toBe(false);
+    expect(matcher.matches(`${path}/other`, "GET")).toBe(false);
+  });
+
   it("delegates Website Builder and File Storage API reads to RBAC", () => {
     for (const resource of ["website-builder/widgets", "file-storage/files"]) {
       for (const suffix of ["", "/", "/count", `/${uuid}`, "/dump"]) {

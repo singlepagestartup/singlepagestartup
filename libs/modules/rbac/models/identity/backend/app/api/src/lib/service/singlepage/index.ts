@@ -14,6 +14,8 @@ import { createHmac, randomBytes } from "node:crypto";
 import { IModel } from "@sps/rbac/models/identity/sdk/model";
 import { assertCredentialColumnsAreHashed } from "@sps/backend-utils";
 
+import type { Repository } from "../../repository";
+
 export type IEmailAndPassword = {
   data: {
     type: "login" | "registration";
@@ -41,6 +43,12 @@ const PASSWORD_RESET_LIFETIME_MS = 60 * 60 * 1000;
 @injectable()
 @injectFromBase()
 export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
+  declare repository: Repository;
+
+  outboundProvider(id: string) {
+    return this.repository.outboundProvider(id);
+  }
+
   get modules() {
     return this.appAssembly.getOrCreate(createModules);
   }
@@ -85,10 +93,8 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     }
     assertCredentialColumnsAreHashed(props.data);
     const existing = await this.findById({ id: props.id });
-    if (existing?.usage === "outbound_api") {
-      throw new Error(
-        "Permission error. Outbound identities are managed by their store owner",
-      );
+    if (!existing) {
+      return null;
     }
 
     // A link sent to the previous address must not reset the new credentials.

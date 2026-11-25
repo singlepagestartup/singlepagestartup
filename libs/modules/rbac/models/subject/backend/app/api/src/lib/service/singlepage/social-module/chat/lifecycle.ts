@@ -1,14 +1,11 @@
 import { api as subjectsToSocialModuleProfilesApi } from "@sps/rbac/relations/subjects-to-social-module-profiles/sdk/server";
-import { api as socialModuleChatApi } from "@sps/social/models/chat/sdk/server";
+import { withConsistencyTransaction } from "@sps/shared-backend-api";
 import { IModel as ISocialModuleChat } from "@sps/social/models/chat/sdk/model";
 import { api as socialModuleProfileApi } from "@sps/social/models/profile/sdk/server";
-import { api as socialModuleThreadApi } from "@sps/social/models/thread/sdk/server";
 import {
   IModel as ISocialModuleThread,
   selectPrimaryLinkedThread,
 } from "@sps/social/models/thread/sdk/model";
-import { api as socialModuleChatsToThreadsApi } from "@sps/social/relations/chats-to-threads/sdk/server";
-import { api as socialModuleProfilesToChatsApi } from "@sps/social/relations/profiles-to-chats/sdk/server";
 import { RBAC_SECRET_KEY } from "@sps/shared-utils";
 import { STORE_EMPLOYEE_CHAT_VARIANT } from "@sps/rbac/models/subject/sdk/model/src/lib/crm-workspace";
 import type { Service as SubjectService } from "../../index";
@@ -50,38 +47,26 @@ export class Service {
       autoBootstrapProfile: props.autoBootstrapProfile,
     });
 
-    const socialModuleChat = await socialModuleChatApi.create({
-      data: props.data,
-      options: {
-        headers: {
-          "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-        },
-      },
+    return withConsistencyTransaction(this.service.repository.db, async () => {
+      const socialModuleChat = await this.service.chatOwnership.create(
+        props.subjectId,
+        props.data,
+      );
+      await this.service.modules.social.profilesToChats.create({
+        data: { profileId: socialModuleProfileId, chatId: socialModuleChat.id },
+      });
+      const socialModuleDefaultThread = await this.ensureDefaultThreadForChat({
+        socialModuleChatId: socialModuleChat.id,
+      });
+      return {
+        socialModuleChat,
+        socialModuleProfileId,
+        socialModuleDefaultThread,
+      };
     });
-
-    await socialModuleProfilesToChatsApi.create({
-      data: {
-        profileId: socialModuleProfileId,
-        chatId: socialModuleChat.id,
-      },
-      options: {
-        headers: {
-          "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-        },
-      },
-    });
-
-    const socialModuleDefaultThread = await this.ensureDefaultThreadForChat({
-      socialModuleChatId: socialModuleChat.id,
-    });
-
-    return {
-      socialModuleChat,
-      socialModuleProfileId,
-      socialModuleDefaultThread,
-    };
   }
 
+  /** Legacy access check for participants and administrators. Settings writes require chatOwnership.assertOwner. */
   async assertSubjectOwnsChat(props: {
     subjectId: string;
     socialModuleChatId: string;
@@ -220,11 +205,6 @@ export class Service {
   async ensureDefaultThreadForChat(props: {
     socialModuleChatId: string;
   }): Promise<ISocialModuleThread> {
-    if (!RBAC_SECRET_KEY) {
-      throw new Error("Configuration error. RBAC_SECRET_KEY not set");
-    }
-
-    const secretKey = RBAC_SECRET_KEY;
     const socialModuleChat = await this.service.modules.social.chat.findById({
       id: props.socialModuleChatId,
     });
@@ -285,58 +265,17 @@ export class Service {
       }
     }
 
-    const socialModuleDefaultThread = await socialModuleThreadApi.create({
+    const thread = await this.service.modules.social.thread.create({
+      data: { variant: "default" },
+    });
+    await this.service.modules.social.chatsToThreads.create({
       data: {
+        chatId: props.socialModuleChatId,
+        threadId: thread.id,
         variant: "default",
       },
-      options: {
-        headers: {
-          "X-RBAC-SECRET-KEY": secretKey,
-        },
-      },
     });
-
-    if (!socialModuleDefaultThread?.id) {
-      throw new Error(
-        "Internal server error. Failed to create default thread for chat",
-      );
-    }
-
-    const persistedDefaultThread = await socialModuleThreadApi.findById({
-      id: socialModuleDefaultThread.id,
-      options: {
-        headers: {
-          "X-RBAC-SECRET-KEY": secretKey,
-        },
-      },
-    });
-
-    if (!persistedDefaultThread?.id) {
-      throw new Error(
-        "Internal server error. Created default thread was not found",
-      );
-    }
-
-    try {
-      await socialModuleChatsToThreadsApi.create({
-        data: {
-          chatId: props.socialModuleChatId,
-          threadId: persistedDefaultThread.id,
-          variant: "default",
-        },
-        options: {
-          headers: {
-            "X-RBAC-SECRET-KEY": secretKey,
-          },
-        },
-      });
-    } catch {
-      throw new Error(
-        `Internal server error. Failed to link default thread to chat. chatId=${props.socialModuleChatId}; threadId=${persistedDefaultThread.id}`,
-      );
-    }
-
-    return persistedDefaultThread;
+    return thread;
   }
 
   protected async resolveSubjectProfileId(props: {

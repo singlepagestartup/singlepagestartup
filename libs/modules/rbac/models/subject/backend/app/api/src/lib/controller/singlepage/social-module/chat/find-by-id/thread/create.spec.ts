@@ -3,6 +3,7 @@ const mockSocialModuleThreadUpdate = jest.fn();
 const mockSocialModuleChatsToThreadsCreate = jest.fn();
 
 jest.mock("@sps/shared-utils", () => ({
+  ...jest.requireActual("@sps/shared-utils"),
   RBAC_JWT_SECRET: "jwt-secret",
   RBAC_SECRET_KEY: "rbac-secret",
   TELEGRAM_SERVICE_BOT_TOKEN: "telegram-token",
@@ -104,6 +105,21 @@ describe("Given: Telegram-backed SPS chat thread creation", () => {
     mockSocialModuleChatsToThreadsCreate.mockResolvedValue({
       id: "chat-to-thread-1",
     });
+  });
+
+  it("preserves the employee chat's supported thread variants", async () => {
+    const service = createService();
+    service.modules.social.chat.findById.mockResolvedValue({
+      id: "chat-1",
+      variant: "store-employee",
+    });
+    await expect(
+      new Handler(service as any).execute(
+        createContext({ title: "Discussion", variant: "telegram" }),
+        jest.fn(),
+      ),
+    ).rejects.toThrow("Training discussions use the custom variant");
+    expect(mockSocialModuleThreadCreate).not.toHaveBeenCalled();
   });
 
   it("rejects new document metadata before creating the thread or its Telegram topic", async () => {

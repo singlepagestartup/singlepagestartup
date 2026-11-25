@@ -1,13 +1,37 @@
 /** @jest-environment jsdom */
 
-import { fireEvent, render, renderHook, screen } from "@testing-library/react";
+import {
+  fireEvent,
+  render,
+  renderHook,
+  screen,
+  within,
+  waitFor,
+} from "@testing-library/react";
+import type { IChatMessage } from "@sps/social/models/message/sdk/model";
 import type { ICustomerWorkView } from "@sps/rbac/models/subject/sdk/model";
 import { ThreadContext } from "./ThreadContext";
-import { useThreadHasFiles } from "./ThreadFiles";
+import { ThreadFilesContent, useThreadHasFiles } from "./ThreadFiles";
 
 const mockThreadMessages = jest.fn();
+const mockDownload = jest.fn();
+jest.mock("@sps/rbac/models/subject/sdk/client", () => ({
+  api: {
+    customerWorkAttachment: (...args: unknown[]) => mockDownload(...args),
+  },
+}));
 
 jest.mock("../hooks/use-thread-messages", () => ({
+  useThreadAttachmentIndex: (
+    scope: unknown,
+    enabled: boolean,
+    select?: unknown,
+  ) =>
+    mockThreadMessages(scope, false, {
+      enabled,
+      select,
+      attachmentIndex: true,
+    }),
   useThreadMessages: (...args: unknown[]) => mockThreadMessages(...args),
 }));
 jest.mock("@sps/file-storage/models/file/frontend/component", () => ({
@@ -41,47 +65,122 @@ it("shows an attached file once using its preview card", () => {
 
   expect(screen.getAllByText("Design input")).toHaveLength(1);
   expect(screen.getByText("Design input").getAttribute("data-layout")).toBe(
-    "card",
+    "rail",
   );
 });
 
-it("shows six files initially and scrolls the expanded list", () => {
+it("shows exactly three distinct files across protected and public messages without More", () => {
   mockThreadMessages.mockReturnValue({
     data: [
       {
-        id: "public",
-        attachments: Array.from({ length: 5 }, (_, index) => ({
-          id: `File ${index + 1}`,
-        })),
-      },
-      {
-        id: "protected",
+        id: "private",
         variant: "customer-work",
-        privateAttachments: [6, 7, 8].map((index) => ({
-          id: `private-${index}`,
-          name: `File ${index}`,
-        })),
+        privateAttachments: [{ id: "one", name: "First.txt" }],
       },
+      { id: "public", attachments: [{ id: "Second" }, { id: "Third" }] },
+      { id: "repeat", attachments: [{ id: "Second" }] },
     ],
   });
   render(<ThreadContext {...scope} isCustomerWork={false} />);
+  expect(
+    screen.getAllByRole("listitem").map((item) => item.textContent),
+  ).toEqual([expect.stringContaining("First.txt"), "Second", "Third"]);
+  expect(screen.queryByRole("button", { name: "More" })).toBeNull();
+});
 
-  expect(screen.getByText("File 1")).toBeTruthy();
-  expect(screen.getByRole("button", { name: "Download File 6" })).toBeTruthy();
-  expect(screen.queryByRole("button", { name: "Download File 7" })).toBeNull();
-  fireEvent.click(
-    screen.getByRole("button", { name: "Show all files (8)", expanded: false }),
+it("opens a four-file gallery, previews an older private upload, and restores focus through both dialogs", async () => {
+  const records = [
+    { id: "public", attachments: [{ id: "One" }, { id: "Two" }] },
+    {
+      id: "protected",
+      variant: "customer-work",
+      attachments: [{ id: "Unrelated public record" }],
+      privateAttachments: [
+        { id: "three", name: "Three.bin" },
+        { id: "four", name: "Four.txt" },
+      ],
+    },
+  ];
+  mockThreadMessages.mockReturnValue({ data: records });
+  mockDownload.mockResolvedValue(
+    new Blob(["Four contents"], { type: "application/octet-stream" }),
   );
-  expect(screen.getByRole("region", { name: "All files" }).classList).toContain(
-    "overflow-y-auto",
+  render(<ThreadContext {...scope} isCustomerWork={false} />);
+  expect(screen.getAllByRole("listitem")).toHaveLength(3);
+  expect(screen.queryByText("Four.txt")).toBeNull();
+  const more = screen.getByRole("button", { name: "More" });
+  fireEvent.click(more);
+  const gallery = screen.getByRole("dialog", { name: "All files" });
+  expect(within(gallery).getAllByRole("listitem")).toHaveLength(4);
+  expect(within(gallery).getByRole("list").className).toMatch(
+    /grid-cols-2.*lg:grid-cols-6/,
   );
-  expect(screen.getByRole("button", { name: "Download File 8" })).toBeTruthy();
+  expect(within(gallery).getByText("One").getAttribute("data-layout")).toBe(
+    "gallery",
+  );
+  expect(within(gallery).queryByText("Unrelated public record")).toBeNull();
+  const tile = within(gallery).getByRole("button", {
+    name: "Preview Four.txt",
+  });
+  tile.focus();
+  fireEvent.click(tile);
+  const preview = screen.getByRole("dialog", { name: "Four.txt" });
+  expect(await within(preview).findByText("Four contents")).toBeTruthy();
+  expect(mockDownload).toHaveBeenCalledWith(
+    expect.objectContaining({
+      id: "buyer",
+      threadId: "thread",
+      messageId: "protected",
+      attachmentId: "four",
+    }),
+  );
+  fireEvent.keyDown(preview, { key: "Escape" });
+  await waitFor(() => expect(document.activeElement).toBe(tile));
+  expect(screen.getByRole("dialog", { name: "All files" })).toBe(gallery);
+  fireEvent.keyDown(gallery, { key: "Escape" });
+  await waitFor(() => expect(document.activeElement).toBe(more));
+  expect(screen.queryByRole("dialog")).toBeNull();
+});
 
-  fireEvent.click(
-    screen.getByRole("button", { name: "Show fewer files", expanded: true }),
+it("uses the CRM attachment operation for a gallery file in the original task message", async () => {
+  const download = jest
+    .fn()
+    .mockResolvedValue(
+      new Blob(["Staff text"], { type: "application/octet-stream" }),
+    );
+  const messages = [
+    {
+      id: "task-message",
+      variant: "customer-work",
+      privateAttachments: ["a", "b", "c", "d"].map((id) => ({
+        id,
+        name: id + ".txt",
+      })),
+    },
+  ];
+  render(
+    <ThreadFilesContent
+      {...scope}
+      language="ru"
+      isCustomerWork
+      messages={messages as IChatMessage[]}
+      onAttachmentDownload={download}
+    />,
   );
-  expect(screen.queryByRole("button", { name: "Download File 7" })).toBeNull();
-  expect(screen.getByRole("button", { name: "Download File 6" })).toBeTruthy();
+  fireEvent.click(screen.getByRole("button", { name: "Ещё" }));
+  fireEvent.click(
+    within(screen.getByRole("dialog", { name: "Все файлы" })).getByRole(
+      "button",
+      { name: "Открыть d.txt" },
+    ),
+  );
+  expect(await screen.findByText("Staff text")).toBeTruthy();
+  expect(download).toHaveBeenCalledWith(
+    "task-message",
+    "d",
+    expect.any(AbortSignal),
+    expect.any(Number),
+  );
 });
 
 it("omits the Files heading when the selected discussion has no attachments", () => {
@@ -148,6 +247,63 @@ it("keeps work attachments on the signed-in buyer's download path", () => {
   expect(screen.queryByText("Public file record")).toBeNull();
   expect(container.querySelector("a, iframe, object, embed, img")).toBeNull();
   expect(
-    screen.getByRole("button", { name: "Download Private brief.pdf" }),
+    screen.getByRole("button", { name: "Preview Private brief.pdf" }),
   ).toBeTruthy();
+});
+
+it("finds files beyond the first 100 messages and loads the older public File only from its original message", async () => {
+  const firstPage = Array.from({ length: 100 }, (_, i) => ({ id: String(i) }));
+  const directory = [
+    {
+      id: "employee-message",
+      variant: "customer-work",
+      privateAttachments: [
+        { id: "p1", name: "One.txt" },
+        { id: "p2", name: "Two.txt" },
+        { id: "p3", name: "Three.txt" },
+      ],
+    },
+    {
+      id: "older-message",
+      publicAttachmentRefs: [
+        { id: "Original public image", name: "Original.png" },
+      ],
+    },
+  ];
+  mockThreadMessages.mockImplementation((_scope, _interval, options = {}) => {
+    if (options.enabled === false) return {};
+    let data: unknown[] = firstPage;
+    if (options.attachmentIndex) data = directory;
+    if (options.attachmentMessageId) {
+      data = [
+        {
+          id: "older-message",
+          attachments: [{ id: "Original public image", file: "/original.png" }],
+        },
+      ];
+    }
+    return { data: options.select ? options.select(data) : data };
+  });
+  const { result } = renderHook(() => useThreadHasFiles(scope, false));
+  expect(result.current).toBe(true);
+  render(<ThreadContext {...scope} isCustomerWork={false} />);
+  expect(screen.getAllByRole("listitem")).toHaveLength(3);
+  expect(
+    mockThreadMessages.mock.calls.some((call) => call[2]?.attachmentMessageId),
+  ).toBe(false);
+  fireEvent.click(screen.getByRole("button", { name: "More" }));
+  const gallery = within(screen.getByRole("dialog", { name: "All files" }));
+  expect(await gallery.findByText("Original public image")).toBeTruthy();
+  expect(mockThreadMessages).toHaveBeenCalledWith(
+    expect.objectContaining({
+      subjectId: "buyer",
+      socialModuleChatId: "chat",
+      socialModuleThreadId: "thread",
+    }),
+    false,
+    expect.objectContaining({
+      attachmentMessageId: "older-message",
+      enabled: true,
+    }),
+  );
 });

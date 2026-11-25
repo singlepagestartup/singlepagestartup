@@ -44,12 +44,7 @@ const readers = [
     "file-storage.files",
   ],
   ["identities", identities, { id: "owner" }, "rbac.identities"],
-  [
-    "balance",
-    balance,
-    { id: "owner" },
-    "rbac.subjects-to-billing-module-currencies",
-  ],
+  ["balance", balance, { id: "owner" }, "billing.wallets-to-currencies"],
   ["me", me, { subjectId: "owner" }, "rbac.subjects"],
 ] as const;
 

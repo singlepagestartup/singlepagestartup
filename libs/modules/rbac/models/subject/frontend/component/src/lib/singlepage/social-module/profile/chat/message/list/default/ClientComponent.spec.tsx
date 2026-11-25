@@ -15,9 +15,11 @@ import {
   waitFor,
   within,
 } from "@testing-library/react";
+import { orderFileReviewInteraction } from "@sps/rbac/models/subject/sdk/model/src/lib/order-work";
 import userEvent from "@testing-library/user-event";
 import {
   mockChatComponentState,
+  mockAttachKnowledgeFiles,
   mockCustomerWork,
   mockOrderWorkRead,
   mockKnowledgeSourceCreateMutate,
@@ -26,8 +28,11 @@ import {
   mockKnowledgeReindexDocumentMutateAsync,
   mockMessageCreateMutate,
   mockOpenRouterModelFavoriteUpdateMutate,
+  mockProfileAvatarUpdateMutateAsync,
+  mockProfileUpdateMutateAsync,
   mockProfileSkillFind,
   mockThreadUpdateMutate,
+  mockToastSuccess,
   mockSocialSkillCreateMutateAsync,
   mockSocialSkillUpdateMutateAsync,
   renderComponent,
@@ -37,8 +42,7 @@ import {
 jest.mock(
   "../../../../../../ecommerce-module/order/create-default/customer-work/ResultReview",
   () => ({
-    ResultReview: ({ selectedVersionId }: { selectedVersionId?: string }) =>
-      selectedVersionId ? <p>{`Reviewing ${selectedVersionId}`}</p> : null,
+    ResultReview: () => <p>Review order files</p>,
   }),
 );
 
@@ -70,6 +74,47 @@ function aiReactionRequest(
 describe("Social thread context", () => {
   beforeEach(() => resetChatComponentMocks());
 
+  it("renders the persisted payment confirmation and the customer reply as chat messages", async () => {
+    const eventId = "1afa2a3e-d105-4a98-a51d-8a4b2d458c26";
+    const orderPayment = {
+      eventId,
+      orderId: "fc28fecb-41e8-4428-8c2e-6b1368797cc9",
+      paymentIntentId: "450a19cc-ccdd-49cb-9e48-27e5a0be9c95",
+      invoiceId: "041f43ae-969d-4722-a314-c133cd7f605c",
+      currency: "RUB",
+      amount: "500.0000",
+    };
+    renderComponent("customer-work", {
+      socialModuleMessagesAndActionsQuery: [
+        {
+          type: "message",
+          data: {
+            id: "payment",
+            description: "Payment received: 500 RUB.",
+            variant: "customer-work",
+            createdAt: new Date(),
+            workReplyKey: `order-payment:${eventId}`,
+            metadata: { orderPayment },
+          },
+        },
+        {
+          type: "message",
+          data: {
+            id: "claim",
+            variant: "customer-work",
+            createdAt: new Date(),
+            description: "I have paid",
+            metadata: { orderPayment },
+          },
+        },
+      ],
+    });
+    expect(
+      await screen.findAllByText("Payment received: 500 RUB."),
+    ).toHaveLength(1);
+    expect(screen.getByText("I have paid")).toBeTruthy();
+  });
+
   it.each([
     {
       variant: "default",
@@ -79,6 +124,12 @@ describe("Social thread context", () => {
     },
     {
       variant: "customer-work",
+      language: "ru",
+      name: "Сообщение",
+      hint: "Enter — отправить. Shift+Enter — новая строка.",
+    },
+    {
+      variant: "store-employee",
       language: "ru",
       name: "Сообщение",
       hint: "Enter — отправить. Shift+Enter — новая строка.",
@@ -246,6 +297,15 @@ describe("Social thread context", () => {
     expect(screen.queryByRole("heading", { name: "Favorites" })).toBeNull();
   });
 
+  it("shows the fixed stage model in the customer composer", () => {
+    mockChatComponentState.orderModelIds = [];
+    mockChatComponentState.fixedStageModelId = "gpt-6.2-astra";
+    renderComponent("customer-work");
+    expect(screen.getByText("Stage model")).toBeTruthy();
+    expect(screen.getByText("GPT-6.2 Astra")).toBeTruthy();
+    expect(screen.queryByRole("button", { name: "Reply model" })).toBeNull();
+  });
+
   it("keeps order choices scoped to each thread and requires a still-eligible model", async () => {
     const user = userEvent.setup();
     const order = renderComponent("customer-work");
@@ -367,7 +427,52 @@ describe("Social thread context", () => {
     expect(screen.queryByRole("heading", { name: "Private notes" })).toBeNull();
   });
 
-  it("opens the hidden right sidebar and focuses the requested result", () => {
+  it("places the review controls only in the newest agent prompt for the preview", () => {
+    const scope = { storeId: "store-1", taskId: "task-1", orderId: "order-1" };
+    const fileId = "1afa2a3e-d105-4a98-a51d-8a4b2d458c26";
+    mockCustomerWork.mockReturnValue({
+      data: {
+        ...scope,
+        chatId: "chat-1",
+        threadId: "thread-1",
+        status: "active",
+        assignment: "assistant",
+        workflow: { title: "Cover", stageTitle: "Review", orderStep: "review" },
+      },
+    });
+    mockOrderWorkRead.mockReturnValue({
+      data: { ...scope, state: "awaiting-result", files: [{ id: fileId }] },
+    });
+    renderComponent("customer-work", {
+      socialModuleMessagesAndActionsQuery: [
+        "First request",
+        "Please review again",
+      ].map((description, index) => ({
+        type: "message",
+        data: {
+          id: String(index),
+          description,
+          variant: "customer-work",
+          workReplyKey: "reply-" + index,
+          createdAt: new Date(1000 + index),
+          metadata: { orderResultFileId: fileId },
+          interaction: orderFileReviewInteraction(fileId, false),
+        },
+      })),
+    });
+    const controls = screen.getByText("Review order files");
+    expect(
+      screen
+        .getByText("Please review again")
+        .closest("article")
+        ?.contains(controls),
+    ).toBe(true);
+    expect(
+      screen.getByText("First request").closest("article")?.contains(controls),
+    ).toBe(false);
+  });
+
+  it("keeps the file attached to the message when the context sidebar closes", () => {
     mockCustomerWork.mockReturnValue({
       data: {
         chatId: "chat-1",
@@ -382,8 +487,10 @@ describe("Social thread context", () => {
     mockOrderWorkRead.mockReturnValue({
       data: {
         orderId: "order-1",
+        storeId: "store-1",
+        taskId: "task-1",
         state: "awaiting-result",
-        versions: [{ id: "version-1", number: 1 }],
+        files: [{ id: "file-1", legacyMessageId: "version-1" }],
       },
     });
     renderComponent("default", {
@@ -405,10 +512,10 @@ describe("Social thread context", () => {
     fireEvent.click(screen.getByRole("button", { name: "Hide right sidebar" }));
     expect(screen.queryByRole("complementary", { name: "Context" })).toBeNull();
 
-    fireEvent.click(screen.getByRole("button", { name: "Open version 1" }));
-    const heading = screen.getByRole("heading", { name: "Order result" });
-    expect(document.activeElement).toBe(heading.closest("section"));
-    expect(screen.getByText("Reviewing version-1")).toBeTruthy();
+    expect(
+      screen.getByRole("button", { name: "Download Order file preview" }),
+    ).toBeTruthy();
+    expect(screen.queryByRole("button", { name: /open version/i })).toBeNull();
   });
 
   it("ignores work that does not belong to the current chat and thread", () => {
@@ -681,22 +788,31 @@ describe("Given: OpenRouter chat profile sidebar", () => {
     });
   });
 
-  it("sends a font as a message with no caption", async () => {
-    const { container } = renderComponent("default");
-    const font = new File(["sample"], "brand.ttf", { type: "font/ttf" });
-    fireEvent.change(container.querySelector("input[type=file]")!, {
-      target: { files: [font] },
-    });
-    fireEvent.click(screen.getByLabelText("Send message"));
-    await waitFor(() =>
-      expect(mockMessageCreateMutate).toHaveBeenCalledWith(
-        expect.objectContaining({
-          data: expect.objectContaining({ files: [font], description: "" }),
-        }),
-        expect.any(Object),
-      ),
-    );
-  });
+  it.each(["default", "store-employee"] as const)(
+    "attaches and sends a file with no caption in a %s chat",
+    async (variant) => {
+      const { container } = renderComponent(variant);
+      const input =
+        container.querySelector<HTMLInputElement>("input[type=file]")!;
+      const openPicker = jest.spyOn(input, "click");
+      fireEvent.click(screen.getByRole("button", { name: "Attach files" }));
+      expect(openPicker).toHaveBeenCalled();
+      expect(input.disabled).toBe(false);
+      const font = new File(["sample"], "brand.ttf", { type: "font/ttf" });
+      fireEvent.change(input, {
+        target: { files: [font] },
+      });
+      fireEvent.click(screen.getByLabelText("Send message"));
+      await waitFor(() =>
+        expect(mockMessageCreateMutate).toHaveBeenCalledWith(
+          expect.objectContaining({
+            data: expect.objectContaining({ files: [font], description: "" }),
+          }),
+          expect.any(Object),
+        ),
+      );
+    },
+  );
 
   /**
    * BDD Scenario
@@ -1846,22 +1962,17 @@ describe("Given: OpenRouter chat profile sidebar", () => {
     fireEvent.click(screen.getByRole("button", { name: "Hide right sidebar" }));
     expect(screen.queryByRole("complementary", { name: "Context" })).toBeNull();
 
-    fireEvent.click(await screen.findByRole("button", { name: "chat-gpt-1" }));
-    expect(
-      screen.getByRole("button", {
-        name: "Hide right sidebar",
-        expanded: true,
-      }),
-    ).toBeTruthy();
-
-    expect(screen.getByText("Chat GPT 1")).toBeTruthy();
-    expect(screen.getByText("YouTube Description")).toBeTruthy();
-    expect(screen.getAllByText("Policy").length).toBeGreaterThan(0);
-    expect(
-      screen.queryByRole("button", { name: "Close profile sidebar" }),
-    ).toBeNull();
-
-    fireEvent.click(screen.getByRole("button", { name: "Hide right sidebar" }));
+    const sender = await screen.findByRole("button", { name: "chat-gpt-1" });
+    fireEvent.click(sender);
+    const profile = within(
+      screen.getByRole("dialog", { name: "Profile details" }),
+    );
+    expect(profile.getByRole("heading", { name: "Chat GPT 1" })).toBeTruthy();
+    expect(profile.getByText("YouTube Description")).toBeTruthy();
+    expect(profile.getByText("Policy")).toBeTruthy();
+    fireEvent.click(profile.getByRole("button", { name: "Close profile" }));
+    await waitFor(() => expect(document.activeElement).toBe(sender));
+    expect(screen.queryByRole("complementary", { name: "Context" })).toBeNull();
     fireEvent.click(screen.getByRole("button", { name: "Show right sidebar" }));
     const context = screen.getByRole("complementary", { name: "Context" });
     expect(within(context).getByRole("link", { name: "Cover" })).toBeTruthy();
@@ -1874,7 +1985,7 @@ describe("Given: OpenRouter chat profile sidebar", () => {
     const matchMedia = window.matchMedia;
     window.matchMedia = jest.fn((query) => ({
       matches: query === "(width < 80rem)",
-    })) as typeof window.matchMedia;
+    })) as unknown as typeof window.matchMedia;
     try {
       mockChatComponentState.profiles = [aiOpponentProfile];
       renderComponent("knowledge", {
@@ -2152,6 +2263,9 @@ describe("Given: OpenRouter chat profile sidebar", () => {
         value: "Created from the sidebar profile.",
       },
     });
+    mockKnowledgeSourceCreateMutate.mockImplementationOnce(
+      (_payload, callbacks) => callbacks.onError({ status: 503 }),
+    );
     fireEvent.click(screen.getByRole("button", { name: "Create knowledge" }));
 
     await waitFor(() => {
@@ -2165,11 +2279,85 @@ describe("Given: OpenRouter chat profile sidebar", () => {
             title: "Sidebar Knowledge",
             content: "Created from the sidebar profile.",
             orderIndex: 0,
+            operationKey: expect.any(String),
           },
         },
         expect.any(Object),
       );
     });
+    expect(screen.getByRole("alert").textContent).toMatch(
+      /indexing is temporarily unavailable/,
+    );
+    expect(screen.getByLabelText("Knowledge content")).toHaveProperty(
+      "value",
+      "Created from the sidebar profile.",
+    );
+    expect(mockToastSuccess).not.toHaveBeenCalled();
+    const requestKey =
+      mockKnowledgeSourceCreateMutate.mock.calls[0][0].data.operationKey;
+    fireEvent.click(screen.getByRole("button", { name: "Create knowledge" }));
+    expect(
+      mockKnowledgeSourceCreateMutate.mock.calls[1][0].data.operationKey,
+    ).toBe(requestKey);
+  });
+
+  it("attaches files selected before saving to the new source in the same profile", async () => {
+    const profile = {
+      id: "assistant-profile-1",
+      slug: "designer",
+      variant: "artificial-intelligence",
+      adminTitle: "Designer",
+    };
+    mockChatComponentState.profiles = [profile];
+    mockChatComponentState.profileMessageRelations = [
+      {
+        id: "profile-message-1",
+        profileId: profile.id,
+        messageId: "message-1",
+      },
+    ];
+    renderComponent("knowledge", {
+      socialModuleMessagesAndActionsQuery: [
+        {
+          type: "message",
+          data: {
+            id: "message-1",
+            description: "Hello",
+            createdAt: new Date(),
+          },
+        },
+      ],
+    });
+    fireEvent.click(await screen.findByRole("button", { name: "designer" }));
+    fireEvent.click(
+      screen.getByRole("button", { name: "New knowledge for designer" }),
+    );
+    const editor = within(
+      screen.getByRole("dialog", { name: "Create Knowledge" }),
+    );
+    const content = "## Composition\n\nThe package fills the right half.";
+    fireEvent.change(editor.getByLabelText("Knowledge title"), {
+      target: { value: "Composition" },
+    });
+    fireEvent.change(editor.getByLabelText("Knowledge content"), {
+      target: { value: content },
+    });
+    const file = new File(["image"], "reference.png", { type: "image/png" });
+    fireEvent.change(editor.getByLabelText("Knowledge files"), {
+      target: { files: [file] },
+    });
+    expect(mockAttachKnowledgeFiles).not.toHaveBeenCalled();
+    fireEvent.click(editor.getByRole("button", { name: "Create knowledge" }));
+    await waitFor(() =>
+      expect(mockKnowledgeSourceCreateMutate).toHaveBeenCalledWith(
+        expect.objectContaining({
+          targetSocialModuleProfileId: profile.id,
+          data: expect.objectContaining({ files: [file], content }),
+        }),
+        expect.any(Object),
+      ),
+    );
+    expect(mockAttachKnowledgeFiles).not.toHaveBeenCalled();
   });
 
   /**
@@ -2341,17 +2529,10 @@ describe("Given: OpenRouter chat profile sidebar", () => {
       );
     });
 
-    fireEvent.click(screen.getByRole("button", { name: "Reindex knowledge" }));
-
-    await waitFor(() => {
-      expect(mockKnowledgeReindexDocumentMutateAsync).toHaveBeenCalledWith({
-        id: "subject-1",
-        socialModuleProfileId: "profile-1",
-        socialModuleChatId: "chat-1",
-        targetSocialModuleProfileId: "assistant-profile-1",
-        knowledgeModuleSourceId: "document-1",
-      });
-    });
+    expect(
+      screen.queryByRole("button", { name: "Reindex knowledge" }),
+    ).toBeNull();
+    expect(mockKnowledgeReindexDocumentMutateAsync).not.toHaveBeenCalled();
   });
 
   /**
@@ -2366,14 +2547,239 @@ describe("Given: OpenRouter chat profile sidebar", () => {
     expect(screen.queryByText("Knowledge")).toBeNull();
   });
 
-  it("opens the employee knowledge and skills in an empty training conversation", () => {
-    renderComponent("store-employee", {
-      artificialIntelligenceOpponentProfile: {
-        id: "employee-profile",
-        slug: "alice",
-        variant: "artificial-intelligence",
-        adminTitle: "Alice",
+  it("creates personal knowledge and edits a remembered order note from the sender card", () => {
+    const manager = {
+      id: "profile-1",
+      slug: "manager-record",
+      adminTitle: "Generated profile label",
+      variant: "default",
+    };
+    const employee = {
+      id: "employee-profile",
+      slug: "alice",
+      adminTitle: "Alice",
+      variant: "artificial-intelligence",
+    };
+    mockChatComponentState.profiles = [manager, employee];
+    mockChatComponentState.knowledgeSources = [
+      {
+        id: "note",
+        title: "Personal note",
+        variant: "customer-memory",
+        editable: true,
+        content: "Please remember the delivery hours.",
+        contentHash: "h",
+        indexedContentHash: null,
       },
+      {
+        id: "shared",
+        title: "Shared document",
+        content: "Shared material",
+        editable: false,
+      },
+    ];
+    const view = renderComponent("store-employee", {
+      artificialIntelligenceOpponentProfile: employee,
+      socialModuleMessagesAndActionsQuery: [
+        {
+          type: "message",
+          data: {
+            id: "manager-message",
+            description: "Hello",
+            createdAt: new Date(),
+            authorProfiles: [
+              {
+                id: manager.id,
+                title: { en: "rogwild" },
+                subtitle: {},
+                avatar: null,
+              },
+            ],
+          },
+        },
+      ],
+    });
+    fireEvent.click(screen.getByRole("button", { name: manager.slug }));
+    const dialog = within(
+      screen.getByRole("dialog", { name: "Profile details" }),
+    );
+    const heading = dialog.getByRole("heading", { name: "rogwild" });
+    expect(heading.closest("aside")?.dataset.profileId).toBe(manager.id);
+    fireEvent.click(dialog.getByRole("button", { name: "Personal note" }));
+    const note = within(screen.getByRole("dialog", { name: "Edit Knowledge" }));
+    expect(
+      (note.getByLabelText("Knowledge content") as HTMLTextAreaElement).value,
+    ).toBe("Please remember the delivery hours.");
+    expect(note.queryByRole("button", { name: "Delete knowledge" })).toBeNull();
+    expect(
+      note.queryByRole("button", { name: "Reindex knowledge" }),
+    ).toBeNull();
+    expect(mockKnowledgeSourceUpdateMutate).not.toHaveBeenCalled();
+    mockKnowledgeSourceUpdateMutate.mockImplementationOnce(
+      (_payload, callbacks) => callbacks.onError({ status: 503 }),
+    );
+    fireEvent.click(note.getByRole("button", { name: "Save knowledge" }));
+    expect(mockKnowledgeSourceUpdateMutate.mock.calls[0][0].data).toEqual({
+      title: "Personal note",
+      content: "Please remember the delivery hours.",
+      expectedContentHash: "h",
+      expectedTitle: "Personal note",
+    });
+    expect(note.getByRole("alert").textContent).toMatch(
+      /indexing is temporarily unavailable/,
+    );
+    expect(mockToastSuccess).not.toHaveBeenCalled();
+    mockChatComponentState.knowledgeSources =
+      mockChatComponentState.knowledgeSources.map((source) =>
+        source.id === "note"
+          ? {
+              ...source,
+              title: "Renamed in a second tab",
+              contentHash: "later-version",
+            }
+          : source,
+      );
+    view.rerenderThread({ id: "thread-1", metadata: {} });
+    expect(
+      (note.getByLabelText("Knowledge title") as HTMLInputElement).value,
+    ).toBe("Personal note");
+    fireEvent.change(note.getByLabelText("Knowledge title"), {
+      target: { value: "Delivery hours" },
+    });
+    fireEvent.change(note.getByLabelText("Knowledge content"), {
+      target: { value: "After 6 pm." },
+    });
+    mockKnowledgeSourceUpdateMutate.mockImplementationOnce(
+      (_payload, callbacks) => callbacks.onError({ status: 409 }),
+    );
+    fireEvent.click(note.getByRole("button", { name: "Save knowledge" }));
+    expect(mockKnowledgeSourceUpdateMutate).toHaveBeenCalledWith(
+      {
+        id: "subject-1",
+        socialModuleProfileId: manager.id,
+        personal: true,
+        knowledgeModuleSourceId: "note",
+        data: {
+          title: "Delivery hours",
+          content: "After 6 pm.",
+          expectedContentHash: "h",
+          expectedTitle: "Personal note",
+        },
+      },
+      expect.any(Object),
+    );
+    expect(note.getByRole("alert").textContent).toMatch(/source has changed/);
+    expect(note.getByRole("button", { name: "Save knowledge" })).toHaveProperty(
+      "disabled",
+      true,
+    );
+    expect(note.getByLabelText("Knowledge content")).toHaveProperty(
+      "value",
+      "After 6 pm.",
+    );
+    fireEvent.click(note.getByRole("button", { name: "Close" }));
+    fireEvent.click(dialog.getByRole("button", { name: "Shared document" }));
+    const shared = within(
+      screen.getByRole("dialog", { name: "Shared document" }),
+    );
+    expect(shared.getByText("Shared material")).toBeTruthy();
+    expect(shared.queryByRole("textbox")).toBeNull();
+    fireEvent.click(shared.getByRole("button", { name: "Close" }));
+    fireEvent.click(dialog.getByRole("button", { name: /New knowledge/ }));
+    const create = within(
+      screen.getByRole("dialog", { name: "Create Knowledge" }),
+    );
+    fireEvent.change(create.getByLabelText("Knowledge title"), {
+      target: { value: "Delivery" },
+    });
+    fireEvent.change(create.getByLabelText("Knowledge content"), {
+      target: { value: "My preferences" },
+    });
+    fireEvent.click(create.getByRole("button", { name: "Create knowledge" }));
+    expect(mockKnowledgeSourceCreateMutate).toHaveBeenCalledWith(
+      {
+        id: "subject-1",
+        socialModuleProfileId: manager.id,
+        personal: true,
+        data: {
+          title: "Delivery",
+          content: "My preferences",
+          orderIndex: 2,
+          operationKey: expect.any(String),
+        },
+      },
+      expect.any(Object),
+    );
+    expect(screen.getByRole("dialog", { name: "Edit Knowledge" })).toBeTruthy();
+    expect(dialog.queryByRole("button", { name: /Edit profile/ })).toBeNull();
+  });
+
+  it("keeps cached personal sources out of a fellow participant's card", () => {
+    const peer = {
+      id: "other-person",
+      slug: "teammate",
+      variant: "default",
+      adminTitle: "Teammate",
+    };
+    mockChatComponentState.profiles = [peer];
+    mockChatComponentState.knowledgeSources = [
+      { id: "private", title: "Private note", content: "Owner only" },
+    ];
+    renderComponent("store-employee", {
+      socialModuleMessagesAndActionsQuery: [
+        {
+          type: "message",
+          data: {
+            id: "peer-message",
+            description: "Hello",
+            createdAt: new Date(),
+            authorProfiles: [
+              {
+                id: peer.id,
+                title: { en: "Teammate" },
+                subtitle: {},
+                avatar: null,
+              },
+            ],
+          },
+        },
+      ],
+    });
+    fireEvent.click(screen.getByRole("button", { name: peer.slug }));
+    const card = within(
+      screen.getByRole("dialog", { name: "Profile details" }),
+    );
+    expect(card.queryByText("Private note")).toBeNull();
+    const { api } = jest.requireMock("@sps/rbac/models/subject/sdk/client");
+    expect(
+      api.socialModuleProfileFindByIdKnowledgeSourceFind,
+    ).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        socialModuleProfileId: "profile-1",
+        personal: true,
+        reactQueryOptions: { enabled: false },
+      }),
+    );
+  });
+
+  it("opens the selected participant from the empty employee conversation", () => {
+    const employee = {
+      id: "employee-profile",
+      slug: "alice",
+      variant: "artificial-intelligence",
+      adminTitle: "Alice",
+    };
+    mockChatComponentState.profiles = [
+      {
+        id: "profile-1",
+        slug: "manager",
+        variant: "default",
+        adminTitle: "Manager",
+      },
+      employee,
+    ];
+    renderComponent("store-employee", {
+      artificialIntelligenceOpponentProfile: employee,
       socialModuleThread: {
         id: "thread-1",
         metadata: {},
@@ -2381,27 +2787,214 @@ describe("Given: OpenRouter chat profile sidebar", () => {
       },
     });
     expect(
-      screen.getByRole("button", { name: "New knowledge for alice" }),
+      screen.queryByRole("button", { name: "Show right sidebar" }),
+    ).toBeNull();
+    expect(screen.queryByRole("dialog")).toBeNull();
+    expect(
+      screen.queryByRole("button", { name: "Open Manager profile" }),
+    ).toBeNull();
+    expect(screen.getAllByText("Alice")).toHaveLength(1);
+    fireEvent.click(screen.getByRole("button", { name: "Open Alice profile" }));
+    const alice = within(
+      screen.getByRole("dialog", { name: "Profile details" }),
+    );
+    expect(alice.getByRole("heading", { name: "Alice" })).toBeTruthy();
+    expect(
+      alice.getByRole("button", { name: "New knowledge for alice" }),
     ).toBeTruthy();
     expect(
-      screen.getByRole("button", { name: "New skill for alice" }),
+      alice.getByRole("button", { name: "New skill for alice" }),
     ).toBeTruthy();
-    expect(screen.queryByRole("button", { name: "Attach files" })).toBeNull();
-    fireEvent.click(screen.getByRole("button", { name: "Show right sidebar" }));
-    fireEvent.click(screen.getByRole("button", { name: "Hide right sidebar" }));
-    fireEvent.click(screen.getByRole("button", { name: "Employee knowledge" }));
-    expect(
-      screen.getByRole("button", {
-        name: "Hide right sidebar",
-        expanded: true,
-      }),
-    ).toBeTruthy();
-    expect(
-      screen.getByRole("button", { name: "New knowledge for alice" }),
-    ).toBeTruthy();
+    fireEvent.click(alice.getByRole("button", { name: "Close profile" }));
+    expect(screen.getByRole("button", { name: "Attach files" })).toBeTruthy();
     fireEvent.change(screen.getByRole("textbox", { name: "Message" }), {
       target: { value: "/" },
     });
     expect(screen.queryByText("/learn")).toBeNull();
+  });
+
+  it("keeps the discussion files open when viewing and closing an employee profile", () => {
+    renderComponent("store-employee", {
+      artificialIntelligenceOpponentProfile: {
+        id: "employee-profile",
+        slug: "alice",
+        variant: "artificial-intelligence",
+        adminTitle: "Alice",
+      },
+      socialModuleMessagesAndActionsQuery: [
+        {
+          type: "message",
+          data: {
+            id: "message-1",
+            description: "Training material",
+            createdAt: new Date("2026-01-01T10:00:00.000Z"),
+            privateAttachments: [{ id: "input-file", name: "Training.pdf" }],
+          },
+        },
+      ],
+    });
+
+    fireEvent.click(screen.getByRole("button", { name: "Show right sidebar" }));
+    const sidebar = within(
+      screen.getByRole("complementary", { name: "Context" }),
+    );
+    expect(sidebar.getByRole("heading", { name: "Files" })).toBeTruthy();
+    expect(
+      sidebar.getByRole("button", { name: "Preview Training.pdf" }),
+    ).toBeTruthy();
+    expect(
+      sidebar.queryByRole("button", { name: "Edit profile alice" }),
+    ).toBeNull();
+    fireEvent.click(screen.getByRole("button", { name: "Open Alice profile" }));
+    const dialog = within(
+      screen.getByRole("dialog", { name: "Profile details" }),
+    );
+    expect(
+      dialog.getByRole("button", { name: "Edit profile alice" }),
+    ).toBeTruthy();
+    fireEvent.click(dialog.getByRole("button", { name: "Close profile" }));
+    expect(sidebar.getByRole("heading", { name: "Files" })).toBeTruthy();
+  });
+
+  it("saves the employee's MCP servers through the operator's private chat", async () => {
+    const employee = {
+      id: "employee-profile",
+      slug: "alice",
+      variant: "artificial-intelligence",
+      adminTitle: "Alice",
+      allowedMcpServerIds: [],
+    };
+    mockProfileUpdateMutateAsync.mockResolvedValue({
+      ...employee,
+      allowedMcpServerIds: ["singlepagestartup"],
+    });
+    renderComponent("store-employee", {
+      artificialIntelligenceOpponentProfile: employee,
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Open Alice profile" }));
+    fireEvent.click(
+      screen.getByRole("button", { name: "Edit MCP servers for alice" }),
+    );
+    const editor = within(
+      screen.getByRole("dialog", { name: "Edit MCP Servers" }),
+    );
+    fireEvent.click(
+      editor.getByRole("checkbox", { name: "SinglePageStartup MCP" }),
+    );
+    fireEvent.click(editor.getByRole("button", { name: "Save" }));
+    await waitFor(() =>
+      expect(mockProfileUpdateMutateAsync).toHaveBeenCalledWith({
+        id: "subject-1",
+        socialModuleProfileId: "profile-1",
+        socialModuleChatId: "chat-1",
+        targetSocialModuleProfileId: employee.id,
+        data: { allowedMcpServerIds: ["singlepagestartup"] },
+      }),
+    );
+    await waitFor(() =>
+      expect(
+        screen.queryByRole("dialog", { name: "Edit MCP Servers" }),
+      ).toBeNull(),
+    );
+  });
+
+  it("saves the employee profile using the operator profile and keeps the draft when saving fails", async () => {
+    const employee = {
+      id: "employee-profile",
+      slug: "alice",
+      variant: "artificial-intelligence",
+      adminTitle: "Alice",
+      title: { en: "Alice", ru: "Алиса" },
+    };
+    mockProfileUpdateMutateAsync
+      .mockRejectedValueOnce(new Error("Profile unavailable"))
+      .mockResolvedValueOnce({
+        ...employee,
+        title: { en: "Alice Green", ru: "Алиса" },
+      });
+    renderComponent("store-employee", {
+      artificialIntelligenceOpponentProfile: employee,
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Open Alice profile" }));
+    fireEvent.click(screen.getByRole("button", { name: "Edit profile alice" }));
+    const dialog = screen.getByRole("dialog", { name: "Edit Profile" });
+    expect(within(dialog).queryByLabelText("Admin title")).toBeNull();
+    expect(within(dialog).queryByLabelText("Slug")).toBeNull();
+    expect(within(dialog).getByLabelText("Headline")).toBeTruthy();
+    expect(within(dialog).getByLabelText("Description")).toBeTruthy();
+    fireEvent.change(within(dialog).getByLabelText("Name"), {
+      target: { value: "Alice Green" },
+    });
+    fireEvent.click(
+      within(dialog).getByRole("button", { name: "Save profile" }),
+    );
+    await waitFor(() =>
+      expect(mockProfileUpdateMutateAsync).toHaveBeenCalledWith({
+        id: "subject-1",
+        socialModuleProfileId: "profile-1",
+        socialModuleChatId: "chat-1",
+        targetSocialModuleProfileId: employee.id,
+        data: { title: { en: "Alice Green" } },
+      }),
+    );
+    expect(
+      (within(dialog).getByLabelText("Name") as HTMLInputElement).value,
+    ).toBe("Alice Green");
+    fireEvent.click(
+      within(dialog).getByRole("button", { name: "Save profile" }),
+    );
+    await waitFor(() =>
+      expect(screen.queryByRole("dialog", { name: "Edit Profile" })).toBeNull(),
+    );
+  });
+  it("immediately uploads or resets the employee avatar without submitting the profile draft", async () => {
+    const employee = {
+      id: "employee-profile",
+      slug: "alice",
+      variant: "artificial-intelligence",
+      title: { en: "Alice", ru: "Алиса" },
+    };
+    mockProfileAvatarUpdateMutateAsync.mockResolvedValue({ file: null });
+    renderComponent("store-employee", {
+      artificialIntelligenceOpponentProfile: employee,
+      language: "ru",
+    });
+    fireEvent.click(
+      screen.getByRole("button", { name: "Открыть профиль «Алиса»" }),
+    );
+    fireEvent.click(screen.getByRole("button", { name: "Edit profile alice" }));
+    const dialog = within(
+      screen.getByRole("dialog", { name: "Редактирование профиля" }),
+    );
+    expect(dialog.getByLabelText("Имя")).toHaveProperty("value", "Алиса");
+    fireEvent.change(dialog.getByLabelText("Имя"), {
+      target: { value: "Draft" },
+    });
+    expect(dialog.getByRole("button", { name: "Закрыть" })).toBeTruthy();
+    const avatar = new File(["avatar"], "avatar.png", { type: "image/png" });
+    fireEvent.change(dialog.getByLabelText("Выбрать аватар профиля"), {
+      target: { files: [avatar] },
+    });
+    const scope = {
+      id: "subject-1",
+      socialModuleProfileId: "profile-1",
+      socialModuleChatId: "chat-1",
+      targetSocialModuleProfileId: employee.id,
+    };
+    await waitFor(() =>
+      expect(mockProfileAvatarUpdateMutateAsync).toHaveBeenCalledWith({
+        ...scope,
+        data: { file: avatar },
+      }),
+    );
+    fireEvent.click(dialog.getByRole("button", { name: "Удалить" }));
+    await waitFor(() =>
+      expect(mockProfileAvatarUpdateMutateAsync).toHaveBeenCalledWith({
+        ...scope,
+        data: { reset: true },
+      }),
+    );
+    expect(mockProfileUpdateMutateAsync).not.toHaveBeenCalled();
+    expect(dialog.getByLabelText("Имя")).toHaveProperty("value", "Draft");
   });
 });

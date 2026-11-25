@@ -32,8 +32,7 @@ import { Service as BillingPaymentIntentService } from "@sps/billing/models/paym
 import { Service as SubscriptionPeriodService } from "../startup/subscription-period";
 import { Service as LifecycleService } from "../startup/lifecycle";
 import { Service as OrderWork } from "./work";
-import type { TReadOrderWorkExpertArchive } from "@sps/ecommerce/models/order-work/sdk/model";
-import { parseExactMonetaryAmount } from "@sps/backend-utils";
+import { logger, parseExactMonetaryAmount } from "@sps/backend-utils";
 import type {
   IExecuteProps as ISubscriptionPeriodProps,
   IFreezeProps as ISubscriptionPeriodFreezeProps,
@@ -41,9 +40,44 @@ import type {
 
 export type IExtendedEcommerceModuleOrder = IGetExtendedResult;
 
+type Order = typeof Table.$inferSelect;
+type TStatusDelivery = (order: Order, previousStatus: string) => Promise<void>;
+
+type TDeliverOrderWork = (event: {
+  orderId: string;
+  eventId: string;
+}) => Promise<unknown>;
+
 @injectable()
 export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
-  private readExpertArchive?: TReadOrderWorkExpertArchive;
+  private deliverOrderWork?: TDeliverOrderWork;
+  private deliverStatus?: TStatusDelivery;
+
+  configureStatusDelivery(deliver: TStatusDelivery) {
+    this.deliverStatus = deliver;
+  }
+
+  private async withStatusDelivery<T extends Order | undefined | null>(
+    id: string,
+    write: () => Promise<T>,
+  ): Promise<T> {
+    const deliver = this.deliverStatus;
+    if (!deliver) {
+      return write();
+    }
+    return this.repository.withLifecycleLock(
+      id,
+      async () => {
+        const before = await this.findById({ id });
+        const after = await write();
+        if (before && after && before.status !== after.status) {
+          await deliver(after, before.status);
+        }
+        return after;
+      },
+      "no key update",
+    );
+  }
 
   get modules() {
     return this.appAssembly.getOrCreate(createModules);
@@ -54,11 +88,25 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
   }
 
   get work() {
-    return new OrderWork(this, this.readExpertArchive);
+    return new OrderWork(this);
   }
 
-  configureExpertArchive(read: TReadOrderWorkExpertArchive) {
-    this.readExpertArchive = read;
+  configurePaymentDelivery(deliver: TDeliverOrderWork) {
+    this.deliverOrderWork = deliver;
+  }
+
+  async deliverConfirmedWork(orderId: string) {
+    if (!this.deliverOrderWork) {
+      return;
+    }
+    try {
+      const work = await this.work.findByOrder(orderId);
+      if (work?.paid && !work.receiptFileId) {
+        await this.deliverOrderWork({ orderId, eventId: work.paid.id });
+      }
+    } catch {
+      logger.warn({ event: "ecommerce.order-work.delivery-deferred", orderId });
+    }
   }
 
   declare repository: Repository;
@@ -86,15 +134,21 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     id: string;
     data: Partial<(typeof Table)["$inferSelect"]>;
   }) {
-    const lifecycle = this.lifecycleService();
-    let order: typeof Table.$inferSelect | null = null;
-    if (
-      lifecycle.protectedLifecycleFields.some((field) => field in props.data)
-    ) {
-      order = await this.findById({ id: props.id });
+    const write = async () => {
+      const lifecycle = this.lifecycleService();
+      let order: typeof Table.$inferSelect | null = null;
+      if (
+        lifecycle.protectedLifecycleFields.some((field) => field in props.data)
+      ) {
+        order = await this.findById({ id: props.id });
+      }
+      const data = lifecycle.writableData(props.data, order);
+      return super.update({ id: props.id, data });
+    };
+    if (typeof props.data.status === "string") {
+      return this.withStatusDelivery(props.id, write);
     }
-    const data = lifecycle.writableData(props.data, order);
-    return super.update({ id: props.id, data });
+    return write();
   }
 
   private lifecycleService() {
@@ -234,10 +288,12 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     if (!allowed) {
       return undefined;
     }
-    return this.lifecycleService().writePaymentStatus({
-      before: order,
-      status: props.status,
-    });
+    return this.withStatusDelivery(props.id, () =>
+      this.lifecycleService().writePaymentStatus({
+        before: order,
+        status: props.status,
+      }),
+    );
   }
 
   async completePaymentStatus(props: {
@@ -282,10 +338,12 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
         ) {
           return undefined;
         }
-        const paid = await this.lifecycleService().writePaymentStatus({
-          before: afterHook,
-          status: "paid",
-        });
+        const paid = await this.withStatusDelivery(props.id, () =>
+          this.lifecycleService().writePaymentStatus({
+            before: afterHook,
+            status: "paid",
+          }),
+        );
         if (paid) {
           await this.work.confirmPayment(paid.id);
         }
@@ -293,6 +351,40 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
       },
       "no key update",
     );
+  }
+
+  async cancelUnfulfilledAtDeadline(id: string, taskId: string) {
+    return this.repository.withLifecycleLock(id, async () => {
+      const order = await this.findById({ id });
+      if (
+        !order ||
+        order.subscriptionPeriodStartsAt ||
+        ![
+          "new",
+          "paying",
+          "paid",
+          "approving",
+          "packaging",
+          "canceling",
+          "requested_cancelation",
+        ].includes(order.status)
+      ) {
+        return;
+      }
+      const work = await this.repository.fulfillmentForOrder(id);
+      if (
+        work &&
+        (work.taskId !== taskId ||
+          work.state === "in-transit" ||
+          work.state === "delivered")
+      ) {
+        return;
+      }
+      if (work) {
+        await this.repository.patchFulfillment(id, { state: "canceled" });
+      }
+      return this.update({ id, data: { status: "canceled", type: "history" } });
+    });
   }
 
   async deleteCanceledWithoutPayment(props: {
@@ -341,10 +433,12 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     ) {
       return undefined;
     }
-    return this.lifecycleService().expireSubscriptionPeriod({
-      before: order,
-      now,
-    });
+    return this.withStatusDelivery(props.id, () =>
+      this.lifecycleService().expireSubscriptionPeriod({
+        before: order,
+        now,
+      }),
+    );
   }
 
   async freezeSubscriptionPeriod(props: ISubscriptionPeriodFreezeProps) {
@@ -356,7 +450,9 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
       findByIdExtended: (props) => this.findByIdExtended(props),
       findById: (props) => this.findById(props),
       writeSubscriptionPeriod: (props) =>
-        this.lifecycleService().writeSubscriptionPeriod(props),
+        this.withStatusDelivery(props.id, () =>
+          this.lifecycleService().writeSubscriptionPeriod(props),
+        ),
     });
   }
 

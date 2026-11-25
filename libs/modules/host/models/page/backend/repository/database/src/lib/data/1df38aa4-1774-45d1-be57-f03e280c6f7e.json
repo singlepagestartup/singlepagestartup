@@ -1,0 +1,47 @@
+{
+  "metadata": {
+    "seo": {
+      "title": {
+        "en": "Create store — SinglePageStartup",
+        "ru": "Создать магазин — SinglePageStartup"
+      },
+      "description": {
+        "en": "Create a store in your workspace.",
+        "ru": "Создайте магазин в своём рабочем пространстве."
+      }
+    },
+    "seoDisplay": {
+      "twitterTitle": {
+        "en": "Create store — SinglePageStartup",
+        "ru": "Создать магазин — SinglePageStartup"
+      },
+      "opengraphTitle": {
+        "en": "Create store — SinglePageStartup",
+        "ru": "Создать магазин — SinglePageStartup"
+      },
+      "opengraphLocale": {
+        "en": "en_US",
+        "ru": "ru_RU"
+      },
+      "twitterDescription": {
+        "en": "Create a store in your workspace.",
+        "ru": "Создайте магазин в своём рабочем пространстве."
+      },
+      "opengraphDescription": {
+        "en": "Create a store in your workspace.",
+        "ru": "Создайте магазин в своём рабочем пространстве."
+      }
+    }
+  },
+  "id": "1df38aa4-1774-45d1-be57-f03e280c6f7e",
+  "title": "Create store",
+  "url": "/crm/workspace/new",
+  "slug": "crm-workspace-store-create",
+  "description": "Create a store in your workspace.",
+  "createdAt": "2026-11-24T18:04:29.833Z",
+  "updatedAt": "2026-11-24T18:04:29.833Z",
+  "variant": "noindex",
+  "className": null,
+  "language": "en",
+  "adminTitle": "Create store"
+}

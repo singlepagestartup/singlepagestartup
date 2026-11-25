@@ -1,3 +1,4 @@
+import { storeSectionHref } from "../subject/me/ecommerce-module/store/paths";
 import type {
   IFunnelStage,
   TEvidenceKind,
@@ -17,8 +18,11 @@ export interface RequestMove {
 
 export interface WorkflowPerson {
   id: string;
+  href?: string;
   name: string;
   initials: string;
+  language: string;
+  profile?: ICrmWorkspaceTask["assigneeProfile"];
   kind: "human" | "agent";
 }
 
@@ -111,6 +115,34 @@ export function manualActions(stage?: IFunnelStage) {
   );
 }
 
+const unavailableStage = "Этап недоступен";
+
+export function getStageName(stages: IFunnelStage[], stageId: string) {
+  return stages.find((stage) => stage.id === stageId)?.name ?? unavailableStage;
+}
+
+export function boardStages(
+  stages: IFunnelStage[],
+  tasks: WorkflowTask[],
+): WorkflowStage[] {
+  const columns = new Map<string, WorkflowStage>(
+    stages.map((stage) => [
+      stage.id,
+      { id: stage.id, title: stage.name, archived: stage.archived },
+    ]),
+  );
+  for (const { stageId } of tasks) {
+    if (!columns.has(stageId)) {
+      columns.set(stageId, {
+        id: stageId,
+        title: unavailableStage,
+        archived: true,
+      });
+    }
+  }
+  return [...columns.values()];
+}
+
 export function taskView(
   task: ICrmWorkspaceTask,
   stages: IFunnelStage[],
@@ -138,15 +170,36 @@ export function taskView(
 }
 
 export function taskHref(language: string, slug: string, id: string) {
-  return `/${language}/ecommerce/stores/${encodeURIComponent(slug)}/crm/tasks/${encodeURIComponent(id)}`;
+  return `${storeSectionHref(language, slug, "tasks")}/tasks/${encodeURIComponent(id)}`;
 }
 
 export function storeHref(language: string, slug: string) {
-  return `/${language}/ecommerce/stores/${encodeURIComponent(slug)}`;
+  return storeSectionHref(language, slug, "overview");
 }
 
 export function workspaceHref(language: string, slug?: string) {
   return slug
-    ? `/${language}/ecommerce/stores/${encodeURIComponent(slug)}/crm`
+    ? storeSectionHref(language, slug, "tasks")
     : `/${language}/crm/workspace`;
+}
+
+export function funnelListHref(language: string, storeSlug: string) {
+  return storeSectionHref(language, storeSlug, "funnels");
+}
+
+export function funnelCreateHref(language: string, storeSlug: string) {
+  return `${funnelListHref(language, storeSlug)}/new`;
+}
+
+export function funnelEditHref(
+  language: string,
+  storeSlug: string,
+  funnelSlug: string,
+) {
+  return `${funnelListHref(language, storeSlug)}/${encodeURIComponent(funnelSlug)}`;
+}
+
+export function hasStatus(error: unknown, ...statuses: number[]) {
+  const status = (error as { status?: number } | null)?.status;
+  return status !== undefined && statuses.includes(status);
 }

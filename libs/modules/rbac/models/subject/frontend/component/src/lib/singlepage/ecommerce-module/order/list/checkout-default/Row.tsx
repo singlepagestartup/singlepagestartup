@@ -177,7 +177,8 @@ export const Component = memo(function Row(props: IRowProps) {
         language={props.language}
         cartDetails={details}
         headerSlot={
-          props.selected !== undefined && lines.length > 0 ? (
+          props.headerSlot ??
+          (props.selected !== undefined && lines.length > 0 ? (
             <div className="flex min-h-8 items-center gap-2 text-sm font-medium">
               <Checkbox
                 id={selectionId}
@@ -193,7 +194,7 @@ export const Component = memo(function Row(props: IRowProps) {
                 )}
               </label>
             </div>
-          ) : undefined
+          ) : undefined)
         }
         priceLabel={
           work && work.state !== "awaiting-payment"

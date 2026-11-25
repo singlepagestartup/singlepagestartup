@@ -13,6 +13,12 @@ export function Component(props: IComponentPropsExtended) {
       socialModuleChat={props.socialModuleChat}
       socialModuleChatId={props.socialModuleChatId}
       socialModuleThreadId={props.socialModuleThreadId}
+      socialModuleEmployeeProfileId={props.socialModuleEmployeeProfileId}
+      defaultThreadId={props.defaultThreadId}
+      threadListLimit={props.threadListLimit}
+      getThreadHref={props.getThreadHref}
+      onCreateThread={props.onCreateThread}
+      isCreatingThread={props.isCreatingThread}
     />
   );
 }

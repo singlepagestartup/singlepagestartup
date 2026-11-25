@@ -15,6 +15,8 @@ export default async function Server(props: IComponentProps) {
       skeleton={props.skeleton}
       socialModuleChatId={props.socialModuleChatId}
       socialModuleThreadId={props.socialModuleThreadId}
+      defaultThreadId={props.defaultThreadId}
+      getThreadHref={props.getThreadHref}
     />
   );
   if (props.socialModuleThreadId) return clientReader;

@@ -11,9 +11,9 @@ export interface IWorkMessage {
   attachments?: SocialPreviewAttachment[];
 }
 
-export interface IWorkResultVersion {
+export interface IWorkResultFile {
   id: string;
-  number: number;
+  filename: string;
   title: string;
   sections: readonly string[];
   pages: number;
@@ -27,8 +27,8 @@ export interface IComponentProps {
   operator: string;
   handoff: "assistant" | "pending" | "manager";
   messages: readonly IWorkMessage[];
-  versions?: readonly IWorkResultVersion[];
-  acceptedVersionId?: string;
+  files?: readonly IWorkResultFile[];
+  acceptedFileId?: string;
   resultStatus?: "preparing" | "review" | "accepted" | "declined" | "paid";
   price: number;
   delivery?: ReactNode;
@@ -36,7 +36,7 @@ export interface IComponentProps {
   onHandoff: () => void;
   onAddToCart?: () => void;
   onRevision?: () => void;
-  onAccept: (versionId: string) => void;
+  onAccept: (fileId: string) => void;
   onDecline: () => void;
   onCheckout: () => void;
 }

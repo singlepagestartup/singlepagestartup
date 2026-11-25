@@ -33,13 +33,16 @@ jest.mock("./components/ProfileSidebarSheet", () => {
   };
 });
 
+import { useSyncExternalStore } from "react";
 import { act, fireEvent, screen } from "@testing-library/react";
 import {
+  mockChatComponentState,
   mockMessageCreateMutate,
   renderComponent,
   resetChatComponentMocks,
 } from "./test-utils";
 
+const { api } = jest.requireMock("@sps/rbac/models/subject/sdk/client");
 const { __timelineRenderSpy: timelineRenderSpy } = jest.requireMock(
   "./components/MessageTimeline",
 ) as { __timelineRenderSpy: jest.Mock };
@@ -61,6 +64,110 @@ describe("Given: chat composer rerender isolation", () => {
   beforeEach(() => {
     resetChatComponentMocks();
     timelineRenderSpy.mockClear();
+  });
+
+  it("keeps the focused draft and caret when peer typing starts and stops", async () => {
+    let notify = () => {};
+    const subscribe = (listener: () => void) => {
+      notify = listener;
+      return () => {};
+    };
+    const query =
+      api.socialModuleProfileFindByIdChatFindByIdActionFind as jest.Mock;
+    const original = query.getMockImplementation();
+    query.mockImplementation(() => ({
+      data: useSyncExternalStore(
+        subscribe,
+        () => mockChatComponentState.socialModuleActions,
+      ),
+    }));
+    try {
+      renderComponent("default");
+      await settle();
+      const textbox = screen.getByRole("textbox", {
+        name: "Message",
+      }) as HTMLTextAreaElement;
+      textbox.focus();
+      fireEvent.change(textbox, { target: { value: "My unfinished draft" } });
+      textbox.setSelectionRange(4, 7);
+      const actor = (id: string) => ({
+        id,
+        variant: "typing",
+        actorProfileIds: [id],
+        createdAt: new Date(),
+        expiresAt: new Date(Date.now() + 8000),
+      });
+      for (const ids of [["profile-1", "peer"], []]) {
+        act(() => {
+          mockChatComponentState.socialModuleActions = ids.map(actor);
+          notify();
+        });
+        const displayed = timelineRenderSpy.mock.lastCall?.[0].items;
+        expect(
+          displayed.map((item: { data: { id: string } }) => item.data.id),
+        ).toEqual(ids.filter((id) => id !== "profile-1"));
+        expect(screen.getByRole("textbox", { name: "Message" })).toBe(textbox);
+        expect(document.activeElement).toBe(textbox);
+        expect([
+          textbox.value,
+          textbox.selectionStart,
+          textbox.selectionEnd,
+        ]).toEqual(["My unfinished draft", 4, 7]);
+      }
+      fireEvent.blur(textbox);
+      await settle();
+      const pulses = (
+        api.socialModuleChatFindByIdThreadTyping as jest.Mock
+      ).mock.calls.map(([props]) => props.data);
+      expect(pulses).toEqual([
+        { sessionId: expect.any(String), active: true },
+        { sessionId: pulses[0].sessionId, active: false },
+      ]);
+    } finally {
+      if (original) query.mockImplementation(original);
+    }
+  });
+
+  it("stops sending typing after an idle pause and expires a disconnected peer", async () => {
+    jest.useFakeTimers();
+    try {
+      const peer = {
+        type: "action" as const,
+        data: {
+          id: "peer",
+          variant: "typing",
+          actorProfileIds: ["peer"],
+          createdAt: new Date(),
+          expiresAt: new Date(Date.now() + 8000),
+        },
+      };
+      const { unmount } = renderComponent("default", {
+        socialModuleMessagesAndActionsQuery: [peer],
+      });
+      const textbox = screen.getByRole("textbox", { name: "Message" });
+      fireEvent.change(textbox, { target: { value: "t" } });
+      await act(async () => {
+        await jest.advanceTimersByTimeAsync(100);
+      });
+      fireEvent.change(textbox, { target: { value: "typing" } });
+      const pulses = api.socialModuleChatFindByIdThreadTyping as jest.Mock;
+      expect(pulses).toHaveBeenCalledTimes(1);
+      expect(timelineRenderSpy.mock.lastCall?.[0].items).toHaveLength(1);
+      await act(async () => {
+        await jest.advanceTimersByTimeAsync(2500);
+      });
+      expect(pulses.mock.calls.map(([request]) => request.data.active)).toEqual(
+        [true, false],
+      );
+      await act(async () => {
+        await jest.advanceTimersByTimeAsync(5500);
+      });
+      expect(timelineRenderSpy.mock.lastCall?.[0].items).toEqual([]);
+      expect((textbox as HTMLTextAreaElement).value).toBe("typing");
+      unmount();
+    } finally {
+      jest.useRealTimers();
+    }
   });
 
   /**

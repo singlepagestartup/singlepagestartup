@@ -25,6 +25,8 @@ export const variants = [
   "subject-me-ecommerce-module-product-overview-default",
   "subject-me-ecommerce-module-category-overview-default",
   "subject-me-ecommerce-module-store-overview-default",
+  "subject-me-ecommerce-module-store-orders",
+  "subject-me-ecommerce-module-store-settings",
   "subject-ecommerce-order",
   "subject-ecommerce-product-list-default",
   "subject-me-crm-module-form-support-ai-chat",

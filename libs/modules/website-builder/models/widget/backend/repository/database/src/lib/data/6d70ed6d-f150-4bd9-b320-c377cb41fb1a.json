@@ -1,15 +1,12 @@
 {
-  "title": {
-    "en": "Store Overview",
-    "ru": "Обзор магазина"
-  },
+  "title": {},
   "subtitle": {},
   "description": {},
   "anchor": "",
   "className": "",
   "id": "6d70ed6d-f150-4bd9-b320-c377cb41fb1a",
   "createdAt": "2026-10-19T16:02:10.536Z",
-  "updatedAt": "2026-11-20T10:20:19.776Z",
+  "updatedAt": "2026-11-22T19:16:21.398Z",
   "variant": "content-ecommerce-default",
   "adminTitle": "Store Overview Default",
   "slug": "commerce-4e3a802c-93fa-4469-a4e6-395256c2e84d"

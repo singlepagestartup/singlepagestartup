@@ -45,6 +45,7 @@ export interface IConstructorProps {
 }
 export interface IMutation {
   subjectId?: string;
+  expectedUpdatedAt?: string;
   operator?: boolean;
   entity: string;
   id?: string;
@@ -675,6 +676,16 @@ export class Service {
         ? await this.record(props.entity, props.id)
         : undefined;
       await this.authorize(props, current);
+      if (props.expectedUpdatedAt) {
+        const updatedAt = current?.updatedAt;
+        const storedTime =
+          typeof updatedAt === "string"
+            ? Date.parse(updatedAt)
+            : Number(updatedAt);
+        if (storedTime !== Date.parse(props.expectedUpdatedAt)) {
+          throw new Error("Conflict error. Store settings have changed");
+        }
+      }
       const offerIds = await this.affectedOffers(props, current);
       return this.dependencies.stock.withOfferLocks({ offerIds }, async () => {
         await this.validateStockMutation(props, current, offerIds);
@@ -1136,6 +1147,20 @@ export class Service {
     return attribute;
   }
 
+  createScopedPrice(
+    owner: { type: "product" | "offer"; id: string },
+    price: { currencyId: string; amount: string },
+  ) {
+    return this.createAttribute(
+      owner,
+      "price",
+      "number",
+      "price",
+      price.amount,
+      price.currencyId,
+    );
+  }
+
   async mutation(props: { subjectId: string; data: ICatalogMutationInput }) {
     const input = catalogMutationSchema.parse(props.data);
     const entitySchema = catalogEntitySchemas[input.entity];
@@ -1180,6 +1205,7 @@ export class Service {
         entity: input.entity,
         method: input.method,
         id: input.recordId,
+        expectedUpdatedAt: input.expectedUpdatedAt,
         data,
       },
       async () => {
@@ -1203,6 +1229,9 @@ export class Service {
   async createOffer(props: {
     subjectId: string;
     data: ICatalogCreateOfferInput;
+    attachProductRelations?: (
+      result: ICatalogCreateOfferResult,
+    ) => Promise<void>;
   }): Promise<ICatalogCreateOfferResult> {
     const input = catalogCreateOfferSchema.parse(props.data);
     if (
@@ -1284,7 +1313,12 @@ export class Service {
             String(input.stockQuantity),
           );
         }
-        return { product, offer } as unknown as ICatalogCreateOfferResult;
+        const result = {
+          product,
+          offer,
+        } as unknown as ICatalogCreateOfferResult;
+        await props.attachProductRelations?.(result);
+        return result;
       },
     );
   }

@@ -9,8 +9,13 @@
     "jest:test": {},
     "jest:integration": {
       "executor": "nx:run-commands",
-      "outputs": ["{projectRoot}/coverage"],
-      "inputs": ["{projectRoot}/**/*", "^default"],
+      "outputs": [
+        "{projectRoot}/coverage"
+      ],
+      "inputs": [
+        "{projectRoot}/**/*",
+        "^default"
+      ],
       "options": {
         "command": "node --experimental-vm-modules node_modules/jest/bin/jest.js --config ./libs/modules/crm/jest.integration.config.ts --passWithNoTests",
         "cwd": ".",
@@ -46,6 +51,9 @@
           },
           {
             "command": "nx run @sps/crm:relations:repository-migrate"
+          },
+          {
+            "command": "nx run @sps/crm:workflow-backfill"
           }
         ]
       }
@@ -78,13 +86,10 @@
             "command": "nx run @sps/crm:models:funnel:repository-generate"
           },
           {
-            "command": "nx run @sps/crm:models:funnel-publication:repository-generate"
-          },
-          {
             "command": "nx run @sps/crm:models:task:repository-generate"
           },
           {
-            "command": "nx run @sps/crm:models:task-event:repository-generate"
+            "command": "nx run @sps/crm:models:stage:repository-generate"
           }
         ]
       }
@@ -117,25 +122,22 @@
             "command": "nx run @sps/crm:relations:widgets-to-website-builder-module-widgets:repository-generate"
           },
           {
-            "command": "nx run @sps/crm:relations:funnels-to-ecommerce-module-stores:repository-generate"
-          },
-          {
-            "command": "nx run @sps/crm:relations:funnels-to-funnel-publications:repository-generate"
-          },
-          {
-            "command": "nx run @sps/crm:relations:tasks-to-funnel-publications:repository-generate"
-          },
-          {
-            "command": "nx run @sps/crm:relations:tasks-to-task-events:repository-generate"
-          },
-          {
-            "command": "nx run @sps/crm:relations:tasks-to-ecommerce-module-products:repository-generate"
-          },
-          {
             "command": "nx run @sps/crm:relations:tasks-to-ecommerce-module-stores-to-products:repository-generate"
           },
           {
             "command": "nx run @sps/crm:relations:tasks-to-ecommerce-module-orders:repository-generate"
+          },
+          {
+            "command": "nx run @sps/crm:relations:tasks-to-stages:repository-generate"
+          },
+          {
+            "command": "nx run @sps/crm:relations:funnels-to-stages:repository-generate"
+          },
+          {
+            "command": "nx run @sps/crm:relations:funnels-to-tasks:repository-generate"
+          },
+          {
+            "command": "nx run @sps/crm:relations:funnels-to-ecommerce-module-stores-to-products:repository-generate"
           }
         ]
       }
@@ -165,16 +167,13 @@
             "command": "nx run @sps/crm:models:step:repository-migrate"
           },
           {
-            "command": "nx run @sps/crm:models:funnel:repository-migrate"
+            "command": "nx run @sps/crm:models:funnel:repository-prepare"
           },
           {
-            "command": "nx run @sps/crm:models:funnel-publication:repository-migrate"
+            "command": "nx run @sps/crm:models:task:repository-prepare"
           },
           {
-            "command": "nx run @sps/crm:models:task:repository-migrate"
-          },
-          {
-            "command": "nx run @sps/crm:models:task-event:repository-migrate"
+            "command": "nx run @sps/crm:models:stage:repository-migrate"
           }
         ]
       }
@@ -207,25 +206,22 @@
             "command": "nx run @sps/crm:relations:widgets-to-website-builder-module-widgets:repository-migrate"
           },
           {
-            "command": "nx run @sps/crm:relations:funnels-to-ecommerce-module-stores:repository-migrate"
-          },
-          {
-            "command": "nx run @sps/crm:relations:funnels-to-funnel-publications:repository-migrate"
-          },
-          {
-            "command": "nx run @sps/crm:relations:tasks-to-funnel-publications:repository-migrate"
-          },
-          {
-            "command": "nx run @sps/crm:relations:tasks-to-task-events:repository-migrate"
-          },
-          {
-            "command": "nx run @sps/crm:relations:tasks-to-ecommerce-module-products:repository-migrate"
-          },
-          {
             "command": "nx run @sps/crm:relations:tasks-to-ecommerce-module-stores-to-products:repository-migrate"
           },
           {
             "command": "nx run @sps/crm:relations:tasks-to-ecommerce-module-orders:repository-migrate"
+          },
+          {
+            "command": "nx run @sps/crm:relations:tasks-to-stages:repository-migrate"
+          },
+          {
+            "command": "nx run @sps/crm:relations:funnels-to-stages:repository-migrate"
+          },
+          {
+            "command": "nx run @sps/crm:relations:funnels-to-tasks:repository-migrate"
+          },
+          {
+            "command": "nx run @sps/crm:relations:funnels-to-ecommerce-module-stores-to-products:repository-migrate"
           }
         ]
       }
@@ -650,36 +646,6 @@
         ]
       }
     },
-    "models:funnel-publication:repository-generate": {
-      "executor": "nx:run-commands",
-      "cache": false,
-      "options": {
-        "parallel": false,
-        "cwd": "libs/modules/crm/models/funnel-publication/backend/repository/database",
-        "commands": [
-          {
-            "command": "drizzle-kit up --config=./src/lib/config.ts"
-          },
-          {
-            "command": "drizzle-kit generate --config=./src/lib/config.ts"
-          }
-        ]
-      }
-    },
-    "models:funnel-publication:repository-migrate": {
-      "executor": "nx:run-commands",
-      "cache": false,
-      "options": {
-        "parallel": false,
-        "envFile": "apps/api/.env",
-        "cwd": "libs/modules/crm/models/funnel-publication/backend/repository/database",
-        "commands": [
-          {
-            "command": "bun run ./src/lib/migrate.ts"
-          }
-        ]
-      }
-    },
     "models:task:repository-generate": {
       "executor": "nx:run-commands",
       "cache": false,
@@ -703,186 +669,6 @@
         "parallel": false,
         "envFile": "apps/api/.env",
         "cwd": "libs/modules/crm/models/task/backend/repository/database",
-        "commands": [
-          {
-            "command": "bun run ./src/lib/migrate.ts"
-          }
-        ]
-      }
-    },
-    "models:task-event:repository-generate": {
-      "executor": "nx:run-commands",
-      "cache": false,
-      "options": {
-        "parallel": false,
-        "cwd": "libs/modules/crm/models/task-event/backend/repository/database",
-        "commands": [
-          {
-            "command": "drizzle-kit up --config=./src/lib/config.ts"
-          },
-          {
-            "command": "drizzle-kit generate --config=./src/lib/config.ts"
-          }
-        ]
-      }
-    },
-    "models:task-event:repository-migrate": {
-      "executor": "nx:run-commands",
-      "cache": false,
-      "options": {
-        "parallel": false,
-        "envFile": "apps/api/.env",
-        "cwd": "libs/modules/crm/models/task-event/backend/repository/database",
-        "commands": [
-          {
-            "command": "bun run ./src/lib/migrate.ts"
-          }
-        ]
-      }
-    },
-    "relations:funnels-to-ecommerce-module-stores:repository-generate": {
-      "executor": "nx:run-commands",
-      "cache": false,
-      "options": {
-        "parallel": false,
-        "cwd": "libs/modules/crm/relations/funnels-to-ecommerce-module-stores/backend/repository/database",
-        "commands": [
-          {
-            "command": "drizzle-kit up --config=./src/lib/config.ts"
-          },
-          {
-            "command": "drizzle-kit generate --config=./src/lib/config.ts"
-          }
-        ]
-      }
-    },
-    "relations:funnels-to-ecommerce-module-stores:repository-migrate": {
-      "executor": "nx:run-commands",
-      "cache": false,
-      "options": {
-        "parallel": false,
-        "envFile": "apps/api/.env",
-        "cwd": "libs/modules/crm/relations/funnels-to-ecommerce-module-stores/backend/repository/database",
-        "commands": [
-          {
-            "command": "bun run ./src/lib/migrate.ts"
-          }
-        ]
-      }
-    },
-    "relations:funnels-to-funnel-publications:repository-generate": {
-      "executor": "nx:run-commands",
-      "cache": false,
-      "options": {
-        "parallel": false,
-        "cwd": "libs/modules/crm/relations/funnels-to-funnel-publications/backend/repository/database",
-        "commands": [
-          {
-            "command": "drizzle-kit up --config=./src/lib/config.ts"
-          },
-          {
-            "command": "drizzle-kit generate --config=./src/lib/config.ts"
-          }
-        ]
-      }
-    },
-    "relations:funnels-to-funnel-publications:repository-migrate": {
-      "executor": "nx:run-commands",
-      "cache": false,
-      "options": {
-        "parallel": false,
-        "envFile": "apps/api/.env",
-        "cwd": "libs/modules/crm/relations/funnels-to-funnel-publications/backend/repository/database",
-        "commands": [
-          {
-            "command": "bun run ./src/lib/migrate.ts"
-          }
-        ]
-      }
-    },
-    "relations:tasks-to-funnel-publications:repository-generate": {
-      "executor": "nx:run-commands",
-      "cache": false,
-      "options": {
-        "parallel": false,
-        "cwd": "libs/modules/crm/relations/tasks-to-funnel-publications/backend/repository/database",
-        "commands": [
-          {
-            "command": "drizzle-kit up --config=./src/lib/config.ts"
-          },
-          {
-            "command": "drizzle-kit generate --config=./src/lib/config.ts"
-          }
-        ]
-      }
-    },
-    "relations:tasks-to-funnel-publications:repository-migrate": {
-      "executor": "nx:run-commands",
-      "cache": false,
-      "options": {
-        "parallel": false,
-        "envFile": "apps/api/.env",
-        "cwd": "libs/modules/crm/relations/tasks-to-funnel-publications/backend/repository/database",
-        "commands": [
-          {
-            "command": "bun run ./src/lib/migrate.ts"
-          }
-        ]
-      }
-    },
-    "relations:tasks-to-task-events:repository-generate": {
-      "executor": "nx:run-commands",
-      "cache": false,
-      "options": {
-        "parallel": false,
-        "cwd": "libs/modules/crm/relations/tasks-to-task-events/backend/repository/database",
-        "commands": [
-          {
-            "command": "drizzle-kit up --config=./src/lib/config.ts"
-          },
-          {
-            "command": "drizzle-kit generate --config=./src/lib/config.ts"
-          }
-        ]
-      }
-    },
-    "relations:tasks-to-task-events:repository-migrate": {
-      "executor": "nx:run-commands",
-      "cache": false,
-      "options": {
-        "parallel": false,
-        "envFile": "apps/api/.env",
-        "cwd": "libs/modules/crm/relations/tasks-to-task-events/backend/repository/database",
-        "commands": [
-          {
-            "command": "bun run ./src/lib/migrate.ts"
-          }
-        ]
-      }
-    },
-    "relations:tasks-to-ecommerce-module-products:repository-generate": {
-      "executor": "nx:run-commands",
-      "cache": false,
-      "options": {
-        "parallel": false,
-        "cwd": "libs/modules/crm/relations/tasks-to-ecommerce-module-products/backend/repository/database",
-        "commands": [
-          {
-            "command": "drizzle-kit up --config=./src/lib/config.ts"
-          },
-          {
-            "command": "drizzle-kit generate --config=./src/lib/config.ts"
-          }
-        ]
-      }
-    },
-    "relations:tasks-to-ecommerce-module-products:repository-migrate": {
-      "executor": "nx:run-commands",
-      "cache": false,
-      "options": {
-        "parallel": false,
-        "envFile": "apps/api/.env",
-        "cwd": "libs/modules/crm/relations/tasks-to-ecommerce-module-products/backend/repository/database",
         "commands": [
           {
             "command": "bun run ./src/lib/migrate.ts"
@@ -946,6 +732,211 @@
         "commands": [
           {
             "command": "bun run ./src/lib/migrate.ts"
+          }
+        ]
+      }
+    },
+    "models:stage:repository-generate": {
+      "executor": "nx:run-commands",
+      "cache": false,
+      "options": {
+        "parallel": false,
+        "cwd": "libs/modules/crm/models/stage/backend/repository/database",
+        "commands": [
+          {
+            "command": "drizzle-kit up --config=./src/lib/config.ts"
+          },
+          {
+            "command": "drizzle-kit generate --config=./src/lib/config.ts"
+          }
+        ]
+      }
+    },
+    "models:stage:repository-migrate": {
+      "executor": "nx:run-commands",
+      "cache": false,
+      "options": {
+        "parallel": false,
+        "envFile": "apps/api/.env",
+        "cwd": "libs/modules/crm/models/stage/backend/repository/database",
+        "commands": [
+          {
+            "command": "bun run ./src/lib/migrate.ts"
+          }
+        ]
+      }
+    },
+    "relations:tasks-to-stages:repository-generate": {
+      "executor": "nx:run-commands",
+      "cache": false,
+      "options": {
+        "parallel": false,
+        "cwd": "libs/modules/crm/relations/tasks-to-stages/backend/repository/database",
+        "commands": [
+          {
+            "command": "drizzle-kit up --config=./src/lib/config.ts"
+          },
+          {
+            "command": "drizzle-kit generate --config=./src/lib/config.ts"
+          }
+        ]
+      }
+    },
+    "relations:tasks-to-stages:repository-migrate": {
+      "executor": "nx:run-commands",
+      "cache": false,
+      "options": {
+        "parallel": false,
+        "envFile": "apps/api/.env",
+        "cwd": "libs/modules/crm/relations/tasks-to-stages/backend/repository/database",
+        "commands": [
+          {
+            "command": "bun run ./src/lib/migrate.ts"
+          }
+        ]
+      }
+    },
+    "relations:funnels-to-stages:repository-generate": {
+      "executor": "nx:run-commands",
+      "cache": false,
+      "options": {
+        "parallel": false,
+        "cwd": "libs/modules/crm/relations/funnels-to-stages/backend/repository/database",
+        "commands": [
+          {
+            "command": "drizzle-kit up --config=./src/lib/config.ts"
+          },
+          {
+            "command": "drizzle-kit generate --config=./src/lib/config.ts"
+          }
+        ]
+      }
+    },
+    "relations:funnels-to-stages:repository-migrate": {
+      "executor": "nx:run-commands",
+      "cache": false,
+      "options": {
+        "parallel": false,
+        "envFile": "apps/api/.env",
+        "cwd": "libs/modules/crm/relations/funnels-to-stages/backend/repository/database",
+        "commands": [
+          {
+            "command": "bun run ./src/lib/migrate.ts"
+          }
+        ]
+      }
+    },
+    "relations:funnels-to-tasks:repository-generate": {
+      "executor": "nx:run-commands",
+      "cache": false,
+      "options": {
+        "parallel": false,
+        "cwd": "libs/modules/crm/relations/funnels-to-tasks/backend/repository/database",
+        "commands": [
+          {
+            "command": "drizzle-kit up --config=./src/lib/config.ts"
+          },
+          {
+            "command": "drizzle-kit generate --config=./src/lib/config.ts"
+          }
+        ]
+      }
+    },
+    "relations:funnels-to-tasks:repository-migrate": {
+      "executor": "nx:run-commands",
+      "cache": false,
+      "options": {
+        "parallel": false,
+        "envFile": "apps/api/.env",
+        "cwd": "libs/modules/crm/relations/funnels-to-tasks/backend/repository/database",
+        "commands": [
+          {
+            "command": "bun run ./src/lib/migrate.ts"
+          }
+        ]
+      }
+    },
+    "relations:funnels-to-ecommerce-module-stores-to-products:repository-generate": {
+      "executor": "nx:run-commands",
+      "cache": false,
+      "options": {
+        "parallel": false,
+        "cwd": "libs/modules/crm/relations/funnels-to-ecommerce-module-stores-to-products/backend/repository/database",
+        "commands": [
+          {
+            "command": "drizzle-kit up --config=./src/lib/config.ts"
+          },
+          {
+            "command": "drizzle-kit generate --config=./src/lib/config.ts"
+          }
+        ]
+      }
+    },
+    "relations:funnels-to-ecommerce-module-stores-to-products:repository-migrate": {
+      "executor": "nx:run-commands",
+      "cache": false,
+      "options": {
+        "parallel": false,
+        "envFile": "apps/api/.env",
+        "cwd": "libs/modules/crm/relations/funnels-to-ecommerce-module-stores-to-products/backend/repository/database",
+        "commands": [
+          {
+            "command": "bun run ./src/lib/migrate.ts"
+          }
+        ]
+      }
+    },
+    "workflow-backfill": {
+      "executor": "nx:run-commands",
+      "cache": false,
+      "options": {
+        "cwd": ".",
+        "command": "bun --env-file=apps/api/.env libs/modules/crm/relations/tasks-to-stages/backend/repository/database/src/lib/workflow-data.ts"
+      }
+    },
+    "workflow-finalize": {
+      "executor": "nx:run-commands",
+      "cache": false,
+      "options": {
+        "cwd": ".",
+        "parallel": false,
+        "commands": [
+          {
+            "command": "bun --env-file=apps/api/.env apps/api/src/db/crm-workflow-cutover.ts"
+          },
+          {
+            "command": "nx run @sps/crm:models:task:repository-migrate"
+          },
+          {
+            "command": "nx run @sps/crm:models:funnel:repository-migrate"
+          }
+        ]
+      }
+    },
+    "models:task:repository-prepare": {
+      "executor": "nx:run-commands",
+      "cache": false,
+      "options": {
+        "parallel": false,
+        "envFile": "apps/api/.env",
+        "cwd": "libs/modules/crm/models/task/backend/repository/database",
+        "commands": [
+          {
+            "command": "bun run ./src/lib/migrate.ts --through=2"
+          }
+        ]
+      }
+    },
+    "models:funnel:repository-prepare": {
+      "executor": "nx:run-commands",
+      "cache": false,
+      "options": {
+        "parallel": false,
+        "envFile": "apps/api/.env",
+        "cwd": "libs/modules/crm/models/funnel/backend/repository/database",
+        "commands": [
+          {
+            "command": "bun run ./src/lib/migrate.ts --through=4"
           }
         ]
       }

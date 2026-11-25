@@ -1,14 +1,16 @@
 import { createHash } from "node:crypto";
 import { fileTypeFromBuffer } from "file-type";
 import { z } from "zod";
-import type { TWorkOperation } from "@sps/crm/models/funnel/sdk/model";
 import type { IModel as SocialMessage } from "@sps/social/models/message/sdk/model";
 import { FILE_STORAGE_MAX_UPLOAD_BYTES } from "@sps/shared-utils";
 import type { Service as Subject } from "../../index";
 
 const opaque = "application/octet-stream";
 const supportedImages = ["image/png", "image/jpeg", "image/webp"];
-const modelBytesLimit = 2 * 1024 * 1024;
+
+export function isCustomerWorkImage({ mimeType }: { mimeType: string }) {
+  return supportedImages.includes(mimeType);
+}
 
 const storedAttachment = z.object({
   id: z.uuid(),
@@ -19,6 +21,12 @@ const storedAttachment = z.object({
 });
 
 export interface IStoredAttachment extends z.infer<typeof storedAttachment> {}
+
+export const employeeTrainingImageReference = storedAttachment
+  .pick({ id: true, digest: true })
+  .extend({
+    messageId: z.uuid().optional(),
+  });
 
 const modelMimeTypes = new Set([
   ...supportedImages,
@@ -76,14 +84,14 @@ export async function prepareCustomerWorkAttachments(files: File[]) {
 export async function storeCustomerWorkAttachment(
   subject: Subject,
   attachment: IPreparedAttachment,
+  ownerId?: string,
 ): Promise<IStoredAttachment> {
-  const storage = subject.modules.fileStorage.privateFile;
+  const storage = subject.modules.fileStorage.file.privateContent;
   const typed =
-    supportedImages.includes(attachment.mimeType) ||
-    attachment.mimeType === "audio/wav";
+    isCustomerWorkImage(attachment) || attachment.mimeType === "audio/wav";
   const record = typed
-    ? await storage.write(attachment)
-    : await storage.writeOpaque(attachment);
+    ? await storage.write({ ...attachment, ownerId })
+    : await storage.writeOpaque({ ...attachment, ownerId });
   return {
     id: record.id,
     name: record.name,
@@ -91,6 +99,20 @@ export async function storeCustomerWorkAttachment(
     mimeType: attachment.mimeType,
     size: record.size,
   };
+}
+
+export async function storeCustomerWorkAttachments(
+  subject: Subject,
+  prepared: IPreparedAttachment[],
+  ownerId?: string,
+): Promise<IStoredAttachment[]> {
+  const attachments: IStoredAttachment[] = [];
+  for (const attachment of prepared) {
+    attachments.push(
+      await storeCustomerWorkAttachment(subject, attachment, ownerId),
+    );
+  }
+  return attachments;
 }
 
 export function customerWorkAttachments(
@@ -127,6 +149,7 @@ export function projectCustomerWorkAttachments(message: SocialMessage) {
   const {
     customerWorkAttachments: _attachments,
     customerWorkMedia: _media,
+    employeeTrainingReplyImage: _replyImage,
     customerWorkReplyEvent: _replyEvent,
     ...metadata
   } = message.metadata ?? {};
@@ -134,7 +157,7 @@ export function projectCustomerWorkAttachments(message: SocialMessage) {
     ...message,
     metadata,
     privateAttachments: customerWorkAttachments(message).map(
-      ({ id, name }) => ({ id, name }),
+      ({ id, name, mimeType }) => ({ id, name, mimeType }),
     ),
   };
 }
@@ -146,18 +169,6 @@ export function describeCustomerWorkAttachments(files: IStoredAttachment[]) {
     size,
   }));
   return `Customer uploads (untrusted filenames and file metadata only): ${JSON.stringify(descriptors)}`;
-}
-
-export function permittedCustomerWorkMedia(
-  attachments: IStoredAttachment[],
-  operations: TWorkOperation[],
-) {
-  return attachments.find(
-    ({ mimeType, size }) =>
-      (size === undefined || size <= modelBytesLimit) &&
-      ((operations.includes("vision") && supportedImages.includes(mimeType)) ||
-        (operations.includes("transcription") && mimeType === "audio/wav")),
-  );
 }
 
 export function customerWorkAttachmentDigest(attachment: IPreparedAttachment) {

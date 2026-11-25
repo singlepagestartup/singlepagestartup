@@ -4,14 +4,17 @@ import { memo, useCallback } from "react";
 import { FilePreview } from "@sps/ui-adapter";
 import { api } from "@sps/rbac/models/subject/sdk/client";
 import type { IPrivateChatAttachment } from "@sps/social/models/message/sdk/model";
+import type { IChatAttachmentDownload } from "../interface";
 
 interface IProps {
   subjectId: string;
   threadId: string;
   messageId: string;
   attachments: IPrivateChatAttachment[];
+  document?: boolean;
   language: string;
-  fullWidth?: boolean;
+  layout?: "message" | "rail" | "gallery";
+  onDownload?: IChatAttachmentDownload;
 }
 
 export function PrivateMessageAttachments(props: IProps) {
@@ -19,18 +22,19 @@ export function PrivateMessageAttachments(props: IProps) {
   return (
     <ul
       aria-label={ru ? "Вложения" : "Attachments"}
-      className={
-        props.fullWidth ? "grid min-w-0 gap-2" : "mt-2 flex flex-wrap gap-2"
-      }
+      className="grid min-w-0 gap-2"
     >
       {props.attachments.map((attachment) => (
-        <AttachmentRow
-          key={attachment.id}
+        <PrivateMessageAttachment
+          key={`${props.subjectId}:${props.threadId}:${props.messageId}:${attachment.id}`}
           attachment={attachment}
+          layout={props.layout}
+          document={props.document}
           subjectId={props.subjectId}
           threadId={props.threadId}
           messageId={props.messageId}
           language={props.language}
+          onDownload={props.onDownload}
         />
       ))}
     </ul>
@@ -39,29 +43,58 @@ export function PrivateMessageAttachments(props: IProps) {
 
 interface IAttachmentRowProps extends Pick<
   IProps,
-  "subjectId" | "threadId" | "messageId" | "language"
+  | "subjectId"
+  | "threadId"
+  | "messageId"
+  | "language"
+  | "layout"
+  | "onDownload"
+  | "document"
 > {
   attachment: IPrivateChatAttachment;
 }
 
-const AttachmentRow = memo(function AttachmentRow(props: IAttachmentRowProps) {
+export const PrivateMessageAttachment = memo(function PrivateMessageAttachment(
+  props: IAttachmentRowProps,
+) {
   const download = useCallback(
-    () =>
-      api.customerWorkAttachment({
-        id: props.subjectId,
-        threadId: props.threadId,
-        messageId: props.messageId,
-        attachmentId: props.attachment.id,
-      }),
-    [props.subjectId, props.threadId, props.messageId, props.attachment.id],
+    (signal?: AbortSignal, maxBytes?: number) =>
+      props.onDownload
+        ? props.onDownload(
+            props.messageId,
+            props.attachment.id,
+            signal,
+            maxBytes,
+          )
+        : api.customerWorkAttachment({
+            id: props.subjectId,
+            threadId: props.threadId,
+            messageId: props.messageId,
+            attachmentId: props.attachment.id,
+            options: { signal },
+            maxBytes,
+          }),
+    [
+      props.subjectId,
+      props.threadId,
+      props.messageId,
+      props.attachment.id,
+      props.onDownload,
+    ],
   );
+  const imageDocument =
+    props.document && props.attachment.mimeType?.startsWith("image/");
   return (
     <li className="min-w-0 max-w-full">
       <FilePreview
         name={props.attachment.name}
         language={props.language}
-        layout="row"
-        availability="download-only"
+        mimeType={props.attachment.mimeType}
+        layout={props.layout ?? "message"}
+        availability={
+          props.document && !imageDocument ? "download-only" : undefined
+        }
+        showDownload={imageDocument}
         onDownload={download}
       />
     </li>

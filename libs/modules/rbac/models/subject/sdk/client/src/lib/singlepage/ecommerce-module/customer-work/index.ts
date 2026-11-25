@@ -11,7 +11,11 @@ import type {
   IReadProps,
   IThreadProps,
 } from "../../../../../../server/src/lib/singlepage/ecommerce-module/customer-work";
-import { clientHost, route } from "@sps/rbac/models/subject/sdk/model";
+import {
+  clientHost,
+  route,
+  type ICustomerWorkView,
+} from "@sps/rbac/models/subject/sdk/model";
 import { saturateHeaders } from "@sps/shared-frontend-client-utils";
 import {
   invalidateRouteQueries,
@@ -97,14 +101,23 @@ export function customerWorkForThread(props: IThreadProps) {
     () => (enabled ? subscription(scopedRoute, queryClient) : undefined),
     [enabled, scopedRoute],
   );
-  return useQuery({
+  return useQuery<ICustomerWorkView>({
     queryKey: key,
     enabled,
+    refetchInterval: (query) =>
+      query.state.data?.workflow?.checkoutPromptId ? 3000 : false,
     meta: {
       topics: [
+        "crm.funnels",
         "crm.tasks",
-        "crm.task-events",
-        "social.threads-to-crm-module-tasks",
+        "crm.tasks-to-stages",
+        "social.threads-to-messages",
+        "ecommerce.orders",
+        "social.chats-to-crm-module-tasks",
+        "social.profiles-to-chats",
+        "social.profiles",
+        "rbac.subjects-to-ecommerce-module-stores",
+        "rbac.subjects-to-social-module-profiles",
       ],
     },
     retry: false,
@@ -153,6 +166,7 @@ export function changeCustomerWork() {
       if (
         props.data.operation === "add" ||
         props.data.operation === "open-cart-discussion" ||
+        props.data.operation === "enter-order-discussion" ||
         props.data.operation === "confirm-cart" ||
         result.cartProposal?.orderId
       ) {

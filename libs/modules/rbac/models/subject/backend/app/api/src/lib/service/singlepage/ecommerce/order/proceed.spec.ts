@@ -730,6 +730,7 @@ function createService(props?: {
       subjectsToIdentities: { find: jest.fn().mockResolvedValue([]) } as any,
     },
     modules: {
+      crm: { task: { get: jest.fn() } } as any,
       social: {
         attribute: { find: jest.fn().mockResolvedValue([]) },
         chat: {

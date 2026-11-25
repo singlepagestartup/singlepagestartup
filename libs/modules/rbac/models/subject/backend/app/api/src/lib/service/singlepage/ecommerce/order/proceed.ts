@@ -6,6 +6,7 @@ import {
 import { Service as InitialGrantProducts } from "../../billing/initial-grant-products";
 import { isConfirmedInvoice } from "@sps/billing/models/payment-intent/sdk/model";
 import type { FindServiceProps } from "@sps/shared-backend-api";
+import type { IModel as ITask } from "@sps/crm/models/task/sdk/model";
 import { IModel as IEcommerceModuleOrder } from "@sps/ecommerce/models/order/sdk/model";
 import { api } from "@sps/rbac/models/subject/sdk/server";
 import { IModel as IEcommerceModuleAttributesToBillingModuleCurrencies } from "@sps/ecommerce/relations/attributes-to-billing-module-currencies/sdk/model";
@@ -41,6 +42,11 @@ interface ILifecycleProps {
   existingRolesIds?: string[];
   productsRolesIds?: string[];
   subjectsToRoles?: ISubjectsToRoles[];
+}
+
+interface ILifecycleLookup {
+  order: Pick<IEcommerceModuleOrder, "id">;
+  subjectToEcommerceModuleOrder: ILifecycleProps["subjectToEcommerceModuleOrder"];
 }
 
 export interface IPaidFulfillmentEffect {
@@ -124,7 +130,7 @@ export interface IConstructorProps {
   >;
   modules: Pick<
     SubjectServiceDependencies["modules"],
-    "ecommerce" | "notification" | "social"
+    "crm" | "ecommerce" | "notification" | "social"
   >;
   repository: Repository;
   ecommerceProductCheckout: IEcommerceProductCheckout;
@@ -1318,7 +1324,43 @@ export class Service {
     return current.id;
   }
 
-  async delivered(props: ILifecycleProps) {
+  async completeDeliveredTask(task: ITask) {
+    if (
+      !task.orderId ||
+      task.status !== "closed" ||
+      task.outcome !== "completed"
+    ) {
+      return;
+    }
+    const work = await this.modules.ecommerce.order.work.findByOrder(
+      task.orderId,
+    );
+    if (
+      work?.taskId !== task.id ||
+      work.state !== "delivered" ||
+      work.customerId !== task.customerId
+    ) {
+      return;
+    }
+    // A checkout can hold the buyer lock while waiting for this task. Proceed
+    // retries delivered orders after commit if that lock is already taken.
+    if (
+      !(await this.dependencies.repository.tryLockDeliverySubject(
+        task.customerId,
+      ))
+    ) {
+      return;
+    }
+    await this.delivered({
+      order: { id: task.orderId },
+      subjectToEcommerceModuleOrder: {
+        subjectId: task.customerId,
+        ecommerceModuleOrderId: task.orderId,
+      },
+    });
+  }
+
+  async delivered(props: ILifecycleProps | ILifecycleLookup) {
     await this.dependencies.repository.withOrderDelivery(
       {
         subjectId: props.subjectToEcommerceModuleOrder.subjectId,
@@ -1329,7 +1371,28 @@ export class Service {
           id: props.order.id,
         });
         const current = await this.freshLifecycleProps(props);
-        if (!current || current.order.status !== "delivered") return undefined;
+        if (!current || current.order.status !== "delivered") {
+          return;
+        }
+        const work = await this.modules.ecommerce.order.work?.findByOrder(
+          current.order.id,
+        );
+        if (work) {
+          const task = await this.modules.crm.task.get(work);
+          if (
+            work.state !== "delivered" ||
+            !work.paid ||
+            !work.receiptFileId ||
+            task.orderId !== current.order.id ||
+            work.customerId !==
+              current.subjectToEcommerceModuleOrder.subjectId ||
+            task.customerId !== work.customerId ||
+            task.status !== "closed" ||
+            task.outcome !== "completed"
+          ) {
+            return;
+          }
+        }
         return this.applyDeliveredStatus(current);
       },
     );
@@ -1732,7 +1795,7 @@ export class Service {
   }
 
   private async freshLifecycleProps(
-    props: ILifecycleProps,
+    props: ILifecycleProps | ILifecycleLookup,
   ): Promise<ILifecycleProps | undefined> {
     const ownership = await this.module.subjectsToEcommerceModuleOrders.find({
       params: {

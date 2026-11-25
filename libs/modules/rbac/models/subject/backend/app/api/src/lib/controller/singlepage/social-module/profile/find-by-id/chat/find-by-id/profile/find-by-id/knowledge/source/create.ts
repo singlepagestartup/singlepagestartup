@@ -1,17 +1,18 @@
 import { getHttpErrorType } from "@sps/backend-utils";
-import { Service as KnowledgeService } from "@sps/knowledge/backend/app/api/src/lib/service";
 import { Context } from "hono";
 import { HTTPException } from "hono/http-exception";
+
 import { Service } from "../../../../../../../../../../../service";
-import { toOrderIndex, toText } from "./helpers";
+import { Service as ProfileSources } from "../../../../../../../../../../../service/singlepage/social-module/profile/knowledge/sources";
+import { toOrderIndex, readSourceDraft } from "./helpers";
 
 export class Handler {
   service: Service;
-  knowledgeService: KnowledgeService;
+  knowledge: ProfileSources;
 
   constructor(service: Service) {
     this.service = service;
-    this.knowledgeService = new KnowledgeService();
+    this.knowledge = new ProfileSources(service);
   }
 
   async execute(c: Context, next: any): Promise<Response> {
@@ -19,27 +20,18 @@ export class Handler {
       const targetSocialModuleProfileId = c.req.param(
         "targetSocialModuleProfileId",
       );
+      const actorId = c.req.param("id");
 
-      if (!targetSocialModuleProfileId) {
+      if (!actorId || !targetSocialModuleProfileId) {
         throw new Error(
-          "Validation error. No targetSocialModuleProfileId provided",
+          "Validation error. The requesting subject and knowledge profile are required",
         );
       }
 
-      const body = (await c.req.json()) as {
-        data?: {
-          title?: unknown;
-          content?: unknown;
-          orderIndex?: unknown;
-        };
-        title?: unknown;
-        content?: unknown;
-        orderIndex?: unknown;
-      };
-      const data = body.data || body;
+      const data = await readSourceDraft(c);
       const storeId = c.get("storeEmployeeTrainingStoreId");
-      const title = toText(data.title).trim();
-      const content = toText(data.content).trim();
+      const title = data.title;
+      const content = data.content.trim();
 
       if (!title) {
         throw new Error("Validation error. Knowledge Source title is required");
@@ -51,41 +43,24 @@ export class Handler {
         );
       }
 
-      const learned = await this.knowledgeService.learnContent({
-        slug: this.createSlug(title),
+      const learned = await this.knowledge.create(actorId, {
+        profileId: targetSocialModuleProfileId,
+        storeId,
+        slug: data.operationKey
+          ? `profile-knowledge-${targetSocialModuleProfileId}-${data.operationKey}`
+          : undefined,
         title,
         content,
-        onSourceSaved: async (sourceId) => {
-          await this.service.modules.social.profilesToKnowledgeModuleSources.create(
-            {
-              data: {
-                profileId: targetSocialModuleProfileId,
-                knowledgeModuleSourceId: sourceId,
-                ...(storeId ? { storeId } : {}),
-                orderIndex: toOrderIndex(data.orderIndex),
-              },
-            },
-          );
-        },
+        files: data.files,
+        orderIndex: toOrderIndex(data.orderIndex),
       });
 
-      return c.json({ data: learned.source });
+      return c.json({
+        data: learned.source,
+      });
     } catch (error: unknown) {
       const { status, message, details } = getHttpErrorType(error);
       throw new HTTPException(status, { message, cause: details });
     }
-  }
-
-  private createSlug(title: string) {
-    const normalizedTitle = title
-      .toLowerCase()
-      .replace(/[^a-z0-9]+/g, "-")
-      .replace(/^-+|-+$/g, "")
-      .slice(0, 80);
-    const suffix = `${Date.now().toString(36)}-${Math.random()
-      .toString(36)
-      .slice(2, 10)}`;
-
-    return `${normalizedTitle || "knowledge"}-${suffix}`;
   }
 }

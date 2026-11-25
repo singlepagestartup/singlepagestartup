@@ -167,6 +167,21 @@ describe("defaultCompiledTopicRules — framework action endpoints", () => {
     }
   });
 
+  it.each(["", "/source-id"])(
+    "refreshes the personal profile list for a source change at %s",
+    (suffix) => {
+      expect(
+        resolveTopicsForPath(
+          `/api/rbac/subjects/owner/social-module/profiles/mine/knowledge/sources/personal${suffix}`,
+          defaultCompiledTopicRules,
+        ),
+      ).toEqual([
+        "social.profiles-to-knowledge-module-sources",
+        "knowledge.sources",
+      ]);
+    },
+  );
+
   it("invalidates attachment and index readers from scoped Source attachment changes", () => {
     const path =
       "/api/rbac/subjects/sub-1/social-module/profiles/requester-1/chats/chat-1/profiles/assistant-1/knowledge/sources/source-1/files";

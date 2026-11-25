@@ -1,4 +1,9 @@
-import { calculateConfirmedResultPrice } from "./utils";
+import sharp from "sharp";
+import {
+  calculateConfirmedResultPrice,
+  imageOrderResult,
+  pdfOrderResult,
+} from "./utils";
 
 const settlement = (id: string, currencyId: string, workAmount: string) => ({
   id,
@@ -67,4 +72,68 @@ it("refuses a missing or future exchange rate and a zero result price", () => {
       reservations: [settlement("zero", "sale", "0")],
     }),
   ).toThrow("positive result price");
+});
+
+it("retains the provider's exact PNG bytes and adds a visible watermark to the downscaled preview", async () => {
+  const providerImage = await sharp({
+    create: {
+      width: 768,
+      height: 1024,
+      channels: 4,
+      background: "#4B6D8E80",
+    },
+  })
+    .png({ compressionLevel: 0 })
+    .toBuffer();
+  const result = await imageOrderResult(providerImage, {
+    preserveOriginal: true,
+  });
+  expect(result.original.bytes).toEqual(providerImage);
+  expect(await sharp(result.preview.bytes).metadata()).toMatchObject({
+    format: "jpeg",
+    width: 384,
+    height: 512,
+  });
+  const { channels } = await sharp(result.preview.bytes).stats();
+  expect(channels.every((channel) => channel.max - channel.min > 80)).toBe(
+    true,
+  );
+});
+
+it("marks each page of the PDF preview while preserving the complete original", async () => {
+  const { getDocument } = await import("pdfjs-dist/legacy/build/pdf.mjs");
+  const sample =
+    Array.from({ length: 130 }, (_, i) => String(i)).join("\n") +
+    "\nProtected original ending";
+  const result = await pdfOrderResult("preview-test", sample);
+  async function pageTexts(bytes: Uint8Array) {
+    const document = getDocument({
+      data: Uint8Array.from(bytes),
+      useSystemFonts: false,
+    });
+    const pdf = await document.promise;
+    try {
+      const pages = [];
+      for (let i = 1; i <= pdf.numPages; i += 1) {
+        const content = await (await pdf.getPage(i)).getTextContent();
+        pages.push(
+          content.items
+            .map((item) => ("str" in item ? item.str : ""))
+            .join(" "),
+        );
+      }
+      return pages;
+    } finally {
+      await document.destroy();
+    }
+  }
+  const previewPages = await pageTexts(result.preview.bytes);
+  expect(previewPages.length).toBeGreaterThan(1);
+  expect(previewPages.every((page) => page.includes("ПРЕДПРОСМОТР"))).toBe(
+    true,
+  );
+  expect(previewPages.join(" ")).not.toContain("Protected original ending");
+  const original = (await pageTexts(result.original.bytes)).join(" ");
+  expect(original).toContain("Protected original ending");
+  expect(original).not.toContain("ПРЕДПРОСМОТР");
 });

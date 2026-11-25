@@ -83,15 +83,15 @@ export function getMcpAuthHeaders(
 ): Record<string, string> {
   const context = getMcpRequestAuthContext();
 
-  if (context?.rbacSecretKey) {
-    return {
-      "X-RBAC-SECRET-KEY": context.rbacSecretKey,
-    };
-  }
-
   if (context?.authorization) {
     return {
       Authorization: context.authorization,
+    };
+  }
+
+  if (context?.rbacSecretKey) {
+    return {
+      "X-RBAC-SECRET-KEY": context.rbacSecretKey,
     };
   }
 

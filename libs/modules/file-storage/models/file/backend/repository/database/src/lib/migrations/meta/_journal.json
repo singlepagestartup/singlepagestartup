@@ -36,6 +36,20 @@
       "when": 1770672832472,
       "tag": "0004_lonely_the_hood",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1795524455517,
+      "tag": "0005_flat_la_nuit",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1795524644167,
+      "tag": "0006_confused_victor_mancha",
+      "breakpoints": true
     }
   ]
 }

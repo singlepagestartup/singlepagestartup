@@ -1,3 +1,4 @@
+import { ProtectedFile } from "./protected-file";
 import { createModule } from "../module";
 import { createModules } from "@sps/rbac/backend/app/api/src/lib/modules";
 import { Service as OrderPaymentDispatch } from "../startup/ecommerce/order/payment-dispatch";
@@ -43,6 +44,8 @@ import { Service as CrmFormRequestCreate } from "../startup/crm/form/request";
 import type { IExecuteProps as ICrmFormRequestCreateProps } from "./crm/form/request";
 import { Service as OrderWork } from "./ecommerce/order/work";
 import { Service as CrmWorkspace } from "./crm/workspace";
+import { Service as StoreCatalogDirectories } from "./ecommerce/catalog/directories";
+import { Service as StoreProducts } from "./ecommerce/product/store-management";
 import "reflect-metadata";
 import { inject, injectable } from "inversify";
 import { CRUDService, DI } from "@sps/shared-backend-api";
@@ -125,6 +128,8 @@ import type {
 } from "./telegram/sync-membership";
 import { Service as TelegramCheckoutFreeSubscription } from "../startup/telegram/checkout-free-subscription";
 import type { IExecuteProps as ITelegramCheckoutFreeSubscriptionExecuteProps } from "./telegram/checkout-free-subscription";
+import { Service as ChatSettings } from "../startup/social-module/chat/settings";
+import { Service as ChatOwnership } from "../startup/social-module/chat/ownership";
 import { Service as ChatLifecycleService } from "../startup/social-module/chat/lifecycle";
 import { Service as ProfileMcpCatalogService } from "../startup/social-module/profile/mcp/catalog";
 import type {
@@ -152,7 +157,7 @@ import type { IExecuteProps as ISocialModuleProfileAvatarUpdateProps } from "./s
 
 import { ProviderConnections } from "./provider-connections";
 import { Service as CustomerWork } from "./ecommerce/customer-work";
-import { WorkLedger } from "./billing/work-ledger";
+import { WorkLedger } from "@sps/billing/models/transaction/backend/app/api/src/lib/service/singlepage/work-ledger";
 import { Service as PermissionDefaults } from "../startup/permission-defaults";
 
 export type SubjectServiceDependencies<Keys extends keyof Service = never> =
@@ -166,12 +171,32 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     return this.appAssembly.getOrCreate(createModules);
   }
 
+  get socialChatSettings() {
+    return new ChatSettings(this);
+  }
+
+  get protectedFile() {
+    return new ProtectedFile(this);
+  }
+
   get orderWork() {
     return new OrderWork(this);
   }
 
+  get chatOwnership() {
+    return new ChatOwnership(this);
+  }
+
   get crmWorkspace() {
     return new CrmWorkspace(this);
+  }
+
+  get storeCatalogDirectories() {
+    return new StoreCatalogDirectories(this);
+  }
+
+  get storeProducts() {
+    return new StoreProducts(this);
   }
 
   get providerConnections() {
@@ -187,7 +212,13 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
   }
 
   get workLedger() {
-    return new WorkLedger(this);
+    return new WorkLedger(
+      this.modules.billing.transaction,
+      this.modules.billing.walletsToCurrencies,
+      this.modules.billing.transactionsToWallets,
+      this.module.subjectsToBillingModuleWallets,
+      (keys, run) => this.repository.withWalletLocks(keys, run),
+    );
   }
 
   get module() {
@@ -382,10 +413,10 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     socialModuleThreadId: string;
     modelId: string;
   }): Promise<ISocialModuleThread> {
-    await this.socialModuleChatLifecycleAssertSubjectOwnsChat({
-      subjectId: props.subjectId,
-      socialModuleChatId: props.socialModuleChatId,
-    });
+    await this.chatOwnership.assertOwner(
+      props.subjectId,
+      props.socialModuleChatId,
+    );
     await this.socialModuleChatLifecycleAssertThreadBelongsToChat({
       socialModuleChatId: props.socialModuleChatId,
       socialModuleThreadId: props.socialModuleThreadId,
@@ -703,10 +734,14 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     props: IOrderRenewalProps,
     internal?: { skipProviderReconciliation?: boolean },
   ) {
-    return new OrderRenewal({
+    const renewal = await new OrderRenewal({
       repository: this.repository,
       service: this,
     }).execute(props, internal);
+    if (renewal.orderId) {
+      await this.orderWork.postRenewalInvoice(renewal.orderId, props.subjectId);
+    }
+    return renewal;
   }
 
   async ecommerceOrderCheckout(
@@ -719,6 +754,8 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
   ) {
     return new EcommerceOrderCheckout({
       repository: this.repository,
+      assertPaymentStage: (subjectId, orderId) =>
+        this.orderWork.assertPaymentStage(subjectId, orderId),
       settledOrderIds: (input) => this.ecommerceModuleOrderSettledIds(input),
       findById: ({ id }) => this.findById({ id }),
       module: this.module,
@@ -804,6 +841,8 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     props: ITelegramBootstrapExecuteProps,
   ): Promise<ITelegramBootstrapResult> {
     const result = await new TelegramBootstrap({
+      createOwnedChat: (subjectId, data) =>
+        this.chatOwnership.create(subjectId, data),
       findById: ({ id }) => this.findById({ id }),
       identity: this.module.identity,
       social: this.modules.social,

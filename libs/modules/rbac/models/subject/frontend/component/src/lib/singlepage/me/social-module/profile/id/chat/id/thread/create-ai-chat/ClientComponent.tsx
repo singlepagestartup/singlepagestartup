@@ -16,6 +16,12 @@ export function Component(props: IClientComponentProps) {
   const { project } = props;
   const [name, setName] = useState("");
   const [error, setError] = useState("");
+  const chat = subjectApi.socialModuleProfileFindByIdChatFindById({
+    id: props.data.id,
+    socialModuleProfileId: project.requesterProfileId,
+    socialModuleChatId: project.chat.id,
+  });
+  const canCreate = !chat.isError && chat.data?.canManageChat === true;
   const create = subjectApi.socialModuleChatFindByIdThreadCreate({
     id: props.data.id,
     socialModuleChatId: project.chat.id,
@@ -24,7 +30,7 @@ export function Component(props: IClientComponentProps) {
   const submit = useCallback(
     async (event: FormEvent<HTMLFormElement>) => {
       event.preventDefault();
-      if (!name.trim() || submitting.current) return;
+      if (!canCreate || !name.trim() || submitting.current) return;
       submitting.current = true;
       setError("");
       try {
@@ -51,8 +57,30 @@ export function Component(props: IClientComponentProps) {
         submitting.current = false;
       }
     },
-    [name, create.mutateAsync, props.data.id, project, router, pathname, ru],
+    [
+      canCreate,
+      name,
+      create.mutateAsync,
+      props.data.id,
+      project,
+      router,
+      pathname,
+      ru,
+    ],
   );
+  if (!canCreate) {
+    return (
+      <p role="status" className="p-8">
+        {chat.isPending
+          ? ru
+            ? "Загружаем чат…"
+            : "Loading chat…"
+          : ru
+            ? "Создавать обсуждения может владелец чата."
+            : "Only the chat owner can create threads."}
+      </p>
+    );
+  }
   return (
     <div className="min-w-0 flex-1">
       <header className="border-b border-border p-5">

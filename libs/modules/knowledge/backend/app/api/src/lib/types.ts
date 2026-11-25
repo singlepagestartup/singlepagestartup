@@ -30,6 +30,7 @@ export interface KnowledgeSearchResult {
   chunkIndex: number;
   sourceId: string | null;
   sourceTitle: string | null;
+  sourceVersion?: string;
   distance: number | null;
   similarity: number | null;
   retrievalRole: "seed" | "neighbor";

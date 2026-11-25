@@ -15,6 +15,14 @@ import { Component as SubjectSelectInput } from "@sps/rbac/models/subject/fronte
 import { Component as IdentitySelectInput } from "@sps/rbac/models/identity/frontend/component";
 import { useGetAdminFormState } from "@sps/shared-frontend-client-hooks";
 
+const formSchema = insertSchema.pick({
+  subjectId: true,
+  identityId: true,
+  variant: true,
+  orderIndex: true,
+  className: true,
+});
+
 export function Component(props: IComponentPropsExtended) {
   const updateEntity = api.update();
   const createEntity = api.create();
@@ -24,8 +32,8 @@ export function Component(props: IComponentPropsExtended) {
     createEntity,
   });
 
-  const form = useForm<z.infer<typeof insertSchema>>({
-    resolver: zodResolver(insertSchema),
+  const form = useForm<z.infer<typeof formSchema>>({
+    resolver: zodResolver(formSchema),
     defaultValues: {
       variant: props.data?.variant || "default",
       orderIndex: props.data?.orderIndex || 0,
@@ -35,7 +43,7 @@ export function Component(props: IComponentPropsExtended) {
     },
   });
 
-  async function onSubmit(data: z.infer<typeof insertSchema>) {
+  async function onSubmit(data: z.infer<typeof formSchema>) {
     if (props.data?.id) {
       updateEntity.mutate({ id: props.data?.id, data });
       return;

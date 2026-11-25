@@ -1,6 +1,6 @@
 import type {
   WorkflowPerson,
-  WorkflowRelease,
+  Workflow,
   WorkflowTask,
 } from "../../../shared/workflows";
 
@@ -9,10 +9,11 @@ export const variant = "task-detail";
 export interface IComponentProps {
   variant?: typeof variant;
   task: WorkflowTask;
-  release: WorkflowRelease;
+  workflow: Workflow;
   people: WorkflowPerson[];
   audience?: "manager" | "customer";
-  canReadCosts?: boolean;
+  canReadConversation?: boolean;
+  onAssign?: (assigneeId: string) => void;
 }
 
 export interface IComponentPropsExtended extends IComponentProps {}

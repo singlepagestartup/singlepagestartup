@@ -4,7 +4,7 @@ export interface IWorkOrder {
   id: string;
   title: string;
   total: number;
-  resultVersionNumber?: number;
+  resultFilename?: string;
   invoiceId?: string;
   shipment?: { status: string; trackingCode?: string };
 }

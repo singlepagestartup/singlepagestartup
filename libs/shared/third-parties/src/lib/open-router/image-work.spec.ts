@@ -21,11 +21,11 @@ const router: IImageWorkRequest = {
   outputUsdPerMillion: "40",
 };
 
-function imageHeader() {
+function imageHeader(width = 1024, height = 1024) {
   const png = Buffer.alloc(33);
   Buffer.from("89504e470d0a1a0a0000000d49484452", "hex").copy(png);
-  png.writeUInt32BE(1024, 16);
-  png.writeUInt32BE(1024, 20);
+  png.writeUInt32BE(width, 16);
+  png.writeUInt32BE(height, 20);
   return png;
 }
 
@@ -156,6 +156,231 @@ it("sends source bytes to OpenAI image edits and reserves for the image input", 
     ),
   ).rejects.toThrow("Unsupported image source inputs");
   expect(network).toHaveBeenCalledTimes(1);
+});
+
+it("requests a native portrait cover edit with medium quality within the existing reserve", async () => {
+  const bytes = imageHeader(864, 1152);
+  const network = jest.fn<typeof fetch>().mockResolvedValue(
+    Response.json(
+      {
+        data: [{ b64_json: bytes.toString("base64") }],
+        usage: {
+          input_tokens: 100,
+          input_tokens_details: { text_tokens: 40, image_tokens: 60 },
+          output_tokens: 2000,
+        },
+      },
+      { headers: { "x-request-id": "req_portrait_cover" } },
+    ),
+  );
+  const request: IImageWorkRequest = {
+    ...direct,
+    sourceImages: [new Uint8Array([0xff, 0xd8, 0xff])],
+    coverBackground: {
+      width: 900,
+      height: 1200,
+      captionSpace: true,
+      captionTopPercent: 80,
+      description: "Continuous warm white backdrop with graphite accents",
+      skillGuidance:
+        "Use a colored strip and decorative symbols for the caption.",
+      referenceGuidance: "The lamp has a solid walnut base.",
+      roleGuidance: "Studio guidance. ".repeat(300) + "Final role sentence.",
+      suppressIcons: true,
+      suppressBands: true,
+    },
+  };
+  const result = await sendImageWork(
+    request,
+    "test-secret",
+    "attempt",
+    network,
+  );
+  const [url, init] = network.mock.calls[0];
+  const form = init?.body as FormData;
+  const prompt = String(form.get("prompt"));
+  expect(url).toBe("https://api.openai.com/v1/images/edits");
+  expect(form.get("size")).toBe("864x1152");
+  expect(form.get("quality")).toBe("medium");
+  expect(prompt).toContain("lower 20%");
+  expect(prompt).toContain("No decorative icons");
+  expect(prompt).toContain("No separate strips");
+  expect(prompt).toContain(request.coverBackground!.roleGuidance!);
+  expect(prompt).toContain(request.coverBackground!.skillGuidance!);
+  expect(prompt).toContain(request.coverBackground!.referenceGuidance!);
+  expect(prompt.indexOf("Explicit buyer constraints")).toBeGreaterThan(
+    prompt.indexOf(request.coverBackground!.skillGuidance!),
+  );
+  expect(result.bytes).toEqual(bytes);
+  expect(result.result.usage).toMatchObject({
+    outputTokens: 2000,
+    usd: "0.06068",
+    basis: "rate-card",
+  });
+  expect(estimateImageWork(request).usd.gt(result.result.usage.usd)).toBe(true);
+});
+
+it.each([true, false])(
+  "sends product and style with separate roles and optional approved copy (%s)",
+  async (hasCopy) => {
+    const productPhoto = new Uint8Array([255, 216, 255, 1]);
+    const styleImage = new Uint8Array([255, 216, 255, 2]);
+    const fontSample = new Uint8Array([255, 216, 255, 3]);
+    const work: IImageWorkRequest = {
+      ...direct,
+      coverBackground: {
+        width: 900,
+        height: 1200,
+        description: "Use the customer's brand palette of sage and warm cream.",
+        skillGuidance: "Use a fixed bottom caption strip.",
+        referenceGuidance:
+          "Earlier designs used a stone podium and a red background.",
+        styleReference: {
+          productPhoto,
+          styleImage,
+          copy: hasCopy
+            ? {
+                title: "Лён",
+                details: ["Свет 4000–6000 К", "Экологичные материалы"],
+                background: "transparent",
+                color: "#183C32",
+                fontSample,
+              }
+            : undefined,
+        },
+      },
+    };
+    const network = jest.fn<typeof fetch>().mockResolvedValue(
+      Response.json(
+        {
+          data: [{ b64_json: imageHeader(864, 1152).toString("base64") }],
+          usage: {
+            input_tokens: 170,
+            input_tokens_details: { text_tokens: 70, image_tokens: 100 },
+            output_tokens: 210,
+          },
+        },
+        { headers: { "x-request-id": "req_reference" } },
+      ),
+    );
+
+    const result = await sendImageWork(work, "test-secret", "attempt", network);
+    const [url, init] = network.mock.calls[0];
+    const form = init?.body as FormData;
+    const prompt = String(form.get("prompt"));
+    const inputs = form.getAll("image[]") as File[];
+    expect(url).toBe("https://api.openai.com/v1/images/edits");
+    expect(form.get("quality")).toBe("medium");
+    expect(inputs.map(({ name }) => name)).toEqual([
+      "product-photo.jpg",
+      "style-reference.jpg",
+      ...(hasCopy ? ["caption-font.jpg"] : []),
+    ]);
+    const bytes = await Promise.all(
+      inputs.map(async (file) => new Uint8Array(await file.arrayBuffer())),
+    );
+    expect(bytes).toEqual([
+      productPhoto,
+      styleImage,
+      ...(hasCopy ? [fontSample] : []),
+    ]);
+    expect(prompt).toContain("sole visual source for the product");
+    expect(prompt).toContain(
+      "Do not copy its product, words, numbers, logos, claims or watermarks",
+    );
+    expect(prompt).toContain("Before rendering, study the example");
+    expect(prompt).toContain("as relative bounds within the artwork");
+    expect(prompt).toContain("same relative zones and on the same visual grid");
+    expect(prompt).toContain("sage and warm cream");
+    expect(prompt).toContain("Ignore interface chrome");
+    expect(prompt).not.toContain(work.coverBackground!.skillGuidance!);
+    expect(prompt).not.toContain(work.coverBackground!.referenceGuidance!);
+    expect(prompt).not.toContain("quiet continuation");
+    if (hasCopy) {
+      expect(prompt).toContain(
+        "Distribute the approved feature lines across the example's corresponding callout zones",
+      );
+      expect(prompt).toContain('"title":"Лён"');
+      expect(prompt).toContain(
+        '"details":["Свет 4000–6000 К","Экологичные материалы"]',
+      );
+      expect(prompt).toContain("no added caption panel");
+      expect(prompt).toContain("Use the requested caption color #183C32");
+    } else {
+      expect(prompt).toContain("Leave out all added text");
+    }
+    expect(estimateImageWork(work).input).toBeGreaterThanOrEqual(
+      inputs.length * 4096,
+    );
+    expect(estimateImageWork(work).usd.gt(result.result.usage.usd)).toBe(true);
+    expect(() =>
+      estimateImageWork({ ...work, sourceImages: [productPhoto] }),
+    ).toThrow("Unsupported image source inputs");
+    await expect(
+      sendImageWork(
+        { ...work, ...router, coverBackground: work.coverBackground },
+        "test-secret",
+        "attempt",
+        network,
+      ),
+    ).rejects.toThrow("Unsupported image source inputs");
+    expect(network).toHaveBeenCalledTimes(1);
+  },
+);
+
+it("forwards the design conversation and original images for direct cover artwork", async () => {
+  const productPhoto = Uint8Array.from([137, 80, 78, 71]);
+  const styleImage = Uint8Array.from([82, 73, 70, 70]);
+  const providerResult = imageHeader(768, 1024);
+  const work: IImageWorkRequest = {
+    ...direct,
+    messages: [{ role: "system", content: "Internal stage rules" }],
+    coverArtwork: {
+      width: 768,
+      height: 1024,
+      conversation: [
+        { role: "user", content: "Use the example's bold lettering." },
+        { role: "assistant", content: "We can arrange the copy diagonally." },
+        { role: "user", content: "Set «Долгий свет» across the upper corner." },
+      ],
+      productPhoto: { bytes: productPhoto, mimeType: "image/png" },
+      styleImage: { bytes: styleImage, mimeType: "image/webp" },
+    },
+  };
+  const network = jest.fn<typeof fetch>().mockResolvedValue(
+    Response.json({
+      id: "req_cover_artwork",
+      data: [{ b64_json: providerResult.toString("base64") }],
+      usage: {
+        input_tokens: 170,
+        input_tokens_details: { text_tokens: 70, image_tokens: 100 },
+        output_tokens: 210,
+      },
+    }),
+  );
+  const result = await sendImageWork(work, "test-secret", "attempt", network);
+  const [url, init] = network.mock.calls[0];
+  expect(url).toBe("https://api.openai.com/v1/images/edits");
+  const form = init?.body as FormData;
+  expect(form.get("size")).toBe("768x1024");
+  const prompt = String(form.get("prompt"));
+  expect(prompt).toContain("Use the example's bold lettering.");
+  expect(prompt).toContain("We can arrange the copy diagonally.");
+  expect(prompt).toContain("Set «Долгий свет» across the upper corner.");
+  expect(prompt).not.toMatch(
+    /Internal stage rules|studio|podium|caption panel|font|safe margins/iu,
+  );
+  const inputFiles = form.getAll("image[]") as File[];
+  expect(inputFiles.map(({ name, type }) => ({ name, type }))).toEqual([
+    { name: "product-photo.png", type: "image/png" },
+    { name: "style-reference.webp", type: "image/webp" },
+  ]);
+  expect(
+    await Promise.all(
+      inputFiles.map(async (file) => new Uint8Array(await file.arrayBuffer())),
+    ),
+  ).toEqual([productPhoto, styleImage]);
+  expect(result.bytes).toEqual(providerResult);
 });
 
 it.each([

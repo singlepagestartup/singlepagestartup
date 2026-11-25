@@ -1,0 +1,23 @@
+{
+  "metadata": {},
+  "id": "4b58c5eb-fca5-4312-8ac5-9fbe3360322c",
+  "createdAt": "2026-11-20T10:08:33.807Z",
+  "updatedAt": "2026-11-22T22:02:51.883Z",
+  "variant": "default",
+  "kind": "service",
+  "type": "one_off",
+  "singleUnitPerOrder": true,
+  "slug": "specific-apricot-wolverine-95",
+  "title": {
+    "en": "Marketplace cover — product photography",
+    "ru": "Обложка для маркетплейса — предметная съёмка"
+  },
+  "shortDescription": {
+    "en": "A cover based on your product photo. Payment is due after you approve the result.",
+    "ru": "Обложка по фотографии товара. Оплата после приёмки."
+  },
+  "description": {
+    "ru": ""
+  },
+  "adminTitle": "Обложка для маркетплейса — предметная съёмка"
+}

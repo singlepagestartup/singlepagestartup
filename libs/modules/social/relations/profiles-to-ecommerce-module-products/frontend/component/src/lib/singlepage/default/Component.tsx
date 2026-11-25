@@ -3,12 +3,6 @@ import { cn } from "@sps/shared-frontend-client-utils";
 import { Component as Product } from "@sps/ecommerce/models/product/frontend/component";
 
 export function Component(props: IComponentPropsExtended) {
-  if (
-    !props.data.ecommerceModuleProductId ||
-    props.data.variant === "store-expert"
-  ) {
-    return null;
-  }
   return (
     <div
       data-module="social"

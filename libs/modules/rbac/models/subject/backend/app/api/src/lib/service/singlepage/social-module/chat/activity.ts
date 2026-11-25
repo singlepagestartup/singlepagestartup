@@ -46,11 +46,18 @@ export class Service {
       activity.map((row) => [row.threadId, row]),
     );
     return threads.map((thread) => {
-      const row = activityByThread.get(thread.id) ?? emptyActivity;
+      const row = activityByThread.get(thread.id);
       return {
         ...thread,
-        lastMessageAt: row.lastMessageAt,
-        unreadCount: row.unreadCount,
+        lastMessageAt: row?.lastMessageAt ?? null,
+        unreadCount: row?.unreadCount ?? 0,
+        lastMessagePreview:
+          row?.lastMessagePreview
+            ?.replace(/\*\*([^*]+)\*\*/g, "$1")
+            .replace(/\s+/g, " ")
+            .trim() || null,
+        lastMessageAuthorId: row?.lastMessageAuthorId ?? null,
+        lastMessageHasFiles: row?.lastMessageHasFiles ?? false,
       };
     });
   }

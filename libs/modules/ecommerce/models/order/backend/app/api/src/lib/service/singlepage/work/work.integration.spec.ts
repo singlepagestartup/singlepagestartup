@@ -1,4 +1,5 @@
-import { randomUUID } from "node:crypto";
+import { randomUUID, createHash } from "node:crypto";
+import { PrivateDirectory } from "@sps/providers-file-storage";
 import { eq, sql } from "drizzle-orm";
 import { createAppAssembly } from "@sps/shared-backend-api";
 import {
@@ -7,15 +8,12 @@ import {
   resetPostgresClient,
 } from "@sps/shared-backend-database-config";
 import { createService as createOrder } from "@sps/ecommerce/models/order/backend/app/api/src/lib/bootstrap";
-import { Table as OrderWork } from "@sps/ecommerce/models/order-work/backend/repository/database";
-import { Table as OrderWorkLink } from "@sps/ecommerce/relations/orders-to-order-works/backend/repository/database";
 import { Table as OrderPaymentLink } from "@sps/ecommerce/relations/orders-to-billing-module-payment-intents/backend/repository/database";
 import { Table as Order } from "@sps/ecommerce/models/order/backend/repository/database";
 import { Table as Currency } from "@sps/billing/models/currency/backend/repository/database";
 import { Table as Invoice } from "@sps/billing/models/invoice/backend/repository/database";
 import { Table as PaymentIntent } from "@sps/billing/models/payment-intent/backend/repository/database";
 import { Table as InvoiceLink } from "@sps/billing/relations/payment-intents-to-invoices/backend/repository/database";
-import { Table as PrivateFile } from "@sps/file-storage/models/private-file/backend/repository/database";
 
 const cleanup: (() => Promise<unknown>)[] = [];
 
@@ -29,17 +27,11 @@ afterAll(async () => {
   resetPostgresClient();
 });
 
-async function verifySettlement(source: "available" | "unavailable") {
+async function verifySettlement(hasLegacyArchive: boolean) {
   const order = createOrder(createAppAssembly());
   const db = getDrizzle({});
   const entity = await order.create({ data: {} });
   cleanup.push(() => db.delete(Order).where(eq(Order.id, entity.id)));
-  cleanup.push(() =>
-    db.delete(OrderWork).where(eq(OrderWork.orderId, entity.id)),
-  );
-  cleanup.push(() =>
-    db.delete(OrderWorkLink).where(eq(OrderWorkLink.orderId, entity.id)),
-  );
 
   const [currency] = await db
     .insert(Currency)
@@ -56,21 +48,6 @@ async function verifySettlement(source: "available" | "unavailable") {
     storeId: randomUUID(),
     customerId: randomUUID(),
   };
-  const archive = [
-    {
-      sourceId: randomUUID(),
-      versionDigest: "test-source-version",
-      title: "Purchased model",
-      content: "Specifications at settlement",
-    },
-  ];
-  const capture = jest.fn(async () => {
-    if (source === "unavailable") {
-      await order.repository.db.execute(sql`select 1 / 0`);
-    }
-    return archive;
-  });
-  order.configureExpertArchive(capture);
   await order.work.register({ ...scope, kind: "individual-service" });
   const checkout = {
     orderId: entity.id,
@@ -100,26 +77,81 @@ async function verifySettlement(source: "available" | "unavailable") {
     });
     for (const fileId of [result.originalFileId, result.previewFileId]) {
       cleanup.push(() =>
-        db.delete(PrivateFile).where(eq(PrivateFile.id, fileId)),
+        order.modules.fileStorage.file.privateContent.delete({ id: fileId }),
       );
     }
     return result;
   };
-  const first = await createResult(1);
   const second = await createResult(2);
+  const first = await createResult(1);
+  expect(first.id).toBe(first.previewFileId);
+  const attachments = await order.module.ordersToFileStorageModuleFiles.find({
+    params: {
+      filters: { and: [{ column: "orderId", method: "eq", value: entity.id }] },
+    },
+  });
+  expect(attachments.map((link) => link.fileStorageModuleFileId)).toEqual(
+    expect.arrayContaining([
+      first.previewFileId,
+      first.originalFileId,
+      second.previewFileId,
+      second.originalFileId,
+    ]),
+  );
+  const [persisted] = await db
+    .select({ payload: Order.fulfillmentWork })
+    .from(Order)
+    .where(eq(Order.id, entity.id));
+  expect(persisted.payload).not.toHaveProperty("versions");
+  await expect(
+    order.work.accept({
+      ...scope,
+      fileId: second.id,
+      operationKey: randomUUID(),
+    }),
+  ).rejects.toThrow("no longer awaiting review");
   await order.work.accept({
     ...scope,
-    resultVersionId: first.id,
+    fileId: first.id,
     operationKey: randomUUID(),
   });
   const selected = (await order.work.acceptedCheckout(checkout))?.checkout;
   expect(selected).toMatchObject({
-    resultVersionId: first.id,
+    fileId: first.id,
     price: "25.00000000",
   });
   expect((await order.work.resultPriceForOrder(entity.id))?.price).toBe(
     "25.00000000",
   );
+
+  let snapshot: object | undefined = selected;
+  if (hasLegacyArchive && selected) {
+    const legacyId = randomUUID();
+    const work = (await order.work.findByOrder(entity.id))!;
+    const { files, acceptedFileId, ...rest } = work;
+    const legacy = {
+      ...rest,
+      acceptedVersionId: legacyId,
+      versions: files.map((file, index) => ({
+        ...file,
+        id: file.id === first.id ? legacyId : file.id,
+        number: index + 1,
+      })),
+      decisions: work.decisions.map(({ fileId, ...decision }) => ({
+        ...decision,
+        resultVersionId: legacyId,
+      })),
+    };
+    await db
+      .update(Order)
+      .set({ fulfillmentWork: sql`${JSON.stringify(legacy)}::jsonb` })
+      .where(eq(Order.id, entity.id));
+    const { fileId, ...fields } = selected;
+    snapshot = { ...fields, resultVersionId: legacyId };
+    expect((await order.work.acceptedCheckout(checkout))?.checkout.fileId).toBe(
+      first.previewFileId,
+    );
+  }
 
   const [intent] = await db
     .insert(PaymentIntent)
@@ -128,7 +160,7 @@ async function verifySettlement(source: "available" | "unavailable") {
       status: "succeeded",
       checkoutCurrencyId: currency.id,
       checkoutMetadata: {
-        ecommerceModule: { orders: [{ id: entity.id, orderWork: selected }] },
+        ecommerceModule: { orders: [{ id: entity.id, orderWork: snapshot }] },
       },
     })
     .returning();
@@ -157,11 +189,13 @@ async function verifySettlement(source: "available" | "unavailable") {
     id: entity.id,
     data: { status: "paying", type: "history" },
   });
-  await order.work.accept({
-    ...scope,
-    resultVersionId: second.id,
-    operationKey: randomUUID(),
-  });
+  await expect(
+    order.work.accept({
+      ...scope,
+      fileId: second.id,
+      operationKey: randomUUID(),
+    }),
+  ).rejects.toThrow("no longer awaiting review");
   const finalize = {
     id: entity.id,
     expectedStatus: "paying",
@@ -171,7 +205,6 @@ async function verifySettlement(source: "available" | "unavailable") {
   await expect(order.completePaymentStatus(finalize)).rejects.toThrow(
     "does not match an authorized order attempt",
   );
-  expect(capture).not.toHaveBeenCalled();
   await db
     .update(PaymentIntent)
     .set({ amount: 25 })
@@ -187,59 +220,119 @@ async function verifySettlement(source: "available" | "unavailable") {
   expect(confirmations.filter(Boolean)).toHaveLength(1);
   const paid = await order.work.findByOrder(entity.id);
   expect(paid?.paid).toMatchObject({
-    resultVersionId: first.id,
+    fileId: first.id,
     invoiceId: invoice.id,
     paymentIntentId: intent.id,
     customerId: scope.customerId,
   });
   expect(paid?.paid).not.toHaveProperty("expertArchive");
-  expect(paid?.expertArchive).toEqual(source === "available" ? archive : []);
-  expect(capture).toHaveBeenCalledTimes(1);
-  expect(capture).toHaveBeenCalledWith(scope);
-  expect(paid?.acceptedVersionId).toBe(second.id);
+  expect(paid?.expertArchive).toBeNull();
+  expect(paid?.acceptedFileId).toBe(first.id);
   expect((await order.work.resultPriceForOrder(entity.id))?.price).toBe(
     "25.00000000",
   );
 
+  const historicalArchive = hasLegacyArchive
+    ? [
+        {
+          sourceId: randomUUID(),
+          versionDigest: "old-digest",
+          title: "Purchased specification",
+          content: "Specification saved at purchase.",
+        },
+      ]
+    : null;
+  if (historicalArchive) {
+    await order.repository.patchFulfillment(entity.id, {
+      expertArchive: historicalArchive,
+    });
+  }
+
   const eventId = paid!.paid!.id;
-  const saved = { orderId: entity.id, eventId };
+  const saved = { ...scope, eventId };
   const receipt = async () => ({
     name: "receipt.pdf",
     mimeType: "application/pdf",
     bytes: Buffer.from("%PDF-1.4\npaid receipt"),
   });
+  let rolledBackFile = "";
   await expect(
-    order.work.deliver(
+    order.work.issueReceipt(
       saved,
-      async () => {
+      async (_payment, ids) => {
+        [rolledBackFile] = ids;
         throw new Error("fixture grant failure");
       },
       receipt,
     ),
   ).rejects.toThrow("fixture grant failure");
   expect((await order.work.findByOrder(entity.id))?.deliveredAt).toBeNull();
+  expect(
+    await order.modules.fileStorage.file.privateContent.findById({
+      id: rolledBackFile,
+    }),
+  ).toBeNull();
+  const { bytes } = await receipt();
+  await expect(
+    new PrivateDirectory().read(
+      rolledBackFile,
+      createHash("sha256").update(bytes).digest("hex"),
+      bytes.length,
+    ),
+  ).rejects.toMatchObject({ code: "ENOENT" });
 
   const grant = jest.fn(async () => {});
-  const delivered = await order.work.deliver(saved, grant, receipt);
+  const recorded = await order.work.issueReceipt(saved, grant, receipt);
   cleanup.push(() =>
-    db.delete(PrivateFile).where(eq(PrivateFile.id, delivered.receiptFileId!)),
+    order.modules.fileStorage.file.privateContent.delete({
+      id: recorded.receiptFileId!,
+    }),
   );
-  await order.work.deliver(saved, grant, receipt);
-  expect(capture).toHaveBeenCalledTimes(1);
-  expect(delivered.expertArchive).toEqual(paid?.expertArchive);
+  await order.work.issueReceipt(saved, grant, receipt);
   expect(grant).toHaveBeenCalledTimes(1);
   expect(grant).toHaveBeenCalledWith(
-    expect.objectContaining({ resultVersionId: first.id }),
-    [delivered.receiptFileId, first.originalFileId],
+    expect.objectContaining({ fileId: first.id }),
+    [recorded.receiptFileId],
+  );
+  expect(recorded.resultFileId).toBeNull();
+  expect(recorded.deliveredAt).toBeNull();
+  grant.mockClear();
+  const selection = { ...saved, fileId: first.id };
+  await expect(
+    order.work.releasePaidFile({ ...selection, fileId: second.id }, grant),
+  ).rejects.toThrow(/accepted and paid/i);
+  await expect(
+    order.work.releasePaidFile({ ...selection, storeId: randomUUID() }, grant),
+  ).rejects.toThrow();
+  await db
+    .update(Invoice)
+    .set({ amount: 26 })
+    .where(eq(Invoice.id, invoice.id));
+  await expect(order.work.releasePaidFile(selection, grant)).rejects.toThrow(
+    /no longer matches/,
+  );
+  expect(grant).not.toHaveBeenCalled();
+  await db
+    .update(Invoice)
+    .set({ amount: 25 })
+    .where(eq(Invoice.id, invoice.id));
+  await order.work.releasePaidFile(selection, grant);
+  await order.work.releasePaidFile(selection, grant);
+  const delivered = (await order.work.findByOrder(entity.id))!;
+  expect(delivered.expertArchive).toEqual(historicalArchive);
+  expect(grant).toHaveBeenCalledTimes(1);
+  expect(grant).toHaveBeenCalledWith(
+    expect.objectContaining({ fileId: first.id }),
+    [first.originalFileId],
   );
   expect(delivered.resultFileId).toBe(first.originalFileId);
-  const file = await order.modules.fileStorage.privateFile.findById({
+  const file = await order.modules.fileStorage.file.privateContent.findById({
     id: delivered.resultFileId!,
   });
   expect(file?.bytes.toString()).toBe("original 1");
 }
 
-it.each(["available", "unavailable"] as const)(
-  "freezes and delivers the checkout version once with an %s expert source",
-  verifySettlement,
-);
+it("delivers the accepted order file without publishing the employee’s knowledge", () =>
+  verifySettlement(false));
+it("preserves the archived specification on a previously paid order through delivery and retry", () =>
+  verifySettlement(true));

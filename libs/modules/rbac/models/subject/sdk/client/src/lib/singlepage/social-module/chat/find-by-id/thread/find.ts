@@ -37,7 +37,7 @@ export function action(props: IProps) {
     "social.chats-to-messages",
     "social.threads-to-messages",
     "social.threads",
-    "social.threads-to-crm-module-tasks",
+    "social.chats-to-crm-module-tasks",
     "social.threads-to-ecommerce-module-products",
     "ecommerce.products",
   ];

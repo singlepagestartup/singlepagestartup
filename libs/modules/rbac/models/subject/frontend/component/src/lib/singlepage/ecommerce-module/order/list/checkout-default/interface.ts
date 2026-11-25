@@ -35,6 +35,7 @@ export interface IRowProps {
   language: string;
   selected?: boolean;
   selectionDisabled?: boolean;
+  headerSlot?: ReactNode;
   onCartItemSelectionChange?: (orderId: string, selected: boolean) => void;
   children?: ReactNode;
   onOrderSelectionStateChange?: (
@@ -54,7 +55,7 @@ export interface IDiscussionActionProps {
   ecommerceModuleOrder: IRowProps["ecommerceModuleOrder"];
   ecommerceModuleProduct?: IEcommerceModuleProduct;
   language: string;
-  showTitle?: boolean;
+  canOpenDiscussion: () => boolean;
   buttonVariant?: "primary" | "outline";
   onDiscussionOpen?: () => void;
 }

@@ -4,7 +4,7 @@ export function downloadOrderFixture(file: IOrderDownload) {
   const title =
     file.kind === "receipt"
       ? "Studio receipt sample"
-      : `Studio strategy sample, version ${file.versionNumber}`;
+      : `Studio strategy sample: ${file.filename}`;
   const content = `BT /F1 18 Tf 50 740 Td (${title}) Tj ET\n`;
   const objects = [
     "<< /Type /Catalog /Pages 2 0 R >>",

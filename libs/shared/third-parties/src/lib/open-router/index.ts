@@ -34,7 +34,9 @@ export type IOpenRouterMessageContent =
         mime_type?: string;
       };
     }
-  | { type: "file_url"; file_url: { url: string } };
+  | { type: "file_url"; file_url: { url: string } }
+  | { type: "input_audio"; input_audio: { data: string; format: string } }
+  | { type: "video_url"; video_url: { url: string } };
 
 export type IOpenRouterRequestMessage = {
   role: "user" | "assistant" | "system" | "tool";

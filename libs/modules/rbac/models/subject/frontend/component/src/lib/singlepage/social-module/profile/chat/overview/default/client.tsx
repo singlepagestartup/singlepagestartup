@@ -10,7 +10,7 @@ import { isChatAccessError } from "../../message/list/default/utils";
 import { Button } from "@sps/shared-ui-shadcn";
 
 export default function Component(props: IComponentProps) {
-  const { data, error, isPending, isError, refetch, isFetching } =
+  const { data, error, isPending, refetch, isFetching } =
     api.socialModuleProfileFindByIdChatFindById({
       id: props.data.id,
       socialModuleProfileId: props.socialModuleProfile.id,
@@ -28,8 +28,9 @@ export default function Component(props: IComponentProps) {
 
   const ru = props.language === "ru";
   if (isPending) return <Skeleton language={props.language} />;
-  if (isError || !data) {
-    if (isChatAccessError(error)) {
+  const denied = isChatAccessError(error);
+  if (denied || !data) {
+    if (denied) {
       return (
         <div role="status" className="grid justify-items-start gap-3 p-4">
           <p>
@@ -37,11 +38,13 @@ export default function Component(props: IComponentProps) {
               ? "Этот чат недоступен для вашего аккаунта."
               : "This chat is unavailable for your account."}
           </p>
-          <Button asChild variant="outline">
-            <Link href={`/${props.language}/social/chats`}>
-              {ru ? "К списку чатов" : "Back to chats"}
-            </Link>
-          </Button>
+          {!props.socialModuleEmployeeProfileId && (
+            <Button asChild variant="outline">
+              <Link href={`/${props.language}/social/chats`}>
+                {ru ? "К списку чатов" : "Back to chats"}
+              </Link>
+            </Button>
+          )}
         </div>
       );
     }

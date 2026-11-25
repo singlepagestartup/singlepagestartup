@@ -1,9 +1,9 @@
 import type { Meta, StoryObj } from "@storybook/react";
 import { Component as Widget } from "../..";
 import { demoWorkflows } from "../../../shared/demo-workflows";
-import { newStage, toDraft } from "../../../shared/workflows";
+import { newStage } from "../../../shared/workflows";
 
-const release = demoWorkflows.releases[0];
+const workflow = demoWorkflows.workflows[0];
 
 const meta = {
   id: "modules-crm-models-widget-singlepage-workflow-editor",
@@ -12,8 +12,7 @@ const meta = {
   parameters: { layout: "padded" },
   args: {
     variant: "workflow-editor",
-    initialDraft: toDraft(release),
-    currentRelease: release,
+    initialWorkflow: workflow,
     people: demoWorkflows.people,
     payers: demoWorkflows.payers,
   },
@@ -28,7 +27,7 @@ type Story = StoryObj<typeof meta>;
 export const Default: Story = { name: "default" };
 export const NewWorkflow: Story = {
   args: {
-    initialDraft: {
+    initialWorkflow: {
       id: "draft",
       shopId: "forma",
       title: "",
@@ -36,6 +35,9 @@ export const NewWorkflow: Story = {
       goal: "",
       stages: [newStage("first-stage")],
     },
-    currentRelease: undefined,
   },
+};
+
+export const WithoutEmployees: Story = {
+  args: { ...NewWorkflow.args, people: [] },
 };

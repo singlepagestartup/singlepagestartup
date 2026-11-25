@@ -1,6 +1,7 @@
 "use client";
 
 import { QueryClient, replaceEqualDeep } from "@tanstack/react-query";
+import { reconcileQueries } from "./reconcile";
 
 type WithId = { id: string };
 
@@ -9,7 +10,7 @@ export function invalidateRouteQueries(
   queryClient: QueryClient,
   route: string,
 ): Promise<void> {
-  return queryClient.invalidateQueries({
+  return reconcileQueries(queryClient, {
     predicate: ({ queryKey }) =>
       typeof queryKey[0] === "string" &&
       (queryKey[0] === route ||
@@ -98,7 +99,7 @@ export function appendToListQueries<T extends WithId>(
     ) {
       // Targeted immediate invalidation - do not await (fire-and-forget is fine
       // for cache invalidation; the component will refetch on next render).
-      void queryClient.invalidateQueries({ queryKey: key });
+      void reconcileQueries(queryClient, { queryKey: key, exact: true });
       continue;
     }
 
@@ -142,6 +143,11 @@ export function patchInListQueries<T extends WithId>(
 
   for (const query of matchingQueries) {
     const key = query.queryKey as unknown[];
+    // A projected list can omit fields carried by a full entity update.
+    if (query.meta?.reconcileOnListPatch === true) {
+      void reconcileQueries(queryClient, { queryKey: key, exact: true });
+      continue;
+    }
     queryClient.setQueryData<T[]>(key, (old) => {
       if (!Array.isArray(old)) return old;
       let changed = false;

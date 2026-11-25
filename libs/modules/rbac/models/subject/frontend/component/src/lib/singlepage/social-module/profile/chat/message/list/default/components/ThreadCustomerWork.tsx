@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import type { Ref } from "react";
 import {
   ClipboardList,
   FileCheck,
@@ -12,9 +11,12 @@ import {
 import { Component as EcommerceModuleProduct } from "@sps/ecommerce/models/product/frontend/component";
 import { api } from "@sps/rbac/models/subject/sdk/client";
 import type { ICustomerWorkView } from "@sps/rbac/models/subject/sdk/model";
+import type { IOrderFileReview } from "@sps/rbac/models/subject/sdk/model/src/lib/order-work";
 import { OrderActions } from "../../../../../../../ecommerce-module/order/create-default/customer-work/OrderActions";
 import { PersonalNotes } from "../../../../../../../ecommerce-module/order/create-default/customer-work/PersonalNotes";
+import { orderCheckoutAnchor } from "../../../../../../../ecommerce-module/order/list/checkout-default/utils";
 import { ResultReview } from "../../../../../../../ecommerce-module/order/create-default/customer-work/ResultReview";
+import { StartOrderPayment } from "./OrderPaymentButtons";
 import { ThreadContextCard } from "./ThreadContextCard";
 import { isChatAccessError } from "../utils";
 
@@ -23,23 +25,82 @@ interface IProps {
   work: ICustomerWorkView;
   productTitle?: string;
   language: string;
-  resultSectionRef: Ref<HTMLElement>;
-  selectedVersionId?: string;
-  onVersionSelect: (id: string) => void;
 }
 
-export function ThreadCustomerWork(props: IProps) {
-  const { subjectId, work, language } = props;
-  const ru = language === "ru";
+function useThreadOrder(
+  subjectId: string,
+  work: ICustomerWorkView,
+  enabled = true,
+) {
   const orderResult = api.orderWork.read({
     id: subjectId,
     storeId: work.storeId,
     taskId: work.taskId,
     orderId: work.orderId ?? "",
+    enabled,
   });
-  const order = isChatAccessError(orderResult.error)
-    ? undefined
-    : orderResult.data;
+  const loadedOrder = orderResult.data;
+  const order =
+    enabled &&
+    !isChatAccessError(orderResult.error) &&
+    loadedOrder?.orderId === work.orderId &&
+    loadedOrder?.storeId === work.storeId &&
+    loadedOrder?.taskId === work.taskId
+      ? loadedOrder
+      : undefined;
+  return { order, orderResult };
+}
+
+export function ThreadOrderStage({
+  subjectId,
+  work,
+  language,
+  prompt,
+}: IProps & { prompt?: IOrderFileReview }) {
+  const { order, orderResult } = useThreadOrder(subjectId, work);
+  const step = work.workflow?.orderStep;
+  if (!step || !order || orderResult.isError) return null;
+  if (prompt)
+    return (
+      <ResultReview
+        subjectId={subjectId}
+        work={order}
+        language={language}
+        prompt={prompt}
+        storeTest={Boolean(work.storeTest)}
+      />
+    );
+  const payable =
+    step === "ecommerce-module-order-payment" &&
+    !work.storeTest &&
+    work.status !== "closed" &&
+    order.state === "awaiting-payment" &&
+    (!order.files?.length ||
+      order.files.some(
+        (file) =>
+          file.id === order.acceptedFileId && !file.invalidatedByCartEdit,
+      ));
+  if (payable) {
+    return work.assignment === "assistant" &&
+      !work.workflow?.checkoutPromptId ? (
+      <StartOrderPayment
+        subjectId={subjectId}
+        work={work}
+        language={language}
+      />
+    ) : null;
+  }
+  return null;
+}
+
+export function ThreadCustomerWork(props: IProps) {
+  const { subjectId, work, language } = props;
+  const ru = language === "ru";
+  const { order, orderResult } = useThreadOrder(
+    subjectId,
+    work,
+    !work.workflow?.orderStep,
+  );
 
   const status = {
     active: ru ? "В работе" : "In progress",
@@ -57,9 +118,16 @@ export function ThreadCustomerWork(props: IProps) {
   const offerSearch = offerId
     ? `?${new URLSearchParams({ offer: offerId })}`
     : "";
+  const productHref = productSlug
+    ? `/${language}/ecommerce/products/${encodeURIComponent(productSlug)}${offerSearch}`
+    : undefined;
   const orderHref =
-    work.orderId && productSlug
-      ? `/${language}/ecommerce/products/${encodeURIComponent(productSlug)}${offerSearch}#order-${encodeURIComponent(work.orderId)}`
+    work.orderId && productHref
+      ? `${productHref}#order-${encodeURIComponent(work.orderId)}`
+      : undefined;
+  const checkoutHref =
+    order && productHref
+      ? `${productHref}#${orderCheckoutAnchor(order.orderId)}`
       : undefined;
   const orderProduct =
     orderHref &&
@@ -106,7 +174,7 @@ export function ThreadCustomerWork(props: IProps) {
   const showResult = Boolean(
     order &&
     (order.state !== "awaiting-result" ||
-      order.versions.length > 0 ||
+      (order.files?.length ?? 0) > 0 ||
       order.result ||
       order.receipt ||
       order.trackingNumber ||
@@ -134,13 +202,12 @@ export function ThreadCustomerWork(props: IProps) {
           </dt>
           <dd className="break-words">{work.operator || assignment}</dd>
         </dl>
-        {work.storeTest && (
+        {work.storeTest?.funnelSlug && (
           <Link
-            href={`/${language}/ecommerce/stores/${encodeURIComponent(work.storeTest.storeSlug)}?funnel=${work.storeTest.funnelId}&testTask=${work.taskId}&edit=1#store-workspace`}
+            href={`/${language}/ecommerce/stores/${encodeURIComponent(work.storeTest.storeSlug)}/crm/funnels/${encodeURIComponent(work.storeTest.funnelSlug)}?testTask=${encodeURIComponent(work.taskId)}`}
             className="text-sm font-medium underline underline-offset-4"
           >
-            {ru ? "Редактировать воронку" : "Edit funnel"} ·{" "}
-            {ru ? "версия" : "version"} {work.storeTest.version}
+            {ru ? "Редактировать воронку" : "Edit funnel"}
           </Link>
         )}
       </ThreadContextCard>
@@ -170,15 +237,13 @@ export function ThreadCustomerWork(props: IProps) {
         <ThreadContextCard
           icon={FileCheck}
           title={ru ? "Результат заказа" : "Order result"}
-          sectionRef={props.resultSectionRef}
         >
           <ResultReview
             subjectId={subjectId}
             work={order}
             language={language}
             storeTest={Boolean(work.storeTest)}
-            selectedVersionId={props.selectedVersionId}
-            onVersionSelect={props.onVersionSelect}
+            checkoutHref={checkoutHref}
           />
         </ThreadContextCard>
       )}
@@ -191,28 +256,29 @@ export function ThreadCustomerWork(props: IProps) {
               : "Could not load the order result."}
           </p>
         )}
-      {!work.storeTest &&
-        (work.assignment === "manager" ||
-          (work.assignment === "assistant" && work.status !== "closed")) && (
-          <ThreadContextCard
-            icon={UserRound}
-            title={ru ? "Менеджер" : "Manager"}
-          >
-            {work.assignment === "manager" ? (
-              <p className="break-words text-sm">
-                {work.operator ||
-                  (ru ? "Менеджер подключён." : "A manager has joined.")}
-              </p>
-            ) : (
-              <OrderActions
-                subjectId={subjectId}
-                work={work}
-                language={language}
-                managerOnly
-              />
-            )}
-          </ThreadContextCard>
-        )}
+      {(work.assignment === "manager" ||
+        work.canRequestManager ||
+        work.awaitingManager) && (
+        <ThreadContextCard icon={UserRound} title={ru ? "Менеджер" : "Manager"}>
+          {work.awaitingManager ? (
+            <p role="status" className="text-sm text-muted-foreground">
+              {ru ? "Вы позвали менеджера" : "You asked for a manager"}
+            </p>
+          ) : work.assignment === "manager" ? (
+            <p className="break-words text-sm">
+              {work.operator ||
+                (ru ? "Менеджер подключён." : "A manager has joined.")}
+            </p>
+          ) : (
+            <OrderActions
+              subjectId={subjectId}
+              work={work}
+              language={language}
+              managerOnly
+            />
+          )}
+        </ThreadContextCard>
+      )}
       {work.memory && (
         <ThreadContextCard
           icon={LockKeyhole}

@@ -14,9 +14,14 @@ import {
 export const serverHost = API_SERVICE_URL;
 export const clientHost = NEXT_PUBLIC_API_SERVICE_URL;
 export const route = "/api/social/actions";
-export const variants = ["hidden", "default", "ai-execution"] as const;
+export const variants = [
+  "hidden",
+  "default",
+  "ai-execution",
+  "typing",
+] as const;
 export const query = {};
-export type { IChatAction } from "./chat-action";
+export { CHAT_TYPING_TTL_MS, type IChatAction } from "./chat-action";
 export const options = {
   next: {
     revalidate: REVALIDATE,

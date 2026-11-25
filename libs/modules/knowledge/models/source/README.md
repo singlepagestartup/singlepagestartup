@@ -6,7 +6,7 @@ Source has the standard SPS fields, plus `title`, `content`, optional `descripti
 
 `contentHash` is computed by the server from content after line-ending and outer-whitespace normalization. A successful atomic index publication sets `indexedContentHash` to that processed hash and records `lastIndexedAt`. Unequal hashes mean the saved text needs indexing. Normal framework updates still change `updatedAt`; it is not used to determine freshness.
 
-The content of a file-backed Source contains a user-context section, descriptions of the attached materials, and a combined overview. The editor edits user context and displays the generated descriptions. On any file relation change, all current Files are analyzed again. The server copies user context unchanged into the new content; provider errors retain that context and the attachments. Removing the last File leaves the user's text.
+The content of a file-backed Source contains a user-context section, descriptions of the attached materials, and a combined overview. The editor edits user context and displays the generated descriptions. Changing attachments through the profile analyzes the current Files again. The server copies user context unchanged into the new content; provider errors retain that context and the attachments. Removing the last File leaves the user's text.
 
 Relations live in the owning modules:
 
@@ -16,7 +16,7 @@ Relations live in the owning modules:
 - Social `messages-to-knowledge-module-sources`: origin or citation.
 - Social `skills-to-knowledge-module-sources`: skill input material.
 
-Ordinary Source edits trigger text indexing. `POST /api/knowledge/sources/:id/reindex` rebuilds vectors from saved content. File relation mutations trigger full file analysis followed by indexing. Deleting a Source removes its chunks and relations and preserves Files.
+Admin CRUD stores the Source text and computes its hash without calling a model. Profile and chat operations check access through RBAC Subject and commit text and embeddings together. `POST /api/knowledge/sources/:id/reindex` rebuilds vectors from saved content. Direct file-relation CRUD invalidates the derived content of affected Sources. Deleting a Source removes its chunks and relations and preserves Files.
 
 Frontend variants include the normal admin views, `chat-sidebar-item`, and `chat-sidebar-detail`. Data access uses the Source SDK. The AI Chat editor prototype lives in `apps/studio/modules/knowledge/models/source/singlepage/ai-chat-editor`.
 
@@ -36,4 +36,4 @@ without an ID. The document's RBAC composition creates and links the Source.
 The editable fields live in its `ClientComponent`; the saved-record variant
 reuses those fields after loading its record.
 
-Source service owns conditional content/attachment changes, preserved slug upsert, derived publication and aggregate deletion. It traverses attachment and chunk relation services and the lower File Storage service. Model repositories contain only their own table operations. Operation-scoped services share one SQL transaction for locks, hash/snapshot checks, relation changes and derived index markers. Analysis and indexing run after commit; errors preserve saved human notes and original Files. New SVG attachments are rejected before saving or linking; legacy SVG cannot be analyzed or rendered inline.
+Source service owns conditional content/attachment changes, preserved slug upsert, derived publication and aggregate deletion. It traverses attachment and chunk relation services and the lower File Storage service. Model repositories contain only their own table operations. Operation-scoped services share one SQL transaction for locks, hash/snapshot checks, relation changes and derived index markers. Profile-scoped analysis and indexing run before commit. An error preserves the previous notes, attachment links and searchable chunks. New SVG attachments are rejected before saving or linking; legacy SVG cannot be analyzed or rendered inline.

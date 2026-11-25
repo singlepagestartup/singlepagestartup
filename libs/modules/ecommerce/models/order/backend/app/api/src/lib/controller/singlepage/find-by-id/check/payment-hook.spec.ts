@@ -36,6 +36,7 @@ function fixture(status = "succeeded") {
   };
   const service = {
     findById: jest.fn().mockResolvedValue(order),
+    deliverConfirmedWork: jest.fn().mockResolvedValue(undefined),
     completePaymentStatus: jest
       .fn()
       .mockImplementation(async ({ onPaymentSucceeded }) => {
@@ -88,6 +89,25 @@ it("runs project effects before persisting the paid order", async () => {
       data: expect.objectContaining({ status: "paid" }),
     }),
   );
+  expect(service.deliverConfirmedWork).toHaveBeenCalledWith(order.id);
+  expect(mockUpdate.mock.invocationCallOrder[0]).toBeLessThan(
+    service.deliverConfirmedWork.mock.invocationCallOrder[0],
+  );
+});
+
+it("replays delivery for a previously confirmed payment", async () => {
+  const { order, service, context } = fixture();
+  service.findById.mockResolvedValue({ ...order, status: "paid" });
+  await new Handler(service as any).execute(context as any, undefined);
+  expect(service.completePaymentStatus).not.toHaveBeenCalled();
+  expect(service.deliverConfirmedWork).toHaveBeenCalledWith(order.id);
+});
+
+it("checks delivery when another request already completed the payment transition", async () => {
+  const { order, service, context } = fixture();
+  service.completePaymentStatus.mockResolvedValueOnce(undefined);
+  await new Handler(service as any).execute(context as any, undefined);
+  expect(service.deliverConfirmedWork).toHaveBeenCalledWith(order.id);
 });
 /**
  * BDD Scenario: a child operation is temporarily unavailable.

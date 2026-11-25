@@ -1,3 +1,22 @@
+import { Component as StoreCustomers } from "./subject/me/ecommerce-module/store/customers";
+import { Component as StoreCustomerDetail } from "./subject/me/ecommerce-module/store/customers/detail";
+import { Component as StoreOrderDetail } from "./subject/me/ecommerce-module/store/orders/detail";
+import { Component as SubjectMeTaskDetail } from "./subject/me/crm-module/task/detail";
+import { Component as SubjectMeTaskCreate } from "./subject/me/crm-module/task/create";
+import { Component as SubjectMeStoreEmployeeDetail } from "./subject/me/ecommerce-module/store/employees/detail";
+import { Component as SubjectMeStoreEmployeeCreate } from "./subject/me/ecommerce-module/store/employees/create";
+import { Component as SubjectMeStoreProductDetail } from "./subject/me/ecommerce-module/store/products/detail";
+import { Component as SubjectMeStoreProductEdit } from "./subject/me/ecommerce-module/store/products/edit";
+import { Component as SubjectMeStoreProductCreate } from "./subject/me/ecommerce-module/store/products/create";
+import { Component as SubjectMeEcommerceModuleStoreSettings } from "./subject/me/ecommerce-module/store/settings";
+import { Component as SubjectMeEcommerceModuleStoreCreate } from "./subject/me/ecommerce-module/store/create";
+import { Component as SubjectMeEcommerceModuleStoreOrders } from "./subject/me/ecommerce-module/store/orders";
+import { Component as SubjectMeEcommerceModuleStoreEmployees } from "./subject/me/ecommerce-module/store/employees";
+import { Component as StoreProductDirectory } from "./subject/me/ecommerce-module/store/products/directories";
+import { Component as SubjectMeEcommerceModuleStoreProducts } from "./subject/me/ecommerce-module/store/products";
+import { Component as SubjectMeCrmModuleStoreFunnelEdit } from "./subject/me/crm-module/funnel/edit";
+import { Component as SubjectMeCrmModuleStoreFunnelCreate } from "./subject/me/crm-module/funnel/create";
+import { Component as SubjectMeCrmModuleStoreFunnelList } from "./subject/me/crm-module/funnel/list";
 import { Component as SubjectMeCrmModuleStoreWorkspace } from "./subject-me-crm-module-store-workspace";
 import { Component as SubjectMeEcommerceModuleOfferCreate } from "./subject/me/ecommerce-module/offer/create";
 import { Component as Hidden } from "@sps/shared-frontend-components/singlepage/hidden";
@@ -47,6 +66,38 @@ import { Component as SubjectOverviewDefault } from "./subject/overview/default"
 import { Component as SubjectListDefault } from "./subject/list/default";
 
 export const variants = {
+  "subject-me-ecommerce-module-store-customers": StoreCustomers,
+  "subject-me-ecommerce-module-store-customer-detail": StoreCustomerDetail,
+  "subject-me-ecommerce-module-store-order-detail": StoreOrderDetail,
+  "subject-me-ecommerce-module-store-settings":
+    SubjectMeEcommerceModuleStoreSettings,
+  "subject-me-ecommerce-module-store-create":
+    SubjectMeEcommerceModuleStoreCreate,
+  "subject-me-ecommerce-module-store-orders":
+    SubjectMeEcommerceModuleStoreOrders,
+  "subject-me-ecommerce-module-store-employees":
+    SubjectMeEcommerceModuleStoreEmployees,
+  "subject-me-ecommerce-module-store-product-categories": StoreProductDirectory,
+  "subject-me-ecommerce-module-store-product-attribute-keys":
+    StoreProductDirectory,
+  "subject-me-ecommerce-module-store-product-attributes": StoreProductDirectory,
+  "subject-me-ecommerce-module-store-products":
+    SubjectMeEcommerceModuleStoreProducts,
+  "subject-me-crm-module-store-funnel-edit": SubjectMeCrmModuleStoreFunnelEdit,
+  "subject-me-crm-module-store-funnel-create":
+    SubjectMeCrmModuleStoreFunnelCreate,
+  "subject-me-crm-module-store-funnel-list": SubjectMeCrmModuleStoreFunnelList,
+  "subject-me-ecommerce-module-store-product-create":
+    SubjectMeStoreProductCreate,
+  "subject-me-ecommerce-module-store-product-detail":
+    SubjectMeStoreProductDetail,
+  "subject-me-ecommerce-module-store-product-edit": SubjectMeStoreProductEdit,
+  "subject-me-ecommerce-module-store-employee-create":
+    SubjectMeStoreEmployeeCreate,
+  "subject-me-ecommerce-module-store-employee-detail":
+    SubjectMeStoreEmployeeDetail,
+  "subject-me-crm-module-task-create": SubjectMeTaskCreate,
+  "subject-me-crm-module-task-detail": SubjectMeTaskDetail,
   "subject-me-crm-module-store-workspace": SubjectMeCrmModuleStoreWorkspace,
   "subject-me-ecommerce-module-offer-create":
     SubjectMeEcommerceModuleOfferCreate,

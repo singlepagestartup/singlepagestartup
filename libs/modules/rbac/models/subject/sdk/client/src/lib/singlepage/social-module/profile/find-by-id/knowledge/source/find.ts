@@ -32,11 +32,36 @@ export type IProps =
 export type IResult =
   IParentResult["ISocialModuleProfileFindByIdKnowledgeSourceFindResult"];
 
+export function cachePersonalKnowledgeSource(
+  owner: Pick<IProps, "id" | "socialModuleProfileId">,
+  source: IResult[number],
+) {
+  const path = `${route}/${owner.id}/social-module/profiles/${owner.socialModuleProfileId}/knowledge/sources/personal?`;
+  const key = consistencyQueryKey(path, undefined, clientHost);
+  const scope = key[2];
+  if (
+    typeof scope === "object" &&
+    scope?.principal &&
+    scope.principal.split(":")[0] !== owner.id
+  ) {
+    return;
+  }
+  queryClient.setQueryData<IResult>(key, (documents) => {
+    if (!documents) return undefined;
+    if (documents.some(({ id }) => id === source.id)) {
+      return documents.map((document) =>
+        document.id === source.id ? { ...document, ...source } : document,
+      );
+    }
+    return [...documents, source];
+  });
+}
+
 export function action(props: IProps) {
   const stringifiedQuery = QueryString.stringify(props.params, {
     encodeValuesOnly: true,
   });
-  const queryKey = `${route}/${props.id}/social-module/profiles/${props.socialModuleProfileId}/knowledge/sources?${stringifiedQuery}`;
+  const queryKey = `${route}/${props.id}/social-module/profiles/${props.socialModuleProfileId}/knowledge/sources${props.personal ? "/personal" : ""}?${stringifiedQuery}`;
   // Merge caller meta last but never let it clobber topics (issue #195): a
   // project passing reactQueryOptions.meta must not silently drop the realtime
   // topic subscription.
@@ -70,6 +95,9 @@ export function action(props: IProps) {
       return result;
     },
     select(data) {
+      if (props.personal) {
+        return data;
+      }
       globalActionsStore.getState().addAction({
         type: "query",
         name: queryKey,

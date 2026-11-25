@@ -1,4 +1,8 @@
-import { getFileContentHeaders, getHttpErrorType } from "@sps/backend-utils";
+import {
+  authorization,
+  getFileContentHeaders,
+  getHttpErrorType,
+} from "@sps/backend-utils";
 import {
   customerWorkCommandSchema,
   customerWorkOfferScopeSchema,
@@ -32,26 +36,7 @@ export class Handler {
         messageId,
         attachmentId,
       });
-      const headers = getFileContentHeaders(
-        file.name,
-        "application/octet-stream",
-      );
-      headers.set("Content-Type", "application/octet-stream");
-      headers.set("Content-Length", String(file.size));
-      headers.set("X-Content-Type-Options", "nosniff");
-      headers.set("Content-Security-Policy", "sandbox; default-src 'none'");
-      headers.set("Cache-Control", "private, no-store");
-      headers.set("Vary", "Authorization, Cookie");
-      const filename = encodeURIComponent(file.name).replace(
-        /['()*]/g,
-        (letter) => `%${letter.charCodeAt(0).toString(16).toUpperCase()}`,
-      );
-      headers.set(
-        "Content-Disposition",
-        `attachment; filename*=UTF-8''${filename}`,
-      );
-      const body = c.req.method === "HEAD" ? null : Uint8Array.from(file.bytes);
-      return new Response(body, { headers });
+      return messageAttachmentResponse(file, c.req.method);
     } catch (error) {
       const { status, message, details } = getHttpErrorType(error);
       throw new HTTPException(status, { message, cause: details });
@@ -132,6 +117,7 @@ export class Handler {
       const data = await this.subject.customerWork.execute(
         customerId,
         command.data,
+        authorization(c),
       );
       c.header("X-SPS-SKIP-ACTION-LOGGER", "1");
       return c.json({ data });
@@ -140,4 +126,28 @@ export class Handler {
       throw new HTTPException(status, { message, cause: details });
     }
   }
+}
+
+export function messageAttachmentResponse(
+  file: { name: string; size: number; bytes: Uint8Array },
+  method: string,
+  contentType = "application/octet-stream",
+) {
+  const headers = getFileContentHeaders(file.name, contentType);
+  headers.set("Content-Type", contentType);
+  headers.set("Content-Length", String(file.size));
+  headers.set("X-Content-Type-Options", "nosniff");
+  headers.set("Content-Security-Policy", "sandbox; default-src 'none'");
+  headers.set("Cache-Control", "private, no-store");
+  headers.set("Vary", "Authorization, Cookie");
+  const filename = encodeURIComponent(file.name).replace(
+    /['()*]/g,
+    (letter) => `%${letter.charCodeAt(0).toString(16).toUpperCase()}`,
+  );
+  headers.set(
+    "Content-Disposition",
+    `attachment; filename*=UTF-8''${filename}`,
+  );
+  const body = method === "HEAD" ? null : Uint8Array.from(file.bytes);
+  return new Response(body, { headers });
 }

@@ -2,7 +2,7 @@ import {
   newStage,
   type TaskState,
   type WorkflowFixture,
-  type WorkflowRelease,
+  type Workflow,
   type WorkflowStage,
   type WorkflowTask,
 } from "./workflows";
@@ -15,6 +15,9 @@ const stages: WorkflowStage[] = [
       "Уточни формат, сюжет и дату выдачи иллюстрации. Запиши требования к исходному файлу.",
     evidence: "В треде есть формат, сюжет и согласованная дата.",
     missingData: "Задай один вопрос по недостающему требованию.",
+    transitions: [
+      { id: "start-production", event: "manual", destination: "production" },
+    ],
     waitFor: "customer-response",
     waitHours: 48,
     reminders: "24",
@@ -29,6 +32,12 @@ const stages: WorkflowStage[] = [
     title: "В работе",
     instruction: "Собери первую версию иллюстрации и приложи превью к треду.",
     output: "image",
+    maxStageAmount: "400",
+    maxRunAmount: "50",
+    materials: ["vision"],
+    transitions: [
+      { id: "open-review", event: "run-completed", destination: "review" },
+    ],
     evidence: "К сообщению приложена именованная версия превью.",
     missingData: "Запроси недостающие материалы у клиента.",
     operations: ["reply", "handoff"],
@@ -43,6 +52,16 @@ const stages: WorkflowStage[] = [
       "Покажи превью. Если клиент выбрал версию, запиши её номер и предложи оплатить заказ. Если нужна правка, уточни изменение.",
     evidence: "Сообщение клиента содержит номер принятой версии превью.",
     missingData: "Переспроси, какую версию клиент принимает.",
+    maxStageAmount: "200",
+    maxRunAmount: "25",
+    materials: ["compression"],
+    transitions: [
+      {
+        id: "move-to-payment",
+        event: "preview-accepted",
+        destination: "payment",
+      },
+    ],
     waitFor: "preview-accepted",
     waitHours: 72,
     reminders: "24, 48",
@@ -59,6 +78,13 @@ const stages: WorkflowStage[] = [
       "Отправь ссылку на заказ. Дождись подтверждения платежа, затем передай результат.",
     evidence: "Платёжный домен подтвердил оплату заказа.",
     missingData: "Проверь состояние заказа и сообщи клиенту срок оплаты.",
+    transitions: [
+      {
+        id: "finish-order",
+        event: "payment-confirmed",
+        destination: "completed",
+      },
+    ],
     waitFor: "payment-confirmed",
     waitHours: 72,
     reminders: "48",
@@ -70,24 +96,16 @@ const stages: WorkflowStage[] = [
   },
 ];
 
-const currentRelease: WorkflowRelease = {
+const illustrationWorkflow: Workflow = {
   id: "illustration",
   shopId: "forma",
   title: "Иллюстрация на заказ",
   applicability:
     "Клиент заказывает иллюстрацию с оплатой после приёмки превью.",
   goal: "Клиент получает исходный файл согласованной версии после оплаты.",
-  version: 3,
-  publishedAt: "2026-11-17T09:00:00+03:00",
-  stages,
-};
 
-const oldRelease: WorkflowRelease = {
-  ...currentRelease,
-  version: 2,
-  publishedAt: "2026-10-24T10:00:00+03:00",
   stages: [
-    ...stages.slice(0, 3),
+    ...stages,
     {
       ...stages[3],
       id: "manual-payment",
@@ -97,14 +115,13 @@ const oldRelease: WorkflowRelease = {
   ],
 };
 
-const adviceRelease: WorkflowRelease = {
+const adviceWorkflow: Workflow = {
   id: "advice",
   shopId: "forma",
   title: "Консультация по товару",
   applicability: "Клиент открыл чат из карточки товара.",
   goal: "Клиент получает ответ и при желании переходит к оформлению заказа.",
-  version: 1,
-  publishedAt: "2026-11-06T10:00:00+03:00",
+
   stages: [
     {
       ...stages[0],
@@ -114,6 +131,13 @@ const adviceRelease: WorkflowRelease = {
     {
       ...stages[1],
       title: "Отвечаем",
+      transitions: [
+        {
+          id: "finish-consultation",
+          event: "run-completed",
+          destination: "completed",
+        },
+      ],
       instruction: "Проверь сведения о товаре и ответь клиенту.",
       output: "chat",
     },
@@ -132,9 +156,9 @@ function task(
 ): WorkflowTask {
   return {
     id,
-    shopId: currentRelease.shopId,
-    workflowId: currentRelease.id,
-    version: currentRelease.version,
+    shopId: illustrationWorkflow.shopId,
+    workflowId: illustrationWorkflow.id,
+
     stageId,
     label,
     customer,
@@ -206,6 +230,7 @@ reviewTask.assignments = [
     reason: "Мария передала согласование ассистенту.",
   },
 ];
+reviewTask.assignmentCandidateIds = ["studio-assistant", "maria"];
 reviewTask.thread = {
   id: "thread-124",
   title: "Согласование обложки",
@@ -252,7 +277,7 @@ const oldTask = {
     "23T12:00:00",
     "Подтверждение счёта",
   ),
-  version: 2,
+
   order: { id: "ЗК-411", title: "Портрет", state: "Ожидает оплаты" },
 };
 
@@ -278,14 +303,13 @@ export const demoWorkflows: WorkflowFixture = {
     },
   ],
   payers: [
-    { id: "shop", title: "Кошелёк магазина" },
-    { id: "assistant", title: "Кошелёк исполнителя" },
+    { id: "shop", title: "Мария Волкова" },
+    { id: "secondary-owner", title: "Алексей Смирнов" },
   ],
-  releases: [
-    currentRelease,
-    oldRelease,
-    adviceRelease,
-    { ...adviceRelease, id: "prisma-advice", shopId: "prisma" },
+  workflows: [
+    illustrationWorkflow,
+    adviceWorkflow,
+    { ...adviceWorkflow, id: "prisma-advice", shopId: "prisma" },
   ],
   tasks: [
     task(
@@ -350,7 +374,6 @@ export const demoWorkflows: WorkflowFixture = {
         "completed",
       ),
       workflowId: "advice",
-      version: 1,
     },
   ],
 };

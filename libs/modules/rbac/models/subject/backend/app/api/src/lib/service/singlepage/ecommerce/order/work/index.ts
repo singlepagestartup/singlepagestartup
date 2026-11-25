@@ -1,17 +1,24 @@
+import { protectedFileContentPath } from "@sps/rbac/models/subject/sdk/model/src/lib/protected-file";
+import { randomUUID } from "node:crypto";
 import { jsPDF } from "jspdf";
+import type { IModel as ITask } from "@sps/crm/models/task/sdk/model";
+import type { IFunnelStage } from "@sps/crm/models/stage/sdk/model";
+import { isOrderPaymentStage } from "@sps/crm/models/funnel/sdk/model";
 import { currencyPrecision } from "@sps/billing/models/currency/sdk/model";
+import { orderStatusLabel } from "@sps/ecommerce/models/order/sdk/model";
 import type {
-  IModel as IOrderWork,
+  IModel as Order,
+  IOrderWork,
   IOrderWorkArtifact,
   IOrderWorkPayment,
-  IOrderWorkExpertArchive,
   IOrderWorkPurchaseQuote,
   TOrderWorkPriceBasis,
   IOrderWorkScope as IInternalScope,
   IOrderPhysicalEvidence,
-} from "@sps/ecommerce/models/order-work/sdk/model";
+} from "@sps/ecommerce/models/order/sdk/model";
 import {
   orderArtifactPath,
+  orderResultFiles,
   type IOrderArtifact,
   type IOrderWorkScope,
   type IOrderWorkView,
@@ -25,7 +32,6 @@ import {
   priceResultCharges,
 } from "./utils";
 import { LegacyReceipts } from "./receipts";
-import { Service as CustomerKnowledge } from "../../customer-work/knowledge";
 
 interface IPurchase extends IOrderWorkScope {
   orderId: string;
@@ -63,6 +69,118 @@ export class Service {
     };
   }
 
+  private async orderChat(order: Order) {
+    const { crm, ecommerce } = this.subject.modules;
+    let current: Order | null = order;
+    const visited = new Set<string>();
+    const owner = await this.receiptOwner(order.id);
+    if (!owner) {
+      return;
+    }
+    while (current && !visited.has(current.id)) {
+      visited.add(current.id);
+      const tasks = await crm.task.find({
+        params: {
+          limit: 2,
+          filters: {
+            and: [
+              { column: "orderId", method: "eq", value: current.id },
+              { column: "customerId", method: "eq", value: owner },
+            ],
+          },
+        },
+      });
+      if (tasks.length) {
+        const [task] = tasks;
+        if (
+          tasks.length === 1 &&
+          (await this.subject.customerWork.workspaceChannel(task))
+        ) {
+          return task;
+        }
+        return;
+      }
+      if (!current.subscriptionSourceOrderId) {
+        return;
+      }
+      current = await ecommerce.order.findById({
+        id: current.subscriptionSourceOrderId,
+      });
+    }
+    return undefined;
+  }
+
+  async postStatusChange(order: Order, previousStatus: string) {
+    // The confirmed payment event carries the exact amount for a work order.
+    if (order.status === "paid" && (await this.work.findByOrder(order.id))) {
+      return;
+    }
+    const task = await this.orderChat(order);
+    if (task) {
+      const periodEnded =
+        order.subscriptionPeriodEndsAt &&
+        order.subscriptionPeriodInvoiceId &&
+        new Date(order.subscriptionPeriodEndsAt).getTime() <= Date.now() &&
+        ["delivered", "expired", "canceling"].includes(order.status);
+      const text = periodEnded
+        ? `Период подписки закончился. Статус заказа — «${orderStatusLabel(order.status, "ru")}».`
+        : `Статус заказа изменился с «${orderStatusLabel(previousStatus, "ru")}» на «${orderStatusLabel(order.status, "ru")}».`;
+      await this.subject.customerWork.postOrderNotice(task, {
+        key: `order-status:${order.id}:${randomUUID()}`,
+        source: "order-status",
+        text,
+      });
+    }
+  }
+
+  async postRenewalInvoice(orderId: string, subjectId: string) {
+    const { ecommerce } = this.subject.modules;
+    const order = await ecommerce.order.findById({ id: orderId });
+    if (
+      !order?.subscriptionSourceOrderId ||
+      order.subscriptionPeriodInvoiceId
+    ) {
+      return;
+    }
+    const task = await this.orderChat(order);
+    if (!task || task.customerId !== subjectId) {
+      return;
+    }
+    await ecommerce.order.repository.withLifecycleLock(order.id, async () => {
+      const current = await ecommerce.order.findByIdExtended({ id: order.id });
+      if (
+        current.subscriptionPeriodInvoiceId ||
+        ["canceled", "canceling", "paid", "completed"].includes(current.status)
+      ) {
+        return;
+      }
+      for (const {
+        billingModulePaymentIntent,
+      } of current.ordersToBillingModulePaymentIntents) {
+        for (const {
+          invoice,
+        } of billingModulePaymentIntent.paymentIntentsToInvoices) {
+          if (invoice.status !== "open") {
+            continue;
+          }
+          await this.subject.customerWork.postOrderNotice(task, {
+            key: `order-renewal:${invoice.id}`,
+            source: "order-renewal",
+            text: `Выставлен счёт на следующий период подписки. Номер счёта — ${invoice.id}.`,
+            interaction:
+              invoice.paymentUrl && /^https?:\/\//i.test(invoice.paymentUrl)
+                ? {
+                    inline_keyboard: [
+                      [{ text: "Оплатить счёт", url: invoice.paymentUrl }],
+                    ],
+                  }
+                : undefined,
+          });
+        }
+      }
+    });
+  }
+
   private async owner(customerId: string, orderId: string) {
     await this.subject.ecommerceModuleOrderAssertAccess({
       subjectId: customerId,
@@ -70,47 +188,21 @@ export class Service {
     });
   }
 
-  async captureExpertArchive(
-    scope: IInternalScope,
-  ): Promise<IOrderWorkExpertArchive> {
-    const task = await this.subject.modules.crm.task.findById({
-      id: scope.taskId,
-    });
-    if (
-      task?.storeId !== scope.storeId ||
-      task.customerId !== scope.customerId ||
-      task.orderId !== scope.orderId
-    ) {
-      return [];
-    }
-    return new CustomerKnowledge(this.subject).archive(task);
-  }
-
   private describe(customerId: string, work: IOrderWork): IOrderWorkView {
     const descriptor = (id: string): IOrderArtifact => ({
       id,
       path: orderArtifactPath(customerId, work.orderId, id),
     });
+    const delivered = Boolean(work.paid && work.deliveredAt);
     return {
       orderId: work.orderId,
       taskId: work.taskId,
       storeId: work.storeId,
       state: work.state,
-      versions: work.versions.map((version) => ({
-        id: version.id,
-        number: version.number,
-        createdAt: version.createdAt,
-        price: version.price,
-        currencyId: version.currencyId,
-        preview: descriptor(version.previewFileId),
-        previewMimeType: version.previewMimeType,
-        ...(version.invalidatedByCartEdit && { invalidatedByCartEdit: true }),
-      })),
-      acceptedVersionId: work.acceptedVersionId,
-      paidVersionId: work.paid?.resultVersionId ?? null,
-      result: work.resultFileId ? descriptor(work.resultFileId) : null,
-      receipt: work.receiptFileId ? descriptor(work.receiptFileId) : null,
-      deliveryStatus: work.deliveredAt ? "available" : "pending",
+      ...orderResultFiles(work, descriptor),
+      receipt:
+        work.paid && work.receiptFileId ? descriptor(work.receiptFileId) : null,
+      deliveryStatus: delivered ? "available" : "pending",
       trackingNumber:
         work.fulfillment.find((event) => event.stage === "in-transit")
           ?.trackingNumber ?? null,
@@ -125,6 +217,36 @@ export class Service {
     await this.owner(customerId, input.orderId);
     const work = await this.work.read(this.scope(customerId, input));
     return this.describe(customerId, work);
+  }
+
+  async assertPaymentStage(customerId: string, orderId: string) {
+    const work = await this.work.findByOrder(orderId);
+    if (!work || work.paid) {
+      return;
+    }
+    const tasks = this.subject.modules.crm.task;
+    const funnel = await tasks.getFunnel(work);
+    const stages = funnel.definition.stages;
+    if (
+      !stages.some(
+        (stage) =>
+          !stage.archived &&
+          stage.behavior === "ecommerce-module-order-payment",
+      )
+    ) {
+      return;
+    }
+    const task = await tasks.get(work);
+    const stage = stages.find((entry) => entry.id === task.stageId);
+    if (
+      task.customerId !== customerId ||
+      task.orderId !== orderId ||
+      task.status === "closed" ||
+      !stage ||
+      !isOrderPaymentStage(stage)
+    ) {
+      throw new Error("Conflict error. The order is not at its payment stage");
+    }
   }
 
   preparePdfResult = pdfOrderResult;
@@ -156,7 +278,7 @@ export class Service {
         return this.work.withOrderLock(scope.orderId, async () => {
           const operationKey = `work-result:${attemptId}`;
           const existing = await this.work.read(scope);
-          const previous = existing.versions.find(
+          const previous = existing.files.find(
             (version) => version.operationKey === operationKey,
           );
           const artifact = {
@@ -279,7 +401,7 @@ export class Service {
               );
             }
             const reservations =
-              await this.subject.module.subjectsToWalletOperations.find({
+              await this.subject.modules.billing.transaction.find({
                 params: {
                   filters: {
                     and: [
@@ -348,21 +470,37 @@ export class Service {
         await this.owner(customerId, orderId);
         const scope = this.scope(customerId, { ...command, orderId });
         const work = await this.work.read(scope);
-        const version = work.versions.find(
-          (entry) => entry.id === command.resultVersionId,
+        const file = work.files.find(
+          (entry) => entry.previewFileId === command.fileId,
         );
-        if (!version) {
+        if (!file) {
           throw new Error(
-            "Not Found error. Result version does not belong to this order",
+            "Not Found error. The file does not belong to this order",
           );
+        }
+
+        const replay = work.decisions.some(
+          (entry) => entry.operationKey === command.operationKey,
+        );
+        if (!replay) {
+          this.work.assertCurrentFile(work, file);
         }
 
         const request = {
           ...scope,
-          resultVersionId: version.id,
+          fileId: file.id,
           operationKey: command.operationKey,
         };
         if (command.operation === "decline") {
+          if (!replay) {
+            await this.subject.customerWork.execute(customerId, {
+              operation: "message",
+              storeId: scope.storeId,
+              taskId: scope.taskId,
+              operationKey: `file-feedback:${file.id}:${command.operationKey}`,
+              text: command.reason,
+            });
+          }
           const revised = await this.work.decline({
             ...request,
             reason: command.reason,
@@ -375,7 +513,7 @@ export class Service {
             (entry) => entry.operationKey === request.operationKey,
           )
         ) {
-          await this.work.assertResultQuantitySnapshot(orderId, version);
+          await this.work.assertResultQuantitySnapshot(orderId, file);
           const crm = this.subject.modules.crm;
           const task = await crm.task.get(scope);
           if (
@@ -387,8 +525,8 @@ export class Service {
               "Permission error. Result task does not belong to the purchase",
             );
           }
-          const publication = await crm.task.getPublication(scope);
-          const stage = publication.definition.stages.find(
+          const funnel = await crm.task.getFunnel(scope);
+          const stage = funnel.definition.stages.find(
             (entry) => entry.id === task.stageId,
           );
           const acceptance =
@@ -409,7 +547,7 @@ export class Service {
               "Conflict error. The current stage needs one result acceptance action",
             );
           }
-          await crm.task.transition({
+          const moved = await crm.task.transition({
             ...scope,
             actorId: customerId,
             actorKind: "system",
@@ -419,9 +557,19 @@ export class Service {
             evidence: {
               kind: "result-accepted",
               orderId,
-              resultVersionId: version.id,
+              fileId: file.id,
             },
           });
+          const next = funnel.definition.stages.find(
+            (entry) => entry.id === moved.stageId,
+          );
+          const revised = await this.work.accept(request);
+          if (moved.status !== "closed" && next) {
+            const assigned =
+              await this.subject.customerWork.assignStageEmployee(moved, next);
+            await this.subject.customerWork.queueStageEntry(assigned);
+          }
+          return this.describe(customerId, revised);
         }
         const revised = await this.work.accept(request);
         return this.describe(customerId, revised);
@@ -431,7 +579,7 @@ export class Service {
 
   accept(
     customerId: string,
-    input: IPurchase & { resultVersionId: string; operationKey: string },
+    input: IPurchase & { fileId: string; operationKey: string },
   ) {
     const { orderId, ...command } = input;
     return this.decision(customerId, orderId, {
@@ -443,7 +591,7 @@ export class Service {
   decline(
     customerId: string,
     input: IPurchase & {
-      resultVersionId: string;
+      fileId: string;
       operationKey: string;
       reason: string;
     },
@@ -467,18 +615,22 @@ export class Service {
       data: { slug, title: slug, availableOnRegistration: false },
     });
     for (const fileId of fileIds) {
-      const path = orderArtifactPath(
-        payment.customerId,
-        payment.orderId,
-        fileId,
-      );
-      for (const method of ["GET", "HEAD"]) {
-        const capability = await permission.findOrCreate({
-          data: { type: "HTTP", method, path },
-        });
-        await role.module.rolesToPermissions.findOrCreate({
-          data: { roleId: grant.entity.id, permissionId: capability.entity.id },
-        });
+      const paths = [
+        orderArtifactPath(payment.customerId, payment.orderId, fileId),
+        protectedFileContentPath(payment.customerId, fileId),
+      ];
+      for (const path of paths) {
+        for (const method of ["GET", "HEAD"]) {
+          const capability = await permission.findOrCreate({
+            data: { type: "HTTP", method, path },
+          });
+          await role.module.rolesToPermissions.findOrCreate({
+            data: {
+              roleId: grant.entity.id,
+              permissionId: capability.entity.id,
+            },
+          });
+        }
       }
     }
     await subjectsToRoles.findOrCreate({
@@ -513,13 +665,153 @@ export class Service {
   }
 
   async consumePayment(input: { orderId: string; eventId: string }) {
-    const work = await this.work.deliver(
-      input,
-      (snapshot, ids) => this.grantFiles(snapshot, ids),
-      (snapshot) => this.receipt(snapshot),
+    const record = await this.work.findByOrder(input.orderId);
+    if (!record) {
+      throw new Error("Not Found error. Order payment event does not exist");
+    }
+    const tasks = this.subject.modules.crm.task;
+    let queuedReply = false;
+    const result = await tasks.withTask(record, async (task) => {
+      const work = await this.work.read(record);
+      const payment = work.paid;
+      if (!payment || payment.id !== input.eventId) {
+        throw new Error("Not Found error. Order payment event does not exist");
+      }
+      if (
+        task.orderId !== work.orderId ||
+        task.customerId !== work.customerId
+      ) {
+        throw new Error("Conflict error. Payment does not match its task");
+      }
+      const funnel = await tasks.getFunnel(work);
+      const stages = funnel.definition.stages;
+      const conversation = this.subject.customerWork;
+      const messageId = await conversation.postOrderPayment(task, payment);
+      const moved = await this.recordPayment(work, task, stages, payment);
+      const target = moved ?? (!work.receiptFileId ? task : undefined);
+      const next =
+        target && stages.find((stage) => stage.id === target.stageId);
+      if (target && target.status !== "closed" && next) {
+        queuedReply = Boolean(
+          await conversation.enterPaidOrderStage(
+            target,
+            next,
+            messageId,
+            payment,
+          ),
+        );
+      }
+      const recorded = await this.work.issueReceipt(
+        { ...work, eventId: payment.id },
+        (snapshot, ids) => this.grantFiles(snapshot, ids),
+        (snapshot) => this.receipt(snapshot),
+      );
+      if (recorded.receiptFileId) {
+        await conversation.postOrderNotice(task, {
+          key: `order-receipt:${payment.id}`,
+          text: "Чек об оплате заказа.",
+          source: "order-receipt",
+          documentId: recorded.receiptFileId,
+        });
+      }
+      return this.describe(recorded.customerId, recorded);
+    });
+    if (queuedReply) {
+      this.subject.customerWork.wakePendingWork(record.taskId);
+    }
+    return result;
+  }
+
+  async releaseAgentFile(
+    task: ITask,
+    selection: { paymentId: string; fileId: string },
+  ) {
+    if (
+      !task.orderId ||
+      task.assigneeKind !== "ai" ||
+      !task.assigneeId ||
+      task.status !== "active"
+    ) {
+      throw new Error(
+        "Conflict error. This assignment cannot deliver an order file",
+      );
+    }
+    return this.work.releasePaidFile(
+      {
+        storeId: task.storeId,
+        taskId: task.id,
+        customerId: task.customerId,
+        orderId: task.orderId,
+        eventId: selection.paymentId,
+        fileId: selection.fileId,
+      },
+      (payment, ids) => this.grantFiles(payment, ids),
     );
-    await this.recordPayment(work);
-    return this.describe(work.customerId, work);
+  }
+
+  async finishAgentFileStage(
+    task: ITask,
+    stage: IFunnelStage,
+    fileId: string,
+    selection: { paymentId: string; fileId: string },
+  ) {
+    if (!task.orderId || !task.assigneeId) {
+      throw new Error("Conflict error. No assigned work order");
+    }
+    const work = await this.work.findByOrder(task.orderId);
+    if (
+      !work?.paid ||
+      work.paid.id !== selection.paymentId ||
+      !work.deliveredAt ||
+      work.resultFileId !== fileId
+    ) {
+      throw new Error("Conflict error. The order file has not been delivered");
+    }
+    const payment = work.paid;
+    const paymentAction = stage.actions.find(
+      (action) =>
+        action.outcome === "completed" &&
+        action.actors.includes("system") &&
+        action.evidence.includes("payment"),
+    );
+    if (paymentAction) {
+      return this.recordPayment(work, task, [stage], payment);
+    }
+    if (stage.behavior !== "order-file-delivery") {
+      return undefined;
+    }
+    const action = stage.actions.find(
+      (entry) =>
+        entry.actors.includes("system") &&
+        (entry.evidence.includes("delivery") ||
+          entry.evidence.includes("file-access")),
+    );
+    if (!action) {
+      return undefined;
+    }
+    const evidence = action.evidence.includes("delivery")
+      ? {
+          kind: "delivery" as const,
+          orderId: task.orderId,
+          deliveryId: fileId,
+          stage: "delivered" as const,
+        }
+      : {
+          kind: "file-access" as const,
+          orderId: task.orderId,
+          grantId: fileId,
+        };
+    return this.subject.modules.crm.task.transition({
+      storeId: task.storeId,
+      taskId: task.id,
+      expectedRevision: task.revision,
+      actorId: task.assigneeId,
+      actorKind: "system",
+      causeId: payment.id,
+      operationKey: `order-file-delivery:${payment.id}`,
+      actionId: action.id,
+      evidence,
+    });
   }
 
   async publishedReceipts(customerId: string, orderId: string) {
@@ -586,31 +878,16 @@ export class Service {
     });
   }
 
-  private async recordPayment(work: IOrderWork) {
-    const payment = work.paid;
-    if (!payment) {
+  private async recordPayment(
+    work: IOrderWork,
+    task: ITask,
+    stages: IFunnelStage[],
+    payment: IOrderWorkPayment,
+  ) {
+    if (task.status === "closed") {
       return;
     }
-    const tasks = this.subject.modules.crm.task;
-    const task = await tasks.get({
-      storeId: work.storeId,
-      taskId: work.taskId,
-    });
-    if (
-      task.orderId !== work.orderId ||
-      task.customerId !== work.customerId ||
-      task.status === "closed"
-    ) {
-      return;
-    }
-
-    const publication = await tasks.getPublication({
-      storeId: work.storeId,
-      taskId: work.taskId,
-    });
-    const stage = publication.definition.stages.find(
-      (entry) => entry.id === task.stageId,
-    );
+    const stage = stages.find((entry) => entry.id === task.stageId);
     const action = stage?.actions.find(
       (entry) =>
         entry.actors.includes("system") && entry.evidence.includes("payment"),
@@ -619,15 +896,22 @@ export class Service {
       return;
     }
 
+    if (
+      action.outcome === "completed" &&
+      payment.fileId &&
+      !work.resultFileId
+    ) {
+      return task;
+    }
     const key = `order-payment:${payment.id}`;
-    const prior = await this.subject.modules.crm.taskEvent.byOperation(
+    const prior = await this.subject.modules.crm.tasksToStages.byOperation(
       task.id,
       key,
     );
     if (prior) {
       return;
     }
-    await tasks.transition({
+    return this.subject.modules.crm.task.transition({
       storeId: work.storeId,
       taskId: work.taskId,
       expectedRevision: task.revision,
@@ -644,70 +928,32 @@ export class Service {
     });
   }
 
-  private async hasFileGrant(
-    customerId: string,
-    orderId: string,
-    fileId: string,
-    method: string,
-  ) {
-    const path = orderArtifactPath(customerId, orderId, fileId);
-    const permission = await this.subject.module.role.module.permission.find({
-      params: {
-        filters: {
-          and: [
-            { column: "type", method: "eq", value: "HTTP" },
-            { column: "method", method: "eq", value: method },
-            { column: "path", method: "eq", value: path },
-          ],
-        },
-      },
-    });
-    if (!permission.length) {
-      return false;
-    }
-
-    const [links, grants] = await Promise.all([
-      this.subject.module.role.module.rolesToPermissions.find({
-        params: {
-          filters: {
-            and: [
-              {
-                column: "permissionId",
-                method: "inArray",
-                value: permission.map((entry) => entry.id),
-              },
-            ],
-          },
-        },
-      }),
-      this.subject.module.subjectsToRoles.find({
-        params: {
-          filters: {
-            and: [{ column: "subjectId", method: "eq", value: customerId }],
-          },
-        },
-      }),
-    ]);
-    const roles = new Set(grants.map((entry) => entry.roleId));
-    return links.some((entry) => roles.has(entry.roleId));
-  }
-
   async artifact(
     customerId: string,
     orderId: string,
     fileId: string,
     method: "GET" | "HEAD",
+    storeId?: string,
   ) {
+    if (storeId) {
+      return this.subject.crmWorkspace.storeOrderArtifact(
+        customerId,
+        storeId,
+        orderId,
+        fileId,
+      );
+    }
     await this.owner(customerId, orderId);
     const work = await this.work.findByOrder(orderId);
     const owned = work?.customerId === customerId ? work : null;
-    const isPreview = owned?.versions.some(
-      (version) => version.previewFileId === fileId,
+    const isPreview = owned?.files.some(
+      (file) => file.previewFileId === fileId,
     );
     if (!isPreview) {
       const isDelivered =
-        owned?.deliveredAt &&
-        [owned.receiptFileId, owned.resultFileId].includes(fileId);
+        owned?.paid &&
+        (owned.receiptFileId === fileId ||
+          (owned.deliveredAt && owned.resultFileId === fileId));
       const isReceipt =
         !isDelivered &&
         (await this.receiptOwner(orderId)) === customerId &&
@@ -718,15 +964,20 @@ export class Service {
         );
       if (
         (!isDelivered && !isReceipt) ||
-        !(await this.hasFileGrant(customerId, orderId, fileId, method))
+        !(await this.subject.protectedFile.hasGrant(
+          customerId,
+          orderArtifactPath(customerId, orderId, fileId),
+          method,
+        ))
       ) {
         throw new Error("Not Found error. Order artifact does not exist");
       }
     }
 
-    const file = await this.subject.modules.fileStorage.privateFile.findById({
-      id: fileId,
-    });
+    const file =
+      await this.subject.modules.fileStorage.file.privateContent.findById({
+        id: fileId,
+      });
     if (!file) {
       throw new Error("Not Found error. Order artifact does not exist");
     }
@@ -759,11 +1010,11 @@ export class Service {
       if (task.status === "closed" && !repeated) {
         throw new Error("Conflict error. The fulfillment task is closed");
       }
-      const publication = await tasks.getPublication(input);
-      const stage = publication.definition.stages.find(
+      const funnel = await tasks.getFunnel(input);
+      const stage = funnel.definition.stages.find(
         (entry) => entry.id === task.stageId,
       );
-      const hasMilestones = publication.definition.stages.some((entry) =>
+      const hasMilestones = funnel.definition.stages.some((entry) =>
         entry.actions.some((action) => action.deliveryStage === input.stage),
       );
       const actions =
@@ -789,7 +1040,7 @@ export class Service {
       });
       if (action && task.status !== "closed") {
         const key = `order-delivery:${event.id}`;
-        const prior = await this.subject.modules.crm.taskEvent.byOperation(
+        const prior = await this.subject.modules.crm.tasksToStages.byOperation(
           task.id,
           key,
         );

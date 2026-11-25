@@ -1,0 +1,47 @@
+{
+  "metadata": {
+    "seo": {
+      "title": {
+        "en": "Store CRM — SinglePageStartup",
+        "ru": "CRM магазина — SinglePageStartup"
+      },
+      "description": {
+        "en": "View and manage CRM tasks for this store.",
+        "ru": "Просматривайте и ведите задачи CRM этого магазина."
+      }
+    },
+    "seoDisplay": {
+      "twitterTitle": {
+        "en": "Store CRM — SinglePageStartup",
+        "ru": "CRM магазина — SinglePageStartup"
+      },
+      "opengraphTitle": {
+        "en": "Store CRM — SinglePageStartup",
+        "ru": "CRM магазина — SinglePageStartup"
+      },
+      "opengraphLocale": {
+        "en": "en_US",
+        "ru": "ru_RU"
+      },
+      "twitterDescription": {
+        "en": "View and manage CRM tasks for this store.",
+        "ru": "Просматривайте и ведите задачи CRM этого магазина."
+      },
+      "opengraphDescription": {
+        "en": "View and manage CRM tasks for this store.",
+        "ru": "Просматривайте и ведите задачи CRM этого магазина."
+      }
+    }
+  },
+  "id": "997ee081-05b5-439a-b9a9-b509cfde2382",
+  "title": "Store CRM",
+  "url": "/ecommerce/stores/[ecommerce.stores.slug]/crm",
+  "slug": "crm-workspace-store",
+  "description": "View and manage CRM tasks for this store.",
+  "createdAt": "2026-11-19T08:58:57.963Z",
+  "updatedAt": "2026-11-22T19:16:21.982Z",
+  "variant": "noindex",
+  "className": null,
+  "language": "en",
+  "adminTitle": "Store CRM Workspace"
+}

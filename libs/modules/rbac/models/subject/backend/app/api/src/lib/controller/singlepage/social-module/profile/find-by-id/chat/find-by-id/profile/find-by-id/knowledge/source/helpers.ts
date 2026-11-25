@@ -1,3 +1,39 @@
+import type { Context } from "hono";
+import { z } from "zod";
+
+const sourceDraft = z.object({
+  title: z.string().trim().min(1),
+  content: z.string(),
+  orderIndex: z.number().optional(),
+  operationKey: z.uuid().optional(),
+  expectedTitle: z.string().optional(),
+  expectedContentHash: z.string().optional(),
+  removeFileIds: z.array(z.uuid()).optional(),
+});
+
+export async function readSourceDraft(c: Context) {
+  let data;
+  let files: File[] = [];
+  if (c.req.header("content-type")?.startsWith("multipart/form-data")) {
+    const form = await c.req.formData();
+    try {
+      data = JSON.parse(String(form.get("data")));
+    } catch {
+      throw new Error(
+        "Validation error. The Knowledge Source draft must be JSON.",
+      );
+    }
+    files = form.getAll("files").filter((file) => typeof file !== "string");
+  } else {
+    const json = await c.req.json();
+    data = json.data ?? json;
+  }
+  const parsed = sourceDraft.safeParse(data);
+  if (!parsed.success) {
+    throw new Error("Validation error. Invalid Knowledge Source draft.");
+  }
+  return { ...parsed.data, files };
+}
 import { Service } from "../../../../../../../../../../../service";
 
 export async function findProfileKnowledgeSourceIds(props: {
@@ -43,24 +79,19 @@ export async function findProfileKnowledgeSourceIds(props: {
       },
     });
 
-  return (
-    relations
-      ?.map((relation: { knowledgeModuleSourceId?: string }) => {
-        return relation.knowledgeModuleSourceId;
-      })
-      .filter((sourceId: unknown): sourceId is string => {
-        return typeof sourceId === "string" && Boolean(sourceId);
-      }) || []
-  );
+  let visible = relations;
   if (props.storeId) {
-    const relevant = relations.filter(
+    visible = relations.filter(
       ({ storeId, offerId, projectId }) =>
         (!storeId || storeId === props.storeId) && !offerId && !projectId,
     );
-    return relevant.map(
-      ({ knowledgeModuleSourceId }) => knowledgeModuleSourceId,
-    );
   }
+  return (visible ?? [])
+    .map(({ knowledgeModuleSourceId }) => knowledgeModuleSourceId)
+    .filter(
+      (sourceId): sourceId is string =>
+        typeof sourceId === "string" && Boolean(sourceId),
+    );
 }
 
 export function toText(value: unknown) {

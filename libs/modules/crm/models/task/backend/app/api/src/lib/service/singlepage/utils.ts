@@ -19,9 +19,7 @@ export function operationDigest(kind: string, data: object) {
 export function getStage(definition: IFunnelDefinition, stageId: string) {
   const stage = definition.stages.find((entry) => entry.id === stageId);
   if (!stage || stage.archived) {
-    throw new Error(
-      "Validation error. Stage does not exist in the funnel publication",
-    );
+    throw new Error("Validation error. Stage does not exist in the funnel");
   }
   return stage;
 }
@@ -87,7 +85,7 @@ export function assertEvidence(
 
   if (
     "orderId" in evidence &&
-    (actorKind !== "system" || evidence.orderId !== task.orderId)
+    (actorKind !== "system" || !task.orderIds.includes(evidence.orderId))
   ) {
     throw new Error(
       "Forbidden error. Commerce evidence must come from the system for this task's order",

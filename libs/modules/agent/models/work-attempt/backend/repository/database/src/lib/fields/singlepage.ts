@@ -7,6 +7,7 @@ import type {
 
 import type {
   ICustomerWorkCartSelection,
+  ICustomerWorkReply,
   ICustomerWorkSourceVersion,
 } from "@sps/rbac/models/subject/sdk/model";
 
@@ -31,6 +32,7 @@ export interface IWorkResult {
   text: string;
   actionId?: string;
   cartSelection?: ICustomerWorkCartSelection;
+  releaseOrderFile?: ICustomerWorkReply["releaseOrderFile"];
   embeddings?: { model: string; dimensions: number; values: number[][] };
   indexing?: { sourceId: string; contentHash: string; indexKey: string };
   artifact?: {
@@ -38,6 +40,12 @@ export interface IWorkResult {
     previewFileId: string;
     publicationId: string;
   };
+}
+
+export interface IWorkBudget {
+  stageAmount?: string;
+  taskAmount?: string;
+  runAmount?: string;
 }
 
 export const fields = {
@@ -65,18 +73,23 @@ export const fields = {
   assignmentRevision: pg.integer("assignment_revision").notNull(),
   stageId: pg.text("stage_id").notNull(),
   capability: pg.text("capability").$type<IProviderCapability>().notNull(),
-  executorId: pg.uuid("executor_id").notNull(),
+  executorId: pg.uuid("executor_id"),
   payerId: pg.uuid("payer_id").notNull(),
   ownerId: pg.uuid("owner_id").notNull(),
   currencyId: pg.uuid("currency_id").notNull(),
-  connectionId: pg.uuid("connection_id").notNull(),
-  identityId: pg.uuid("identity_id").notNull(),
-  credentialVersion: pg.uuid("credential_version").notNull(),
+  connectionId: pg.uuid("connection_id"),
+  identityId: pg.uuid("identity_id"),
+  credentialVersion: pg.uuid("credential_version"),
+  providerMode: pg
+    .text("provider_mode", { enum: ["identity", "server"] })
+    .notNull()
+    .default("identity"),
   provider: pg.text("provider").$type<IProviderType>().notNull(),
   externalAccount: pg.text("external_account").notNull(),
   model: pg.text("model").notNull(),
   terms: pg.jsonb("terms").$type<IProviderTerms>().notNull(),
   maximum: pg.numeric("maximum", { precision: 38, scale: 12 }).notNull(),
+  budget: pg.jsonb("budget").$type<IWorkBudget>(),
   state: pg.text("state").$type<TAttemptState>().notNull(),
   result: pg.jsonb("result").$type<IWorkResult>(),
   providerRequestId: pg.text("provider_request_id"),

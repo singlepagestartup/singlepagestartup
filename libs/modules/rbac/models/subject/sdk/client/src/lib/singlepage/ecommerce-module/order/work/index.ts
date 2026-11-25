@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { api } from "@sps/rbac/models/subject/sdk/server";
 import {
@@ -10,6 +11,7 @@ import {
 import {
   invalidateRouteQueries,
   queryClient,
+  subscription,
 } from "@sps/shared-frontend-client-api";
 import { saturateHeaders } from "@sps/shared-frontend-client-utils";
 
@@ -17,8 +19,8 @@ type IReadProps = Parameters<typeof api.orderWork.read>[0];
 type IDecisionProps = Parameters<typeof api.orderWork.decision>[0];
 type IContentProps = Parameters<typeof api.orderWork.content>[0];
 
-const queryKey = (id: string, orderId: string, taskId: string) =>
-  [orderWorkPath(id, orderId), taskId] as const;
+const queryKey = ({ id, orderId, taskId, storeId }: IReadProps) =>
+  [orderWorkPath(id, orderId), taskId, storeId] as const;
 
 function clientRequest<
   T extends { host?: string; options?: IReadProps["options"] },
@@ -34,14 +36,28 @@ function clientRequest<
 }
 
 function read(props: IReadProps & { enabled?: boolean }) {
+  const path = orderWorkPath(props.id, props.orderId);
+  const enabled =
+    props.enabled !== false &&
+    Boolean(props.id && props.orderId && props.taskId && props.storeId);
+  useEffect(
+    () => (enabled ? subscription(path, queryClient) : undefined),
+    [enabled, path],
+  );
   return useQuery({
-    queryKey: queryKey(props.id, props.orderId, props.taskId),
+    queryKey: queryKey(props),
     queryFn: () => api.orderWork.read(clientRequest(props)),
-    enabled:
-      props.enabled !== false &&
-      Boolean(props.id && props.orderId && props.taskId),
-    refetchInterval: (query) =>
-      query.state.data?.state === "delivered" ? false : 3000,
+    enabled,
+    meta: {
+      topics: ["ecommerce.orders"],
+    },
+    refetchInterval: ({ state }) => {
+      const status = (state.error as { status?: number } | null)?.status;
+      return state.data?.state === "delivered" ||
+        [401, 403, 404].includes(status ?? 0)
+        ? false
+        : 3000;
+    },
   });
 }
 
@@ -51,13 +67,24 @@ function decision() {
       api.orderWork.decision(clientRequest(props)),
     onSuccess: async (work, props) => {
       queryClient.setQueryData(
-        queryKey(props.id, work.orderId, work.taskId),
+        queryKey({
+          id: props.id,
+          orderId: work.orderId,
+          taskId: work.taskId,
+          storeId: work.storeId,
+        }),
         work,
       );
-      await invalidateRouteQueries(
-        queryClient,
-        `${route}/${props.id}/ecommerce-module/orders`,
-      );
+      await Promise.all([
+        invalidateRouteQueries(
+          queryClient,
+          `${route}/${props.id}/ecommerce-module/orders`,
+        ),
+        invalidateRouteQueries(
+          queryClient,
+          `${route}/${props.id}/customer-work`,
+        ),
+      ]);
     },
   });
 }

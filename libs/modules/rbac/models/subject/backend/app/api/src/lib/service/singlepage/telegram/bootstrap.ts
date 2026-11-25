@@ -74,6 +74,10 @@ type IEnsureProfileManagementAccess = (props: {
 }) => Promise<unknown>;
 
 export interface IConstructorProps {
+  createOwnedChat: (
+    subjectId: string,
+    data: Partial<ISocialModuleChat>,
+  ) => Promise<ISocialModuleChat>;
   findById: IFindById;
   identity: IdentityService;
   social: Pick<
@@ -95,6 +99,7 @@ export interface IConstructorProps {
 }
 
 export class Service {
+  private readonly createOwnedChat: IConstructorProps["createOwnedChat"];
   findById: IFindById;
   identity: IdentityService;
   social: Pick<
@@ -115,6 +120,7 @@ export class Service {
   ensureProfileManagementAccess: IEnsureProfileManagementAccess;
 
   constructor(props: IConstructorProps) {
+    this.createOwnedChat = props.createOwnedChat;
     this.findById = props.findById;
     this.identity = props.identity;
     this.social = props.social;
@@ -458,6 +464,7 @@ export class Service {
   }
 
   protected async resolveTelegramChat(props: {
+    privateChatOwnerId?: string;
     chatId: string;
     profileId: string;
     headers: Record<string, string>;
@@ -465,14 +472,17 @@ export class Service {
     let chats = await this.findTelegramChats(props.chatId);
 
     if (!chats.length) {
-      const createdChat = await socialModuleChatApi.create({
-        data: {
-          variant: "telegram",
-          sourceSystemId: props.chatId,
-          slug: `telegram-chat-${props.chatId}`,
-        },
-        options: { headers: props.headers },
-      });
+      const data = {
+        variant: "telegram",
+        sourceSystemId: props.chatId,
+        slug: `telegram-chat-${props.chatId}`,
+      };
+      const createdChat = props.privateChatOwnerId
+        ? await this.createOwnedChat(props.privateChatOwnerId, data)
+        : await socialModuleChatApi.create({
+            data,
+            options: { headers: props.headers },
+          });
       chats = [createdChat];
     }
 
@@ -1227,6 +1237,8 @@ export class Service {
     }
 
     chat = await this.resolveTelegramChat({
+      privateChatOwnerId:
+        props.fromId === props.chatId ? subject.id : undefined,
       chatId: props.chatId,
       profileId: profile.id,
       headers,

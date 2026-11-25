@@ -77,6 +77,20 @@ it("projects the purchased line, published product fields and total in the selec
   });
 });
 
+it("adds fractional prices exactly for a multi-line order", async () => {
+  const { service, findByIdTotal } = setup();
+  const currency = { id: "rub", symbol: "₽", minorUnitDigits: 2 };
+  findByIdTotal.mockResolvedValue({
+    availableCurrencyIds: ["rub"],
+    totals: [0.1, 0.2].map((total) => ({
+      total,
+      billingModuleCurrency: currency,
+    })),
+    unpriced: [],
+  });
+  expect((await service.total("order", "cart"))?.amount).toBe(0.3);
+});
+
 it("preserves the product and quantity on an older order without repricing history", async () => {
   const { service, ecommerce, findByIdTotal } = setup();
   ecommerce.order.findById.mockResolvedValue({ id: "order", type: "history" });

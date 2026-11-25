@@ -29,6 +29,8 @@ import {
   moduleBootstrap as hostApp,
 } from "@sps/host/backend/app/api/src/lib/bootstrap";
 import { moduleBootstrap as rbacApp } from "@sps/rbac/backend/app/api/src/lib/bootstrap";
+import { createService as createCrmTaskService } from "@sps/crm/models/task/backend/app/api/src/lib/bootstrap";
+import { createService as createTaskParticipants } from "@sps/rbac/relations/subjects-to-crm-module-tasks/backend/app/api/src/lib/bootstrap";
 import { createService as createSubjectService } from "@sps/rbac/models/subject/backend/app/api/src/lib/bootstrap";
 import { rbacHttpCacheExcludeRoutes } from "@sps/rbac/models/permission/backend/app/api/src/lib/service/singlepage/http-cache-exclude-routes";
 import { moduleBootstrap as startupApp } from "@sps/startup/backend/app/api/src/lib/bootstrap";
@@ -71,14 +73,20 @@ const mountedModules = await Promise.all(
   }),
 );
 const { app: rbac } = await rbacApp.bootstrap(defaultAppAssembly);
+createCrmTaskService(defaultAppAssembly).configureParticipants(
+  createTaskParticipants(defaultAppAssembly),
+);
 const subjectService = createSubjectService(defaultAppAssembly);
 const workAttempts = createWorkAttemptService(defaultAppAssembly);
 subjectService.configureCustomerWorkWakeup((taskId) =>
   workAttempts.wakeCustomerWork(taskId),
 );
 const ecommerce = defaultAppAssembly.getOrCreate(createEcommerceServices);
-ecommerce.order.configureExpertArchive((scope) =>
-  subjectService.orderWork.captureExpertArchive(scope),
+ecommerce.order.configureStatusDelivery((order, previousStatus) =>
+  subjectService.orderWork.postStatusChange(order, previousStatus),
+);
+ecommerce.order.configurePaymentDelivery((event) =>
+  subjectService.orderWork.consumePayment(event),
 );
 defaultAppAssembly
   .getOrCreate(createFileStorageServices)

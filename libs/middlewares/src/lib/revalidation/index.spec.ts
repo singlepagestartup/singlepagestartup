@@ -143,6 +143,13 @@ function intersects(a: string[], b: string[]): boolean {
 }
 
 describe("revalidation topic resolution", () => {
+  it("publishes typing changes only to the active thread’s action subscribers", () => {
+    const path = `/api/rbac/subjects/${SID}/social-module/profiles/${PID}/chats/${CID}/threads/${TID}/typing`;
+    expect(new Middleware().resolveBroadcastTopics(path)).toEqual([
+      `social.threads.${TID}.actions`,
+    ]);
+  });
+
   /**
    * BDD Scenario: Explicit default rule takes precedence over derivation.
    * Given: the built-in thread-scoped message rule.

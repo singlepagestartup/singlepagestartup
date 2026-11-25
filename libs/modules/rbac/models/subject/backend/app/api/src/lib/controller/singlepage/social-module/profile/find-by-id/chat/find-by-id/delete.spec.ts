@@ -16,12 +16,6 @@ jest.mock("@sps/backend-utils", () => ({
   }),
 }));
 
-jest.mock("@sps/social/models/chat/sdk/server", () => ({
-  api: {
-    delete: (...args: unknown[]) => mockSocialModuleChatDelete(...args),
-  },
-}));
-
 jest.mock("@sps/social/models/action/sdk/server", () => ({
   api: {
     delete: (...args: unknown[]) => mockSocialModuleActionDelete(...args),
@@ -59,6 +53,7 @@ function createContext() {
 
 function createService(props: { isAdmin: boolean }) {
   return {
+    socialChatSettings: { deleteChat: mockSocialModuleChatDelete },
     socialModuleChatLifecycleAssertSubjectOwnsChat: jest
       .fn()
       .mockResolvedValue(undefined),
@@ -160,14 +155,7 @@ describe("Given: RBAC social chat deletion", () => {
         }),
       }),
     );
-    expect(mockSocialModuleChatDelete).toHaveBeenCalledWith({
-      id: "chat-1",
-      options: {
-        headers: {
-          "X-RBAC-SECRET-KEY": "rbac-secret",
-        },
-      },
-    });
+    expect(mockSocialModuleChatDelete).toHaveBeenCalledWith("chat-1");
     expect(response).toEqual({
       data: {
         id: "chat-1",

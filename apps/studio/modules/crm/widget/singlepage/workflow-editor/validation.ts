@@ -1,19 +1,31 @@
-import type { WorkflowDraft, WorkflowStage } from "../../../shared/workflows";
+import type {
+  Workflow,
+  WorkflowPerson,
+  WorkflowStage,
+} from "../../../shared/workflows";
 
-export function stageErrors(stage: WorkflowStage) {
+export function stageErrors(stage: WorkflowStage, people: WorkflowPerson[]) {
   const errors: string[] = [];
 
   if (!stage.title.trim()) errors.push("Введите название этапа.");
-  if (!stage.instruction.trim()) errors.push("Запишите инструкцию.");
-  if (!stage.evidence.trim())
-    errors.push("Опишите достаточное доказательство.");
-  if (!stage.missingData.trim())
-    errors.push("Укажите действие при нехватке данных.");
-  if (!stage.operations.length) errors.push("Разрешите хотя бы одну операцию.");
-  if (!stage.assignee) errors.push("Выберите исполнителя.");
-  if (!stage.payer) errors.push("Выберите плательщика.");
-  if (stage.settlementEvent === "none")
-    errors.push("Выберите событие расчёта.");
+  const assignee = people.find(({ id }) => id === stage.assignee);
+  if (!assignee) errors.push("Выберите сотрудника.");
+  if (assignee?.kind === "agent") {
+    if (!stage.payer) errors.push("Выберите владельца магазина.");
+    const positiveDecimal = (value: string) =>
+      /^(?:0|[1-9]\d{0,17})(?:\.\d{1,12})?$/.test(value) && Number(value) > 0;
+    const run = stage.maxRunAmount ?? "";
+    const stageLimit = stage.maxStageAmount ?? "";
+    if (
+      !positiveDecimal(run) ||
+      !positiveDecimal(stageLimit) ||
+      Number(run) > Number(stageLimit)
+    ) {
+      errors.push(
+        "Лимит на сообщение должен быть положительным и укладываться в лимит этапа.",
+      );
+    }
+  }
   const pricing = stage.resultPricing;
   if (pricing?.kind === "confirmed-cost") {
     const positiveDecimal = (value: string) =>
@@ -68,7 +80,7 @@ export function stageErrors(stage: WorkflowStage) {
   return errors;
 }
 
-export function draftErrors(draft: WorkflowDraft) {
+export function draftErrors(draft: Workflow) {
   const errors: string[] = [];
 
   if (!draft.title.trim()) errors.push("Введите название воронки.");

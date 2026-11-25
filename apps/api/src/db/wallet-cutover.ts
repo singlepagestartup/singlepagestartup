@@ -7,7 +7,6 @@ import {
   getDrizzle,
   getPostgresClient,
 } from "@sps/shared-backend-database-config";
-import { Table as Balance } from "@sps/rbac/relations/subjects-to-billing-module-currencies/backend/repository/database";
 import { Table as Invoice } from "@sps/billing/models/invoice/backend/repository/database";
 import { Table as Intent } from "@sps/billing/models/payment-intent/backend/repository/database";
 import { Table as Store } from "@sps/ecommerce/models/store/backend/repository/database";
@@ -34,15 +33,17 @@ async function readSnapshot() {
         sql`select current_database() as name`,
       );
       // Read only columns already present on installations that predate work attempts.
-      const wallets = await tx
-        .select({
-          subjectId: Balance.subjectId,
-          currencyId: Balance.billingModuleCurrencyId,
-          amount: sql<string>`trim_scale(sum(${Balance.amount}::numeric))::text`,
-        })
-        .from(Balance)
-        .groupBy(Balance.subjectId, Balance.billingModuleCurrencyId)
-        .orderBy(Balance.subjectId, Balance.billingModuleCurrencyId);
+      const [view] = await tx.execute(
+        sql`SELECT to_regclass('public.sps_rc_subject_wallet_balance') IS NOT NULL AS installed`,
+      );
+      const table = view.installed
+        ? "sps_rc_subject_wallet_balance"
+        : "sps_rc_ss_to_bg_me_cs_vvd";
+      const wallets = [
+        ...(await tx.execute(sql`SELECT st_id AS "subjectId", bg_me_cy_id AS "currencyId",
+        trim_scale(sum(amount::numeric))::text AS amount FROM ${sql.identifier(table)}
+        GROUP BY st_id, bg_me_cy_id ORDER BY st_id, bg_me_cy_id`)),
+      ];
       const invoices = await tx
         .select({
           id: Invoice.id,

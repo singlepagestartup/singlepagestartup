@@ -6,6 +6,7 @@ import {
   type SelectedComposerFile,
 } from "./SelectedComposerPills";
 import { SkillMentionPicker } from "./SkillMentionPicker";
+import { useChatTyping } from "../hooks/use-chat-typing";
 import { useChatComposer } from "../hooks/use-chat-composer";
 import { ThreadMessagesCache } from "../hooks/use-thread-messages-refetch";
 import type { IChatModelControls, SocialSkill } from "../types";
@@ -20,7 +21,7 @@ import {
 } from "../utils";
 import { Form } from "@sps/shared-ui-shadcn";
 import { ModelPicker } from "@sps/ui-adapter";
-import { BookOpen, Paperclip, Send } from "lucide-react";
+import { Paperclip, Send } from "lucide-react";
 import { Controller, useWatch } from "react-hook-form";
 import {
   useCallback,
@@ -34,7 +35,6 @@ import {
 
 interface ComposerProps {
   isEmployeeChat?: boolean;
-  onEmployeeProfileOpen?: () => void;
   onEmployeeMessageSaved?: () => void;
   isCustomerWork: boolean;
   canUseKnowledge: boolean;
@@ -61,7 +61,7 @@ interface ComposerProps {
   socialModuleThreadId: string;
   subjectId: string;
   syncSelectedSkillsToDescription: (description?: string | null) => void;
-  threadMessagesCache: ThreadMessagesCache;
+  threadMessagesCache?: ThreadMessagesCache;
 }
 
 /**
@@ -72,16 +72,12 @@ interface ComposerProps {
  * shell and timeline never rerender because of composer activity.
  */
 export function Composer(props: ComposerProps) {
+  const typing = useChatTyping(props);
   const ru = props.language === "ru";
   const keyboardHintId = useId();
   const keyboardHint = ru
     ? "Enter — отправить. Shift+Enter — новая строка."
     : "Enter to send. Shift+Enter for a new line.";
-  const placeholder = props.isEmployeeChat
-    ? ru
-      ? "Задайте вопрос или напишите «Запомни…», чтобы добавить знание сотруднику."
-      : "Ask a question or type “Remember…” to add to this employee’s knowledge."
-    : keyboardHint;
   const { modelControls } = props;
   const composer = useChatComposer({
     isCustomerWork: props.isCustomerWork,
@@ -475,6 +471,7 @@ export function Composer(props: ComposerProps) {
 
     event.preventDefault();
     if (!canSubmit) return;
+    typing.stop();
     void composer.form.handleSubmit(composer.onSubmit)();
     if (composer.textareaRef.current) {
       composer.textareaRef.current.style.height = "auto";
@@ -493,6 +490,7 @@ export function Composer(props: ComposerProps) {
         className="max-h-[75%] min-w-0 shrink-0 overflow-y-auto border-t border-border p-4"
         onSubmit={composer.form.handleSubmit(async (data) => {
           if (canSubmit) {
+            typing.stop();
             await composer.onSubmit(data);
           }
         })}
@@ -523,7 +521,6 @@ export function Composer(props: ComposerProps) {
         <input
           ref={composer.fileInputRef}
           type="file"
-          disabled={props.isEmployeeChat}
           multiple
           className="hidden"
           onChange={(event) => {
@@ -576,13 +573,18 @@ export function Composer(props: ComposerProps) {
                 }}
                 aria-label={ru ? "Сообщение" : "Message"}
                 aria-describedby={keyboardHintId}
-                placeholder={placeholder}
+                placeholder={keyboardHint}
                 rows={4}
                 className="h-32 min-h-24 max-h-[min(50dvh,480px)] w-full resize-y rounded-lg bg-transparent text-sm leading-6 outline-none placeholder:text-muted-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
                 onChange={(event) => {
                   field.onChange(event);
+                  typing.input(event.currentTarget.value);
                   event.currentTarget.style.height = "auto";
                   event.currentTarget.style.height = `${event.currentTarget.scrollHeight}px`;
+                }}
+                onBlur={() => {
+                  field.onBlur();
+                  typing.stop();
                 }}
                 onKeyDown={onComposerTextareaKeyDown}
               />
@@ -592,27 +594,23 @@ export function Composer(props: ComposerProps) {
             <button
               type="button"
               className="inline-flex min-h-10 shrink-0 items-center gap-2 rounded-md text-xs font-semibold text-muted-foreground hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
-              disabled={props.isEmployeeChat && !props.onEmployeeProfileOpen}
-              onClick={
-                props.isEmployeeChat
-                  ? props.onEmployeeProfileOpen
-                  : () => composer.fileInputRef.current?.click()
-              }
+              onClick={() => composer.fileInputRef.current?.click()}
             >
-              {props.isEmployeeChat ? (
-                <>
-                  <BookOpen className="size-4" aria-hidden="true" />
-                  {ru ? "Знания сотрудника" : "Employee knowledge"}
-                </>
-              ) : (
-                <>
-                  <Paperclip className="size-4" aria-hidden="true" />
-                  {ru ? "Прикрепить файлы" : "Attach files"}
-                </>
-              )}
+              <Paperclip className="size-4" aria-hidden="true" />
+              {ru ? "Прикрепить файлы" : "Attach files"}
             </button>
             <div className="ml-auto flex min-w-0 flex-wrap items-center justify-end gap-2">
-              {showModelPicker && (
+              {modelControls?.fixedModelLabel && (
+                <span className="inline-flex min-h-10 items-center gap-2 rounded-xl bg-muted px-3 text-sm">
+                  <span className="text-muted-foreground">
+                    {ru ? "Модель этапа" : "Stage model"}
+                  </span>
+                  <span className="font-medium">
+                    {modelControls.fixedModelLabel}
+                  </span>
+                </span>
+              )}
+              {showModelPicker && !modelControls.fixedModelLabel && (
                 <ModelPicker
                   key={props.socialModuleThreadId}
                   {...modelControls}

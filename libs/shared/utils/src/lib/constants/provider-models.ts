@@ -11,6 +11,22 @@ export const providerReasoningEffortValues = [
 export type TProviderReasoningEffort =
   (typeof providerReasoningEffortValues)[number];
 
+export const OPEN_AI_STAGE_TEXT_DEFAULT = {
+  modelId: "gpt-6.2-astra",
+  reasoning: "high",
+} as const;
+export const OPEN_AI_STAGE_TEXT_MODEL_LABEL = "GPT-6.2 Astra";
+export const OPEN_AI_STAGE_TEXT_REASONING = ["medium", "high"] as const;
+
+export const OPEN_AI_WORK_MODELS = {
+  text: [
+    OPEN_AI_STAGE_TEXT_DEFAULT.modelId,
+    "gpt-5.4-mini-2026-03-17",
+    "gpt-4.1-mini",
+  ],
+  image: ["gpt-image-2.5-flare-2026-09-08"],
+} as const;
+
 // Explicit equivalents used across the direct API and OpenRouter.
 // https://openrouter.ai/api/v1/models/openai/gpt-4.1-mini/endpoints
 // https://openrouter.ai/api/v1/models/openai/gpt-image-2.5-flare/endpoints

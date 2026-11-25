@@ -1,0 +1,9 @@
+{
+  "id": "cd2442ef-6088-4bed-97c2-6ca81dfa55c2",
+  "createdAt": "2026-11-16T12:13:49.217Z",
+  "updatedAt": "2026-11-16T15:13:39.336Z",
+  "variant": "default",
+  "type": "HTTP",
+  "method": "POST",
+  "path": "/api/rbac/subjects/[rbac.subjects.id]/ecommerce-module/orders/[ecommerce.orders.id]/repeat"
+}

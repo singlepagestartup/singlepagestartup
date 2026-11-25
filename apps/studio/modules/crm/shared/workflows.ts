@@ -1,3 +1,5 @@
+import type { IOpenAIWorkModelSelection } from "@sps/shared-utils/provider-models";
+
 export type TaskState = "active" | "waiting" | "completed" | "closed";
 export type WorkflowOperation =
   "reply" | "request-revision" | "checkout" | "handoff";
@@ -26,12 +28,98 @@ export type WorkflowResultPricing =
       conversions: WorkflowExchangeRate[];
     };
 
+export const workflowMaterialOptions = {
+  "request-routing": {
+    ru: {
+      label: "Проверить, понятен ли запрос",
+      description:
+        "Проверяет последнее сообщение клиента перед ответом. Если запрос неясен, предлагает задать уточняющий вопрос.",
+    },
+    en: {
+      label: "Check whether the request is clear",
+      description:
+        "Checks the latest customer message before replying. If it is unclear, prompts the assistant to ask a follow-up question.",
+    },
+  },
+  "tool-selection": {
+    ru: {
+      label: "Выбрать один инструмент",
+      description:
+        "Из доступных инструментов поиска, анализа изображения и расшифровки выбирает один или пропускает все.",
+    },
+    en: {
+      label: "Choose one tool",
+      description:
+        "Chooses at most one available tool for search, image analysis, or transcription. It can skip them all.",
+    },
+  },
+  compression: {
+    ru: {
+      label: "Сократить длинную переписку",
+      description:
+        "Если в переписке больше восьми реплик, кратко пересказывает ранние сообщения для следующего ответа.",
+    },
+    en: {
+      label: "Summarize a long conversation",
+      description:
+        "If the conversation has more than eight messages, summarizes earlier messages for the next reply.",
+    },
+  },
+  "knowledge-search": {
+    ru: {
+      label: "Искать в материалах магазина",
+      description:
+        "Ищет по смыслу в доступных проиндексированных источниках магазина. Подходящие фрагменты помогают подготовить ответ.",
+    },
+    en: {
+      label: "Search store materials",
+      description:
+        "Searches accessible, indexed store sources by meaning. Relevant excerpts help the assistant prepare the reply.",
+    },
+  },
+  vision: {
+    ru: {
+      label: "Проанализировать изображение",
+      description:
+        "Может описать вложение JPEG, PNG или WebP из сообщения клиента, на которое готовится ответ.",
+    },
+    en: {
+      label: "Analyze an image",
+      description:
+        "Can describe a JPEG, PNG, or WebP attachment from the customer message being answered.",
+    },
+  },
+  transcription: {
+    ru: {
+      label: "Расшифровать аудио",
+      description:
+        "Может преобразовать поддерживаемый несжатый WAV из сообщения клиента в текст для ответа.",
+    },
+    en: {
+      label: "Transcribe audio",
+      description:
+        "Can transcribe a supported uncompressed WAV from the customer message being answered.",
+    },
+  },
+} as const;
+
+export type TWorkflowMaterial = keyof typeof workflowMaterialOptions;
+
+export interface IWorkflowTransition {
+  id: string;
+  event: Exclude<WorkflowEvent, "none"> | "manual";
+  destination: string;
+}
+
 export interface WorkflowStage {
   id: string;
   title: string;
   instruction: string;
   output?: "chat" | "pdf" | "image";
+  provider?: IOpenAIWorkModelSelection;
   imageBrief?: "marketplace-cover";
+  imageBriefAutoGenerate?: boolean;
+  coverAttachmentRole?: "product-photo" | "style-reference";
   evidence: string;
   missingData: string;
   waitFor: WorkflowEvent;
@@ -39,26 +127,25 @@ export interface WorkflowStage {
   reminders: string;
   silenceOutcome: "" | "completed" | "closed";
   operations: WorkflowOperation[];
+  materials?: TWorkflowMaterial[];
+  transitions?: IWorkflowTransition[];
   assignee: string;
   payer: string;
+  maxStageAmount?: string;
+  maxRunAmount?: string;
   settlementEvent: WorkflowEvent;
   settlementInstruction?: string;
   resultPricing?: WorkflowResultPricing;
   archived?: boolean;
 }
 
-export interface WorkflowDraft {
+export interface Workflow {
   id: string;
   shopId: string;
   title: string;
   applicability: string;
   goal: string;
   stages: WorkflowStage[];
-}
-
-export interface WorkflowRelease extends WorkflowDraft {
-  version: number;
-  publishedAt: string;
 }
 
 export interface TaskHistoryEntry {
@@ -90,12 +177,12 @@ export interface WorkflowTask {
   id: string;
   shopId: string;
   workflowId: string;
-  version: number;
   stageId: string;
   revision: number;
   label: string;
   customer: string;
   assignee: string;
+  assignmentCandidateIds?: string[];
   state: TaskState;
   waitingFor?: string;
   dueAt?: string;
@@ -118,7 +205,7 @@ export interface WorkflowPerson {
 
 export interface WorkflowFixture {
   shops: { id: string; title: string }[];
-  releases: WorkflowRelease[];
+  workflows: Workflow[];
   tasks: WorkflowTask[];
   people: WorkflowPerson[];
   payers: { id: string; title: string }[];
@@ -178,17 +265,6 @@ export function newStage(id: string): WorkflowStage {
     assignee: "",
     payer: "",
     settlementEvent: "none",
-  };
-}
-
-export function toDraft(release: WorkflowRelease): WorkflowDraft {
-  return {
-    id: release.id,
-    shopId: release.shopId,
-    title: release.title,
-    applicability: release.applicability,
-    goal: release.goal,
-    stages: release.stages.map((stage) => ({ ...stage })),
   };
 }
 

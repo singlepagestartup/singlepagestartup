@@ -3,6 +3,7 @@ import {
   actorKindSchema,
   pageInputSchema,
   stageIdSchema,
+  coverAttachmentRoleSchema,
 } from "@sps/crm/models/funnel/sdk/model";
 
 const scopeSchema = z.object({ storeId: z.uuid() });
@@ -36,7 +37,7 @@ export const taskEvidenceSchema = z.discriminatedUnion("kind", [
   z.object({
     kind: z.literal("result-accepted"),
     orderId: z.uuid(),
-    resultVersionId: z.uuid(),
+    fileId: z.uuid(),
   }),
   z.object({
     kind: z.literal("payment"),
@@ -59,7 +60,7 @@ export const taskEvidenceSchema = z.discriminatedUnion("kind", [
 export const openTaskSchema = scopeSchema.extend({
   ...auditSchema.shape,
   funnelId: z.uuid(),
-  expectedPublicationId: z.uuid().optional(),
+  expectedFunnelRevision: z.number().int().positive().optional(),
   customerId: z.uuid(),
   productId: z.uuid().optional(),
   offerId: z.uuid().optional(),
@@ -73,8 +74,8 @@ export const listTasksSchema = scopeSchema.extend({
   stageId: stageIdSchema.optional(),
   customerId: z.uuid().optional(),
   overdue: z.boolean().optional(),
+  current: z.boolean().optional(),
   orderId: z.uuid().optional(),
-  publicationId: z.uuid().optional(),
   assigneeId: z.uuid().optional(),
   status: z.enum(["active", "waiting", "closed"]).optional(),
   search: z.string().trim().min(1).max(180).optional(),
@@ -86,6 +87,13 @@ export const assignTaskSchema = changeSchema.extend({
   assigneeId: z.uuid(),
   assigneeKind: z.enum(["human", "ai"]),
   assignmentExpiresAt: z.iso.datetime({ offset: true }).optional(),
+});
+
+export const resumeCustomerWorkSchema = changeSchema.extend({
+  causeId: z.uuid(),
+  actorKind: z.enum(["manager", "ai"]).optional(),
+  assigneeId: z.uuid(),
+  expectedAssignmentRevision: z.number().int().positive(),
 });
 
 export const transitionTaskSchema = changeSchema.extend({
@@ -100,8 +108,9 @@ export const recordTaskEvidenceSchema = transitionTaskSchema.omit({
 });
 export const customerTaskActivitySchema = z.discriminatedUnion("kind", [
   changeSchema.extend({
-    kind: z.literal("customer-message"),
+    kind: z.enum(["customer-message", "staff-message"]),
     messageId: z.uuid(),
+    coverAttachmentRole: coverAttachmentRoleSchema.optional(),
   }),
   changeSchema.extend({ kind: z.literal("customer-handoff-requested") }),
   changeSchema.extend({
@@ -123,7 +132,8 @@ export const customerTaskActivitySchema = z.discriminatedUnion("kind", [
     approvedMaximum: z
       .string()
       .regex(/^(?:0|[1-9][0-9]{0,17})(?:\.[0-9]{1,12})?$/)
-      .refine((value) => /[1-9]/.test(value)),
+      .refine((value) => /[1-9]/.test(value))
+      .optional(),
     priceKey: z.string().regex(/^[a-f0-9]{64}$/),
     rates: z
       .array(
@@ -133,7 +143,7 @@ export const customerTaskActivitySchema = z.discriminatedUnion("kind", [
         ),
       )
       .min(1)
-      .max(7),
+      .max(20),
   }),
 ]);
 export const transferTaskCustomerSchema = changeSchema.extend({
@@ -141,16 +151,23 @@ export const transferTaskCustomerSchema = changeSchema.extend({
   customerId: z.uuid(),
 });
 export const getTaskWorkSchema = taskScopeSchema.extend({
+  eventId: z.uuid().optional(),
   assigneeId: z.uuid(),
   expectedRevision: z.number().int().positive().optional(),
   expectedAssignmentRevision: z.number().int().nonnegative(),
 });
 
-export const migrateTaskSchema = changeSchema.extend({
-  publicationId: z.uuid(),
-  stageId: stageIdSchema,
-  reason: reasonSchema,
+export const attachTaskFunnelSchema = taskScopeSchema.extend({
+  funnelId: z.uuid(),
 });
+export interface IAttachTaskFunnel extends z.infer<
+  typeof attachTaskFunnelSchema
+> {}
+
+export const attachTaskOfferSchema = changeSchema.extend({ offerId: z.uuid() });
+export interface IAttachTaskOffer extends z.infer<
+  typeof attachTaskOfferSchema
+> {}
 
 export const attachTaskOrderSchema = changeSchema.extend({ orderId: z.uuid() });
 export const closeTaskSchema = changeSchema.extend({ reason: reasonSchema });
@@ -167,6 +184,9 @@ export interface ITaskScope extends z.infer<typeof taskScopeSchema> {}
 export interface IListTasks extends z.infer<typeof listTasksSchema> {}
 export interface ITaskHistory extends z.infer<typeof taskHistorySchema> {}
 export interface IAssignTask extends z.infer<typeof assignTaskSchema> {}
+export interface IResumeCustomerWork extends z.infer<
+  typeof resumeCustomerWorkSchema
+> {}
 export interface ITransitionTask extends z.infer<typeof transitionTaskSchema> {}
 export interface IRecordTaskEvidence extends z.infer<
   typeof recordTaskEvidenceSchema
@@ -176,7 +196,6 @@ export interface ITransferTaskCustomer extends z.infer<
   typeof transferTaskCustomerSchema
 > {}
 export interface IGetTaskWork extends z.infer<typeof getTaskWorkSchema> {}
-export interface IMigrateTask extends z.infer<typeof migrateTaskSchema> {}
 export interface IAttachTaskOrder extends z.infer<
   typeof attachTaskOrderSchema
 > {}

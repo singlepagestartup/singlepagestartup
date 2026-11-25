@@ -1,0 +1,15 @@
+{
+  "id": "877e3cd2-0ecd-4343-945c-636f989174d7",
+  "createdAt": "2026-11-17T07:14:49.998Z",
+  "updatedAt": "2026-11-17T07:14:49.998Z",
+  "variant": "default",
+  "number": null,
+  "boolean": null,
+  "date": null,
+  "datetime": null,
+  "string": {
+    "en": "unit_price * quantity"
+  },
+  "adminTitle": "ai-chat-tokens-500-rub-price-formula",
+  "slug": "ai-chat-tokens-500-rub-price-formula"
+}

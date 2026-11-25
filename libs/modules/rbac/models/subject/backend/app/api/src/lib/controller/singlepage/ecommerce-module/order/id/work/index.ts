@@ -23,6 +23,7 @@ export class Handler {
           orderId,
           z.uuid().parse(artifactId),
           c.req.method,
+          z.uuid().optional().parse(c.req.query("storeId")),
         );
         const headers = getFileContentHeaders(file.name, file.mimeType);
         headers.set("Cache-Control", "private, no-store");

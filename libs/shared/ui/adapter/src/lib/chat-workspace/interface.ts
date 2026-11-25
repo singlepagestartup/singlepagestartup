@@ -32,10 +32,11 @@ export interface IChatListActivityProps {
 
 export interface IChatThreadPanelProps {
   title: string;
+  titleContent?: ReactNode;
   threadId?: string;
   pane?: "chat" | "context";
   onPaneChange?: (pane: "chat" | "context") => void;
-  /** Defaults to open at xl and closed on smaller screens. */
+  /** Defaults to closed until the user opens the context panel. */
   contextOpen?: boolean;
   onContextOpenChange?: (open: boolean) => void;
   language?: string;

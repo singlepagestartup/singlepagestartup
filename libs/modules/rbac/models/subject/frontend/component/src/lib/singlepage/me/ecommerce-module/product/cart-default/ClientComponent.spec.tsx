@@ -152,13 +152,13 @@ it("does not treat a child service as a saved primary on the service page", () =
   expect(screen.queryByText("Buy this configuration")).toBeNull();
 });
 
-it("omits result versions invalidated by a quantity correction from the buyer's choices", () => {
+it("only offers acceptance of the current order file", () => {
   mockWork = {
     orderId: "saved-chair",
     storeId: "workshop",
     taskId: "task",
     state: "awaiting-result",
-    versions: [
+    files: [
       {
         id: "version-old",
         number: 1,
@@ -177,8 +177,8 @@ it("omits result versions invalidated by a quantity correction from the buyer's 
         preview: { id: "preview-new", path: "/preview-new" },
       },
     ],
-    acceptedVersionId: null,
-    paidVersionId: null,
+    acceptedFileId: null,
+    paidFileId: null,
     result: null,
     receipt: null,
     deliveryStatus: "pending",
@@ -186,5 +186,5 @@ it("omits result versions invalidated by a quantity correction from the buyer's 
   };
   renderProduct("chair");
   expect(screen.queryByRole("option", { name: "Версия 1" })).toBeNull();
-  expect(screen.getByRole("button", { name: "Принять версию 2" })).toBeTruthy();
+  expect(screen.getByRole("button", { name: /Принять файл/ })).toBeTruthy();
 });

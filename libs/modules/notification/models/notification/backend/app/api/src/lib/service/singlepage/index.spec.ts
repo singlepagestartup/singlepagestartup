@@ -496,6 +496,61 @@ describe("notification send service", () => {
    * When the provider sends that notification
    * Then it uses sendDocument instead of an invalid one-item media group
    */
+  it.each(["image/png", "application/pdf"])(
+    "uploads a private %s as the original Telegram document",
+    async (mimeType) => {
+      const notification = createNotification({ reciever: "132" });
+      const service = Object.assign(Object.create(Service.prototype), {
+        findById: jest.fn().mockResolvedValue(notification),
+        update: jest.fn().mockResolvedValue(notification),
+      }) as Service;
+      const name =
+        mimeType === "application/pdf" ? "receipt.pdf" : "original.png";
+      const file = { bytes: Buffer.from("file bytes"), name, mimeType };
+      const read = jest.fn().mockResolvedValue(file);
+      Object.defineProperty(service, "modules", {
+        value: {
+          fileStorage: { file: { privateContent: { findById: read } } },
+        },
+      });
+      notification.attachments = [
+        service.telegramDocument(
+          notification.id,
+          notification.reciever,
+          "file-id",
+        ),
+      ];
+      (templateApi.render as jest.Mock).mockResolvedValue(
+        JSON.stringify({
+          method: "sendMessage",
+          props: ["File attached", { message_thread_id: 7 }],
+        }),
+      );
+      mockTelegramSendDocument.mockResolvedValue({ message_id: 123 });
+      const request = {
+        method: "telegram" as const,
+        provider: "Telegram" as const,
+        id: notification.id,
+        template: { id: "template" } as any,
+      };
+      await service.provider(request);
+      expect(jest.requireMock("grammy").InputFile).toHaveBeenCalledWith(
+        file.bytes,
+        name,
+      );
+      expect(mockTelegramSendDocument).toHaveBeenCalledWith(
+        "132",
+        expect.anything(),
+        expect.objectContaining({ message_thread_id: 7 }),
+      );
+      notification.reciever = "133";
+      await expect(service.provider(request)).rejects.toThrow(
+        "Invalid document delivery",
+      );
+      expect(read).toHaveBeenCalledTimes(1);
+    },
+  );
+
   it("sends one TXT attachment as a Telegram document", async () => {
     const notification = createNotification({
       reciever: "-100123",

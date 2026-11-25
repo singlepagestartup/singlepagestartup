@@ -29,7 +29,8 @@ jest.mock("@sps/shared-frontend-client-store", () => {
   };
 });
 
-import { QueryClient } from "@tanstack/react-query";
+import { QueryClient, QueryObserver } from "@tanstack/react-query";
+import { responsePipe } from "@sps/shared-utils";
 import { subscription } from "./index";
 
 const JITTER_MAX_MS = 200;
@@ -122,7 +123,7 @@ describe("subscription invalidation timing", () => {
     );
 
     expect(invalidateSpy).not.toHaveBeenCalled();
-    jest.advanceTimersByTime(JITTER_MAX_MS);
+    await jest.advanceTimersByTimeAsync(JITTER_MAX_MS);
     expect(invalidateSpy).toHaveBeenCalledTimes(1);
 
     unsubscribe();
@@ -136,10 +137,11 @@ describe("subscription invalidation timing", () => {
    * When:  the broadcast arrives.
    * Then:  the route is invalidated within 200 ms.
    */
-  it("invalidates the route fallback within the jitter bound", () => {
+  it("invalidates the route fallback within the jitter bound", async () => {
     const queryClient = makeClient();
     const invalidateSpy = jest.spyOn(queryClient, "invalidateQueries");
     const route = "/api/test/fallback-route-b";
+    await seedTopicQuery(queryClient, [route], []);
     const unsubscribe = subscription(route, queryClient);
 
     emit(
@@ -151,12 +153,12 @@ describe("subscription invalidation timing", () => {
     );
 
     expect(invalidateSpy).not.toHaveBeenCalled();
-    jest.advanceTimersByTime(JITTER_MAX_MS);
+    await jest.advanceTimersByTimeAsync(JITTER_MAX_MS);
     expect(invalidateSpy).toHaveBeenCalledTimes(1);
-    expect(invalidateSpy).toHaveBeenCalledWith({
-      queryKey: [route],
-      predicate: expect.any(Function),
-    });
+    expect(invalidateSpy).toHaveBeenCalledWith(
+      { queryKey: [route], exact: true, refetchType: "active" },
+      { cancelRefetch: false },
+    );
 
     unsubscribe();
   });
@@ -188,7 +190,7 @@ describe("subscription invalidation timing", () => {
     emit(state);
     emit(state);
 
-    jest.advanceTimersByTime(JITTER_MAX_MS);
+    await jest.advanceTimersByTimeAsync(JITTER_MAX_MS);
     expect(invalidateSpy).toHaveBeenCalledTimes(1);
 
     unsubscribe();
@@ -226,7 +228,7 @@ describe("subscription invalidation timing", () => {
       }),
     );
 
-    jest.advanceTimersByTime(JITTER_MAX_MS);
+    await jest.advanceTimersByTimeAsync(JITTER_MAX_MS);
     expect(invalidateSpy).toHaveBeenCalledTimes(1);
 
     unsubscribeFns.forEach((unsubscribe) => unsubscribe());
@@ -269,19 +271,21 @@ describe("subscription invalidation timing", () => {
       }),
     );
 
-    jest.advanceTimersByTime(JITTER_MAX_MS);
+    await jest.advanceTimersByTimeAsync(JITTER_MAX_MS);
 
-    // Both the global topic invalidation (for the sibling) and the per-route
-    // fallback (for this topic-less route) run.
-    expect(invalidateSpy).toHaveBeenCalledWith({
-      queryKey: [route],
-      predicate: expect.any(Function),
-    });
-    expect(
-      invalidateSpy.mock.calls.some(
-        (call) => typeof (call[0] as any)?.predicate === "function",
-      ),
-    ).toBe(true);
+    expect(invalidateSpy).toHaveBeenCalledTimes(2);
+    expect(invalidateSpy).toHaveBeenCalledWith(
+      { queryKey: [route, undefined], exact: true, refetchType: "active" },
+      { cancelRefetch: false },
+    );
+    expect(invalidateSpy).toHaveBeenCalledWith(
+      {
+        queryKey: ["/api/social/messages-f"],
+        exact: true,
+        refetchType: "active",
+      },
+      { cancelRefetch: false },
+    );
 
     unsubscribe();
   });
@@ -313,15 +317,13 @@ describe("subscription invalidation timing", () => {
       }),
     );
 
-    jest.advanceTimersByTime(JITTER_MAX_MS);
+    await jest.advanceTimersByTimeAsync(JITTER_MAX_MS);
 
-    // Exactly one invalidation - the predicate-based global one. The plain
-    // route-key fallback must NOT have fired.
     expect(invalidateSpy).toHaveBeenCalledTimes(1);
-    expect(invalidateSpy).not.toHaveBeenCalledWith({
-      queryKey: [route],
-      predicate: expect.any(Function),
-    });
+    expect(invalidateSpy).toHaveBeenCalledWith(
+      { queryKey: [route, undefined], exact: true, refetchType: "active" },
+      { cancelRefetch: false },
+    );
 
     unsubscribe();
   });
@@ -366,7 +368,7 @@ describe("subscription invalidation timing", () => {
     // The single broadcast reaches both clients' listeners.
     emit(state);
 
-    jest.advanceTimersByTime(JITTER_MAX_MS);
+    await jest.advanceTimersByTimeAsync(JITTER_MAX_MS);
 
     expect(invalidateSpyA).toHaveBeenCalledTimes(1);
     expect(invalidateSpyB).toHaveBeenCalledTimes(1);
@@ -382,11 +384,12 @@ describe("subscription invalidation timing", () => {
    * When:  a matching broadcast is processed.
    * Then:  invalidation is scheduled no later than 200 ms.
    */
-  it("schedules invalidation no later than the jitter maximum", () => {
+  it("schedules invalidation no later than the jitter maximum", async () => {
     jest.spyOn(Math, "random").mockReturnValue(0.999999);
     const queryClient = makeClient();
     const invalidateSpy = jest.spyOn(queryClient, "invalidateQueries");
     const route = "/api/test/fallback-route-d";
+    await seedTopicQuery(queryClient, [route], []);
     const unsubscribe = subscription(route, queryClient);
 
     emit(
@@ -398,11 +401,146 @@ describe("subscription invalidation timing", () => {
     );
 
     // Math.floor(0.999999 * 200) = 199 - the maximum possible jitter delay.
-    jest.advanceTimersByTime(JITTER_MAX_MS - 2);
+    await jest.advanceTimersByTimeAsync(JITTER_MAX_MS - 2);
     expect(invalidateSpy).not.toHaveBeenCalled();
-    jest.advanceTimersByTime(2);
+    await jest.advanceTimersByTimeAsync(2);
     expect(invalidateSpy).toHaveBeenCalledTimes(1);
 
     unsubscribe();
+  });
+
+  it("waits for a chat response body and refreshes once for a burst of topic and route events", async () => {
+    const client = makeClient();
+    const route = "/api/rbac/subjects/buyer/customer-work/threads/thread";
+    const key = [route];
+    const readTopic = "social.messages";
+    const requests: { signal: AbortSignal; finish: (text: string) => void }[] =
+      [];
+    client.setQueryData(key, "previous message");
+    const observer = new QueryObserver(client, {
+      queryKey: key,
+      staleTime: Infinity,
+      meta: { topics: [readTopic] },
+      queryFn: ({ signal }) =>
+        responsePipe<string>({
+          res: new Response(
+            new ReadableStream<Uint8Array>({
+              start(controller) {
+                signal.addEventListener(
+                  "abort",
+                  () => controller.error(signal.reason),
+                  { once: true },
+                );
+                requests.push({
+                  signal,
+                  finish(text) {
+                    controller.enqueue(
+                      new TextEncoder().encode(JSON.stringify(text)),
+                    );
+                    controller.close();
+                  },
+                });
+              },
+            }),
+          ),
+        }),
+    });
+    const disposeObserver = observer.subscribe(() => {});
+    const disposeSubscription = subscription(route, client);
+    const consoleError = jest
+      .spyOn(console, "error")
+      .mockImplementation(() => undefined);
+
+    try {
+      const currentRead = observer.refetch();
+      emit(
+        makeRevalidationState({
+          payload: route,
+          topics: [],
+          createdAt: new Date(Date.now() + 1).toISOString(),
+        }),
+      );
+      emit(
+        makeRevalidationState({
+          payload: route,
+          topics: [readTopic],
+          createdAt: new Date(Date.now() + 2).toISOString(),
+        }),
+      );
+      await jest.advanceTimersByTimeAsync(JITTER_MAX_MS);
+      expect(requests).toHaveLength(1);
+      expect(requests[0].signal.aborted).toBe(false);
+
+      requests[0].finish("old snapshot");
+      await currentRead;
+      await jest.advanceTimersByTimeAsync(0);
+      expect(requests).toHaveLength(2);
+      expect(observer.getCurrentResult().data).toBe("old snapshot");
+
+      emit(
+        makeRevalidationState({
+          payload: route,
+          topics: [],
+          createdAt: new Date(Date.now() + 1).toISOString(),
+        }),
+      );
+      await jest.advanceTimersByTimeAsync(JITTER_MAX_MS);
+      expect(requests).toHaveLength(2);
+      expect(requests[1].signal.aborted).toBe(false);
+      requests[1].finish("first update");
+      await jest.advanceTimersByTimeAsync(0);
+      expect(requests).toHaveLength(3);
+      requests[2].finish("latest update");
+      await jest.advanceTimersByTimeAsync(0);
+
+      expect(observer.getCurrentResult().data).toBe("latest update");
+      expect(consoleError).not.toHaveBeenCalled();
+    } finally {
+      disposeObserver();
+      disposeSubscription();
+      client.clear();
+    }
+  });
+
+  it("keeps normal request cancellation on leaving a query and skips its queued refresh", async () => {
+    const client = makeClient();
+    const route = "/api/test/removed-conversation";
+    let signal: AbortSignal | undefined;
+    const queryFn = jest.fn(
+      ({ signal: requestSignal }: { signal: AbortSignal }) => {
+        signal = requestSignal;
+        return new Promise<string>((_, reject) => {
+          requestSignal.addEventListener(
+            "abort",
+            () => reject(requestSignal.reason),
+            { once: true },
+          );
+        });
+      },
+    );
+    const observer = new QueryObserver(client, { queryKey: [route], queryFn });
+    const disposeObserver = observer.subscribe(() => {});
+    const disposeSubscription = subscription(route, client);
+    try {
+      emit(
+        makeRevalidationState({
+          payload: route,
+          topics: [],
+          createdAt: new Date(Date.now() + 1).toISOString(),
+        }),
+      );
+      await jest.advanceTimersByTimeAsync(JITTER_MAX_MS);
+      expect(signal?.aborted).toBe(false);
+      disposeObserver();
+      client.removeQueries({ queryKey: [route], exact: true });
+      await jest.advanceTimersByTimeAsync(0);
+
+      expect(signal?.aborted).toBe(true);
+      expect(queryFn).toHaveBeenCalledTimes(1);
+      expect(client.getQueryState([route])).toBeUndefined();
+    } finally {
+      disposeSubscription();
+      client.clear();
+    }
   });
 });

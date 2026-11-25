@@ -1,4 +1,4 @@
-import { getHttpErrorType, logger } from "@sps/backend-utils";
+import { addMoney, getHttpErrorType, logger } from "@sps/backend-utils";
 import { currencyPrecision } from "@sps/shared-utils";
 import type { ICustomerWorkOrderSummary } from "@sps/rbac/models/subject/sdk/model";
 import type { Service as SubjectService } from "../../index";
@@ -70,7 +70,7 @@ export class Service {
     };
   }
 
-  private async total(orderId: string, type: string) {
+  async total(orderId: string, type: string) {
     const ecommerce = this.subject.modules.ecommerce;
     try {
       if (type === "history") {
@@ -121,14 +121,17 @@ export class Service {
         return undefined;
       }
       return {
-        amount: entries.reduce((amount, entry) => amount + entry.total, 0),
+        amount: entries.reduce(
+          (amount, entry) => addMoney(amount, entry.total),
+          0,
+        ),
         symbol: currency.symbol,
         precision: currencyPrecision(currency),
       };
     } catch (error) {
       const { status } = getHttpErrorType(error);
       if (status >= 500) {
-        logger.warn("Could not read the customer conversation order total", {
+        logger.warn("Could not read the order total", {
           orderId,
           status,
         });

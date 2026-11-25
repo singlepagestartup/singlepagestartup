@@ -10,8 +10,9 @@ export interface IFilePreviewProps {
   localFile?: File;
   /** A client reader for stored text; mounted only while the dialog is open. */
   textContent?: ReactNode;
-  onDownload?: (signal?: AbortSignal) => Promise<Blob>;
-  layout?: "card" | "row";
+  onDownload?: (signal?: AbortSignal, maxBytes?: number) => Promise<Blob>;
+  layout?: "card" | "row" | "message" | "rail" | "gallery";
+  showDownload?: boolean;
   availability?: "preview" | "download-only" | "unavailable";
   className?: string;
   thumbnailClassName?: string;
@@ -25,7 +26,7 @@ export interface IFilePreviewTextProps {
 
 export interface ILocalTextProps {
   language?: string;
-  file: File;
+  file: Blob;
   kind: FilePreviewKind;
 }
 

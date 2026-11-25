@@ -72,6 +72,7 @@ describe("Knowledge material rebuilding", () => {
     expect(state.media.analyze).toHaveBeenCalledWith(
       expect.objectContaining({ id: "remaining" }),
       "Пользователь: отчёт предварительный.",
+      undefined,
     );
   });
   it("keeps user text and publishes no partial description when a file cannot be analyzed", async () => {

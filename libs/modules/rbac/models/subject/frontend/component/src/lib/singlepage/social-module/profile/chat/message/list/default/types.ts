@@ -1,4 +1,3 @@
-import type { IModel as IKnowledgeModuleSource } from "@sps/knowledge/models/source/sdk/model";
 import type { TRbacAiReactionReasoning } from "@sps/rbac/models/subject/sdk/model";
 import type { IResult as ISubjectResults } from "@sps/rbac/models/subject/sdk/client";
 import type { IModel as ISocialModuleSkill } from "@sps/social/models/skill/sdk/model";
@@ -53,6 +52,7 @@ type TChatModelGroups =
 
 export interface IChatModelControls {
   mode: "assistant" | "order";
+  fixedModelLabel?: string;
   favoriteModelIds: string[];
   isLoadingModels: boolean;
   isSelectionUnavailable: boolean;
@@ -67,5 +67,6 @@ export interface IChatModelControls {
   selectedReasoning: OpenRouterReasoningValue;
 }
 
-export type KnowledgeSource = IKnowledgeModuleSource;
+export type KnowledgeSource =
+  ISubjectResults["ISocialModuleProfileFindByIdKnowledgeSourceFindResult"][number];
 export type SocialSkill = ISocialModuleSkill;

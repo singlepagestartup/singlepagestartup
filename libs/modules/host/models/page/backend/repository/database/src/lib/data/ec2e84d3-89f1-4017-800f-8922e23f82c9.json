@@ -1,0 +1,35 @@
+{
+  "metadata": {
+    "seo": {
+      "title": {
+        "en": "Store order — SinglePageStartup",
+        "ru": "Карточка заказа — SinglePageStartup"
+      }
+    },
+    "seoDisplay": {
+      "twitterTitle": {
+        "en": "Store order — SinglePageStartup",
+        "ru": "Карточка заказа — SinglePageStartup"
+      },
+      "opengraphTitle": {
+        "en": "Store order — SinglePageStartup",
+        "ru": "Карточка заказа — SinglePageStartup"
+      },
+      "opengraphLocale": {
+        "en": "en_US",
+        "ru": "ru_RU"
+      }
+    }
+  },
+  "id": "ec2e84d3-89f1-4017-800f-8922e23f82c9",
+  "title": "Store order",
+  "url": "/ecommerce/stores/[ecommerce.stores.slug]/orders/[ecommerce.orders.id]",
+  "slug": "store-order-detail",
+  "description": "Description",
+  "createdAt": "2026-11-24T19:20:58.758Z",
+  "updatedAt": "2026-11-24T19:20:58.758Z",
+  "variant": "noindex",
+  "className": null,
+  "language": "en",
+  "adminTitle": "Store order"
+}

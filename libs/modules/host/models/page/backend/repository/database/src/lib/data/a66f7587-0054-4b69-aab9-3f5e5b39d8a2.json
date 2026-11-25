@@ -1,0 +1,47 @@
+{
+  "metadata": {
+    "seo": {
+      "title": {
+        "en": "Edit store product — SinglePageStartup",
+        "ru": "Редактирование товара — SinglePageStartup"
+      },
+      "description": {
+        "en": "Edit the product in your store.",
+        "ru": "Редактирование товара магазина."
+      }
+    },
+    "seoDisplay": {
+      "twitterTitle": {
+        "en": "Edit store product — SinglePageStartup",
+        "ru": "Редактирование товара — SinglePageStartup"
+      },
+      "opengraphTitle": {
+        "en": "Edit store product — SinglePageStartup",
+        "ru": "Редактирование товара — SinglePageStartup"
+      },
+      "opengraphLocale": {
+        "en": "en_US",
+        "ru": "ru_RU"
+      },
+      "twitterDescription": {
+        "en": "Edit the product in your store.",
+        "ru": "Редактирование товара магазина."
+      },
+      "opengraphDescription": {
+        "en": "Edit the product in your store.",
+        "ru": "Редактирование товара магазина."
+      }
+    }
+  },
+  "id": "a66f7587-0054-4b69-aab9-3f5e5b39d8a2",
+  "title": "Edit store product",
+  "url": "/ecommerce/stores/[ecommerce.stores.slug]/products/[ecommerce.products.id]/edit",
+  "slug": "store-product-edit",
+  "description": "Edit the product in your store.",
+  "createdAt": "2026-11-22T21:23:13.614Z",
+  "updatedAt": "2026-11-22T21:23:13.614Z",
+  "variant": "noindex",
+  "className": null,
+  "language": "en",
+  "adminTitle": "Edit store product"
+}
