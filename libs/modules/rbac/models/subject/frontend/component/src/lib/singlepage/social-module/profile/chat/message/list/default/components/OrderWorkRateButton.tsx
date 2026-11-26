@@ -1,8 +1,9 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { Button } from "@sps/shared-ui-shadcn";
 import { api } from "@sps/rbac/models/subject/sdk/client";
+import type { readCustomerWorkRatePrompt } from "@sps/rbac/models/subject/sdk/model";
+import { OrderMessageKeyboard } from "./OrderMessageKeyboard";
 
 interface IProps {
   subjectId: string;
@@ -12,7 +13,7 @@ interface IProps {
   priceKey: string;
   maximum?: string;
   canApprove: boolean;
-  label: string;
+  button: NonNullable<ReturnType<typeof readCustomerWorkRatePrompt>>["button"];
   language: string;
 }
 
@@ -51,22 +52,17 @@ export function OrderWorkRateButton(props: IProps) {
   }
 
   return (
-    <>
-      <Button
-        type="button"
-        size="sm"
-        variant="outline"
-        className="mt-2 w-fit text-xs"
-        disabled={!props.canApprove || mutation.isPending || approved}
-        onClick={() => void approve()}
-      >
-        {props.label}
-      </Button>
-      {failed && (
-        <p className="mt-1 text-xs text-destructive" role="alert">
-          {ru ? "Не удалось подтвердить тариф." : "Could not approve the rate."}
-        </p>
-      )}
-    </>
+    <OrderMessageKeyboard
+      rows={[[props.button]]}
+      disabled={!props.canApprove || mutation.isPending || approved}
+      error={
+        failed
+          ? ru
+            ? "Не удалось подтвердить тариф."
+            : "Could not approve the rate."
+          : undefined
+      }
+      onSelect={() => void approve()}
+    />
   );
 }

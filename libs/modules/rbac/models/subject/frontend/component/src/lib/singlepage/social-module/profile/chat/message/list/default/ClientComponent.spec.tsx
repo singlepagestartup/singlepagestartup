@@ -174,6 +174,9 @@ describe("Social thread context", () => {
       name: "Подтвердить тариф",
     });
     expect(button.getAttribute("type")).toBe("button");
+    expect(Array.from(button.classList)).toEqual(
+      expect.arrayContaining(["w-full", "text-sm", "py-2", "px-4"]),
+    );
     expect(button.closest("form")).toBeNull();
     expect(timeline.getByText("Предыдущий тариф.")).toBeTruthy();
     expect(mockChangeCustomerWork).not.toHaveBeenCalled();
@@ -226,6 +229,36 @@ describe("Social thread context", () => {
     expect(button.hasAttribute("disabled")).toBe(true);
     fireEvent.click(button);
     expect(mockChangeCustomerWork).not.toHaveBeenCalled();
+  });
+
+  it("uses the saved button label and retries a failed approval with the same operation key", async () => {
+    mockCustomerWork.mockReturnValue({ data: meteredOrder });
+    mockChangeCustomerWork.mockRejectedValueOnce(new Error("Request failed"));
+    renderComponent("customer-work", {
+      language: "ru",
+      socialModuleMessagesAndActionsQuery: [
+        rateMessage({ label: "Принять тариф" }),
+      ],
+    });
+    const button = screen.getByRole("button", { name: "Принять тариф" });
+    fireEvent.click(button);
+    fireEvent.click(button);
+
+    expect((await screen.findByRole("alert")).textContent).toBe(
+      "Не удалось подтвердить тариф.",
+    );
+    expect(mockChangeCustomerWork).toHaveBeenCalledTimes(1);
+    expect(button.hasAttribute("disabled")).toBe(false);
+
+    fireEvent.click(button);
+    await waitFor(() => {
+      expect(button.hasAttribute("disabled")).toBe(true);
+      expect(screen.queryByRole("alert")).toBeNull();
+    });
+    expect(mockChangeCustomerWork).toHaveBeenCalledTimes(2);
+    expect(mockChangeCustomerWork.mock.calls[1]).toEqual(
+      mockChangeCustomerWork.mock.calls[0],
+    );
   });
 
   it("renders the persisted payment confirmation and the customer reply as chat messages", async () => {

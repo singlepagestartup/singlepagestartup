@@ -253,7 +253,7 @@ export const MessageTimelineSection = memo(function MessageTimelineSection(
         priceKey={prompt.priceKey}
         maximum={prompt.maximum}
         canApprove={work.canApproveRate === true}
-        label={prompt.button.text}
+        button={prompt.button}
       />,
     );
     return slots;
