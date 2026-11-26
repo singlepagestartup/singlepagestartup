@@ -4,8 +4,8 @@ issue_title: Заказы покупателя и Social Chat в профиле
 repository: singlepagestartup
 created_at: 2026-11-26
 last_updated: 2026-11-26
-status: complete
-current_phase: complete
+status: in_review
+current_phase: plan
 ---
 
 # Журнал работы
@@ -16,7 +16,7 @@ current_phase: complete
 - Research: completed
 - Plan: completed
 - Implement: completed
-- Next step: code review / merge
+- Next step: проверка дополненного плана услуг. Первая часть остаётся в PR #444.
 
 ## Phase Notes
 
@@ -68,3 +68,9 @@ current_phase: complete
 - **Root Cause**: карточка всегда отдавала предпочтение состоянию работы.
 - **Fix**: карточка использует этап исполнения только у активного заказа. Отмену и ошибку оплаты показывает по состоянию самого заказа.
 - **Reusable Pattern**: отдельно проверять терминальное состояние заказа при устаревшем этапе работы.
+
+## Продолжение — услуги бизнес-экспертов
+
+- Research: completed. Проверены локальный тикет прежнего помощника, PR #374, issue #376 и рабочая CRM из #418. Публичное демо хранит правки локально. Существующая выдача оплаченного файла и сохранение знаний профиля имеют разные точки входа.
+- Plan: completed, in review. В `thoughts/shared/plans/singlepagestartup/ISSUE-442.md` сохранён прежний объём и добавлены услуги, этапы воронок, перенос главной, область доступа к знаниям и критерии двух заказов у разных экспертов.
+- Implement: pending для нового объёма. Сначала проверяются планы услуг на материалах Studio, затем проекции, рабочие контракты SPS и сквозной сценарий.
