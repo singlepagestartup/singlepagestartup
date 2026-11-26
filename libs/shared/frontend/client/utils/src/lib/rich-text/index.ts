@@ -41,7 +41,9 @@ export function readRichTextContent(
   try {
     const parsed: unknown = JSON.parse(value);
     if (isRichTextNode(parsed)) return parsed;
-    if (Array.isArray(parsed) && parsed.every(isRichTextNode)) return parsed;
+    return Array.isArray(parsed) && parsed.every(isRichTextNode)
+      ? parsed
+      : undefined;
   } catch {
     return undefined;
   }
