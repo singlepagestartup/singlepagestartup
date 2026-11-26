@@ -513,19 +513,16 @@ it("opens the only thread with the searchable chat list still in the sidebar", (
   expect(screen.getByTestId("conversation").textContent).toBe("General");
   const chats = within(screen.getByRole("navigation", { name: "Chats" }));
   expect(chats.getByRole("button", { name: "Chat settings" })).toBeTruthy();
-  expect(chats.getByRole("link", { name: /Team chat/ })).toBeTruthy();
+  fireEvent.click(chats.getByRole("link", { name: /Team chat/ }));
+  expect(screen.queryByRole("navigation", { name: "Threads" })).toBeNull();
+  expect(screen.queryByRole("button", { name: "Chat threads" })).toBeNull();
+  expect(screen.getByTestId("conversation").textContent).toBe("General");
   fireEvent.click(chats.getByRole("button", { name: "Search chats" }));
   fireEvent.change(chats.getByRole("searchbox", { name: "Search chats" }), {
     target: { value: "SUPPORT" },
   });
   expect(chats.getByRole("link", { name: /Support/ })).toBeTruthy();
   expect(chats.queryByRole("link", { name: /Team chat/ })).toBeNull();
-  fireEvent.click(screen.getByRole("button", { name: "Chat threads" }));
-  const topics = within(screen.getByRole("navigation", { name: "Threads" }));
-  expect(topics.getByRole("link", { name: /^General/ })).toBeTruthy();
-  expect(topics.getByRole("button", { name: "New thread" })).toBeTruthy();
-  fireEvent.click(screen.getByRole("button", { name: "All chats" }));
-  expect(screen.getByRole("navigation", { name: "Chats" })).toBeTruthy();
 });
 
 it("uses the same sidebar for chats and a flat list of ordinary and historical threads", () => {
@@ -554,7 +551,7 @@ it("uses the same sidebar for chats and a flat list of ordinary and historical t
     threads.getByRole("link", { name: /^Brief[.]md/ }).getAttribute("href"),
   ).toBe("/en/social/chats/chat/threads/old-document");
   expect(threads.queryByText("Documents")).toBeNull();
-  fireEvent.click(screen.getByRole("button", { name: "All chats" }));
+  fireEvent.click(threads.getByRole("button", { name: "Back to chats" }));
   const chats = within(screen.getByRole("navigation", { name: "Chats" }));
   expect(screen.queryByRole("navigation", { name: "Threads" })).toBeNull();
   expect(screen.getByTestId("conversation").textContent).toBe("General");

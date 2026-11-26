@@ -291,9 +291,7 @@ function ChatOverview(props: IComponentPropsExtended) {
     href: string;
     open: boolean;
   } | null>(null);
-  const [navigationView, setNavigationView] = useState<
-    "chats" | "threads" | null
-  >(null);
+  const [chatListChatId, setChatListChatId] = useState<string | null>(null);
   const closeNavigation = useCallback(() => {
     setMobileNavigation({ href: navigationHref, open: false });
   }, [navigationHref]);
@@ -404,18 +402,18 @@ function ChatOverview(props: IComponentPropsExtended) {
     : socialModuleThreads?.[0];
   const activeSocialModuleThreadId = activeSocialModuleThread?.id;
   const hasMultipleThreads = (socialModuleThreads?.length ?? 0) > 1;
-  const activeView =
-    navigationView ?? (hasMultipleThreads ? "threads" : "chats");
-  const showThreads = embedded || activeView === "threads";
+  const showThreads =
+    embedded ||
+    (hasMultipleThreads && chatListChatId !== props.socialModuleChat.id);
   const navigationOpen =
     mobileNavigation?.href === navigationHref
       ? mobileNavigation.open
       : !props.socialModuleThreadId && hasMultipleThreads;
   const selectCurrentChat = useCallback(() => {
-    setNavigationView("threads");
+    setChatListChatId(null);
     setThreadSearch("");
-    setMobileNavigation({ href: navigationHref, open: true });
-  }, [navigationHref]);
+    setMobileNavigation({ href: navigationHref, open: hasMultipleThreads });
+  }, [hasMultipleThreads, navigationHref]);
   const chatListQueryKey = useMemo(() => {
     return `${route}/${props.data.id}/social-module/profiles/${props.socialModuleProfile.id}/chats`;
   }, [props.data.id, props.socialModuleProfile.id]);
@@ -987,7 +985,25 @@ function ChatOverview(props: IComponentPropsExtended) {
         value: threadSearch,
         onChange: setThreadSearch,
       }}
-      leading={coverProps && <ChatCover {...coverProps} compact />}
+      leading={
+        <>
+          {!embedded && (
+            <button
+              type="button"
+              aria-label={backToChats}
+              title={backToChats}
+              onClick={() => {
+                setChatListChatId(props.socialModuleChat.id);
+                setThreadSearch("");
+              }}
+              className={navigationButtonClassName}
+            >
+              <ArrowLeft className="size-5" aria-hidden="true" />
+            </button>
+          )}
+          {coverProps && <ChatCover {...coverProps} compact />}
+        </>
+      }
       actions={settingsButton}
       footer={
         canManageChat && (
@@ -1055,7 +1071,7 @@ function ChatOverview(props: IComponentPropsExtended) {
       includeSubjectProfiles
       currentSocialModuleChatId={props.socialModuleChat.id}
       compact
-      currentChatActions={settingsButton}
+      currentChatActions={!hasMultipleThreads && settingsButton}
       onSelectCurrentChat={selectCurrentChat}
     />
   );
@@ -1082,47 +1098,7 @@ function ChatOverview(props: IComponentPropsExtended) {
       <ChatWorkspace
         siteLayout
         className={embedded ? "h-[clamp(32rem,70dvh,48rem)]" : undefined}
-        navigation={
-          <>
-            {!embedded && (
-              <div
-                role="group"
-                aria-label={ru ? "Разделы чата" : "Chat navigation"}
-                className="grid shrink-0 grid-cols-2 gap-1 border-b border-border p-2"
-              >
-                {(
-                  [
-                    { view: "chats", label: ru ? "Все чаты" : "All chats" },
-                    {
-                      view: "threads",
-                      label: ru ? "Обсуждения чата" : "Chat threads",
-                    },
-                  ] as const
-                ).map(({ view, label }) => {
-                  const active = activeView === view;
-                  return (
-                    <button
-                      key={view}
-                      type="button"
-                      aria-pressed={active}
-                      onClick={() => {
-                        setNavigationView(view);
-                        setThreadSearch("");
-                      }}
-                      className={cn(
-                        "min-h-10 rounded-lg px-2 text-sm font-medium text-muted-foreground hover:bg-muted focus-visible:outline-2",
-                        active && "bg-muted text-foreground",
-                      )}
-                    >
-                      {label}
-                    </button>
-                  );
-                })}
-              </div>
-            )}
-            {navigation}
-          </>
-        }
+        navigation={navigation}
         navigationId={mobileNavigationId}
         navigationClassName={cn(
           "w-full flex-col overflow-hidden bg-card p-0 text-card-foreground lg:flex lg:w-80 lg:border-r lg:border-border",
