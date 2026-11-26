@@ -7,7 +7,7 @@ export function ProductCover({ coverUrl }: { coverUrl?: string }) {
   return (
     <span
       aria-hidden="true"
-      className="row-span-2 grid size-16 place-items-center overflow-hidden rounded-xl bg-muted text-muted-foreground sm:row-span-1 sm:size-20"
+      className="grid size-12 place-items-center overflow-hidden rounded-xl bg-muted text-muted-foreground sm:size-16"
     >
       {coverUrl && coverUrl !== failedCover ? (
         <Image

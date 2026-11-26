@@ -20,14 +20,19 @@ const props = {
 
 it("shows the purchased quantity and recorded total, links to the catalog and recovers a broken cover", () => {
   const { container } = render(<Component {...props} />);
-  expect(screen.getByRole("heading", { name: "Original name" })).toBeTruthy();
-  expect(screen.getByText("Qty 2")).toBeTruthy();
-  expect(screen.getByText("$130.00")).toBeTruthy();
+  const link = screen.getByRole("link", {
+    name: "Open product: Original name",
+  });
+  expect(screen.getAllByRole("link")).toHaveLength(1);
+  expect(link.getAttribute("href")).toBe("/en/ecommerce/products/gift-set");
   expect(
-    screen
-      .getByRole("link", { name: "Open product: Original name" })
-      .getAttribute("href"),
-  ).toBe("/en/ecommerce/products/gift-set");
+    link.contains(screen.getByRole("heading", { name: "Original name" })),
+  ).toBe(true);
+  expect(link.contains(screen.getByText("Qty 2"))).toBe(true);
+  expect(link.contains(screen.getByText("$130.00"))).toBe(true);
+  expect(link.querySelector("img")).toBeTruthy();
+  link.focus();
+  expect(document.activeElement).toBe(link);
   const image = container.querySelector("img")!;
   expect(new URL(image.src).pathname).toBe("/api/files/cover.jpg");
   fireEvent.error(image);

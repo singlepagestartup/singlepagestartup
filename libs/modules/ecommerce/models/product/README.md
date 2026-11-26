@@ -32,7 +32,7 @@ Both admin forms accept custom values.
 ## Variants
 
 - `default`: product card with media, attributes, and short description.
-- `customer-order-line` shows the saved product title, quantity and line amount. Supply `coverUrl` and a public product slug when available. An archived item still displays its purchase details.
+- `customer-order-line` shows the saved product title, quantity and line amount. Supply `coverUrl` and a public product slug when available. The entire row links to the catalog item, with the cover and name on the left and the quantity and line amount on the right. An archived item still displays its purchase details.
 - `overview-default`: detailed product overview with media and attributes. Both card variants accept a `priceSlot` for a store’s unit price. Supplying the slot hides Product price attributes from the displayed characteristics.
 - `price-default`: reads Product price attributes for `billingModuleCurrencyId`. When `calculatedPrice` is supplied, presents that amount, currency, status and issues exclusively, including unavailable or pending results. Store `product-price-default` supplies this calculated result; Product does not read incoming Store relations.
 - `cart-default`: compact product row with the first ordered default media, product link and slots for cart actions. The owning RBAC cart supplies quantities and authorized order totals.

@@ -18,17 +18,13 @@ export const Component = memo(function CustomerOrderLine({
   const href = data.slug
     ? `/${language}/ecommerce/products/${encodeURIComponent(data.slug)}`
     : undefined;
-  return (
-    <article
-      data-module="ecommerce"
-      data-model="product"
-      data-id={data.id}
-      data-variant="customer-order-line"
-      className="grid min-w-0 grid-cols-[auto_minmax(0,1fr)] items-start gap-x-3 gap-y-2 py-3 sm:grid-cols-[auto_minmax(0,1fr)_auto] sm:items-center sm:gap-x-4"
-    >
+  const rowClass =
+    "grid w-full min-w-0 grid-cols-[auto_minmax(0,1fr)_fit-content(38%)] items-center gap-2 px-1 py-3 sm:gap-4 sm:px-2";
+  const content = (
+    <>
       <span
         aria-hidden="true"
-        className="row-span-2 grid size-16 place-items-center overflow-hidden rounded-xl bg-muted text-muted-foreground sm:row-span-1 sm:size-20"
+        className="grid size-12 place-items-center overflow-hidden rounded-xl bg-muted text-muted-foreground sm:size-16"
       >
         {coverUrl && coverUrl !== failedCover ? (
           <img
@@ -44,33 +40,45 @@ export const Component = memo(function CustomerOrderLine({
           <SharedIcon variant="phosphor" name="package" size={24} />
         )}
       </span>
-      <div className="min-w-0 space-y-1">
-        <h4 className="wrap-anywhere text-base font-semibold leading-snug">
+      <div className="min-w-0">
+        <h4 className="wrap-anywhere text-base font-semibold leading-snug group-hover:underline group-focus-visible:underline">
           {title}
         </h4>
-        <p className="flex flex-wrap items-baseline gap-x-3 gap-y-1 text-sm">
-          <span className="text-muted-foreground">
-            {ru ? `${quantity} шт.` : `Qty ${quantity}`}
-          </span>
-          <span className="font-medium tabular-nums">
-            {priceLabel || (ru ? "Цена не сохранилась" : "Price unavailable")}
-          </span>
+        {!href && (
+          <p className="mt-1 text-sm text-muted-foreground">
+            {ru ? "Товар недоступен" : "Product unavailable"}
+          </p>
+        )}
+      </div>
+      <div className="min-w-0 space-y-1 text-right text-sm tabular-nums">
+        <p className="text-muted-foreground">
+          {ru ? `${quantity} шт.` : `Qty ${quantity}`}
+        </p>
+        <p className="wrap-anywhere font-medium">
+          {priceLabel || (ru ? "Цена не сохранилась" : "Price unavailable")}
         </p>
       </div>
+    </>
+  );
+  return (
+    <article
+      data-module="ecommerce"
+      data-model="product"
+      data-id={data.id}
+      data-variant="customer-order-line"
+    >
       {href ? (
         <a
           href={href}
           aria-label={
             ru ? `Открыть товар «${title}»` : `Open product: ${title}`
           }
-          className="col-start-2 inline-flex min-h-10 w-fit items-center justify-center rounded-lg border border-border px-3 text-sm font-medium hover:bg-muted focus-visible:outline-2 focus-visible:outline-offset-2 sm:col-start-3"
+          className={`${rowClass} group rounded-xl hover:bg-muted/60 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring`}
         >
-          {ru ? "Открыть товар" : "Open product"}
+          {content}
         </a>
       ) : (
-        <span className="col-start-2 text-sm text-muted-foreground sm:col-start-3">
-          {ru ? "Товар недоступен" : "Product unavailable"}
-        </span>
+        <div className={rowClass}>{content}</div>
       )}
     </article>
   );

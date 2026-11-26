@@ -1124,6 +1124,8 @@ to their interactive views.
 collects all owned Profile memberships, deduplicates Chat IDs and reads one
 collection. Administrative scope uses the existing Chat lifecycle role check.
 Customer order conversations appear only for the customer who owns the linked task. This check also applies to administrators browsing Social. The collection and direct chat link use the same access rule.
+In a standalone chat, **All chats** opens the Subject's inbox and **Chat threads** lists the discussions in the selected chat, even when it has only one. Chat owners can create a discussion from that list. The embedded order conversation stays within its chat.
+
 The account inbox and the thread sidebar request `membershipsOnly=true` so even an administrator sees personal conversations there. Administrative SDK callers can use the existing role scope. The inbox searches stored titles before paging through conversations visible to the current Subject.
 Participant expansion runs in bulk after access validation. Query identity
 includes these parameters, API host and current principal. A loaded list row

@@ -520,6 +520,12 @@ it("opens the only thread with the searchable chat list still in the sidebar", (
   });
   expect(chats.getByRole("link", { name: /Support/ })).toBeTruthy();
   expect(chats.queryByRole("link", { name: /Team chat/ })).toBeNull();
+  fireEvent.click(screen.getByRole("button", { name: "Chat threads" }));
+  const topics = within(screen.getByRole("navigation", { name: "Threads" }));
+  expect(topics.getByRole("link", { name: /^General/ })).toBeTruthy();
+  expect(topics.getByRole("button", { name: "New thread" })).toBeTruthy();
+  fireEvent.click(screen.getByRole("button", { name: "All chats" }));
+  expect(screen.getByRole("navigation", { name: "Chats" })).toBeTruthy();
 });
 
 it("uses the same sidebar for chats and a flat list of ordinary and historical threads", () => {
@@ -548,7 +554,7 @@ it("uses the same sidebar for chats and a flat list of ordinary and historical t
     threads.getByRole("link", { name: /^Brief[.]md/ }).getAttribute("href"),
   ).toBe("/en/social/chats/chat/threads/old-document");
   expect(threads.queryByText("Documents")).toBeNull();
-  fireEvent.click(threads.getByRole("button", { name: "Back to chats" }));
+  fireEvent.click(screen.getByRole("button", { name: "All chats" }));
   const chats = within(screen.getByRole("navigation", { name: "Chats" }));
   expect(screen.queryByRole("navigation", { name: "Threads" })).toBeNull();
   expect(screen.getByTestId("conversation").textContent).toBe("General");
