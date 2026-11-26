@@ -1,0 +1,24 @@
+{
+  "metadata": {},
+  "id": "21fe9571-b2ad-4ed8-bc1f-78da1b9f593b",
+  "createdAt": "2026-11-26T14:02:43.827Z",
+  "updatedAt": "2026-11-26T14:02:43.827Z",
+  "variant": "default",
+  "kind": "service",
+  "type": "one_off",
+  "singleUnitPerOrder": true,
+  "slug": "framework-brand-voice",
+  "title": {
+    "en": "Brand and messaging",
+    "ru": "Бренд и коммуникация"
+  },
+  "shortDescription": {
+    "en": "Messaging hierarchy, brand voice and examples",
+    "ru": "Иерархия сообщений, голос бренда и примеры"
+  },
+  "description": {
+    "en": "Communications strategist. Inputs: Strategy and substantiated customer promises. Request changes to the preview before accepting and paying.",
+    "ru": "Стратег по коммуникации. Для работы: Стратегия и подтверждённые обещания покупателям. После просмотра результата можно запросить правки. Оплата после приёмки."
+  },
+  "adminTitle": "used sapphire dolphin"
+}

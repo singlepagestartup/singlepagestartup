@@ -3539,6 +3539,41 @@ paths:
         "200": { description: File headers with private no-store caching }
         "401": { description: A signed-in subject is required }
 
+  /rbac/subjects/{id}/ecommerce-module/orders/{orderId}/work/artifacts/{artifactId}/knowledge:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema: { type: string, format: uuid }
+      - name: orderId
+        in: path
+        required: true
+        schema: { type: string, format: uuid }
+      - name: artifactId
+        in: path
+        required: true
+        schema: { type: string, format: uuid }
+    post:
+      tags: [rbac-subject]
+      summary: Copy the delivered order original into the buyer's personal knowledge and index it
+      responses:
+        "200": { description: Personal profile ID and indexed source ID }
+        "401": { description: A signed-in subject is required }
+        "404":
+          {
+            description: The personal profile or delivered original is unavailable,
+          }
+    delete:
+      tags: [rbac-subject]
+      summary: Remove the copied original and its index from the buyer's personal knowledge
+      responses:
+        "200": { description: Personal profile ID and null source ID }
+        "401": { description: A signed-in subject is required }
+        "404":
+          {
+            description: The personal profile or delivered original is unavailable,
+          }
+
   /rbac/subjects/{id}/file-storage-module/files/{fileId}/content:
     parameters:
       - {

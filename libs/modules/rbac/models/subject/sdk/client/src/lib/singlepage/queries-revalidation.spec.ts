@@ -28,7 +28,6 @@ jest.mock("@paralleldrive/cuid2", () => ({ createId: () => "request" }));
 
 import { queryClient } from "@sps/shared-frontend-client-api";
 import { action as profiles } from "./social-module/profile/find";
-import { action as projects } from "./social-module/profile/projects";
 import { action as avatar } from "./social-module/profile/find-by-id/avatar/find";
 import { action as identities } from "./identity/find";
 import { action as balance } from "./billing-module/balance";
@@ -36,7 +35,6 @@ import { action as me } from "./authentication/me";
 
 const readers = [
   ["profiles", profiles, { id: "owner" }, "social.profiles"],
-  ["projects", projects, { id: "owner" }, "social.chats-to-threads"],
   [
     "avatar",
     avatar,
@@ -106,9 +104,3 @@ it.each(readers)(
     });
   },
 );
-
-it("isolates aggregate project caches by the authenticated Subject", () => {
-  const owner = projects({ id: "owner" }) as any;
-  const other = projects({ id: "other" }) as any;
-  expect(owner.queryKey).not.toEqual(other.queryKey);
-});

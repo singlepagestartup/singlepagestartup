@@ -281,8 +281,6 @@ export class Service {
         path: `/api/rbac/subjects/${subjectId}/billing-module/balance`,
       },
       { method: "GET", path },
-      { method: "GET", path: `${path}/projects` },
-      { method: "POST", path },
       { method: "GET", path: `/api/rbac/subjects/${subjectId}/identities` },
       { method: "PATCH", path: `${path}/${profile.id}` },
       { method: "POST", path: `${path}/${profile.id}/avatar` },

@@ -34,7 +34,6 @@ export function Component(props: IExternalWidgetProps) {
                 dataSource="props"
                 data={entity}
                 language={props.language}
-                socialModuleProfileId={routeParams?.["social.profiles.id"]}
                 socialModuleChatId={routeParams?.["social.chats.id"]}
                 socialModuleThreadId={routeParams?.["social.threads.id"]}
                 subjectSlug={routeParams?.["rbac.subjects.slug"]}

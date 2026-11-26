@@ -1117,6 +1117,7 @@ export class Service {
           order.paymentStatus = "paid";
         }
         if (work?.kind === "individual-service") {
+          order.workState = work.state;
           order.originalDelivered = Boolean(
             work.paid && work.resultFileId && work.deliveredAt,
           );

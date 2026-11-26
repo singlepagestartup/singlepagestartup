@@ -420,6 +420,7 @@ export interface ICrmWorkspaceTaskDetail {
     status: string;
     paymentStatus: string | null;
     originalDelivered?: boolean;
+    workState?: TWorkFulfillmentState;
     fulfillment?: {
       state: TWorkFulfillmentState;
       trackingNumber?: string;

@@ -114,13 +114,11 @@ it("creates exactly one personal default profile and grants only its Subject's c
     }),
   ]);
   expect(deps.role.rows).toHaveLength(1);
-  expect(deps.permission.rows).toHaveLength(15);
+  expect(deps.permission.rows).toHaveLength(13);
   expect(deps.permission.rows.map((row) => [row.method, row.path])).toEqual([
     ["GET", "/api/rbac/subjects/owner"],
     ["GET", "/api/rbac/subjects/owner/billing-module/balance"],
     ["GET", "/api/rbac/subjects/owner/social-module/profiles"],
-    ["GET", "/api/rbac/subjects/owner/social-module/profiles/projects"],
-    ["POST", "/api/rbac/subjects/owner/social-module/profiles"],
     ["GET", "/api/rbac/subjects/owner/identities"],
     ["PATCH", "/api/rbac/subjects/owner/social-module/profiles/profile-1"],
     [
@@ -147,7 +145,7 @@ it("creates exactly one personal default profile and grants only its Subject's c
       "/api/rbac/subjects/owner/identities/identity/email-change/verify",
     ],
   ]);
-  expect(deps.rolesToPermissions.rows).toHaveLength(15);
+  expect(deps.rolesToPermissions.rows).toHaveLength(13);
   expect(deps.subjectsToRoles.rows).toEqual([
     expect.objectContaining({
       subjectId: "owner",

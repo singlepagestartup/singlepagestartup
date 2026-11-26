@@ -1,9 +1,11 @@
 import {
+  orderArtifactKnowledgePath,
   orderArtifactPath,
   orderWorkPath,
   serverHost,
   type IOrderWorkScope,
   type IOrderWorkView,
+  type IOrderArtifactKnowledge,
   type TOrderWorkDecision,
 } from "@sps/rbac/models/subject/sdk/model";
 import {
@@ -27,6 +29,10 @@ export interface IContentProps extends IRequest {
   artifactId: string;
   maxBytes?: number;
   storeId?: string;
+}
+export interface IKnowledgeProps extends IRequest {
+  artifactId: string;
+  method: "POST" | "DELETE";
 }
 
 async function read({
@@ -101,4 +107,23 @@ async function content({
   return readChatAttachmentBlob(res, maxBytes);
 }
 
-export const orderWork = { read, decision, content };
+async function setArtifactKnowledge({
+  id,
+  orderId,
+  artifactId,
+  method,
+  host = serverHost,
+  options,
+}: IKnowledgeProps): Promise<IOrderArtifactKnowledge> {
+  const res = await fetch(
+    `${host}${orderArtifactKnowledgePath(id, orderId, artifactId)}`,
+    { ...options, credentials: "include", method, cache: "no-store" },
+  );
+  const answer = await responsePipe<{ data: IOrderArtifactKnowledge }>({ res });
+  if (!answer?.data) {
+    throw new Error("Order result Knowledge returned no data");
+  }
+  return answer.data;
+}
+
+export const orderWork = { read, decision, content, setArtifactKnowledge };

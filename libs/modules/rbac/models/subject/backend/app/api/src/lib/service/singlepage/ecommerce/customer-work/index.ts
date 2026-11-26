@@ -299,11 +299,7 @@ export class Service {
         },
       );
     }
-    if (
-      command.operation === "memory-project" ||
-      command.operation === "remember" ||
-      command.operation === "forget"
-    ) {
+    if (command.operation === "remember" || command.operation === "forget") {
       return this.recordMemory(customerId, command);
     }
     const view = await this.recordActivity(
@@ -1067,7 +1063,6 @@ export class Service {
           customerId,
           storeId: task.storeId,
           profileId: profile.id,
-          projectId: channel.memoryProjectId,
         })
       : undefined;
     const entries = await this.messages(channel.threadId);
@@ -3546,22 +3541,19 @@ export class Service {
     return this.subject.repository.withSubjectLock(
       { subjectId: customerId, savepoint: command.operation === "remember" },
       async () => {
-        const task = await this.taskForCustomer(customerId, command);
+        await this.taskForCustomer(customerId, command);
         const profile = await this.profileForSubject(customerId);
         if (!profile) {
           throw new Error(
             "Not Found error. The customer profile is unavailable",
           );
         }
-        const thread = await this.channel(task.id);
         await this.knowledge.record(
           {
             customerId,
-            storeId: task.storeId,
+            storeId: command.storeId,
             profileId: profile.id,
-            projectId: thread.memoryProjectId,
           },
-          thread,
           command,
         );
         return this.view(customerId, command);
@@ -3845,9 +3837,7 @@ export class Service {
                 customerId,
                 storeId: task.storeId,
                 profileId: personalProfileId,
-                projectId: channel.memoryProjectId,
               },
-              channel,
               { ...command, operationKey },
             );
           }
@@ -4888,7 +4878,6 @@ export class Service {
                 customerId: task.customerId,
                 profileId: customerProfile.id,
                 storeId: task.storeId,
-                projectId: channel.memoryProjectId,
               }
             : undefined,
       },

@@ -4,8 +4,8 @@
   "totals": {
     "modules": 15,
     "entities": 61,
-    "variants": 1110,
-    "coveredVariants": 259,
+    "variants": 1092,
+    "coveredVariants": 250,
     "representedEntities": 61
   },
   "modules": [
@@ -3325,7 +3325,6 @@
             "apps/studio/modules/host/layout/singlepage/admin-v2-select-input/Component.stories.tsx",
             "apps/studio/modules/host/layout/singlepage/admin-v2-table/Component.stories.tsx",
             "apps/studio/modules/host/layout/singlepage/ai-chat-dashboard/Component.stories.tsx",
-            "apps/studio/modules/host/layout/singlepage/ai-chat-landing/Component.stories.tsx",
             "apps/studio/modules/host/layout/singlepage/default/Component.stories.tsx",
             "apps/studio/modules/host/layout/singlepage/website/Component.stories.tsx"
           ]
@@ -3583,7 +3582,6 @@
             "apps/studio/modules/host/page/singlepage/admin-v2-select-input/Component.stories.tsx",
             "apps/studio/modules/host/page/singlepage/admin-v2-table/Component.stories.tsx",
             "apps/studio/modules/host/page/singlepage/ai-chat-help/Component.stories.tsx",
-            "apps/studio/modules/host/page/singlepage/ai-chat/Component.stories.tsx",
             "apps/studio/modules/host/page/singlepage/blog-module-article-find/Component.stories.tsx",
             "apps/studio/modules/host/page/singlepage/blog-module-article-private-slug/Component.stories.tsx",
             "apps/studio/modules/host/page/singlepage/blog-module-article-slug/Component.stories.tsx",
@@ -3596,6 +3594,8 @@
             "apps/studio/modules/host/page/singlepage/ecommerce-module-token-find/Component.stories.tsx",
             "apps/studio/modules/host/page/singlepage/framework-module-find/Component.stories.tsx",
             "apps/studio/modules/host/page/singlepage/framework-module-slug/Component.stories.tsx",
+            "apps/studio/modules/host/page/singlepage/framework-service-detail/Component.stories.tsx",
+            "apps/studio/modules/host/page/singlepage/framework-service-list/Component.stories.tsx",
             "apps/studio/modules/host/page/singlepage/framework/Component.stories.tsx",
             "apps/studio/modules/host/page/singlepage/privacy/Component.stories.tsx",
             "apps/studio/modules/host/page/singlepage/rbac-module-subject-me-authentication-registration-ai-chat/Component.stories.tsx",
@@ -3608,11 +3608,6 @@
             "apps/studio/modules/host/page/singlepage/rbac-module-subject-me-ecommerce-module-order-checkout/Component.stories.tsx",
             "apps/studio/modules/host/page/singlepage/rbac-module-subject-me-settings-ai-chat/Component.stories.tsx",
             "apps/studio/modules/host/page/singlepage/rbac-module-subject-me-settings/Component.stories.tsx",
-            "apps/studio/modules/host/page/singlepage/rbac-module-subject-me-social-module-profile-create-ai-chat/Component.stories.tsx",
-            "apps/studio/modules/host/page/singlepage/rbac-module-subject-me-social-module-profile-id-chat-id-thread-create-ai-chat/Component.stories.tsx",
-            "apps/studio/modules/host/page/singlepage/rbac-module-subject-me-social-module-profile-id-chat-id-thread-id-ai-chat/Component.stories.tsx",
-            "apps/studio/modules/host/page/singlepage/rbac-module-subject-me-social-module-profile-id-settings-ai-chat/Component.stories.tsx",
-            "apps/studio/modules/host/page/singlepage/rbac-module-subject-me-social-module-profile-list-ai-chat/Component.stories.tsx",
             "apps/studio/modules/host/page/singlepage/root/Component.stories.tsx",
             "apps/studio/modules/host/page/singlepage/seo-preview/Component.stories.tsx",
             "apps/studio/modules/host/page/singlepage/social-module-chat-id-thread-id/Component.stories.tsx",
@@ -5167,12 +5162,6 @@
               "coveredBy": []
             },
             {
-              "variant": "me-profile-settings-ai-chat",
-              "scope": "singlepage",
-              "variantsFile": "libs/modules/rbac/models/subject/frontend/component/src/lib/singlepage/variants.ts",
-              "coveredBy": []
-            },
-            {
               "variant": "me-social-module-profile-chat-list-default",
               "scope": "singlepage",
               "variantsFile": "libs/modules/rbac/models/subject/frontend/component/src/lib/singlepage/variants.ts",
@@ -5185,41 +5174,7 @@
               "coveredBy": []
             },
             {
-              "variant": "me-social-module-profile-create-ai-chat",
-              "scope": "singlepage",
-              "variantsFile": "libs/modules/rbac/models/subject/frontend/component/src/lib/singlepage/variants.ts",
-              "coveredBy": [
-                "rbac.subject.me-social-module-profile-create-ai-chat"
-              ]
-            },
-            {
               "variant": "me-social-module-profile-id-avatar-update-ai-chat",
-              "scope": "singlepage",
-              "variantsFile": "libs/modules/rbac/models/subject/frontend/component/src/lib/singlepage/variants.ts",
-              "coveredBy": []
-            },
-            {
-              "variant": "me-social-module-profile-id-chat-id-thread-create-ai-chat",
-              "scope": "singlepage",
-              "variantsFile": "libs/modules/rbac/models/subject/frontend/component/src/lib/singlepage/variants.ts",
-              "coveredBy": []
-            },
-            {
-              "variant": "me-social-module-profile-id-navigation-ai-chat",
-              "scope": "singlepage",
-              "variantsFile": "libs/modules/rbac/models/subject/frontend/component/src/lib/singlepage/variants.ts",
-              "coveredBy": []
-            },
-            {
-              "variant": "me-social-module-profile-id-settings-ai-chat",
-              "scope": "singlepage",
-              "variantsFile": "libs/modules/rbac/models/subject/frontend/component/src/lib/singlepage/variants.ts",
-              "coveredBy": [
-                "rbac.subject.me-social-module-profile-id-settings-ai-chat"
-              ]
-            },
-            {
-              "variant": "me-social-module-profile-id-sidebar-ai-chat",
               "scope": "singlepage",
               "variantsFile": "libs/modules/rbac/models/subject/frontend/component/src/lib/singlepage/variants.ts",
               "coveredBy": []
@@ -5231,24 +5186,10 @@
               "coveredBy": []
             },
             {
-              "variant": "me-social-module-profile-list-ai-chat",
-              "scope": "singlepage",
-              "variantsFile": "libs/modules/rbac/models/subject/frontend/component/src/lib/singlepage/variants.ts",
-              "coveredBy": []
-            },
-            {
               "variant": "me-social-module-profile-list-settings-ai-chat",
               "scope": "singlepage",
               "variantsFile": "libs/modules/rbac/models/subject/frontend/component/src/lib/singlepage/variants.ts",
               "coveredBy": []
-            },
-            {
-              "variant": "me-social-module-profile-select-ai-chat",
-              "scope": "singlepage",
-              "variantsFile": "libs/modules/rbac/models/subject/frontend/component/src/lib/singlepage/variants.ts",
-              "coveredBy": [
-                "rbac.subject.me-social-module-profile-select-ai-chat"
-              ]
             },
             {
               "variant": "overview-default",
@@ -5342,7 +5283,6 @@
             "apps/studio/modules/rbac/subject/singlepage/me/identity/create/telegram/Component.stories.tsx",
             "apps/studio/modules/rbac/subject/singlepage/me/identity/delete/Component.stories.tsx",
             "apps/studio/modules/rbac/subject/singlepage/me/identity/find/information/Component.stories.tsx",
-            "apps/studio/modules/rbac/subject/singlepage/me/social-module/profile/create/ai-chat/Component.stories.tsx",
             "apps/studio/modules/rbac/subject/singlepage/me/social-module/profile/id/chat/id/thread/create/form/ai-chat/Component.stories.tsx",
             "apps/studio/modules/rbac/subject/singlepage/me/social-module/profile/id/chat/id/thread/id/knowledge-module/source/list/document/ai-chat/Component.stories.tsx",
             "apps/studio/modules/rbac/subject/singlepage/me/social-module/profile/id/chat/id/thread/id/knowledge-module/source/update/ai-chat/Component.stories.tsx",
@@ -5433,6 +5373,22 @@
               "scope": "singlepage",
               "variantsFile": "libs/modules/rbac/models/widget/frontend/component/src/lib/singlepage/variants.ts",
               "coveredBy": []
+            },
+            {
+              "variant": "framework-service-detail",
+              "scope": "singlepage",
+              "variantsFile": "libs/modules/rbac/models/widget/frontend/component/src/lib/singlepage/variants.ts",
+              "coveredBy": [
+                "rbac.widget.framework-service-detail"
+              ]
+            },
+            {
+              "variant": "framework-service-list",
+              "scope": "singlepage",
+              "variantsFile": "libs/modules/rbac/models/widget/frontend/component/src/lib/singlepage/variants.ts",
+              "coveredBy": [
+                "rbac.widget.framework-service-list"
+              ]
             },
             {
               "variant": "hidden",
@@ -5763,36 +5719,6 @@
               ]
             },
             {
-              "variant": "subject-me-social-module-profile-create-ai-chat",
-              "scope": "singlepage",
-              "variantsFile": "libs/modules/rbac/models/widget/frontend/component/src/lib/singlepage/variants.ts",
-              "coveredBy": []
-            },
-            {
-              "variant": "subject-me-social-module-profile-id-chat-id-thread-create-ai-chat",
-              "scope": "singlepage",
-              "variantsFile": "libs/modules/rbac/models/widget/frontend/component/src/lib/singlepage/variants.ts",
-              "coveredBy": [
-                "rbac.widget.subject-me-social-module-profile-id-chat-id-thread-create-ai-chat"
-              ]
-            },
-            {
-              "variant": "subject-me-social-module-profile-id-chat-id-thread-id-ai-chat",
-              "scope": "singlepage",
-              "variantsFile": "libs/modules/rbac/models/widget/frontend/component/src/lib/singlepage/variants.ts",
-              "coveredBy": [
-                "rbac.widget.subject-me-social-module-profile-id-chat-id-thread-id-ai-chat"
-              ]
-            },
-            {
-              "variant": "subject-me-social-module-profile-id-settings-ai-chat",
-              "scope": "singlepage",
-              "variantsFile": "libs/modules/rbac/models/widget/frontend/component/src/lib/singlepage/variants.ts",
-              "coveredBy": [
-                "rbac.widget.subject-me-social-module-profile-id-settings-ai-chat"
-              ]
-            },
-            {
               "variant": "subject-overview-default",
               "scope": "singlepage",
               "variantsFile": "libs/modules/rbac/models/widget/frontend/component/src/lib/singlepage/variants.ts",
@@ -5815,6 +5741,8 @@
             "apps/studio/modules/rbac/widget/Skeleton.stories.tsx",
             "apps/studio/modules/rbac/widget/singlepage/admin-v2-card/Component.stories.tsx",
             "apps/studio/modules/rbac/widget/singlepage/admin-v2-table/Component.stories.tsx",
+            "apps/studio/modules/rbac/widget/singlepage/framework-service-detail/Component.stories.tsx",
+            "apps/studio/modules/rbac/widget/singlepage/framework-service-list/Component.stories.tsx",
             "apps/studio/modules/rbac/widget/singlepage/list/Component.stories.tsx",
             "apps/studio/modules/rbac/widget/singlepage/subject-me-authentication-registration-ai-chat/Component.stories.tsx",
             "apps/studio/modules/rbac/widget/singlepage/subject-me-authentication-select-method-ai-chat/Component.stories.tsx",
@@ -5825,10 +5753,6 @@
             "apps/studio/modules/rbac/widget/singlepage/subject-me-ecommerce-module-product-list-default/Component.stories.tsx",
             "apps/studio/modules/rbac/widget/singlepage/subject-me-ecommerce-module-token-find/Component.stories.tsx",
             "apps/studio/modules/rbac/widget/singlepage/subject-me-profile-settings/Component.stories.tsx",
-            "apps/studio/modules/rbac/widget/singlepage/subject-me-social-module-profile-id-chat-id-thread-create-ai-chat/Component.stories.tsx",
-            "apps/studio/modules/rbac/widget/singlepage/subject-me-social-module-profile-id-chat-id-thread-id-ai-chat/Component.stories.tsx",
-            "apps/studio/modules/rbac/widget/singlepage/subject-me-social-module-profile-id-settings-ai-chat/Component.stories.tsx",
-            "apps/studio/modules/rbac/widget/singlepage/subject-me-social-module-profile-list-ai-chat/Component.stories.tsx",
             "apps/studio/modules/rbac/widget/singlepage/subject-me-store-customer-work/Component.stories.tsx",
             "apps/studio/modules/rbac/widget/singlepage/subject-me-store-provider-settings/Component.stories.tsx",
             "apps/studio/modules/rbac/widget/singlepage/subject/me/social-module/profile/chat/list-default/Component.stories.tsx",
@@ -6226,14 +6150,6 @@
               "coveredBy": [
                 "social.chat.id-ai-chat"
               ]
-            },
-            {
-              "variant": "id-preview-ai-chat",
-              "scope": "singlepage",
-              "variantsFile": "libs/modules/social/models/chat/frontend/component/src/lib/singlepage/variants.ts",
-              "coveredBy": [
-                "social.chat.id-preview-ai-chat"
-              ]
             }
           ],
           "storyFiles": [
@@ -6241,7 +6157,6 @@
             "apps/studio/modules/social/chat/singlepage/admin-v2-card/Component.stories.tsx",
             "apps/studio/modules/social/chat/singlepage/admin-v2-table/Component.stories.tsx",
             "apps/studio/modules/social/chat/singlepage/id/ai-chat/Component.stories.tsx",
-            "apps/studio/modules/social/chat/singlepage/id/preview/ai-chat/Component.stories.tsx",
             "apps/studio/modules/social/chat/singlepage/list-item-ai-chat/Component.stories.tsx"
           ]
         },
@@ -6510,14 +6425,6 @@
               "coveredBy": []
             },
             {
-              "variant": "id-ai-chat-project",
-              "scope": "singlepage",
-              "variantsFile": "libs/modules/social/models/profile/frontend/component/src/lib/singlepage/variants.ts",
-              "coveredBy": [
-                "social.profile.id-ai-chat-project"
-              ]
-            },
-            {
               "variant": "id-settings-ai-chat",
               "scope": "singlepage",
               "variantsFile": "libs/modules/social/models/profile/frontend/component/src/lib/singlepage/variants.ts",
@@ -6529,30 +6436,6 @@
               "variantsFile": "libs/modules/social/models/profile/frontend/component/src/lib/singlepage/variants.ts",
               "coveredBy": [
                 "social.profile.overview-default"
-              ]
-            },
-            {
-              "variant": "select-ai-chat-project",
-              "scope": "singlepage",
-              "variantsFile": "libs/modules/social/models/profile/frontend/component/src/lib/singlepage/variants.ts",
-              "coveredBy": [
-                "social.profile.select-ai-chat-project"
-              ]
-            },
-            {
-              "variant": "select-item-ai-chat-project",
-              "scope": "singlepage",
-              "variantsFile": "libs/modules/social/models/profile/frontend/component/src/lib/singlepage/variants.ts",
-              "coveredBy": [
-                "social.profile.select-item-ai-chat-project"
-              ]
-            },
-            {
-              "variant": "sidebar-ai-chat-project",
-              "scope": "singlepage",
-              "variantsFile": "libs/modules/social/models/profile/frontend/component/src/lib/singlepage/variants.ts",
-              "coveredBy": [
-                "social.profile.sidebar-ai-chat-project"
               ]
             },
             {
@@ -7578,19 +7461,7 @@
               ]
             },
             {
-              "variant": "demo-document",
-              "scope": "singlepage",
-              "variantsFile": "libs/modules/website-builder/models/feature/frontend/component/src/lib/singlepage/variants.ts",
-              "coveredBy": []
-            },
-            {
               "variant": "demo-handoff",
-              "scope": "singlepage",
-              "variantsFile": "libs/modules/website-builder/models/feature/frontend/component/src/lib/singlepage/variants.ts",
-              "coveredBy": []
-            },
-            {
-              "variant": "demo-project",
               "scope": "singlepage",
               "variantsFile": "libs/modules/website-builder/models/feature/frontend/component/src/lib/singlepage/variants.ts",
               "coveredBy": []
@@ -8101,14 +7972,6 @@
               ]
             },
             {
-              "variant": "content-ai-chat-profile-create",
-              "scope": "singlepage",
-              "variantsFile": "libs/modules/website-builder/models/widget/frontend/component/src/lib/singlepage/variants.ts",
-              "coveredBy": [
-                "website-builder.widget.content-ai-chat-profile-create"
-              ]
-            },
-            {
               "variant": "content-ai-chat-registration",
               "scope": "singlepage",
               "variantsFile": "libs/modules/website-builder/models/widget/frontend/component/src/lib/singlepage/variants.ts",
@@ -8253,19 +8116,27 @@
               "coveredBy": []
             },
             {
-              "variant": "content-project-context",
-              "scope": "singlepage",
-              "variantsFile": "libs/modules/website-builder/models/widget/frontend/component/src/lib/singlepage/variants.ts",
-              "coveredBy": [
-                "website-builder.widget.content-project-context"
-              ]
-            },
-            {
               "variant": "content-rich",
               "scope": "singlepage",
               "variantsFile": "libs/modules/website-builder/models/widget/frontend/component/src/lib/singlepage/variants.ts",
               "coveredBy": [
                 "website-builder.widget.content-rich"
+              ]
+            },
+            {
+              "variant": "content-service-detail",
+              "scope": "singlepage",
+              "variantsFile": "libs/modules/website-builder/models/widget/frontend/component/src/lib/singlepage/variants.ts",
+              "coveredBy": [
+                "website-builder.widget.content-service-detail"
+              ]
+            },
+            {
+              "variant": "content-service-list",
+              "scope": "singlepage",
+              "variantsFile": "libs/modules/website-builder/models/widget/frontend/component/src/lib/singlepage/variants.ts",
+              "coveredBy": [
+                "website-builder.widget.content-service-list"
               ]
             },
             {
@@ -8328,12 +8199,6 @@
               "coveredBy": []
             },
             {
-              "variant": "landing-ai-chat",
-              "scope": "singlepage",
-              "variantsFile": "libs/modules/website-builder/models/widget/frontend/component/src/lib/singlepage/variants.ts",
-              "coveredBy": []
-            },
-            {
               "variant": "navbar-ai-chat",
               "scope": "singlepage",
               "variantsFile": "libs/modules/website-builder/models/widget/frontend/component/src/lib/singlepage/variants.ts",
@@ -8377,28 +8242,24 @@
             "apps/studio/modules/website-builder/widget/singlepage/content-offer-card/Component.stories.tsx",
             "apps/studio/modules/website-builder/widget/singlepage/content-offer/Component.stories.tsx",
             "apps/studio/modules/website-builder/widget/singlepage/content-page-header/Component.stories.tsx",
-            "apps/studio/modules/website-builder/widget/singlepage/content-project-context/Component.stories.tsx",
             "apps/studio/modules/website-builder/widget/singlepage/content-rich/Component.stories.tsx",
+            "apps/studio/modules/website-builder/widget/singlepage/content-service-detail/Component.stories.tsx",
+            "apps/studio/modules/website-builder/widget/singlepage/content-service-list/Component.stories.tsx",
             "apps/studio/modules/website-builder/widget/singlepage/content-showcase/Component.stories.tsx",
             "apps/studio/modules/website-builder/widget/singlepage/content-steps/Component.stories.tsx",
             "apps/studio/modules/website-builder/widget/singlepage/content-testimonials/Component.stories.tsx",
             "apps/studio/modules/website-builder/widget/singlepage/content/ai-chat/authentication/Component.stories.tsx",
-            "apps/studio/modules/website-builder/widget/singlepage/content/ai-chat/continue/Component.stories.tsx",
             "apps/studio/modules/website-builder/widget/singlepage/content/ai-chat/forgot-password/Component.stories.tsx",
             "apps/studio/modules/website-builder/widget/singlepage/content/ai-chat/help/Component.stories.tsx",
-            "apps/studio/modules/website-builder/widget/singlepage/content/ai-chat/hero/Component.stories.tsx",
             "apps/studio/modules/website-builder/widget/singlepage/content/ai-chat/materials-processing/Component.stories.tsx",
-            "apps/studio/modules/website-builder/widget/singlepage/content/ai-chat/profile-create/Component.stories.tsx",
             "apps/studio/modules/website-builder/widget/singlepage/content/ai-chat/registration/Component.stories.tsx",
             "apps/studio/modules/website-builder/widget/singlepage/content/ai-chat/reset-password/Component.stories.tsx",
-            "apps/studio/modules/website-builder/widget/singlepage/content/ai-chat/try/Component.stories.tsx",
             "apps/studio/modules/website-builder/widget/singlepage/content/social/chat-default/Component.stories.tsx",
             "apps/studio/modules/website-builder/widget/singlepage/footer-compact/Component.stories.tsx",
             "apps/studio/modules/website-builder/widget/singlepage/footer-default/Component.stories.tsx",
             "apps/studio/modules/website-builder/widget/singlepage/footer/ai-chat/Component.stories.tsx",
             "apps/studio/modules/website-builder/widget/singlepage/list/Component.stories.tsx",
             "apps/studio/modules/website-builder/widget/singlepage/navbar-default/Component.stories.tsx",
-            "apps/studio/modules/website-builder/widget/singlepage/navbar/ai-chat-landing/Component.stories.tsx",
             "apps/studio/modules/website-builder/widget/singlepage/navbar/ai-chat/Component.stories.tsx",
             "apps/studio/modules/website-builder/widget/startup/content-default/Component.stories.tsx"
           ]

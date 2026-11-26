@@ -595,6 +595,24 @@ npm run api:dev
 npm run host:dev
 ```
 
+### Testing Framework agent services locally
+
+The standard seed installs the eight example offers shown at
+`/ru/framework/services` and `/en/framework/services`. To test fulfillment,
+use an existing local seller account and its RBAC Subject ID. With PostgreSQL,
+Redis and the Knowledge embedding provider configured, run the following from
+`apps/api`. Replace `SELLER_SUBJECT_ID` with that account's ID.
+
+```sh
+../../node_modules/.bin/bun --tsconfig-override ./tsconfig.json --env-file=.env ../../tools/testing/framework-agent-services.ts SELLER_SUBJECT_ID
+```
+
+This prepares each expert's profile, knowledge, skill and CRM funnel for the
+seeded store. Use the same seller ID on repeat runs. Sign in as a buyer to
+order a brief, accept a version, pay using the test payment module and save the
+delivered file to the buyer's personal profile. Open a separate strategy order
+to ask another expert about the saved brief.
+
 ## Testing Convention (BDD Required)
 
 All test files in SPS follow a BDD-oriented format (`unit`, `integration`).

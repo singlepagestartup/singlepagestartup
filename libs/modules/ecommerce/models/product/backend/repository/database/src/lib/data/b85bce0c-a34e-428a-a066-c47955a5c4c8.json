@@ -1,0 +1,24 @@
+{
+  "metadata": {},
+  "id": "b85bce0c-a34e-428a-a066-c47955a5c4c8",
+  "createdAt": "2026-11-26T14:02:39.334Z",
+  "updatedAt": "2026-11-26T14:02:39.334Z",
+  "variant": "default",
+  "kind": "service",
+  "type": "one_off",
+  "singleUnitPerOrder": true,
+  "slug": "framework-offer-analysis",
+  "title": {
+    "en": "Offer analysis",
+    "ru": "Описание предложения"
+  },
+  "shortDescription": {
+    "en": "An offer specification with purchasing terms and unit economics",
+    "ru": "Карточка предложения с условиями покупки и расчётом экономики"
+  },
+  "description": {
+    "en": "Business analyst. Inputs: Offer contents, prices and known costs. Request changes to the preview before accepting and paying.",
+    "ru": "Бизнес-аналитик. Для работы: Состав предложения, цены и известные затраты. После просмотра результата можно запросить правки. Оплата после приёмки."
+  },
+  "adminTitle": "parliamentary turquoise reindeer"
+}

@@ -180,6 +180,11 @@ export interface IOrderArtifact {
   mimeType?: string;
 }
 
+export interface IOrderArtifactKnowledge {
+  profileId: string;
+  sourceId: string | null;
+}
+
 export interface IOrderResultFile {
   name?: string;
   id: string;
@@ -259,4 +264,33 @@ export function orderArtifactPath(
   fileId: string,
 ) {
   return `${orderWorkPath(subjectId, orderId)}/artifacts/${fileId}`;
+}
+
+export function orderArtifactKnowledgePath(
+  subjectId: string,
+  orderId: string,
+  fileId: string,
+) {
+  return `${orderArtifactPath(subjectId, orderId, fileId)}/knowledge`;
+}
+
+export function orderResultKnowledgeOrigin(slug: string) {
+  const match = slug.match(
+    /^personal-profile-([0-9a-f-]{36})-order-([0-9a-f-]{36})-result-([0-9a-f-]{36})$/i,
+  );
+  if (!match) {
+    return undefined;
+  }
+  const [, profileId, orderId, versionId] = match;
+  if (
+    !z
+      .tuple([z.uuid(), z.uuid(), z.uuid()])
+      .safeParse([profileId, orderId, versionId]).success
+  ) {
+    return undefined;
+  }
+  return {
+    profileId,
+    path: `/rbac/subjects/orders/${orderId}#result-${versionId}`,
+  };
 }

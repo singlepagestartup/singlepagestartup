@@ -66,21 +66,19 @@ export const AI_CHAT_HELP_CONTENT = {
       title: "What happens next",
       paragraphs: [
         "Support requests are processed within 24 hours. This is the initial response expectation, not a promise to resolve every request within that time. Continuous live support is outside the current service.",
-        "Keep your saved documents and task in place while you wait. [Return to the workspace](/ai-chat/social/profiles/example).",
+        "Keep your saved documents and task in place while you wait. [Open chats](/social/chats).",
       ],
       items: [],
       links: [
         {
-          text: "Return to the workspace",
-          href: "/ai-chat/social/profiles/example",
+          text: "Open chats",
+          href: "/social/chats",
         },
       ],
     },
     success: {
       title: "Request submitted",
-      paragraphs: [
-        "We’ll respond within 24 hours. You can keep working in your workspace while you wait.",
-      ],
+      paragraphs: ["We’ll respond within 24 hours."],
       items: [],
       links: [],
     },
@@ -90,11 +88,11 @@ export const AI_CHAT_HELP_CONTENT = {
       items: [
         {
           title: "back-label",
-          text: "Back to workspace",
+          text: "Open chats",
         },
         {
           title: "back-href",
-          text: "/ai-chat/social/profiles/example",
+          text: "/social/chats",
         },
         {
           title: "topic-label",
@@ -130,11 +128,11 @@ export const AI_CHAT_HELP_CONTENT = {
         },
         {
           title: "return-label",
-          text: "Return to workspace",
+          text: "Open chats",
         },
         {
           title: "return-href",
-          text: "/ai-chat/social/profiles/example",
+          text: "/social/chats",
         },
         {
           title: "topic-error",
@@ -157,8 +155,8 @@ export const AI_CHAT_HELP_CONTENT = {
     },
   },
   labels: {
-    "back-label": "Back to workspace",
-    "back-href": "/ai-chat/social/profiles/example",
+    "back-label": "Open chats",
+    "back-href": "/social/chats",
     "topic-label": "Topic",
     "topic-placeholder": "Select a topic",
     "details-label": "What happened?",
@@ -167,8 +165,8 @@ export const AI_CHAT_HELP_CONTENT = {
     "result-placeholder": "Tell us what you want to continue or correct.",
     submit: "Send request",
     "edit-request": "Edit request",
-    "return-label": "Return to workspace",
-    "return-href": "/ai-chat/social/profiles/example",
+    "return-label": "Open chats",
+    "return-href": "/social/chats",
     "topic-error": "Choose a topic.",
     "details-error": "Describe what happened.",
     "result-error": "Tell us what result you need.",
@@ -205,16 +203,14 @@ export const AI_CHAT_SUPPORT_CONTENT = {
   labels: {
     submit: "Send request",
     "edit-request": "Edit request",
-    "return-label": "Return to workspace",
-    "return-href": "/ai-chat/social/profiles/example",
+    "return-label": "Open chats",
+    "return-href": "/social/chats",
     "topic-error": "Choose a topic.",
     "details-error": "Describe what happened.",
     "result-error": "Tell us what result you need.",
     "success-message": "Support request submitted.",
   },
-  successParagraphs: [
-    "We’ll respond within 24 hours. You can keep working in your workspace while you wait.",
-  ],
+  successParagraphs: ["We’ll respond within 24 hours."],
 };
 export const AI_CHAT_MATERIALS_PROCESSING =
   "## How your materials are processed and stored\n\nThe service and your uploaded materials are hosted on a Contabo server in Amsterdam. The original materials and their search representations remain in the service's own storage and PostgreSQL database, with pgvector storing the vectors used to find relevant passages.\n\nDocument text is sent to OpenRouter to create those search representations. Relevant passages are also sent through OpenRouter as context for an AI answer. These requests are handled under the selected provider's terms; uploading a file does not keep its text entirely inside this service.\n\nDeleting your account removes the account and active project data the service controls. Contabo backups may retain copies for up to six months after deletion, and the service cannot shorten that period.\n\nThis information is available before registration and upload, and beside the account-deletion action in Settings.\n";
@@ -267,7 +263,7 @@ export const AI_CHAT_REGISTRATION_CONTENT = {
   aside: {
     title: "Before you add files",
     paragraphs: [
-      "Read [How your materials are processed and stored](/ai-chat/projects#how-your-materials-are-processed-and-stored), including external AI processing and backup retention after deletion.",
+      "Read [How your materials are processed and stored](/privacy), including external AI processing and backup retention after deletion.",
     ],
   },
 };

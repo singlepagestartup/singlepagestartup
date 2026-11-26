@@ -6,8 +6,6 @@ export function Component(props: IComponentProps) {
       isServer={false}
       variant={props.variant}
       language={props.language}
-      socialModuleProfileId={props.socialModuleProfileId}
-      socialModuleChatId={props.socialModuleChatId}
       settingsSelected={props.settingsSelected}
     />
   );

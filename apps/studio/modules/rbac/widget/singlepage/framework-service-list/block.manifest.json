@@ -1,0 +1,27 @@
+{
+  "id": "rbac.widget.framework-service-list",
+  "title": "Каталог услуг",
+  "layer": "singlepage",
+  "state": "draft",
+  "description": "Каталог услуг",
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "source": {
+    "module": "rbac",
+    "entityType": "model",
+    "entity": "widget",
+    "variant": "framework-service-list"
+  },
+  "contentSlots": [],
+  "figma": {
+    "componentName": "rbac.widget",
+    "pageName": "rbac",
+    "variantName": "framework-service-list",
+    "nodeId": null,
+    "variantNodeId": null,
+    "syncStatus": "not-created",
+    "metadataFile": "figma.json"
+  }
+}

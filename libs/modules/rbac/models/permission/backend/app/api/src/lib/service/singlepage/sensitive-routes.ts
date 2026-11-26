@@ -53,6 +53,11 @@ export const controllerGuardedRoutes: IRouteRule[] = [
   },
   {
     regexPath:
+      /^\/api\/rbac\/subjects\/[^/]+\/ecommerce-module\/orders\/[^/]+\/work\/artifacts\/[^/]+\/knowledge\/?$/,
+    methods: ["POST", "DELETE"],
+  },
+  {
+    regexPath:
       /^\/api\/rbac\/subjects\/[^/]+\/ecommerce-module\/orders\/[^/]+\/work\/fulfillment\/?$/,
     methods: ["POST"],
   },

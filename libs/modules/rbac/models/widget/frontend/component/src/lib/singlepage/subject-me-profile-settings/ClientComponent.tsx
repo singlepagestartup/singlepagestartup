@@ -205,12 +205,6 @@ function Settings(props: ISettingsProps) {
                 </Link>
                 .
               </p>
-              <Link
-                href={getLocalizedHref(pathname, "/ai-chat/projects")}
-                className="mt-6 inline-flex min-h-11 items-center rounded-xl border border-border px-4 text-sm font-semibold"
-              >
-                {ru ? "Мои проекты" : "Review my projects"}
-              </Link>
             </>
           )}
         </section>

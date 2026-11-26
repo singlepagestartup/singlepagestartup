@@ -293,13 +293,7 @@ adds `authenticated`, derived from the Subject's Identity links. This field is
 session metadata and is not stored in the Subject table. The authentication
 reader supplies `{ data, authenticated }` to its children. Account menus,
 private workspace entry points and admin controls use that flag before loading
-profiles, projects or roles.
-
-Protected AI Chat entry points pass `unauthenticatedRedirectHref` to the
-authentication reader. A resolved visitor session redirects to the localized
-sign-in page before private project reads. Token restoration and pending session
-queries keep the loading state; an authenticated account still receives the
-project-access result when it opens another owner's workspace.
+profiles or roles.
 
 Email registration reuses the current visitor Subject identified by a verified
 session token. Its Identity and registration roles are attached to that Subject,
@@ -320,9 +314,8 @@ must be available even when the browser's cookie-change event has already fired.
 - `GET /rbac/subjects/authentication/oauth/{provider}/callback`: OAuth provider callback.
 - `POST /rbac/subjects/authentication/oauth/exchange`: exchange one-time code to JWT/refresh.
 
-### Account email changes and project reads
+### Account email changes
 
-- `GET /rbac/subjects/:id/social-module/profiles/projects` returns the caller's assistant profiles with their Chat and its default Thread. Ownership comes from the Subject's `assistant` relation, and the caller's personal Profile must also belong to that Chat. Shared Chat membership does not establish project ownership.
 - `POST /rbac/subjects/:id/identities/:identityId/email-change/code` sends a verification code through the Notification service. An empty data object requests a code for the current address; a new `email` requires the `verificationId` returned by verifying the current address.
 - `POST /rbac/subjects/:id/identities/:identityId/email-change/verify` verifies `challengeId` and the six-digit `code`. Current-address verification returns a `verificationId`; new-address verification saves the email and returns the public Identity fields.
 
@@ -783,8 +776,6 @@ delete action is called.
 
 `GET /api/rbac/subjects/:id/social-module/profiles` returns only Profiles explicitly owned by that Subject. Caller filters apply within this scope; shared Chat membership does not grant ownership.
 
-`POST` at the same URL creates an `artificial-intelligence` Profile from its title. The authenticated registration flow provisions the single personal Profile; callers cannot create another personal Profile through this endpoint. Model defaults generate `slug` and `adminTitle`; caller values for those fields are not forwarded. AI Profile creation also provisions its Chat, default Thread and Agent Subject through the existing bootstrap. The returned model is the created Profile.
-
 ### Publishing an Article
 
 `POST /api/rbac/subjects/:id/blog-module/articles` requires the current Subject's JWT and a registered human Identity. Its strict JSON envelope contains `data.requestId`, localized `title` and TipTap-serialized `description`, optional localized `subtitle`, and an optional `categoryId`. The server chooses the caller's personal Social Profile and atomically creates Article, ownership, authorship and optional category links. A retry with the same request UUID and unchanged payload returns the same Article; a changed or foreign request conflicts. This operation publishes immediately.
@@ -793,10 +784,6 @@ Public author URLs use `/authors/<Social Profile UUID>`. Social's `authors`, `au
 
 ## Variants
 
-- `me-social-module-profile-list-ai-chat`: connected AI Profiles and their workspace context. Its server reader forwards the current JWT through SDKs; its client reader supports seeded data and existing realtime invalidation.
-- `me-social-module-profile-select-ai-chat`: project menu backed by that reader and Social Profile menu rows.
-- `me-social-module-profile-id-navigation-ai-chat`: current project's Documents and topic navigation using Social Profile and Thread presentations.
-- `me-social-module-profile-id-chat-id-thread-id-ai-chat`: selected Thread composition with separate message reader, composer, Knowledge list and export actions.
 - `me-social-module-profile-id-chat-id-thread-id-message-list-ai-chat` and `me-social-module-profile-id-chat-id-thread-id-message-create-ai-chat`: scoped messages and submission with AI reaction and selected Source metadata.
 - `me-social-module-profile-id-chat-id-thread-id-knowledge-module-source-list-document-ai-chat` and `me-social-module-profile-id-chat-id-thread-id-knowledge-module-source-id-update-ai-chat`: document Source creation/attachment and individual Source editing. Creation retries retain the saved Source ID.
 - `me-social-module-profile-id-chat-id-thread-id-download-ai-chat`: scoped Source reader and Thread Markdown export.
@@ -844,25 +831,17 @@ Public author URLs use `/authors/<Social Profile UUID>`. Social's `authors`, `au
 - `admin-table`: admin table listing subjects.
 - `admin-table-row`: admin row showing subject fields.
 
-### AI Chat projects
+### Personal profile settings
 
 `GET /api/rbac/subjects/:id/social-module/profiles` returns only Profiles
 directly linked to that Subject. With no matching Profiles it returns `[]`.
-Shared Chat membership does not establish Profile ownership. Both GET and POST
-require the requesting Subject to match `:id`; a private owner role grants the
-concrete Subject collection route rather than a public collection template.
+The Subject can read its own collection through its private owner role.
 
 Successful registration creates one personal Profile and its `default` link
 before returning authentication credentials. Repeated authentication preserves
 that Profile. Its initial display name comes from the generated Subject slug;
 the Profile slug and admin title are assigned without user input. Existing
 personal names are preserved.
-
-POST creates an artificial-intelligence Profile from its title and variant,
-then links it to its human owner with `variant="assistant"`. The personal
-Profile is provisioned by authentication and cannot be duplicated through this
-POST route. Account identity and personal settings select the `default` link;
-the project selector requests artificial-intelligence Profiles.
 
 The private owner role also grants GET of the current Subject record by its
 concrete ID, so standard SPS readers can load that record without access to the
@@ -883,19 +862,6 @@ do not need access to general file or relation collections. Profile, Identity
 and avatar mutations patch their acting client's caches and retain WebSocket
 invalidation. Successful email and password edits close their dialogs. Account data
 updates without a page reload.
-
-The Subject project list has distinct pending, error, empty and populated
-states. An empty successful response displays the creation form and a navbar
-Create project action. Errors display a retry action. Studio includes Loading
-and Empty stories for both the Subject selector and the creation page.
-
-Creating a project provisions an assistant Profile, a Chat and one default
-Thread. The project list opens the Thread linked by the Chat’s default
-relation. For a Chat without a default relation, it opens the first available
-Thread in relation order.
-
-Existing Threads retain their IDs and message history. The scoped Profile
-Knowledge routes provide access to the project’s saved Sources.
 
 Social chat and thread lists include `lastMessageAt` and `unreadCount`.
 Messages received after unread tracking begins count toward the badge. A
@@ -1073,8 +1039,8 @@ server readers support request-rendered routes; cookies cannot personalize
 an ISR page shared between users.
 Foreign records are `ecommerceModuleProduct`, `ecommerceModuleStore` and
 `ecommerceModuleOrder`. Product presentation keeps its JSX slots and has no
-RBAC import. `me-navigation-controls-ai-chat` owns the session, project selector
-and account controls; it receives explicit Social IDs and `settingsSelected`.
+RBAC import. `me-navigation-controls-ai-chat` owns the session and account
+controls. Its `settingsSelected` prop identifies the active settings link.
 
 Public Product details also use the Subject registry:
 `ecommerce-module-product-category-default` and

@@ -5,6 +5,7 @@ import {
   providerModelDisplayName,
 } from "@sps/shared-utils";
 import { settingsFormStyles } from "@sps/shared-ui-shadcn";
+import { orderDisplayStatus } from "@sps/ecommerce/models/order/sdk/model";
 import { OrderStatusBadge } from "@sps/ecommerce/models/order/frontend/component/src/lib/singlepage/store-list-row/OrderStatusBadge";
 import Link from "next/link";
 
@@ -414,7 +415,10 @@ function OrderSection({
         ) : (
           <span className="break-all">{order.id}</span>
         )}
-        <OrderStatusBadge status={order.status} language={language} />
+        <OrderStatusBadge
+          status={orderDisplayStatus(order.status, order.workState)}
+          language={language}
+        />
         {order.fulfillment?.trackingNumber && (
           <p className="text-sm">
             {ru ? "Трек-номер" : "Tracking number"}{" "}

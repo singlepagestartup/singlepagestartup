@@ -108,13 +108,6 @@ export const customerWorkCommandSchema = z.discriminatedUnion("operation", [
     .strict(),
   scopeSchema
     .extend({
-      operation: z.literal("memory-project"),
-      taskId: z.uuid(),
-      projectId: z.uuid().nullable(),
-    })
-    .strict(),
-  scopeSchema
-    .extend({
       operation: z.literal("remember"),
       taskId: z.uuid(),
       sourceId: z.uuid().optional(),
@@ -167,8 +160,6 @@ export interface ICustomerWorkMemoryNote {
 }
 
 export interface ICustomerWorkMemory {
-  currentProjectId?: string;
-  projects: { id: string; title: string }[];
   notes: ICustomerWorkMemoryNote[];
 }
 
@@ -281,6 +272,7 @@ export interface ICustomerWorkRun extends Omit<
 export interface ICustomerWorkSourceVersion {
   id: string;
   version: string;
+  orderResultPath?: string;
 }
 
 export interface ICustomerWorkRunAttachment {

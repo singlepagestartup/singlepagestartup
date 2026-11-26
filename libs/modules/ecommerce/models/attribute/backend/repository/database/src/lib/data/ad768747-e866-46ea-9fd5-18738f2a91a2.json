@@ -1,0 +1,15 @@
+{
+  "id": "ad768747-e866-46ea-9fd5-18738f2a91a2",
+  "createdAt": "2026-11-26T14:02:40.972Z",
+  "updatedAt": "2026-11-26T14:02:40.972Z",
+  "variant": "default",
+  "number": null,
+  "boolean": null,
+  "date": null,
+  "datetime": null,
+  "string": {
+    "en": "1"
+  },
+  "adminTitle": "formula_version",
+  "slug": "sensible-apricot-kangaroo-6520"
+}

@@ -338,6 +338,59 @@ it("adds a postpaid service to the cart before starting its discussion", async (
   expect(mockChangeWork).not.toHaveBeenCalled();
   expect(mockNavigate).not.toHaveBeenCalled();
 });
+it("books the pinned service offer and opens its order discussion", async () => {
+  mockServiceAvailable = true;
+  const settings = { standalone: true, requiresResultAcceptance: true };
+  mockOffers[0].settings = settings;
+  mockOffers.push({ ...mockOffers[0], id: "offer-b" });
+  mockChangeWork.mockResolvedValue({ chatId: "chat", threadId: "thread" });
+  render(
+    <Component
+      {...props}
+      ecommerceModuleProduct={{ id: "product", kind: "service" }}
+      ecommerceModuleStore={{ id: "store-a" }}
+      ecommerceModuleOfferId="offer-b"
+      openServiceDiscussionOnSubmit
+    />,
+  );
+  const book = screen.getByRole("button", { name: "Заказать и открыть чат" });
+  await waitFor(() => expect(book.hasAttribute("disabled")).toBe(false));
+  fireEvent.click(book);
+  await waitFor(() =>
+    expect(mockNavigate).toHaveBeenCalledWith(
+      "/ru/social/chats/chat/threads/thread",
+    ),
+  );
+  expect(mockChangeWork).toHaveBeenCalledWith({
+    id: "subject",
+    data: expect.objectContaining({
+      operation: "add",
+      offerId: "offer-b",
+      storeId: "store-a",
+    }),
+  });
+  expect(mockCreate).not.toHaveBeenCalled();
+});
+it("blocks direct booking when a postpaid service has no available work", async () => {
+  mockOffers[0].settings = { standalone: true, requiresResultAcceptance: true };
+  render(
+    <Component
+      {...props}
+      ecommerceModuleProduct={{ id: "product", kind: "service" }}
+      ecommerceModuleStore={{ id: "store-a" }}
+      ecommerceModuleOfferId="offer-a"
+      openServiceDiscussionOnSubmit
+    />,
+  );
+  expect(
+    await screen.findByText("Услуга сейчас недоступна для заказа."),
+  ).toBeTruthy();
+  const button = screen.getByRole("button", { name: "Добавить в корзину" });
+  expect(button.hasAttribute("disabled")).toBe(true);
+  fireEvent.click(button);
+  expect(mockCreate).not.toHaveBeenCalled();
+  expect(mockChangeWork).not.toHaveBeenCalled();
+});
 it("keeps quantity fixed after a live quote corrects stale product data", async () => {
   mockOffers.push({
     ...mockOffers[0],

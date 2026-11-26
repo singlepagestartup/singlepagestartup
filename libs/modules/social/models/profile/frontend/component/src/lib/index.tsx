@@ -13,5 +13,3 @@ export function Component(props: IComponentProps) {
   // or you can use switch case, but it's not recommended
   return <Comp {...(props as any)} />;
 }
-
-export { Component as EmptyProjectSelect } from "./singlepage/select-ai-chat-project/EmptyComponent";

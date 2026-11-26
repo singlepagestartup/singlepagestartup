@@ -697,11 +697,11 @@ export function FilePreview(props: IFilePreviewProps) {
         )}
         <DialogContent
           ref={dialog}
-          overlayClassName={gallery || rail ? "z-[70]" : undefined}
+          overlayClassName="z-[70]"
           closeLabel={ru ? "Закрыть" : "Close"}
           className={cn(
             "flex h-[min(90dvh,900px)] w-[calc(100%-1rem)] max-w-5xl flex-col gap-0 overflow-hidden rounded-xl border-border bg-card p-0 text-foreground fullscreen:inset-0 fullscreen:m-0 fullscreen:translate-x-0 fullscreen:translate-y-0 sm:rounded-2xl",
-            (gallery || rail) && "z-[70]",
+            "z-[70]",
             expanded &&
               "left-0 top-0 h-dvh w-screen max-w-none translate-x-0 translate-y-0 rounded-none border-0 sm:rounded-none",
           )}

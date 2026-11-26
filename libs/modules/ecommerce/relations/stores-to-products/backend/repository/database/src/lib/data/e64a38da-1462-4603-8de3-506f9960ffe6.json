@@ -1,0 +1,16 @@
+{
+  "id": "e64a38da-1462-4603-8de3-506f9960ffe6",
+  "createdAt": "2026-11-26T14:02:39.334Z",
+  "updatedAt": "2026-11-26T14:11:45.036Z",
+  "variant": "default",
+  "orderIndex": 1,
+  "className": null,
+  "configurationKey": "",
+  "settings": {
+    "standalone": true,
+    "requiresResultAcceptance": true
+  },
+  "sku": "cc008e05-9787-4960-8a80-7002bed1cc09",
+  "storeId": "57407484-0471-4465-b0fa-4fd6a46b9012",
+  "productId": "b85bce0c-a34e-428a-a066-c47955a5c4c8"
+}

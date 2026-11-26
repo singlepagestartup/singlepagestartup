@@ -23,6 +23,20 @@ const labels: Record<string, readonly [string, string]> = {
   void: ["Аннулирован", "Voided"],
 };
 
+const activeOrderStates = new Set([
+  "new",
+  "paying",
+  "paid",
+  "approving",
+  "packaging",
+  "delivering",
+]);
+
+export function orderDisplayStatus(status: string, workState?: string | null) {
+  if (workState && activeOrderStates.has(status)) return workState;
+  return status === "cancelled" ? "canceled" : status;
+}
+
 export function orderStatusLabel(status: string, language: string) {
   const ru = language === "ru";
   return (

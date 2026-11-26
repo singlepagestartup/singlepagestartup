@@ -2,7 +2,7 @@
 /**
  * BDD Suite: Account settings navigation.
  * Given: an authenticated account viewing Settings in Russian.
- * When: the account opens privacy/project links or signs out.
+ * When: the account opens the privacy link or signs out.
  * Then: destinations retain the current locale.
  */
 import { fireEvent, render, screen } from "@testing-library/react";
@@ -12,7 +12,7 @@ jest.mock("client-only", () => ({}), { virtual: true });
 jest.mock("server-only", () => ({}), { virtual: true });
 jest.mock("next/navigation", () => ({
   useRouter: () => ({ push: jest.fn() }),
-  usePathname: () => "/ru/ai-chat/settings",
+  usePathname: () => "/ru/rbac/subjects/settings",
 }));
 jest.mock("next/link", () => ({
   __esModule: true,
@@ -65,9 +65,7 @@ it("retains Russian in Data and privacy links and sign-out redirect", () => {
       })
       .getAttribute("href"),
   ).toBe("/ru/privacy");
-  expect(
-    screen.getByRole("link", { name: "Мои проекты" }).getAttribute("href"),
-  ).toBe("/ru/ai-chat/projects");
+  expect(screen.queryByRole("link", { name: "Мои проекты" })).toBeNull();
   fireEvent.click(screen.getByRole("button", { name: "Выйти" }));
   expect(logout).toHaveBeenCalledWith({
     redirectTo: "/ru/rbac/subject/authentication/email-and-password",

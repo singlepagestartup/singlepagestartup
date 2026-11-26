@@ -33,7 +33,6 @@ import { Component as MeIdentityCreateOauthGoogle } from "./me/identity/create/o
 import { Component as MeIdentityCreateTelegram } from "./me/identity/create/telegram/index";
 import { Component as MeIdentityDelete } from "./me/identity/delete/index";
 import { Component as MeIdentityFindInformation } from "./me/identity/find/information/index";
-import { Component as MeSocialModuleProfileCreateAiChat } from "./me/social-module/profile/create/ai-chat/index";
 import { Component as MeSocialModuleProfileIdChatIdThreadCreateFormAiChat } from "./me/social-module/profile/id/chat/id/thread/create/form/ai-chat/index";
 import { Component as MeSocialModuleProfileIdChatIdThreadIdKnowledgeModuleSourceListDocumentAiChat } from "./me/social-module/profile/id/chat/id/thread/id/knowledge-module/source/list/document/ai-chat/index";
 import { Component as MeSocialModuleProfileIdChatIdThreadIdKnowledgeModuleSourceUpdateAiChat } from "./me/social-module/profile/id/chat/id/thread/id/knowledge-module/source/update/ai-chat/index";
@@ -94,7 +93,6 @@ export const variants = {
   "me-identity-create-telegram": MeIdentityCreateTelegram,
   "me-identity-delete": MeIdentityDelete,
   "me-identity-find-information": MeIdentityFindInformation,
-  "me-social-module-profile-create-ai-chat": MeSocialModuleProfileCreateAiChat,
   "me-social-module-profile-id-chat-id-thread-create-form-ai-chat":
     MeSocialModuleProfileIdChatIdThreadCreateFormAiChat,
   "me-social-module-profile-id-chat-id-thread-id-knowledge-module-source-list-document-ai-chat":

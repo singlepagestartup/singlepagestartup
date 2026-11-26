@@ -1,0 +1,24 @@
+{
+  "metadata": {},
+  "id": "6aa3b9a8-df17-4403-be69-ef32a997208f",
+  "createdAt": "2026-11-26T14:03:05.685Z",
+  "updatedAt": "2026-11-26T14:03:05.685Z",
+  "variant": "default",
+  "kind": "service",
+  "type": "one_off",
+  "singleUnitPerOrder": true,
+  "slug": "framework-campaign-creative",
+  "title": {
+    "en": "Campaign creative",
+    "ru": "Рекламный креатив"
+  },
+  "shortDescription": {
+    "en": "A finished image for the selected advertising channel",
+    "ru": "Готовое изображение для выбранного рекламного канала"
+  },
+  "description": {
+    "en": "Campaign designer. Inputs: Offer, audience, format and channel requirements. Request changes to the preview before accepting and paying.",
+    "ru": "Дизайнер рекламы. Для работы: Предложение, аудитория, формат и требования канала. После просмотра результата можно запросить правки. Оплата после приёмки."
+  },
+  "adminTitle": "coming fuchsia cat"
+}

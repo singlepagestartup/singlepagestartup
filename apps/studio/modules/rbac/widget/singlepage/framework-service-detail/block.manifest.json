@@ -1,0 +1,27 @@
+{
+  "id": "rbac.widget.framework-service-detail",
+  "title": "Карточка услуги",
+  "layer": "singlepage",
+  "state": "draft",
+  "description": "Карточка услуги",
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "source": {
+    "module": "rbac",
+    "entityType": "model",
+    "entity": "widget",
+    "variant": "framework-service-detail"
+  },
+  "contentSlots": [],
+  "figma": {
+    "componentName": "rbac.widget",
+    "pageName": "rbac",
+    "variantName": "framework-service-detail",
+    "nodeId": null,
+    "variantNodeId": null,
+    "syncStatus": "not-created",
+    "metadataFile": "figma.json"
+  }
+}

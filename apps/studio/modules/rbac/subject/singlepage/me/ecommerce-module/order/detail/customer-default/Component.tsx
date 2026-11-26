@@ -51,6 +51,27 @@ export function Component(props: IComponentProps) {
                 )}
               </div>
             )}
+            {props.result && (
+              <div className="mt-3 grid gap-3 border-t border-border pt-5">
+                <p className="break-words text-sm font-medium">
+                  {props.result.name}
+                </p>
+                <button
+                  type="button"
+                  className="min-h-10 w-fit rounded-lg border border-border px-3 text-sm font-medium hover:bg-muted"
+                  onClick={props.result.onChange}
+                >
+                  {props.result.savedToKnowledge
+                    ? "Удалить из знаний профиля"
+                    : "Сохранить в знания"}
+                </button>
+                {props.result.savedToKnowledge && (
+                  <p role="status" className="text-sm text-muted-foreground">
+                    В знаниях вашего профиля
+                  </p>
+                )}
+              </div>
+            )}
           </OrderCard>
           {props.discussion ?? (
             <p className="text-sm text-muted-foreground">

@@ -1,0 +1,15 @@
+{
+  "id": "572ca681-5a18-4535-b0e5-01acc2e33a0d",
+  "createdAt": "2026-11-26T14:02:40.972Z",
+  "updatedAt": "2026-11-26T14:02:40.972Z",
+  "variant": "default",
+  "number": null,
+  "boolean": null,
+  "date": null,
+  "datetime": null,
+  "string": {
+    "en": "unit_price * quantity"
+  },
+  "adminTitle": "price_formula",
+  "slug": "economic-tomato-bird-6813"
+}

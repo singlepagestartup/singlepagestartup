@@ -1,46 +1,34 @@
 {
   "metadata": {
     "seo": {
-      "title": {
-        "en": "AI Chat — your project workspace — SinglePageStartup",
-        "ru": "AI Chat — чат проекта — SinglePageStartup"
-      },
       "description": {
-        "en": "Discuss a business idea, add your materials and prepare project documents in AI Chat.",
-        "ru": "Обсуждайте бизнес-идею, добавляйте материалы и готовьте документы о проекте в AI Chat."
+        "en": "An open modular framework for websites, stores and web services. Explore its structure, modules and interface examples.",
+        "ru": "Открытый модульный фреймворк для сайтов, магазинов и веб-сервисов. Изучите устройство, модули и примеры интерфейсов."
       }
     },
     "seoDisplay": {
-      "twitterTitle": {
-        "en": "AI Chat — your project workspace — SinglePageStartup",
-        "ru": "AI Chat — чат проекта — SinglePageStartup"
-      },
-      "opengraphTitle": {
-        "en": "AI Chat — your project workspace — SinglePageStartup",
-        "ru": "AI Chat — чат проекта — SinglePageStartup"
-      },
       "opengraphLocale": {
         "en": "en_US",
         "ru": "ru_RU"
       },
       "twitterDescription": {
-        "en": "Discuss a business idea, add your materials and prepare project documents in AI Chat.",
-        "ru": "Обсуждайте бизнес-идею, добавляйте материалы и готовьте документы о проекте в AI Chat."
+        "en": "An open modular framework for websites, stores and web services. Explore its structure, modules and interface examples.",
+        "ru": "Открытый модульный фреймворк для сайтов, магазинов и веб-сервисов. Изучите устройство, модули и примеры интерфейсов."
       },
       "opengraphDescription": {
-        "en": "Discuss a business idea, add your materials and prepare project documents in AI Chat.",
-        "ru": "Обсуждайте бизнес-идею, добавляйте материалы и готовьте документы о проекте в AI Chat."
+        "en": "An open modular framework for websites, stores and web services. Explore its structure, modules and interface examples.",
+        "ru": "Открытый модульный фреймворк для сайтов, магазинов и веб-сервисов. Изучите устройство, модули и примеры интерфейсов."
       }
     }
   },
   "id": "c9d1562a-ff09-4381-a46d-23d67fa62643",
-  "title": "AI Chat — чат проекта",
+  "title": "Code Framework",
   "url": "/",
   "slug": "page-8a5edab282632443219e051e4ade2d1d5bbc671c781051bf1437897cbdfea0f1",
   "description": "Description",
   "createdAt": "2026-10-11T01:59:46.304Z",
-  "updatedAt": "2026-10-30T22:25:08.759Z",
-  "variant": "default",
+  "updatedAt": "2026-11-26T14:08:38.246Z",
+  "variant": "noindex",
   "className": "",
   "language": "en",
   "adminTitle": "outdoor magenta kiwi"

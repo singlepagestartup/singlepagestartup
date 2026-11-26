@@ -1,0 +1,24 @@
+{
+  "metadata": {},
+  "id": "6cf87096-77c1-405e-8070-5a28fb20457b",
+  "createdAt": "2026-11-26T14:02:01.830Z",
+  "updatedAt": "2026-11-26T14:02:01.830Z",
+  "variant": "default",
+  "kind": "service",
+  "type": "one_off",
+  "singleUnitPerOrder": true,
+  "slug": "framework-business-brief",
+  "title": {
+    "en": "Business brief",
+    "ru": "Бриф бизнеса"
+  },
+  "shortDescription": {
+    "en": "A brief with goals, facts, constraints and open questions",
+    "ru": "Бриф с целями, фактами, ограничениями и открытыми вопросами"
+  },
+  "description": {
+    "en": "Account manager. Inputs: Business notes and a price list. Request changes to the preview before accepting and paying.",
+    "ru": "Аккаунт-менеджер. Для работы: Описание бизнеса, заметки и прайс. После просмотра результата можно запросить правки. Оплата после приёмки."
+  },
+  "adminTitle": "linear tomato iguana"
+}

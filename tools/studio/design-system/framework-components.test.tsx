@@ -15,7 +15,7 @@ import { Component as WebsiteBuilderWidget } from "../../../apps/studio/modules/
 import { Component as WebsiteBuilderButtonsArray } from "../../../apps/studio/modules/website-builder/buttons-array";
 import { Component as WebsiteBuilderLogotype } from "../../../apps/studio/modules/website-builder/logotype";
 
-test("site navigation connects Framework and AI Chat through public entries", () => {
+test("site navigation connects Framework and agent services through public entries", () => {
   const nav = renderToStaticMarkup(
     <WebsiteBuilderButtonsArray
       variant="navbar-default"
@@ -24,7 +24,7 @@ test("site navigation connects Framework and AI Chat through public entries", ()
   );
   expect(nav).toContain("singlepage-framework--default");
   expect(nav).toContain("singlepage-framework-module-find--default");
-  expect(nav).toContain("singlepage-ai-chat--default");
+  expect(nav).toContain("singlepage-framework-service-list--default");
   expect(nav).not.toContain('aria-disabled="true"');
   expect(nav).toContain('aria-current="page"');
   const logo = renderToStaticMarkup(
@@ -42,7 +42,7 @@ test("footer exposes real destinations and preserves supplied link records", () 
     "Build",
     "Prepare",
     "Learn",
-    "AI Chat",
+    "AI agent services",
     "Modules",
     "Blog",
     "MIT License",

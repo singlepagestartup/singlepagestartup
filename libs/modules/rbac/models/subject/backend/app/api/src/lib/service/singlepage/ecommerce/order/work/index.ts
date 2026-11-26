@@ -6,6 +6,7 @@ import type { IFunnelStage } from "@sps/crm/models/stage/sdk/model";
 import { isOrderPaymentStage } from "@sps/crm/models/funnel/sdk/model";
 import { currencyPrecision } from "@sps/billing/models/currency/sdk/model";
 import { orderStatusLabel } from "@sps/ecommerce/models/order/sdk/model";
+import { isSupportedAiChatAttachment } from "@sps/shared-utils";
 import type {
   IModel as Order,
   IOrderWork,
@@ -20,11 +21,13 @@ import {
   orderArtifactPath,
   orderResultFiles,
   type IOrderArtifact,
+  type IOrderArtifactKnowledge,
   type IOrderWorkScope,
   type IOrderWorkView,
   type TOrderWorkDecision,
 } from "@sps/rbac/models/subject/sdk/model/src/lib/order-work";
 import type { Service as Subject } from "../../../index";
+import { Service as PersonalSources } from "../../../social-module/profile/knowledge/personal";
 import {
   calculateConfirmedResultPrice,
   imageOrderResult,
@@ -982,6 +985,120 @@ export class Service {
       throw new Error("Not Found error. Order artifact does not exist");
     }
     return file;
+  }
+
+  private deliveredVersion(customerId: string, work: IOrderWork | undefined) {
+    if (
+      work?.customerId !== customerId ||
+      work.kind !== "individual-service" ||
+      !work.deliveredAt ||
+      !work.resultFileId ||
+      !work.paid?.fileId ||
+      work.receiptFileId === work.resultFileId ||
+      work.files.some(
+        ({ previewFileId }) => previewFileId === work.resultFileId,
+      )
+    ) {
+      return undefined;
+    }
+    return work.files.find(
+      (version) =>
+        version.id === work.paid?.fileId &&
+        version.originalFileId === work.resultFileId &&
+        !version.invalidatedByCartEdit,
+    );
+  }
+
+  async profileKnowledgeResult(customerId: string, work: IOrderWork) {
+    const version = this.deliveredVersion(customerId, work);
+    if (
+      !version?.originalName ||
+      !isSupportedAiChatAttachment({
+        name: version.originalName,
+        type: version.originalMimeType,
+      }) ||
+      !(await this.subject.protectedFile.hasGrant(
+        customerId,
+        orderArtifactPath(customerId, work.orderId, version.originalFileId),
+        "GET",
+      ))
+    ) {
+      return undefined;
+    }
+    const personal = new PersonalSources(this.subject);
+    const profileId = await personal.profileForOwner(customerId);
+    if (!profileId) {
+      return undefined;
+    }
+    const source = await personal.orderArtifact(profileId, {
+      orderId: work.orderId,
+      versionId: version.id,
+    });
+    return {
+      id: version.originalFileId,
+      versionId: version.id,
+      name: version.originalName,
+      mimeType: version.originalMimeType,
+      savedToKnowledge: Boolean(source),
+    };
+  }
+
+  async setArtifactKnowledge(
+    customerId: string,
+    orderId: string,
+    artifactId: string,
+    method: "POST" | "DELETE",
+  ): Promise<IOrderArtifactKnowledge> {
+    return this.subject.repository.withSubjectLock(
+      { subjectId: customerId, savepoint: true },
+      async () => {
+        await this.owner(customerId, orderId);
+        const work = await this.work.findByOrder(orderId);
+        const version = this.deliveredVersion(customerId, work);
+        if (
+          work?.orderId !== orderId ||
+          version?.originalFileId !== artifactId
+        ) {
+          throw new Error(
+            "Not Found error. Delivered order result is unavailable",
+          );
+        }
+        const personal = new PersonalSources(this.subject);
+        const profileId = await personal.profileForOwner(customerId);
+        if (!profileId) {
+          throw new Error(
+            "Not Found error. The personal profile is unavailable",
+          );
+        }
+        const origin = { orderId, versionId: version.id };
+        if (method === "DELETE") {
+          await personal.removeOrderArtifact(customerId, profileId, origin);
+          return { profileId, sourceId: null };
+        }
+        const file = await this.artifact(
+          customerId,
+          orderId,
+          artifactId,
+          "GET",
+        );
+        if (
+          !isSupportedAiChatAttachment({ name: file.name, type: file.mimeType })
+        ) {
+          throw new Error(
+            "Validation error. This result format cannot be indexed",
+          );
+        }
+        const sourceId = await personal.saveOrderArtifact(
+          customerId,
+          profileId,
+          origin,
+          new File([Uint8Array.from(file.bytes)], file.name, {
+            type: file.mimeType,
+          }),
+        );
+        return { profileId, sourceId };
+      },
+    );
   }
 
   async fulfill(

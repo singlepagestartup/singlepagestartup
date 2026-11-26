@@ -578,6 +578,7 @@ it.each([
       taskId: f.task.id,
       customerId: f.task.customerId,
       kind: "individual-service",
+      state: "delivered",
       paid: { id: "payment" },
       receiptFileId: "receipt",
       resultFileId: hasResult ? "original" : null,
@@ -591,6 +592,7 @@ it.each([
         id: orderId,
         status: "delivered",
         paymentStatus: "paid",
+        workState: "delivered",
         originalDelivered,
       },
     });

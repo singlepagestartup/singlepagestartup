@@ -1,0 +1,15 @@
+{
+  "id": "f064a658-380c-4fe3-aa96-805c67a9d96a",
+  "createdAt": "2026-11-26T14:02:51.737Z",
+  "updatedAt": "2026-11-26T14:02:51.737Z",
+  "variant": "default",
+  "number": null,
+  "boolean": null,
+  "date": null,
+  "datetime": null,
+  "string": {
+    "en": "unit_price * quantity"
+  },
+  "adminTitle": "price_formula",
+  "slug": "major-orange-mongoose-9935"
+}

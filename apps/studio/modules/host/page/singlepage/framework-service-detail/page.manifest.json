@@ -1,0 +1,30 @@
+{
+  "id": "framework-service-detail",
+  "title": "Карточка услуги Framework",
+  "layer": "singlepage",
+  "state": "draft",
+  "description": "Карточка услуги Framework",
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "blocks": [
+    {
+      "id": "rbac.widget.framework-service-detail",
+      "path": "../../../../rbac/widget/singlepage/framework-service-detail"
+    },
+    {
+      "id": "website-builder.widget.content-service-detail",
+      "path": "../../../../website-builder/widget/singlepage/content-service-detail"
+    }
+  ],
+  "figma": {
+    "componentName": "host.page",
+    "pageName": "host",
+    "variantName": "framework-service-detail",
+    "nodeId": null,
+    "variantNodeId": null,
+    "syncStatus": "not-created",
+    "metadataFile": "figma.json"
+  }
+}

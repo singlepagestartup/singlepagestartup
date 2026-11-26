@@ -14,10 +14,8 @@ describe("Module-owned Framework pages", () => {
   test("the public landing renders the current Russian sections and owned images", () => {
     const html = render({ variant: "framework" });
     for (const text of [
-      "Создайте свой продукт",
+      "SinglePageStartup Code Framework",
       "15 модулей",
-      "Ваш бизнес в цифровом виде",
-      "3. Обновите опубликованный проект",
       "используя open-source",
     ])
       expect(html).toContain(text);
@@ -26,7 +24,6 @@ describe("Module-owned Framework pages", () => {
       "cf-foundation",
       "cf-modules",
       "cf-start",
-      "cf-chat",
       "cf-handoff-title",
       "cf-questions-title",
     ])
@@ -34,6 +31,7 @@ describe("Module-owned Framework pages", () => {
     expect(html).not.toContain("workspace-assets");
     expect(html).not.toContain("workspace-brand");
     expect(html).not.toContain("Turn your business brief");
+    expect(html).not.toContain('id="cf-chat"');
     for (const [, src] of html.matchAll(
       /(?:src|href)="(\/module-assets\/[^"?]+)"/g,
     ))
@@ -56,7 +54,7 @@ describe("Module-owned Framework pages", () => {
     );
     expect(html.match(/data-variant="selectable"/g)).toHaveLength(4);
     expect(html.match(/data-variant="step"/g)).toHaveLength(3);
-    expect(html.match(/data-variant="dropdown"/g)).toHaveLength(12);
+    expect(html.match(/data-variant="dropdown"/g)).toHaveLength(6);
     expect(html).toContain('data-variant="preview-scroll"');
     expect(html).toContain("framework-example-previews/contact-hd.jpg");
     expect(html).not.toContain("sps-demo-study-format");
@@ -145,16 +143,5 @@ describe("Module-owned Framework pages", () => {
     expect(html).toContain("0,13");
     expect(html).toContain(Math.round(300 / 0.13).toLocaleString("ru-RU"));
     expect(html).not.toContain("769.230769");
-  });
-  test("AI Chat landing embeds its domain workspace rather than the retired walkthrough", () => {
-    const html = render({ variant: "ai-chat" });
-    expect(html).toContain(
-      'data-variant="subject-me-social-module-profile-id-chat-id-thread-id-ai-chat"',
-    );
-    expect(html).toContain("Продукты.md");
-    expect(html).toContain("Рабочий контекст");
-    expect(html).not.toContain('data-variant="id-preview-ai-chat"');
-    expect(html).not.toContain("Restart walkthrough");
-    expect(html.match(/<main[ >]/g)).toHaveLength(1);
   });
 });

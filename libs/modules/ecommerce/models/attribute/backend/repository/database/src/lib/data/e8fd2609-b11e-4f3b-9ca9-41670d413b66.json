@@ -1,0 +1,15 @@
+{
+  "id": "e8fd2609-b11e-4f3b-9ca9-41670d413b66",
+  "createdAt": "2026-11-26T14:03:05.685Z",
+  "updatedAt": "2026-11-26T14:03:05.685Z",
+  "variant": "default",
+  "number": null,
+  "boolean": null,
+  "date": null,
+  "datetime": null,
+  "string": {
+    "en": "1"
+  },
+  "adminTitle": "formula_version",
+  "slug": "resonant-violet-marten-6462"
+}

@@ -20,21 +20,18 @@ Widgets store reusable content blocks (text, media, structured sections) for bui
 
 ## Variants
 
-- `content-ai-chat-profile-create`: project creation card with a form slot and project-start image.
 - `content-ai-chat-materials-processing`: expandable materials-processing disclosure.
 - `content-ai-chat-help`: support-page heading, support card with its own title and icon, form slot and response information. The Widget receives its persisted data through the owning RBAC Widget relation and renders the Subject/CRM form supplied as children.
 - `content-ai-chat-authentication`: sign-in introduction, imagery and aside with an RBAC form slot.
 - `content-ai-chat-registration`: registration presentation with two images and its own RBAC form slot.
 - `content-ai-chat-forgot-password`: password recovery presentation with its own RBAC form slot.
 - `content-ai-chat-reset-password`: password reset presentation with its own RBAC form slot.
-- `navbar-ai-chat`: server navigation presentation with children for project and account controls composed by Host. Host supplies `language` and `helpSelected`; the Widget does not receive or parse the current Page URL.
+- `navbar-ai-chat`: server navigation presentation with a child slot for account controls composed by Host. Host supplies `language` and `helpSelected`; the Widget does not receive or parse the current Page URL.
 - `footer-ai-chat`: server footer presentation with locale-aware destinations.
-- `landing-ai-chat`: Russian landing presentation with a local demonstration using the production Social views’ shared `ChatWorkspace` and `ChatThreadPanel` from `@sps/ui-adapter`: five example documents (Brief, Strategy, Brand, Design, Products), chat, editable Markdown with explicit local saving, local file previews and new discussions. Each document retains its own draft, saved text, attachments and conversation while switching between sections. The dark navigation, responsive Chat/Document switch, 360px editor column and independent scroll areas use the production layout. The demonstration uses prepared copy and local state without a Social Chat record, API writes or AI calls. It imports no Social or RBAC components. Its links target saved Host pages and preserve the current URL language. Russian default copy lives in `AI_CHAT_LANDING_CONTENT`; localized saved Widget titles remain editable.
 
 - `default`: sample component, for debugging.
 - `content-default`: saved hero copy, ordered media, sliders, features and CTA groups.
 - `content-showcase`: saved introduction with ordered `selectable` Features. Native radio inputs select one associated scrollable screenshot; each instance has its own selection group.
-- `content-project-context`: saved introduction with ordered document and context-note Features.
 - `content-cta`: saved centered call to action with linked button groups.
 - `content-rich`: article section with saved rich text, ordered Features and actions.
 - `content-hero`: saved localized hero heading, subtitle and description with ordered media and CTA groups.
@@ -109,31 +106,12 @@ Lucide React supplies the navigation glyphs: Menu ☰ and X ×. They are decorat
 inside buttons with localized accessible names. Slider arrows use the same
 library, ArrowLeft ← and ArrowRight →. No new photographic assets are bundled.
 
-### Editable AI Chat landing
-
-`landing-ai-chat` reads its exact `widgets-to-features` associations in order.
-The Feature variants `landing-introduction`, `landing-workflow`,
-`landing-followup` and `landing-disclosure` own the section layouts. Their
-localized title, subtitle and rich description are saved records. Hero media
-uses `features-to-file-storage-module-files`; links use
-`features-to-buttons-arrays` and saved Button variants.
-
-The workflow receives a local demo built from linked `demo-project` and
-`demo-document` Features. Project title and prepared reply come from the project
-record. Each document uses its UUID as its local key, title as its filename,
-subtitle as its introduction and description as its rich document source, converted to Markdown for the local editor. Associated
-File Storage records supply previewable attachments. `demo-project` buttons
-supply sidebar links.
-The demo does not create a live project or call an AI provider. Generic editor
-controls are interface translations; example business content is stored in the
-records. No source-side catalog supplies missing landing records.
+### Account and support content
 
 `navbar-ai-chat` and `footer-ai-chat` render their own ordered
 `widgets-to-buttons-arrays` associations. Host supplies the account control as a
-rendered child; the presentation does not choose a session operation.
+rendered child.
 
-Authentication, registration, password recovery, project creation, help and
-materials-processing views read their saved Widget title, subtitle and
-description. Their media and navigation use the same exact-instance file and
-ButtonsArray relations. The content is editable through the existing localized
-admin fields.
+Authentication, registration, password recovery and support use saved Widget
+titles, subtitles and descriptions. Their media and navigation are edited
+through each Widget's File and ButtonsArray relations.

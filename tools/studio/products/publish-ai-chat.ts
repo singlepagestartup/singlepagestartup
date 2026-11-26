@@ -136,30 +136,10 @@ publish(
   "apps/studio/modules/website-builder/widget/singlepage/content/ai-chat/website.json",
   JSON.stringify(website, null, 2) + "\n",
 );
-const landingCopies = {
-  "content/ai-chat/hero": {
-    hero: website.hero,
-    labels: {
-      "hero-photo-alt": website.labels["hero-photo-alt"],
-      "navigation-foundation": website.labels["navigation-foundation"],
-    },
-  },
-  "content/ai-chat/try": {
-    workflow: website.workflow,
-    uploadNote: website.labels["demo-upload-note"],
-  },
-  "content/ai-chat/continue": {
-    continue: website.continue,
-    terms: website.terms,
-    startLink: website.hero.links[0],
-  },
-  "footer/ai-chat": website.footer,
-};
-for (const [variant, copy] of Object.entries(landingCopies))
-  publish(
-    `apps/studio/modules/website-builder/widget/singlepage/${variant}/content.json`,
-    JSON.stringify(copy, null, 2) + "\n",
-  );
+publish(
+  "apps/studio/modules/website-builder/widget/singlepage/footer/ai-chat/content.json",
+  JSON.stringify(website.footer, null, 2) + "\n",
+);
 for (const [name, owner] of Object.entries(copies)) {
   const [module, entity, ...variant] = owner.split("/");
   const copy = readOwnedContent<IAIChatServicePageContent>(

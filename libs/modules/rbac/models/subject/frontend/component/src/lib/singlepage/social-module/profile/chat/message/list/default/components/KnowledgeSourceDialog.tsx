@@ -20,6 +20,7 @@ import {
 } from "@sps/shared-ui-shadcn";
 
 import { KnowledgeSourceFiles } from "./KnowledgeSourceFiles";
+import { orderResultKnowledgeOrigin } from "@sps/rbac/models/subject/sdk/model";
 import type { IProps as IFileScope } from "@sps/rbac/models/subject/sdk/server/src/lib/singlepage/social-module/profile/find-by-id/chat/find-by-id/profile/find-by-id/knowledge/source/find-by-id/files/find";
 
 interface KnowledgeSourceDialogProps {
@@ -56,6 +57,10 @@ export function KnowledgeSourceDialog(props: KnowledgeSourceDialogProps) {
   const ru = props.language === "ru";
   const isCreating = props.mode === "create";
   const closeLabel = ru ? "Закрыть" : "Close";
+  const origin =
+    props.personal && props.document
+      ? orderResultKnowledgeOrigin(props.document.slug)
+      : undefined;
   return (
     <Dialog open={props.isOpen} onOpenChange={props.onOpenChange}>
       <SettingsDialogContent closeLabel={closeLabel}>
@@ -75,6 +80,14 @@ export function KnowledgeSourceDialog(props: KnowledgeSourceDialogProps) {
                 ru ? "Источник знаний профиля" : "Profile knowledge source"
               }
             />
+            {origin && (
+              <a
+                href={`/${props.language}${origin.path}`}
+                className="w-fit text-sm underline underline-offset-4"
+              >
+                {ru ? "Открыть результат заказа" : "Open order result"}
+              </a>
+            )}
             <div className="prose max-w-none break-words text-sm">
               <Markdown options={{ disableParsingRawHTML: true }}>
                 {readKnowledgeDocumentContent(props.document?.content ?? "")}
@@ -94,17 +107,21 @@ export function KnowledgeSourceDialog(props: KnowledgeSourceDialogProps) {
                     : "Edit Knowledge"
               }
               description={
-                props.personal
+                origin
                   ? ru
-                    ? "Сохраните сведения в своём профиле."
-                    : "Save information in your personal profile."
-                  : isCreating
+                    ? "Оригинал заказа в знаниях вашего профиля."
+                    : "An order original in your profile knowledge."
+                  : props.personal
                     ? ru
-                      ? "Добавьте заметки и исходные материалы для сотрудника."
-                      : "Add notes and reference files for the employee."
-                    : ru
-                      ? "Обновите текст или прикрепите файлы для ответов сотрудника."
-                      : "Update the text or attach files for the assistant to use in its replies."
+                      ? "Сохраните сведения в своём профиле."
+                      : "Save information in your personal profile."
+                    : isCreating
+                      ? ru
+                        ? "Добавьте заметки и исходные материалы для сотрудника."
+                        : "Add notes and reference files for the employee."
+                      : ru
+                        ? "Обновите текст или прикрепите файлы для ответов сотрудника."
+                        : "Update the text or attach files for the assistant to use in its replies."
               }
             />
             {props.saveError && (

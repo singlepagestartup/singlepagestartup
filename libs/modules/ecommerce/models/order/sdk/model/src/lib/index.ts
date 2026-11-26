@@ -14,7 +14,7 @@ import type { IModel as IFileStorageModuleFile } from "@sps/file-storage/models/
 
 export const STORE_TEST_ORDER_VARIANT = "store-test";
 export * from "./work";
-export { orderStatusLabel } from "./status";
+export { orderDisplayStatus, orderStatusLabel } from "./status";
 
 export interface IStoreOrderRow {
   id: string;

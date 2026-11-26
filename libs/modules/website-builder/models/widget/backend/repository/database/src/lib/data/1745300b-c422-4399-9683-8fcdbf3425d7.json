@@ -1,21 +1,21 @@
 {
   "title": {
-    "en": "Launch your project today and start showing it to customers",
-    "ru": "Запустите проект уже сегодня и начните показывать его клиентам"
+    "en": "Start with the framework code",
+    "ru": "Начните с кода фреймворка"
   },
   "subtitle": {
-    "en": "Start with your idea",
-    "ru": "Начните со своей идеи"
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Code and documentation on GitHub\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Код и документация на GitHub\"}]}]}"
   },
   "description": {
-    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Describe what you want to offer customers. Choose features with the AI assistant, review the first version and publish it through chat.\"}]}]}",
-    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Опишите, что хотите предложить клиентам. Вместе с ИИ-помощником выберите функции, посмотрите первую версию и опубликуйте её через чат.\"}]}]}"
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Open the repository and follow the README to run the project. The module directory lists available features and examples.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Откройте репозиторий и запустите проект по README. В справочнике модулей перечислены готовые функции и примеры их использования.\"}]}]}"
   },
   "anchor": "cf-handoff",
   "className": "",
   "id": "1745300b-c422-4399-9683-8fcdbf3425d7",
   "createdAt": "2026-10-26T00:12:48.999Z",
-  "updatedAt": "2026-10-27T14:58:49.173Z",
+  "updatedAt": "2026-11-26T14:08:38.642Z",
   "variant": "content-cta",
   "adminTitle": "Запустите проект уже сегодня и начните показывать его клиентам",
   "slug": "framework-reviewed-cta"

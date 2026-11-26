@@ -1,0 +1,15 @@
+{
+  "id": "e7ba3b9b-137e-4950-b674-35014722a147",
+  "createdAt": "2026-11-26T14:02:39.334Z",
+  "updatedAt": "2026-11-26T14:02:39.334Z",
+  "variant": "default",
+  "number": null,
+  "boolean": null,
+  "date": null,
+  "datetime": null,
+  "string": {
+    "en": "1"
+  },
+  "adminTitle": "formula_version",
+  "slug": "primitive-violet-locust-7058"
+}

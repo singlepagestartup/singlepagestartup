@@ -19,9 +19,9 @@ export const aiChatServiceHrefs = {
   landing: "/",
   register: "/rbac/subject/authentication/email-and-password/registration",
   login: "/rbac/subject/authentication/email-and-password",
-  "account-settings": "/ai-chat/rbac/subjects/settings",
-  help: "/ai-chat/help",
-  tokens: "/ai-chat/rbac/subjects/tokens",
+  "account-settings": "/rbac/subjects/settings",
+  help: "/framework/help",
+  tokens: "/ecommerce",
   "profile-list": "/ai-chat/projects",
   "profile-create": "/ai-chat/social/profiles/create",
 } as const;

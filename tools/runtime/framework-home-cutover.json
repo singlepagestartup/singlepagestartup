@@ -1,0 +1,2600 @@
+{
+  "updates": [
+    {
+      "entity": "host.page",
+      "id": "01f39ad8-5b96-4121-adc1-2a79951c0e2a",
+      "before": {
+        "url": "/ai-chat/help",
+        "title": "AI Chat Help",
+        "metadata": {
+          "seo": {
+            "title": {
+              "en": "AI Chat help — SinglePageStartup",
+              "ru": "Помощь по AI Chat — SinglePageStartup"
+            },
+            "description": {
+              "en": "How to work with projects, conversations, documents and files in AI Chat.",
+              "ru": "Как работать с проектами, обсуждениями, документами и файлами в AI Chat."
+            }
+          },
+          "seoDisplay": {
+            "twitterTitle": {
+              "en": "AI Chat help — SinglePageStartup",
+              "ru": "Помощь по AI Chat — SinglePageStartup"
+            },
+            "opengraphTitle": {
+              "en": "AI Chat help — SinglePageStartup",
+              "ru": "Помощь по AI Chat — SinglePageStartup"
+            },
+            "opengraphLocale": {
+              "en": "en_US",
+              "ru": "ru_RU"
+            },
+            "twitterDescription": {
+              "en": "How to work with projects, conversations, documents and files in AI Chat.",
+              "ru": "Как работать с проектами, обсуждениями, документами и файлами в AI Chat."
+            },
+            "opengraphDescription": {
+              "en": "How to work with projects, conversations, documents and files in AI Chat.",
+              "ru": "Как работать с проектами, обсуждениями, документами и файлами в AI Chat."
+            }
+          }
+        }
+      },
+      "data": {
+        "url": "/framework/help",
+        "title": "Support",
+        "metadata": {}
+      }
+    },
+    {
+      "entity": "host.page",
+      "id": "c9d1562a-ff09-4381-a46d-23d67fa62643",
+      "before": {
+        "title": "AI Chat — чат проекта",
+        "metadata": {
+          "seo": {
+            "title": {
+              "en": "AI Chat — your project workspace — SinglePageStartup",
+              "ru": "AI Chat — чат проекта — SinglePageStartup"
+            },
+            "description": {
+              "en": "Discuss a business idea, add your materials and prepare project documents in AI Chat.",
+              "ru": "Обсуждайте бизнес-идею, добавляйте материалы и готовьте документы о проекте в AI Chat."
+            }
+          },
+          "seoDisplay": {
+            "twitterTitle": {
+              "en": "AI Chat — your project workspace — SinglePageStartup",
+              "ru": "AI Chat — чат проекта — SinglePageStartup"
+            },
+            "opengraphTitle": {
+              "en": "AI Chat — your project workspace — SinglePageStartup",
+              "ru": "AI Chat — чат проекта — SinglePageStartup"
+            },
+            "opengraphLocale": {
+              "en": "en_US",
+              "ru": "ru_RU"
+            },
+            "twitterDescription": {
+              "en": "Discuss a business idea, add your materials and prepare project documents in AI Chat.",
+              "ru": "Обсуждайте бизнес-идею, добавляйте материалы и готовьте документы о проекте в AI Chat."
+            },
+            "opengraphDescription": {
+              "en": "Discuss a business idea, add your materials and prepare project documents in AI Chat.",
+              "ru": "Обсуждайте бизнес-идею, добавляйте материалы и готовьте документы о проекте в AI Chat."
+            }
+          }
+        },
+        "variant": "default"
+      },
+      "data": {
+        "title": "Code Framework",
+        "metadata": {
+          "seo": {
+            "description": {
+              "en": "An open modular framework for websites, stores and web services. Explore its structure, modules and interface examples.",
+              "ru": "Открытый модульный фреймворк для сайтов, магазинов и веб-сервисов. Изучите устройство, модули и примеры интерфейсов."
+            }
+          },
+          "seoDisplay": {
+            "opengraphLocale": {
+              "en": "en_US",
+              "ru": "ru_RU"
+            },
+            "twitterDescription": {
+              "en": "An open modular framework for websites, stores and web services. Explore its structure, modules and interface examples.",
+              "ru": "Открытый модульный фреймворк для сайтов, магазинов и веб-сервисов. Изучите устройство, модули и примеры интерфейсов."
+            },
+            "opengraphDescription": {
+              "en": "An open modular framework for websites, stores and web services. Explore its structure, modules and interface examples.",
+              "ru": "Открытый модульный фреймворк для сайтов, магазинов и веб-сервисов. Изучите устройство, модули и примеры интерфейсов."
+            }
+          }
+        },
+        "variant": "noindex"
+      }
+    },
+    {
+      "entity": "host.pages-to-widgets",
+      "id": "746283d5-1803-414a-a904-9d5610a8bd70",
+      "before": {
+        "widgetId": "5600ca7a-e9fd-4e88-ba5b-91e07505dc4b"
+      },
+      "data": {
+        "widgetId": "90affb0c-c151-4594-8d62-99211346f043"
+      }
+    },
+    {
+      "entity": "host.pages-to-widgets",
+      "id": "da7b89c1-5acc-4293-9402-af3233edbe60",
+      "before": {
+        "widgetId": "3ef194e7-688e-4a4e-b836-b008e2fb9201"
+      },
+      "data": {
+        "widgetId": "48fdb9cc-4eb4-4597-8ec7-2da82e1f05fc"
+      }
+    },
+    {
+      "entity": "host.pages-to-layouts",
+      "id": "c6fb777e-bf78-4c1c-b18e-e8947842a53b",
+      "before": {
+        "layoutId": "288ea6c6-10eb-41f6-9f9c-1771e6608a23"
+      },
+      "data": {
+        "layoutId": "54169e94-e8d4-4048-b627-ec332708db6c"
+      }
+    },
+    {
+      "entity": "host.pages-to-layouts",
+      "id": "850a05fe-a3a3-4bd8-806e-60a92e798511",
+      "before": {
+        "layoutId": "815c3653-933e-4938-b768-1124be773268"
+      },
+      "data": {
+        "layoutId": "54169e94-e8d4-4048-b627-ec332708db6c"
+      }
+    },
+    {
+      "entity": "host.pages-to-layouts",
+      "id": "6c75e0fa-a661-4e7d-8d25-c529dc1933e2",
+      "before": {
+        "layoutId": "815c3653-933e-4938-b768-1124be773268"
+      },
+      "data": {
+        "layoutId": "54169e94-e8d4-4048-b627-ec332708db6c"
+      }
+    },
+    {
+      "entity": "host.pages-to-layouts",
+      "id": "5636c86e-d66f-445b-891e-d160b21d2a02",
+      "before": {
+        "layoutId": "815c3653-933e-4938-b768-1124be773268"
+      },
+      "data": {
+        "layoutId": "54169e94-e8d4-4048-b627-ec332708db6c"
+      }
+    },
+    {
+      "entity": "host.pages-to-layouts",
+      "id": "47ee009a-7cf9-498c-807b-9f1b012f0e77",
+      "before": {
+        "layoutId": "815c3653-933e-4938-b768-1124be773268"
+      },
+      "data": {
+        "layoutId": "54169e94-e8d4-4048-b627-ec332708db6c"
+      }
+    },
+    {
+      "entity": "host.pages-to-layouts",
+      "id": "b63de01b-9f53-4493-a9de-c85405e5cb9e",
+      "before": {
+        "layoutId": "815c3653-933e-4938-b768-1124be773268"
+      },
+      "data": {
+        "layoutId": "54169e94-e8d4-4048-b627-ec332708db6c"
+      }
+    },
+    {
+      "entity": "host.pages-to-layouts",
+      "id": "c13de201-702a-4f6f-95d5-cb6372bb4181",
+      "before": {
+        "layoutId": "815c3653-933e-4938-b768-1124be773268"
+      },
+      "data": {
+        "layoutId": "54169e94-e8d4-4048-b627-ec332708db6c"
+      }
+    },
+    {
+      "entity": "host.pages-to-layouts",
+      "id": "b82ab0db-04a2-4807-9ad7-4614b31bb2a8",
+      "before": {
+        "layoutId": "815c3653-933e-4938-b768-1124be773268"
+      },
+      "data": {
+        "layoutId": "54169e94-e8d4-4048-b627-ec332708db6c"
+      }
+    },
+    {
+      "entity": "host.pages-to-layouts",
+      "id": "28c0f8a6-7738-41ea-bc0b-5010d22998ea",
+      "before": {
+        "layoutId": "815c3653-933e-4938-b768-1124be773268"
+      },
+      "data": {
+        "layoutId": "54169e94-e8d4-4048-b627-ec332708db6c"
+      }
+    },
+    {
+      "entity": "host.pages-to-metadata",
+      "id": "88a0ffa6-a805-4f0b-8b1a-e462c691b12e",
+      "before": {
+        "metadataId": "941d1acc-5e1f-402e-b3c8-359f89b6233f"
+      },
+      "data": {
+        "metadataId": "b5dc3452-280e-41d3-96a7-753868ee1a1b"
+      }
+    },
+    {
+      "entity": "website-builder.widget",
+      "id": "2c332454-201b-4034-bdf1-9fcf065764e0",
+      "before": {
+        "title": {
+          "en": "Create your product today",
+          "ru": "Создайте свой продукт уже сегодня"
+        },
+        "subtitle": {
+          "en": "Websites and web services in 1 day",
+          "ru": "Сайты и веб-сервисы за 1 день"
+        },
+        "description": {
+          "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Describe your idea to the AI assistant. It will help you choose features, assemble pages from existing blocks and add your text and images. Publish the first version directly from chat and get a link to share with customers.\"}]}]}",
+          "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Опишите свою идею ИИ-помощнику. Он поможет выбрать функции, собрать страницы из готовых блоков и добавить ваши тексты и изображения. Опубликуйте первую версию прямо из чата и получите ссылку, которую можно отправить клиентам.\"}]}]}"
+        }
+      },
+      "data": {
+        "title": {
+          "en": "SinglePageStartup Code Framework",
+          "ru": "SinglePageStartup Code Framework"
+        },
+        "subtitle": {
+          "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Open-source framework\"}]}]}",
+          "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Фреймворк с открытым исходным кодом\"}]}]}"
+        },
+        "description": {
+          "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Build a website, store or web service with ready-made modules. Use accounts, chat, catalog, orders and payments in one project and adapt them to your needs.\"}]}]}",
+          "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Соберите сайт, магазин или веб-сервис на готовых модулях. Используйте аккаунты, чат, каталог, заказы и оплату в одном проекте и меняйте их под свои задачи.\"}]}]}"
+        }
+      }
+    },
+    {
+      "entity": "website-builder.widget",
+      "id": "1745300b-c422-4399-9683-8fcdbf3425d7",
+      "before": {
+        "title": {
+          "en": "Launch your project today and start showing it to customers",
+          "ru": "Запустите проект уже сегодня и начните показывать его клиентам"
+        },
+        "subtitle": {
+          "en": "Start with your idea",
+          "ru": "Начните со своей идеи"
+        },
+        "description": {
+          "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Describe what you want to offer customers. Choose features with the AI assistant, review the first version and publish it through chat.\"}]}]}",
+          "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Опишите, что хотите предложить клиентам. Вместе с ИИ-помощником выберите функции, посмотрите первую версию и опубликуйте её через чат.\"}]}]}"
+        }
+      },
+      "data": {
+        "title": {
+          "en": "Start with the framework code",
+          "ru": "Начните с кода фреймворка"
+        },
+        "subtitle": {
+          "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Code and documentation on GitHub\"}]}]}",
+          "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Код и документация на GitHub\"}]}]}"
+        },
+        "description": {
+          "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Open the repository and follow the README to run the project. The module directory lists available features and examples.\"}]}]}",
+          "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Откройте репозиторий и запустите проект по README. В справочнике модулей перечислены готовые функции и примеры их использования.\"}]}]}"
+        }
+      }
+    },
+    {
+      "entity": "website-builder.feature",
+      "id": "18a6aca7-7110-4000-971a-90263329ce2e",
+      "before": {
+        "title": {
+          "en": "Create an account",
+          "ru": "Создайте аккаунт"
+        },
+        "description": {
+          "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Register and open a chat with the AI assistant. Describe what you want to offer customers and how your business will work.\"}]}]}",
+          "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Зарегистрируйтесь и откройте чат с ИИ-помощником. Расскажите, что хотите предложить клиентам и как будет работать ваш бизнес.\"}]}]}"
+        }
+      },
+      "data": {
+        "title": {
+          "en": "Describe the task",
+          "ru": "Опишите задачу"
+        },
+        "description": {
+          "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Define what you want the product to help customers do. If you need a brief or strategy, choose an AI agent service.\"}]}]}",
+          "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Сформулируйте, что продукт помогает сделать клиенту. Если нужны бриф или стратегия, выберите услугу ИИ-агента.\"}]}]}"
+        }
+      }
+    },
+    {
+      "entity": "website-builder.feature",
+      "id": "9f60bb31-ed35-4f0b-ab46-3545e78a786c",
+      "before": {
+        "title": {
+          "en": "Plan your project with AI",
+          "ru": "Спроектируйте проект с ИИ"
+        },
+        "description": {
+          "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Choose features and pages with the AI assistant and prepare text and images. The assistant will assemble the first version from existing blocks so you can review it and say what to change.\"}]}]}",
+          "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Вместе с ИИ-помощником выберите функции и страницы, подготовьте тексты и изображения. Помощник соберёт первую версию из готовых блоков, а вы сможете посмотреть её и сказать, что изменить.\"}]}]}"
+        }
+      },
+      "data": {
+        "title": {
+          "en": "Select modules",
+          "ru": "Выберите модули"
+        },
+        "description": {
+          "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Choose ready-made features for the main task. The module directory shows the data and relationships already available.\"}]}]}",
+          "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Подберите готовые функции для основной задачи. Используйте справочник модулей, чтобы понять, какие данные и связи уже есть.\"}]}]}"
+        }
+      }
+    },
+    {
+      "entity": "website-builder.feature",
+      "id": "b506da85-a3ee-4d2b-bb0c-6bf5616267dc",
+      "before": {
+        "title": {
+          "en": "Publish your project",
+          "ru": "Опубликуйте проект"
+        },
+        "description": {
+          "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Register with a hosting service where your website will run. Then ask the AI assistant to publish the project directly from the SinglePageStartup chat. You will get a link for customers and access to the code.\"}]}]}",
+          "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Зарегистрируйтесь на хостинге — сервисе, где будет работать ваш сайт. Затем попросите ИИ-помощника опубликовать проект прямо из чата SinglePageStartup. Вы получите ссылку для клиентов и доступ к коду.\"}]}]}"
+        }
+      },
+      "data": {
+        "title": {
+          "en": "Run and test",
+          "ru": "Запустите и проверьте"
+        },
+        "description": {
+          "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Get the code from GitHub, follow the README to run it locally, and test the customer flow before deployment.\"}]}]}",
+          "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Возьмите код на GitHub, запустите проект локально по README и проверьте сценарий клиента перед развёртыванием.\"}]}]}"
+        }
+      }
+    },
+    {
+      "entity": "website-builder.feature",
+      "id": "d0819b15-6704-495e-b1de-aaf8c36094bb",
+      "before": {
+        "title": {
+          "en": "Do I need programming skills to start?",
+          "ru": "Нужно ли уметь программировать, чтобы начать?"
+        },
+        "description": {
+          "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Start by describing your idea in your own words. The AI assistant will help you choose features, prepare pages and publish the first version. Review how the project works and say what to change.\"}]}]}",
+          "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Для начала достаточно описать идею своими словами. ИИ-помощник поможет выбрать функции, подготовить страницы и опубликовать первую версию. Вы смотрите, как работает проект, и говорите, что изменить.\"}]}]}"
+        }
+      },
+      "data": {
+        "title": {
+          "en": "Do I need programming skills?",
+          "ru": "Нужны ли навыки программирования?"
+        },
+        "description": {
+          "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Running and deploying the framework requires development tools. The README lists the requirements and commands.\"}]}]}",
+          "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Для запуска и развёртывания понадобятся инструменты разработки. README описывает требования и команды.\"}]}]}"
+        }
+      }
+    },
+    {
+      "entity": "website-builder.feature",
+      "id": "32e2cdeb-286f-40a9-a497-ec0e038a3db0",
+      "before": {
+        "title": {
+          "en": "How can I develop the code myself?",
+          "ru": "Как дорабатывать код самостоятельно?"
+        },
+        "description": {
+          "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Download your repository and open it in Claude Code or Codex. Give the AI assistant your project documents, describe the changes and check the result before publishing.\"}]}]}",
+          "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Скачайте свой репозиторий и откройте его в Claude Code или Codex. Передайте ИИ-помощнику документы проекта, опишите изменения и проверьте результат перед публикацией.\"}]}]}"
+        }
+      },
+      "data": {
+        "title": {
+          "en": "How can I develop the code myself?",
+          "ru": "Как дорабатывать код самостоятельно?"
+        },
+        "description": {
+          "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Clone the repository, run the project and change the modules you need. Test the customer flow before deployment.\"}]}]}",
+          "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Клонируйте репозиторий, запустите проект и меняйте нужные модули. Перед публикацией проверьте сценарий клиента.\"}]}]}"
+        }
+      }
+    },
+    {
+      "entity": "website-builder.feature",
+      "id": "00f2720e-6e09-4269-ad88-692b386f166b",
+      "before": {
+        "title": {
+          "en": "How will the first version of my project be created?",
+          "ru": "Как появится первая версия проекта?"
+        },
+        "description": {
+          "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"The AI assistant will assemble pages from existing blocks and add your text and images. Connect GitHub to store the code and a hosting account to run the project. Start publishing through the same chat and get a link to the first version.\"}]}]}",
+          "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"ИИ-помощник соберёт страницы из готовых блоков и добавит ваши тексты и изображения. Подключите GitHub, где будет храниться код, и аккаунт на хостинге, где будет работать проект. Запустите публикацию через тот же чат и получите ссылку на первую версию.\"}]}]}"
+        }
+      },
+      "data": {
+        "title": {
+          "en": "How do I launch the first version?",
+          "ru": "Как запустить первую версию?"
+        },
+        "description": {
+          "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Follow the README to configure the environment and prepare the database. After testing locally, deploy to your chosen host.\"}]}]}",
+          "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Откройте README, настройте окружение и подготовьте базу данных. После локальной проверки разверните проект на выбранном хостинге.\"}]}]}"
+        }
+      }
+    },
+    {
+      "entity": "website-builder.feature",
+      "id": "1d3a6d7f-c326-4009-a956-2e6cb7f32d9b",
+      "before": {
+        "title": {
+          "en": "Can I develop the project further?",
+          "ru": "Можно ли дорабатывать проект потом?"
+        },
+        "description": {
+          "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Yes. Return to the same chat, describe the changes you need and add to the project knowledge. If you need a specific feature, you can extend the code with an AI assistant or a developer.\"}]}]}",
+          "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Да. Возвращайтесь в тот же чат, описывайте нужные изменения и дополняйте знания о проекте. Если потребуется особая функция, можно доработать код с ИИ-помощником или подключить разработчика.\"}]}]}"
+        }
+      },
+      "data": {
+        "title": {
+          "en": "Can I develop the project further?",
+          "ru": "Можно ли дорабатывать проект потом?"
+        },
+        "description": {
+          "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Yes. Add ready-made modules and extend them as the project grows.\"}]}]}",
+          "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Да. Подключайте готовые модули и расширяйте их по мере развития проекта.\"}]}]}"
+        }
+      }
+    },
+    {
+      "entity": "website-builder.feature",
+      "id": "06573106-b12b-444a-8339-83471d3ce6a3",
+      "before": {
+        "title": {
+          "en": "What is free?",
+          "ru": "Что здесь бесплатно?"
+        },
+        "description": {
+          "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Code Framework and its documentation are available free under the MIT licence. AI Chat, development tools and hosting are paid separately.\"}]}]}",
+          "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Code Framework и документация доступны бесплатно по лицензии MIT. AI Chat, инструменты разработки и хостинг оплачиваются отдельно.\"}]}]}"
+        }
+      },
+      "data": {
+        "title": {
+          "en": "What is free?",
+          "ru": "Что здесь бесплатно?"
+        },
+        "description": {
+          "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"The framework code and documentation are available under the MIT license. Services, development tools and hosting are priced separately.\"}]}]}",
+          "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Код фреймворка и документация доступны по лицензии MIT. Услуги, инструменты разработки и хостинг оплачиваются отдельно.\"}]}]}"
+        }
+      }
+    },
+    {
+      "entity": "website-builder.button",
+      "id": "04d41815-f7c4-4253-aa79-cca8283a3ad5",
+      "before": {
+        "url": "/rbac/subject/authentication/email-and-password/registration",
+        "title": {
+          "en": "Create a product",
+          "ru": "Создать продукт"
+        },
+        "adminTitle": "Создать продукт"
+      },
+      "data": {
+        "url": "/framework/services",
+        "title": {
+          "en": "AI agent services",
+          "ru": "Услуги ИИ-агентов"
+        },
+        "adminTitle": "AI agent services"
+      }
+    },
+    {
+      "entity": "website-builder.button",
+      "id": "21341ee8-9ed0-407a-98a6-35dca4430572",
+      "before": {
+        "url": "/rbac/subject/authentication/email-and-password/registration",
+        "title": {
+          "en": "Start",
+          "ru": "Начать"
+        },
+        "adminTitle": "Начать"
+      },
+      "data": {
+        "url": "/framework/modules",
+        "title": {
+          "en": "All modules",
+          "ru": "Все модули"
+        },
+        "adminTitle": "All modules"
+      }
+    },
+    {
+      "entity": "website-builder.button",
+      "id": "620f52d4-12ee-4ffa-a82a-f30a057972ea",
+      "before": {
+        "url": "/",
+        "title": {
+          "en": "Prepare your product in AI Chat",
+          "ru": "Подготовить продукт в AI-чате"
+        },
+        "adminTitle": "Prepare your product in AI Chat"
+      },
+      "data": {
+        "url": "/framework/services",
+        "title": {
+          "en": "AI agent services",
+          "ru": "Услуги ИИ-агентов"
+        },
+        "adminTitle": "AI agent services"
+      }
+    },
+    {
+      "entity": "website-builder.button",
+      "id": "e560aa13-59de-4daa-9dde-f62d5a64e89c",
+      "before": {
+        "url": "/",
+        "title": {
+          "en": "Prepare your product in AI Chat",
+          "ru": "Подготовить продукт в AI-чате"
+        },
+        "adminTitle": "Prepare your product in AI Chat"
+      },
+      "data": {
+        "url": "/framework/services",
+        "title": {
+          "en": "AI agent services",
+          "ru": "Услуги ИИ-агентов"
+        },
+        "adminTitle": "AI agent services"
+      }
+    },
+    {
+      "entity": "website-builder.button",
+      "id": "d99b4232-6ab7-403d-9ca2-9ea620b94bf9",
+      "before": {
+        "url": "/",
+        "title": {
+          "en": "Prepare your product in AI Chat",
+          "ru": "Подготовить продукт в AI-чате"
+        },
+        "adminTitle": "Prepare your product in AI Chat"
+      },
+      "data": {
+        "url": "/framework/services",
+        "title": {
+          "en": "AI agent services",
+          "ru": "Услуги ИИ-агентов"
+        },
+        "adminTitle": "AI agent services"
+      }
+    },
+    {
+      "entity": "website-builder.button",
+      "id": "3b7919fd-c55e-4b57-b9bd-eea8a216b2cf",
+      "before": {
+        "url": "/",
+        "title": {
+          "en": "AI Chat",
+          "ru": "AI-чат"
+        },
+        "adminTitle": "AI Chat"
+      },
+      "data": {
+        "url": "/framework/services",
+        "title": {
+          "en": "AI agent services",
+          "ru": "Услуги ИИ-агентов"
+        },
+        "adminTitle": "AI agent services"
+      }
+    },
+    {
+      "entity": "website-builder.button",
+      "id": "fb4672c0-0cde-40a4-bf9a-e2a8a41d6413",
+      "before": {
+        "url": "/",
+        "title": {
+          "en": "Prepare your product in AI Chat",
+          "ru": "Подготовить продукт в AI-чате"
+        },
+        "adminTitle": "Prepare your product in AI Chat"
+      },
+      "data": {
+        "url": "/framework/services",
+        "title": {
+          "en": "AI agent services",
+          "ru": "Услуги ИИ-агентов"
+        },
+        "adminTitle": "AI agent services"
+      }
+    },
+    {
+      "entity": "website-builder.button",
+      "id": "49001ffb-35b2-460b-b553-42b01d741eca",
+      "before": {
+        "url": "/",
+        "title": {
+          "en": "Open AI Chat",
+          "ru": "Открыть AI-чат"
+        },
+        "adminTitle": "Open AI Chat"
+      },
+      "data": {
+        "url": "/framework/services",
+        "title": {
+          "en": "AI agent services",
+          "ru": "Услуги ИИ-агентов"
+        },
+        "adminTitle": "AI agent services"
+      }
+    },
+    {
+      "entity": "website-builder.button",
+      "id": "7c8e9baf-6817-43a8-8a9d-ab9cb67ebe94",
+      "before": {
+        "url": "/",
+        "title": {
+          "en": "AI Chat",
+          "ru": "AI-чат"
+        },
+        "adminTitle": "AI Chat"
+      },
+      "data": {
+        "url": "/framework/services",
+        "title": {
+          "en": "AI agent services",
+          "ru": "Услуги ИИ-агентов"
+        },
+        "adminTitle": "AI agent services"
+      }
+    },
+    {
+      "entity": "website-builder.button",
+      "id": "76ce785e-dc02-422a-b3f0-0ef6a40f2658",
+      "before": {
+        "url": "/",
+        "title": {
+          "en": "Prepare your product in AI Chat",
+          "ru": "Подготовить продукт в AI-чате"
+        },
+        "adminTitle": "Prepare your product in AI Chat"
+      },
+      "data": {
+        "url": "/framework/services",
+        "title": {
+          "en": "AI agent services",
+          "ru": "Услуги ИИ-агентов"
+        },
+        "adminTitle": "AI agent services"
+      }
+    },
+    {
+      "entity": "website-builder.button",
+      "id": "d3fb587e-70a5-4ef8-ac76-bb4463e73ec4",
+      "before": {
+        "url": "/",
+        "title": {
+          "en": "Prepare your product in AI Chat",
+          "ru": "Подготовить продукт в AI-чате"
+        },
+        "adminTitle": "Prepare your product in AI Chat"
+      },
+      "data": {
+        "url": "/framework/services",
+        "title": {
+          "en": "AI agent services",
+          "ru": "Услуги ИИ-агентов"
+        },
+        "adminTitle": "AI agent services"
+      }
+    },
+    {
+      "entity": "website-builder.button",
+      "id": "67cbe5da-4323-4a5d-963e-4af5c05cef8f",
+      "before": {
+        "url": "/#workflow",
+        "title": {
+          "en": "Try the chat",
+          "ru": "Попробовать чат"
+        },
+        "adminTitle": "Попробовать чат"
+      },
+      "data": {
+        "url": "/framework/services",
+        "title": {
+          "en": "AI agent services",
+          "ru": "Услуги ИИ-агентов"
+        },
+        "adminTitle": "AI agent services"
+      }
+    },
+    {
+      "entity": "website-builder.button",
+      "id": "638e54d4-8aa8-4dd5-8a07-63d65d078a88",
+      "before": {
+        "url": "/",
+        "title": {
+          "en": "Prepare your product in AI Chat",
+          "ru": "Подготовить продукт в AI-чате"
+        },
+        "adminTitle": "Prepare your product in AI Chat"
+      },
+      "data": {
+        "url": "/framework/services",
+        "title": {
+          "en": "AI agent services",
+          "ru": "Услуги ИИ-агентов"
+        },
+        "adminTitle": "AI agent services"
+      }
+    },
+    {
+      "entity": "website-builder.button",
+      "id": "e2d995aa-3ea2-4e63-a690-5952355cfb99",
+      "before": {
+        "url": "/",
+        "title": {
+          "en": "Prepare my business in AI Chat",
+          "ru": "Подготовить бизнес в AI-чате"
+        },
+        "adminTitle": "Prepare my business in AI Chat"
+      },
+      "data": {
+        "url": "/framework/services",
+        "title": {
+          "en": "AI agent services",
+          "ru": "Услуги ИИ-агентов"
+        },
+        "adminTitle": "AI agent services"
+      }
+    },
+    {
+      "entity": "website-builder.button",
+      "id": "aebf00e6-7269-4f1f-ba45-8965a6ea2707",
+      "before": {
+        "url": "/ai-chat/help"
+      },
+      "data": {
+        "url": "/framework/help"
+      }
+    },
+    {
+      "entity": "website-builder.button",
+      "id": "a0362061-6017-4915-9ae7-ef32f5eab03a",
+      "before": {
+        "url": "/",
+        "title": {
+          "en": "Prepare your product in AI Chat",
+          "ru": "Подготовить продукт в AI-чате"
+        },
+        "adminTitle": "Prepare your product in AI Chat"
+      },
+      "data": {
+        "url": "/framework/services",
+        "title": {
+          "en": "AI agent services",
+          "ru": "Услуги ИИ-агентов"
+        },
+        "adminTitle": "AI agent services"
+      }
+    },
+    {
+      "entity": "website-builder.button",
+      "id": "3f310609-36c7-4f78-8fe4-815e498287c5",
+      "before": {
+        "url": "/",
+        "title": {
+          "en": "AI Chat",
+          "ru": "AI-чат"
+        },
+        "adminTitle": "AI Chat"
+      },
+      "data": {
+        "url": "/framework/services",
+        "title": {
+          "en": "AI agent services",
+          "ru": "Услуги ИИ-агентов"
+        },
+        "adminTitle": "AI agent services"
+      }
+    },
+    {
+      "entity": "website-builder.button",
+      "id": "045875d7-2409-4e23-9242-2ff599629c4f",
+      "before": {
+        "url": "/",
+        "title": {
+          "en": "AI Chat",
+          "ru": "AI-чат"
+        },
+        "adminTitle": "AI Chat"
+      },
+      "data": {
+        "url": "/framework/services",
+        "title": {
+          "en": "AI agent services",
+          "ru": "Услуги ИИ-агентов"
+        },
+        "adminTitle": "AI agent services"
+      }
+    },
+    {
+      "entity": "website-builder.button",
+      "id": "6e95ce32-be2d-43a9-a991-0ff03b75d5ce",
+      "before": {
+        "url": "/",
+        "title": {
+          "en": "AI Chat",
+          "ru": "AI-чат"
+        },
+        "adminTitle": "AI Chat"
+      },
+      "data": {
+        "url": "/framework/services",
+        "title": {
+          "en": "AI agent services",
+          "ru": "Услуги ИИ-агентов"
+        },
+        "adminTitle": "AI agent services"
+      }
+    },
+    {
+      "entity": "website-builder.button",
+      "id": "6de6f1c9-9edf-4252-97ba-0fab09c14e73",
+      "before": {
+        "url": "/",
+        "title": {
+          "en": "Prepare your product in AI Chat",
+          "ru": "Подготовить продукт в AI-чате"
+        },
+        "adminTitle": "Prepare your product in AI Chat"
+      },
+      "data": {
+        "url": "/framework/services",
+        "title": {
+          "en": "AI agent services",
+          "ru": "Услуги ИИ-агентов"
+        },
+        "adminTitle": "AI agent services"
+      }
+    },
+    {
+      "entity": "website-builder.button",
+      "id": "2adae5fd-8c56-49f3-9add-f91529b7ff37",
+      "before": {
+        "url": "/",
+        "title": {
+          "en": "Prepare your product in AI Chat",
+          "ru": "Подготовить продукт в AI-чате"
+        },
+        "adminTitle": "Prepare your product in AI Chat"
+      },
+      "data": {
+        "url": "/framework/services",
+        "title": {
+          "en": "AI agent services",
+          "ru": "Услуги ИИ-агентов"
+        },
+        "adminTitle": "AI agent services"
+      }
+    },
+    {
+      "entity": "website-builder.button",
+      "id": "a75ae30e-6113-4cd3-8da0-12fe52b3a9ea",
+      "before": {
+        "url": "/",
+        "title": {
+          "en": "Prepare your product in AI Chat",
+          "ru": "Подготовить продукт в AI-чате"
+        },
+        "adminTitle": "Prepare your product in AI Chat"
+      },
+      "data": {
+        "url": "/framework/services",
+        "title": {
+          "en": "AI agent services",
+          "ru": "Услуги ИИ-агентов"
+        },
+        "adminTitle": "AI agent services"
+      }
+    },
+    {
+      "entity": "website-builder.button",
+      "id": "aef15a19-8775-4b80-ae43-60f8f7b09091",
+      "before": {
+        "url": "/",
+        "title": {
+          "en": "Prepare your product in AI Chat",
+          "ru": "Подготовить продукт в AI-чате"
+        },
+        "adminTitle": "Prepare your product in AI Chat"
+      },
+      "data": {
+        "url": "/framework/services",
+        "title": {
+          "en": "AI agent services",
+          "ru": "Услуги ИИ-агентов"
+        },
+        "adminTitle": "AI agent services"
+      }
+    },
+    {
+      "entity": "website-builder.button",
+      "id": "caafd7d6-b9f4-49b6-a22e-da4b3aae3541",
+      "before": {
+        "url": "/ai-chat/help"
+      },
+      "data": {
+        "url": "/framework/help"
+      }
+    },
+    {
+      "entity": "website-builder.button",
+      "id": "c9431e9b-fdc4-4cd9-a5f4-7ea94c939278",
+      "before": {
+        "url": "/rbac/subject/authentication/email-and-password/registration",
+        "title": {
+          "en": "Register",
+          "ru": "Зарегистрироваться"
+        },
+        "adminTitle": "Зарегистрироваться"
+      },
+      "data": {
+        "url": "/framework/services",
+        "title": {
+          "en": "Choose a service",
+          "ru": "Выбрать услугу"
+        },
+        "adminTitle": "Choose a service"
+      }
+    },
+    {
+      "entity": "website-builder.button",
+      "id": "08ea7092-c806-44bb-90e1-46b765be0c11",
+      "before": {
+        "url": "/",
+        "title": {
+          "en": "Prepare in AI Chat",
+          "ru": "Подготовить в AI-чате"
+        },
+        "adminTitle": "Prepare in AI Chat"
+      },
+      "data": {
+        "url": "/framework/services",
+        "title": {
+          "en": "AI agent services",
+          "ru": "Услуги ИИ-агентов"
+        },
+        "adminTitle": "AI agent services"
+      }
+    },
+    {
+      "entity": "website-builder.button",
+      "id": "3dcc3fed-fda9-413b-bd50-2e4c5a35119e",
+      "before": {
+        "url": "/",
+        "title": {
+          "en": "Prepare the documents in AI Chat",
+          "ru": "Подготовить документы в AI-чате"
+        },
+        "adminTitle": "Prepare the documents in AI Chat"
+      },
+      "data": {
+        "url": "/framework/services",
+        "title": {
+          "en": "AI agent services",
+          "ru": "Услуги ИИ-агентов"
+        },
+        "adminTitle": "AI agent services"
+      }
+    },
+    {
+      "entity": "website-builder.button",
+      "id": "25c7e0b8-e01d-4980-a996-aa88eff87dd4",
+      "before": {
+        "url": "/ai-chat",
+        "title": {
+          "en": "AI Chat",
+          "ru": "AI Chat"
+        },
+        "adminTitle": "AI Chat"
+      },
+      "data": {
+        "url": "/framework/services",
+        "title": {
+          "en": "AI agent services",
+          "ru": "Услуги ИИ-агентов"
+        },
+        "adminTitle": "AI agent services"
+      }
+    },
+    {
+      "entity": "website-builder.button",
+      "id": "9838b5fe-eae5-4a80-840c-bed601479243",
+      "before": {
+        "url": "/",
+        "title": {
+          "en": "AI Chat",
+          "ru": "AI-чат"
+        },
+        "adminTitle": "AI Chat"
+      },
+      "data": {
+        "url": "/framework/services",
+        "title": {
+          "en": "AI agent services",
+          "ru": "Услуги ИИ-агентов"
+        },
+        "adminTitle": "AI agent services"
+      }
+    },
+    {
+      "entity": "website-builder.button",
+      "id": "4e017944-6ef2-42ed-bb03-a2aafb20ef25",
+      "before": {
+        "url": "/ai-chat/help"
+      },
+      "data": {
+        "url": "/framework/help"
+      }
+    },
+    {
+      "entity": "website-builder.button",
+      "id": "e01e1e04-a453-40de-99f4-ff6e07179441",
+      "before": {
+        "url": "/",
+        "title": {
+          "en": "Prepare your product in AI Chat",
+          "ru": "Подготовить продукт в AI-чате"
+        },
+        "adminTitle": "Prepare your product in AI Chat"
+      },
+      "data": {
+        "url": "/framework/services",
+        "title": {
+          "en": "AI agent services",
+          "ru": "Услуги ИИ-агентов"
+        },
+        "adminTitle": "AI agent services"
+      }
+    },
+    {
+      "entity": "website-builder.button",
+      "id": "0b7518fc-5e4d-43a2-bb93-41fa38d6dcb3",
+      "before": {
+        "url": "/ai-chat/help"
+      },
+      "data": {
+        "url": "/framework/help"
+      }
+    },
+    {
+      "entity": "website-builder.button",
+      "id": "97615f8e-4977-417b-9d34-90d41afb5623",
+      "before": {
+        "url": "/",
+        "title": {
+          "en": "Prepare your product in AI Chat",
+          "ru": "Подготовить продукт в AI-чате"
+        },
+        "adminTitle": "Prepare your product in AI Chat"
+      },
+      "data": {
+        "url": "/framework/services",
+        "title": {
+          "en": "AI agent services",
+          "ru": "Услуги ИИ-агентов"
+        },
+        "adminTitle": "AI agent services"
+      }
+    },
+    {
+      "entity": "website-builder.button",
+      "id": "a6ccab62-e0b7-4f04-8181-e349c80327f5",
+      "before": {
+        "url": "/",
+        "title": {
+          "en": "Prepare your product in AI Chat",
+          "ru": "Подготовить продукт в AI-чате"
+        },
+        "adminTitle": "Prepare your product in AI Chat"
+      },
+      "data": {
+        "url": "/framework/services",
+        "title": {
+          "en": "AI agent services",
+          "ru": "Услуги ИИ-агентов"
+        },
+        "adminTitle": "AI agent services"
+      }
+    },
+    {
+      "entity": "website-builder.button",
+      "id": "7871ad84-fa06-4124-a564-21c1d1c7cbb1",
+      "before": {
+        "url": "/",
+        "title": {
+          "en": "Open AI Chat",
+          "ru": "Открыть AI-чат"
+        },
+        "adminTitle": "Open AI Chat"
+      },
+      "data": {
+        "url": "/framework/services",
+        "title": {
+          "en": "AI agent services",
+          "ru": "Услуги ИИ-агентов"
+        },
+        "adminTitle": "AI agent services"
+      }
+    },
+    {
+      "entity": "website-builder.button",
+      "id": "9b3f7866-45bd-4bec-9180-920efdbbd798",
+      "before": {
+        "url": "/",
+        "title": {
+          "en": "Prepare your product in AI Chat",
+          "ru": "Подготовить продукт в AI-чате"
+        },
+        "adminTitle": "Prepare your product in AI Chat"
+      },
+      "data": {
+        "url": "/framework/services",
+        "title": {
+          "en": "AI agent services",
+          "ru": "Услуги ИИ-агентов"
+        },
+        "adminTitle": "AI agent services"
+      }
+    },
+    {
+      "entity": "website-builder.button",
+      "id": "254010d3-7b44-49ca-8047-0265efd8fe38",
+      "before": {
+        "url": "/ai-chat/help"
+      },
+      "data": {
+        "url": "/framework/help"
+      }
+    },
+    {
+      "entity": "website-builder.button",
+      "id": "2174b376-bcc9-42a6-91fc-2f4e3483c328",
+      "before": {
+        "url": "/ai-chat/social/profiles/create#how-your-materials-are-processed-and-stored"
+      },
+      "data": {
+        "url": "/privacy"
+      }
+    },
+    {
+      "entity": "website-builder.button",
+      "id": "b3c64d3d-d0b0-4415-8bbb-e538f9a0d2a4",
+      "before": {
+        "url": "/ai-chat/social/profiles/example",
+        "title": {
+          "en": "Return to your project",
+          "ru": "Вернуться к проекту"
+        },
+        "adminTitle": "Вернуться к проекту"
+      },
+      "data": {
+        "url": "/social/chats",
+        "title": {
+          "en": "Open chats",
+          "ru": "Открыть чаты"
+        },
+        "adminTitle": "Open chats"
+      }
+    },
+    {
+      "entity": "website-builder.widget",
+      "id": "891660ec-0b4d-4051-b595-e3f0debcefaa",
+      "before": {
+        "subtitle": {
+          "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Tell us what you wanted to do, what happened and what result you need. Include the project or payment if it relates to your question.\"}]}]}",
+          "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Расскажите, что вы хотели сделать, что произошло и какой результат нужен. Укажите проект или платёж, если вопрос связан с ним.\"}]}]}"
+        },
+        "description": {
+          "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"heading\",\"attrs\":{\"level\":2},\"content\":[{\"type\":\"text\",\"text\":\"What happens next\"}]},{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"We respond to initial requests within 24 hours. Resolution time depends on the question. We do not currently offer round-the-clock support chat.\"}]},{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Your saved documents and tasks remain available while you wait for a reply. Return to your project.\"}]}]}",
+          "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"heading\",\"attrs\":{\"level\":2},\"content\":[{\"type\":\"text\",\"text\":\"Что будет дальше\"}]},{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"На первое обращение отвечаем в течение 24 часов. Срок решения зависит от вопроса. Круглосуточного чата поддержки сейчас нет.\"}]},{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Сохранённые документы и задачи остаются доступны, пока вы ждёте ответа. Вернуться к проекту.\"}]}]}"
+        }
+      },
+      "data": {
+        "subtitle": {
+          "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Tell us what you wanted to do and what happened. Include the order or payment number if it relates to the question.\"}]}]}",
+          "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Расскажите, что вы хотели сделать и что произошло. Если вопрос касается заказа или оплаты, укажите их номер.\"}]}]}"
+        },
+        "description": {
+          "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"heading\",\"attrs\":{\"level\":2},\"content\":[{\"type\":\"text\",\"text\":\"What happens next\"}]},{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"We respond to initial requests within 24 hours. Resolution time depends on the question. We do not currently offer round-the-clock support chat.\"}]}]}",
+          "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"heading\",\"attrs\":{\"level\":2},\"content\":[{\"type\":\"text\",\"text\":\"Что будет дальше\"}]},{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"На первое обращение отвечаем в течение 24 часов. Срок решения зависит от вопроса. Круглосуточного чата поддержки сейчас нет.\"}]}]}"
+        }
+      }
+    },
+    {
+      "entity": "website-builder.widget",
+      "id": "98347b4f-47f2-4178-a81e-2ea50520651c",
+      "before": {
+        "description": {
+          "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Prepare your business in AI Chat. Build your product with Code Framework.\"}]}]}",
+          "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Подготовьте бизнес в AI-чате. Разрабатывайте продукт с Code Framework.\"}]}]}"
+        }
+      },
+      "data": {
+        "description": {
+          "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Build websites, stores and web services with SinglePageStartup. Explore the framework modules and AI agent services.\"}]}]}",
+          "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Создавайте сайты, магазины и веб-сервисы на SinglePageStartup. Посмотрите модули фреймворка и услуги ИИ-агентов.\"}]}]}"
+        }
+      }
+    },
+    {
+      "entity": "website-builder.button",
+      "id": "b38ffd02-024c-4a29-89fd-7bb68f63802b",
+      "before": {
+        "title": {
+          "en": "Create a product",
+          "ru": "Создать продукт"
+        },
+        "url": "/rbac/subject/authentication/email-and-password/registration",
+        "adminTitle": "Создать продукт"
+      },
+      "data": {
+        "title": {
+          "en": "AI agent services",
+          "ru": "Услуги ИИ-агентов"
+        },
+        "url": "/framework/services",
+        "adminTitle": "AI agent services"
+      }
+    }
+  ],
+  "deletions": [
+    {
+      "entity": "website-builder.widgets-to-features",
+      "id": "0302534c-4f63-4488-a0bf-032c4ada19f8",
+      "expected": {
+        "variant": "default",
+        "widgetId": "296a384b-520a-4793-9d0e-150885a476e3",
+        "featureId": "efaea174-976e-4917-8cbc-904e0fc79dc0"
+      }
+    },
+    {
+      "entity": "website-builder.widgets-to-features",
+      "id": "03e93c11-df57-4cb7-94f2-d3e25222a32d",
+      "expected": {
+        "variant": "default",
+        "widgetId": "631ec56d-556c-46c1-b6a4-f8d3f49560fd",
+        "featureId": "f4731c2b-fe2e-401c-85d6-94419f60b060"
+      }
+    },
+    {
+      "entity": "host.pages-to-metadata",
+      "id": "054039d1-3a8a-40f0-a672-e98643b20aad",
+      "expected": {
+        "variant": "default",
+        "pageId": "b8ce23e9-63c3-406d-b44a-ba382b4cccc8",
+        "metadataId": "5f510747-b5fc-4cc2-a2e1-ee903ce91df1"
+      }
+    },
+    {
+      "entity": "website-builder.widgets-to-features",
+      "id": "0f077dae-37e6-4643-85eb-c9ed49793ea2",
+      "expected": {
+        "variant": "default",
+        "widgetId": "631ec56d-556c-46c1-b6a4-f8d3f49560fd",
+        "featureId": "565258a1-61af-47fe-b080-7f3776232997"
+      }
+    },
+    {
+      "entity": "host.pages-to-widgets",
+      "id": "1a376b81-e86b-49ed-9fc4-3058644c5198",
+      "expected": {
+        "variant": "default",
+        "pageId": "66f99ba7-2cc2-407b-bfa9-7ef3e55a7cf4",
+        "widgetId": "6921d9a3-3508-4994-94f3-c88b0828d106"
+      }
+    },
+    {
+      "entity": "host.pages-to-widgets",
+      "id": "1a4a886f-f042-49dc-840b-d7c1168bf4b3",
+      "expected": {
+        "variant": "default",
+        "pageId": "b8ce23e9-63c3-406d-b44a-ba382b4cccc8",
+        "widgetId": "d32f1387-5991-4983-a52c-b78866a176ec"
+      }
+    },
+    {
+      "entity": "website-builder.widgets-to-features",
+      "id": "22952b1d-a02f-4592-a4a6-04fc4602e14b",
+      "expected": {
+        "variant": "default",
+        "widgetId": "296a384b-520a-4793-9d0e-150885a476e3",
+        "featureId": "f5542d76-4e52-4fdc-88dd-047098aba17c"
+      }
+    },
+    {
+      "entity": "website-builder.widgets-to-features",
+      "id": "23b4e3aa-d750-4ca6-914f-9d6e90498b30",
+      "expected": {
+        "variant": "default",
+        "widgetId": "6c93688d-2c9a-46f2-9ca0-844691f1d51b",
+        "featureId": "fa23c972-e270-42f2-86ae-1e0795c4ae1e"
+      }
+    },
+    {
+      "entity": "host.pages-to-layouts",
+      "id": "24287b9c-4511-42f5-9b29-019820291878",
+      "expected": {
+        "variant": "default",
+        "pageId": "b8ce23e9-63c3-406d-b44a-ba382b4cccc8",
+        "layoutId": "815c3653-933e-4938-b768-1124be773268"
+      }
+    },
+    {
+      "entity": "website-builder.widgets-to-features",
+      "id": "267630b2-e30d-4648-9b87-1ef36cbb53d7",
+      "expected": {
+        "variant": "default",
+        "widgetId": "6c93688d-2c9a-46f2-9ca0-844691f1d51b",
+        "featureId": "e2c9a8a3-6de6-41a1-997c-50b95432d93c"
+      }
+    },
+    {
+      "entity": "host.pages-to-metadata",
+      "id": "27a0b49b-5c46-4ccc-b0b2-998269c6d950",
+      "expected": {
+        "variant": "default",
+        "pageId": "a22958f9-92e8-4231-b992-81672bd57dfc",
+        "metadataId": "8024b44c-d965-4495-bbb0-6d89ab023af1"
+      }
+    },
+    {
+      "entity": "host.widgets-to-external-widgets",
+      "id": "2983789b-9ece-423b-9ea4-3de7185cc41e",
+      "expected": {
+        "variant": "default",
+        "widgetId": "de0edad2-a563-4e6a-9807-66da773282c4",
+        "externalWidgetId": "9766a057-17ad-4d54-8ad5-4c98c7954e61"
+      }
+    },
+    {
+      "entity": "website-builder.widgets-to-features",
+      "id": "37cb09a9-0d45-42ec-8448-78d191fe065d",
+      "expected": {
+        "variant": "default",
+        "widgetId": "631ec56d-556c-46c1-b6a4-f8d3f49560fd",
+        "featureId": "b7cd648f-eed4-4b8f-9df6-b6306adc2b91"
+      }
+    },
+    {
+      "entity": "host.widgets-to-external-widgets",
+      "id": "3b13be5c-8219-4020-afac-d407bf72e6f3",
+      "expected": {
+        "variant": "default",
+        "widgetId": "5600ca7a-e9fd-4e88-ba5b-91e07505dc4b",
+        "externalWidgetId": "631ec56d-556c-46c1-b6a4-f8d3f49560fd"
+      }
+    },
+    {
+      "entity": "host.pages-to-layouts",
+      "id": "3b5ab621-3334-41c6-97dc-e8604735a67f",
+      "expected": {
+        "variant": "default",
+        "pageId": "9e761df6-d548-4adf-a8dc-6f6571d0b6ae",
+        "layoutId": "815c3653-933e-4938-b768-1124be773268"
+      }
+    },
+    {
+      "entity": "host.pages-to-layouts",
+      "id": "413def80-e852-4a70-b030-fb8ff7550045",
+      "expected": {
+        "variant": "default",
+        "pageId": "f3f4a647-dae0-4fa9-b0b3-deb25fbd4eb5",
+        "layoutId": "815c3653-933e-4938-b768-1124be773268"
+      }
+    },
+    {
+      "entity": "host.pages-to-layouts",
+      "id": "430f1ffe-202d-479e-a290-3858be59a96a",
+      "expected": {
+        "variant": "default",
+        "pageId": "89ffc350-ca96-467e-acb1-1b02604d98ce",
+        "layoutId": "815c3653-933e-4938-b768-1124be773268"
+      }
+    },
+    {
+      "entity": "website-builder.widgets-to-features",
+      "id": "4d5f2e6b-a94d-4dc9-9463-e5ad936f9d18",
+      "expected": {
+        "variant": "default",
+        "widgetId": "631ec56d-556c-46c1-b6a4-f8d3f49560fd",
+        "featureId": "64db9e8d-b40e-436b-8b8d-2df646746bb9"
+      }
+    },
+    {
+      "entity": "website-builder.widgets-to-features",
+      "id": "4dea32d4-468b-4fdd-b0d2-78a8cf6a3b12",
+      "expected": {
+        "variant": "default",
+        "widgetId": "631ec56d-556c-46c1-b6a4-f8d3f49560fd",
+        "featureId": "cff5a893-5fd3-4941-bff8-13bb89dc98db"
+      }
+    },
+    {
+      "entity": "website-builder.widgets-to-features",
+      "id": "51e38f47-ccbe-4b5e-adbd-c5ddde7e80fe",
+      "expected": {
+        "variant": "default",
+        "widgetId": "296a384b-520a-4793-9d0e-150885a476e3",
+        "featureId": "4a4c91b6-44b9-4dbb-8a99-3499f7c79c15"
+      }
+    },
+    {
+      "entity": "website-builder.widgets-to-features",
+      "id": "523090db-3c17-4196-9f3a-622116f046de",
+      "expected": {
+        "variant": "default",
+        "widgetId": "296a384b-520a-4793-9d0e-150885a476e3",
+        "featureId": "bc33f9e1-bd79-436f-8d69-4f313a710a0a"
+      }
+    },
+    {
+      "entity": "host.widgets-to-external-widgets",
+      "id": "523cf563-132d-4c31-99d2-f7b8fce87a22",
+      "expected": {
+        "variant": "default",
+        "widgetId": "6bb3df80-b72a-4766-b878-7276de8cc640",
+        "externalWidgetId": "f31b4dcd-da9d-462e-b24e-f6fb93bf18ed"
+      }
+    },
+    {
+      "entity": "website-builder.widgets-to-features",
+      "id": "52f4738e-4eea-440a-812e-bae094be018d",
+      "expected": {
+        "variant": "default",
+        "widgetId": "296a384b-520a-4793-9d0e-150885a476e3",
+        "featureId": "300a825d-bff5-41f6-93eb-dffbbcbd7562"
+      }
+    },
+    {
+      "entity": "website-builder.widgets-to-buttons-arrays",
+      "id": "552301dd-55db-4fb9-a1c5-bcdde9a831f7",
+      "expected": {
+        "variant": "default",
+        "widgetId": "296a384b-520a-4793-9d0e-150885a476e3",
+        "buttonsArrayId": "5695e253-9060-4846-b8a4-ada5104c52bd"
+      }
+    },
+    {
+      "entity": "host.pages-to-metadata",
+      "id": "555cce64-8db2-4b93-b2bc-2a04eb9f0e33",
+      "expected": {
+        "variant": "default",
+        "pageId": "c9d1562a-ff09-4381-a46d-23d67fa62643",
+        "metadataId": "868711f7-5c69-45b2-a6d7-d2e22521d2a8"
+      }
+    },
+    {
+      "entity": "host.pages-to-metadata",
+      "id": "590a9381-18cb-4a46-bcc5-d73a06e43aed",
+      "expected": {
+        "variant": "default",
+        "pageId": "cdd585f7-62a8-4344-96c6-f9b593d37f1c",
+        "metadataId": "70de9a3c-4781-4f87-851e-d344631def29"
+      }
+    },
+    {
+      "entity": "host.pages-to-layouts",
+      "id": "59e36cf4-5900-44a8-932b-4060baf9ad02",
+      "expected": {
+        "variant": "default",
+        "pageId": "a9b2427c-ebd4-4072-b707-ac108bfebb48",
+        "layoutId": "815c3653-933e-4938-b768-1124be773268"
+      }
+    },
+    {
+      "entity": "host.pages-to-widgets",
+      "id": "63eb8b35-a776-497b-96f9-b1b96a070d98",
+      "expected": {
+        "variant": "default",
+        "pageId": "a22958f9-92e8-4231-b992-81672bd57dfc",
+        "widgetId": "48fdb9cc-4eb4-4597-8ec7-2da82e1f05fc"
+      }
+    },
+    {
+      "entity": "website-builder.widgets-to-features",
+      "id": "67ca957f-5b98-496a-a53f-6361c5f008c5",
+      "expected": {
+        "variant": "default",
+        "widgetId": "6c93688d-2c9a-46f2-9ca0-844691f1d51b",
+        "featureId": "a12e0086-fe55-41c4-8314-f9784de308e8"
+      }
+    },
+    {
+      "entity": "host.pages-to-widgets",
+      "id": "6c84d9c2-76ad-43f4-aa25-326b8a28e300",
+      "expected": {
+        "variant": "default",
+        "pageId": "9e761df6-d548-4adf-a8dc-6f6571d0b6ae",
+        "widgetId": "6bb3df80-b72a-4766-b878-7276de8cc640"
+      }
+    },
+    {
+      "entity": "host.pages-to-widgets",
+      "id": "6d1c7424-7827-4d92-8ac1-48014290c5d5",
+      "expected": {
+        "variant": "default",
+        "pageId": "89ffc350-ca96-467e-acb1-1b02604d98ce",
+        "widgetId": "e09d0410-5c69-4111-ac68-18032e12b0ce"
+      }
+    },
+    {
+      "entity": "host.pages-to-widgets",
+      "id": "728eeda5-0366-461b-96a6-5370c35a4470",
+      "expected": {
+        "variant": "default",
+        "pageId": "a9b2427c-ebd4-4072-b707-ac108bfebb48",
+        "widgetId": "e9fe3cd2-0515-4c11-94f7-229b90c2cd69"
+      }
+    },
+    {
+      "entity": "host.layouts-to-widgets",
+      "id": "7336f18b-7850-4ea2-b73b-fb44e1579bbc",
+      "expected": {
+        "variant": "default",
+        "layoutId": "815c3653-933e-4938-b768-1124be773268",
+        "widgetId": "e9eadf30-c2bc-4d4d-b711-222e41fd2abd"
+      }
+    },
+    {
+      "entity": "host.pages-to-layouts",
+      "id": "79c5d2dd-b502-49d4-8c33-456ef061cdbd",
+      "expected": {
+        "variant": "default",
+        "pageId": "66f99ba7-2cc2-407b-bfa9-7ef3e55a7cf4",
+        "layoutId": "815c3653-933e-4938-b768-1124be773268"
+      }
+    },
+    {
+      "entity": "website-builder.widgets-to-features",
+      "id": "7d261c1a-b365-4bf6-a803-75e6ed5dcfd5",
+      "expected": {
+        "variant": "default",
+        "widgetId": "6c93688d-2c9a-46f2-9ca0-844691f1d51b",
+        "featureId": "806f2fe5-4859-4901-89a2-d96d5c131860"
+      }
+    },
+    {
+      "entity": "host.widgets-to-external-widgets",
+      "id": "7ec72bac-1b0a-423a-95fb-a9b218adc4bb",
+      "expected": {
+        "variant": "default",
+        "widgetId": "e09d0410-5c69-4111-ac68-18032e12b0ce",
+        "externalWidgetId": "eff12691-8a05-4f49-80b4-ef3dcfa79077"
+      }
+    },
+    {
+      "entity": "host.pages-to-metadata",
+      "id": "8929277d-09b4-4705-afbd-8754ee275c2b",
+      "expected": {
+        "variant": "default",
+        "pageId": "9e761df6-d548-4adf-a8dc-6f6571d0b6ae",
+        "metadataId": "ef7b5149-7346-4c83-acb4-57547d8813ab"
+      }
+    },
+    {
+      "entity": "website-builder.widgets-to-features",
+      "id": "92f7fa3e-2dbb-407a-9149-e06860bb6de2",
+      "expected": {
+        "variant": "default",
+        "widgetId": "296a384b-520a-4793-9d0e-150885a476e3",
+        "featureId": "92582c78-9749-487e-85c0-7cb17f1e587a"
+      }
+    },
+    {
+      "entity": "host.pages-to-widgets",
+      "id": "937a1c3b-08eb-4046-b3fb-211e594e8e9e",
+      "expected": {
+        "variant": "default",
+        "pageId": "89ffc350-ca96-467e-acb1-1b02604d98ce",
+        "widgetId": "d0298dfd-fce7-437e-b674-072cfe23ab3f"
+      }
+    },
+    {
+      "entity": "website-builder.widgets-to-buttons-arrays",
+      "id": "99e7a3d0-d7dc-4fd4-b759-f3045bdbd67f",
+      "expected": {
+        "variant": "default",
+        "widgetId": "9766a057-17ad-4d54-8ad5-4c98c7954e61",
+        "buttonsArrayId": "b2e3b960-16ff-496f-a73d-aaefd7db2445"
+      }
+    },
+    {
+      "entity": "host.pages-to-metadata",
+      "id": "9d94d745-b75d-4aba-a16e-c0c874067242",
+      "expected": {
+        "variant": "default",
+        "pageId": "f3f4a647-dae0-4fa9-b0b3-deb25fbd4eb5",
+        "metadataId": "67c9b8d7-faba-474c-af9d-a57b2da73938"
+      }
+    },
+    {
+      "entity": "host.pages-to-layouts",
+      "id": "9f721563-4407-4534-94ff-a776b5c29c82",
+      "expected": {
+        "variant": "default",
+        "pageId": "a22958f9-92e8-4231-b992-81672bd57dfc",
+        "layoutId": "815c3653-933e-4938-b768-1124be773268"
+      }
+    },
+    {
+      "entity": "website-builder.widgets-to-features",
+      "id": "9f813b0b-65c9-4bc8-9d6a-5ea3de0b7c83",
+      "expected": {
+        "variant": "default",
+        "widgetId": "631ec56d-556c-46c1-b6a4-f8d3f49560fd",
+        "featureId": "6d738937-deb6-491e-9b36-cbbc8b40f46b"
+      }
+    },
+    {
+      "entity": "host.pages-to-widgets",
+      "id": "9fa6e070-1699-4af4-92b6-a7c89c5137c5",
+      "expected": {
+        "variant": "default",
+        "pageId": "cdd585f7-62a8-4344-96c6-f9b593d37f1c",
+        "widgetId": "06c6b2be-5e47-4e51-af48-1bdf6ee09098"
+      }
+    },
+    {
+      "entity": "host.widgets-to-external-widgets",
+      "id": "a2560d8f-b9ce-42cb-8d9a-64f79c953a2e",
+      "expected": {
+        "variant": "default",
+        "widgetId": "d32f1387-5991-4983-a52c-b78866a176ec",
+        "externalWidgetId": "86d0e4be-f0b5-4277-bbc7-17f0c34a2c7d"
+      }
+    },
+    {
+      "entity": "website-builder.widgets-to-features",
+      "id": "a413272a-739f-4229-b203-8755304b8764",
+      "expected": {
+        "variant": "default",
+        "widgetId": "631ec56d-556c-46c1-b6a4-f8d3f49560fd",
+        "featureId": "c7e2a3d6-2a07-46ce-b0ed-c7cc8515e509"
+      }
+    },
+    {
+      "entity": "website-builder.widgets-to-features",
+      "id": "ab8e009a-67ec-41df-8016-85f1595c8f3b",
+      "expected": {
+        "variant": "default",
+        "widgetId": "631ec56d-556c-46c1-b6a4-f8d3f49560fd",
+        "featureId": "1cd2aecb-6f9e-4ae5-a0ae-7a07d3651472"
+      }
+    },
+    {
+      "entity": "host.pages-to-metadata",
+      "id": "af323cc1-bcf3-46b4-941b-083d6ecee4ea",
+      "expected": {
+        "variant": "default",
+        "pageId": "a9b2427c-ebd4-4072-b707-ac108bfebb48",
+        "metadataId": "216fb1c3-455b-4b4b-9e7f-7635044fe27c"
+      }
+    },
+    {
+      "entity": "host.widgets-to-external-widgets",
+      "id": "b2bcc6cf-7dfe-483d-a6c9-3be2e64f1420",
+      "expected": {
+        "variant": "default",
+        "widgetId": "d0298dfd-fce7-437e-b674-072cfe23ab3f",
+        "externalWidgetId": "dec6ec00-eb6e-420a-86e3-264539c41f36"
+      }
+    },
+    {
+      "entity": "website-builder.widgets-to-logotypes",
+      "id": "b32c7915-8d53-4093-b1a1-1a5c85b16608",
+      "expected": {
+        "variant": "default",
+        "widgetId": "9766a057-17ad-4d54-8ad5-4c98c7954e61",
+        "logotypeId": "688fe8ba-0801-4e61-84ce-e2b7712325e2"
+      }
+    },
+    {
+      "entity": "website-builder.widgets-to-features",
+      "id": "b6d004c5-fd8b-4a91-9ecb-281787b58f0f",
+      "expected": {
+        "variant": "default",
+        "widgetId": "631ec56d-556c-46c1-b6a4-f8d3f49560fd",
+        "featureId": "234792bc-5712-4686-8500-55e3934fa792"
+      }
+    },
+    {
+      "entity": "host.pages-to-layouts",
+      "id": "bb6989fc-a96f-4c5d-85c7-bb77caca9542",
+      "expected": {
+        "variant": "default",
+        "pageId": "cdd585f7-62a8-4344-96c6-f9b593d37f1c",
+        "layoutId": "815c3653-933e-4938-b768-1124be773268"
+      }
+    },
+    {
+      "entity": "host.widgets-to-external-widgets",
+      "id": "bec019e5-e8a2-4e85-a7ad-292b04b679c9",
+      "expected": {
+        "variant": "default",
+        "widgetId": "90affb0c-c151-4594-8d62-99211346f043",
+        "externalWidgetId": "296a384b-520a-4793-9d0e-150885a476e3"
+      }
+    },
+    {
+      "entity": "host.widgets-to-external-widgets",
+      "id": "c42b0348-955f-482f-aa35-d5bb09695109",
+      "expected": {
+        "variant": "default",
+        "widgetId": "e9fe3cd2-0515-4c11-94f7-229b90c2cd69",
+        "externalWidgetId": "74680c2d-bc2d-4864-8d2d-2079aa24f574"
+      }
+    },
+    {
+      "entity": "rbac.widgets-to-website-builder-module-widgets",
+      "id": "c550e036-11b9-49c0-b327-9b38a7c0c1cd",
+      "expected": {
+        "variant": "default",
+        "widgetId": "eff12691-8a05-4f49-80b4-ef3dcfa79077",
+        "websiteBuilderModuleWidgetId": "cfff32c1-462c-432c-8bd2-c747ecf62430"
+      }
+    },
+    {
+      "entity": "host.layouts-to-widgets",
+      "id": "c616e30a-d033-462a-9096-46c41d8f4dc6",
+      "expected": {
+        "variant": "additional",
+        "layoutId": "815c3653-933e-4938-b768-1124be773268",
+        "widgetId": "de0edad2-a563-4e6a-9807-66da773282c4"
+      }
+    },
+    {
+      "entity": "host.pages-to-metadata",
+      "id": "ccd0150e-0d3e-4652-bcff-527a78ce1093",
+      "expected": {
+        "variant": "default",
+        "pageId": "66f99ba7-2cc2-407b-bfa9-7ef3e55a7cf4",
+        "metadataId": "c3cab3c9-0cd2-4093-8b8f-2eba6d42899c"
+      }
+    },
+    {
+      "entity": "website-builder.widgets-to-file-storage-module-files",
+      "id": "cd9f3611-bc6f-40a0-b7d6-7a3d889b8809",
+      "expected": {
+        "variant": "default",
+        "widgetId": "cfff32c1-462c-432c-8bd2-c747ecf62430",
+        "fileStorageModuleFileId": "39435fbf-4ec1-4760-b784-6bce711e74f9"
+      }
+    },
+    {
+      "entity": "host.pages-to-widgets",
+      "id": "d4547fb8-f7fb-4f10-8775-0b17682a4c34",
+      "expected": {
+        "variant": "default",
+        "pageId": "f3f4a647-dae0-4fa9-b0b3-deb25fbd4eb5",
+        "widgetId": "059fc6a7-e258-443e-a886-de34a8513758"
+      }
+    },
+    {
+      "entity": "host.pages-to-metadata",
+      "id": "dcbcac03-61e3-494b-87b4-46e7b3a176a1",
+      "expected": {
+        "variant": "default",
+        "pageId": "89ffc350-ca96-467e-acb1-1b02604d98ce",
+        "metadataId": "94dc0901-f125-4629-a769-91aa85c40f6a"
+      }
+    },
+    {
+      "entity": "website-builder.widgets-to-features",
+      "id": "e8f506b3-0858-48e1-ada9-2633a910d64c",
+      "expected": {
+        "variant": "default",
+        "widgetId": "631ec56d-556c-46c1-b6a4-f8d3f49560fd",
+        "featureId": "87f53fd6-db95-4897-982c-73579b8c64f8"
+      }
+    },
+    {
+      "entity": "host.widgets-to-external-widgets",
+      "id": "ed40fdd1-4008-412e-8923-881416c4c931",
+      "expected": {
+        "variant": "default",
+        "widgetId": "e9eadf30-c2bc-4d4d-b711-222e41fd2abd",
+        "externalWidgetId": "e87a5a6d-0a5d-4b42-a598-f62489df5022"
+      }
+    },
+    {
+      "entity": "website-builder.widgets-to-features",
+      "id": "ed634f96-5af0-4faa-a571-49e3d5024678",
+      "expected": {
+        "variant": "default",
+        "widgetId": "631ec56d-556c-46c1-b6a4-f8d3f49560fd",
+        "featureId": "41da2c7a-c82f-452a-b9b8-2187c9e7c43c"
+      }
+    },
+    {
+      "entity": "website-builder.widgets-to-features",
+      "id": "ef53cfa2-f37c-4fc9-aae9-5a54b333aa86",
+      "expected": {
+        "variant": "default",
+        "widgetId": "296a384b-520a-4793-9d0e-150885a476e3",
+        "featureId": "84b25d7f-a161-4497-8d47-148d9e79ce58"
+      }
+    },
+    {
+      "entity": "website-builder.widgets-to-features",
+      "id": "f2e40f45-dd50-4a44-9b01-1ba19ee0fbbb",
+      "expected": {
+        "variant": "default",
+        "widgetId": "631ec56d-556c-46c1-b6a4-f8d3f49560fd",
+        "featureId": "1a16f163-180c-4b6e-8575-60893375047e"
+      }
+    },
+    {
+      "entity": "website-builder.widgets-to-features",
+      "id": "f9f9a0b2-c92e-4d80-acc1-5d5abfe145b9",
+      "expected": {
+        "variant": "default",
+        "widgetId": "6c93688d-2c9a-46f2-9ca0-844691f1d51b",
+        "featureId": "a46f2a1c-a7ee-4af5-bc3a-e070c04fd1bb"
+      }
+    },
+    {
+      "entity": "website-builder.widgets-to-features",
+      "id": "fda5fdb8-da48-4894-999e-568b322ebc07",
+      "expected": {
+        "variant": "default",
+        "widgetId": "296a384b-520a-4793-9d0e-150885a476e3",
+        "featureId": "f5a770b8-3359-439f-a921-5870e1f10896"
+      }
+    },
+    {
+      "entity": "website-builder.feature",
+      "id": "234792bc-5712-4686-8500-55e3934fa792",
+      "expected": {
+        "slug": "ai-chat-editable-workflow"
+      }
+    },
+    {
+      "entity": "website-builder.widget",
+      "id": "296a384b-520a-4793-9d0e-150885a476e3",
+      "expected": {
+        "slug": "framework-reviewed-context"
+      }
+    },
+    {
+      "entity": "website-builder.feature",
+      "id": "300a825d-bff5-41f6-93eb-dffbbcbd7562",
+      "expected": {
+        "slug": "framework-reviewed-context-doc-document-two"
+      }
+    },
+    {
+      "entity": "website-builder.feature",
+      "id": "4a4c91b6-44b9-4dbb-8a99-3499f7c79c15",
+      "expected": {
+        "slug": "framework-reviewed-context-task"
+      }
+    },
+    {
+      "entity": "host.widget",
+      "id": "5600ca7a-e9fd-4e88-ba5b-91e07505dc4b",
+      "expected": {
+        "slug": "ai-chat-host-landing"
+      }
+    },
+    {
+      "entity": "website-builder.widget",
+      "id": "631ec56d-556c-46c1-b6a4-f8d3f49560fd",
+      "expected": {
+        "slug": "ai-chat-landing-content"
+      }
+    },
+    {
+      "entity": "host.page",
+      "id": "66f99ba7-2cc2-407b-bfa9-7ef3e55a7cf4",
+      "expected": {
+        "url": "/ai-chat/forgot-password"
+      }
+    },
+    {
+      "entity": "host.widget",
+      "id": "6bb3df80-b72a-4766-b878-7276de8cc640",
+      "expected": {
+        "slug": "ai-chat-host-project-settings"
+      }
+    },
+    {
+      "entity": "website-builder.feature",
+      "id": "6d738937-deb6-491e-9b36-cbbc8b40f46b",
+      "expected": {
+        "slug": "ai-chat-editable-demo-design"
+      }
+    },
+    {
+      "entity": "rbac.widget",
+      "id": "74680c2d-bc2d-4864-8d2d-2079aa24f574",
+      "expected": {
+        "slug": "ai-chat-new-thread"
+      }
+    },
+    {
+      "entity": "website-builder.feature",
+      "id": "806f2fe5-4859-4901-89a2-d96d5c131860",
+      "expected": {
+        "slug": "framework-reviewed-step-doc-document-five"
+      }
+    },
+    {
+      "entity": "host.layout",
+      "id": "815c3653-933e-4938-b768-1124be773268",
+      "expected": {
+        "slug": "ai-chat-layout"
+      }
+    },
+    {
+      "entity": "website-builder.feature",
+      "id": "84b25d7f-a161-4497-8d47-148d9e79ce58",
+      "expected": {
+        "slug": "framework-reviewed-context-doc-document-five"
+      }
+    },
+    {
+      "entity": "rbac.widget",
+      "id": "86d0e4be-f0b5-4277-bbc7-17f0c34a2c7d",
+      "expected": {
+        "slug": "ai-chat-workspace"
+      }
+    },
+    {
+      "entity": "website-builder.feature",
+      "id": "87f53fd6-db95-4897-982c-73579b8c64f8",
+      "expected": {
+        "slug": "how-your-materials-are-processed-and-stored"
+      }
+    },
+    {
+      "entity": "host.page",
+      "id": "89ffc350-ca96-467e-acb1-1b02604d98ce",
+      "expected": {
+        "url": "/ai-chat/projects"
+      }
+    },
+    {
+      "entity": "website-builder.feature",
+      "id": "92582c78-9749-487e-85c0-7cb17f1e587a",
+      "expected": {
+        "slug": "framework-reviewed-context-heading"
+      }
+    },
+    {
+      "entity": "website-builder.widget",
+      "id": "9766a057-17ad-4d54-8ad5-4c98c7954e61",
+      "expected": {
+        "slug": "ai-chat-footer"
+      }
+    },
+    {
+      "entity": "host.page",
+      "id": "9e761df6-d548-4adf-a8dc-6f6571d0b6ae",
+      "expected": {
+        "url": "/ai-chat/social/profiles/[social.profiles.id]/chats/[social.chats.id]/settings"
+      }
+    },
+    {
+      "entity": "website-builder.feature",
+      "id": "a12e0086-fe55-41c4-8314-f9784de308e8",
+      "expected": {
+        "slug": "framework-reviewed-step-doc-document-two"
+      }
+    },
+    {
+      "entity": "host.page",
+      "id": "a22958f9-92e8-4231-b992-81672bd57dfc",
+      "expected": {
+        "url": "/ai-chat/settings"
+      }
+    },
+    {
+      "entity": "website-builder.feature",
+      "id": "a46f2a1c-a7ee-4af5-bc3a-e070c04fd1bb",
+      "expected": {
+        "slug": "framework-reviewed-step-doc-document-four"
+      }
+    },
+    {
+      "entity": "host.page",
+      "id": "a9b2427c-ebd4-4072-b707-ac108bfebb48",
+      "expected": {
+        "url": "/ai-chat/social/profiles/[social.profiles.id]/chats/[social.chats.id]/threads/create"
+      }
+    },
+    {
+      "entity": "host.page",
+      "id": "b8ce23e9-63c3-406d-b44a-ba382b4cccc8",
+      "expected": {
+        "url": "/ai-chat/social/profiles/[social.profiles.id]/chats/[social.chats.id]/threads/[social.threads.id]"
+      }
+    },
+    {
+      "entity": "website-builder.feature",
+      "id": "bc33f9e1-bd79-436f-8d69-4f313a710a0a",
+      "expected": {
+        "slug": "framework-reviewed-context-doc-document-four"
+      }
+    },
+    {
+      "entity": "website-builder.feature",
+      "id": "c7e2a3d6-2a07-46ce-b0ed-c7cc8515e509",
+      "expected": {
+        "slug": "ai-chat-editable-demo-brand"
+      }
+    },
+    {
+      "entity": "host.page",
+      "id": "cdd585f7-62a8-4344-96c6-f9b593d37f1c",
+      "expected": {
+        "url": "/ai-chat/reset-password"
+      }
+    },
+    {
+      "entity": "website-builder.widget",
+      "id": "cfff32c1-462c-432c-8bd2-c747ecf62430",
+      "expected": {
+        "slug": "ai-chat-projects-content"
+      }
+    },
+    {
+      "entity": "host.widget",
+      "id": "d0298dfd-fce7-437e-b674-072cfe23ab3f",
+      "expected": {
+        "slug": "ai-chat-materials-processing"
+      }
+    },
+    {
+      "entity": "host.widget",
+      "id": "d32f1387-5991-4983-a52c-b78866a176ec",
+      "expected": {
+        "slug": "ai-chat-host-workspace"
+      }
+    },
+    {
+      "entity": "host.widget",
+      "id": "de0edad2-a563-4e6a-9807-66da773282c4",
+      "expected": {
+        "slug": "ai-chat-footer"
+      }
+    },
+    {
+      "entity": "website-builder.widget",
+      "id": "dec6ec00-eb6e-420a-86e3-264539c41f36",
+      "expected": {
+        "slug": "ai-chat-materials-processing"
+      }
+    },
+    {
+      "entity": "host.widget",
+      "id": "e09d0410-5c69-4111-ac68-18032e12b0ce",
+      "expected": {
+        "slug": "ai-chat-host-projects"
+      }
+    },
+    {
+      "entity": "website-builder.feature",
+      "id": "e2c9a8a3-6de6-41a1-997c-50b95432d93c",
+      "expected": {
+        "slug": "framework-reviewed-step-doc-document-three"
+      }
+    },
+    {
+      "entity": "host.widget",
+      "id": "e9eadf30-c2bc-4d4d-b711-222e41fd2abd",
+      "expected": {
+        "slug": "ai-chat-navbar"
+      }
+    },
+    {
+      "entity": "host.widget",
+      "id": "e9fe3cd2-0515-4c11-94f7-229b90c2cd69",
+      "expected": {
+        "slug": "ai-chat-host-new-thread"
+      }
+    },
+    {
+      "entity": "website-builder.feature",
+      "id": "efaea174-976e-4917-8cbc-904e0fc79dc0",
+      "expected": {
+        "slug": "framework-reviewed-context-publish"
+      }
+    },
+    {
+      "entity": "rbac.widget",
+      "id": "eff12691-8a05-4f49-80b4-ef3dcfa79077",
+      "expected": {
+        "slug": "ai-chat-projects"
+      }
+    },
+    {
+      "entity": "rbac.widget",
+      "id": "f31b4dcd-da9d-462e-b24e-f6fb93bf18ed",
+      "expected": {
+        "slug": "ai-chat-project-settings"
+      }
+    },
+    {
+      "entity": "host.page",
+      "id": "f3f4a647-dae0-4fa9-b0b3-deb25fbd4eb5",
+      "expected": {
+        "url": "/ai-chat/create-account"
+      }
+    },
+    {
+      "entity": "website-builder.feature",
+      "id": "f5542d76-4e52-4fdc-88dd-047098aba17c",
+      "expected": {
+        "slug": "framework-reviewed-context-doc-document-three"
+      }
+    },
+    {
+      "entity": "website-builder.feature",
+      "id": "f5a770b8-3359-439f-a921-5870e1f10896",
+      "expected": {
+        "slug": "framework-reviewed-context-doc-document-one"
+      }
+    },
+    {
+      "entity": "website-builder.feature",
+      "id": "fa23c972-e270-42f2-86ae-1e0795c4ae1e",
+      "expected": {
+        "slug": "framework-reviewed-step-doc-document-one"
+      }
+    },
+    {
+      "entity": "website-builder.features-to-file-storage-module-files",
+      "id": "124016ea-7e39-4935-b3d7-d2dd2a96dc10",
+      "expected": {
+        "variant": "default",
+        "featureId": "1cd2aecb-6f9e-4ae5-a0ae-7a07d3651472",
+        "fileStorageModuleFileId": "854943e4-fabc-4836-847e-005cfd461ac6"
+      }
+    },
+    {
+      "entity": "website-builder.features-to-file-storage-module-files",
+      "id": "1b6f7b0e-7c51-43f4-853d-c704eaa7ea02",
+      "expected": {
+        "variant": "default",
+        "featureId": "cff5a893-5fd3-4941-bff8-13bb89dc98db",
+        "fileStorageModuleFileId": "57fbe2ba-0da8-4dc3-ac57-e74c270829f8"
+      }
+    },
+    {
+      "entity": "website-builder.features-to-buttons-arrays",
+      "id": "251035a0-22c8-49aa-bb08-a56364432781",
+      "expected": {
+        "variant": "default",
+        "featureId": "f4731c2b-fe2e-401c-85d6-94419f60b060",
+        "buttonsArrayId": "46a27c35-dc78-41e1-8673-6f2c42031855"
+      }
+    },
+    {
+      "entity": "website-builder.buttons-arrays-to-buttons",
+      "id": "29350114-5608-4d49-b1a4-692349dd2dba",
+      "expected": {
+        "variant": "default",
+        "buttonsArrayId": "b2e3b960-16ff-496f-a73d-aaefd7db2445",
+        "buttonId": "b6450c77-dfd3-4d7e-8df1-a5670d92a107"
+      }
+    },
+    {
+      "entity": "website-builder.features-to-file-storage-module-files",
+      "id": "297f8fc9-e32c-4fb2-b8a8-02314069ff7b",
+      "expected": {
+        "variant": "default",
+        "featureId": "41da2c7a-c82f-452a-b9b8-2187c9e7c43c",
+        "fileStorageModuleFileId": "854943e4-fabc-4836-847e-005cfd461ac6"
+      }
+    },
+    {
+      "entity": "website-builder.buttons-arrays-to-buttons",
+      "id": "43ba02f3-f7f3-426c-8249-d177d3118e1c",
+      "expected": {
+        "variant": "default",
+        "buttonsArrayId": "5d9e8654-ff1a-4c56-bbc6-d2366d75e97a",
+        "buttonId": "53805421-0135-40d8-af6f-37218e75c231"
+      }
+    },
+    {
+      "entity": "website-builder.features-to-buttons-arrays",
+      "id": "4a49ddf3-90a5-4f09-8a38-3ea50d2d7671",
+      "expected": {
+        "variant": "default",
+        "featureId": "64db9e8d-b40e-436b-8b8d-2df646746bb9",
+        "buttonsArrayId": "753fb16c-65a7-4692-8fd3-363b3aa9e822"
+      }
+    },
+    {
+      "entity": "website-builder.buttons-arrays-to-buttons",
+      "id": "4be3ac14-a579-4779-a33a-c4033a34e076",
+      "expected": {
+        "variant": "default",
+        "buttonsArrayId": "b2e3b960-16ff-496f-a73d-aaefd7db2445",
+        "buttonId": "74cfe64b-c094-4129-95fe-65cb2c8e1523"
+      }
+    },
+    {
+      "entity": "website-builder.buttons-arrays-to-buttons",
+      "id": "58171b4c-77b8-42ca-b800-69eb4107343f",
+      "expected": {
+        "variant": "default",
+        "buttonsArrayId": "5695e253-9060-4846-b8a4-ada5104c52bd",
+        "buttonId": "4e18b214-60d9-4067-ba6a-9d4ec6f776c6"
+      }
+    },
+    {
+      "entity": "website-builder.features-to-file-storage-module-files",
+      "id": "62ed8aff-6fe9-4c49-ab61-745756a00839",
+      "expected": {
+        "variant": "default",
+        "featureId": "565258a1-61af-47fe-b080-7f3776232997",
+        "fileStorageModuleFileId": "e7d85d99-5e24-4294-a2ef-498c73e03e3a"
+      }
+    },
+    {
+      "entity": "website-builder.buttons-arrays-to-buttons",
+      "id": "6945bb0f-a5aa-479c-817b-1efa0fde1d00",
+      "expected": {
+        "variant": "default",
+        "buttonsArrayId": "b2e3b960-16ff-496f-a73d-aaefd7db2445",
+        "buttonId": "0aad705f-bbb2-452f-aeb9-d8e88b7e703c"
+      }
+    },
+    {
+      "entity": "website-builder.buttons-arrays-to-buttons",
+      "id": "6d6e5252-1507-4a57-a64e-7a7909e71a5b",
+      "expected": {
+        "variant": "default",
+        "buttonsArrayId": "753fb16c-65a7-4692-8fd3-363b3aa9e822",
+        "buttonId": "9c13d1ef-895c-47a8-b7e7-8b95fe5fdd61"
+      }
+    },
+    {
+      "entity": "website-builder.buttons-arrays-to-buttons",
+      "id": "79915d6b-5fe4-4d04-89c0-79dd18456d13",
+      "expected": {
+        "variant": "default",
+        "buttonsArrayId": "46a27c35-dc78-41e1-8673-6f2c42031855",
+        "buttonId": "82e576cd-60db-469b-8be8-c2570c0fe026"
+      }
+    },
+    {
+      "entity": "website-builder.buttons-arrays-to-buttons",
+      "id": "87debbbe-2927-47c8-aff2-e55aaa380a0d",
+      "expected": {
+        "variant": "default",
+        "buttonsArrayId": "59a484a7-817b-472d-b606-80f89dfa2c95",
+        "buttonId": "26e85a32-0173-46af-9e3a-a8a78055cdbe"
+      }
+    },
+    {
+      "entity": "website-builder.buttons-arrays-to-buttons",
+      "id": "8c770f0b-9a10-4573-8ea0-ec171c87f367",
+      "expected": {
+        "variant": "default",
+        "buttonsArrayId": "46a27c35-dc78-41e1-8673-6f2c42031855",
+        "buttonId": "6d9803b3-2591-44b5-8e44-4317cd06f4bc"
+      }
+    },
+    {
+      "entity": "website-builder.buttons-arrays-to-buttons",
+      "id": "9182d511-2b20-4e2a-9879-f511bea51e5d",
+      "expected": {
+        "variant": "default",
+        "buttonsArrayId": "b2e3b960-16ff-496f-a73d-aaefd7db2445",
+        "buttonId": "edda2e7c-2b76-4495-b656-b1377e66236a"
+      }
+    },
+    {
+      "entity": "website-builder.features-to-buttons-arrays",
+      "id": "9e33dfd5-980d-4b9f-a95e-9af7d8bf38e6",
+      "expected": {
+        "variant": "default",
+        "featureId": "1a16f163-180c-4b6e-8575-60893375047e",
+        "buttonsArrayId": "59a484a7-817b-472d-b606-80f89dfa2c95"
+      }
+    },
+    {
+      "entity": "website-builder.features-to-file-storage-module-files",
+      "id": "9f2338da-214e-472e-a091-95f05c002749",
+      "expected": {
+        "variant": "default",
+        "featureId": "1cd2aecb-6f9e-4ae5-a0ae-7a07d3651472",
+        "fileStorageModuleFileId": "e7d85d99-5e24-4294-a2ef-498c73e03e3a"
+      }
+    },
+    {
+      "entity": "website-builder.features-to-buttons-arrays",
+      "id": "a16d0f02-e5e4-4447-9103-ec816f1bfa0e",
+      "expected": {
+        "variant": "default",
+        "featureId": "b7cd648f-eed4-4b8f-9df6-b6306adc2b91",
+        "buttonsArrayId": "e572deda-aecf-4053-8b11-9cf9746e86f8"
+      }
+    },
+    {
+      "entity": "website-builder.buttons-arrays-to-buttons",
+      "id": "a97a73a8-0fae-4514-8846-1d9eed1aa381",
+      "expected": {
+        "variant": "default",
+        "buttonsArrayId": "5d9e8654-ff1a-4c56-bbc6-d2366d75e97a",
+        "buttonId": "e83875c8-2bf6-4d58-8846-e44d99ad85bf"
+      }
+    },
+    {
+      "entity": "website-builder.buttons-arrays-to-buttons",
+      "id": "e4bf9886-100f-407e-bb2c-fbc662ce0108",
+      "expected": {
+        "variant": "default",
+        "buttonsArrayId": "46a27c35-dc78-41e1-8673-6f2c42031855",
+        "buttonId": "6e7393e8-0a72-4729-a9a3-b169760df959"
+      }
+    },
+    {
+      "entity": "website-builder.buttons-arrays-to-buttons",
+      "id": "e572ff13-2be8-45ce-a8a5-236e8dd3a2f8",
+      "expected": {
+        "variant": "default",
+        "buttonsArrayId": "e572deda-aecf-4053-8b11-9cf9746e86f8",
+        "buttonId": "613a0706-662f-4386-9e1a-b808d9174d44"
+      }
+    },
+    {
+      "entity": "website-builder.buttons-arrays-to-buttons",
+      "id": "efffe31d-1af2-479f-bab1-d3f838350236",
+      "expected": {
+        "variant": "default",
+        "buttonsArrayId": "b2e3b960-16ff-496f-a73d-aaefd7db2445",
+        "buttonId": "fdb0358d-78dd-4583-9f2f-d2699eaa64a6"
+      }
+    },
+    {
+      "entity": "website-builder.features-to-buttons-arrays",
+      "id": "fc7a1376-bcd5-4352-957a-1c7963b8333e",
+      "expected": {
+        "variant": "default",
+        "featureId": "cff5a893-5fd3-4941-bff8-13bb89dc98db",
+        "buttonsArrayId": "5d9e8654-ff1a-4c56-bbc6-d2366d75e97a"
+      }
+    },
+    {
+      "entity": "website-builder.button",
+      "id": "0aad705f-bbb2-452f-aeb9-d8e88b7e703c",
+      "expected": {
+        "slug": "ai-chat-editable-footer-button-4"
+      }
+    },
+    {
+      "entity": "website-builder.feature",
+      "id": "1a16f163-180c-4b6e-8575-60893375047e",
+      "expected": {
+        "slug": "ai-chat-editable-demo-project"
+      }
+    },
+    {
+      "entity": "website-builder.feature",
+      "id": "1cd2aecb-6f9e-4ae5-a0ae-7a07d3651472",
+      "expected": {
+        "slug": "ai-chat-editable-demo-products"
+      }
+    },
+    {
+      "entity": "website-builder.button",
+      "id": "26e85a32-0173-46af-9e3a-a8a78055cdbe",
+      "expected": {
+        "slug": "ai-chat-editable-demo-settings-button-0"
+      }
+    },
+    {
+      "entity": "website-builder.feature",
+      "id": "41da2c7a-c82f-452a-b9b8-2187c9e7c43c",
+      "expected": {
+        "slug": "ai-chat-editable-demo-brief"
+      }
+    },
+    {
+      "entity": "website-builder.buttons-array",
+      "id": "46a27c35-dc78-41e1-8673-6f2c42031855",
+      "expected": {
+        "slug": "ai-chat-editable-terms-actions"
+      }
+    },
+    {
+      "entity": "website-builder.button",
+      "id": "4e18b214-60d9-4067-ba6a-9d4ec6f776c6",
+      "expected": {
+        "slug": "framework-reviewed-context-actions-0"
+      }
+    },
+    {
+      "entity": "website-builder.button",
+      "id": "53805421-0135-40d8-af6f-37218e75c231",
+      "expected": {
+        "slug": "ai-chat-editable-hero-button-1"
+      }
+    },
+    {
+      "entity": "website-builder.feature",
+      "id": "565258a1-61af-47fe-b080-7f3776232997",
+      "expected": {
+        "slug": "ai-chat-editable-demo-strategy"
+      }
+    },
+    {
+      "entity": "website-builder.buttons-array",
+      "id": "5695e253-9060-4846-b8a4-ada5104c52bd",
+      "expected": {
+        "slug": "framework-reviewed-context-actions"
+      }
+    },
+    {
+      "entity": "website-builder.buttons-array",
+      "id": "59a484a7-817b-472d-b606-80f89dfa2c95",
+      "expected": {
+        "slug": "ai-chat-editable-demo-settings-actions"
+      }
+    },
+    {
+      "entity": "website-builder.buttons-array",
+      "id": "5d9e8654-ff1a-4c56-bbc6-d2366d75e97a",
+      "expected": {
+        "slug": "ai-chat-editable-hero-actions"
+      }
+    },
+    {
+      "entity": "website-builder.button",
+      "id": "613a0706-662f-4386-9e1a-b808d9174d44",
+      "expected": {
+        "slug": "ai-chat-editable-followup-button-0"
+      }
+    },
+    {
+      "entity": "website-builder.feature",
+      "id": "64db9e8d-b40e-436b-8b8d-2df646746bb9",
+      "expected": {
+        "slug": "ai-chat-editable-demo-handoff"
+      }
+    },
+    {
+      "entity": "website-builder.button",
+      "id": "6d9803b3-2591-44b5-8e44-4317cd06f4bc",
+      "expected": {
+        "slug": "ai-chat-editable-terms-button-2"
+      }
+    },
+    {
+      "entity": "website-builder.button",
+      "id": "6e7393e8-0a72-4729-a9a3-b169760df959",
+      "expected": {
+        "slug": "ai-chat-editable-terms-button-1"
+      }
+    },
+    {
+      "entity": "website-builder.button",
+      "id": "74cfe64b-c094-4129-95fe-65cb2c8e1523",
+      "expected": {
+        "slug": "ai-chat-editable-footer-button-2"
+      }
+    },
+    {
+      "entity": "website-builder.buttons-array",
+      "id": "753fb16c-65a7-4692-8fd3-363b3aa9e822",
+      "expected": {
+        "slug": "ai-chat-editable-demo-handoff-actions"
+      }
+    },
+    {
+      "entity": "website-builder.button",
+      "id": "82e576cd-60db-469b-8be8-c2570c0fe026",
+      "expected": {
+        "slug": "ai-chat-editable-terms-button-0"
+      }
+    },
+    {
+      "entity": "website-builder.button",
+      "id": "9c13d1ef-895c-47a8-b7e7-8b95fe5fdd61",
+      "expected": {
+        "slug": "ai-chat-editable-demo-handoff-button-0"
+      }
+    },
+    {
+      "entity": "website-builder.buttons-array",
+      "id": "b2e3b960-16ff-496f-a73d-aaefd7db2445",
+      "expected": {
+        "slug": "ai-chat-editable-footer-actions"
+      }
+    },
+    {
+      "entity": "website-builder.button",
+      "id": "b6450c77-dfd3-4d7e-8df1-a5670d92a107",
+      "expected": {
+        "slug": "ai-chat-editable-footer-button-1"
+      }
+    },
+    {
+      "entity": "website-builder.feature",
+      "id": "b7cd648f-eed4-4b8f-9df6-b6306adc2b91",
+      "expected": {
+        "slug": "ai-chat-editable-followup"
+      }
+    },
+    {
+      "entity": "website-builder.feature",
+      "id": "cff5a893-5fd3-4941-bff8-13bb89dc98db",
+      "expected": {
+        "slug": "ai-chat-editable-hero"
+      }
+    },
+    {
+      "entity": "website-builder.buttons-array",
+      "id": "e572deda-aecf-4053-8b11-9cf9746e86f8",
+      "expected": {
+        "slug": "ai-chat-editable-followup-actions"
+      }
+    },
+    {
+      "entity": "website-builder.button",
+      "id": "e83875c8-2bf6-4d58-8846-e44d99ad85bf",
+      "expected": {
+        "slug": "ai-chat-editable-hero-button-0"
+      }
+    },
+    {
+      "entity": "website-builder.button",
+      "id": "edda2e7c-2b76-4495-b656-b1377e66236a",
+      "expected": {
+        "slug": "ai-chat-editable-footer-button-3"
+      }
+    },
+    {
+      "entity": "website-builder.feature",
+      "id": "f4731c2b-fe2e-401c-85d6-94419f60b060",
+      "expected": {
+        "slug": "ai-chat-editable-terms"
+      }
+    },
+    {
+      "entity": "website-builder.button",
+      "id": "fdb0358d-78dd-4583-9f2f-d2699eaa64a6",
+      "expected": {
+        "slug": "ai-chat-editable-footer-button-0"
+      }
+    }
+  ]
+}

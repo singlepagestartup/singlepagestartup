@@ -1,0 +1,15 @@
+{
+  "id": "a7c783fc-8c05-42fb-943c-6cd3d8404ef9",
+  "createdAt": "2026-11-26T14:02:43.204Z",
+  "updatedAt": "2026-11-26T14:02:43.204Z",
+  "variant": "default",
+  "number": null,
+  "boolean": null,
+  "date": null,
+  "datetime": null,
+  "string": {
+    "en": "1"
+  },
+  "adminTitle": "formula_version",
+  "slug": "panicky-aquamarine-ocelot-5646"
+}

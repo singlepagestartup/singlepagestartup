@@ -16,5 +16,4 @@ export type {
 } from "./interface";
 
 export type { IShowcaseItem } from "./singlepage/content-showcase/interface";
-
-export type { IProjectDocument } from "./singlepage/content-project-context/interface";
+export { ServiceCard } from "./singlepage/content-service-list/ServiceCard";

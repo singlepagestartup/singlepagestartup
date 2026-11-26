@@ -38,6 +38,7 @@ export function Component(props: IComponentPropsExtended) {
                 dataSource="props"
                 data={entity}
                 language={props.language}
+                slots={props.slots}
               >
                 {props.children}
               </WebsiteBuilderModuleWidget>

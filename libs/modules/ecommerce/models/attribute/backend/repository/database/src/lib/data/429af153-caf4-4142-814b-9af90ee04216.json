@@ -1,0 +1,15 @@
+{
+  "id": "429af153-caf4-4142-814b-9af90ee04216",
+  "createdAt": "2026-11-26T14:02:01.830Z",
+  "updatedAt": "2026-11-26T14:02:01.830Z",
+  "variant": "default",
+  "number": null,
+  "boolean": null,
+  "date": null,
+  "datetime": null,
+  "string": {
+    "en": "1"
+  },
+  "adminTitle": "formula_version",
+  "slug": "coherent-gray-beaver-3838"
+}

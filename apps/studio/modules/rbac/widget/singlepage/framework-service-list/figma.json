@@ -1,0 +1,21 @@
+{
+  "componentName": "rbac.widget",
+  "pageName": "rbac",
+  "variantName": "framework-service-list",
+  "nodeId": null,
+  "variantNodeId": null,
+  "metadata": {
+    "singlepagestartup.studio.blockId": "rbac.widget.framework-service-list",
+    "singlepagestartup.studio.layer": "singlepage",
+    "singlepagestartup.studio.syncKey": "rbac/widget/singlepage/framework-service-list",
+    "sps.figma.component": "rbac.widget",
+    "sps.figma.variant": "framework-service-list",
+    "sps.source.module": "rbac",
+    "sps.source.entityType": "model",
+    "sps.source.entity": "widget",
+    "sps.source.variant": "framework-service-list",
+    "sps.contractVersion": "0.1.0",
+    "sps.code.component": "apps/studio/modules/rbac/widget/singlepage/framework-service-list/Component.tsx",
+    "sps.code.story": "apps/studio/modules/rbac/widget/singlepage/framework-service-list/Component.stories.tsx"
+  }
+}

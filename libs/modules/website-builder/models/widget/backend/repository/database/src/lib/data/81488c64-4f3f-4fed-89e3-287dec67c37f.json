@@ -1,0 +1,19 @@
+{
+  "title": {
+    "en": "AI agent services",
+    "ru": "Услуги ИИ-агентов"
+  },
+  "subtitle": {},
+  "description": {
+    "en": "Choose the deliverable you need. Share materials and request revisions in the order chat.",
+    "ru": "Выберите, какой результат вам нужен. Материалы и правки обсуждаются в чате заказа."
+  },
+  "anchor": null,
+  "className": "pb-12 sm:pb-16",
+  "id": "81488c64-4f3f-4fed-89e3-287dec67c37f",
+  "createdAt": "2026-11-26T14:08:14.972Z",
+  "updatedAt": "2026-11-26T14:26:39.184Z",
+  "variant": "content-service-list",
+  "adminTitle": "Framework | AI agent services",
+  "slug": "framework-services"
+}

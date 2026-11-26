@@ -99,6 +99,13 @@ export class Service {
           work.resultFileId
         ) {
           exactCheckout.delivery = [{ kind: "digital" }];
+          const result = await service.orderWork.profileKnowledgeResult(
+            subjectId,
+            work,
+          );
+          if (result) {
+            order.deliveredResult = result;
+          }
         }
         if (work.receiptFileId) {
           const path = orderArtifactPath(

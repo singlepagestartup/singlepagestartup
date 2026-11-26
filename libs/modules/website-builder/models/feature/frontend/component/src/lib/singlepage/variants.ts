@@ -1,7 +1,5 @@
 import { Component as Hidden } from "@sps/shared-frontend-components/singlepage/hidden";
 import { Component as DemoHandoff } from "./demo-handoff";
-import { Component as DemoDocument } from "./demo-document";
-import { Component as DemoProject } from "./demo-project";
 import { Component as LandingDisclosure } from "./landing-disclosure";
 import { Component as LandingFollowup } from "./landing-followup";
 import { Component as LandingWorkflow } from "./landing-workflow";
@@ -36,8 +34,6 @@ import { Component as Default } from "./default";
 export const variants = {
   hidden: Hidden,
   "demo-handoff": DemoHandoff,
-  "demo-document": DemoDocument,
-  "demo-project": DemoProject,
   "landing-disclosure": LandingDisclosure,
   "landing-followup": LandingFollowup,
   "landing-workflow": LandingWorkflow,

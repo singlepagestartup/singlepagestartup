@@ -37,12 +37,10 @@ export const variants = [
   "me-account",
   "me-blog-module-article-create-default",
 
-  "me-social-module-profile-id-sidebar-ai-chat",
   "me-authentication-email-and-password-reset-password-form-ai-chat",
   "me-authentication-email-and-password-forgot-password-form-ai-chat",
   "me-authentication-email-and-password-registration-form-ai-chat",
   "me-authentication-email-and-password-authentication-form-ai-chat",
-  "me-social-module-profile-select-ai-chat",
   "me-social-module-profile-id-update-ai-chat",
   "me-social-module-profile-id-avatar-update-ai-chat",
   "me-identity-id-settings-ai-chat",
@@ -54,17 +52,11 @@ export const variants = [
   "me-social-module-profile-id-chat-id-thread-id-knowledge-module-source-id-update-ai-chat",
   "me-social-module-profile-id-chat-id-thread-id-knowledge-module-source-list-document-ai-chat",
   "me-social-module-profile-id-chat-id-thread-id-download-ai-chat",
-  "me-social-module-profile-id-navigation-ai-chat",
-  "me-social-module-profile-list-ai-chat",
 
   "me-crm-module-form-support-ai-chat",
   "me-ecommerce-module-order-list-ai-chat",
   "me-account-ai-chat",
-  "me-profile-settings-ai-chat",
-  "me-social-module-profile-id-chat-id-thread-create-ai-chat",
-  "me-social-module-profile-id-settings-ai-chat",
   "me-social-module-profile-id-chat-id-thread-id-ai-chat",
-  "me-social-module-profile-create-ai-chat",
   "default",
   "agent",
   "provider-agent",
@@ -81,11 +73,6 @@ export * from "./ai-thread-preferences";
 export * from "./ai-thread-context";
 export * from "./telegram-personal-ai-agent";
 
-export {
-  projectHref,
-  projectBaseHref,
-  type IAIChatProject,
-} from "./ai-chat-project";
 export * from "./token-revocation";
 export * from "./crm-workspace";
 

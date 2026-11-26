@@ -39,7 +39,7 @@ export function Component({
       }
     : (session.account.profile ?? aiChatAccount.profile);
   const settingsHref = showTokens
-    ? "/ai-chat/rbac/subjects/settings"
+    ? "/rbac/subjects/settings"
     : "/?path=/story/modules-host-models-page-singlepage-rbac-module-subject-me-settings--default";
   if (!authenticated)
     return (

@@ -36,7 +36,7 @@ export const defaultFooterDefaultProps: FooterDefaultProps = {
     {
       title: "Prepare",
       links: [
-        storyLink("AI Chat", "ai-chat"),
+        storyLink("AI agent services", "framework-service-list"),
         storyLink("Plans and tokens", "ecommerce-module-token-find"),
         storyLink("Help", "ai-chat-help"),
       ],

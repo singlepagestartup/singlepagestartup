@@ -5,11 +5,7 @@ import { Component as AuthorCardDefault } from "./author-card-default";
 import { Component as Byline } from "./byline";
 import { Component as AgentIdAiChat } from "./agent-id-ai-chat";
 import { Component as IdSettingsAiChat } from "./id-settings-ai-chat";
-import { Component as SidebarAiChatProject } from "./sidebar-ai-chat-project";
 import { Component as ThreadListSidebarAiChat } from "./thread-list-sidebar-ai-chat";
-import { Component as SelectItemAiChatProject } from "./select-item-ai-chat-project";
-import { Component as SelectAiChatProject } from "./select-ai-chat-project";
-import { Component as IdAiChatProject } from "./id-ai-chat-project";
 import { Component as ArticlesDefault } from "./articles-default";
 import { Component as AdminV2SidebarItem } from "./admin-v2/sidebar-item";
 import { Component as AdminV2Card } from "./admin-v2/card";
@@ -36,11 +32,7 @@ export const variants = {
   byline: Byline,
   "agent-id-ai-chat": AgentIdAiChat,
   "id-settings-ai-chat": IdSettingsAiChat,
-  "sidebar-ai-chat-project": SidebarAiChatProject,
   "thread-list-sidebar-ai-chat": ThreadListSidebarAiChat,
-  "select-item-ai-chat-project": SelectItemAiChatProject,
-  "select-ai-chat-project": SelectAiChatProject,
-  "id-ai-chat-project": IdAiChatProject,
   "articles-default": ArticlesDefault,
   "overview-default": OverviewDefault,
   "button-default": ButtonDefault,

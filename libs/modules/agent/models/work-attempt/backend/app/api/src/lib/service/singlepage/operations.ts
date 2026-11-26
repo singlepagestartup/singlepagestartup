@@ -329,16 +329,16 @@ export class Operations {
         return { blocked };
       }
       const candidates = new Map(
-        context.knowledgeCandidateVersions?.map(({ id, version }) => [
-          id,
-          version,
+        context.knowledgeCandidateVersions?.map((source) => [
+          source.id,
+          source,
         ]),
       );
       const current = chunks.filter(
         (chunk) =>
           chunk.sourceId &&
           chunk.sourceVersion &&
-          candidates.get(chunk.sourceId) === chunk.sourceVersion,
+          candidates.get(chunk.sourceId)?.version === chunk.sourceVersion,
       );
       const used = new Set(current.map((chunk) => chunk.sourceId));
       sourceVersions =
@@ -346,6 +346,11 @@ export class Operations {
         [];
       const personal = new Set(context.personalKnowledgeSourceIds);
       const excerpts = current.map((chunk) => {
+        const origin =
+          chunk.sourceId && candidates.get(chunk.sourceId)?.orderResultPath;
+        if (origin) {
+          return `Customer's delivered order result. Cite ${origin} when using facts from this source.\n${chunk.text.slice(0, 1800)}`;
+        }
         const label =
           chunk.sourceId && personal.has(chunk.sourceId)
             ? "Interlocutor preference"

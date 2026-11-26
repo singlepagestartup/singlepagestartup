@@ -1,15 +1,15 @@
 {
   "title": {
-    "en": "Prepare your product in AI Chat",
-    "ru": "Подготовить продукт в AI-чате"
+    "en": "AI agent services",
+    "ru": "Услуги ИИ-агентов"
   },
   "subtitle": {},
-  "url": "/",
+  "url": "/framework/services",
   "className": "w-fit",
   "id": "e01e1e04-a453-40de-99f4-ff6e07179441",
   "createdAt": "2026-10-24T01:05:59.254Z",
-  "updatedAt": "2026-10-24T01:05:59.254Z",
+  "updatedAt": "2026-11-26T14:08:39.832Z",
   "variant": "ghost",
-  "adminTitle": "Prepare your product in AI Chat",
+  "adminTitle": "AI agent services",
   "slug": "framework-journey-guide-social-actions-3"
 }

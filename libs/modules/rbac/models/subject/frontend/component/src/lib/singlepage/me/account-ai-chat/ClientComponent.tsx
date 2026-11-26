@@ -164,7 +164,7 @@ function AccountMenu({
             <DropdownMenu.Separator className="my-1 h-px bg-border" />
             <DropdownMenu.Item asChild>
               <Link
-                href={`${localeBase}/ai-chat/settings`}
+                href={`${localeBase}/rbac/subjects/settings`}
                 aria-current={settingsSelected ? "page" : undefined}
                 className={menuItemClassName}
               >

@@ -1,0 +1,15 @@
+{
+  "id": "7c8b251b-00c5-4472-a6a9-eb4941a4af33",
+  "createdAt": "2026-11-26T14:02:39.923Z",
+  "updatedAt": "2026-11-26T14:02:39.923Z",
+  "variant": "default",
+  "number": null,
+  "boolean": null,
+  "date": null,
+  "datetime": null,
+  "string": {
+    "en": "1"
+  },
+  "adminTitle": "formula_version",
+  "slug": "wonderful-moccasin-peafowl-5988"
+}

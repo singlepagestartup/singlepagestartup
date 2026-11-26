@@ -1,3 +1,5 @@
+import type { IComponentProps as IFrameworkServiceListProps } from "./subject/ecommerce-module/service/list/interface";
+import type { IComponentProps as IFrameworkServiceDetailProps } from "./subject/ecommerce-module/service/detail/interface";
 import type { IComponentProps as ISubjectMeCustomerOrderProps } from "./subject/me/ecommerce-module/order/detail/interface";
 import type { IComponentProps as ISubjectMeCustomerOrdersProps } from "./subject/me/ecommerce-module/order/list/interface";
 import type { IComponentProps as IStoreCustomers } from "./subject/me/ecommerce-module/store/customers/interface";
@@ -39,10 +41,6 @@ import type { IComponentProps as ISubjectMeAuthenticationForgotPasswordAiChat } 
 import type { IComponentProps as ISubjectMeAuthenticationRegistrationAiChat } from "./subject-me-authentication-registration-ai-chat/interface";
 import type { IComponentProps as ISubjectMeAuthenticationSelectMethodAiChat } from "./subject-me-authentication-select-method-ai-chat/interface";
 import type { IComponentProps as ISubjectMeProfileSettings } from "./subject-me-profile-settings/interface";
-import type { IComponentProps as ISubjectMeSocialModuleProfileIdChatIdThreadCreateAiChat } from "./subject-me-social-module-profile-id-chat-id-thread-create-ai-chat/interface";
-import type { IComponentProps as ISubjectMeSocialModuleProfileIdSettingsAiChat } from "./subject-me-social-module-profile-id-settings-ai-chat/interface";
-import type { IComponentProps as ISubjectMeSocialModuleProfileIdChatIdThreadIdAiChat } from "./subject-me-social-module-profile-id-chat-id-thread-id-ai-chat/interface";
-import type { IComponentProps as ISubjectMeSocialModuleProfileCreateAiChat } from "./subject-me-social-module-profile-create-ai-chat/interface";
 import { IComponentProps as ISubjectListSocialModuleProfileDefaultComponentProps } from "./subject/list/social-module/profile/default/interface";
 import { IComponentProps as ISubjectOverviewSocialModuleProfileOverviewDefaultComponentProps } from "./subject/overview/social-module/profile/overview/default/interface";
 import { IComponentProps as ISubjectOverviewEcommerceModuleProductListDefaultComponentProps } from "./subject/overview/ecommerce-module/product/list/default/interface";
@@ -70,6 +68,8 @@ import { IComponentProps as ISubjectListDefaultComponentProps } from "./subject/
 export type IComponentProps =
   | ISubjectMeCustomerOrderProps
   | ISubjectMeCustomerOrdersProps
+  | IFrameworkServiceListProps
+  | IFrameworkServiceDetailProps
   | ISubjectMeTaskDetail
   | ISubjectMeTaskCreate
   | ISubjectMeStoreEmployeeDetail
@@ -109,10 +109,6 @@ export type IComponentProps =
   | ISubjectMeAuthenticationRegistrationAiChat
   | ISubjectMeAuthenticationSelectMethodAiChat
   | ISubjectMeProfileSettings
-  | ISubjectMeSocialModuleProfileIdChatIdThreadCreateAiChat
-  | ISubjectMeSocialModuleProfileIdSettingsAiChat
-  | ISubjectMeSocialModuleProfileIdChatIdThreadIdAiChat
-  | ISubjectMeSocialModuleProfileCreateAiChat
   | ISubjectListSocialModuleProfileDefaultComponentProps
   | ISubjectOverviewSocialModuleProfileOverviewDefaultComponentProps
   | ISubjectOverviewEcommerceModuleProductListDefaultComponentProps

@@ -2,7 +2,10 @@ import Link from "next/link";
 import { memo, type ReactNode } from "react";
 import { Component as EcommerceModuleProduct } from "@sps/ecommerce/models/product/frontend/component";
 import { formatCurrencyAmount } from "@sps/shared-frontend-client-utils";
-import { orderStatusLabel } from "@sps/ecommerce/models/order/sdk/model";
+import {
+  orderDisplayStatus,
+  orderStatusLabel,
+} from "@sps/ecommerce/models/order/sdk/model";
 import type { IResult } from "@sps/rbac/models/subject/sdk/server";
 interface IOrderCardProps {
   ecommerceModuleOrder: IResult["IEcommerceModuleOrderListResult"][number];
@@ -22,21 +25,11 @@ export const OrderCard = memo(function OrderCard({
     dateStyle: "long",
     timeZone: "UTC",
   }).format(new Date(order.createdAt));
-  const orderStatus = order.status === "cancelled" ? "canceled" : order.status;
-  const workState = order.customerDetails?.workState;
-  // Work can still be awaiting payment after a cancellation or payment failure.
-  const activeFulfillment = [
-    "new",
-    "paying",
-    "paid",
-    "approving",
-    "packaging",
-    "delivering",
-  ].includes(orderStatus);
-  const status = orderStatusLabel(
-    activeFulfillment && workState ? workState : orderStatus,
-    language,
+  const displayStatus = orderDisplayStatus(
+    order.status,
+    order.customerDetails?.workState,
   );
+  const status = orderStatusLabel(displayStatus, language);
   const lines = order.customerDetails?.lines ?? [];
   return (
     <article className="min-w-0 rounded-2xl border border-border bg-card p-5 text-card-foreground sm:p-6">
@@ -76,7 +69,11 @@ export const OrderCard = memo(function OrderCard({
                 priceLabel={
                   line.price
                     ? `${formatCurrencyAmount(line.price.amount, language)} ${line.price.symbol}`
-                    : undefined
+                    : displayStatus === "awaiting-result"
+                      ? ru
+                        ? "Цена при согласовании результата"
+                        : "Price at result review"
+                      : undefined
                 }
               />
             </li>

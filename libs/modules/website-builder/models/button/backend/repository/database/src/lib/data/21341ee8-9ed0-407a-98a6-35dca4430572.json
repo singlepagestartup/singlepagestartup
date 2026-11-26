@@ -1,15 +1,15 @@
 {
   "title": {
-    "en": "Start",
-    "ru": "Начать"
+    "en": "All modules",
+    "ru": "Все модули"
   },
   "subtitle": {},
-  "url": "/rbac/subject/authentication/email-and-password/registration",
+  "url": "/framework/modules",
   "className": "",
   "id": "21341ee8-9ed0-407a-98a6-35dca4430572",
   "createdAt": "2026-10-26T00:12:49.704Z",
-  "updatedAt": "2026-11-10T23:51:16.389Z",
+  "updatedAt": "2026-11-26T14:08:38.933Z",
   "variant": "action-inverse",
-  "adminTitle": "Начать",
+  "adminTitle": "All modules",
   "slug": "framework-reviewed-cta-actions-0"
 }

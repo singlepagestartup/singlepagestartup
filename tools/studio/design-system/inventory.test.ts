@@ -148,7 +148,7 @@ describe("Host Studio coverage", () => {
       .find((record) => record.name === "host")!
       .entities.find((entity) => entity.entity === "page")!;
     expect(
-      page.storyFiles?.some((file) => file.includes("/singlepage/ai-chat/")),
+      page.storyFiles?.some((file) => file.includes("/singlepage/framework/")),
     ).toBe(true);
     expect(page.variants.some((item) => item.variant === "ai-chat")).toBe(
       false,
@@ -195,7 +195,7 @@ describe("AI Chat project ownership", () => {
       subjectCreate.storyFiles?.some((file) =>
         file.includes("/singlepage/me/social-module/profile/create/ai-chat/"),
       ),
-    ).toBe(true);
+    ).toBe(false);
     for (const [entity, folders] of [
       ["chat", ["id/ai-chat"]],
       [

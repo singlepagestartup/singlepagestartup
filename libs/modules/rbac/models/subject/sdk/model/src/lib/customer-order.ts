@@ -38,4 +38,11 @@ export interface ISubjectCustomerOrderDetails {
   checkout?: ICustomerOrderCheckout;
   workState?: TWorkFulfillmentState;
   discussion?: { chatId: string; threadId: string };
+  deliveredResult?: {
+    id: string;
+    versionId: string;
+    name: string;
+    mimeType?: string;
+    savedToKnowledge: boolean;
+  };
 }

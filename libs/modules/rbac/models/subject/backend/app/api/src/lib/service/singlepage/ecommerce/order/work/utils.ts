@@ -150,9 +150,9 @@ function makePdf(
     .slice(0, 32);
   document.setFileId(token);
   document.setCreationDate(new Date(0));
-  document.addFileToVFS("Onest.ttf", font);
-  document.addFont("Onest.ttf", "Onest", "normal");
-  document.setFont("Onest");
+  document.addFileToVFS("Manrope.ttf", font);
+  document.addFont("Manrope.ttf", "Manrope", "normal");
+  document.setFont("Manrope");
   document.setFontSize(11);
   const lines = document.splitTextToSize(text, 175) as string[];
   let y = 20;
@@ -188,7 +188,7 @@ export async function pdfOrderResult(attemptId: string, text: string) {
   }
   const fontPath = path.resolve(
     __dirname,
-    "../../../../../../../../../../../../../../../apps/studio/runtime/assets/fonts/Onest-wght.ttf",
+    "../../../../../../../../../../../../../../shared/frontend/client/pdf/visual/assets/Manrope-wght.ttf",
   );
   const font = (await readFile(fontPath)).toString("base64");
   const excerptLength = Math.min(480, Math.floor(content.length / 2));

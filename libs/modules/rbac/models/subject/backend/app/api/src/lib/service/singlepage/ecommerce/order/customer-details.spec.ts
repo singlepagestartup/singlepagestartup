@@ -60,7 +60,10 @@ function fixture() {
           ]),
       },
     },
-    orderWork: { publishedReceipts: jest.fn().mockResolvedValue([]) },
+    orderWork: {
+      publishedReceipts: jest.fn().mockResolvedValue([]),
+      profileKnowledgeResult: jest.fn(),
+    },
     protectedFile: { hasGrant: jest.fn().mockResolvedValue(true) },
     customerWork: {
       discussionForOrder: jest.fn().mockResolvedValue({
@@ -205,11 +208,20 @@ describe("Customer order details", () => {
       price: { amount: 25, symbol: "₽", precision: 2 },
     });
     expect(list.get("order")?.checkout).toBeUndefined();
+    expect(service.orderWork.profileKnowledgeResult).not.toHaveBeenCalled();
+    const delivery = {
+      id: "result",
+      versionId: "delivered-version",
+      name: "result.pdf",
+      savedToKnowledge: false,
+    };
+    service.orderWork.profileKnowledgeResult.mockResolvedValue(delivery);
     const result = await reader.execute({
       subjectId,
       ownedHistoryOrderIds: ["order"],
       requestedOrderId: "order",
     });
+    expect(result.get("order")?.deliveredResult).toEqual(delivery);
     const path =
       "/api/rbac/subjects/subject/ecommerce-module/orders/order/work/artifacts/receipt";
     expect(service.protectedFile.hasGrant).toHaveBeenCalledWith(

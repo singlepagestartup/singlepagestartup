@@ -10,6 +10,8 @@ export function Component(props: IComponentPropsExtended) {
       ecommerceModuleProduct={props.ecommerceModuleProduct}
       className={props.className}
       ecommerceModuleStore={props.ecommerceModuleStore}
+      ecommerceModuleOfferId={props.ecommerceModuleOfferId}
+      openServiceDiscussionOnSubmit={props.openServiceDiscussionOnSubmit}
       language={props.language}
       withOneStepCheckout={props.withOneStepCheckout}
     />

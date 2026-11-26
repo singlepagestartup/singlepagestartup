@@ -1,0 +1,25 @@
+{
+  "metadata": {
+    "seo": {
+      "title": {
+        "en": "AI agent service",
+        "ru": "Услуга ИИ-агента"
+      },
+      "description": {
+        "en": "See what to prepare, what you receive, and when payment is due.",
+        "ru": "Что подготовить, какой результат вы получите и когда оплатить услугу."
+      }
+    }
+  },
+  "id": "52234b46-6200-4de6-b731-bf7ccb036f41",
+  "title": "[host.pages.metadata.seo.title]",
+  "url": "/framework/services/[ecommerce.products.slug]",
+  "slug": "framework-service",
+  "description": "[host.pages.metadata.seo.description]",
+  "createdAt": "2026-11-26T14:08:15.146Z",
+  "updatedAt": "2026-11-26T14:08:15.146Z",
+  "variant": "default",
+  "className": null,
+  "language": "en",
+  "adminTitle": "Framework | AI agent service"
+}

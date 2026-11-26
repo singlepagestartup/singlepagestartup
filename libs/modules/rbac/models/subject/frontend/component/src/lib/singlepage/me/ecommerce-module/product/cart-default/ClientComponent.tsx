@@ -134,7 +134,9 @@ export function Component(props: IComponentPropsExtended) {
             order.cartDetails?.lines.some(
               (line) =>
                 !line.parentLineId &&
-                line.productId === props.ecommerceModuleProduct.id,
+                line.productId === props.ecommerceModuleProduct.id &&
+                (!props.ecommerceModuleOfferId ||
+                  line.offerId === props.ecommerceModuleOfferId),
             ),
           );
           return (
@@ -165,6 +167,10 @@ export function Component(props: IComponentPropsExtended) {
                 data={props.data}
                 ecommerceModuleProduct={props.ecommerceModuleProduct}
                 ecommerceModuleStore={props.ecommerceModuleStore}
+                ecommerceModuleOfferId={props.ecommerceModuleOfferId}
+                openServiceDiscussionOnSubmit={
+                  props.openServiceDiscussionOnSubmit
+                }
                 language={props.language}
                 hideConfiguration={orders.length > 0}
                 checkoutSlot={

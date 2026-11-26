@@ -1,0 +1,15 @@
+{
+  "id": "6eba0fb6-fd61-45ba-a651-a18bf618943c",
+  "createdAt": "2026-11-26T14:02:01.830Z",
+  "updatedAt": "2026-11-26T14:02:01.830Z",
+  "variant": "default",
+  "number": null,
+  "boolean": null,
+  "date": null,
+  "datetime": null,
+  "string": {
+    "en": "unit_price * quantity"
+  },
+  "adminTitle": "price_formula",
+  "slug": "dull-emerald-fly-4271"
+}

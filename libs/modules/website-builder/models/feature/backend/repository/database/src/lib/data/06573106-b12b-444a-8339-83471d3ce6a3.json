@@ -2,7 +2,7 @@
   "className": "",
   "id": "06573106-b12b-444a-8339-83471d3ce6a3",
   "createdAt": "2026-10-26T00:12:53.179Z",
-  "updatedAt": "2026-10-27T14:59:22.066Z",
+  "updatedAt": "2026-11-26T14:08:38.877Z",
   "variant": "dropdown",
   "title": {
     "en": "What is free?",
@@ -13,8 +13,8 @@
     "ru": ""
   },
   "description": {
-    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Code Framework and its documentation are available free under the MIT licence. AI Chat, development tools and hosting are paid separately.\"}]}]}",
-    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Code Framework и документация доступны бесплатно по лицензии MIT. AI Chat, инструменты разработки и хостинг оплачиваются отдельно.\"}]}]}"
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"The framework code and documentation are available under the MIT license. Services, development tools and hosting are priced separately.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Код фреймворка и документация доступны по лицензии MIT. Услуги, инструменты разработки и хостинг оплачиваются отдельно.\"}]}]}"
   },
   "adminTitle": "Что здесь бесплатно?",
   "slug": "framework-reviewed-faq-4"

@@ -1,0 +1,19 @@
+{
+  "title": {
+    "en": "AI agent services",
+    "ru": "Услуги ИИ-агентов"
+  },
+  "subtitle": {},
+  "description": {
+    "en": "Choose the deliverable you need. Share materials and request revisions in the order chat.",
+    "ru": "Выберите, какой результат вам нужен. Материалы и правки обсуждаются в чате заказа."
+  },
+  "anchor": "workflow",
+  "className": null,
+  "id": "defe51c9-de83-4e54-95e6-ebe768ea1426",
+  "createdAt": "2026-11-26T14:08:15.553Z",
+  "updatedAt": "2026-11-26T14:08:15.553Z",
+  "variant": "content-cta",
+  "adminTitle": "Framework | Service catalog entry",
+  "slug": "framework-agent-services-entry"
+}

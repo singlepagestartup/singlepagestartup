@@ -21,12 +21,10 @@ import { Component as MeEcommerceModuleCartDefault } from "./me/ecommerce-module
 import { Component as MeEcommerceModuleProductCheckoutDefault } from "./me/ecommerce-module/product/checkout-default";
 import { Component as MeEcommerceModuleProductCartDefault } from "./me/ecommerce-module/product/cart-default";
 import { Component as MeEcommerceModuleOrderListCheckoutDefault } from "./me/ecommerce-module/order/list/checkout-default";
-import { Component as MeSocialModuleProfileIdSidebarAiChat } from "./me/social-module/profile/id/sidebar-ai-chat";
 import { Component as ResetPasswordFormAiChat } from "./authentication/email-and-password/reset-password-form-ai-chat";
 import { Component as ForgotPasswordFormAiChat } from "./authentication/email-and-password/forgot-password-form-ai-chat";
 import { Component as RegistrationFormAiChat } from "./authentication/email-and-password/registration-form-ai-chat";
 import { Component as AuthenticationFormAiChat } from "./authentication/email-and-password/authentication-form-ai-chat";
-import { Component as MeSocialProfileSelectAiChat } from "./me/social-module/profile/select-ai-chat";
 import { Component as MeIdentityListSettingsAiChat } from "./me/identity/list/settings-ai-chat";
 import { Component as MeSocialModuleProfileListSettingsAiChat } from "./me/social-module/profile/list/settings-ai-chat";
 import { Component as MeIdentityIdSettingsAiChat } from "./me/identity/id/settings-ai-chat";
@@ -34,15 +32,9 @@ import { Component as MeIdentityChangePassword } from "./me/identity/change-pass
 import { Component as MeIdentityChangeEmail } from "./me/identity/change-email";
 import { Component as MeSocialModuleProfileIdAvatarUpdateAiChat } from "./me/social-module/profile/id/avatar-update-ai-chat";
 import { Component as MeSocialModuleProfileIdUpdateAiChat } from "./me/social-module/profile/id/update-ai-chat";
-import { Component as MeSocialModuleProfileIdNavigationAiChat } from "./me/social-module/profile/id/navigation-ai-chat";
-import { Component as MeSocialModuleProfileListAiChat } from "./me/social-module/profile/list/ai-chat";
 import { Component as MeCrmModuleFormSupportAiChat } from "./me/crm-module/form/support-ai-chat";
 import { Component as MeEcommerceModuleOrderListAiChat } from "./me/ecommerce-module/order/list/ai-chat";
 import { Component as MeAccountAiChat } from "./me/account-ai-chat";
-import { Component as MeProfileSettingsAiChat } from "./me/profile/settings-ai-chat";
-import { Component as MeSocialModuleProfileIdChatIdThreadCreateAiChat } from "./me/social-module/profile/id/chat/id/thread/create-ai-chat";
-import { Component as MeSocialModuleProfileIdSettingsAiChat } from "./me/social-module/profile/id/settings-ai-chat";
-import { Component as MeSocialModuleProfileCreateAiChat } from "./me/social-module/profile/create-ai-chat";
 import { Component as EcommerceModuleOrderCheckoutDefault } from "./ecommerce-module/order/checkout-default";
 import { Component as EcommerceModuleOrderListCheckoutDefault } from "./ecommerce-module/order/list/checkout-default";
 import { Component as EcommerceModuleOrderUpdateDefault } from "./ecommerce-module/order/update-default";
@@ -128,8 +120,6 @@ export const variants = {
   "authentication-email-and-password-form-default": EmailPasswordForm,
   "authentication-email-and-password-form-ai-chat":
     AuthenticationEmailAndPasswordFormAiChat,
-  "me-social-module-profile-id-sidebar-ai-chat":
-    MeSocialModuleProfileIdSidebarAiChat,
   "me-authentication-email-and-password-reset-password-form-ai-chat":
     ResetPasswordFormAiChat,
   "me-authentication-email-and-password-forgot-password-form-ai-chat":
@@ -138,7 +128,6 @@ export const variants = {
     RegistrationFormAiChat,
   "me-authentication-email-and-password-authentication-form-ai-chat":
     AuthenticationFormAiChat,
-  "me-social-module-profile-select-ai-chat": MeSocialProfileSelectAiChat,
   "me-identity-list-settings-ai-chat": MeIdentityListSettingsAiChat,
   "me-social-module-profile-list-settings-ai-chat":
     MeSocialModuleProfileListSettingsAiChat,
@@ -149,18 +138,9 @@ export const variants = {
     MeSocialModuleProfileIdAvatarUpdateAiChat,
   "me-social-module-profile-id-update-ai-chat":
     MeSocialModuleProfileIdUpdateAiChat,
-  "me-social-module-profile-id-navigation-ai-chat":
-    MeSocialModuleProfileIdNavigationAiChat,
-  "me-social-module-profile-list-ai-chat": MeSocialModuleProfileListAiChat,
   "me-crm-module-form-support-ai-chat": MeCrmModuleFormSupportAiChat,
   "me-ecommerce-module-order-list-ai-chat": MeEcommerceModuleOrderListAiChat,
   "me-account-ai-chat": MeAccountAiChat,
-  "me-profile-settings-ai-chat": MeProfileSettingsAiChat,
-  "me-social-module-profile-id-chat-id-thread-create-ai-chat":
-    MeSocialModuleProfileIdChatIdThreadCreateAiChat,
-  "me-social-module-profile-id-settings-ai-chat":
-    MeSocialModuleProfileIdSettingsAiChat,
-  "me-social-module-profile-create-ai-chat": MeSocialModuleProfileCreateAiChat,
   "ecommerce-module-order-checkout-default":
     EcommerceModuleOrderCheckoutDefault,
   "ecommerce-module-order-list-checkout-default":

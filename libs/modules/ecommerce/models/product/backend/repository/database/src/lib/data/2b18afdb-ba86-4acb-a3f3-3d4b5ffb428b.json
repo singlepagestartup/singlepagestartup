@@ -1,0 +1,24 @@
+{
+  "metadata": {},
+  "id": "2b18afdb-ba86-4acb-a3f3-3d4b5ffb428b",
+  "createdAt": "2026-11-26T14:02:51.737Z",
+  "updatedAt": "2026-11-26T14:02:51.737Z",
+  "variant": "default",
+  "kind": "service",
+  "type": "one_off",
+  "singleUnitPerOrder": true,
+  "slug": "framework-visual-identity",
+  "title": {
+    "en": "Visual direction",
+    "ru": "Визуальное направление"
+  },
+  "shortDescription": {
+    "en": "A visual direction board with a concrete application",
+    "ru": "Лист визуального направления с примером применения"
+  },
+  "description": {
+    "en": "Brand designer. Inputs: Brief, brand guidelines and cleared references. Request changes to the preview before accepting and paying.",
+    "ru": "Бренд-дизайнер. Для работы: Бриф, бренд и разрешённые референсы. После просмотра результата можно запросить правки. Оплата после приёмки."
+  },
+  "adminTitle": "spatial maroon condor"
+}

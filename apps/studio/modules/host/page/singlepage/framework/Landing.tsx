@@ -5,7 +5,6 @@ import {
   landingArtwork,
   landingModuleIds,
   launchStepIds,
-  projectDocumentKeys,
   productExamplePreviews,
   parseCodeFrameworkWebsite,
 } from "./content";
@@ -24,12 +23,6 @@ export default function CodeFrameworkLanding({
   const content = parseCodeFrameworkWebsite(text ?? sourceText);
   const label = content.labels;
   const start = content.hero.links[0];
-  const documents = projectDocumentKeys.map((id) => ({
-    id,
-    title: label[id],
-    description: label[`${id}-description`],
-    example: label[`${id}-example`],
-  }));
   const destination = (href: string) => {
     const resolved = resolveLink?.(href) ?? href;
     return typeof resolved === "string" ? { href: resolved } : resolved;
@@ -177,12 +170,6 @@ export default function CodeFrameworkLanding({
               subtitle={String(index + 1).padStart(2, "0")}
               title={item.title}
               description={item.text}
-              attachments={
-                index === 1
-                  ? documents.map(({ id, title }) => ({ id, title }))
-                  : undefined
-              }
-              attachmentsLabel="Документы проекта"
             >
               {index === 0 ? (
                 <PreviewLink
@@ -190,7 +177,7 @@ export default function CodeFrameworkLanding({
                   resolveLink={resolveLink}
                   className={`${kit.button} w-full`}
                 >
-                  {label["journey-register"]}
+                  {label["journey-services"]}
                   <Icon name="arrow-right" size={20} />
                 </PreviewLink>
               ) : index === 1 ? null : (
@@ -200,28 +187,18 @@ export default function CodeFrameworkLanding({
           ))}
         </WebsiteBuilderModuleWidget>
         <WebsiteBuilderModuleWidget
-          variant="content-project-context"
-          id="cf-chat"
-          eyebrow={content.chat.paragraphs[0]}
-          title={content.chat.title}
-          description={content.chat.paragraphs[1]}
-          projectTitle={label["context-project"]}
-          savedTitle={label["context-saved"]}
-          documents={documents}
-          documentExampleLabel={label["document-example"]}
-          taskTitle={label["context-new"]}
-          taskContext={label["context-attachment"]}
-          task={content.change.quote}
-          taskNote={content.change.paragraphs[1]}
-          publishTitle={label["context-publish"]}
-          publishDescription={label["context-publish-description"]}
+          variant="content-cta"
+          appearance="primary"
+          id="workflow"
+          title="Услуги ИИ-агентов"
+          description="Выберите, какой результат вам нужен. Материалы и правки обсуждаются в чате заказа."
           actions={
             <PreviewLink
-              href={content.chat.links[0].href}
+              href="/framework/services"
               resolveLink={resolveLink}
-              className={kit.button}
+              className="inline-flex min-h-11 items-center gap-2 rounded-xl bg-default px-5 py-3 text-sm font-semibold text-default-foreground focus-visible:outline-2 focus-visible:outline-offset-4"
             >
-              {content.chat.links[0].text}
+              Выбрать услугу
               <Icon name="arrow-right" size={20} />
             </PreviewLink>
           }

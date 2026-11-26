@@ -1,15 +1,15 @@
 {
   "title": {
-    "en": "Prepare the documents in AI Chat",
-    "ru": "Подготовить документы в AI-чате"
+    "en": "AI agent services",
+    "ru": "Услуги ИИ-агентов"
   },
   "subtitle": {},
-  "url": "/",
+  "url": "/framework/services",
   "className": "w-fit",
   "id": "3dcc3fed-fda9-413b-bd50-2e4c5a35119e",
   "createdAt": "2026-10-24T01:05:51.722Z",
-  "updatedAt": "2026-10-24T01:05:51.722Z",
+  "updatedAt": "2026-11-26T14:08:39.661Z",
   "variant": "primary",
-  "adminTitle": "Prepare the documents in AI Chat",
+  "adminTitle": "AI agent services",
   "slug": "framework-journey-handoff-actions-0"
 }

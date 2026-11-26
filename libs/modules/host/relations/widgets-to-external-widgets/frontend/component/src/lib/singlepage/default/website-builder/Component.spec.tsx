@@ -103,7 +103,7 @@ const props: any = {
   isServer: true,
   data: { externalWidgetId: "website-widget" },
   language: "en",
-  url: "/en/ai-chat",
+  url: "/en/framework",
   apiProps: {
     params: {
       filters: {
@@ -119,11 +119,7 @@ beforeEach(() => {
   subjectCalls.mockClear();
   projectWidgetCalls.mockClear();
 });
-it.each([
-  "content-ai-chat-profile-create",
-  "content-ai-chat-help",
-  "landing-ai-chat",
-])(
+it.each(["content-ai-chat-help", "content-hero"])(
   "renders its exact persisted %s without cross-module record discovery",
   (variant) => {
     widgets[0].variant = variant;
@@ -142,16 +138,18 @@ it.each([
 );
 
 it.each([
-  ["/ai-chat/help", true],
-  [
-    "/ai-chat/social/profiles/profile-id/chats/chat-id/threads/thread-id",
-    false,
-  ],
+  ["/rbac/subjects/settings", true],
+  ["/social/chats/chat-id/threads/thread-id", false],
 ])(
   "keeps URL and active-link selection out of the Navbar adapter for %s",
-  (url, helpSelected) => {
+  (url, settingsSelected) => {
     widgets[0].variant = "navbar-ai-chat";
     renderToStaticMarkup(<Component {...props} url={url} />);
+    expect(
+      subjectCalls.mock.calls.find(
+        ([call]) => call.variant === "me-navigation-controls-ai-chat",
+      )?.[0],
+    ).toEqual(expect.objectContaining({ settingsSelected }));
     const target = widgetRenders.mock.calls[0][0];
     expect(target).toEqual(
       expect.objectContaining({
@@ -182,9 +180,7 @@ it.each([
 it("shows the sign-in control for an anonymous default Subject without reading account or project views", () => {
   widgets[0].variant = "navbar-ai-chat";
   authenticated = false;
-  const html = renderToStaticMarkup(
-    <Component {...props} url="/ai-chat/projects" />,
-  );
+  const html = renderToStaticMarkup(<Component {...props} url="/framework" />);
   expect(html).toContain("Sign in");
   expect(html).toContain("/en/rbac/subject/authentication/email-and-password");
   expect(html).not.toContain("Projects unavailable");

@@ -8,8 +8,8 @@ const meta = {
 } satisfies Meta<typeof Component>;
 export default meta;
 export const Loading: StoryObj<typeof meta> = {};
-export const WorkspaceLoading: StoryObj<typeof meta> = {
+export const ConversationLoading: StoryObj<typeof meta> = {
   args: {
-    variant: "subject-me-social-module-profile-id-chat-id-thread-id-ai-chat",
+    variant: "subject-me-social-module-profile-chat-overview-default",
   },
 };

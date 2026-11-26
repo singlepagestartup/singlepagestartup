@@ -1,0 +1,15 @@
+{
+  "id": "4cefd840-bd9c-4075-b391-2564ca419986",
+  "createdAt": "2026-11-26T14:02:43.827Z",
+  "updatedAt": "2026-11-26T14:02:43.827Z",
+  "variant": "default",
+  "number": null,
+  "boolean": null,
+  "date": null,
+  "datetime": null,
+  "string": {
+    "en": "unit_price * quantity"
+  },
+  "adminTitle": "price_formula",
+  "slug": "late-scarlet-damselfly-4133"
+}

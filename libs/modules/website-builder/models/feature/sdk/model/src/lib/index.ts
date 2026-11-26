@@ -17,8 +17,6 @@ export const route = "/api/website-builder/features";
 export const variants = [
   "hidden",
   "demo-handoff",
-  "demo-document",
-  "demo-project",
   "landing-disclosure",
   "landing-followup",
   "landing-workflow",

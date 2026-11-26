@@ -1,0 +1,15 @@
+{
+  "id": "32c3656f-fe18-4924-8406-058dcdfd4a28",
+  "createdAt": "2026-11-26T14:02:43.827Z",
+  "updatedAt": "2026-11-26T14:02:43.827Z",
+  "variant": "default",
+  "number": null,
+  "boolean": null,
+  "date": null,
+  "datetime": null,
+  "string": {
+    "en": "1"
+  },
+  "adminTitle": "formula_version",
+  "slug": "probable-tomato-gamefowl-8775"
+}

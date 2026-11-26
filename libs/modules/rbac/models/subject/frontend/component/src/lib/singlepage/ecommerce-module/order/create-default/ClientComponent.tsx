@@ -57,7 +57,8 @@ export function Component(props: IComponentPropsExtended) {
   const ru = props.language === "ru";
   const router = useRouter();
   const search = useSearchParams();
-  const requestedOfferId = search.get("offer") ?? "";
+  const requestedOfferId =
+    props.ecommerceModuleOfferId ?? search.get("offer") ?? "";
   const consultationTaskId = search.get("consultation") ?? "";
   const formId = useId();
   const createOrder = api.ecommerceModuleOrderCreate({});
@@ -105,6 +106,15 @@ export function Component(props: IComponentPropsExtended) {
             value: props.ecommerceModuleProduct.id,
           },
           { column: "variant", method: "eq", value: "default" },
+          ...(props.ecommerceModuleOfferId
+            ? [
+                {
+                  column: "id",
+                  method: "eq",
+                  value: props.ecommerceModuleOfferId,
+                },
+              ]
+            : []),
           ...(props.ecommerceModuleStore
             ? [
                 {
@@ -156,6 +166,13 @@ export function Component(props: IComponentPropsExtended) {
     offerId: consultationOffer?.id ?? "",
     productId: props.ecommerceModuleProduct.id,
   });
+  const startsServiceDiscussion =
+    props.openServiceDiscussionOnSubmit && workQuery.data?.payAfterAcceptance;
+  const serviceUnavailable =
+    props.openServiceDiscussionOnSubmit &&
+    consultationOffer?.settings.requiresResultAcceptance &&
+    !workQuery.isPending &&
+    !startsServiceDiscussion;
   const workMutation = api.changeCustomerWork();
   const [selectionWork, setSelectionWork] = useState<{
     identity: string;
@@ -355,6 +372,7 @@ export function Component(props: IComponentPropsExtended) {
       : undefined;
   const ready = Boolean(
     selected &&
+    !serviceUnavailable &&
     draft.currencyId &&
     validNumbers &&
     (!singleUnitPerOrder || selection.quantity === 1) &&
@@ -580,7 +598,9 @@ export function Component(props: IComponentPropsExtended) {
       };
       if (
         workQuery.data?.order &&
-        (!workQuery.data.payAfterAcceptance || continueConsultation)
+        (!workQuery.data.payAfterAcceptance ||
+          continueConsultation ||
+          startsServiceDiscussion)
       ) {
         const result = await workMutation.mutateAsync({
           id: props.data.id,
@@ -600,7 +620,7 @@ export function Component(props: IComponentPropsExtended) {
         });
         workRequest.current = undefined;
         if (submittedIdentity === currentIdentity.current) {
-          if (continueConsultation) {
+          if (continueConsultation || startsServiceDiscussion) {
             router.push(
               `/${props.language}/social/chats/${result.chatId}/threads/${result.threadId}`,
             );
@@ -1150,9 +1170,13 @@ export function Component(props: IComponentPropsExtended) {
                   ? ru
                     ? "Добавляем…"
                     : "Adding…"
-                  : ru
-                    ? "Добавить в корзину"
-                    : "Add to cart"}
+                  : startsServiceDiscussion
+                    ? ru
+                      ? "Заказать и открыть чат"
+                      : "Book and open chat"
+                    : ru
+                      ? "Добавить в корзину"
+                      : "Add to cart"}
             </Button>
             {workQuery.data?.payAfterAcceptance && (
               <p className="text-xs text-muted-foreground">
@@ -1191,6 +1215,13 @@ export function Component(props: IComponentPropsExtended) {
       {error && (
         <p role="alert" className="text-sm text-destructive">
           {error}
+        </p>
+      )}
+      {serviceUnavailable && (
+        <p role="status" className="text-sm text-muted-foreground">
+          {ru
+            ? "Услуга сейчас недоступна для заказа."
+            : "This service is currently unavailable to book."}
         </p>
       )}
       {work && !props.hideConfiguration && (

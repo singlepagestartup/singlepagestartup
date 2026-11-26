@@ -9,6 +9,7 @@ export function Component(props: IComponentProps) {
       variant={props.variant}
       mode={props.mode}
       successHref={props.successHref}
+      onModeChange={props.onModeChange}
       className={props.className}
     />
   );

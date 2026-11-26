@@ -1,0 +1,30 @@
+{
+  "id": "framework-service-list",
+  "title": "Витрина услуг Framework",
+  "layer": "singlepage",
+  "state": "draft",
+  "description": "Витрина услуг Framework",
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "blocks": [
+    {
+      "id": "rbac.widget.framework-service-list",
+      "path": "../../../../rbac/widget/singlepage/framework-service-list"
+    },
+    {
+      "id": "website-builder.widget.content-service-list",
+      "path": "../../../../website-builder/widget/singlepage/content-service-list"
+    }
+  ],
+  "figma": {
+    "componentName": "host.page",
+    "pageName": "host",
+    "variantName": "framework-service-list",
+    "nodeId": null,
+    "variantNodeId": null,
+    "syncStatus": "not-created",
+    "metadataFile": "figma.json"
+  }
+}

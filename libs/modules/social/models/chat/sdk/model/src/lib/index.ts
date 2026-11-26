@@ -17,7 +17,6 @@ export const route = "/api/social/chats";
 export const variants = [
   "hidden",
   "id-ai-chat",
-  "id-preview-ai-chat",
   "default",
   "telegram",
   "knowledge",

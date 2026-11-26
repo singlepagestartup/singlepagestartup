@@ -6,5 +6,6 @@ export interface IComponentProps {
   variant?: typeof variant;
   order?: IOrder;
   discussion?: ReactNode;
+  result?: { name: string; savedToKnowledge: boolean; onChange: () => void };
 }
 export interface IComponentPropsExtended extends IComponentProps {}

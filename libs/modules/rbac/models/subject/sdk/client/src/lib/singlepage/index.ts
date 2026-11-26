@@ -36,11 +36,6 @@ import {
   type IResult as IBlogModuleArticleCreateResult,
 } from "./blog-module/article/create";
 import {
-  action as socialModuleProfileProjects,
-  type IProps as ISocialModuleProfileProjectsProps,
-  type IResult as ISocialModuleProfileProjectsResult,
-} from "./social-module/profile/projects";
-import {
   request as identityChangeEmailRequest,
   verify as identityChangeEmailVerify,
 } from "./identity/change-email";
@@ -60,11 +55,6 @@ import {
   type IProps as ISocialModuleProfileFindByIdUpdateProps,
   type IResult as ISocialModuleProfileFindByIdUpdateResult,
 } from "./social-module/profile/find-by-id/update";
-import {
-  action as socialModuleProfileCreate,
-  type IProps as ISocialModuleProfileCreateProps,
-  type IResult as ISocialModuleProfileCreateResult,
-} from "./social-module/profile/create";
 import {
   action as billingModuleBalance,
   type IProps as IBillingModuleBalanceProps,
@@ -505,9 +495,7 @@ export type IProps = {
   ISocialModuleProfileFindByIdAvatarFindProps: ISocialModuleProfileFindByIdAvatarFindProps;
   ISocialModuleProfileFindByIdAvatarUpdateProps: ISocialModuleProfileFindByIdAvatarUpdateProps;
   ISocialModuleProfileFindByIdUpdateProps: ISocialModuleProfileFindByIdUpdateProps;
-  ISocialModuleProfileCreateProps: ISocialModuleProfileCreateProps;
   ISocialModuleProfileFindProps: ISocialModuleProfileFindProps;
-  ISocialModuleProfileProjectsProps: ISocialModuleProfileProjectsProps;
   ISocialModuleProfileFindByIdChatFindByIdProfileFindByIdKnowledgeSourceFindByIdFilesUpdateProps: ISocialModuleProfileFindByIdChatFindByIdProfileFindByIdKnowledgeSourceFindByIdFilesUpdateProps;
   ISocialModuleProfileFindByIdChatFindByIdProfileFindByIdKnowledgeSourceFindByIdFilesFindProps: ISocialModuleProfileFindByIdChatFindByIdProfileFindByIdKnowledgeSourceFindByIdFilesFindProps;
   IAuthenticationInitProps: IAuthenticationInitProps;
@@ -600,9 +588,7 @@ export type IResult = {
   ISocialModuleProfileFindByIdAvatarFindResult: ISocialModuleProfileFindByIdAvatarFindResult;
   ISocialModuleProfileFindByIdAvatarUpdateResult: ISocialModuleProfileFindByIdAvatarUpdateResult;
   ISocialModuleProfileFindByIdUpdateResult: ISocialModuleProfileFindByIdUpdateResult;
-  ISocialModuleProfileCreateResult: ISocialModuleProfileCreateResult;
   ISocialModuleProfileFindResult: ISocialModuleProfileFindResult;
-  ISocialModuleProfileProjectsResult: ISocialModuleProfileProjectsResult;
   ISocialModuleProfileFindByIdChatFindByIdProfileFindByIdKnowledgeSourceFindByIdFilesUpdateResult: ISocialModuleProfileFindByIdChatFindByIdProfileFindByIdKnowledgeSourceFindByIdFilesUpdateResult;
   ISocialModuleProfileFindByIdChatFindByIdProfileFindByIdKnowledgeSourceFindByIdFilesFindResult: ISocialModuleProfileFindByIdChatFindByIdProfileFindByIdKnowledgeSourceFindByIdFilesFindResult;
   IAuthenticationInitResult: IAuthenticationInitResult;
@@ -790,8 +776,6 @@ export const api = {
   socialModuleProfileFindByIdChatFindByIdActionFind,
   billingModuleBalance,
   socialModuleProfileFind,
-  socialModuleProfileProjects,
-  socialModuleProfileCreate,
   socialModuleProfileFindByIdUpdate,
   socialModuleProfileFindByIdAvatarFind,
   socialModuleProfileFindByIdAvatarUpdate,

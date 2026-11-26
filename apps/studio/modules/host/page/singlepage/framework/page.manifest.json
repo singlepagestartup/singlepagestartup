@@ -10,6 +10,10 @@
   },
   "blocks": [
     {
+      "id": "website-builder.widget.content-cta",
+      "path": "../../../../website-builder/widget/singlepage/content-cta"
+    },
+    {
       "id": "website-builder.widget.content-feature-split",
       "path": "../../../../website-builder/widget/singlepage/content-feature-split"
     },

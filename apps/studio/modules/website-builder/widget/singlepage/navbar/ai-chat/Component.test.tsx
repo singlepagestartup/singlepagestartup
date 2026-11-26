@@ -8,7 +8,7 @@ import { Component as HostModuleLayout } from "../../../../../host/layout/index"
 import { Component as SocialModuleProfile } from "../../../../../social/profile/index";
 import { Component as Widget } from "../../../index";
 import { Component as Navbar } from "./index";
-import { AIChatPreview } from "../../../../../host/page/singlepage/ai-chat/Preview";
+import { AccountPreview } from "../../../../../host/page/AccountPreview";
 import { aiChatServiceHrefs } from "../../../../../host/layout/singlepage/ai-chat-landing/routes";
 
 const studio = path.resolve(import.meta.dir, "../../../../../..");
@@ -169,14 +169,14 @@ describe("Website Builder navbar composition", () => {
       "website-builder.button.navbar-ai-chat",
     ])
       expect(html).toContain(`data-ds-block="${block}"`);
-    expect(html).toContain('href="/ai-chat/help"');
-    expect(html).toContain('aria-label="SPS AI Chat home"');
+    expect(html).toContain('href="/framework/help"');
+    expect(html).toContain('aria-label="Главная AI Chat"');
     expect(html).toContain("Selected project slot");
     expect(html.indexOf("Current subject slot")).toBeLessThan(
-      html.indexOf('aria-label="Open navigation menu"'),
+      html.indexOf('aria-label="Открыть меню навигации"'),
     );
     const help = renderToStaticMarkup(
-      <Navbar buttonsArrayId="ai-chat-help" activeHref="/ai-chat/help" />,
+      <Navbar buttonsArrayId="ai-chat-help" activeHref="/framework/help" />,
     );
     expect(help).toContain('aria-current="page"');
   });
@@ -203,13 +203,7 @@ describe("Website Builder navbar composition", () => {
     }
   });
 
-  test("landing and contact widgets receive higher models as slots", () => {
-    const landing = renderToStaticMarkup(
-      <Widget variant="content-ai-chat-try">
-        <aside>Chat preview slot</aside>
-      </Widget>,
-    );
-    expect(landing).toContain("preview slot</aside>");
+  test("contact receives the Subject form through its slot", () => {
     const contact = renderToStaticMarkup(
       <Widget
         variant="content-feature-find-row"
@@ -254,7 +248,7 @@ describe("Website Builder navbar composition", () => {
       expect(header).toContain(`href="${aiChatServiceHrefs.login}"`);
       expect(header).not.toContain('data-id="ai-chat-register"');
       expect(header).not.toContain('data-id="ai-chat-login"');
-      expect(header).not.toContain('aria-label="Open navigation menu"');
+      expect(header).not.toContain('aria-label="Открыть меню навигации"');
     }
   });
 
@@ -262,22 +256,18 @@ describe("Website Builder navbar composition", () => {
     const routes = [
       aiChatServiceHrefs.register,
       aiChatServiceHrefs.login,
-      "/ai-chat/rbac/subjects/settings",
-      "/ai-chat/help",
-      "/ai-chat/rbac/subjects/tokens",
-      "/ai-chat/social/profiles/create",
-      "/ai-chat/social/profiles/pottery",
-      "/ai-chat/social/profiles/pottery/settings",
-      "/ai-chat/social/profiles/pottery/chats/pottery%3Aproject-chat/threads/create",
+      "/rbac/subjects/settings",
+      "/framework/help",
+      "/ecommerce",
     ];
     for (const route of routes) {
-      const html = renderToStaticMarkup(<AIChatPreview initialHref={route} />);
+      const html = renderToStaticMarkup(<AccountPreview initialHref={route} />);
       expect(
         html.match(/data-ds-block="website-builder.widget.navbar-ai-chat"/g)
           ?.length,
       ).toBe(1);
       const header = html.match(/<header\b[\s\S]*?<\/header>/)?.[0] ?? "";
-      expect(header.match(/aria-label="SPS AI Chat home"/g)?.length).toBe(1);
+      expect(header.match(/aria-label="Главная AI Chat"/g)?.length).toBe(1);
       expect(
         html.match(/data-ds-block="website-builder.widget.footer-ai-chat"/g)
           ?.length,
@@ -300,13 +290,6 @@ describe("Website Builder navbar composition", () => {
         expect(source).toContain('variant="me-account"');
         expect(source).toContain("showTokens");
         expect(source).toContain("rbac/subject/index");
-      }
-      if (route.startsWith("/ai-chat/social/profiles")) {
-        expect(source).toContain("profileSelect=");
-        expect(source).toMatch(
-          /variant="(?:select-ai-chat-project|me-social-module-profile-select-ai-chat)"/,
-        );
-        expect(source).toMatch(/(?:social\/profile|rbac\/subject)\/index/);
       }
     }
   });
