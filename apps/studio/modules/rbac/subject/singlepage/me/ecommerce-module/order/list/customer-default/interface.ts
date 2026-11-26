@@ -4,7 +4,25 @@ export interface IOrder {
   id: string;
   date: string;
   status: string;
-  lines: { id: string; title: string; quantity: number }[];
+  lines: {
+    id: string;
+    productId: string;
+    title: string;
+    quantity: number;
+    slug?: string;
+    coverUrl?: string;
+    priceLabel?: string;
+  }[];
+  checkout?: {
+    email?: string;
+    paymentMethod?: string;
+    paidAt?: string;
+    subscriptionPeriod?: string;
+    comment?: string;
+    delivery?: string;
+    total?: string;
+    downloadReceipt?: () => void;
+  };
 }
 export interface IComponentProps {
   variant?: typeof variant;

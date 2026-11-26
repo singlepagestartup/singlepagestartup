@@ -15,6 +15,7 @@ import {
 } from "@sps/rbac/models/subject/sdk/model";
 import {
   orderCheckoutProviders,
+  orderPaymentProviderLabel,
   readOrderCheckoutButtons,
 } from "@sps/rbac/models/subject/sdk/model/src/lib/order-work";
 import type { Service as Subject } from "../../index";
@@ -35,16 +36,6 @@ interface IPaymentRequest {
   comment?: string;
   ecommerceModule: { orders: { id: string }[] };
 }
-const methodNames: Record<(typeof orderCheckoutProviders)[number], string> = {
-  stripe: "Stripe",
-  "0xprocessing": "0xProcessing",
-  payselection: "PaySelection",
-  "payselection-international": "PaySelection International",
-  tiptoppay: "TipTopPay",
-  cloudpayments: "CloudPayments",
-  dummy: "Demo",
-  paykeeper: "PayKeeper",
-};
 
 export class OrderChatCheckout {
   constructor(
@@ -104,16 +95,6 @@ export class OrderChatCheckout {
     );
   }
 
-  private methodName(
-    provider: (typeof orderCheckoutProviders)[number],
-    ru: boolean,
-  ) {
-    if (provider === "dummy") {
-      return ru ? "Тестовая оплата" : "Test payment";
-    }
-    return methodNames[provider];
-  }
-
   private async prompt(
     ctx: IContext,
     state: Omit<State, "promptId" | "fileId">,
@@ -139,7 +120,7 @@ export class OrderChatCheckout {
 
   private methods(ctx: IContext) {
     const buttons = this.providers().map((provider) => ({
-      text: this.methodName(provider, ctx.ru),
+      text: orderPaymentProviderLabel(provider, ctx.ru ? "ru" : "en"),
       callback_data: "method:" + provider,
     }));
     let text = ctx.ru ? "Выберите способ оплаты." : "Choose a payment method.";
@@ -293,7 +274,7 @@ export class OrderChatCheckout {
         await this.methods(ctx);
         return;
       }
-      const name = this.methodName(provider, ctx.ru);
+      const name = orderPaymentProviderLabel(provider, ctx.ru ? "ru" : "en");
       await this.prompt(
         ctx,
         { step: "email", provider },

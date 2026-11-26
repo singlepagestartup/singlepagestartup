@@ -4,6 +4,22 @@ import { fireEvent, render, screen } from "@testing-library/react";
 import { Component as Orders } from "./client";
 import { Component as Order } from "../../detail/customer-default/client";
 
+jest.mock("@sps/ecommerce/models/product/frontend/component", () => ({
+  Component: (props: {
+    variant: string;
+    data: { title: { und: string } };
+    quantity: number;
+  }) => {
+    if (props.variant !== "customer-order-line")
+      throw Error("Unexpected product variant");
+    return (
+      <div>
+        {props.data.title.und}
+        <span>Qty {props.quantity}</span>
+      </div>
+    );
+  },
+}));
 jest.mock("client-only", () => ({}), { virtual: true });
 jest.mock("../../../../../authentication/me-default/client", () => ({
   __esModule: true,
@@ -103,9 +119,11 @@ it("uses the exact order and thread, including historical titles and fulfillment
   expect(screen.getByText("Original title")).toBeTruthy();
   expect(screen.getByText("Qty 2")).toBeTruthy();
   expect(screen.getByText("Preparing the result")).toBeTruthy();
+  expect(screen.queryByRole("link", { name: "Open in chats" })).toBeNull();
+  expect(screen.queryByRole("link", { name: "All orders" })).toBeNull();
   expect(
-    screen.getByRole("link", { name: "Open in chats" }).getAttribute("href"),
-  ).toBe("/en/social/chats/chat-id/threads/thread-id");
+    screen.queryByRole("heading", { name: "Order discussion" }),
+  ).toBeNull();
   expect(renderDiscussion).toHaveBeenCalledWith(
     sample.customerDetails.discussion,
   );
@@ -169,4 +187,52 @@ it("retains the last page on transient errors, clears restricted data, and offer
   view.rerender(<Orders {...props} />);
   expect(screen.getByText("Original title")).toBeTruthy();
   mockAuthenticated = true;
+});
+
+it("shows the buyer's saved checkout and receipt on the detail only", () => {
+  const order = {
+    ...sample,
+    comment: "Ring the bell",
+    customerDetails: {
+      ...sample.customerDetails,
+      checkout: {
+        email: "buyer@example.test",
+        paymentProvider: "dummy",
+        paidAt: "2026-11-26T12:00:00Z",
+        total: { amount: 25, symbol: "₽", precision: 2 },
+        receipts: [{ id: "receipt-id" }],
+        delivery: [
+          { method: "Courier", address: "Example street 1" },
+          { kind: "digital" },
+        ],
+      },
+    },
+  };
+  mockRead.mockReturnValue({ data: [order] });
+  const detail = render(
+    <Order
+      isServer={false}
+      language="en"
+      variant="me-ecommerce-module-order-detail-customer-default"
+      ecommerceModuleOrderId={order.id}
+      renderDiscussion={() => null}
+    />,
+  );
+  expect(screen.getByText("buyer@example.test")).toBeTruthy();
+  expect(screen.getByText("Test payment")).toBeTruthy();
+  expect(screen.getByText("25 ₽", { exact: false })).toBeTruthy();
+  expect(screen.getByText(/Example street 1/)).toBeTruthy();
+  expect(screen.getByText("File in the order chat")).toBeTruthy();
+  expect(screen.getByText("Ring the bell")).toBeTruthy();
+  expect(screen.getByRole("button", { name: "Download receipt" })).toBeTruthy();
+  detail.unmount();
+  render(
+    <Orders
+      isServer={false}
+      language="en"
+      variant="me-ecommerce-module-order-list-customer-default"
+    />,
+  );
+  expect(screen.queryByText("buyer@example.test")).toBeNull();
+  expect(screen.queryByRole("button", { name: "Download receipt" })).toBeNull();
 });

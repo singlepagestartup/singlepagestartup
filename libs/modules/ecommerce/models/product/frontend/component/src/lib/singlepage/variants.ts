@@ -1,3 +1,4 @@
+import { Component as CustomerOrderLine } from "./customer-order-line";
 import { Component as OrderLineTitle } from "./order-line-title";
 import { Component as Hidden } from "@sps/shared-frontend-components/singlepage/hidden";
 import { Component as Loading } from "./loading";
@@ -20,6 +21,7 @@ import { Component as AdminV2SidebarItem } from "./admin-v2/sidebar-item";
 import { Component as AdminV2Card } from "./admin-v2/card";
 
 export const variants = {
+  "customer-order-line": CustomerOrderLine,
   "order-line-title": OrderLineTitle,
   hidden: Hidden,
   loading: Loading,

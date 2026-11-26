@@ -1227,7 +1227,7 @@ edits use the model’s validation. The seller’s stock operation also checks
 outstanding reservations.
 
 Buyers read cart and payment details through `GET /api/rbac/subjects/:id/ecommerce-module/orders`.
-The account orders page requests `includeCustomerDetails=true`. Each history order includes its saved lines and available fulfillment state. Adding an exact order ID filter also returns the existing Social discussion when the buyer can access it. The buyer opens this page at `/{language}/rbac/subjects/orders/{orderId}`.
+The account orders page requests `includeCustomerDetails=true`. Each history order includes its saved lines, known purchase prices and available fulfillment state. The Ecommerce Product `customer-order-line` variant displays the line with the public catalog cover and product link when available. Adding an exact order ID filter returns the saved checkout details for that order, permitted receipt downloads and the existing Social discussion when the buyer can access it. The buyer opens this page at `/{language}/rbac/subjects/orders/{orderId}`.
 
 The purchase view requests `includePurchaseDetails=true` with a history filter.
 It returns each owned order's charges, invoice status and available payment link.

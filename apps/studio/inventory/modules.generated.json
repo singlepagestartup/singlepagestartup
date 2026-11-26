@@ -4,8 +4,8 @@
   "totals": {
     "modules": 15,
     "entities": 61,
-    "variants": 1109,
-    "coveredVariants": 258,
+    "variants": 1110,
+    "coveredVariants": 259,
     "representedEntities": 61
   },
   "modules": [
@@ -2641,6 +2641,14 @@
               "coveredBy": []
             },
             {
+              "variant": "customer-order-line",
+              "scope": "singlepage",
+              "variantsFile": "libs/modules/ecommerce/models/product/frontend/component/src/lib/singlepage/variants.ts",
+              "coveredBy": [
+                "ecommerce.product.customer-order-line"
+              ]
+            },
+            {
               "variant": "default",
               "scope": "singlepage",
               "variantsFile": "libs/modules/ecommerce/models/product/frontend/component/src/lib/singlepage/variants.ts",
@@ -2702,6 +2710,7 @@
             "apps/studio/modules/ecommerce/product/singlepage/card-related/Component.stories.tsx",
             "apps/studio/modules/ecommerce/product/singlepage/card/Component.stories.tsx",
             "apps/studio/modules/ecommerce/product/singlepage/cart-default/Component.stories.tsx",
+            "apps/studio/modules/ecommerce/product/singlepage/customer-order-line/Component.stories.tsx",
             "apps/studio/modules/ecommerce/product/singlepage/gallery/Component.stories.tsx",
             "apps/studio/modules/ecommerce/product/singlepage/overview-cta/Component.stories.tsx",
             "apps/studio/modules/ecommerce/product/singlepage/overview-customer-work/Component.stories.tsx",

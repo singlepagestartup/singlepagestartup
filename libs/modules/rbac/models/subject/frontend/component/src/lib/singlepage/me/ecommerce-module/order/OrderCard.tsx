@@ -1,16 +1,20 @@
 import Link from "next/link";
-import { memo } from "react";
+import { memo, type ReactNode } from "react";
+import { Component as EcommerceModuleProduct } from "@sps/ecommerce/models/product/frontend/component";
+import { formatCurrencyAmount } from "@sps/shared-frontend-client-utils";
 import { orderStatusLabel } from "@sps/ecommerce/models/order/sdk/model";
 import type { IResult } from "@sps/rbac/models/subject/sdk/server";
 interface IOrderCardProps {
   ecommerceModuleOrder: IResult["IEcommerceModuleOrderListResult"][number];
   language: string;
   href?: string;
+  children?: ReactNode;
 }
 export const OrderCard = memo(function OrderCard({
   ecommerceModuleOrder: order,
   language,
   href,
+  children,
 }: IOrderCardProps) {
   const ru = language === "ru";
   const title = (ru ? "Заказ №" : "Order #") + order.id.slice(0, 8);
@@ -56,21 +60,25 @@ export const OrderCard = memo(function OrderCard({
       {lines.length ? (
         <ul className="mt-4 divide-y divide-border border-t border-border">
           {lines.map((line) => (
-            <li
-              key={line.id}
-              className="flex min-w-0 items-baseline justify-between gap-4 py-2 text-sm"
-            >
-              <span className="break-words min-w-0">
-                {line.title?.[language] ||
-                  line.title?.en ||
-                  Object.values(line.title || {}).find(Boolean) ||
-                  (ru
-                    ? "Товар " + line.productId
-                    : "Product " + line.productId)}
-              </span>
-              <span className="shrink-0 tabular-nums">
-                {ru ? `${line.quantity} шт.` : `Qty ${line.quantity}`}
-              </span>
+            <li key={line.id} className="min-w-0">
+              <EcommerceModuleProduct
+                isServer={false}
+                dataSource="props"
+                variant="customer-order-line"
+                data={{
+                  id: line.productId,
+                  title: line.title,
+                  slug: line.productSlug,
+                }}
+                language={language}
+                quantity={line.quantity}
+                coverUrl={line.coverUrl}
+                priceLabel={
+                  line.price
+                    ? `${formatCurrencyAmount(line.price.amount, language)} ${line.price.symbol}`
+                    : undefined
+                }
+              />
             </li>
           ))}
         </ul>
@@ -81,6 +89,7 @@ export const OrderCard = memo(function OrderCard({
             : "Item details are unavailable for this order."}
         </p>
       )}
+      {children}
     </article>
   );
 });

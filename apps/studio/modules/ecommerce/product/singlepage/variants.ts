@@ -1,3 +1,4 @@
+import { Component as CustomerOrderLine } from "./customer-order-line";
 import { Component as SeoEditor } from "./seo-editor";
 import { Component as AdminV2Card } from "./admin-v2-card/index";
 import { Component as AdminV2Form } from "./admin-v2-form/index";
@@ -16,6 +17,7 @@ import { Component as Tier } from "./tier/index";
 import { Component as OverviewCustomerWork } from "./overview-customer-work";
 
 export const variants = {
+  "customer-order-line": CustomerOrderLine,
   "overview-customer-work": OverviewCustomerWork,
   "seo-editor": SeoEditor,
   "admin-v2-card": AdminV2Card,

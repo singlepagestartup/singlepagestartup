@@ -15,8 +15,6 @@ export function Component(props: IComponentProps) {
         <Subject
           variant="me-ecommerce-module-order-detail-customer-default"
           order={props.order}
-          listHref={props.listHref}
-          threadHref={props.threadHref}
           discussion={props.discussion}
         />
       </WebsiteBuilderModuleWidget>

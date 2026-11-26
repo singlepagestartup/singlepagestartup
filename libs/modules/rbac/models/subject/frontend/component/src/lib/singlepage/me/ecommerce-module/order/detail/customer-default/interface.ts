@@ -15,5 +15,6 @@ export interface IComponentProps extends ISpsComponentBase {
   ) => ReactNode;
 }
 export interface IComponentPropsExtended extends IComponentProps {
+  subjectId: string;
   ecommerceModuleOrder?: IResult["IEcommerceModuleOrderListResult"][number];
 }

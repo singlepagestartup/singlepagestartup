@@ -37,6 +37,26 @@ export const orderCheckoutProviders = [
   "paykeeper",
 ] as const;
 
+const paymentProviderNames: Readonly<Record<string, string>> = {
+  stripe: "Stripe",
+  "0xprocessing": "0xProcessing",
+  payselection: "PaySelection",
+  "payselection-international": "PaySelection International",
+  tiptoppay: "TipTopPay",
+  cloudpayments: "CloudPayments",
+  paykeeper: "PayKeeper",
+  "telegram-star": "Telegram Stars",
+};
+
+export function orderPaymentProviderLabel(provider: string, language: string) {
+  if (provider === "dummy") {
+    return language === "ru" ? "Тестовая оплата" : "Test payment";
+  }
+  return Object.hasOwn(paymentProviderNames, provider)
+    ? paymentProviderNames[provider]
+    : provider;
+}
+
 const checkoutKeyboard = z.object({
   inline_keyboard: z.array(
     z.array(

@@ -9,8 +9,6 @@ const meta = {
   args: {
     variant: "me-ecommerce-module-order-detail-customer-default",
     order: orders[1],
-    listHref:
-      "/iframe.html?id=modules-rbac-models-widget-singlepage-subject-me-customer-orders--default",
   },
 } satisfies Meta<
   Extract<

@@ -1,6 +1,7 @@
 import type { IComponentProps } from "./interface";
 import { OrderCard } from "../../OrderCard";
 export function Component(props: IComponentProps) {
+  const checkout = props.order?.checkout;
   return (
     <div
       data-module="rbac"
@@ -8,39 +9,58 @@ export function Component(props: IComponentProps) {
       data-variant="me-ecommerce-module-order-detail-customer-default"
       className="grid min-w-0 gap-5"
     >
-      <div className="grid gap-5">
-        <a
-          href={props.listHref}
-          className="w-fit text-sm font-medium underline underline-offset-4"
-        >
-          Все заказы
-        </a>
-        {props.order ? (
-          <>
-            <OrderCard order={props.order} />
-            <section className="grid min-w-0 gap-4">
-              <header className="flex flex-wrap items-baseline justify-between gap-3">
-                <h3 className="text-xl font-semibold">Переписка по заказу</h3>
-                {props.threadHref && (
-                  <a
-                    className="text-sm font-medium underline underline-offset-4"
-                    href={props.threadHref}
+      {props.order ? (
+        <>
+          <OrderCard order={props.order}>
+            {checkout && (
+              <div className="mt-3 grid gap-4 border-t border-border pt-5">
+                <dl className="grid min-w-0 gap-x-6 gap-y-4 sm:grid-cols-2 lg:grid-cols-3">
+                  {[
+                    ["Сумма заказа", checkout.total],
+                    ["Способ оплаты", checkout.paymentMethod],
+                    ["Дата оплаты", checkout.paidAt],
+                    ["Почта для чека", checkout.email],
+                    ["Получение заказа", checkout.delivery],
+                    ["Период подписки", checkout.subscriptionPeriod],
+                    ["Комментарий к заказу", checkout.comment],
+                  ].map(
+                    ([label, value]) =>
+                      value && (
+                        <div
+                          key={label}
+                          className="grid min-w-0 content-start gap-1"
+                        >
+                          <dt className="text-sm text-muted-foreground">
+                            {label}
+                          </dt>
+                          <dd className="whitespace-pre-line break-words text-sm font-medium">
+                            {value}
+                          </dd>
+                        </div>
+                      ),
+                  )}
+                </dl>
+                {checkout.downloadReceipt && (
+                  <button
+                    type="button"
+                    className="min-h-10 w-fit rounded-lg border border-border px-3 text-sm font-medium hover:bg-muted"
+                    onClick={checkout.downloadReceipt}
                   >
-                    Открыть в чатах
-                  </a>
+                    Скачать чек
+                  </button>
                 )}
-              </header>
-              {props.discussion ?? (
-                <p className="text-sm text-muted-foreground">
-                  У этого заказа нет переписки.
-                </p>
-              )}
-            </section>
-          </>
-        ) : (
-          <p role="status">Заказ недоступен.</p>
-        )}
-      </div>
+              </div>
+            )}
+          </OrderCard>
+          {props.discussion ?? (
+            <p className="text-sm text-muted-foreground">
+              У этого заказа нет переписки.
+            </p>
+          )}
+        </>
+      ) : (
+        <p role="status">Заказ недоступен.</p>
+      )}
     </div>
   );
 }

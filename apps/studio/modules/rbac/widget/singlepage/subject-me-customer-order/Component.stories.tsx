@@ -63,10 +63,6 @@ const meta = {
   args: {
     variant: "subject-me-customer-order",
     order: orders[0],
-    listHref:
-      "/iframe.html?id=modules-rbac-models-widget-singlepage-subject-me-customer-orders--default",
-    threadHref:
-      "/iframe.html?id=modules-rbac-models-widget-singlepage-subject-me-customer-order--discussion-thread",
     discussion: <Discussion />,
   },
 } satisfies Meta<
@@ -79,8 +75,6 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 export const Default: Story = {};
 export const Historical: Story = {
-  args: { order: orders[1], discussion: undefined, threadHref: undefined },
+  args: { order: orders[1], discussion: undefined },
 };
 export const Unavailable: Story = { args: { order: undefined } };
-
-export const DiscussionThread: Story = { render: () => <Discussion /> };

@@ -45,6 +45,13 @@ export const Default: Story = {
   args: { type: "default", title: "Document updated" },
 };
 export const Success: Story = {};
+export const MessageOnly: Story = {
+  args: {
+    type: "success",
+    title: "Your payment was processed successfully.",
+    description: "",
+  },
+};
 export const Error: Story = {
   args: {
     type: "error",

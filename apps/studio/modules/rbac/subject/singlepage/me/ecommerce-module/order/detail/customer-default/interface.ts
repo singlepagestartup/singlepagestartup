@@ -5,8 +5,6 @@ export const variant =
 export interface IComponentProps {
   variant?: typeof variant;
   order?: IOrder;
-  listHref: string;
   discussion?: ReactNode;
-  threadHref?: string;
 }
 export interface IComponentPropsExtended extends IComponentProps {}
