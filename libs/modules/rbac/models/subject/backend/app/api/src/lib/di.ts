@@ -6,7 +6,6 @@ export const SubjectDI = {
     "rbac.subject.security-notifications.service",
   ),
   IIsAuthorizedService: Symbol.for("rbac.subject.is-authorized.service"),
-  IBillRouteService: Symbol.for("rbac.subject.bill-route.service"),
   IEcommerceOrderProceedService: Symbol.for(
     "rbac.subject.ecommerce-order-proceed.service",
   ),

@@ -34,6 +34,57 @@ it("preserves ordinary UTF-8 text without a visual analysis request", async () =
   expect(generate).not.toHaveBeenCalled();
 });
 
+it("uses the same direct OpenAI key for material synthesis and timestamped audio", async () => {
+  const environment = jest.replaceProperty(process, "env", {
+    ...process.env,
+    KNOWLEDGE_EMBEDDING_PROVIDER: "openai",
+    OPEN_AI_API_KEY: "material-fixture-key",
+  });
+  const segments = [{ start: 0, end: 2, text: "Verified words" }];
+  const network = jest
+    .spyOn(globalThis, "fetch")
+    .mockResolvedValueOnce(
+      Response.json({
+        choices: [
+          { finish_reason: "stop", message: { content: "Material summary" } },
+        ],
+      }),
+    )
+    .mockResolvedValueOnce(Response.json({ text: "Verified words", segments }));
+  try {
+    const service = new MediaService();
+    await expect(
+      service.synthesize("Verified material", "Current notes"),
+    ).resolves.toBe("Material summary");
+    const audio = service as unknown as {
+      transcribe(bytes: Buffer): Promise<unknown>;
+    };
+    await expect(
+      audio.transcribe(Buffer.from("wav fixture")),
+    ).resolves.toMatchObject({ segments });
+    expect(network.mock.calls.map(([url]) => String(url))).toEqual([
+      "https://api.openai.com/v1/chat/completions",
+      "https://api.openai.com/v1/audio/transcriptions",
+    ]);
+    for (const [, options] of network.mock.calls) {
+      expect(new Headers(options?.headers).get("authorization")).toBe(
+        "Bearer material-fixture-key",
+      );
+    }
+    expect(JSON.parse(String(network.mock.calls[0][1]?.body))).toMatchObject({
+      model: "gpt-4.1",
+      store: false,
+    });
+    const form = network.mock.calls[1][1]?.body as FormData;
+    expect(form.get("model")).toBe("whisper-1");
+    expect(form.get("response_format")).toBe("verbose_json");
+    expect(form.get("timestamp_granularities[]")).toBe("segment");
+  } finally {
+    environment.restore();
+    network.mockRestore();
+  }
+});
+
 it("reads UTF-8 markup as text without invoking a renderer or model", async () => {
   const text = '<html><a href="https://example.org/">Example</a></html>';
   const generate = jest.fn();

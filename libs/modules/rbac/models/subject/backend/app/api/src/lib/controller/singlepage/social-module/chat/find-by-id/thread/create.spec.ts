@@ -3,6 +3,7 @@ const mockSocialModuleThreadUpdate = jest.fn();
 const mockSocialModuleChatsToThreadsCreate = jest.fn();
 
 jest.mock("@sps/shared-utils", () => ({
+  ...jest.requireActual("@sps/shared-utils"),
   RBAC_JWT_SECRET: "jwt-secret",
   RBAC_SECRET_KEY: "rbac-secret",
   TELEGRAM_SERVICE_BOT_TOKEN: "telegram-token",
@@ -32,7 +33,7 @@ jest.mock("@sps/social/relations/chats-to-threads/sdk/server", () => ({
 
 import { Handler } from "./create";
 
-function createContext() {
+function createContext(data: Record<string, unknown> = { title: "Support" }) {
   return {
     req: {
       param: (name: string) => {
@@ -42,9 +43,7 @@ function createContext() {
         }[name];
       },
       parseBody: jest.fn().mockResolvedValue({
-        data: JSON.stringify({
-          title: "Support",
-        }),
+        data: JSON.stringify(data),
       }),
     },
     json: jest.fn((payload: unknown) => payload),
@@ -106,6 +105,41 @@ describe("Given: Telegram-backed SPS chat thread creation", () => {
     mockSocialModuleChatsToThreadsCreate.mockResolvedValue({
       id: "chat-to-thread-1",
     });
+  });
+
+  it("preserves the employee chat's supported thread variants", async () => {
+    const service = createService();
+    service.modules.social.chat.findById.mockResolvedValue({
+      id: "chat-1",
+      variant: "store-employee",
+    });
+    await expect(
+      new Handler(service as any).execute(
+        createContext({ title: "Discussion", variant: "telegram" }),
+        jest.fn(),
+      ),
+    ).rejects.toThrow("Training discussions use the custom variant");
+    expect(mockSocialModuleThreadCreate).not.toHaveBeenCalled();
+  });
+
+  it("rejects new document metadata before creating the thread or its Telegram topic", async () => {
+    await expect(
+      new Handler(createService()).execute(
+        createContext({
+          title: "Brief.md",
+          metadata: {
+            aiChatDocument: {
+              key: "brief",
+              profileId: "profile",
+              sourceIds: [],
+            },
+          },
+        }),
+        jest.fn(),
+      ),
+    ).rejects.toThrow("Thread documents are no longer supported");
+    expect(mockSocialModuleThreadCreate).not.toHaveBeenCalled();
+    expect(global.fetch).not.toHaveBeenCalled();
   });
 
   /**

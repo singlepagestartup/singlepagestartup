@@ -1,0 +1,35 @@
+{
+  "metadata": {
+    "seo": {
+      "title": {
+        "en": "Store customer — SinglePageStartup",
+        "ru": "Карточка клиента — SinglePageStartup"
+      }
+    },
+    "seoDisplay": {
+      "twitterTitle": {
+        "en": "Store customer — SinglePageStartup",
+        "ru": "Карточка клиента — SinglePageStartup"
+      },
+      "opengraphTitle": {
+        "en": "Store customer — SinglePageStartup",
+        "ru": "Карточка клиента — SinglePageStartup"
+      },
+      "opengraphLocale": {
+        "en": "en_US",
+        "ru": "ru_RU"
+      }
+    }
+  },
+  "id": "648d902b-438b-4c85-a989-d37cd09222a9",
+  "title": "Store customer",
+  "url": "/ecommerce/stores/[ecommerce.stores.slug]/customers/[rbac.subjects.id]",
+  "slug": "store-customer-detail",
+  "description": "Description",
+  "createdAt": "2026-11-24T19:55:03.683Z",
+  "updatedAt": "2026-11-24T19:55:03.683Z",
+  "variant": "noindex",
+  "className": null,
+  "language": "en",
+  "adminTitle": "Store customer"
+}

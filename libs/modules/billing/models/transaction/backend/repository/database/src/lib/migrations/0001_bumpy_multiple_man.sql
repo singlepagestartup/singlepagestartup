@@ -1,0 +1,2 @@
+ALTER TABLE "sps_bg_transaction" DROP CONSTRAINT "sps_bg_wallet_valid_kind";--> statement-breakpoint
+ALTER TABLE "sps_bg_transaction" ADD CONSTRAINT "sps_bg_wallet_valid_kind" CHECK (("sps_bg_transaction"."kind" = 'reserve' AND "sps_bg_transaction"."state" IN ('held','released','settled')) OR ("sps_bg_transaction"."kind" = 'transfer' AND "sps_bg_transaction"."state" = 'posted' AND "sps_bg_transaction"."budget" IS NULL));

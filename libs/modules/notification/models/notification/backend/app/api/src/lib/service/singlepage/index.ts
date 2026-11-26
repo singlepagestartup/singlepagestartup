@@ -4,6 +4,7 @@ import { Service as Delivery } from "../startup/delivery";
 import type { IDeliveryProgress } from "./delivery";
 import { Repository } from "../../repository";
 import "reflect-metadata";
+import { createHmac, timingSafeEqual } from "node:crypto";
 import { readFile } from "node:fs/promises";
 import { join, normalize } from "node:path";
 import { injectFromBase, injectable } from "inversify";
@@ -42,6 +43,25 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
   }
 
   declare repository: Repository;
+
+  // Only the server can authorize a private file for this particular recipient and delivery.
+  telegramDocument(
+    notificationId: string,
+    receiver: string,
+    fileId: string,
+  ): INotificationAttachment {
+    if (!RBAC_SECRET_KEY) {
+      throw new Error(
+        "Configuration error. Notification signing key is missing",
+      );
+    }
+    const signature = createHmac("sha256", RBAC_SECRET_KEY)
+      .update(
+        JSON.stringify(["telegram-document", notificationId, receiver, fileId]),
+      )
+      .digest("hex");
+    return { type: "telegram-document", url: `${fileId}.${signature}` };
+  }
 
   async updateDelivery(props: {
     id: string;
@@ -791,8 +811,39 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     const validAttachments: typeof attachments = [];
     const preparationSignal = AbortSignal.timeout(props.timeoutMs ?? 25000);
 
+    let privateDocument: InputFile | undefined;
     for (const attachment of attachments) {
       preparationSignal.throwIfAborted();
+      if (attachment.type === "telegram-document") {
+        const [fileId] = attachment.url.split(".");
+        const expected = this.telegramDocument(
+          entity.id,
+          entity.reciever,
+          fileId,
+        );
+        const signature = Buffer.from(attachment.url);
+        const reference = Buffer.from(expected.url);
+        if (
+          props.method !== "telegram" ||
+          attachments.length !== 1 ||
+          signature.length !== reference.length ||
+          !timingSafeEqual(signature, reference)
+        ) {
+          throw new Error("Permission error. Invalid document delivery");
+        }
+        const file =
+          await this.modules.fileStorage.file.privateContent.findById({
+            id: fileId,
+          });
+        if (!file) {
+          throw new Error(
+            "Not Found error. The Telegram document is unavailable",
+          );
+        }
+        privateDocument = new InputFile(file.bytes, file.name);
+        validAttachments.push(attachment);
+        continue;
+      }
       try {
         const response = await fetch(attachment.url, {
           method: "HEAD",
@@ -962,10 +1013,14 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
 
             if (validAttachments.length === 1) {
               const attachment = validAttachments[0];
-              const mimeType = this.getMimeType(attachment.url);
+              const mimeType = privateDocument
+                ? "application/octet-stream"
+                : this.getMimeType(attachment.url);
               const sendAttachment = async (uploadFile: boolean) => {
                 let media;
-                if (uploadFile) {
+                if (privateDocument) {
+                  media = privateDocument;
+                } else if (uploadFile) {
                   media = await this.createTelegramAttachmentInputFile({
                     attachment,
                   });
@@ -1006,7 +1061,10 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
               try {
                 response = await sendAttachment(false);
               } catch (error) {
-                if (!this.isTelegramWebpageMediaFetchFailed(error)) {
+                if (
+                  privateDocument ||
+                  !this.isTelegramWebpageMediaFetchFailed(error)
+                ) {
                   throw error;
                 }
 

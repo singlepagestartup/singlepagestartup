@@ -37,13 +37,13 @@ function createTool(
   };
 }
 
-it("finishes a staged proposal without another generative call or a false model error", async () => {
+it("finishes successfully when a tool stages a working draft", async () => {
   const tool = createTool({ source: "knowledge", completeAfterSuccess: true });
   const generate = jest.fn().mockResolvedValue({
     text: "",
     toolCalls: [
       {
-        id: "proposal",
+        id: "draft",
         type: "function",
         function: {
           name: tool.definition.function.name,
@@ -62,55 +62,8 @@ it("finishes a staged proposal without another generative call or a false model 
   });
   expect(generate).toHaveBeenCalledTimes(1);
   expect(result.trace.stopReason).toBe("final_text");
-  expect(result.finalText).toBe("Предложение готово к проверке.");
+  expect(result.finalText).toBe("Черновик готов.");
   expect(result.trace.calls).toHaveLength(1);
-});
-
-it("requires the proposal tool before accepting a document revision as complete", async () => {
-  const tool = createTool({ source: "knowledge", completeAfterSuccess: true });
-  const generate = jest
-    .fn()
-    .mockResolvedValueOnce({ text: "A revised draft without a tool call" })
-    .mockResolvedValueOnce({
-      text: "",
-      toolCalls: [
-        {
-          id: "staged",
-          type: "function",
-          function: {
-            name: tool.definition.function.name,
-            arguments: '{"id":"revised"}',
-          },
-        },
-      ],
-    });
-  const result = await new SocialProfileAiToolLoop().run({
-    context: [{ role: "user", content: "Revise the proposed document" }],
-    modelCandidateIds: ["test/answer"],
-    tools: [tool],
-    requiredCompletionToolName: tool.definition.function.name,
-    generate,
-  });
-  expect(generate).toHaveBeenCalledTimes(2);
-  expect(result.trace.calls).toHaveLength(1);
-  expect(result.trace.stopReason).toBe("final_text");
-});
-
-it("reports an unstaged revision as an error when the model keeps avoiding the tool", async () => {
-  const tool = createTool({ source: "knowledge", completeAfterSuccess: true });
-  const generate = jest
-    .fn()
-    .mockResolvedValue({ text: "The revision is ready" });
-  const result = await new SocialProfileAiToolLoop().run({
-    context: [{ role: "user", content: "Revise the proposed document" }],
-    modelCandidateIds: ["test/answer"],
-    tools: [tool],
-    requiredCompletionToolName: tool.definition.function.name,
-    generate,
-  });
-  expect(generate).toHaveBeenCalledTimes(2);
-  expect(result.trace.calls).toHaveLength(0);
-  expect(result.trace.stopReason).toBe("model_error");
 });
 
 describe("Given: a bounded social.profile AI tool loop", () => {
@@ -134,7 +87,8 @@ describe("Given: a bounded social.profile AI tool loop", () => {
    * Then: the final text and redacted trace identify the social.profile tool execution without exposing raw arguments.
    */
   it("When: an available tool is requested Then: its result is replayed before final text", async () => {
-    const tool = createTool();
+    const record = { id: "record-1", description: "Ж".repeat(65_536) };
+    const tool = createTool({ execute: jest.fn(async () => record) });
     const generate = jest
       .fn()
       .mockResolvedValueOnce({
@@ -169,7 +123,7 @@ describe("Given: a bounded social.profile AI tool loop", () => {
         expect.objectContaining({
           role: "tool",
           tool_call_id: "call-1",
-          content: '{"id":"record-1","ok":true}',
+          content: JSON.stringify(record),
         }),
       ]),
     );

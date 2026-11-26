@@ -6,3 +6,5 @@ export interface IChatAction extends IModel {
   actorProfileIds: string[];
   actorProfiles: IProfilePresentation[];
 }
+
+export const CHAT_TYPING_TTL_MS = 8000;

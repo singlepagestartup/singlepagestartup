@@ -1,3 +1,4 @@
+import { workflowResources } from "../../admin/workflow/resources";
 import { cn, isAdminRoute } from "@sps/shared-frontend-client-utils";
 import { Button } from "@sps/shared-ui-shadcn";
 import { ChevronDown, ChevronRight } from "lucide-react";
@@ -54,6 +55,22 @@ export function Component(props: IComponentProps) {
 
       {isCurrentModule ? (
         <div className="mt-2 space-y-1 pl-3">
+          {workflowResources.map((name) => (
+            <Button
+              asChild
+              key={name}
+              variant="outline"
+              className={cn(
+                "w-full justify-start",
+                isAdminRoute(props.url, "crm", name) &&
+                  "bg-slate-900 text-white",
+              )}
+            >
+              <Link href={ADMIN_BASE_PATH + "/crm/" + name}>
+                <span className="truncate">{name}</span>
+              </Link>
+            </Button>
+          ))}
           <Form isServer={props.isServer} url={props.url} />
           <Input isServer={props.isServer} url={props.url} />
           <Option isServer={props.isServer} url={props.url} />

@@ -104,6 +104,9 @@ properties:
     default: {}
     type: object
     properties:
+      requiresResultAcceptance:
+        type: boolean
+        description: Charge for a commissioned service after the customer accepts a result version.
       initialGrant:
         type: boolean
       initialGrantLegacyHistory:

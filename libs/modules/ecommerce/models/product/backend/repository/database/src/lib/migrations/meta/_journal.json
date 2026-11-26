@@ -43,6 +43,13 @@
       "when": 1794871903821,
       "tag": "0005_eager_wilson_fisk",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1795098387914,
+      "tag": "0006_tired_bastion",
+      "breakpoints": true
     }
   ]
 }

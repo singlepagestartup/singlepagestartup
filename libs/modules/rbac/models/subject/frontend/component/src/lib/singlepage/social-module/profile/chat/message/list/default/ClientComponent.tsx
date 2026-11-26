@@ -1,5 +1,6 @@
 "use client";
 
+import { toast } from "sonner";
 import { Composer } from "./components/Composer";
 import { KnowledgeSourceDialog } from "./components/KnowledgeSourceDialog";
 import { McpServersDialog } from "./components/McpServersDialog";
@@ -7,16 +8,22 @@ import { MessageTimelineSection } from "./components/MessageTimelineSection";
 import { ProfileEditDialog } from "./components/ProfileEditDialog";
 import { ProfileSidebarPanel } from "./components/ProfileSidebarPanel";
 import { ProfileSidebarSheet } from "./components/ProfileSidebarSheet";
-import { useKnowledgeSources } from "./hooks/use-knowledge-sources";
-import { useOpenRouterModelControls } from "./hooks/use-openrouter-model-controls";
+import { ThreadContext } from "./components/ThreadContext";
+import { ChatParticipantButton } from "./components/ChatParticipantButton";
+import { useThreadHasFiles } from "./components/ThreadFiles";
+import { useChatModelControls } from "./hooks/use-chat-model-controls";
 import { useProfileSidebar } from "./hooks/use-profile-sidebar";
 import { useProfileSkills } from "./hooks/use-profile-skills";
 import { useThreadMessagesRefetch } from "./hooks/use-thread-messages-refetch";
 import { IComponentPropsExtended } from "./interface";
 import type { KnowledgeSource, SocialSkill } from "./types";
+import { isChatAccessError } from "./utils";
 import { cn } from "@sps/shared-frontend-client-utils";
+import { ChatThreadPanel } from "@sps/ui-adapter";
+import { api } from "@sps/rbac/models/subject/sdk/client";
+import { STORE_EMPLOYEE_CHAT_VARIANT } from "@sps/rbac/models/subject/sdk/model";
 import { Component as SocialModuleSkill } from "@sps/social/models/skill/frontend/component";
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useImperativeHandle, useRef, useState } from "react";
 import type { IModel as SocialProfile } from "@sps/social/models/profile/sdk/model";
 
 interface SkillDialogTarget {
@@ -34,6 +41,7 @@ interface SkillDialogTarget {
  * ThreadMessagesCache API.
  */
 export function Component(props: IComponentPropsExtended) {
+  const threadId = props.socialModuleThreadId;
   const [isSkillDialogOpen, setIsSkillDialogOpen] = useState(false);
   const [isMcpServersDialogOpen, setIsMcpServersDialogOpen] = useState(false);
   const [isProfileEditDialogOpen, setIsProfileEditDialogOpen] = useState(false);
@@ -49,35 +57,76 @@ export function Component(props: IComponentPropsExtended) {
   const markShouldScrollToBottom = useCallback(() => {
     markShouldScrollToBottomRef.current();
   }, []);
-
   const threadMessagesCache = useThreadMessagesRefetch({
     subjectId: props.data.id,
     socialModuleProfileId: props.socialModuleProfile.id,
     socialModuleChatId: props.socialModuleChat.id,
     socialModuleThreadId: props.socialModuleThreadId,
   });
-  const assistantProfile =
-    props.knowledgeAssistantProfile ||
-    props.artificialIntelligenceOpponentProfile ||
-    null;
-  // Single source of truth: OpenRouter controls, knowledge access, and the
-  // AI-opponent layout all gate on the same condition (issue #195 cleanup).
-  const isArtificialIntelligenceAssistant =
-    assistantProfile?.variant === "artificial-intelligence";
-  const knowledgeSources = useKnowledgeSources({
+  const thread =
+    props.socialModuleThread.id === threadId
+      ? props.socialModuleThread
+      : undefined;
+  const isEmployeeChat =
+    props.socialModuleChat.variant === STORE_EMPLOYEE_CHAT_VARIANT;
+  const isCustomerWork =
+    !isEmployeeChat &&
+    (props.socialModuleChat.variant === "customer-work" ||
+      thread?.hasCustomerWork === true);
+  const threadScope = {
     subjectId: props.data.id,
     socialModuleProfileId: props.socialModuleProfile.id,
-    socialModuleChat: props.socialModuleChat,
-    assistantProfile,
+    socialModuleChatId: props.socialModuleChat.id,
+    socialModuleThreadId: threadId,
+  };
+  const hasThreadFiles = useThreadHasFiles(threadScope, isCustomerWork);
+  const staffView = Boolean(props.socialModuleChat.taskChatStaff);
+  const workResult = api.customerWorkForThread({
+    id: props.data.id,
+    threadId: isCustomerWork && !staffView ? threadId : "",
   });
+  const work =
+    isCustomerWork &&
+    workResult.data?.chatId === props.socialModuleChat.id &&
+    workResult.data.threadId === threadId &&
+    !isChatAccessError(workResult.error)
+      ? workResult.data
+      : undefined;
+  const assistantProfile = isCustomerWork
+    ? null
+    : props.knowledgeAssistantProfile ||
+      props.artificialIntelligenceOpponentProfile ||
+      null;
+  const isArtificialIntelligenceAssistant =
+    assistantProfile?.variant === "artificial-intelligence";
   const profileSidebar = useProfileSidebar({
+    language: props.language,
+    summaryOnly: isCustomerWork,
+    employeeProfileId: isEmployeeChat ? assistantProfile?.id : undefined,
     subjectId: props.data.id,
     socialModuleProfileId: props.socialModuleProfile.id,
     socialModuleChatId: props.socialModuleChat.id,
   });
-  const composerSkillsProfileId =
-    knowledgeSources.knowledgeAssistantProfileId || "missing-profile";
+  const { closeProfile, openProfile } = profileSidebar;
+  useImperativeHandle(props.profileOpenRef, () => openProfile, [openProfile]);
+  const canEditProfile =
+    !isCustomerWork && profileSidebar.canManageSelectedProfile;
+  const canAddKnowledge = canEditProfile || profileSidebar.isOwnPersonalProfile;
+  const canEditKnowledge =
+    canEditProfile ||
+    (profileSidebar.isOwnPersonalProfile &&
+      (profileSidebar.isCreatingKnowledgeSource ||
+        profileSidebar.selectedKnowledgeSource?.editable === true));
+  const profileCaption =
+    isEmployeeChat &&
+    assistantProfile?.id === profileSidebar.selectedProfile?.id
+      ? props.language === "ru"
+        ? "Сотрудник магазина"
+        : "Store employee"
+      : undefined;
+  const composerSkillsProfileId = assistantProfile?.id || "missing-profile";
   const profileSkills = useProfileSkills({
+    language: props.language,
     enabled: isArtificialIntelligenceAssistant,
     subjectId: props.data.id,
     requesterSocialModuleProfileId: props.socialModuleProfile.id,
@@ -88,18 +137,28 @@ export function Component(props: IComponentPropsExtended) {
       profileSidebar.refetchSkillQueries();
     },
   });
-  const openRouterModelControls = useOpenRouterModelControls({
+  const modelControls = useChatModelControls({
     subjectId: props.data.id,
     socialModuleProfileId: props.socialModuleProfile.id,
     socialModuleChatId: props.socialModuleChat.id,
     socialModuleThread: props.socialModuleThread,
     socialModuleThreadId: props.socialModuleThreadId,
-    enabled: isArtificialIntelligenceAssistant,
+    mode:
+      (isCustomerWork && !staffView) || isEmployeeChat
+        ? "order"
+        : isArtificialIntelligenceAssistant &&
+            props.socialModuleChat.canManageChat === true
+          ? "assistant"
+          : undefined,
+    catalogRevision: [
+      work?.workflow?.stageTitle,
+      work?.assignment,
+      work?.status,
+    ].join(":"),
   });
 
   function openSidebarSkillCreateDialog(profile: SocialProfile) {
     setEditingSkill(null);
-    profileSidebar.setIsMobileSheetOpen(false);
     setSkillDialogTarget({
       orderIndex: profileSidebar.profileSkillIds.length,
       profileId: profile.id,
@@ -108,30 +167,25 @@ export function Component(props: IComponentPropsExtended) {
   }
 
   function openSidebarKnowledgeSourceCreateDialog(profile: SocialProfile) {
-    profileSidebar.setIsMobileSheetOpen(false);
     profileSidebar.onKnowledgeSourceCreate(profile);
   }
 
   function openProfileEditDialog() {
-    profileSidebar.setIsMobileSheetOpen(false);
     setIsProfileEditDialogOpen(true);
   }
 
   function openMcpServersDialog() {
-    profileSidebar.setIsMobileSheetOpen(false);
     setIsMcpServersDialogOpen(true);
   }
 
   function openKnowledgeSourceEditDialog(document: KnowledgeSource) {
-    profileSidebar.setIsMobileSheetOpen(false);
     profileSidebar.onKnowledgeSourceSelect(document);
   }
 
   function openSkillEditDialog(skill: SocialSkill) {
     setEditingSkill(skill);
-    profileSidebar.setIsMobileSheetOpen(false);
     setSkillDialogTarget({
-      orderIndex: profileSkills.profileSkillIds.length,
+      orderIndex: profileSidebar.profileSkillIds.length,
       profileId: profileSidebar.selectedProfile?.id || composerSkillsProfileId,
     });
     setIsSkillDialogOpen(true);
@@ -143,6 +197,19 @@ export function Component(props: IComponentPropsExtended) {
   };
   const resolvedSkillDialogTarget =
     skillDialogTarget || fallbackSkillDialogTarget;
+  const products = thread?.linkedProducts;
+  const showThreadContext = hasThreadFiles || work || products?.length;
+  const participants = props.socialModuleChat.participants;
+  const opponent = isEmployeeChat
+    ? assistantProfile
+    : !isCustomerWork &&
+        props.socialModuleChat.variant === "default" &&
+        participants?.length === 2
+      ? participants.find(({ id }) => id !== props.socialModuleProfile.id)
+      : undefined;
+  const title =
+    props.socialModuleThread.title?.trim() ||
+    (props.language === "ru" ? "Без названия" : "Untitled");
 
   return (
     <div
@@ -150,202 +217,231 @@ export function Component(props: IComponentPropsExtended) {
       data-model="subject"
       data-variant={props.variant}
       className={cn(
-        "flex h-full min-h-0 w-full flex-col overflow-hidden bg-white",
+        "flex h-full min-h-0 min-w-0 flex-1 flex-col overflow-hidden bg-card",
         props.className,
       )}
     >
       <ProfileSidebarSheet
-        isOpen={profileSidebar.isMobileSheetOpen}
-        onOpenChange={(open) => {
-          if (open) {
-            profileSidebar.setIsMobileSheetOpen(true);
-            return;
+        isOpen={Boolean(profileSidebar.selectedProfile)}
+        language={props.language}
+        summaryOnly={!canEditProfile}
+        onCloseAutoFocus={(event) => {
+          if (profileSidebar.profileTrigger.current?.isConnected) {
+            event.preventDefault();
+            profileSidebar.profileTrigger.current.focus();
           }
-
-          profileSidebar.closeProfile();
+        }}
+        onOpenChange={(open) => {
+          if (!open) closeProfile();
         }}
       >
         <ProfileSidebarPanel
+          summaryOnly={!canEditProfile}
+          avatar={profileSidebar.selectedAvatar}
+          displayName={
+            !canEditProfile ? profileSidebar.selectedName : undefined
+          }
           hasKnowledgeSourcesError={profileSidebar.hasKnowledgeSourcesError}
           isKnowledgeSourcesLoading={profileSidebar.isKnowledgeSourcesLoading}
           isSkillsLoading={profileSidebar.isSkillsLoading}
           knowledgeSources={profileSidebar.knowledgeSources}
           language={props.language}
           onKnowledgeSourceCreate={
-            profileSidebar.canManageSelectedProfile
-              ? openSidebarKnowledgeSourceCreateDialog
-              : undefined
+            canAddKnowledge ? openSidebarKnowledgeSourceCreateDialog : undefined
           }
-          onKnowledgeSourceSelect={openKnowledgeSourceEditDialog}
-          onMcpServersEdit={
-            profileSidebar.canManageSelectedProfile
-              ? openMcpServersDialog
-              : undefined
+          onKnowledgeSourceSelect={
+            canAddKnowledge ? openKnowledgeSourceEditDialog : undefined
           }
-          onProfileEdit={
-            profileSidebar.canManageSelectedProfile
-              ? openProfileEditDialog
-              : undefined
-          }
+          onMcpServersEdit={canEditProfile ? openMcpServersDialog : undefined}
+          onProfileEdit={canEditProfile ? openProfileEditDialog : undefined}
           onSkillCreate={
-            profileSidebar.canManageSelectedProfile
-              ? openSidebarSkillCreateDialog
-              : undefined
+            canEditProfile ? openSidebarSkillCreateDialog : undefined
           }
-          onSkillEdit={
-            profileSidebar.canManageSelectedProfile
-              ? openSkillEditDialog
-              : undefined
-          }
+          onSkillEdit={canEditProfile ? openSkillEditDialog : undefined}
           profile={profileSidebar.selectedProfile}
+          profileCaption={profileCaption}
           selectedKnowledgeSource={profileSidebar.selectedKnowledgeSource}
           skills={profileSidebar.skills}
         />
       </ProfileSidebarSheet>
-      <div className="flex min-h-0 flex-1">
-        <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
-          <MessageTimelineSection
-            participants={props.socialModuleChat.participants}
-            language={props.language}
-            markShouldScrollToBottomRef={markShouldScrollToBottomRef}
-            onProfileOpen={profileSidebar.openProfile}
-            socialModuleChatId={props.socialModuleChat.id}
-            socialModuleProfileId={props.socialModuleProfile.id}
-            socialModuleThreadId={props.socialModuleThreadId}
-            subjectId={props.data.id}
-            threadMessagesCache={threadMessagesCache}
-          />
-          <SocialModuleSkill
-            isServer={false}
-            variant="chat-create-dialog"
-            language={props.language}
-            data={editingSkill}
-            mode={editingSkill ? "edit" : "create"}
-            open={isSkillDialogOpen}
-            onOpenChange={(open) => {
-              setIsSkillDialogOpen(open);
+      <ChatThreadPanel
+        title={title}
+        threadId={props.socialModuleThreadId}
+        language={props.language}
+        navigation={props.navigation}
+        titleContent={
+          opponent && (
+            <ChatParticipantButton
+              profile={opponent}
+              language={props.language}
+              presentation={props.socialModuleChat.participantPresentations?.find(
+                ({ id }) => id === opponent.id,
+              )}
+              onProfileOpen={openProfile}
+            />
+          )
+        }
+        messagesOwnScroll
+        messages={
+          <>
+            <MessageTimelineSection
+              orderWork={staffView ? undefined : (work ?? undefined)}
+              isCustomerWork={isCustomerWork}
+              isEmployeeChat={isEmployeeChat}
+              participants={props.socialModuleChat.participants}
+              language={props.language}
+              markShouldScrollToBottomRef={markShouldScrollToBottomRef}
+              onProfileOpen={openProfile}
+              socialModuleChatId={props.socialModuleChat.id}
+              socialModuleProfileId={props.socialModuleProfile.id}
+              socialModuleThreadId={props.socialModuleThreadId}
+              subjectId={props.data.id}
+              threadMessagesCache={threadMessagesCache}
+            />
+            <SocialModuleSkill
+              isServer={false}
+              variant="chat-create-dialog"
+              language={props.language}
+              data={editingSkill}
+              mode={editingSkill ? "edit" : "create"}
+              open={isSkillDialogOpen}
+              onOpenChange={(open) => {
+                setIsSkillDialogOpen(open);
 
-              if (!open) {
-                setEditingSkill(null);
-                setSkillDialogTarget(null);
+                if (!open) {
+                  setEditingSkill(null);
+                  setSkillDialogTarget(null);
+                }
+              }}
+              profileId={resolvedSkillDialogTarget.profileId}
+              orderIndex={resolvedSkillDialogTarget.orderIndex}
+              isSubmitting={
+                profileSkills.isCreatingSkill || profileSkills.isUpdatingSkill
               }
-            }}
-            profileId={resolvedSkillDialogTarget.profileId}
-            orderIndex={resolvedSkillDialogTarget.orderIndex}
-            isSubmitting={
-              profileSkills.isCreatingSkill || profileSkills.isUpdatingSkill
-            }
-            onCreate={profileSkills.createSkillAndLinkToProfile}
-            onUpdate={(skill, values) => {
-              return profileSkills.updateProfileSkill(
-                skill,
-                values,
-                resolvedSkillDialogTarget.profileId,
-              );
-            }}
-          />
-          <KnowledgeSourceDialog
-            fileScope={
-              profileSidebar.selectedProfile &&
-              profileSidebar.selectedKnowledgeSource
-                ? {
-                    id: props.data.id,
-                    socialModuleProfileId: props.socialModuleProfile.id,
-                    socialModuleChatId: props.socialModuleChat.id,
-                    targetSocialModuleProfileId:
-                      profileSidebar.selectedProfile.id,
-                    knowledgeModuleSourceId:
-                      profileSidebar.selectedKnowledgeSource.id,
-                  }
+              onCreate={profileSkills.createSkillAndLinkToProfile}
+              onUpdate={(skill, values) => {
+                return profileSkills.updateProfileSkill(
+                  skill,
+                  values,
+                  resolvedSkillDialogTarget.profileId,
+                );
+              }}
+            />
+            <KnowledgeSourceDialog
+              key={JSON.stringify([
+                profileSidebar.selectedProfile?.id,
+                profileSidebar.selectedKnowledgeSource?.id,
+              ])}
+              fileScope={
+                canEditProfile &&
+                profileSidebar.selectedProfile &&
+                profileSidebar.selectedKnowledgeSource
+                  ? {
+                      id: props.data.id,
+                      socialModuleProfileId: props.socialModuleProfile.id,
+                      socialModuleChatId: props.socialModuleChat.id,
+                      targetSocialModuleProfileId:
+                        profileSidebar.selectedProfile.id,
+                      knowledgeModuleSourceId:
+                        profileSidebar.selectedKnowledgeSource.id,
+                    }
+                  : undefined
+              }
+              document={profileSidebar.selectedKnowledgeSource}
+              personal={profileSidebar.isOwnPersonalProfile}
+              readOnly={!canEditKnowledge}
+              draft={profileSidebar.knowledgeSourceDraft}
+              saveError={profileSidebar.knowledgeError?.message}
+              saveBlocked={
+                profileSidebar.knowledgeError?.status === 409 &&
+                !profileSidebar.isCreatingKnowledgeSource
+              }
+              isDeleting={profileSidebar.isDeletingKnowledgeSource}
+              isDirty={profileSidebar.isKnowledgeSourceDirty}
+              isOpen={Boolean(profileSidebar.selectedKnowledgeSource)}
+              isSaving={profileSidebar.isSavingKnowledgeSource}
+              language={props.language}
+              mode={
+                profileSidebar.isCreatingKnowledgeSource ? "create" : "edit"
+              }
+              needsReindex={profileSidebar.selectedKnowledgeSourceNeedsReindex}
+              onDelete={
+                canEditProfile
+                  ? profileSidebar.onKnowledgeSourceDelete
+                  : undefined
+              }
+              onDraftChange={profileSidebar.onKnowledgeSourceDraftChange}
+              onOpenChange={(open) => {
+                if (!open) {
+                  profileSidebar.closeKnowledgeSource();
+                }
+              }}
+              onSave={profileSidebar.onKnowledgeSourceSave}
+            />
+            <McpServersDialog
+              language={props.language}
+              isOpen={isMcpServersDialogOpen}
+              isSaving={profileSidebar.isSavingProfile}
+              onOpenChange={setIsMcpServersDialogOpen}
+              onSave={(allowedMcpServerIds) => {
+                void profileSidebar
+                  .onProfileSave({ allowedMcpServerIds })
+                  .then(() => {
+                    setIsMcpServersDialogOpen(false);
+                    toast.success(
+                      props.language === "ru"
+                        ? "Профиль сохранён"
+                        : "Profile saved",
+                    );
+                  })
+                  .catch(() => {
+                    /* The SDK displayed the mutation error. */
+                  });
+              }}
+              profile={profileSidebar.selectedProfile}
+            />
+            <ProfileEditDialog
+              avatar={profileSidebar.selectedAvatar}
+              onAvatarSave={profileSidebar.onAvatarSave}
+              isSavingAvatar={profileSidebar.isSavingAvatar}
+              isEmployee={Boolean(profileCaption)}
+              isOpen={isProfileEditDialogOpen}
+              isSaving={profileSidebar.isSavingProfile}
+              language={props.language}
+              onOpenChange={setIsProfileEditDialogOpen}
+              onSave={async (values) => {
+                if (Object.keys(values).length)
+                  await profileSidebar.onProfileSave(values);
+                setIsProfileEditDialogOpen(false);
+              }}
+              profile={profileSidebar.selectedProfile}
+            />
+          </>
+        }
+        composer={
+          <Composer
+            isCustomerWork={isCustomerWork}
+            isEmployeeChat={isEmployeeChat}
+            onEmployeeMessageSaved={
+              isEmployeeChat
+                ? profileSidebar.refetchKnowledgeSourceQueries
                 : undefined
             }
-            onFilesUpdated={profileSidebar.onKnowledgeSourceSelect}
-            document={profileSidebar.selectedKnowledgeSource}
-            draft={profileSidebar.knowledgeSourceDraft}
-            isDeleting={profileSidebar.isDeletingKnowledgeSource}
-            isDirty={profileSidebar.isKnowledgeSourceDirty}
-            isOpen={Boolean(profileSidebar.selectedKnowledgeSource)}
-            isReindexing={profileSidebar.isReindexingKnowledgeSource}
-            isSaving={profileSidebar.isSavingKnowledgeSource}
-            language={props.language}
-            mode={profileSidebar.isCreatingKnowledgeSource ? "create" : "edit"}
-            needsReindex={profileSidebar.selectedKnowledgeSourceNeedsReindex}
-            onDelete={profileSidebar.onKnowledgeSourceDelete}
-            onUnlink={profileSidebar.onKnowledgeSourceUnlink}
-            onDraftChange={profileSidebar.onKnowledgeSourceDraftChange}
-            onOpenChange={(open) => {
-              if (!open) {
-                profileSidebar.closeKnowledgeSource();
-              }
-            }}
-            onReindex={profileSidebar.onKnowledgeSourceReindex}
-            onSave={profileSidebar.onKnowledgeSourceSave}
-          />
-          <McpServersDialog
-            isOpen={isMcpServersDialogOpen}
-            isSaving={profileSidebar.isSavingProfile}
-            onOpenChange={setIsMcpServersDialogOpen}
-            onSave={(allowedMcpServerIds) => {
-              void profileSidebar
-                .onProfileSave({ allowedMcpServerIds })
-                .then(() => {
-                  setIsMcpServersDialogOpen(false);
-                });
-            }}
-            profile={profileSidebar.selectedProfile}
-          />
-          <ProfileEditDialog
-            isOpen={isProfileEditDialogOpen}
-            isSaving={profileSidebar.isSavingProfile}
-            language={props.language}
-            onOpenChange={setIsProfileEditDialogOpen}
-            onSave={(values) => {
-              profileSidebar.onProfileSave(values);
-              setIsProfileEditDialogOpen(false);
-            }}
-            profile={profileSidebar.selectedProfile}
-          />
-          <Composer
-            canSelectOpenRouterReasoning={
-              openRouterModelControls.canSelectReasoning
+            canUseKnowledge={
+              isArtificialIntelligenceAssistant && !isEmployeeChat
             }
-            canUseKnowledge={isArtificialIntelligenceAssistant}
             clearSelectedSkills={profileSkills.clearSelectedSkills}
             isArtificialIntelligenceOpponent={isArtificialIntelligenceAssistant}
-            isOpenRouterModelsLoading={openRouterModelControls.isLoadingModels}
-            isOpenRouterModelFavoritesUpdating={
-              openRouterModelControls.isUpdatingFavoriteModels
-            }
             isSkillOptionsLoading={profileSkills.isLoadingSkills}
             language={props.language}
             markShouldScrollToBottom={markShouldScrollToBottom}
-            onOpenRouterModelChange={openRouterModelControls.setSelectedModelId}
-            onOpenRouterReasoningChange={
-              openRouterModelControls.setSelectedReasoning
-            }
-            onOpenRouterModelFavoriteToggle={
-              openRouterModelControls.toggleFavoriteModelId
-            }
+            modelControls={modelControls}
             onRemoveSelectedSkill={profileSkills.removeSelectedSkill}
             onSkillSelect={profileSkills.selectSkill}
-            openRouterFavoriteModelIds={
-              openRouterModelControls.favoriteModelIds
-            }
-            openRouterModelGroups={openRouterModelControls.modelGroups}
-            openRouterModelId={openRouterModelControls.selectedModelId}
-            openRouterModelLabel={openRouterModelControls.selectedModelLabel}
-            openRouterReasoning={openRouterModelControls.selectedReasoning}
-            openRouterReasoningLabel={
-              openRouterModelControls.selectedReasoningLabel
-            }
-            openRouterReasoningOptions={
-              openRouterModelControls.reasoningOptions
-            }
             profileSkills={profileSkills.profileSkills}
             registerFocusComposerTextArea={registerFocusComposerTextArea}
             selectedSkillIds={profileSkills.selectedSkillIds}
             selectedSkills={profileSkills.selectedSkills}
-            showOpenRouterControls={isArtificialIntelligenceAssistant}
             socialModuleChatId={props.socialModuleChat.id}
             socialModuleProfileId={props.socialModuleProfile.id}
             socialModuleThreadId={props.socialModuleThreadId}
@@ -355,53 +451,20 @@ export function Component(props: IComponentPropsExtended) {
             }
             threadMessagesCache={threadMessagesCache}
           />
-        </div>
-        {profileSidebar.isSidebarOpen &&
-        profileSidebar.selectedProfile &&
-        !profileSidebar.isMobileSheetOpen ? (
-          <aside className="hidden min-h-0 w-96 shrink-0 border-l border-slate-200 2xl:block">
-            <ProfileSidebarPanel
-              hasKnowledgeSourcesError={profileSidebar.hasKnowledgeSourcesError}
-              isKnowledgeSourcesLoading={
-                profileSidebar.isKnowledgeSourcesLoading
-              }
-              isSkillsLoading={profileSidebar.isSkillsLoading}
-              knowledgeSources={profileSidebar.knowledgeSources}
+        }
+        context={
+          showThreadContext ? (
+            <ThreadContext
+              {...threadScope}
+              key={threadId}
+              isCustomerWork={isCustomerWork}
+              work={work}
+              products={products}
               language={props.language}
-              onKnowledgeSourceCreate={
-                profileSidebar.canManageSelectedProfile
-                  ? openSidebarKnowledgeSourceCreateDialog
-                  : undefined
-              }
-              onKnowledgeSourceSelect={openKnowledgeSourceEditDialog}
-              onMcpServersEdit={
-                profileSidebar.canManageSelectedProfile
-                  ? openMcpServersDialog
-                  : undefined
-              }
-              onProfileEdit={
-                profileSidebar.canManageSelectedProfile
-                  ? openProfileEditDialog
-                  : undefined
-              }
-              onSkillCreate={
-                profileSidebar.canManageSelectedProfile
-                  ? openSidebarSkillCreateDialog
-                  : undefined
-              }
-              onSkillEdit={
-                profileSidebar.canManageSelectedProfile
-                  ? openSkillEditDialog
-                  : undefined
-              }
-              onClose={profileSidebar.closeProfile}
-              profile={profileSidebar.selectedProfile}
-              selectedKnowledgeSource={profileSidebar.selectedKnowledgeSource}
-              skills={profileSidebar.skills}
             />
-          </aside>
-        ) : null}
-      </div>
+          ) : undefined
+        }
+      />
     </div>
   );
 }

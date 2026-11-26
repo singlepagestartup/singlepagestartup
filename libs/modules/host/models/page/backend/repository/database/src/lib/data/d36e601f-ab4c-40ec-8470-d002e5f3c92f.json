@@ -1,0 +1,47 @@
+{
+  "metadata": {
+    "seo": {
+      "title": {
+        "en": "CRM Store Directory — SinglePageStartup",
+        "ru": "Магазины CRM — SinglePageStartup"
+      },
+      "description": {
+        "en": "Choose a store to open its CRM workspace.",
+        "ru": "Выберите магазин, чтобы открыть его CRM."
+      }
+    },
+    "seoDisplay": {
+      "twitterTitle": {
+        "en": "CRM Store Directory — SinglePageStartup",
+        "ru": "Магазины CRM — SinglePageStartup"
+      },
+      "opengraphTitle": {
+        "en": "CRM Store Directory — SinglePageStartup",
+        "ru": "Магазины CRM — SinglePageStartup"
+      },
+      "opengraphLocale": {
+        "en": "en_US",
+        "ru": "ru_RU"
+      },
+      "twitterDescription": {
+        "en": "Choose a store to open its CRM workspace.",
+        "ru": "Выберите магазин, чтобы открыть его CRM."
+      },
+      "opengraphDescription": {
+        "en": "Choose a store to open its CRM workspace.",
+        "ru": "Выберите магазин, чтобы открыть его CRM."
+      }
+    }
+  },
+  "id": "d36e601f-ab4c-40ec-8470-d002e5f3c92f",
+  "title": "CRM Store Directory",
+  "url": "/crm/workspace",
+  "slug": "crm-workspace-workspace",
+  "description": "Choose a store to open its CRM workspace.",
+  "createdAt": "2026-11-19T08:58:57.914Z",
+  "updatedAt": "2026-11-22T19:16:21.928Z",
+  "variant": "noindex",
+  "className": null,
+  "language": "en",
+  "adminTitle": "CRM Workspace"
+}

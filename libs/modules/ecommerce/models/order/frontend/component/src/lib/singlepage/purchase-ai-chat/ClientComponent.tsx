@@ -2,16 +2,10 @@
 import { internationalization } from "@sps/shared-configuration";
 import { memo } from "react";
 import Link from "next/link";
-import { Component as OrdersToFileStorageModuleFiles } from "@sps/ecommerce/relations/orders-to-file-storage-module-files/frontend/component";
-import { Component as FileStorageModuleFile } from "@sps/file-storage/models/file/frontend/component";
-import { Icon } from "@sps/ui-adapter";
-import {
-  NEXT_PUBLIC_API_SERVICE_URL,
-  saveLanguageContext,
-} from "@sps/shared-utils";
+import { saveLanguageContext } from "@sps/shared-utils";
 import { cn } from "@sps/shared-frontend-client-utils";
 import type { IPurchaseCharge } from "@sps/ecommerce/models/order/sdk/model";
-import type { IComponentPropsExtended, IReceiptProps } from "./interface";
+import type { IComponentPropsExtended } from "./interface";
 
 const statuses: Record<string, { ru: string; en: string; color: string }> = {
   new: {
@@ -92,27 +86,6 @@ const invoiceStatuses: Record<string, { ru: string; en: string }> = {
   uncollectible: { ru: "Не удалось взыскать оплату", en: "Uncollectible" },
   void: { ru: "Аннулирован", en: "Void" },
 };
-
-function Receipt({ file, language }: IReceiptProps) {
-  const path = file?.file?.trim();
-  if (!path) return null;
-  const external = /^https?:\/\//i.test(path);
-  if (!external && (!path.startsWith("/") || path.startsWith("//")))
-    return null;
-  const href = external
-    ? path
-    : `${NEXT_PUBLIC_API_SERVICE_URL}${path.startsWith("/public/") ? "" : "/public"}${path}`;
-  return (
-    <a
-      className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-border px-4 text-sm font-medium hover:bg-muted"
-      href={href}
-      target="_blank"
-      rel="noopener noreferrer"
-    >
-      <Icon name="file-text" /> {language === "ru" ? "Чек" : "Receipt"}
-    </a>
-  );
-}
 
 function orderPurchaseCharges(charges: IPurchaseCharge[]) {
   const products = charges
@@ -279,64 +252,6 @@ export const Component = memo(function Component(
           >
             {ru ? "Перейти к оплате" : "Continue to payment"}
           </a>
-        )}
-        {props.purchaseDetails || props.dataSource === "props" ? (
-          <Receipt
-            language={language}
-            file={props.purchaseDetails?.receipts.find((receipt) =>
-              receipt.file?.trim(),
-            )}
-          />
-        ) : (
-          <OrdersToFileStorageModuleFiles
-            isServer={false}
-            variant="find"
-            apiProps={{
-              params: {
-                filters: {
-                  and: [
-                    { column: "orderId", method: "eq", value: props.data.id },
-                    {
-                      column: "variant",
-                      method: "eq",
-                      value: "receipt-default",
-                    },
-                  ],
-                },
-              },
-            }}
-          >
-            {({ data: ordersToFileStorageModuleFiles }) =>
-              ordersToFileStorageModuleFiles?.length ? (
-                <FileStorageModuleFile
-                  isServer={false}
-                  variant="find"
-                  apiProps={{
-                    params: {
-                      filters: {
-                        and: [
-                          {
-                            column: "id",
-                            method: "eq",
-                            value:
-                              ordersToFileStorageModuleFiles[0]
-                                .fileStorageModuleFileId,
-                          },
-                        ],
-                      },
-                    },
-                  }}
-                >
-                  {({ data: fileStorageModuleFiles }) => (
-                    <Receipt
-                      language={language}
-                      file={fileStorageModuleFiles?.[0]}
-                    />
-                  )}
-                </FileStorageModuleFile>
-              ) : null
-            }
-          </OrdersToFileStorageModuleFiles>
         )}
         {props.actions}
       </div>

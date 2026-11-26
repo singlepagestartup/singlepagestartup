@@ -13,6 +13,8 @@ export const variant = "cart-card-default" as const;
 export interface IComponentProps extends IParentProps<IModel, typeof variant> {
   language: string;
   cartDetails: ICartDetails | undefined;
+  headerSlot?: ReactNode;
+  priceLabel?: string;
   quantitySlots?: Record<string, ReactNode>;
   selectionSlots?: Record<string, ReactNode>;
   currencySlot?: ReactNode;

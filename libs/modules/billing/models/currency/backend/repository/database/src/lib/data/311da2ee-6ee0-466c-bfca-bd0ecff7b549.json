@@ -4,6 +4,7 @@
   "updatedAt": "2025-12-13T17:19:55.254Z",
   "variant": "default",
   "isDefault": true,
+  "minorUnitDigits": null,
   "symbol": "₽",
   "title": "Российский Рубль",
   "adminTitle": "leading green crow",

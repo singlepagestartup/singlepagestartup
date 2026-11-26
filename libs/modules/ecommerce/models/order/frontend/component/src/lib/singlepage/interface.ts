@@ -1,3 +1,4 @@
+import type { IComponentProps as IStoreListRowProps } from "./store-list-row/interface";
 import { IComponentProps as IHiddenComponentProps } from "@sps/shared-frontend-components/singlepage/hidden/interface";
 import type { IComponentProps as IPurchaseAiChat } from "./purchase-ai-chat/interface";
 import { IComponentProps as IOrdersToProductsQuantityDefaultComponentProps } from "./orders-to-products/quantity/default/interface";
@@ -19,6 +20,7 @@ import type { IComponentProps as ICartCardDefaultProps } from "./cart-card-defau
 import { IComponentProps as ICartDefaultComponentProps } from "./cart-default/interface";
 import { IComponentProps as IFormFieldDefaultComponentProps } from "./form-field-default/interface";
 export type IComponentProps =
+  | IStoreListRowProps
   | IHiddenComponentProps
   | IPurchaseAiChat
   | IOrdersToProductsQuantityDefaultComponentProps

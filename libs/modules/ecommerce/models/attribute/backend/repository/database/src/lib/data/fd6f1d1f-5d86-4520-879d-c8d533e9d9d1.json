@@ -1,0 +1,15 @@
+{
+  "id": "fd6f1d1f-5d86-4520-879d-c8d533e9d9d1",
+  "createdAt": "2026-11-20T10:08:33.807Z",
+  "updatedAt": "2026-11-20T10:08:33.807Z",
+  "variant": "default",
+  "number": null,
+  "boolean": null,
+  "date": null,
+  "datetime": null,
+  "string": {
+    "en": "1"
+  },
+  "adminTitle": "formula_version",
+  "slug": "shaggy-indigo-dove-4207"
+}

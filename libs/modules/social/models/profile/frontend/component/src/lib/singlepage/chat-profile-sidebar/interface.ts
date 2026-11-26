@@ -1,6 +1,9 @@
 import type { IComponentProps as IParentComponentProps } from "@sps/shared-frontend-components/singlepage/default/interface";
 export { type IModel } from "@sps/social/models/profile/sdk/model";
-import { IModel } from "@sps/social/models/profile/sdk/model";
+import type {
+  IModel,
+  IProfileAvatar,
+} from "@sps/social/models/profile/sdk/model";
 import { IModel as IKnowledgeModuleSource } from "@sps/knowledge/models/source/sdk/model";
 import { IModel as ISocialModuleSkill } from "@sps/social/models/skill/sdk/model";
 import { ISpsComponentBase } from "@sps/ui-adapter";
@@ -12,7 +15,11 @@ export interface IClientComponentProps extends Pick<
   "className" | "isServer"
 > {
   data: IModel;
+  avatar?: IProfileAvatar | null;
+  displayName?: string;
   language: string;
+  profileCaption?: string;
+  summaryOnly?: boolean;
   skills?: ISocialModuleSkill[];
   knowledgeSources?: IKnowledgeModuleSource[];
   selectedKnowledgeSource?: IKnowledgeModuleSource | null;

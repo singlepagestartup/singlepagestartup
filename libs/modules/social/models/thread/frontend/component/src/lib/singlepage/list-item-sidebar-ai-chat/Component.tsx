@@ -12,6 +12,12 @@ export function Component(props: IComponentPropsExtended) {
       href={props.href}
       selected={props.selected}
       topic={props.topic}
+      title={props.title}
+      activityAt={props.activityAt}
+      unreadCount={props.unreadCount}
+      preview={props.preview}
+      previewAuthor={props.previewAuthor}
+      onNavigate={props.onNavigate}
     />
   );
 }

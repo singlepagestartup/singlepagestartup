@@ -60,6 +60,28 @@ describe("Given: thread-scoped social action create", () => {
     mockSocialModuleProfilesToActionsCreate.mockResolvedValue({});
   });
 
+  it.each([
+    [{ variant: "typing" }, "Use the thread typing endpoint"],
+    [
+      { variant: "ai-execution", payload: { phase: "reply_generation" } },
+      "Only the reply worker",
+    ],
+  ] as const)("reserves server-managed actions %j", async (data, error) => {
+    const handler = new Handler({} as never);
+    const context = {
+      req: {
+        param: () => "id",
+        parseBody: async () => ({
+          data: JSON.stringify(data),
+        }),
+      },
+    };
+    await expect(handler.execute(context as never, jest.fn())).rejects.toThrow(
+      error,
+    );
+    expect(mockSocialModuleActionCreate).not.toHaveBeenCalled();
+  });
+
   /**
    * BDD Scenario: action create uses raw query thread id.
    *

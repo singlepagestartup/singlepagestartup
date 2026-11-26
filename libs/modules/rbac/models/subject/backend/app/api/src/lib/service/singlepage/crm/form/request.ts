@@ -44,18 +44,35 @@ export class Service {
     });
     if (!form) throw new Error("Not Found error. CRM Form not found");
     const normalized = await this.normalize(form, submission);
-    const recipients = await this.notificationRecipients();
-    const saved = await this.service.modules.crm.form.submit({
-      key,
-      digest,
-      formId: form.id,
-      payload: {
-        subjectId: entity.id,
+    const intake = await this.service.modules.crm.funnel.resolveFormIntake(
+      form.id,
+    );
+    const recipients = await this.notificationRecipients(intake?.storeId);
+    const openTask = intake
+      ? (requestId: string) =>
+          this.service.customerWork.openFromForm({
+            customerId: entity.id,
+            storeId: intake.storeId,
+            funnelId: intake.funnel.id,
+            formId: form.id,
+            requestId,
+            title: form.title?.ru ?? form.title?.en ?? form.adminTitle,
+          })
+      : undefined;
+    const saved = await this.service.modules.crm.form.submit(
+      {
+        key,
+        digest,
         formId: form.id,
-        submissionId: submission.submissionId,
-        form: normalized,
+        payload: {
+          subjectId: entity.id,
+          formId: form.id,
+          submissionId: submission.submissionId,
+          form: normalized,
+        },
       },
-    });
+      openTask,
+    );
     if (!saved.created) return this.result(entity, saved.request, true);
     let status: TNotificationStatus = "sent";
     for (const { subjectId, template } of recipients) {
@@ -120,7 +137,7 @@ export class Service {
       },
     };
   }
-  private async notificationRecipients() {
+  private async notificationRecipients(storeId?: string) {
     const topics = await this.service.modules.notification.topic.find({
       params: {
         filters: {
@@ -147,6 +164,33 @@ export class Service {
       throw new Error(
         "Configuration error. CRM notification templates not found",
       );
+    if (storeId) {
+      const memberships =
+        await this.service.module.subjectsToEcommerceModuleStores.find({
+          params: {
+            filters: {
+              and: [
+                {
+                  column: "ecommerceModuleStoreId",
+                  method: "eq",
+                  value: storeId,
+                },
+                {
+                  column: "variant",
+                  method: "inArray",
+                  value: ["owner", "crm-manager", "crm-manager-finance"],
+                },
+              ],
+            },
+          },
+        });
+      const subjects = [
+        ...new Set(memberships.map(({ subjectId }) => subjectId)),
+      ];
+      return templates.flatMap((template) =>
+        subjects.map((subjectId) => ({ subjectId, template })),
+      );
+    }
     const roles = await this.service.module.role.find({
       params: {
         filters: { and: [{ column: "slug", method: "eq", value: "admin" }] },

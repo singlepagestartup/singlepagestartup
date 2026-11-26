@@ -38,7 +38,7 @@ address itself. Open Graph uses Host's fixed local favicon.
 ## Variants
 
 - `default`: renders image/video output based on MIME type.
-- `attachment-ai-chat`: compact card that opens a centered file preview dialog.
+- `attachment-ai-chat` shows an attachment in a message, file list or preview card.
 - `find`: data-fetch wrapper for querying files.
 - `admin-form`: admin create/edit form for file metadata.
 - `admin-select-input`: admin select input for choosing a file.
@@ -53,7 +53,7 @@ The effective File service exposes stored-byte reads, path imports and transacti
 for Knowledge and message attachments. A parent with an authorized File result
 passes `dataSource="props"`; the card does not repeat the metadata query or
 mount another Provider. The shared reader passes the loaded File to the
-`index.tsx` renderer, which selects only the File, variant and language for
+`index.tsx` renderer, which selects the File, variant, language and layout for
 `client.tsx`. The client reader composes a lazy JSX text-reader slot and passes
 it through `Component.tsx` to `ClientComponent.tsx`. Views do not import the
 local reader; SDK bindings and request options stay above the client boundary.
@@ -66,12 +66,18 @@ without observers. The original bytes do not enter the global action debug
 snapshot. Both declared and streamed text sizes are limited to 2 MiB.
 
 `fileApi.download({ src, signal? })` retrieves public original bytes without
-credentials for PDF rendering and the Download action. Preview does not widen
-File metadata access. PDF pages render in the browser through the app's lazy
-PDF.js bundle; images support zoom, Markdown has formatted/source modes, and
-text formats use a scrolling plain-text view. The Social message composer also
-accepts HTML and HTM. Knowledge source uploads keep their own format list.
-Legacy SVG attachments keep their noninteractive card.
+credentials for PDF rendering and downloads. Message and Files sidebar layouts
+show image thumbnails and open a larger image with zoom. Audio and video
+attachments have native playback controls and can open in a larger viewer.
+PDF.js renders PDF pages in the browser. Markdown offers formatted and source
+views. Text files open in a scrolling text view. The viewer offers a download
+for SVG, scripts and unrecognized formats.
+
+Private work and employee chats use the same viewer. RBAC supplies a scoped
+byte reader for the selected subject, thread, message and attachment. Protected
+media uses a temporary browser URL after the viewer checks the file header.
+The message and sidebar can also display older attachments with just an ID and
+filename.
 
 Opening an HTML attachment reads up to 2 MiB into an isolated document.
 Inline JavaScript runs there. Scripts and stylesheets may load from
@@ -246,3 +252,22 @@ docker run --rm --read-only --tmpfs /tmp \
 The fixture adds its generated CA to the trust store for this container run.
 The tests verify that downloads reject a hostname mismatch and an untrusted
 certificate before sending HTTP data.
+
+## Private content
+
+Protected uploads have a File ID and checksum in PostgreSQL. Their bytes live in
+`FILE_STORAGE_PRIVATE_DIRECTORY`, an absolute directory outside public storage.
+The default is `~/.local/share/singlepagestartup/private-files`. Mount the same
+persistent directory on the API, workers and migration process, and back it up
+alongside PostgreSQL. The File service verifies size and SHA-256 on reads.
+
+The authenticated Subject can download its own upload with
+`GET /api/rbac/subjects/{subjectId}/file-storage-module/files/{fileId}/content`.
+Other Subjects, including staff and agents, need a role with a permission for
+that exact path and HTTP method. Configure `HEAD` separately. Order and thread
+artifact routes continue to check access to the purchase or message.
+
+Stop old writers before running `api:db:migrate` during the upgrade. The
+migration copies historical bytes to the private directory, verifies each
+checksum, preserves File IDs and switches the receipt foreign key. The previous
+table stays in PostgreSQL as `archived_sps_fs_private_file` for recovery.

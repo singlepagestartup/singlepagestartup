@@ -309,6 +309,9 @@
         "commands": [
           {
             "command": "bun run ./src/lib/migrate.ts"
+          },
+          {
+            "command": "bun run ../../../../../../../../apps/api/src/db/order-fulfillment-cutover.ts orders"
           }
         ]
       }
@@ -848,7 +851,13 @@
         "cwd": "libs/modules/ecommerce/relations/orders-to-file-storage-module-files/backend/repository/database",
         "commands": [
           {
+            "command": "bun run ../../../../../../../../apps/api/src/db/order-fulfillment-cutover.ts files"
+          },
+          {
             "command": "bun run ./src/lib/migrate.ts"
+          },
+          {
+            "command": "bun run ../../../../../../../../apps/api/src/db/order-fulfillment-cutover.ts retire-files"
           }
         ]
       }

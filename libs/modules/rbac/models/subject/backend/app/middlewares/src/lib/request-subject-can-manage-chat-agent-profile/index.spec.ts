@@ -10,6 +10,7 @@ function createService() {
     socialModuleChatLifecycleAssertSubjectOwnsChat: jest.fn(async () => true),
     modules: {
       social: {
+        chat: { findById: jest.fn(async () => ({ variant: "default" })) },
         profile: {
           findById: jest.fn(async () => ({
             id: targetProfileId,
@@ -35,6 +36,9 @@ function createService() {
       },
     },
     module: {
+      subjectsToEcommerceModuleStores: {
+        find: jest.fn(async () => [] as { id: string }[]),
+      },
       subjectsToSocialModuleProfiles: {
         find: jest.fn(async (props: any) => {
           const filters = props?.params?.filters?.and || [];
@@ -63,6 +67,22 @@ function createService() {
 }
 
 describe("Given: RBAC authorizes management of a chat AI profile", () => {
+  it("rejects a customer chat as a way to edit an employee's knowledge", async () => {
+    const service = createService();
+    service.module.subjectsToEcommerceModuleStores.find.mockResolvedValue([
+      { id: "store-grant" },
+    ]);
+    const app = new Hono();
+    app.get(
+      "/subjects/:id/profiles/:socialModuleProfileId/chats/:socialModuleChatId/profiles/:targetSocialModuleProfileId/knowledge/sources",
+      new Middleware(service as any).init(),
+      (c) => c.json({ ok: true }),
+    );
+    const response = await app.request(
+      "/subjects/subject-id/profiles/requester-profile-id/chats/chat-id/profiles/target-profile-id/knowledge/sources",
+    );
+    expect(response.status).toBe(404);
+  });
   /**
    * BDD Scenario
    * Given: the requester owns its profile and chat, but that profile is not a

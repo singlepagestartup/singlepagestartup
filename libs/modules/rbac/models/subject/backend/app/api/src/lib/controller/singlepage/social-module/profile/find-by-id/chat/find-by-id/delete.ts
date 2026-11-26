@@ -3,7 +3,6 @@ import { Context } from "hono";
 import { HTTPException } from "hono/http-exception";
 import { Service } from "../../../../../../../service";
 import { getHttpErrorType } from "@sps/backend-utils";
-import { api as socialModuleChatApi } from "@sps/social/models/chat/sdk/server";
 import { api as socialModuleActionApi } from "@sps/social/models/action/sdk/server";
 import { api as socialModuleMessageApi } from "@sps/social/models/message/sdk/server";
 import { api as socialModuleThreadApi } from "@sps/social/models/thread/sdk/server";
@@ -260,14 +259,7 @@ export class Handler {
         socialModuleChatId,
       });
 
-      await socialModuleChatApi.delete({
-        id: socialModuleChatId,
-        options: {
-          headers: {
-            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-          },
-        },
-      });
+      await this.service.socialChatSettings.deleteChat(socialModuleChatId);
 
       return c.json({
         data: socialModuleChat,

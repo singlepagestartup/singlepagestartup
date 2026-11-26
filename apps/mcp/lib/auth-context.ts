@@ -31,8 +31,11 @@ function mergeHeaders(
   headers: Headers,
   context: IMcpRequestAuthContext | undefined,
 ) {
-  if (context?.authorization && !headers.has("authorization")) {
+  if (context?.authorization) {
+    headers.delete("x-rbac-secret-key");
+    headers.delete("cookie");
     headers.set("authorization", context.authorization);
+    return headers;
   }
 
   if (context?.rbacSecretKey && !headers.has("x-rbac-secret-key")) {

@@ -65,10 +65,9 @@ export {
 } from "./ai-chat-website";
 
 export * from "./ai-chat-service";
-export * from "./ai-chat-documents";
-export * from "./ai-chat-skill-templates";
 
 export * from "./open-router-models";
+export * from "./provider-models";
 export * from "./ai-chat-attachments";
 export * from "./file-preview";
 export * from "./ai-context";
@@ -76,7 +75,10 @@ export * from "./ai-context";
 export {
   PRODUCT_TECHNICAL_ATTRIBUTE_SLUGS,
   REGISTRATION_GRANT_VARIANT,
+  SINGLE_UNIT_PER_ORDER_MESSAGE,
+  STORE_PRODUCT_CREATE_MAX_IMAGES,
 } from "./ecommerce";
+export { CUSTOMER_WORK_OFFER_CHOICE_REQUIRED } from "./ecommerce";
 
 export * from "./agent";
 

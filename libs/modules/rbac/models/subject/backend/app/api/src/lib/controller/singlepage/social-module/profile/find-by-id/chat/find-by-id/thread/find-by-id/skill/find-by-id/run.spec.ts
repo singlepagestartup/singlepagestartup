@@ -185,13 +185,16 @@ describe("Given: rbac social skill transcript run", () => {
   beforeEach(() => {
     jest.clearAllMocks();
 
-    mockKnowledgeLearnContent.mockResolvedValue({
-      source: {
-        id: "knowledge-document-1",
-      },
-      index: {
-        createdChunks: 2,
-      },
+    mockKnowledgeLearnContent.mockImplementation(async ({ onSourceSaved }) => {
+      await onSourceSaved("knowledge-document-1");
+      return {
+        source: {
+          id: "knowledge-document-1",
+        },
+        index: {
+          createdChunks: 2,
+        },
+      };
     });
     mockLlmComplete.mockResolvedValue({
       answer: "Generated description",

@@ -8,6 +8,8 @@ export interface IComponentProps extends ISpsComponentBase {
   language: string;
   socialModuleChatId: string;
   socialModuleThreadId?: string;
+  defaultThreadId?: string;
+  getThreadHref?: (threadId: string) => string;
   /** authenticationMe supplies the current Subject in the local reader. */
   apiProps?: IAuthenticationProps["apiProps"];
 }

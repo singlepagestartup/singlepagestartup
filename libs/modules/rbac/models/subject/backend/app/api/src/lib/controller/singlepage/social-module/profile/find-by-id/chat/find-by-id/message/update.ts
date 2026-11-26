@@ -13,6 +13,7 @@ import { api as fileStorageModuleFileApi } from "@sps/file-storage/models/file/s
 import { getHttpErrorType, logger } from "@sps/backend-utils";
 import { IModel as ISocialModuleMessage } from "@sps/social/models/message/sdk/model";
 import { getAudioTranscriptionMetadata } from "./audio-transcription";
+import { Service as ChatMessages } from "../../../../../../../../service/startup/social-module/chat/messages";
 
 export class Handler {
   service: Service;
@@ -54,6 +55,11 @@ export class Handler {
       if (!socialModuleMessageId) {
         throw new Error("Validation error. No socialModuleMessageId provided");
       }
+      await new ChatMessages(this.service).editable({
+        chatId: socialModuleChatId,
+        messageId: socialModuleMessageId,
+        profileId: socialModuleProfileId,
+      });
 
       const formData = await c.req.formData();
       const dataField = formData.get("data");
@@ -79,6 +85,14 @@ export class Handler {
       } catch (error) {
         throw new Error(
           "Validation error. Invalid JSON in body['data']. Got: " + dataField,
+        );
+      }
+      if (
+        parsedBody.data?.variant === "customer-work" ||
+        parsedBody.data?.workReplyKey
+      ) {
+        throw new Error(
+          "Forbidden error. Work conversation messages use the assigned workflow",
         );
       }
 

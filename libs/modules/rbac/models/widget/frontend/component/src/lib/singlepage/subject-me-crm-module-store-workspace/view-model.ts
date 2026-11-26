@@ -1,0 +1,205 @@
+import { storeSectionHref } from "../subject/me/ecommerce-module/store/paths";
+import type {
+  IFunnelStage,
+  TEvidenceKind,
+} from "@sps/crm/models/funnel/sdk/model";
+import type {
+  ICrmWorkspaceParticipant,
+  ICrmWorkspaceTask,
+} from "@sps/rbac/models/subject/sdk/model";
+import type { TaskActions } from "./primitives";
+
+export type TaskState = "active" | "waiting" | "completed" | "closed";
+
+export interface RequestMove {
+  taskId: string;
+  toStageId?: string;
+}
+
+export interface WorkflowPerson {
+  id: string;
+  href?: string;
+  name: string;
+  initials: string;
+  language: string;
+  profile?: ICrmWorkspaceTask["assigneeProfile"];
+  kind: "human" | "agent";
+}
+
+export interface WorkflowStage {
+  id: string;
+  title: string;
+  archived?: boolean;
+}
+
+export interface WorkflowTask {
+  id: string;
+  reportId: string;
+  href: string;
+  stageId: string;
+  label: string;
+  customer: string;
+  assignee?: string;
+  state: TaskState;
+  waitingFor?: string;
+  dueAt?: string;
+  updatedAt: string;
+  order?: { id: string };
+  canMove: boolean;
+}
+
+export interface ITaskCollectionProps extends TaskActions {
+  stages: WorkflowStage[];
+  tasks: WorkflowTask[];
+  people: WorkflowPerson[];
+  pendingIds?: ReadonlySet<string>;
+  canAssign: boolean;
+}
+
+export const taskStateLabels: Record<TaskState, string> = {
+  active: "В работе",
+  waiting: "Ожидание",
+  completed: "Выполнено",
+  closed: "Закрыто без результата",
+};
+
+export const evidenceLabels: Record<TEvidenceKind, string> = {
+  manual: "Запись менеджера",
+  message: "Сообщение клиента",
+  "model-result": "Результат исполнителя",
+  "result-accepted": "Клиент принял результат",
+  payment: "Платёж подтверждён",
+  delivery: "Доставка подтверждена",
+  "file-access": "Доступ к файлу открыт",
+};
+
+export function assigneeOptionGroups(people: ICrmWorkspaceParticipant[]) {
+  return [
+    {
+      label: "ИИ-сотрудники",
+      options: people
+        .filter(({ kind }) => kind === "ai")
+        .map(({ id, name }) => ({ value: id, label: name })),
+    },
+    {
+      label: "Другие исполнители",
+      options: people
+        .filter(({ kind }) => kind === "human")
+        .map(({ id, name }) => ({ value: id, label: name })),
+    },
+  ];
+}
+
+export function timestampLabel(value: string, withYear = false) {
+  return new Intl.DateTimeFormat("ru-RU", {
+    day: "numeric",
+    month: "short",
+    ...(withYear ? { year: "numeric" } : {}),
+    hour: "2-digit",
+    minute: "2-digit",
+  }).format(new Date(value));
+}
+
+export function canUseManualActions(stage?: IFunnelStage) {
+  return !stage?.waiting || stage.waiting.expectedEvent === "message";
+}
+
+export function manualActions(stage?: IFunnelStage) {
+  if (!stage || !canUseManualActions(stage)) return [];
+  return stage.actions.filter(
+    (action) =>
+      action.nextStageId &&
+      action.nextStageId !== stage.id &&
+      action.actors.includes("manager") &&
+      action.evidence.includes("manual"),
+  );
+}
+
+const unavailableStage = "Этап недоступен";
+
+export function getStageName(stages: IFunnelStage[], stageId: string) {
+  return stages.find((stage) => stage.id === stageId)?.name ?? unavailableStage;
+}
+
+export function boardStages(
+  stages: IFunnelStage[],
+  tasks: WorkflowTask[],
+): WorkflowStage[] {
+  const columns = new Map<string, WorkflowStage>(
+    stages.map((stage) => [
+      stage.id,
+      { id: stage.id, title: stage.name, archived: stage.archived },
+    ]),
+  );
+  for (const { stageId } of tasks) {
+    if (!columns.has(stageId)) {
+      columns.set(stageId, {
+        id: stageId,
+        title: unavailableStage,
+        archived: true,
+      });
+    }
+  }
+  return [...columns.values()];
+}
+
+export function taskView(
+  task: ICrmWorkspaceTask,
+  stages: IFunnelStage[],
+  href: string,
+): WorkflowTask {
+  const stage = stages.find((stage) => stage.id === task.stageId);
+  const state = task.outcome === "completed" ? "completed" : task.status;
+  return {
+    id: task.id,
+    reportId: task.id.slice(0, 8),
+    href,
+    stageId: task.stageId,
+    label: task.label,
+    customer: task.customerName,
+    assignee: task.assigneeId ?? undefined,
+    state,
+    waitingFor: task.expectedEvent
+      ? evidenceLabels[task.expectedEvent]
+      : undefined,
+    dueAt: task.deadlineAt ?? undefined,
+    updatedAt: task.updatedAt,
+    order: task.orderId ? { id: task.orderId } : undefined,
+    canMove: task.status !== "closed" && manualActions(stage).length > 0,
+  };
+}
+
+export function taskHref(language: string, slug: string, id: string) {
+  return `${storeSectionHref(language, slug, "tasks")}/tasks/${encodeURIComponent(id)}`;
+}
+
+export function storeHref(language: string, slug: string) {
+  return storeSectionHref(language, slug, "overview");
+}
+
+export function workspaceHref(language: string, slug?: string) {
+  return slug
+    ? storeSectionHref(language, slug, "tasks")
+    : `/${language}/crm/workspace`;
+}
+
+export function funnelListHref(language: string, storeSlug: string) {
+  return storeSectionHref(language, storeSlug, "funnels");
+}
+
+export function funnelCreateHref(language: string, storeSlug: string) {
+  return `${funnelListHref(language, storeSlug)}/new`;
+}
+
+export function funnelEditHref(
+  language: string,
+  storeSlug: string,
+  funnelSlug: string,
+) {
+  return `${funnelListHref(language, storeSlug)}/${encodeURIComponent(funnelSlug)}`;
+}
+
+export function hasStatus(error: unknown, ...statuses: number[]) {
+  const status = (error as { status?: number } | null)?.status;
+  return status !== undefined && statuses.includes(status);
+}

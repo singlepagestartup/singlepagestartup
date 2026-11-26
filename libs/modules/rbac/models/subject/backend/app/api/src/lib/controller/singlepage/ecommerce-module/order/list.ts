@@ -1,13 +1,12 @@
+import { STORE_TEST_ORDER_VARIANT } from "@sps/ecommerce/models/order/sdk/model";
 import { RBAC_JWT_SECRET, RBAC_SECRET_KEY } from "@sps/shared-utils";
 import { Context } from "hono";
 import { HTTPException } from "hono/http-exception";
 import { authorization, getHttpErrorType, verifyJwt } from "@sps/backend-utils";
 import { Service } from "../../../../service";
 import { withConsistencySnapshot } from "@sps/shared-backend-api";
-import type {
-  IModel as IEcommerceModuleOrder,
-  ICartDetails,
-} from "@sps/ecommerce/models/order/sdk/model";
+import type { IModel as IEcommerceModuleOrder } from "@sps/ecommerce/models/order/sdk/model";
+import type { ISubjectCartDetails } from "@sps/rbac/models/subject/sdk/model";
 
 export class Handler {
   service: Service;
@@ -97,12 +96,14 @@ export class Handler {
 
         // An OR filter must never widen the result beyond the subject's orders.
         const ownedIds = new Set(ownedOrderIds);
-        const ownedOrders = (orders ?? []).filter((order) =>
-          ownedIds.has(order.id),
+        const ownedOrders = (orders ?? []).filter(
+          (order) =>
+            ownedIds.has(order.id) &&
+            order.variant !== STORE_TEST_ORDER_VARIANT,
         );
         if (includeCartDetails) {
           const carts: (IEcommerceModuleOrder & {
-            cartDetails: ICartDetails & { storeIds: string[] };
+            cartDetails: ISubjectCartDetails;
           })[] = [];
           for (const order of ownedOrders) {
             // Defense against OR filters: private cart expansion never includes historical orders.

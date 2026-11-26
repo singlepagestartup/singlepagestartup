@@ -1,0 +1,2 @@
+ALTER TABLE "sps_cm_funnel" ALTER COLUMN "slug" SET NOT NULL;--> statement-breakpoint
+ALTER TABLE "sps_cm_funnel" ADD CONSTRAINT "cm_funnel_slug_format" CHECK (length("sps_cm_funnel"."slug") <= 200 AND "sps_cm_funnel"."slug" ~ '^[a-z0-9]+(-[a-z0-9]+)*$' AND "sps_cm_funnel"."slug" <> 'new');

@@ -2,30 +2,29 @@ const mockSourceFiles = jest.fn();
 const mockSetFiles = jest.fn();
 const mockRebuild = jest.fn();
 const mockCreateFile = jest.fn();
-const mockReanalyze = jest.fn();
+const mockDeleteFile = jest.fn();
 const mockSource = {
   id: "source",
   contentHash: "hash",
   indexedContentHash: "hash" as string | null,
 };
+const mockScope = {
+  sourceFiles: mockSourceFiles,
+  setFiles: mockSetFiles,
+  findSourceById: jest.fn(async () => mockSource),
+};
 jest.mock("@sps/knowledge/backend/app/api/src/lib/service", () => ({
   Service: jest.fn(() => ({
     rebuildFiles: mockRebuild,
     source: {
-      sourceFiles: mockSourceFiles,
-      setFiles: mockSetFiles,
-      findSourceById: jest.fn(async () => mockSource),
+      ...mockScope,
+      withTransaction: (operation: (scope: typeof mockScope) => unknown) =>
+        operation(mockScope),
     },
   })),
 }));
 jest.mock("@sps/file-storage/models/file/sdk/server", () => ({
-  api: { create: mockCreateFile },
-}));
-jest.mock("@sps/rbac/models/subject/sdk/server", () => ({
-  api: {
-    socialModuleProfileFindByIdChatFindByIdProfileFindByIdKnowledgeSourceFindByIdFilesUpdate:
-      mockReanalyze,
-  },
+  api: { create: mockCreateFile, delete: mockDeleteFile },
 }));
 /**
  * BDD Suite: Scoped Knowledge attachments.
@@ -54,13 +53,12 @@ function context(body: FormData) {
 beforeEach(() => {
   jest.clearAllMocks();
   mockSource.indexedContentHash = "hash";
-  mockReanalyze.mockResolvedValue({});
   mockSourceFiles.mockResolvedValue([
     { relation: { id: "first-link" }, file: { id: "first" } },
     { relation: { id: "second-link" }, file: { id: "second" } },
   ]);
   mockSetFiles.mockResolvedValue(undefined);
-  mockRebuild.mockResolvedValue(undefined);
+  mockRebuild.mockResolvedValue(mockSource);
 });
 it("rejects SVG uploads before persisting file or Source changes", async () => {
   const body = new FormData();
@@ -96,12 +94,11 @@ it("preserves uploaded text bytes, filename and MIME type across FormData runtim
     undefined,
   );
 });
-it("unlinks atomically and returns while the scoped background analysis is still running", async () => {
+it("returns the rebuilt Source when removing an attachment", async () => {
   const body = new FormData();
   body.set("removeFileId", "first");
   body.set("expectedContentHash", "hash");
   mockSource.indexedContentHash = null;
-  mockReanalyze.mockImplementationOnce(() => new Promise(() => {}));
   const result = (await new Handler().execute(context(body))) as any;
   expect(mockSetFiles).toHaveBeenCalledWith(
     "source",
@@ -110,28 +107,34 @@ it("unlinks atomically and returns while the scoped background analysis is still
     "hash",
   );
   expect(mockCreateFile).not.toHaveBeenCalled();
-  expect(mockRebuild).not.toHaveBeenCalled();
-  expect(mockReanalyze).toHaveBeenCalledWith(
-    expect.objectContaining({
-      id: "subject",
-      socialModuleProfileId: "requester",
-      socialModuleChatId: "chat",
-      targetSocialModuleProfileId: "assistant",
-      knowledgeModuleSourceId: "source",
-      data: { reanalyze: true },
-    }),
-  );
-  expect(result.data.analysisPending).toBe(true);
+  expect(mockRebuild).toHaveBeenCalledWith("source", mockScope);
+  expect(result.data.source).toBe(mockSource);
 });
-it("reports failed explicit reanalysis without pretending the index is ready", async () => {
+it("rejects failed explicit reanalysis", async () => {
   const body = new FormData();
   body.set("reanalyze", "true");
-  mockSource.indexedContentHash = null;
   mockRebuild.mockRejectedValueOnce(new Error("Rebuild unavailable"));
-  const result = (await new Handler().execute(context(body))) as any;
-  expect(result.data.processingError).toBe("Rebuild unavailable");
-  expect(result.data.analysisPending).toBe(false);
-  expect(mockReanalyze).not.toHaveBeenCalled();
+  await expect(new Handler().execute(context(body))).rejects.toThrow(
+    "Rebuild unavailable",
+  );
+});
+it("discards only new uploads if indexing fails", async () => {
+  const body = new FormData();
+  body.set(
+    "files",
+    new File(["New notes"], "notes.txt", { type: "text/plain" }),
+  );
+  mockCreateFile.mockResolvedValue({ id: "new-upload" });
+  mockRebuild.mockRejectedValueOnce(
+    Object.assign(new Error("Index unavailable"), { status: 503 }),
+  );
+  await expect(new Handler().execute(context(body))).rejects.toMatchObject({
+    status: 503,
+  });
+  expect(mockDeleteFile).toHaveBeenCalledTimes(1);
+  expect(mockDeleteFile).toHaveBeenCalledWith(
+    expect.objectContaining({ id: "new-upload" }),
+  );
 });
 it("rejects unattached files and prevents analysis after a stale Source conflict", async () => {
   const body = new FormData();

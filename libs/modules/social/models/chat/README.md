@@ -21,6 +21,10 @@ Telegram chats have a partial unique natural key on `sourceSystemId` when
 `variant = telegram`, preventing two internal chats from representing the same
 Telegram chat.
 
+## Chat settings
+
+The Social Chat settings dialog groups the title, description, cover, threads and participants. Chat covers use the `cover` variant of `chats-to-file-storage-module-files`. The profile-scoped detail returns the current `coverFileId`. Members read its bytes through the authenticated chat cover endpoint.
+
 ## Variants
 
 - `id-ai-chat`: server container for the selected Chat, with a Thread content slot.

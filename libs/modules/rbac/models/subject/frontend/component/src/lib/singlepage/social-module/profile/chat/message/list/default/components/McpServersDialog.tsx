@@ -9,19 +9,18 @@ import {
 } from "@sps/social/models/profile/sdk/model";
 import {
   Badge,
-  Button,
   Checkbox,
   Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
+  SettingsDialogContent,
+  SettingsDialogHeader,
+  settingsFormStyles,
   Label,
 } from "@sps/shared-ui-shadcn";
 import { Save, ServerCog } from "lucide-react";
 import { type FormEvent, useEffect, useState } from "react";
 
 interface McpServersDialogProps {
+  language?: string;
   isOpen: boolean;
   isSaving?: boolean;
   onOpenChange: (open: boolean) => void;
@@ -30,6 +29,7 @@ interface McpServersDialogProps {
 }
 
 export function McpServersDialog(props: McpServersDialogProps) {
+  const ru = props.language === "ru";
   const [configuredServerIds, setConfiguredServerIds] = useState<
     TSupportedMcpServerIdentifier[]
   >([]);
@@ -53,14 +53,16 @@ export function McpServersDialog(props: McpServersDialogProps) {
 
   return (
     <Dialog open={props.isOpen} onOpenChange={props.onOpenChange}>
-      <DialogContent className="z-[70] sm:max-w-lg">
-        <DialogHeader>
-          <DialogTitle>Edit MCP Servers</DialogTitle>
-          <DialogDescription>
-            Choose which MCP servers this AI profile may use in chat.
-          </DialogDescription>
-        </DialogHeader>
-        <form className="grid gap-4" onSubmit={handleSubmit}>
+      <SettingsDialogContent closeLabel={ru ? "Закрыть" : "Close"}>
+        <SettingsDialogHeader
+          title={ru ? "Настройки серверов MCP" : "Edit MCP Servers"}
+          description={
+            ru
+              ? "Выберите серверы MCP, которые ассистент может использовать в чате."
+              : "Choose which MCP servers this assistant can use in chat."
+          }
+        />
+        <form className="grid gap-6" onSubmit={handleSubmit}>
           <div className="space-y-2">
             {supportedMcpServerDescriptors.map((server) => {
               const inputId = `profile-mcp-server-${server.id}`;
@@ -69,10 +71,11 @@ export function McpServersDialog(props: McpServersDialogProps) {
               return (
                 <div
                   key={server.id}
-                  className="flex items-start gap-3 rounded-lg border border-slate-200 bg-white p-3"
+                  className="flex items-start gap-3 rounded-xl border border-border bg-card p-4"
                 >
                   <Checkbox
                     id={inputId}
+                    disabled={props.isSaving}
                     checked={isEnabled}
                     onCheckedChange={(checked) => {
                       setConfiguredServerIds((current) => {
@@ -84,14 +87,16 @@ export function McpServersDialog(props: McpServersDialogProps) {
                       });
                     }}
                   />
-                  <ServerCog className="mt-0.5 h-4 w-4 shrink-0 text-slate-400" />
+                  <ServerCog className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
                   <div className="min-w-0 flex-1 space-y-1">
                     <div className="flex flex-wrap items-center gap-2">
                       <Label htmlFor={inputId}>{server.title}</Label>
                       <Badge variant="outline">{server.id}</Badge>
                     </div>
-                    <p className="text-sm text-slate-500">
-                      {server.description}
+                    <p className="text-sm leading-6 text-muted-foreground">
+                      {ru && server.id === "singlepagestartup"
+                        ? "Локальный сервер MCP для этой установки SinglePageStartup."
+                        : server.description}
                     </p>
                   </div>
                 </div>
@@ -99,13 +104,23 @@ export function McpServersDialog(props: McpServersDialogProps) {
             })}
           </div>
           <div className="flex justify-end">
-            <Button type="submit" disabled={props.isSaving}>
-              <Save className="mr-2 h-4 w-4" />
-              Save
-            </Button>
+            <button
+              type="submit"
+              disabled={props.isSaving}
+              className={settingsFormStyles.primary}
+            >
+              <Save className="size-4" />
+              {props.isSaving
+                ? ru
+                  ? "Сохраняем…"
+                  : "Saving…"
+                : ru
+                  ? "Сохранить"
+                  : "Save"}
+            </button>
           </div>
         </form>
-      </DialogContent>
+      </SettingsDialogContent>
     </Dialog>
   );
 }

@@ -77,6 +77,7 @@ it("reads stored Markdown only on open, switches to source, closes and restores 
         isServer: false,
         variant: "attachment-ai-chat",
         dataSource: "props",
+        layout: "row",
         data: file,
       } as any)}
     />,
@@ -85,6 +86,7 @@ it("reads stored Markdown only on open, switches to source, closes and restores 
   expect(mockMetadata).not.toHaveBeenCalled();
   expect(mockProvider).not.toHaveBeenCalled();
   const trigger = screen.getByRole("button", { name: "Preview Brief.md" });
+  expect(within(trigger).getByText("MD")).toBeTruthy();
   trigger.focus();
   fireEvent.click(trigger);
   const dialog = screen.getByRole("dialog", { name: "Brief.md" });
@@ -192,13 +194,14 @@ it("renders PDF pages with zoom through the byte SDK without text or metadata re
   fireEvent.click(screen.getByRole("button", { name: "Zoom in" }));
   expect(screen.getByText("125%")).toBeTruthy();
   await waitFor(() => expect(screen.queryByRole("status")).toBeNull());
-  expect(screen.getByRole("link", { name: "Open original" })).toBeTruthy();
+  expect(screen.queryByRole("link", { name: "Open original" })).toBeNull();
+  expect(screen.getByRole("button", { name: "Download" })).toBeTruthy();
   expect(mockText).not.toHaveBeenCalled();
   expect(mockMetadata).not.toHaveBeenCalled();
 });
 
-it("opens images with zoom and keeps legacy SVG blocked", () => {
-  const view = render(
+it("opens images with zoom", () => {
+  render(
     <FileStorageFile
       {...({
         isServer: false,
@@ -220,17 +223,80 @@ it("opens images with zoom and keeps legacy SVG blocked", () => {
   expect(screen.getByText("150%")).toBeTruthy();
   fireEvent.keyDown(screen.getByRole("dialog"), { key: "Escape" });
   expect(screen.queryByRole("dialog")).toBeNull();
-  view.rerender(
+});
+
+it("downloads a legacy SVG as an opaque file without opening a preview", async () => {
+  const originalCreate = URL.createObjectURL;
+  const originalRevoke = URL.revokeObjectURL;
+  const create = jest.fn(() => "blob:svg-fixture");
+  const revoke = jest.fn();
+  const downloaded = jest.fn();
+  URL.createObjectURL = create;
+  URL.revokeObjectURL = revoke;
+  const click = jest
+    .spyOn(HTMLAnchorElement.prototype, "click")
+    .mockImplementation(function (this: HTMLAnchorElement) {
+      downloaded(this.href, this.download);
+    });
+  jest.useFakeTimers();
+  try {
+    mockDownload.mockResolvedValueOnce(
+      new Blob(["<svg />"], { type: "image/svg+xml" }),
+    );
+    const { container } = render(
+      <FileStorageFile
+        {...({
+          isServer: false,
+          variant: "attachment-ai-chat",
+          dataSource: "props",
+          data: {
+            ...file,
+            file: "/renamed.bin",
+            adminTitle: "Logo.svg",
+            mimeType: "image/svg+xml; charset=utf-8",
+          },
+        } as any)}
+      />,
+    );
+    const trigger = screen.getByRole("button", { name: "Download Logo.svg" });
+    expect(within(trigger).getByText("SVG")).toBeTruthy();
+    expect(container.querySelector("a, iframe, object, embed, img")).toBeNull();
+    expect(mockDownload).not.toHaveBeenCalled();
+    fireEvent.click(trigger);
+    await waitFor(() =>
+      expect(downloaded).toHaveBeenCalledWith("blob:svg-fixture", "Logo.svg"),
+    );
+    expect(mockDownload).toHaveBeenCalledWith({
+      src: expect.stringMatching(/\/public\/renamed\.bin$/),
+      signal: expect.any(AbortSignal),
+    });
+    expect(create).toHaveBeenCalledWith(
+      expect.objectContaining({ type: "application/octet-stream" }),
+    );
+    expect(screen.queryByRole("dialog")).toBeNull();
+    expect(mockText).not.toHaveBeenCalled();
+  } finally {
+    jest.runOnlyPendingTimers();
+    jest.useRealTimers();
+    click.mockRestore();
+    URL.createObjectURL = originalCreate;
+    URL.revokeObjectURL = originalRevoke;
+  }
+});
+
+it("identifies unavailable file records without rendering an action", () => {
+  render(
     <FileStorageFile
       {...({
         isServer: false,
         variant: "attachment-ai-chat",
         dataSource: "props",
-        data: { ...file, mimeType: "image/svg+xml; charset=utf-8" },
+        data: { ...file, mimeType: "application/x-knowledge-unavailable" },
       } as any)}
     />,
   );
-  expect(screen.getByText("Unsupported attachment")).toBeTruthy();
+  expect(screen.getByText("Brief.md")).toBeTruthy();
+  expect(screen.getByText("File unavailable")).toBeTruthy();
   expect(screen.queryByRole("button")).toBeNull();
 });
 
@@ -247,6 +313,7 @@ it("can move past a PDF page that failed to render", async () => {
         dataSource: "props",
         data: {
           ...file,
+          file: "/guide.pdf",
           adminTitle: "Guide.pdf",
           extension: "pdf",
           mimeType: "application/pdf",
@@ -288,7 +355,8 @@ it("shows a readable error and a retry while keeping the original available", ()
   expect(screen.getByRole("alert").textContent).toBe("File unavailable");
   fireEvent.click(screen.getByRole("button", { name: "Try again" }));
   expect(retry).toHaveBeenCalledTimes(1);
-  expect(screen.getByRole("link", { name: "Open original" })).toBeTruthy();
+  expect(screen.queryByRole("link", { name: "Open original" })).toBeNull();
+  expect(screen.getByRole("button", { name: "Download" })).toBeTruthy();
 });
 
 it("loads stored HTML only after opening and keeps its executable markup outside the chat document", () => {

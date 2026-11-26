@@ -144,13 +144,11 @@ describe("Paid purchase details", () => {
     expect(html).toContain("2026-10-08");
     expect(html).not.toContain("100 RUB");
   });
-  it("opens the stored receipt in a separate tab instead of generating preview receipt text", () => {
+  it("keeps public receipt storage out of customer purchase rows", () => {
     const html = renderPurchase();
-    expect(html).toContain(
-      'href="http://localhost:4000/public/file-storage/static/receipt.pdf"',
-    );
-    expect(html).toContain('target="_blank"');
-    expect(html).not.toContain("download=");
+    expect(html).not.toContain("/public/file-storage/");
+    expect(mockReceiptLinks).not.toHaveBeenCalled();
+    expect(mockReceiptFiles).not.toHaveBeenCalled();
   });
   it("does not invent a downloadable receipt when no receipt file exists", () => {
     mockReceipts = [];
@@ -341,12 +339,12 @@ describe("Paid purchase details", () => {
         canPay,
       );
       expect(html.includes("Перейти к оплате")).toBe(canPay);
-      expect(html.includes("Чек")).toBe(hasReceipt);
+      expect(html).not.toContain("Чек");
       expect(
         html.includes(
           'href="http://localhost:4000/public/file-storage/static/receipt.png"',
         ),
-      ).toBe(hasReceipt);
+      ).toBe(false);
     },
   );
   it("omits both actions for a pending order with no open invoice and an empty receipt path", () => {
@@ -399,12 +397,12 @@ describe("Paid purchase details", () => {
       }),
     );
     expect(html).toContain("0 USD");
-    expect(html).toContain("/public/file-storage/static/owned.pdf");
+    expect(html).not.toContain("/public/file-storage/static/owned.pdf");
     expect(mockTotal).not.toHaveBeenCalled();
     expect(mockReceiptLinks).not.toHaveBeenCalled();
     expect(mockReceiptFiles).not.toHaveBeenCalled();
   });
-  it("keeps an expired subscription purchase and its stored receipt available", () => {
+  it("keeps an expired subscription purchase visible without exposing the public receipt", () => {
     const html = renderToStaticMarkup(
       createElement(Component, {
         isServer: false,
@@ -439,7 +437,7 @@ describe("Paid purchase details", () => {
     expect(html).toContain("Срок истёк");
     expect(html).toContain("SPS-EXPIRED");
     expect(html).toContain("42 USD");
-    expect(html).toContain("/public/file-storage/static/expired.pdf");
+    expect(html).not.toContain("/public/file-storage/static/expired.pdf");
     expect(mockTotal).not.toHaveBeenCalled();
     expect(mockReceiptLinks).not.toHaveBeenCalled();
   });

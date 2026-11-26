@@ -1,0 +1,2 @@
+ALTER TABLE "sps_cm_tasks_to_stages" ADD COLUMN "pending" boolean DEFAULT false NOT NULL;--> statement-breakpoint
+CREATE INDEX "cm_tasks_to_stages_pending" ON "sps_cm_tasks_to_stages" USING btree ("pending","task_id","assignment_revision","revision");

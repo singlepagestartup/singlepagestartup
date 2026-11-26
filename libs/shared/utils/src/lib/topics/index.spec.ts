@@ -164,13 +164,6 @@ describe("deriveTopicsFromPath", () => {
         `/api/rbac/subjects/${SID}/ecommerce-module/orders/checkout`,
       ),
     ).toEqual(["ecommerce.checkout"]);
-
-    const reaction = deriveTopicsFromPath(
-      `/api/rbac/subjects/${SID}/social-module/profiles/${PID}/chats/${CID}/messages/${MID}/react-by/openrouter`,
-    );
-
-    expect(reaction).toContain("social.openrouter");
-    expect(reaction).not.toContain("social.messages");
   });
 });
 

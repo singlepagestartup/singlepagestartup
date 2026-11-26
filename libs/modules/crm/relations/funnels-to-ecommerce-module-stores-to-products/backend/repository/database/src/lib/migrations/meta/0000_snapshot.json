@@ -1,0 +1,114 @@
+{
+  "id": "fbc85dad-e4f1-4dd8-a3e0-f77c843ebca1",
+  "prevId": "00000000-0000-0000-0000-000000000000",
+  "version": "7",
+  "dialect": "postgresql",
+  "tables": {
+    "public.sps_cm_funnels_to_offers": {
+      "name": "sps_cm_funnels_to_offers",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp (3)",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "funnel_id": {
+          "name": "funnel_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "offer_id": {
+          "name": "offer_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {
+        "cm_funnels_to_offers_pair": {
+          "name": "cm_funnels_to_offers_pair",
+          "columns": [
+            {
+              "expression": "funnel_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "offer_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "cm_funnels_to_offers_offer": {
+          "name": "cm_funnels_to_offers_offer",
+          "columns": [
+            {
+              "expression": "offer_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "sps_cm_funnels_to_offers_funnel_id_sps_cm_funnel_id_fk": {
+          "name": "sps_cm_funnels_to_offers_funnel_id_sps_cm_funnel_id_fk",
+          "tableFrom": "sps_cm_funnels_to_offers",
+          "tableTo": "sps_cm_funnel",
+          "columnsFrom": ["funnel_id"],
+          "columnsTo": ["id"],
+          "onDelete": "restrict",
+          "onUpdate": "no action"
+        },
+        "sps_cm_funnels_to_offers_offer_id_sps_ee_ss_to_ps_vn7_id_fk": {
+          "name": "sps_cm_funnels_to_offers_offer_id_sps_ee_ss_to_ps_vn7_id_fk",
+          "tableFrom": "sps_cm_funnels_to_offers",
+          "tableTo": "sps_ee_ss_to_ps_vn7",
+          "columnsFrom": ["offer_id"],
+          "columnsTo": ["id"],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    }
+  },
+  "enums": {},
+  "schemas": {},
+  "sequences": {},
+  "roles": {},
+  "policies": {},
+  "views": {},
+  "_meta": {
+    "columns": {},
+    "schemas": {},
+    "tables": {}
+  }
+}

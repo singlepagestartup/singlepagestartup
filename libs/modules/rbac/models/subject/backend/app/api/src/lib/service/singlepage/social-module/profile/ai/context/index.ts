@@ -523,7 +523,7 @@ export class Service implements IAiContextService {
     metrics.budgetExceeded =
       metrics.inputEstimatedTokens > AI_CONTEXT_POLICY.softInputTokens;
     metrics.budgetExceededReason = metrics.budgetExceeded
-      ? this.state.workingDraft || this.props.documentThread
+      ? this.state.workingDraft
         ? "preserve_exact_document_and_recent_messages"
         : "preserve_unsummarized_history_and_recent_messages"
       : null;

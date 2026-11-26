@@ -1,0 +1,15 @@
+{
+  "id": "16f50b28-7efb-45d4-aefc-c8a64982f5d3",
+  "createdAt": "2026-11-17T07:10:36.979Z",
+  "updatedAt": "2026-11-17T07:10:36.979Z",
+  "variant": "default",
+  "type": "feature",
+  "field": "string",
+  "adminTitle": "price_formula",
+  "slug": "price_formula",
+  "title": {
+    "en": "price_formula"
+  },
+  "prefix": {},
+  "suffix": {}
+}

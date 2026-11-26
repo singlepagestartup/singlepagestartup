@@ -1,7 +1,7 @@
 {
   "id": "4e3a802c-93fa-4469-a4e6-395256c2e84d",
   "createdAt": "2025-05-08T21:25:04.089Z",
-  "updatedAt": "2025-11-15T09:32:28.624Z",
+  "updatedAt": "2026-11-20T10:20:19.822Z",
   "variant": "store-overview-default",
   "className": "",
   "anchor": "",
@@ -9,7 +9,7 @@
   "slug": "right-bronze-earthworm",
   "title": {
     "en": "Store Overview",
-    "ru": "Store Overview"
+    "ru": "Обзор магазина"
   },
   "subtitle": {},
   "description": {}

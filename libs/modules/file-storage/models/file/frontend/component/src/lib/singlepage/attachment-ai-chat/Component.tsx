@@ -1,5 +1,5 @@
-import { FileText } from "lucide-react";
 import { NEXT_PUBLIC_API_SERVICE_URL } from "@sps/shared-utils";
+import { getFilePreviewKind } from "@sps/shared-frontend-client-utils";
 import { FilePreviewText } from "@sps/ui-adapter";
 import type {
   IComponentPropsExtended,
@@ -9,35 +9,35 @@ import { Component as ClientComponent } from "./ClientComponent";
 
 export function Component(props: IComponentPropsExtended) {
   const file = props.data;
+  const path = file.file.split(/[?#]/)[0];
   const src = /^https?:\/\//i.test(file.file)
     ? file.file
     : `${NEXT_PUBLIC_API_SERVICE_URL}/public${file.file}`;
   const title =
-    file.adminTitle || file.alt || file.file.split("/").pop() || "File";
-  const extension = (
-    file.extension ||
-    file.file.split("?")[0].split(".").pop() ||
-    ""
-  ).toLowerCase();
-  const blocked =
-    /\.svgz?(?:[?#]|$)/i.test(file.file) ||
-    ["svg", "svgz"].includes(extension) ||
-    file.mimeType?.split(";")[0].trim().toLowerCase() === "image/svg+xml" ||
-    file.mimeType === "application/x-knowledge-unavailable";
-  if (blocked)
-    return (
-      <div
-        data-module="file-storage"
-        data-model="file"
-        data-variant={props.variant}
-        data-id={file.id}
-        className="overflow-hidden rounded-xl border border-border bg-card p-3"
-      >
-        <FileText className="size-7" />
-        <p className="truncate text-xs font-medium">{title}</p>
-        <p className="text-xs text-muted-foreground">Unsupported attachment</p>
-      </div>
-    );
+    file.adminTitle ||
+    file.alt ||
+    path.split("/").pop() ||
+    (props.language === "ru" ? "Файл" : "File");
+  const pathExtension = path.match(/\.([^/.]+)$/)?.[1].toLowerCase();
+  const extension =
+    file.extension?.replace(/^\./, "").toLowerCase() || pathExtension;
+  const mimeType = file.mimeType?.split(";")[0].trim().toLowerCase();
+  const svgExtension = [pathExtension, extension].find(
+    (value) => value === "svg" || value === "svgz",
+  );
+  const svg = Boolean(svgExtension || mimeType === "image/svg+xml");
+  let availability: "preview" | "download-only" | "unavailable" = "preview";
+  if (mimeType === "application/x-knowledge-unavailable") {
+    availability = "unavailable";
+  } else if (
+    svg ||
+    getFilePreviewKind({ name: title, mimeType, extension }) ===
+      "unsupported" ||
+    (pathExtension &&
+      getFilePreviewKind({ name: path, mimeType, extension }) === "unsupported")
+  ) {
+    availability = "download-only";
+  }
   return (
     <ClientComponent
       language={props.language}
@@ -46,7 +46,13 @@ export function Component(props: IComponentPropsExtended) {
       name={title}
       src={src}
       mimeType={file.mimeType}
-      extension={extension}
+      extension={svg ? svgExtension || "svg" : extension}
+      layout={
+        availability === "preview" || props.layout === "gallery"
+          ? props.layout
+          : "row"
+      }
+      availability={availability}
       textContent={props.textContent}
     />
   );

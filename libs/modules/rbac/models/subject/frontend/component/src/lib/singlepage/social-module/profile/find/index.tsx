@@ -8,7 +8,7 @@ export function Component(props: IComponentProps) {
   const Reader = props.isServer ? Server : Client;
   return (
     <ErrorBoundary>
-      <Suspense fallback={null}>
+      <Suspense fallback={props.skeleton ?? null}>
         <Provider>
           <Reader {...props} />
         </Provider>

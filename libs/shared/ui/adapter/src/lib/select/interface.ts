@@ -5,14 +5,21 @@ export interface ISelectOption {
   label: string;
   disabled?: boolean;
 }
+
+export interface ISelectOptionGroup {
+  label: string;
+  options: ISelectOption[];
+}
+
 export interface IComponentProps extends SelectPrimitive.SelectProps {
   ui: "shadcn";
   id?: string;
   className?: string;
   contentClassName?: string;
   placeholder?: string;
+  search?: { placeholder: string; empty: string };
   "aria-label"?: string;
   "aria-invalid"?: boolean;
   "aria-describedby"?: string;
-  options: ISelectOption[];
+  options: Array<ISelectOption | ISelectOptionGroup>;
 }

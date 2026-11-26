@@ -1,0 +1,35 @@
+{
+  "metadata": {
+    "seo": {
+      "title": {
+        "en": "Attribute keys — SinglePageStartup",
+        "ru": "Ключи атрибутов — SinglePageStartup"
+      }
+    },
+    "seoDisplay": {
+      "twitterTitle": {
+        "en": "Attribute keys — SinglePageStartup",
+        "ru": "Ключи атрибутов — SinglePageStartup"
+      },
+      "opengraphTitle": {
+        "en": "Attribute keys — SinglePageStartup",
+        "ru": "Ключи атрибутов — SinglePageStartup"
+      },
+      "opengraphLocale": {
+        "en": "en_US",
+        "ru": "ru_RU"
+      }
+    }
+  },
+  "id": "4814b4d5-661d-41a5-bb7f-b0076c4471a9",
+  "title": "Attribute keys",
+  "url": "/ecommerce/stores/[ecommerce.stores.slug]/products/attribute-keys",
+  "slug": "store-product-attribute-keys",
+  "description": "Description",
+  "createdAt": "2026-11-24T18:57:57.190Z",
+  "updatedAt": "2026-11-24T18:57:57.190Z",
+  "variant": "noindex",
+  "className": null,
+  "language": "en",
+  "adminTitle": "Attribute keys"
+}

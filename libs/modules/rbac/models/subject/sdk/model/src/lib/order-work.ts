@@ -1,0 +1,242 @@
+import { z } from "zod";
+import type {
+  IOrderWork,
+  IOrderWorkExpertArchive,
+  TWorkFulfillmentState,
+} from "@sps/ecommerce/models/order/sdk/model";
+
+export function orderFileReviewInteraction(fileId: string, russian: boolean) {
+  return {
+    inline_keyboard: [
+      [
+        {
+          text: russian ? "Принять файл" : "Accept file",
+          callback_data: `order:accept:${fileId}`,
+        },
+        {
+          text: russian ? "Запросить правки" : "Request changes",
+          callback_data: `order:decline:${fileId}`,
+        },
+      ],
+    ],
+  };
+}
+
+const callbackButton = z.object({
+  text: z.string().min(1),
+  callback_data: z.string(),
+});
+export const orderCheckoutProviders = [
+  "stripe",
+  "0xprocessing",
+  "payselection",
+  "payselection-international",
+  "tiptoppay",
+  "cloudpayments",
+  "dummy",
+  "paykeeper",
+] as const;
+
+const checkoutKeyboard = z.object({
+  inline_keyboard: z.array(
+    z.array(
+      z.union([
+        callbackButton,
+        z.object({ text: z.string().min(1), url: z.httpUrl() }),
+      ]),
+    ),
+  ),
+});
+
+export function readOrderCheckoutButtons(message: {
+  id: string;
+  variant: string;
+  workReplyKey?: string | null;
+  interaction?: unknown;
+}) {
+  if (
+    message.variant !== "customer-work" ||
+    message.workReplyKey !== `order-checkout:${message.id}`
+  )
+    return;
+  return checkoutKeyboard.safeParse(message.interaction).data?.inline_keyboard;
+}
+
+const fileReviewKeyboard = z.object({
+  inline_keyboard: z.tuple([z.tuple([callbackButton, callbackButton])]),
+});
+
+export interface IOrderFileReview {
+  fileId: string;
+  acceptText: string;
+  declineText: string;
+}
+
+export function readOrderFileReview(message: {
+  variant: string;
+  workReplyKey?: string | null;
+  metadata?: Record<string, unknown> | null;
+  interaction?: unknown;
+}): IOrderFileReview | undefined {
+  if (message.variant !== "customer-work" || !message.workReplyKey) return;
+  const fileId = z.uuid().safeParse(message.metadata?.orderResultFileId).data;
+  const row = fileReviewKeyboard.safeParse(message.interaction).data
+    ?.inline_keyboard[0];
+  if (!fileId || !row) return;
+  const [accept, decline] = row;
+  if (
+    accept.callback_data !== `order:accept:${fileId}` ||
+    decline.callback_data !== `order:decline:${fileId}`
+  ) {
+    return undefined;
+  }
+  return { fileId, acceptText: accept.text, declineText: decline.text };
+}
+
+const paymentNoticeSchema = z.object({
+  eventId: z.uuid(),
+  orderId: z.uuid(),
+  invoiceId: z.uuid(),
+  paymentIntentId: z.uuid(),
+  amount: z.string(),
+  currency: z.string(),
+});
+export function orderPaymentMessageKey(eventId: string) {
+  return `order-payment:${eventId}`;
+}
+export function readOrderPaymentNotice(message: {
+  variant: string;
+  workReplyKey?: string | null;
+  metadata?: Record<string, unknown> | null;
+}) {
+  const notice = paymentNoticeSchema.safeParse(
+    message.metadata?.orderPayment,
+  ).data;
+  if (
+    notice &&
+    message.variant === "customer-work" &&
+    message.workReplyKey === orderPaymentMessageKey(notice.eventId)
+  ) {
+    return notice;
+  }
+  return undefined;
+}
+export const orderWorkScopeSchema = z.object({
+  storeId: z.uuid(),
+  taskId: z.uuid(),
+});
+
+export const orderWorkFulfillmentSchema = orderWorkScopeSchema
+  .extend({
+    stage: z.enum(["preparing", "in-transit", "delivered"]),
+    operationKey: z.string().trim().min(1).max(140),
+    trackingNumber: z.string().trim().min(1).max(180).optional(),
+    carrierEvidenceId: z.string().trim().min(1).max(180).optional(),
+  })
+  .strict();
+
+const decisionSchema = orderWorkScopeSchema.extend({
+  fileId: z.uuid(),
+  operationKey: z.string().trim().min(1).max(140),
+});
+
+export const orderWorkDecisionSchema = z.discriminatedUnion("operation", [
+  decisionSchema.extend({ operation: z.literal("accept") }).strict(),
+  decisionSchema
+    .extend({
+      operation: z.literal("decline"),
+      reason: z.string().trim().min(1).max(4000),
+    })
+    .strict(),
+]);
+
+export type TOrderWorkDecision = z.infer<typeof orderWorkDecisionSchema>;
+export interface IOrderWorkScope extends z.infer<typeof orderWorkScopeSchema> {}
+
+export interface IOrderArtifact {
+  id: string;
+  path: string;
+  name?: string;
+  mimeType?: string;
+}
+
+export interface IOrderResultFile {
+  name?: string;
+  id: string;
+  legacyMessageId?: string;
+  changesRequested?: boolean;
+  createdAt: string;
+  price: string;
+  currencyId: string;
+  preview: IOrderArtifact;
+  previewMimeType?: string;
+  invalidatedByCartEdit?: true;
+}
+
+export interface IOrderWorkView {
+  orderId: string;
+  taskId: string;
+  storeId: string;
+  state: TWorkFulfillmentState;
+  acceptedFileId: string | null;
+  paidFileId: string | null;
+  files: IOrderResultFile[];
+  result: IOrderArtifact | null;
+  receipt: IOrderArtifact | null;
+  deliveryStatus: "pending" | "available";
+  trackingNumber: string | null;
+  expertArchive?: IOrderWorkExpertArchive;
+}
+
+export function orderResultFiles(
+  work: IOrderWork,
+  descriptor: (id: string) => IOrderArtifact,
+) {
+  const original =
+    work.paid && work.deliveredAt && work.resultFileId
+      ? work.files.find(
+          (file) =>
+            file.id === work.paid?.fileId &&
+            file.originalFileId === work.resultFileId,
+        )
+      : undefined;
+  const files = work.files.map((file) => ({
+    id: file.previewFileId,
+    name: file.previewName,
+    legacyMessageId: file.legacyMessageId,
+    createdAt: file.createdAt,
+    price: file.price,
+    currencyId: file.currencyId,
+    preview: descriptor(file.previewFileId),
+    previewMimeType: file.previewMimeType,
+    invalidatedByCartEdit: file.invalidatedByCartEdit,
+    changesRequested: work.decisions.some(
+      (decision) => decision.fileId === file.id && decision.kind === "declined",
+    ),
+  }));
+  return {
+    files,
+    result:
+      work.paid && work.deliveredAt && work.resultFileId
+        ? {
+            ...descriptor(work.resultFileId),
+            name: original?.originalName,
+            mimeType: original?.originalMimeType,
+          }
+        : null,
+    acceptedFileId: work.acceptedFileId,
+    paidFileId: work.paid?.fileId ?? null,
+  };
+}
+
+export function orderWorkPath(subjectId: string, orderId: string) {
+  return `/api/rbac/subjects/${subjectId}/ecommerce-module/orders/${orderId}/work`;
+}
+
+export function orderArtifactPath(
+  subjectId: string,
+  orderId: string,
+  fileId: string,
+) {
+  return `${orderWorkPath(subjectId, orderId)}/artifacts/${fileId}`;
+}

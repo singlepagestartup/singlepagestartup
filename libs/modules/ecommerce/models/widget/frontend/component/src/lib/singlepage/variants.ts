@@ -18,7 +18,10 @@ import { Component as CategoryListDefault } from "./category/list-default";
 import { Component as StoreListDefault } from "./store/list-default";
 import { Component as CategoryOverviewDefault } from "./category/overview-default";
 import { Component as StoreOverviewDefault } from "./store/overview-default";
+import { Component as StoreHeaderDefault } from "./store/header-default";
+
 export const variants = {
+  "store-header-default": StoreHeaderDefault,
   hidden: Hidden,
   find: Find,
   "admin-table-row": AdminTableRow,

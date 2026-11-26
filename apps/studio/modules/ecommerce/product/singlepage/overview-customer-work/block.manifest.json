@@ -1,0 +1,27 @@
+{
+  "id": "ecommerce.product.overview-customer-work",
+  "title": "Предложение магазина",
+  "description": "Offer details, product questions and inline cart confirmation.",
+  "layer": "singlepage",
+  "state": "draft",
+  "source": {
+    "module": "ecommerce",
+    "entityType": "model",
+    "entity": "product",
+    "variant": "overview-customer-work"
+  },
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "contentSlots": [],
+  "figma": {
+    "componentName": "ecommerce.product",
+    "pageName": "ecommerce",
+    "variantName": "overview-customer-work",
+    "nodeId": null,
+    "variantNodeId": null,
+    "syncStatus": "not-created",
+    "metadataFile": "figma.json"
+  }
+}

@@ -8,6 +8,9 @@ allOf:
         type: object
         description: Delivery, packaging and registration settings for this offer.
         properties:
+          requiresResultAcceptance:
+            type: boolean
+            description: Charge for a commissioned service after the customer accepts a result version.
           initialGrant:
             type: boolean
             description: An administrator can assign this offer to registered Subjects once per Product.

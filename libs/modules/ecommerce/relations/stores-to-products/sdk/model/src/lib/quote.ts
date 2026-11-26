@@ -67,6 +67,7 @@ export interface IOfferQuote {
   storeId: string;
   currencyId: string;
   quantity: number;
+  singleUnitPerOrder?: boolean;
   amount: string | null;
   availableQuantity: number | null;
   currencyIds: string[];

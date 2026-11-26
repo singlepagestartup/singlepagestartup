@@ -71,18 +71,17 @@ describe("Given: thread-scoped social actions", () => {
           return undefined;
         }),
       },
-      get: jest.fn(() => ({
-        limit: 20,
-        offset: 0,
-        orderBy: {
-          and: [
-            {
-              column: "createdAt",
-              method: "asc",
-            },
-          ],
-        },
-      })),
+      get: jest.fn((name: string) =>
+        name === "parsedQuery"
+          ? {
+              limit: 20,
+              offset: 0,
+              orderBy: {
+                and: [{ column: "createdAt", method: "asc" }],
+              },
+            }
+          : undefined,
+      ),
       json: jest.fn((payload: unknown) => payload),
     };
 
@@ -189,10 +188,9 @@ describe("Given: thread-scoped social actions", () => {
           return undefined;
         }),
       },
-      get: jest.fn(() => ({
-        limit: 20,
-        offset: 0,
-      })),
+      get: jest.fn((name: string) =>
+        name === "parsedQuery" ? { limit: 20, offset: 0 } : undefined,
+      ),
       json: jest.fn((payload: unknown) => payload),
     };
 

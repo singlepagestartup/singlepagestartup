@@ -1,5 +1,6 @@
 "use client";
 import "client-only";
+import { ChatNotice } from "../../Notice";
 import AuthenticationMe from "../../../../../../authentication/me-default/client";
 import { Component as ChildComponent } from "./Component";
 import type { IComponentProps } from "./interface";
@@ -10,13 +11,14 @@ export default function Client(props: IComponentProps) {
       variant="authentication-me-default"
       apiProps={props.apiProps}
       skeleton={props.skeleton}
-      fallback={<p role="status">Sign in to view chats.</p>}
+      waitForAuthenticationInit
+      fallback={<ChatNotice language={props.language} sessionError />}
     >
       {({ data, authenticated }) =>
         data && authenticated ? (
           <ChildComponent {...props} isServer={false} data={data} />
         ) : (
-          <p role="status">Sign in to view chats.</p>
+          <ChatNotice language={props.language} />
         )
       }
     </AuthenticationMe>

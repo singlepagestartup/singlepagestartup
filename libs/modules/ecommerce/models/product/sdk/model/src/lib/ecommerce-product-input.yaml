@@ -1,3 +1,3 @@
 type: string
-description: JSON string
-example: '{"variant": "default", "slug": "example", "adminTitle": "Example", "className": "example-class", "title": {"en": "", "ru": ""}}'
+description: JSON string. Set singleUnitPerOrder to true to limit the product to one unit per order.
+example: '{"variant": "default", "slug": "example", "adminTitle": "Example", "className": "example-class", "title": {"en": "", "ru": ""}, "singleUnitPerOrder": true}'

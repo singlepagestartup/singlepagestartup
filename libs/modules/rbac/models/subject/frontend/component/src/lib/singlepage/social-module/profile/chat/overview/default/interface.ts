@@ -13,6 +13,12 @@ export interface IComponentProps extends ISpsComponentBase {
   socialModuleProfile: ISocialModuleProfile;
   socialModuleChatId: ISocialModuleChat["id"];
   socialModuleThreadId?: string;
+  socialModuleEmployeeProfileId?: string;
+  defaultThreadId?: string;
+  threadListLimit?: number;
+  getThreadHref?: (threadId: string) => string;
+  onCreateThread?: (title: string) => Promise<string>;
+  isCreatingThread?: boolean;
   variant: typeof variant;
   className?: string;
 }

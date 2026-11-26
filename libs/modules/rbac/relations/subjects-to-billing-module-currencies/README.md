@@ -1,10 +1,10 @@
 # RBAC Subjects to Billing Module Currencies Relation
 
+The existing admin and SDK routes read and write Billing wallet balances through the subject’s default wallet. Historical balance IDs remain valid. [Wallet currency balances](../../../billing/relations/wallets-to-currencies/README.md)
+
 ## Purpose
 
-Stores a Subject's balance in a Billing currency. More than one relation can
-exist for a Subject and currency; balance readers and admission guards sum all
-of them, including negative amounts.
+A subject can hold several balance rows in one currency. Balance readers sum every row, including negative amounts.
 
 ## Fields
 

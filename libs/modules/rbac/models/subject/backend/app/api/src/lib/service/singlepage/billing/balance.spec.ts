@@ -1,70 +1,28 @@
 import { Service } from "./balance";
 
-it("reads only the requesting Subject's token balance", async () => {
-  const currency = { find: jest.fn().mockResolvedValue([{ id: "tokens" }]) };
-  const balances = { find: jest.fn().mockResolvedValue([{ amount: "3000" }]) };
+it("reads the subject's wallet and preserves the currency's full decimal precision", async () => {
+  const amount = "999999999999999999.123456789123";
+  const defaultWallet = jest.fn().mockResolvedValue("wallet");
+  const total = jest.fn().mockResolvedValue(amount);
   const service = new Service({
-    module: {
-      subjectsToBillingModuleCurrencies: balances,
-    },
+    module: { subjectsToBillingModuleWallets: { defaultWallet } },
     modules: {
       billing: {
-        currency,
+        currency: { find: jest.fn().mockResolvedValue([{ id: "token" }]) },
+        walletsToCurrencies: { total },
       },
     },
-  } as any);
-  expect(await service.execute("owner")).toEqual({
-    amount: "3000",
-    currencyId: "tokens",
+  } as never);
+  await expect(service.execute("owner")).resolves.toEqual({
+    amount,
+    currencyId: "token",
   });
-  expect(balances.find).toHaveBeenCalledWith({
-    params: {
-      filters: {
-        and: [
-          { column: "subjectId", method: "eq", value: "owner" },
-          { column: "billingModuleCurrencyId", method: "eq", value: "tokens" },
-        ],
-      },
-    },
-  });
-});
-
-it("returns zero for an empty balance without fetching another Subject", async () => {
-  const balances = { find: jest.fn().mockResolvedValue([]) };
-  const service = new Service({
-    module: {
-      subjectsToBillingModuleCurrencies: balances,
-    },
-    modules: {
-      billing: {
-        currency: { find: jest.fn().mockResolvedValue([{ id: "tokens" }]) },
-      },
-    },
-  } as any);
-  expect(await service.execute("new-user")).toEqual({
+  expect(defaultWallet).toHaveBeenCalledWith("owner");
+  expect(total).toHaveBeenCalledWith("wallet", "token");
+  defaultWallet.mockResolvedValue(undefined);
+  await expect(service.execute("new")).resolves.toEqual({
     amount: "0",
-    currencyId: "tokens",
+    currencyId: "token",
   });
-  expect(balances.find).toHaveBeenCalledTimes(1);
-});
-
-it("shows the whole token balance when older deliveries created more than one relation", async () => {
-  const service = new Service({
-    module: {
-      subjectsToBillingModuleCurrencies: {
-        find: jest
-          .fn()
-          .mockResolvedValue([{ amount: "2982" }, { amount: "8" }]),
-      },
-    },
-    modules: {
-      billing: {
-        currency: { find: jest.fn().mockResolvedValue([{ id: "tokens" }]) },
-      },
-    },
-  } as any);
-  expect(await service.execute("owner")).toEqual({
-    amount: "2990",
-    currencyId: "tokens",
-  });
+  expect(total).toHaveBeenCalledTimes(1);
 });

@@ -12,7 +12,7 @@ export function Component(props: IComponentProps) {
 
   return (
     <ErrorBoundary>
-      <Suspense fallback={<Skeleton />}>
+      <Suspense fallback={<Skeleton language={props.language} />}>
         <Provider>
           <Comp {...props} />
         </Provider>

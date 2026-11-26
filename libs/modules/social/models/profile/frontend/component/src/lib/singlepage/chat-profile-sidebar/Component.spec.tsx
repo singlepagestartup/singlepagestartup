@@ -12,6 +12,8 @@
 
 import { act } from "react";
 import { createRoot, Root } from "react-dom/client";
+import { within } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { Component } from "./Component";
 
 jest.mock("@sps/knowledge/models/source/frontend/component", () => ({
@@ -23,7 +25,16 @@ jest.mock("@sps/social/models/skill/frontend/component", () => ({
 }));
 
 jest.mock("@sps/social/models/profile/frontend/component", () => ({
-  Component: () => <div data-testid="profile-avatar" />,
+  Component: (props: {
+    dataSource?: string;
+    file?: { id?: string } | null;
+  }) => (
+    <div
+      data-testid="profile-avatar"
+      data-source={props.dataSource}
+      data-avatar-id={props.file?.id}
+    />
+  ),
 }));
 
 describe("GIVEN: social profile chat sidebar actions", () => {
@@ -92,6 +103,50 @@ describe("GIVEN: social profile chat sidebar actions", () => {
         slug: "chat-gpt-1",
       }),
     );
+  });
+
+  test("opens the corresponding skill and knowledge editors with the keyboard", async () => {
+    const user = userEvent.setup();
+    const onSkillCreate = jest.fn();
+    const onKnowledgeSourceCreate = jest.fn();
+    const profile = {
+      id: "profile-1",
+      slug: "assistant",
+      title: { ru: "Ассистент" },
+    } as any;
+
+    act(() => {
+      root.render(
+        <Component
+          isServer={false}
+          variant="chat-profile-sidebar"
+          language="ru"
+          data={profile}
+          onSkillCreate={onSkillCreate}
+          onKnowledgeSourceCreate={onKnowledgeSourceCreate}
+        />,
+      );
+    });
+
+    const skill = within(container).getByRole("button", {
+      name: "Добавить навык для профиля «Ассистент»",
+    });
+    const knowledge = within(container).getByRole("button", {
+      name: "Добавить источник знаний для профиля «Ассистент»",
+    });
+    for (const action of [skill, knowledge]) {
+      expect(action.classList.contains("rounded-xl")).toBe(true);
+      expect(action.classList.contains("size-11")).toBe(true);
+      expect(action.querySelector('[data-icon-name="plus"]')).not.toBeNull();
+    }
+    await user.tab();
+    expect(document.activeElement).toBe(skill);
+    await user.keyboard("{Enter}");
+    expect(onSkillCreate).toHaveBeenCalledWith(profile);
+    await user.tab();
+    expect(document.activeElement).toBe(knowledge);
+    await user.keyboard("[Space]");
+    expect(onKnowledgeSourceCreate).toHaveBeenCalledWith(profile);
   });
 
   /**
@@ -222,9 +277,67 @@ describe("GIVEN: social profile chat sidebar actions", () => {
       );
     });
 
-    expect(container.textContent).toContain(
-      "Knowledge could not be loaded. Check access permissions and try again.",
-    );
+    expect(container.textContent).toContain("Knowledge could not be loaded.");
     expect(container.textContent).not.toContain("No knowledge sources.");
+  });
+
+  test("shows the owner's empty Knowledge section with no agent tools or editing actions", () => {
+    act(() => {
+      root.render(
+        <Component
+          isServer={false}
+          variant="chat-profile-sidebar"
+          language="ru"
+          summaryOnly
+          onKnowledgeSourceSelect={jest.fn()}
+          data={{ id: "mine", slug: "rogwild", variant: "default" } as any}
+        />,
+      );
+    });
+    const card = within(container);
+    expect(card.getByRole("heading", { name: "Знания" })).toBeTruthy();
+    expect(card.getByText("Нет источников знаний.")).toBeTruthy();
+    expect(card.queryByRole("button")).toBeNull();
+    expect(card.queryByText("Навыки")).toBeNull();
+    expect(card.queryByText("Инструменты MCP")).toBeNull();
+  });
+
+  test("shows the scoped profile summary without the tools, skills or knowledge sections", () => {
+    act(() => {
+      root.render(
+        <Component
+          isServer={false}
+          variant="chat-profile-sidebar"
+          language="en"
+          summaryOnly
+          displayName="rogwild"
+          avatar={{ id: "authorized-avatar" } as any}
+          onMcpServersEdit={jest.fn()}
+          onProfileEdit={jest.fn()}
+          onSkillCreate={jest.fn()}
+          skills={[{ id: "private-skill" } as any]}
+          knowledgeSources={[{ id: "private-source" } as any]}
+          data={
+            {
+              id: "profile-1",
+              slug: "alice",
+              title: {},
+              adminTitle: "Internal account label",
+              description: { en: "Store assistant" },
+              allowedMcpServerIds: ["singlepagestartup"],
+            } as any
+          }
+        />,
+      );
+    });
+
+    expect(container.querySelector("h2")?.textContent).toBe("rogwild");
+    expect(container.textContent).not.toContain("Internal account label");
+    expect(container.textContent).toContain("Store assistant");
+    expect(container.textContent).not.toMatch(/MCP|Skills|Knowledge/);
+    const avatar = container.querySelector('[data-testid="profile-avatar"]');
+    expect(avatar?.getAttribute("data-source")).toBe("props");
+    expect(avatar?.getAttribute("data-avatar-id")).toBe("authorized-avatar");
+    expect(container.querySelector("button")).toBeNull();
   });
 });

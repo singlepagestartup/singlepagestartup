@@ -115,6 +115,7 @@ describe("Given: Telegram bootstrap initializes a topic thread", () => {
      */
     it("Then: creates thread and applies generated title", async () => {
       const service = new Service({
+        createOwnedChat: jest.fn(),
         findById: jest.fn(),
         identity: {} as any,
         subjectsToIdentities: {} as any,
@@ -225,6 +226,7 @@ describe("Given: Telegram bootstrap initializes a topic thread", () => {
         billing: null,
       });
       const service = new Service({
+        createOwnedChat: jest.fn(),
         findById: jest.fn(),
         identity: {} as any,
         subjectsToIdentities: {} as any,
@@ -288,6 +290,7 @@ describe("Given: Telegram bootstrap initializes a topic thread", () => {
      */
     it("Then: derives a title source from an addressed /learn command", () => {
       const service = new Service({
+        createOwnedChat: jest.fn(),
         findById: jest.fn(),
         identity: {} as any,
         subjectsToIdentities: {} as any,
@@ -317,6 +320,7 @@ describe("Given: Telegram bootstrap initializes a topic thread", () => {
         billing: null,
       });
       const service = new Service({
+        createOwnedChat: jest.fn(),
         findById: jest.fn(),
         identity: {} as any,
         subjectsToIdentities: {} as any,
@@ -345,6 +349,7 @@ describe("Given: Telegram bootstrap initializes a topic thread", () => {
         billing: null,
       });
       const service = new Service({
+        createOwnedChat: jest.fn(),
         findById: jest.fn(),
         identity: {} as any,
         subjectsToIdentities: {} as any,
@@ -367,6 +372,7 @@ describe("Given: Telegram bootstrap initializes a topic thread", () => {
      */
     it("Then: repairs an already persisted loose title field label", async () => {
       const service = new Service({
+        createOwnedChat: jest.fn(),
         findById: jest.fn(),
         identity: {} as any,
         subjectsToIdentities: {} as any,
@@ -445,6 +451,7 @@ describe("Given: Telegram bootstrap initializes a topic thread", () => {
      */
     it("Then: does not regenerate non-fallback title", async () => {
       const service = new Service({
+        createOwnedChat: jest.fn(),
         findById: jest.fn(),
         identity: {} as any,
         subjectsToIdentities: {} as any,
@@ -510,6 +517,7 @@ describe("Given: Telegram bootstrap initializes a topic thread", () => {
       });
 
       const service = new Service({
+        createOwnedChat: jest.fn(),
         findById: jest.fn(),
         identity: {} as any,
         subjectsToIdentities: {} as any,
@@ -609,6 +617,7 @@ describe("Given: Telegram automatic chat participants", () => {
       }),
     };
     const service = new Service({
+      createOwnedChat: jest.fn(),
       findById: jest.fn(),
       identity: {} as any,
       subjectsToIdentities: {} as any,
@@ -675,6 +684,7 @@ describe("Given: Telegram automatic chat participants", () => {
 describe("Given: two Telegram updates race to bootstrap the same account", () => {
   function buildService() {
     return new Service({
+      createOwnedChat: jest.fn(),
       findById: jest.fn(),
       identity: {} as any,
       subjectsToIdentities: {} as any,
@@ -803,6 +813,7 @@ describe("Given: a telegram identity is claimed by two requests at once", () => 
 
   function buildService() {
     return new Service({
+      createOwnedChat: jest.fn(),
       findById: jest.fn(),
       identity: {} as any,
       subjectsToIdentities: {} as any,
@@ -891,3 +902,43 @@ describe("Given: a telegram identity is claimed by two requests at once", () => 
     ).rejects.toBe(conflict);
   });
 });
+
+it.each([
+  { chatId: "123", privateChatOwnerId: "subject-123" },
+  { chatId: "-456", privateChatOwnerId: undefined },
+])(
+  "assigns ownership only for a verified private Telegram chat ($chatId)",
+  async ({ chatId, privateChatOwnerId }) => {
+    jest.clearAllMocks();
+    const chat = { id: "social-chat" };
+    const createOwnedChat = jest.fn().mockResolvedValue(chat);
+    mockSocialModuleChatCreate.mockResolvedValue(chat);
+    const service = new Service({
+      createOwnedChat,
+      findById: jest.fn(),
+      identity: {} as any,
+      subjectsToIdentities: {} as any,
+      subjectsToSocialModuleProfiles: {} as any,
+      social: {
+        chat: { find: jest.fn().mockResolvedValue([]) },
+        profilesToChats: { find: jest.fn().mockResolvedValue([]) },
+      } as any,
+    });
+    await (service as any).resolveTelegramChat({
+      chatId,
+      privateChatOwnerId,
+      profileId: "profile",
+      headers: {},
+    });
+    if (privateChatOwnerId) {
+      expect(createOwnedChat).toHaveBeenCalledWith(
+        privateChatOwnerId,
+        expect.objectContaining({ sourceSystemId: chatId }),
+      );
+      expect(mockSocialModuleChatCreate).not.toHaveBeenCalled();
+    } else {
+      expect(createOwnedChat).not.toHaveBeenCalled();
+      expect(mockSocialModuleChatCreate).toHaveBeenCalledTimes(1);
+    }
+  },
+);

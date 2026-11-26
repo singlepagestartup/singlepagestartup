@@ -102,3 +102,55 @@ it("blocks a legacy renamed SVG read projection and preserves its File record an
   ]);
   expect(stored.mimeType).toBe("image/png");
 });
+
+it("indexes public file names and legacy protected records without reading media bytes or author profiles", async () => {
+  const privateId = "ef00e598-d16c-424a-8f6b-b18a5156b76d";
+  const findLinks = jest
+    .fn()
+    .mockResolvedValue([
+      { messageId: "public", fileStorageModuleFileId: "file" },
+    ]);
+  const readBytes = jest.fn();
+  const service = new Service({
+    modules: {
+      social: { messagesToFileStorageModuleFiles: { find: findLinks } },
+      fileStorage: {
+        file: {
+          find: async () => [
+            { id: "file", file: "/public/notes.txt", adminTitle: "Notes" },
+          ],
+          readBytes,
+        },
+      },
+    },
+  } as any);
+  const result = await service.attachmentIndex([
+    { id: "empty", variant: "default" },
+    {
+      id: "private",
+      variant: "customer-work",
+      metadata: {
+        customerWorkMedia: {
+          id: privateId,
+          digest: "a".repeat(64),
+          mimeType: "audio/wav",
+        },
+      },
+    },
+    { id: "public", variant: "default" },
+  ] as any);
+  expect(result.map((message) => message.id)).toEqual(["private", "public"]);
+  expect(result[0].privateAttachments).toEqual([
+    { id: privateId, name: "clip.wav", mimeType: "audio/wav" },
+  ]);
+  expect(result[0]).not.toHaveProperty("metadata");
+  expect(result[0]).not.toHaveProperty("description");
+  expect(result[1].publicAttachmentRefs).toEqual([
+    { id: "file", name: "Notes" },
+  ]);
+  expect(findLinks.mock.calls[0][0].params.filters.and[0].value).toEqual([
+    "empty",
+    "public",
+  ]);
+  expect(readBytes).not.toHaveBeenCalled();
+});

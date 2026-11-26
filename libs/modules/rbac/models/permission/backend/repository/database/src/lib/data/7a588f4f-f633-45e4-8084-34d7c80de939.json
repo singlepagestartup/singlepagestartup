@@ -1,9 +1,0 @@
-{
-  "id": "7a588f4f-f633-45e4-8084-34d7c80de939",
-  "createdAt": "2026-11-18T00:00:00.000Z",
-  "updatedAt": "2026-11-18T00:00:00.000Z",
-  "variant": "default",
-  "type": "HTTP",
-  "method": "POST",
-  "path": "/api/rbac/subjects/[rbac.subjects.id]/ecommerce-module/catalogue-attributes"
-}

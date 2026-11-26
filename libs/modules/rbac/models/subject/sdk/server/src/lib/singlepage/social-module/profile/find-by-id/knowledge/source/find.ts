@@ -10,6 +10,7 @@ import QueryString from "qs";
 export interface IProps {
   id: string;
   socialModuleProfileId: string;
+  personal?: boolean;
   host?: string;
   tag?: string;
   revalidate?: number;
@@ -19,7 +20,7 @@ export interface IProps {
   options?: Partial<NextRequestOptions>;
 }
 
-export type IResult = IKnowledgeModuleSource[];
+export type IResult = (IKnowledgeModuleSource & { editable?: boolean })[];
 
 export async function action(props: IProps): Promise<IResult> {
   const {
@@ -36,12 +37,13 @@ export async function action(props: IProps): Promise<IResult> {
     credentials: "include",
     method: "GET",
     ...options,
+    ...(props.personal ? { cache: "no-store" as const } : {}),
     next: {
       ...options?.next,
     },
   };
   const res = await fetch(
-    `${host}${route}/${id}/social-module/profiles/${socialModuleProfileId}/knowledge/sources?${stringifiedQuery}`,
+    `${host}${route}/${id}/social-module/profiles/${socialModuleProfileId}/knowledge/sources${props.personal ? "/personal" : ""}?${stringifiedQuery}`,
     requestOptions,
   );
   const json = await responsePipe<{ data: IResult }>({

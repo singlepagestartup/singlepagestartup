@@ -1,5 +1,5 @@
-import type { IModel as IKnowledgeModuleSource } from "@sps/knowledge/models/source/sdk/model";
 import type { TRbacAiReactionReasoning } from "@sps/rbac/models/subject/sdk/model";
+import type { IResult as ISubjectResults } from "@sps/rbac/models/subject/sdk/client";
 import type { IModel as ISocialModuleSkill } from "@sps/social/models/skill/sdk/model";
 
 export interface ProfileSummary {
@@ -41,41 +41,32 @@ export interface SkillCreateContext {
 export interface SkillUpdateValues extends SkillCreateValues {}
 
 export type OpenRouterReasoningValue = TRbacAiReactionReasoning;
-export type OpenRouterReasoningEffort = Exclude<
-  OpenRouterReasoningValue,
-  "auto"
->;
-
 export interface OpenRouterReasoningOption {
   label: string;
+  labelRu: string;
   value: OpenRouterReasoningValue;
 }
 
-export interface OpenRouterChatModelReasoning {
-  defaultEffort: OpenRouterReasoningEffort | null;
-  defaultEnabled: boolean | null;
-  mandatory: boolean;
-  supportedEfforts: OpenRouterReasoningEffort[];
-  supportsMaxTokens: boolean;
+type TChatModelGroups =
+  ISubjectResults["ISocialModuleProfileFindByIdChatFindByIdOpenrouterModelFindResult"]["groups"];
+
+export interface IChatModelControls {
+  mode: "assistant" | "order";
+  fixedModelLabel?: string;
+  favoriteModelIds: string[];
+  isLoadingModels: boolean;
+  isSelectionUnavailable: boolean;
+  isUpdatingFavorites: boolean;
+  modelGroups: TChatModelGroups;
+  onFavoriteToggle: (canonicalId: string) => void;
+  onModelChange: (modelId: string) => void;
+  onReasoningChange: (effort: OpenRouterReasoningValue) => void;
+  reasoningOptions: OpenRouterReasoningOption[];
+  selectedModelId: string;
+  selectedModelLabel: string;
+  selectedReasoning: OpenRouterReasoningValue;
 }
 
-export interface OpenRouterChatModelOption {
-  id: string;
-  name: string;
-  description: string;
-  contextLength: number;
-  inputModalities: string[];
-  outputModalities: string[];
-  supportedParameters: string[];
-  supportsReasoning: boolean;
-  reasoning: OpenRouterChatModelReasoning | null;
-}
-
-export interface OpenRouterChatModelGroup {
-  id: "text" | "vision_file" | "image" | "audio";
-  title: string;
-  models: OpenRouterChatModelOption[];
-}
-
-export type KnowledgeSource = IKnowledgeModuleSource;
+export type KnowledgeSource =
+  ISubjectResults["ISocialModuleProfileFindByIdKnowledgeSourceFindResult"][number];
 export type SocialSkill = ISocialModuleSkill;

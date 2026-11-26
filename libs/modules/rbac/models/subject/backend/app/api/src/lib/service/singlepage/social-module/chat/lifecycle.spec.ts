@@ -8,25 +8,6 @@ jest.mock("@sps/shared-utils", () => {
   };
 });
 
-jest.mock("@sps/social/models/thread/sdk/server", () => {
-  return {
-    api: {
-      create: (...args: unknown[]) => mockSocialModuleThreadCreate(...args),
-      findById: jest.fn(),
-    },
-  };
-});
-
-jest.mock("@sps/social/relations/chats-to-threads/sdk/server", () => {
-  return {
-    api: {
-      create: (...args: unknown[]) =>
-        mockSocialModuleChatsToThreadsCreate(...args),
-    },
-  };
-});
-
-jest.mock("@sps/social/models/chat/sdk/server", () => ({ api: {} }));
 jest.mock("@sps/social/models/profile/sdk/server", () => ({ api: {} }));
 jest.mock(
   "@sps/rbac/relations/subjects-to-social-module-profiles/sdk/server",
@@ -37,6 +18,64 @@ jest.mock("@sps/social/relations/profiles-to-chats/sdk/server", () => ({
 }));
 
 import { Service as ChatLifecycleService } from "./lifecycle";
+
+it.each([
+  { variant: "store-employee" },
+  { slug: "store-employee-training-reserved" },
+])(
+  "reserves employee training chat identities from ordinary create",
+  async (data) => {
+    const lifecycle = new ChatLifecycleService({} as never);
+    await expect(
+      lifecycle.createChatWithDefaultThread({
+        subjectId: "subject",
+        autoBootstrapProfile: true,
+        data,
+      }),
+    ).rejects.toThrow("Forbidden error");
+  },
+);
+
+it("creates one default thread without document metadata for a new AI Chat", async () => {
+  const thread = { id: "default-thread", variant: "default", metadata: {} };
+  mockSocialModuleThreadCreate.mockResolvedValueOnce(thread);
+  const lifecycle = new ChatLifecycleService({
+    modules: {
+      social: {
+        chat: {
+          findById: jest
+            .fn()
+            .mockResolvedValue({ id: "chat-1", variant: "ai-chat" }),
+        },
+        thread: { create: mockSocialModuleThreadCreate },
+        chatsToThreads: {
+          find: jest.fn().mockResolvedValue([]),
+          create: mockSocialModuleChatsToThreadsCreate,
+        },
+      },
+    },
+  } as never);
+
+  const result = await lifecycle.ensureDefaultThreadForChat({
+    socialModuleChatId: "chat-1",
+  });
+
+  expect(result).toEqual(thread);
+  expect(mockSocialModuleThreadCreate).toHaveBeenCalledTimes(1);
+  expect(mockSocialModuleThreadCreate).toHaveBeenCalledWith(
+    expect.objectContaining({ data: { variant: "default" } }),
+  );
+  expect(mockSocialModuleChatsToThreadsCreate).toHaveBeenCalledTimes(1);
+  expect(mockSocialModuleChatsToThreadsCreate).toHaveBeenCalledWith(
+    expect.objectContaining({
+      data: {
+        chatId: "chat-1",
+        threadId: "default-thread",
+        variant: "default",
+      },
+    }),
+  );
+});
 
 describe("Given: a web chat has several default-variant threads", () => {
   beforeEach(() => {

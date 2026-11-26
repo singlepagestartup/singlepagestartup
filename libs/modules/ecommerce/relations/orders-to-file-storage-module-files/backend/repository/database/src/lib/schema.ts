@@ -22,4 +22,11 @@ export const Table = pgTable(table, {
     .uuid("fe_se_me_fe_id")
     .notNull()
     .references(() => FileStorageModuleFile.id, { onDelete: "cascade" }),
+  privateReceiptFileId: pgCore
+    .uuid("private_receipt_file_id")
+    .references(() => FileStorageModuleFile.id, { onDelete: "restrict" }),
+  legacyReceiptLocation: pgCore.text("legacy_receipt_location"),
+  legacyReceiptRevokedAt: pgCore.timestamp("legacy_receipt_revoked_at", {
+    precision: 3,
+  }),
 });

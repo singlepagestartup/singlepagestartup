@@ -75,6 +75,16 @@ export function find(props: IFindProps) {
       return data;
     },
     staleTime: STALE_TIME,
+    retry(failureCount, error) {
+      if (
+        error &&
+        "status" in error &&
+        [401, 403, 404].includes(Number(error.status))
+      ) {
+        return false;
+      }
+      return failureCount < 3;
+    },
     ...props.reactQueryOptions,
   });
 }
@@ -106,6 +116,22 @@ export function update(props: IUpdateProps) {
             },
           );
 
+        // Favorites belong to the Subject, although each chat has its own reader.
+        const profilePrefix = `${route}/${mutationFunctionProps.id}/social-module/profiles/`;
+        queryClient.setQueriesData<IResult>(
+          {
+            predicate: ({ queryKey, state }) => {
+              const key = queryKey[0];
+              return (
+                state.status === "success" &&
+                typeof key === "string" &&
+                key.startsWith(profilePrefix) &&
+                key.endsWith("/openrouter/model-favorites")
+              );
+            },
+          },
+          result,
+        );
         queryClient.setQueryData([mutationKey], result);
 
         return result;

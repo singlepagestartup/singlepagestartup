@@ -12,6 +12,9 @@ export function Component(props: IComponentPropsExtended) {
       socialModuleProfile={props.socialModuleProfile}
       socialModuleChats={props.socialModuleChats}
       currentSocialModuleChatId={props.currentSocialModuleChatId}
+      compact={props.compact}
+      currentChatActions={props.currentChatActions}
+      onSelectCurrentChat={props.onSelectCurrentChat}
     />
   );
 }

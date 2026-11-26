@@ -6,6 +6,7 @@
  * Then: they target RBAC-scoped profile Knowledge routes.
  */
 
+import { action as createSource } from "./create";
 import { action as findDocuments } from "./find";
 import { action as deleteSource } from "./find-by-id/delete";
 import { action as reindexSource } from "./find-by-id/reindex";
@@ -13,11 +14,12 @@ import { action as updateSource } from "./find-by-id/update";
 
 describe("rbac profile-scoped Knowledge Source SDK actions", () => {
   beforeEach(() => {
-    global.fetch = jest.fn().mockResolvedValue(
-      new Response(JSON.stringify({ data: [] }), {
-        status: 200,
-        headers: { "content-type": "application/json" },
-      }),
+    global.fetch = jest.fn().mockImplementation(
+      async () =>
+        new Response(JSON.stringify({ data: [] }), {
+          status: 200,
+          headers: { "content-type": "application/json" },
+        }),
     ) as any;
   });
 
@@ -46,6 +48,102 @@ describe("rbac profile-scoped Knowledge Source SDK actions", () => {
       }),
     );
   });
+
+  it("uses the owner-only route for personal sources", async () => {
+    await findDocuments({
+      host: "http://api.test",
+      id: "subject-1",
+      socialModuleProfileId: "my-profile",
+      personal: true,
+    });
+    expect(global.fetch).toHaveBeenCalledWith(
+      "http://api.test/api/rbac/subjects/subject-1/social-module/profiles/my-profile/knowledge/sources/personal?",
+      expect.objectContaining({
+        method: "GET",
+        credentials: "include",
+        cache: "no-store",
+      }),
+    );
+  });
+
+  it("creates and updates personal sources with owner scope, retry key and original revision", async () => {
+    const scope = {
+      host: "http://api.test",
+      id: "sender",
+      socialModuleProfileId: "mine",
+      personal: true,
+      options: { headers: { Authorization: "Bearer my-session" } },
+    };
+    const data = { title: "Delivery", content: "Call on arrival" };
+    await createSource({
+      ...scope,
+      data: { ...data, operationKey: "retry-key" },
+    });
+    await updateSource({
+      ...scope,
+      knowledgeModuleSourceId: "source-1",
+      data: {
+        ...data,
+        expectedContentHash: "revision",
+        expectedTitle: "Old delivery title",
+      },
+    });
+    const path =
+      "http://api.test/api/rbac/subjects/sender/social-module/profiles/mine/knowledge/sources/personal";
+    expect(global.fetch).toHaveBeenNthCalledWith(
+      1,
+      path + "?",
+      expect.objectContaining({
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
+          Authorization: "Bearer my-session",
+        },
+        body: JSON.stringify({ data: { ...data, operationKey: "retry-key" } }),
+      }),
+    );
+    expect(global.fetch).toHaveBeenNthCalledWith(
+      2,
+      path + "/source-1?",
+      expect.objectContaining({
+        method: "PATCH",
+        body: JSON.stringify({
+          data: {
+            ...data,
+            expectedContentHash: "revision",
+            expectedTitle: "Old delivery title",
+          },
+        }),
+      }),
+    );
+  });
+
+  it.each([409, 503])(
+    "returns the HTTP failure for an unsaved revision (%s)",
+    async (status) => {
+      (global.fetch as jest.Mock).mockResolvedValueOnce(
+        new Response(JSON.stringify({ error: "Request failed" }), {
+          status,
+          headers: { "content-type": "application/json" },
+        }),
+      );
+      await expect(
+        updateSource({
+          host: "http://api.test",
+          id: "owner",
+          socialModuleProfileId: "mine",
+          personal: true,
+          knowledgeModuleSourceId: "source",
+          data: {
+            title: "Note",
+            content: "Draft",
+            expectedTitle: "Note",
+            expectedContentHash: "revision",
+          },
+        }),
+      ).rejects.toMatchObject({ status });
+    },
+  );
 
   /**
    * BDD Scenario: update profile document.

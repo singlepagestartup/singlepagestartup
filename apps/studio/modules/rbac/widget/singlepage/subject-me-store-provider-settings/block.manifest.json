@@ -1,0 +1,27 @@
+{
+  "id": "rbac.widget.subject-me-store-provider-settings",
+  "title": "Подключения и бюджет магазина",
+  "description": "Owner assignments, credential metadata, budgets and reconciliation.",
+  "layer": "singlepage",
+  "state": "draft",
+  "source": {
+    "module": "rbac",
+    "entityType": "model",
+    "entity": "widget",
+    "variant": "subject-me-store-provider-settings"
+  },
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "contentSlots": [],
+  "figma": {
+    "componentName": "rbac.widget",
+    "pageName": "rbac",
+    "variantName": "subject-me-store-provider-settings",
+    "nodeId": null,
+    "variantNodeId": null,
+    "syncStatus": "not-created",
+    "metadataFile": "figma.json"
+  }
+}

@@ -47,16 +47,18 @@ export function Component(props: IComponentPropsExtended) {
           {ru ? "Обсуждения" : "Threads"}
         </h3>
         {props.threads}
-        <Link
-          prefetch={false}
-          href={getLocalizedHref(localeBase, props.newThreadHref)}
-          aria-current={props.creatingThread ? "page" : undefined}
-          className={`flex min-h-11 w-full items-center gap-2 rounded-xl border border-default-foreground/15 px-3 py-2 text-left text-sm text-default-foreground/80 hover:bg-card/10 ${props.creatingThread ? "bg-card/15" : ""} ${focus}`}
-        >
-          <Icon name="plus" className="size-4" />
+        {props.newThreadHref && (
+          <Link
+            prefetch={false}
+            href={getLocalizedHref(localeBase, props.newThreadHref)}
+            aria-current={props.creatingThread ? "page" : undefined}
+            className={`flex min-h-11 w-full items-center gap-2 rounded-xl border border-default-foreground/15 px-3 py-2 text-left text-sm text-default-foreground/80 hover:bg-card/10 ${props.creatingThread ? "bg-card/15" : ""} ${focus}`}
+          >
+            <Icon name="plus" className="size-4" />
 
-          {ru ? "Новое обсуждение" : "New thread"}
-        </Link>
+            {ru ? "Новое обсуждение" : "New thread"}
+          </Link>
+        )}
       </section>
     </div>
   );

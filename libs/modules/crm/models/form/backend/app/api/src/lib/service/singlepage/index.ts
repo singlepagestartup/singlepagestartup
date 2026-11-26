@@ -18,12 +18,15 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
   }
 
   declare repository: Repository;
-  async submit(props: {
-    key: string;
-    digest: string;
-    formId: string;
-    payload: Record<string, unknown>;
-  }) {
+  async submit(
+    props: {
+      key: string;
+      digest: string;
+      formId: string;
+      payload: Record<string, unknown>;
+    },
+    onSaved?: (requestId: string) => Promise<unknown>,
+  ) {
     return this.repository.transaction(async (db) => {
       return withConsistencyDatabase(db, async () => {
         await this.repository.lockSubmission(props.key);
@@ -46,6 +49,9 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
         await relations.create({
           data: { formId: props.formId, requestId: request.id },
         });
+        if (onSaved) {
+          await onSaved(request.id);
+        }
         return { request, created: true };
       });
     });

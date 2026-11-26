@@ -23,6 +23,7 @@ export function action(props: IProps) {
     meta: {
       ...props.reactQueryOptions?.meta,
       topics: [
+        "ecommerce.products",
         "ecommerce.stores-to-products",
         "ecommerce.offers-to-offers",
         "ecommerce.attributes",

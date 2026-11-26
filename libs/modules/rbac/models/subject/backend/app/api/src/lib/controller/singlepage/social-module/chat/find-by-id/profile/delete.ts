@@ -46,6 +46,17 @@ export class Handler {
         socialModuleChatId,
       });
 
+      const taskChat = c.get("taskChatScope");
+      if (taskChat) {
+        const removed =
+          await this.service.crmWorkspace.chatSettings.removeParticipant(
+            taskChat,
+            id,
+            socialModuleProfileId,
+          );
+        return c.json({ data: removed });
+      }
+
       const allSocialModuleProfilesToChats =
         await this.service.modules.social.profilesToChats.find({
           params: {

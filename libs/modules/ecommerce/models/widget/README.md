@@ -26,6 +26,7 @@ Ecommerce widgets render lists and overview layouts for orders, products, catego
 - `product-overview-default`: card layout for product overviews.
 - `category-list-default`: card layout listing categories.
 - `category-overview-default`: wrapper for category overview content.
+- `store-header-default` renders Store `header-default` for the supplied store ID. RBAC store pages select this Widget through their saved `widgets-to-ecommerce-module-widgets` links and supply navigation for the current user.
 - `store-list-default`: wrapper for listing stores.
 - `store-overview-default`: wrapper for store overview content.
 - `find`: data-fetch wrapper for querying widgets.

@@ -1,0 +1,2 @@
+ALTER TABLE "sps_rc_subject" ADD COLUMN "social_thread_reads_since" timestamp DEFAULT now() NOT NULL;--> statement-breakpoint
+ALTER TABLE "sps_rc_subject" ADD COLUMN "social_thread_read_cursors" jsonb DEFAULT '{}'::jsonb NOT NULL;

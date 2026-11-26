@@ -1,5 +1,36 @@
 import { z } from "zod";
+import type { ICartDetails } from "@sps/ecommerce/models/order/sdk/model";
 import type { IOfferQuote } from "@sps/ecommerce/relations/stores-to-products/sdk/model";
+
+export interface ICheckoutOrderSelection {
+  id: string;
+  /** The complete set of primary lines in the selected order. */
+  lineIds?: string[];
+}
+
+export interface ICartWork {
+  paymentTiming: "after-acceptance";
+  state:
+    | "requires-discussion"
+    | "discussion-unavailable"
+    | "awaiting-result"
+    | "awaiting-payment";
+  orderId: string;
+  storeId: string;
+}
+
+export interface ICartDiscussion {
+  storeId: string;
+  taskId: string;
+  threadId: string;
+  chatId: string;
+}
+
+export interface ISubjectCartDetails extends ICartDetails {
+  storeIds: string[];
+  work?: ICartWork;
+  discussion?: ICartDiscussion;
+}
 
 export const ecommerceCartSelectionSchema = z
   .object({

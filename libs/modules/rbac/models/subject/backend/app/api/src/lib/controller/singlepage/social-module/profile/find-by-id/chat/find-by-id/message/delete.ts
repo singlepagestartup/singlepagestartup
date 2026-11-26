@@ -5,6 +5,7 @@ import { Service } from "../../../../../../../../service";
 import { api as rbacSubjectApi } from "@sps/rbac/models/subject/sdk/server";
 import { api as socialModuleMessageApi } from "@sps/social/models/message/sdk/server";
 import { getHttpErrorType } from "@sps/backend-utils";
+import { Service as ChatMessages } from "../../../../../../../../service/startup/social-module/chat/messages";
 
 export class Handler {
   service: Service;
@@ -53,38 +54,13 @@ export class Handler {
         throw new Error("Validation error. No socialModuleMessageId provided");
       }
 
-      const chatToMessages =
-        await this.service.modules.social.chatsToMessages.find({
-          params: {
-            filters: {
-              and: [
-                {
-                  column: "chatId",
-                  method: "eq",
-                  value: socialModuleChatId,
-                },
-                {
-                  column: "messageId",
-                  method: "eq",
-                  value: socialModuleMessageId,
-                },
-              ],
-            },
-          },
-        });
-
-      if (!chatToMessages?.length) {
-        throw new Error("Not found error. Message not found in chat");
-      }
-
-      const socialModuleMessage =
-        await this.service.modules.social.message.findById({
-          id: socialModuleMessageId,
-        });
-
-      if (!socialModuleMessage) {
-        throw new Error("Not found error. Social module message not found");
-      }
+      const socialModuleMessage = await new ChatMessages(this.service).editable(
+        {
+          chatId: socialModuleChatId,
+          messageId: socialModuleMessageId,
+          profileId: socialModuleProfileId,
+        },
+      );
 
       await rbacSubjectApi.socialModuleProfileFindByIdChatFindByIdActionCreate({
         id,

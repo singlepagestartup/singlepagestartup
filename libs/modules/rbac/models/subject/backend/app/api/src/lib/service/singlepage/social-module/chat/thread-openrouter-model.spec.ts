@@ -32,8 +32,10 @@ describe("Given: the Subject service owns a chat thread", () => {
       overrideService(threadOwner, thread);
     });
     const subject = Object.create(Service.prototype) as Service;
+    Object.defineProperty(subject, "chatOwnership", {
+      value: { assertOwner: assertSubjectOwnsChat },
+    });
     const service = Object.assign(subject, {
-      socialModuleChatLifecycleAssertSubjectOwnsChat: assertSubjectOwnsChat,
       socialModuleChatLifecycleAssertThreadBelongsToChat:
         assertThreadBelongsToChat,
     }).withAppAssembly(assembly);
@@ -57,10 +59,7 @@ describe("Given: the Subject service owns a chat thread", () => {
         },
       },
     });
-    expect(assertSubjectOwnsChat).toHaveBeenCalledWith({
-      subjectId: "subject-1",
-      socialModuleChatId: "chat-1",
-    });
+    expect(assertSubjectOwnsChat).toHaveBeenCalledWith("subject-1", "chat-1");
     expect(assertThreadBelongsToChat).toHaveBeenCalledWith({
       socialModuleChatId: "chat-1",
       socialModuleThreadId: "thread-1",

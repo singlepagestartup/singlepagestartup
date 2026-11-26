@@ -1,136 +1,58 @@
-const sign = jest
-  .fn()
-  .mockResolvedValue("server-signed-rbac-subject-authentication-jwt");
-
-jest.mock("hono/jwt", () => ({ sign }));
-jest.mock("@sps/shared-utils", () => ({
-  RBAC_JWT_SECRET: "rbac-jwt-secret",
-  RBAC_JWT_TOKEN_LIFETIME_IN_SECONDS: 3600,
-}));
-
 import { Handler } from "./find";
 
-describe("owner-scoped profile MCP catalog endpoint", () => {
-  beforeEach(() => {
-    jest.clearAllMocks();
+function fixture(token?: string, ownerId = "manager") {
+  const close = jest.fn();
+  const catalog = { supported: [], connected: [], stale: [] };
+  const service = {
+    modules: {
+      social: {
+        profile: {
+          findById: async () => ({
+            id: "employee-profile",
+            allowedMcpServerIds: ["singlepagestartup"],
+          }),
+        },
+      },
+    },
+    me: jest.fn().mockResolvedValue({ id: ownerId, variant: "default" }),
+    socialModuleProfileMcpCatalogOpen: jest
+      .fn()
+      .mockResolvedValue({ catalog, close }),
+  };
+  const context = {
+    req: {
+      param: (key: string) => (key === "id" ? "manager" : "employee-profile"),
+      header: () => (token ? "Bearer " + token : undefined),
+    },
+    json: jest.fn(),
+  };
+  return {
+    service,
+    close,
+    catalog,
+    context,
+    execute: () =>
+      new Handler(service as never).execute(context as never, undefined),
+  };
+}
+
+it("discovers the employee's configured tools under the caller's original access token", async () => {
+  const { service, execute, close, catalog, context } = fixture("sender-token");
+  await execute();
+  expect(service.socialModuleProfileMcpCatalogOpen).toHaveBeenCalledWith({
+    subjectId: "manager",
+    configuredServerIds: ["singlepagestartup"],
+    rbacSubjectAuthenticationJwt: "sender-token",
   });
+  expect(context.json).toHaveBeenCalledWith({ data: catalog });
+  expect(close).toHaveBeenCalledTimes(1);
+});
 
-  /**
-   * BDD Scenario: live catalog response and cleanup.
-   *
-   * Given: a profile allows SinglePageStartup MCP and the authenticated owner supplies an RBAC subject authentication JWT.
-   * When: its MCP server descriptors are requested.
-   * Then: the catalog is returned and its turn-scoped session is closed.
-   */
-  it("returns the profile catalog and closes its MCP session", async () => {
-    const close = jest.fn().mockResolvedValue(undefined);
-    const catalog = {
-      supported: [{ id: "singlepagestartup", title: "SinglePageStartup MCP" }],
-      connected: [
-        { id: "singlepagestartup", title: "SinglePageStartup MCP", tools: [] },
-      ],
-      stale: ["retired-server"],
-    };
-    const service = {
-      findById: jest.fn().mockResolvedValue({
-        id: "rbac-subject-1",
-        slug: "rbac.subject",
-      }),
-      socialModuleProfileMcpCatalogOpen: jest
-        .fn()
-        .mockResolvedValue({ catalog, close }),
-      modules: {
-        social: {
-          profile: {
-            findById: jest.fn().mockResolvedValue({
-              id: "profile-1",
-              allowedMcpServerIds: ["singlepagestartup", "retired-server"],
-            }),
-          },
-        },
-      },
-      module: {
-        subjectsToSocialModuleProfiles: {
-          find: jest.fn().mockResolvedValue([
-            {
-              subjectId: "rbac-subject-1",
-              socialModuleProfileId: "profile-1",
-            },
-          ]),
-        },
-      },
-    } as any;
-    const context = {
-      req: {
-        param: jest.fn((name: string) =>
-          name === "socialModuleProfileId" ? "profile-1" : undefined,
-        ),
-      },
-      json: jest.fn((body: unknown) => new Response(JSON.stringify(body))),
-    } as any;
-
-    await new Handler(service).execute(context, undefined);
-
-    expect(service.socialModuleProfileMcpCatalogOpen).toHaveBeenCalledWith({
-      configuredServerIds: ["singlepagestartup", "retired-server"],
-      rbacSubjectAuthenticationJwt:
-        "server-signed-rbac-subject-authentication-jwt",
-    });
-    expect(sign).toHaveBeenCalledWith(
-      expect.objectContaining({
-        subject: expect.objectContaining({ id: "rbac-subject-1" }),
-      }),
-      "rbac-jwt-secret",
-    );
-    expect(context.json).toHaveBeenCalledWith({ data: catalog });
-    expect(close).toHaveBeenCalledTimes(1);
-  });
-
-  /**
-   * BDD Scenario: ambiguous rbac.subject identity.
-   *
-   * Given: a profile is linked to multiple RBAC subjects.
-   * When: its MCP catalog is requested.
-   * Then: no rbac.subject JWT or MCP session is created.
-   */
-  it("fails closed unless the profile has exactly one rbac.subject", async () => {
-    const service = {
-      findById: jest.fn(),
-      socialModuleProfileMcpCatalogOpen: jest.fn(),
-      modules: {
-        social: {
-          profile: {
-            findById: jest.fn().mockResolvedValue({
-              id: "profile-1",
-              allowedMcpServerIds: ["singlepagestartup"],
-            }),
-          },
-        },
-      },
-      module: {
-        subjectsToSocialModuleProfiles: {
-          find: jest
-            .fn()
-            .mockResolvedValue([
-              { subjectId: "rbac.subject-1" },
-              { subjectId: "rbac.subject-2" },
-            ]),
-        },
-      },
-    } as any;
-    const context = {
-      req: {
-        param: jest.fn(() => "profile-1"),
-      },
-    } as any;
-
-    await expect(
-      new Handler(service).execute(context, undefined),
-    ).rejects.toThrow("exactly one linked rbac.subject");
-    expect(sign).not.toHaveBeenCalledWith(
-      expect.objectContaining({ subject: expect.anything() }),
-      expect.anything(),
-    );
-    expect(service.socialModuleProfileMcpCatalogOpen).not.toHaveBeenCalled();
-  });
+it.each([
+  [undefined, "manager"],
+  ["other-token", "other-user"],
+])("requires an authenticated matching caller", async (token, ownerId) => {
+  const { service, execute } = fixture(token, ownerId);
+  await expect(execute()).rejects.toThrow();
+  expect(service.socialModuleProfileMcpCatalogOpen).not.toHaveBeenCalled();
 });

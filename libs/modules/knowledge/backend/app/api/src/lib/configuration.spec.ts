@@ -10,6 +10,7 @@ import {
   getKnowledgeConfiguration,
   KNOWLEDGE_DEFAULT_OPEN_ROUTER_EMBEDDING_MODEL,
   KNOWLEDGE_LLM_EMBEDDING_MODEL,
+  knowledgeEmbeddingIndexKey,
 } from "./configuration";
 
 const originalEnvironment = {
@@ -17,11 +18,28 @@ const originalEnvironment = {
   KNOWLEDGE_OPEN_ROUTER_EMBEDDING_MODEL:
     process.env.KNOWLEDGE_OPEN_ROUTER_EMBEDDING_MODEL,
   OPEN_ROUTER_API_KEY: process.env.OPEN_ROUTER_API_KEY,
+  OPEN_AI_API_KEY: process.env.OPEN_AI_API_KEY,
 };
 
 describe("knowledge embedding provider configuration", () => {
   afterEach(() => {
     restoreEnvironment();
+  });
+
+  it("defaults to direct OpenAI using the server key and the paid index identity", () => {
+    delete process.env.KNOWLEDGE_EMBEDDING_PROVIDER;
+    process.env.OPEN_AI_API_KEY = " openai-fixture ";
+    const { embedding } = getKnowledgeConfiguration();
+    expect(embedding).toEqual({
+      provider: "openai",
+      model: "text-embedding-3-large",
+      dimensions: 768,
+      url: "https://api.openai.com/v1",
+      apiKey: "openai-fixture",
+    });
+    expect(knowledgeEmbeddingIndexKey(embedding)).toBe(
+      "openai:text-embedding-3-large:768:v1",
+    );
   });
 
   /**
@@ -102,7 +120,9 @@ describe("knowledge embedding provider configuration", () => {
   it("rejects unsupported embedding providers", () => {
     process.env.KNOWLEDGE_EMBEDDING_PROVIDER = "unknown";
 
-    expect(() => getKnowledgeConfiguration()).toThrow("llm or openrouter");
+    expect(() => getKnowledgeConfiguration()).toThrow(
+      "llm, openrouter or openai",
+    );
   });
 });
 

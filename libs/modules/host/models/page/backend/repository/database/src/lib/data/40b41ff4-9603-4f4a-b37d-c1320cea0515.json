@@ -1,0 +1,35 @@
+{
+  "metadata": {
+    "seo": {
+      "title": {
+        "en": "Product attributes — SinglePageStartup",
+        "ru": "Атрибуты товаров — SinglePageStartup"
+      }
+    },
+    "seoDisplay": {
+      "twitterTitle": {
+        "en": "Product attributes — SinglePageStartup",
+        "ru": "Атрибуты товаров — SinglePageStartup"
+      },
+      "opengraphTitle": {
+        "en": "Product attributes — SinglePageStartup",
+        "ru": "Атрибуты товаров — SinglePageStartup"
+      },
+      "opengraphLocale": {
+        "en": "en_US",
+        "ru": "ru_RU"
+      }
+    }
+  },
+  "id": "40b41ff4-9603-4f4a-b37d-c1320cea0515",
+  "title": "Product attributes",
+  "url": "/ecommerce/stores/[ecommerce.stores.slug]/products/attributes",
+  "slug": "store-product-attributes",
+  "description": "Description",
+  "createdAt": "2026-11-24T18:57:57.579Z",
+  "updatedAt": "2026-11-24T18:57:57.579Z",
+  "variant": "noindex",
+  "className": null,
+  "language": "en",
+  "adminTitle": "Product attributes"
+}

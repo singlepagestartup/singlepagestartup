@@ -28,6 +28,12 @@ export interface IProps {
 }
 
 export type IResult = ISocialModuleChat & {
+  coverFileId?: string | null;
+  taskChatStaff?: boolean;
+  canManageChat?: boolean;
+  protectedProfileIds?: string[];
+  mainThreadId?: string;
+  taskChatThreadId?: string;
   participants?: ISocialModuleProfile[];
   participantPresentations?: IProfilePresentation[];
 };

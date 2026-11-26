@@ -14,6 +14,8 @@ import { createHmac, randomBytes } from "node:crypto";
 import { IModel } from "@sps/rbac/models/identity/sdk/model";
 import { assertCredentialColumnsAreHashed } from "@sps/backend-utils";
 
+import type { Repository } from "../../repository";
+
 export type IEmailAndPassword = {
   data: {
     type: "login" | "registration";
@@ -41,8 +43,31 @@ const PASSWORD_RESET_LIFETIME_MS = 60 * 60 * 1000;
 @injectable()
 @injectFromBase()
 export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
+  declare repository: Repository;
+
+  outboundProvider(id: string) {
+    return this.repository.outboundProvider(id);
+  }
+
   get modules() {
     return this.appAssembly.getOrCreate(createModules);
+  }
+
+  createOutbound(provider: "openai" | "openrouter") {
+    return super.insert({ usage: "outbound_api", provider });
+  }
+
+  protected override insert(data: any) {
+    if (
+      data.usage === "outbound_api" ||
+      data.provider === "openai" ||
+      data.provider === "openrouter"
+    ) {
+      throw new Error(
+        "Permission error. Use the store's provider connection operation",
+      );
+    }
+    return super.insert(data);
   }
 
   /**
@@ -57,7 +82,20 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     id: string;
     data: (typeof Table)["$inferSelect"];
   }): Promise<(typeof Table)["$inferSelect"] | null> {
+    if (
+      props.data.usage === "outbound_api" ||
+      props.data.provider === "openai" ||
+      props.data.provider === "openrouter"
+    ) {
+      throw new Error(
+        "Permission error. Use the store's provider connection operation",
+      );
+    }
     assertCredentialColumnsAreHashed(props.data);
+    const existing = await this.findById({ id: props.id });
+    if (!existing) {
+      return null;
+    }
 
     // A link sent to the previous address must not reset the new credentials.
     if (

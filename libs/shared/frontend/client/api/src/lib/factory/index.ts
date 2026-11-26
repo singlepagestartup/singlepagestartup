@@ -30,6 +30,7 @@ import {
 import {
   DefaultError,
   QueryClient,
+  skipToken,
   useMutation,
   useQuery,
 } from "@tanstack/react-query";
@@ -45,6 +46,7 @@ import {
   patchInListQueries,
   removeFromListQueries,
 } from "../cache";
+import { reconcileQueries } from "../cache/reconcile";
 
 export interface IFactoryProps<T> {
   route: string;
@@ -129,7 +131,7 @@ const invalidateByTopics = (topics: string[], queryClient: QueryClient) => {
     return;
   }
 
-  queryClient.invalidateQueries({
+  void reconcileQueries(queryClient, {
     predicate: (query) => {
       if (queryConsistency(queryClient).covered(query)) return false;
       const meta = query.meta as { topics?: string[] } | undefined;
@@ -278,7 +280,7 @@ export function subscription(route: string, queryClient: QueryClient) {
               isMatchingRoute(route, message.result["payload"])
             ) {
               setTimeout(() => {
-                queryClient.invalidateQueries({
+                void reconcileQueries(queryClient, {
                   queryKey: [route],
                   predicate: (query) =>
                     !queryConsistency(queryClient).covered(query),
@@ -335,8 +337,12 @@ export function factory<T>(factoryProps: IFactoryProps<T>) {
       // Destructure `meta` out of reactQueryOptions so the trailing spread does
       // NOT re-introduce it and silently clobber the derived topics. A
       // project-supplied meta is MERGED on top of the derived topics instead.
-      const { meta: userMeta, ...restReactQueryOptions } =
-        props?.reactQueryOptions ?? {};
+      const {
+        meta: userMeta,
+        enabled = true,
+        queryFn: customQueryFn,
+        ...restReactQueryOptions
+      } = props?.reactQueryOptions ?? {};
 
       return useQuery<T | undefined>({
         queryKey: consistencyQueryKey(route, props.params, factoryProps.host),
@@ -344,7 +350,8 @@ export function factory<T>(factoryProps: IFactoryProps<T>) {
           ? { topics: deriveTopicsFromPath(route), ...(userMeta ?? {}) }
           : undefined,
         queryFn: props.id
-          ? findByIdQuery({
+          ? (customQueryFn ??
+            findByIdQuery({
               ...factoryProps,
               cb: (data) => {
                 addToGlobalStore({
@@ -354,9 +361,9 @@ export function factory<T>(factoryProps: IFactoryProps<T>) {
                 });
               },
               ...props,
-            })
-          : undefined,
-        enabled: props.id ? true : false,
+            }))
+          : skipToken,
+        enabled: props.id ? enabled : false,
         staleTime:
           factoryProps.staleTime !== undefined
             ? factoryProps.staleTime

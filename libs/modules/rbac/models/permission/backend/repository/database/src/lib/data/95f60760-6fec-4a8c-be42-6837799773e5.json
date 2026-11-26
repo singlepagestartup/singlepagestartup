@@ -1,0 +1,9 @@
+{
+  "id": "95f60760-6fec-4a8c-be42-6837799773e5",
+  "createdAt": "2026-11-17T07:14:49.788Z",
+  "updatedAt": "2026-11-17T07:14:49.788Z",
+  "variant": "default",
+  "type": "HTTP",
+  "method": "POST",
+  "path": "/api/rbac/subjects/[rbac.subjects.id]/ecommerce-module/orders/[ecommerce.orders.id]/selection"
+}

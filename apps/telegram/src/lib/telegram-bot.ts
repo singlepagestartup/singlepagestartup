@@ -5,6 +5,7 @@ import { mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import {
+  CUSTOMER_WORK_OFFER_CHOICE_REQUIRED,
   NEXT_PUBLIC_TELEGRAM_SERVICE_URL,
   RBAC_JWT_SECRET,
   RBAC_JWT_TOKEN_LIFETIME_IN_SECONDS,
@@ -2121,23 +2122,41 @@ export class TelegarmBot {
       targetSocialModuleThread = socialModuleThread;
     }
 
-    return await rbacModuleSubjectApi.socialModuleProfileFindByIdChatFindByIdThreadFindByIdMessageCreate(
-      {
-        id: rbacModuleSubject.id,
-        socialModuleChatId: socialModuleChat.id,
-        socialModuleThreadId: targetSocialModuleThread.id,
-        socialModuleProfileId: socialModuleProfile.id,
-        data: {
-          ...props.data,
-          description: sanitizedDescription,
-        },
-        options: {
-          headers: {
-            Authorization: "Bearer " + jwtToken,
+    try {
+      const message =
+        await rbacModuleSubjectApi.socialModuleProfileFindByIdChatFindByIdThreadFindByIdMessageCreate(
+          {
+            id: rbacModuleSubject.id,
+            socialModuleChatId: socialModuleChat.id,
+            socialModuleThreadId: targetSocialModuleThread.id,
+            socialModuleProfileId: socialModuleProfile.id,
+            data: {
+              ...props.data,
+              description: sanitizedDescription,
+            },
+            options: {
+              headers: {
+                Authorization: "Bearer " + jwtToken,
+              },
+            },
           },
-        },
-      },
-    );
+        );
+      return message;
+    } catch (error) {
+      if (
+        error instanceof Error &&
+        error.message.includes(CUSTOMER_WORK_OFFER_CHOICE_REQUIRED)
+      ) {
+        const russian = props.ctx.from?.language_code?.startsWith("ru");
+        await props.ctx.reply(
+          russian
+            ? "Откройте нужное предложение магазина на сайте и нажмите «Задать вопрос»."
+            : "Open the store offer on the website and choose Ask a question.",
+        );
+        return;
+      }
+      throw error;
+    }
   }
 
   private async flushMediaGroup(props: { mediaGroupId: string }) {

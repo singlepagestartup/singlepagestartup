@@ -104,20 +104,17 @@ export class Handler {
         ),
         title: body.title || skill.title,
         content: transcript,
-      });
-      if (!knowledgeIngest.source)
-        throw new Error("Knowledge Source was not saved");
-      await this.service.modules.social.skillsToKnowledgeModuleSources.findOrCreate(
-        {
-          data: {
-            skillId: skill.id,
-            knowledgeModuleSourceId: knowledgeIngest.source.id,
-          },
+        onSourceSaved: async (sourceId) => {
+          await this.service.modules.social.skillsToKnowledgeModuleSources.findOrCreate(
+            {
+              data: { skillId: skill.id, knowledgeModuleSourceId: sourceId },
+            },
+          );
+          await this.ensureProfileKnowledgeSourceRelation({
+            socialModuleProfileId,
+            knowledgeModuleSourceId: sourceId,
+          });
         },
-      );
-      await this.ensureProfileKnowledgeSourceRelation({
-        socialModuleProfileId,
-        knowledgeModuleSourceId: knowledgeIngest.source.id,
       });
       const prompt = this.buildPrompt({
         profile,

@@ -19,6 +19,7 @@ export interface IConsistencyReadContext {
   collections?: Map<string, string>;
   complete: boolean;
   database?: any;
+  rollbackEffects?: Array<() => Promise<void>>;
   isCovered: (resource: string) => Promise<boolean>;
 }
 
@@ -274,31 +275,82 @@ export function compactDependencies(context: IConsistencyReadContext) {
   context.complete = false; // More than the bounded number of distinct resources.
 }
 
-export function withConsistencyDatabase<T>(
+async function undoEffects(
+  effects: Array<() => Promise<void>>,
+  cause: unknown,
+) {
+  const failures: unknown[] = [];
+  for (const undo of effects.reverse()) {
+    try {
+      await undo();
+    } catch (error) {
+      failures.push(error);
+    }
+  }
+  if (failures.length) {
+    throw new AggregateError(
+      [cause, ...failures],
+      "Transaction rollback cleanup failed",
+    );
+  }
+}
+
+export async function withConsistencyDatabase<T>(
   database: any,
+  operation: () => Promise<T>,
+  managedEffects?: Array<() => Promise<void>>,
+): Promise<T> {
+  const previous = consistencyContext.getStore();
+  if (previous?.database === database) {
+    return operation();
+  }
+  if (previous) {
+    previous.collections ??= new Map();
+  }
+  const scope: IConsistencyReadContext = {
+    ...(previous ?? {
+      dependencies: new Map(),
+      resources: new Set(),
+      complete: true,
+      isCovered: async () => false,
+    }),
+    database,
+    rollbackEffects: managedEffects ?? [],
+  };
+  try {
+    return await consistencyContext.run(scope, operation);
+  } catch (error) {
+    if (!managedEffects) {
+      await undoEffects(scope.rollbackEffects!, error);
+    }
+    throw error;
+  } finally {
+    if (previous && !scope.complete) {
+      previous.complete = false;
+    }
+  }
+}
+
+/** Keep non-database side effects with the transaction or savepoint that created them. */
+export async function withConsistencyTransaction<T>(
+  database: ReturnType<typeof getDrizzle>,
   operation: () => Promise<T>,
 ): Promise<T> {
   const previous = consistencyContext.getStore();
-  if (!previous)
-    return consistencyContext.run(
-      {
-        dependencies: new Map(),
-        resources: new Set(),
-        complete: true,
-        isCovered: async () => false,
-        database,
-      },
-      operation,
+  const effects: Array<() => Promise<void>> = [];
+  let value: T;
+  try {
+    value = await database.transaction((tx) =>
+      withConsistencyDatabase(tx, operation, effects),
     );
-  previous.collections ||= new Map();
-  const scope = { ...previous, database };
-  return consistencyContext.run(scope, async () => {
-    try {
-      return await operation();
-    } finally {
-      if (!scope.complete) previous.complete = false;
-    }
-  });
+  } catch (error) {
+    await undoEffects(effects, error);
+    throw error;
+  }
+  if (previous?.database === database) {
+    previous.rollbackEffects?.push(...effects);
+  }
+  return value;
 }
 
 export function withConsistencySnapshot<T>(

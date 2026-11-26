@@ -9,6 +9,20 @@
 import { Service as KnowledgeService } from "./service";
 import type { KnowledgeSearchResult } from "./types";
 
+const originalEmbeddingProvider = process.env.KNOWLEDGE_EMBEDDING_PROVIDER;
+
+beforeEach(() => {
+  process.env.KNOWLEDGE_EMBEDDING_PROVIDER = "llm";
+});
+
+afterEach(() => {
+  if (originalEmbeddingProvider === undefined) {
+    delete process.env.KNOWLEDGE_EMBEDDING_PROVIDER;
+  } else {
+    process.env.KNOWLEDGE_EMBEDDING_PROVIDER = originalEmbeddingProvider;
+  }
+});
+
 function createSearchResult(
   props: Partial<KnowledgeSearchResult> & { id: string },
 ): KnowledgeSearchResult {
@@ -25,6 +39,109 @@ function createSearchResult(
   };
 }
 
+it("uses one paid query with two independent authorized source scopes and a bounded personal share", async () => {
+  process.env.KNOWLEDGE_EMBEDDING_PROVIDER = "openai";
+  const vector = Array<number>(768).fill(0.125);
+  const embedQuery = jest.fn().mockResolvedValue(vector);
+  const searchChunks = jest.fn(async ({ sourceIds }: { sourceIds: string[] }) =>
+    Array.from({ length: 4 }, (_, index) =>
+      createSearchResult({
+        id: `${sourceIds[0]}:${index}`,
+        sourceId: sourceIds[0],
+        sourceVersion: `${sourceIds[0]}-version`,
+      }),
+    ),
+  );
+  const findSourcesByIds = jest.fn(async (sourceIds: string[]) =>
+    sourceIds.map((id) => ({
+      id,
+      title: id,
+      content: id,
+      contentHash: "hash",
+      indexedContentHash: "hash",
+    })),
+  );
+  const source = {
+    searchChunks,
+    findSourcesByIds,
+    hasEmbeddingIndex: jest.fn().mockResolvedValue(true),
+    findNeighborChunks: jest.fn().mockResolvedValue([]),
+  };
+  const embeddingClient = {
+    embed: jest.fn(),
+    embedMany: jest.fn(),
+    validateEmbedding: jest.fn(),
+  };
+  const knowledge = new KnowledgeService({
+    source: source as any,
+    embeddingClient,
+  });
+
+  const results = await knowledge.searchAuthorizedSources({
+    query: " matching request ",
+    sourceIds: ["personal", "staff"],
+    personalSourceIds: ["personal", "outside"],
+    neighborWindow: 1,
+    finalTopK: 3,
+    embedQuery,
+  });
+  expect(embedQuery).toHaveBeenCalledTimes(1);
+  expect(embedQuery).toHaveBeenCalledWith("matching request", {
+    provider: "openai",
+    model: "text-embedding-3-large",
+    dimensions: 768,
+  });
+  expect(source.hasEmbeddingIndex).toHaveBeenCalledWith(
+    ["personal", "staff"],
+    "openai:text-embedding-3-large:768:v1",
+    true,
+  );
+  expect(source.findSourcesByIds).not.toHaveBeenCalled();
+  expect(source.searchChunks.mock.calls.map(([props]) => props)).toEqual([
+    expect.objectContaining({
+      sourceIds: ["staff"],
+      includeCustomerMemory: true,
+      embeddingIndex: "openai:text-embedding-3-large:768:v1",
+    }),
+    expect.objectContaining({
+      sourceIds: ["personal"],
+      includeCustomerMemory: true,
+      embeddingIndex: "openai:text-embedding-3-large:768:v1",
+    }),
+  ]);
+  expect(
+    source.findNeighborChunks.mock.calls.map(
+      ([props]) => props.seeds[0].sourceVersion,
+    ),
+  ).toEqual(["staff-version", "personal-version"]);
+  expect(results.map(({ sourceId }) => sourceId)).toEqual([
+    "staff",
+    "staff",
+    "personal",
+  ]);
+  expect(embeddingClient.embed).not.toHaveBeenCalled();
+  expect(embeddingClient.embedMany).not.toHaveBeenCalled();
+
+  source.searchChunks.mockClear();
+  embedQuery.mockResolvedValue(undefined);
+  await expect(
+    knowledge.searchAuthorizedSources({
+      query: "blocked",
+      sourceIds: ["personal"],
+      embedQuery,
+    }),
+  ).resolves.toEqual([]);
+  expect(source.searchChunks).not.toHaveBeenCalled();
+  await expect(
+    knowledge.searchAuthorizedSources({
+      query: "no sources",
+      sourceIds: [],
+      embedQuery,
+    }),
+  ).resolves.toEqual([]);
+  expect(embedQuery).toHaveBeenCalledTimes(2);
+});
+
 describe("knowledge service", () => {
   describe("stored file mutations", () => {
     function setup() {
@@ -39,68 +156,31 @@ describe("knowledge service", () => {
         generationClient: {} as any,
         modelClient: {} as any,
       });
-      const rebuildFiles = jest
-        .spyOn(service, "rebuildFiles")
-        .mockResolvedValue(undefined);
-      return { file, mutateStoredFile, service, rebuildFiles };
+      return { file, mutateStoredFile, service };
     }
-
     it.each(["update", "delete"] as const)(
-      "rebuilds every affected Source after a stored file %s commits",
+      "returns the committed file for %s",
       async (action) => {
-        const state = setup();
+        const { file, mutateStoredFile, service } = setup();
         const data = { alt: "Updated report" };
         const result =
           action === "update"
-            ? await state.service.updateStoredFile({ id: state.file.id, data })
-            : await state.service.deleteStoredFile({ id: state.file.id });
-
-        expect(result).toBe(state.file);
-        expect(state.mutateStoredFile).toHaveBeenCalledWith({
+            ? await service.updateStoredFile({ id: file.id, data })
+            : await service.deleteStoredFile({ id: file.id });
+        expect(result).toBe(file);
+        expect(mutateStoredFile).toHaveBeenCalledWith({
           action,
-          id: state.file.id,
+          id: file.id,
           ...(action === "update" ? { data } : {}),
         });
-        expect(state.rebuildFiles.mock.calls).toEqual([
-          ["source-1"],
-          ["source-2"],
-        ]);
-        expect(state.mutateStoredFile.mock.invocationCallOrder[0]).toBeLessThan(
-          state.rebuildFiles.mock.invocationCallOrder[0],
-        );
       },
     );
-
-    it("does not rebuild Sources when the File Storage mutation fails", async () => {
-      const state = setup();
-      state.mutateStoredFile.mockRejectedValueOnce(
-        new Error("file deletion failed"),
+    it("propagates failure from the transaction rebuilding the affected Sources", async () => {
+      const { file, mutateStoredFile, service } = setup();
+      mutateStoredFile.mockRejectedValueOnce(new Error("vision unavailable"));
+      await expect(service.deleteStoredFile({ id: file.id })).rejects.toThrow(
+        "vision unavailable",
       );
-
-      await expect(
-        state.service.deleteStoredFile({ id: state.file.id }),
-      ).rejects.toThrow("file deletion failed");
-      expect(state.rebuildFiles).not.toHaveBeenCalled();
-    });
-
-    it("still rebuilds other Sources when one material analysis fails", async () => {
-      const state = setup();
-      const error = new Error("vision unavailable");
-      state.rebuildFiles.mockRejectedValueOnce(error);
-      const log = jest.spyOn(console, "error").mockImplementation(() => {});
-      try {
-        await expect(
-          state.service.deleteStoredFile({ id: state.file.id }),
-        ).resolves.toBe(state.file);
-        expect(state.rebuildFiles).toHaveBeenCalledWith("source-2");
-        expect(log).toHaveBeenCalledWith(
-          "Knowledge rebuild after stored file change failed",
-          "source-1",
-          error,
-        );
-      } finally {
-        log.mockRestore();
-      }
     });
   });
   /**
@@ -477,17 +557,20 @@ describe("knowledge service", () => {
   it("stores learned content and indexes the returned document", async () => {
     const source = { id: "source-1", content: "Learned context" };
     const upsertSourceBySlug = jest.fn().mockResolvedValue(source);
+    const repository: any = {
+      upsertSourceBySlug,
+      findSourceById: jest.fn().mockResolvedValue(source),
+    };
+    repository.withTransaction = (operation: (scope: any) => unknown) =>
+      operation(repository);
     const service = new KnowledgeService({
-      source: {
-        upsertSourceBySlug,
-        findSourceById: jest.fn().mockResolvedValue(source),
-      } as any,
+      source: repository,
       embeddingClient: {} as any,
       generationClient: {} as any,
       modelClient: {} as any,
     });
     const index = jest
-      .spyOn(service, "index")
+      .spyOn(service, "indexAuthorizedSource")
       .mockResolvedValue({ indexed: 1, skipped: 0 } as any);
     const result = await service.learnContent({
       slug: "knowledge-source",
@@ -504,7 +587,7 @@ describe("knowledge service", () => {
       },
       true,
     );
-    expect(index).toHaveBeenCalledWith({ sourceId: "source-1" });
+    expect(index).toHaveBeenCalledWith({ sourceId: "source-1" }, repository);
     expect(result.source).toEqual(source);
   });
 

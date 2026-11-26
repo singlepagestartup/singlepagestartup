@@ -1,0 +1,122 @@
+{
+  "id": "18317171-df94-4c96-b395-7f3fff01313b",
+  "prevId": "8613380d-4876-4eb2-a386-398377b7d7b1",
+  "version": "7",
+  "dialect": "postgresql",
+  "tables": {
+    "public.sps_cm_tasks_to_orders": {
+      "name": "sps_cm_tasks_to_orders",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp (3)",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "task_id": {
+          "name": "task_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "order_id": {
+          "name": "order_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {
+        "cm_tasks_to_orders_pair": {
+          "name": "cm_tasks_to_orders_pair",
+          "columns": [
+            {
+              "expression": "task_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "order_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "cm_tasks_to_orders_target": {
+          "name": "cm_tasks_to_orders_target",
+          "columns": [
+            {
+              "expression": "order_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "sps_cm_tasks_to_orders_task_id_sps_cm_task_id_fk": {
+          "name": "sps_cm_tasks_to_orders_task_id_sps_cm_task_id_fk",
+          "tableFrom": "sps_cm_tasks_to_orders",
+          "tableTo": "sps_cm_task",
+          "columnsFrom": [
+            "task_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "restrict",
+          "onUpdate": "no action"
+        },
+        "sps_cm_tasks_to_orders_order_id_sps_ee_order_id_fk": {
+          "name": "sps_cm_tasks_to_orders_order_id_sps_ee_order_id_fk",
+          "tableFrom": "sps_cm_tasks_to_orders",
+          "tableTo": "sps_ee_order",
+          "columnsFrom": [
+            "order_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    }
+  },
+  "enums": {},
+  "schemas": {},
+  "sequences": {},
+  "roles": {},
+  "policies": {},
+  "views": {},
+  "_meta": {
+    "columns": {},
+    "schemas": {},
+    "tables": {}
+  }
+}

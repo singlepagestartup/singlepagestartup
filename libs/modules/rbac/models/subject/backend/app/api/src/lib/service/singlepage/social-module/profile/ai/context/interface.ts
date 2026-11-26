@@ -40,7 +40,6 @@ export interface IAiContextServiceProps {
   triggerMessageId: string;
   resetMessageId: string | null;
   history: IAiContextHistoryMessage[];
-  documentThread: boolean;
   mode?: "full" | "compact";
 }
 

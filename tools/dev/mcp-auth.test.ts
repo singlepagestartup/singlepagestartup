@@ -25,6 +25,7 @@ if (!Number.isSafeInteger(redisPort) || redisPort <= 0) {
 const secret = randomBytes(32).toString("hex");
 const subjectId = randomUUID();
 const refreshTokens = new Set<string>();
+const revokedAccessTokens = new Set<string>();
 let refreshCalls = 0;
 let sinkHits = 0;
 let apiSawOperatorKey = false;
@@ -48,6 +49,22 @@ const rbac = Bun.serve({
 
     if (request.headers.has("x-rbac-secret-key")) {
       apiSawOperatorKey = true;
+    }
+
+    if (path.endsWith("/authentication/me")) {
+      const token = request.headers
+        .get("authorization")
+        ?.slice("Bearer ".length);
+      const payload =
+        token && !revokedAccessTokens.has(token) && jwt.verify(token, secret);
+      if (
+        !payload ||
+        typeof payload !== "object" ||
+        payload.subject?.id !== subjectId
+      ) {
+        return Response.json({ data: null }, { status: 401 });
+      }
+      return Response.json({ data: { id: subjectId, authenticated: true } });
     }
 
     const form = await request.formData();
@@ -309,6 +326,46 @@ test("MCP renews expired access through RBAC, rotates once in Redis and keeps RB
   );
 });
 
+test("an internal MCP session stops accepting tools when the sending subject logs out", async () => {
+  const token = jwt.sign(
+    { subject: { id: subjectId }, type: "access" },
+    secret,
+    {
+      expiresIn: 60,
+      jwtid: randomUUID(),
+    },
+  );
+  const exchange = () =>
+    fetch(`${base}/internal/rbac-subject-token-exchange`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "x-mcp-internal-token-exchange-secret": secret,
+      },
+      body: JSON.stringify({ subject_token: token }),
+    });
+  const issued = await exchange();
+  expect(issued.status).toBe(200);
+  const { access_token } = await issued.json();
+  const client = new Client({ name: "sender-session-check", version: "1" });
+  try {
+    await client.connect(
+      new StreamableHTTPClientTransport(new URL(`${base}/mcp`), {
+        requestInit: { headers: { Authorization: `Bearer ${access_token}` } },
+      }),
+    );
+    expect((await client.listTools()).tools.length).toBeGreaterThan(0);
+    revokedAccessTokens.add(token);
+    await expect(
+      client.callTool({ name: "project-guide", arguments: {} }),
+    ).rejects.toThrow();
+    expect((await exchange()).status).toBe(401);
+    expect(apiSawOperatorKey).toBe(false);
+  } finally {
+    await client.close();
+  }
+});
+
 test("a connector signs in again with its existing client after session expiry and MCP restart", async () => {
   const callback = "http://localhost:41001/callback?source=cli";
   const { clientId, tokens } = await signIn({ callback });
@@ -356,7 +413,7 @@ test("hosted callbacks and the SDK discover annotated tools and execute reads", 
     try {
       await client.connect(transport);
       const { tools } = await client.listTools();
-      expect(tools).toHaveLength(20);
+      expect(tools).toHaveLength(22);
       for (const tool of tools) {
         expect(typeof tool.annotations?.readOnlyHint).toBe("boolean");
         expect(typeof tool.annotations?.destructiveHint).toBe("boolean");

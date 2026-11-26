@@ -4,7 +4,9 @@
   "createdAt": "2026-10-23T20:18:07.855Z",
   "updatedAt": "2026-10-30T02:30:58.872Z",
   "variant": "default",
+  "kind": "physical",
   "type": "one_off",
+  "singleUnitPerOrder": false,
   "slug": "framework-landing",
   "title": {
     "en": "Landing page",

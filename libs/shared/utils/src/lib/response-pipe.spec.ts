@@ -12,6 +12,40 @@
 
 import { util as responsePipe } from "./response-pipe";
 
+describe("reading a successful response body", () => {
+  afterEach(() => {
+    jest.restoreAllMocks();
+  });
+
+  it("propagates normal body cancellation without logging a JSON error", async () => {
+    const abort = new DOMException(
+      "signal is aborted without reason",
+      "AbortError",
+    );
+    const res = new Response("{}");
+    jest.spyOn(res, "json").mockRejectedValue(abort);
+    const log = jest
+      .spyOn(console, "error")
+      .mockImplementation(() => undefined);
+
+    await expect(responsePipe({ res, catchErrors: true })).rejects.toBe(abort);
+    expect(log).not.toHaveBeenCalled();
+  });
+
+  it("still reports a malformed JSON body", async () => {
+    const log = jest
+      .spyOn(console, "error")
+      .mockImplementation(() => undefined);
+    const res = new Response("{");
+
+    await expect(responsePipe({ res })).rejects.toThrow();
+    expect(log).toHaveBeenCalledWith(
+      "Failed to parse response JSON:",
+      expect.any(Error),
+    );
+  });
+});
+
 describe("Given: client-side unauthorized responses", () => {
   beforeEach(() => {
     localStorage.clear();

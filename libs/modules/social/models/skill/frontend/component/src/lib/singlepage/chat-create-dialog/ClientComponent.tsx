@@ -5,31 +5,26 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import {
   Button,
   Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
+  SettingsDialogContent,
+  SettingsDialogHeader,
+  settingsFormStyles,
   Form,
   Input,
   Label,
   Textarea,
 } from "@sps/shared-ui-shadcn";
-import { Pencil, Plus } from "lucide-react";
-import { useEffect } from "react";
+import { Icon } from "@sps/ui-adapter";
+import { useEffect, useId, useMemo } from "react";
 import { useForm } from "react-hook-form";
+import slugify from "slugify";
 import { z } from "zod";
-
-const skillCreateFormSchema = z.object({
-  title: z.string().min(1, "Title is required"),
-  slug: z.string().min(1, "Slug is required"),
-  description: z.string().min(1, "Description is required"),
-});
-
-type SkillCreateFormValues = z.infer<typeof skillCreateFormSchema>;
 
 function toSkillSlug(value: string) {
   return value
     .toLowerCase()
+    .replace(/\p{Script=Cyrillic}+/gu, (word) =>
+      slugify(word, { locale: "ru", strict: true }),
+    )
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-+|-+$/g, "")
     .slice(0, 120);
@@ -52,6 +47,34 @@ function normalizeSkillSlug(value: string) {
 
   return slug;
 }
+
+function skillCreateFormSchema(ru: boolean) {
+  return z
+    .object({
+      title: z
+        .string()
+        .trim()
+        .min(1, ru ? "Введите название." : "Title is required"),
+      slug: z.string().trim(),
+      description: z
+        .string()
+        .refine(
+          (value) => value.trim(),
+          ru ? "Введите инструкцию." : "Description is required",
+        ),
+    })
+    .refine(
+      ({ title, slug }) => !title || Boolean(normalizeSkillSlug(slug || title)),
+      {
+        path: ["slug"],
+        message: ru
+          ? "Введите команду латиницей или цифрами."
+          : "Enter a slug using letters or numbers.",
+      },
+    );
+}
+
+type SkillCreateFormValues = z.infer<ReturnType<typeof skillCreateFormSchema>>;
 
 function getDefaultValues(): SkillCreateFormValues {
   return {
@@ -76,13 +99,17 @@ function getSkillFormValues(
 }
 
 export function Component(props: IClientComponentProps) {
+  const ru = props.language === "ru";
   const isEditing = props.mode === "edit" && Boolean(props.data);
+  const id = useId();
+  const schema = useMemo(() => skillCreateFormSchema(ru), [ru]);
   const form = useForm<SkillCreateFormValues>({
-    resolver: zodResolver(skillCreateFormSchema),
+    resolver: zodResolver(schema),
     defaultValues: getSkillFormValues(props.data),
   });
   const titleInput = form.register("title");
   const slugInput = form.register("slug");
+  const isSaving = props.isSubmitting || form.formState.isSubmitting;
 
   useEffect(() => {
     if (!props.open) {
@@ -100,13 +127,23 @@ export function Component(props: IClientComponentProps) {
       description: data.description,
     };
 
-    if (isEditing && props.data) {
-      await props.onUpdate?.(props.data, values);
-    } else {
-      await props.onCreate(values, {
-        orderIndex: props.orderIndex,
-        profileId: props.profileId,
+    form.clearErrors("root");
+    try {
+      if (isEditing && props.data) {
+        await props.onUpdate?.(props.data, values);
+      } else {
+        await props.onCreate(values, {
+          orderIndex: props.orderIndex,
+          profileId: props.profileId,
+        });
+      }
+    } catch {
+      form.setError("root", {
+        message: ru
+          ? "Навык не сохранился. Повторите попытку."
+          : "Could not save the skill. Try again.",
       });
+      return;
     }
 
     form.reset(getDefaultValues());
@@ -124,27 +161,47 @@ export function Component(props: IClientComponentProps) {
         }
       }}
     >
-      <DialogContent
+      <SettingsDialogContent
         data-module="social"
         data-model="skill"
         data-variant="chat-create-dialog"
-        className="z-[70] max-h-[calc(100vh-2rem)] overflow-y-auto sm:max-w-2xl"
+        closeLabel={ru ? "Закрыть" : "Close"}
       >
-        <DialogHeader>
-          <DialogTitle>{isEditing ? "Edit Skill" : "Create Skill"}</DialogTitle>
-          <DialogDescription>
-            {isEditing
-              ? "Update instructions for this profile skill."
-              : "Add instructions and link them to the current profile."}
-          </DialogDescription>
-        </DialogHeader>
+        <SettingsDialogHeader
+          title={
+            isEditing
+              ? ru
+                ? "Редактировать навык"
+                : "Edit Skill"
+              : ru
+                ? "Новый навык"
+                : "Create Skill"
+          }
+          description={
+            ru
+              ? "Опишите, что сотрудник должен сделать по команде в чате."
+              : "Describe what the assistant should do when someone uses this command in chat."
+          }
+        />
         <Form {...form}>
-          <form className="grid gap-4" onSubmit={form.handleSubmit(onSubmit)}>
-            <div className="grid gap-4 sm:grid-cols-2">
-              <div className="space-y-1.5">
-                <Label htmlFor="skill-title">Title</Label>
+          <form className="min-w-0" onSubmit={form.handleSubmit(onSubmit)}>
+            <div className="grid items-start gap-5 sm:grid-cols-2">
+              <div className="grid min-w-0 gap-3">
+                <Label
+                  className={settingsFormStyles.label}
+                  htmlFor={`${id}-title`}
+                >
+                  {ru ? "Название" : "Title"}
+                </Label>
                 <Input
-                  id="skill-title"
+                  id={`${id}-title`}
+                  aria-invalid={Boolean(form.formState.errors.title)}
+                  aria-describedby={
+                    form.formState.errors.title
+                      ? `${id}-title-error`
+                      : undefined
+                  }
+                  className={settingsFormStyles.field}
                   {...titleInput}
                   onBlur={(event) => {
                     void titleInput.onBlur(event);
@@ -162,15 +219,32 @@ export function Component(props: IClientComponentProps) {
                   }}
                 />
                 {form.formState.errors.title?.message ? (
-                  <p className="text-xs text-destructive">
+                  <p
+                    id={`${id}-title-error`}
+                    role="alert"
+                    className="text-sm text-destructive"
+                  >
                     {form.formState.errors.title.message}
                   </p>
                 ) : null}
               </div>
-              <div className="space-y-1.5">
-                <Label htmlFor="skill-slug">Slug</Label>
+              <div className="grid min-w-0 gap-3">
+                <Label
+                  className={settingsFormStyles.label}
+                  htmlFor={`${id}-slug`}
+                >
+                  {ru ? "Команда в чате" : "Slug"}
+                </Label>
                 <Input
-                  id="skill-slug"
+                  id={`${id}-slug`}
+                  aria-invalid={Boolean(form.formState.errors.slug)}
+                  className={settingsFormStyles.field}
+                  aria-describedby={[
+                    `${id}-slug-hint`,
+                    form.formState.errors.slug && `${id}-slug-error`,
+                  ]
+                    .filter(Boolean)
+                    .join(" ")}
                   {...slugInput}
                   onBlur={(event) => {
                     void slugInput.onBlur(event);
@@ -187,45 +261,90 @@ export function Component(props: IClientComponentProps) {
                     }
                   }}
                 />
+                <p
+                  id={`${id}-slug-hint`}
+                  className="text-xs text-muted-foreground"
+                >
+                  {ru
+                    ? "Например, /opisanie-tovara. Оставьте поле пустым, чтобы создать команду из названия навыка."
+                    : "For example, /product-description. Leave this field blank to generate the command from the title."}
+                </p>
                 {form.formState.errors.slug?.message ? (
-                  <p className="text-xs text-destructive">
+                  <p
+                    id={`${id}-slug-error`}
+                    role="alert"
+                    className="text-sm text-destructive"
+                  >
                     {form.formState.errors.slug.message}
                   </p>
                 ) : null}
               </div>
-            </div>
-            <div className="space-y-1.5">
-              <Label htmlFor="skill-description">Description</Label>
-              <Textarea
-                id="skill-description"
-                rows={8}
-                className="min-h-40 resize-y"
-                {...form.register("description")}
-              />
-              {form.formState.errors.description?.message ? (
-                <p className="text-xs text-destructive">
-                  {form.formState.errors.description.message}
+              <div className="grid min-w-0 gap-3 sm:col-span-2">
+                <Label
+                  className={settingsFormStyles.label}
+                  htmlFor={`${id}-description`}
+                >
+                  {ru ? "Инструкция" : "Description"}
+                </Label>
+                <Textarea
+                  id={`${id}-description`}
+                  aria-invalid={Boolean(form.formState.errors.description)}
+                  aria-describedby={
+                    form.formState.errors.description
+                      ? `${id}-description-error`
+                      : undefined
+                  }
+                  rows={6}
+                  className={settingsFormStyles.textarea}
+                  {...form.register("description")}
+                />
+                {form.formState.errors.description?.message ? (
+                  <p
+                    id={`${id}-description-error`}
+                    role="alert"
+                    className="text-sm text-destructive"
+                  >
+                    {form.formState.errors.description.message}
+                  </p>
+                ) : null}
+              </div>
+              {form.formState.errors.root?.message && (
+                <p
+                  role="alert"
+                  className="text-sm text-destructive sm:col-span-2"
+                >
+                  {form.formState.errors.root.message}
                 </p>
-              ) : null}
+              )}
             </div>
-            <div className="flex justify-end">
+            <div className={settingsFormStyles.actions}>
               <Button
                 type="submit"
                 variant="primary"
-                className="w-auto"
-                disabled={props.isSubmitting}
+                className={settingsFormStyles.primary}
+                aria-busy={isSaving}
+                disabled={isSaving}
               >
-                {isEditing ? (
-                  <Pencil className="mr-2 h-4 w-4" />
+                {isSaving ? (
+                  <Icon
+                    name="spinner-gap"
+                    className="motion-safe:animate-spin"
+                  />
                 ) : (
-                  <Plus className="mr-2 h-4 w-4" />
+                  <Icon name={isEditing ? "floppy-disk" : "plus"} />
                 )}
-                {isEditing ? "Save skill" : "Create skill"}
+                {isEditing
+                  ? ru
+                    ? "Сохранить навык"
+                    : "Save skill"
+                  : ru
+                    ? "Создать навык"
+                    : "Create skill"}
               </Button>
             </div>
           </form>
         </Form>
-      </DialogContent>
+      </SettingsDialogContent>
     </Dialog>
   );
 }

@@ -20,6 +20,11 @@ export function MessageProfileLoader(props: MessageProfileLoaderProps) {
   const profile = id
     ? props.participants?.find((item) => item.id === id)
     : undefined;
+  const orderNotice =
+    props.message.variant === "customer-work" &&
+    /^order-(?:status|payment|receipt|renewal):/.test(
+      props.message.workReplyKey ?? "",
+    );
   const fallback: IProfilePresentation = profile
     ? {
         id: profile.id,
@@ -29,7 +34,9 @@ export function MessageProfileLoader(props: MessageProfileLoaderProps) {
       }
     : {
         id: "unknown",
-        title: { en: "Unknown profile", ru: "Неизвестный профиль" },
+        title: orderNotice
+          ? { en: "Store", ru: "Магазин" }
+          : { en: "Unknown profile", ru: "Неизвестный профиль" },
         subtitle: {},
         avatar: null,
       };

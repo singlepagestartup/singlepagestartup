@@ -10,6 +10,7 @@
  * Then: the profile update receives the stable SinglePageStartup server identifier.
  */
 
+import { screen, within } from "@testing-library/react";
 import { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { McpServersDialog } from "./McpServersDialog";
@@ -50,48 +51,65 @@ describe("GIVEN: the chat profile MCP server editor", () => {
    * When: the operator enables SinglePageStartup MCP and saves.
    * Then: the editor submits singlepagestartup as the only allowed server.
    */
-  test("When: SinglePageStartup MCP is enabled Then: its identifier is saved", async () => {
-    const onSave = jest.fn();
+  test.each([
+    {
+      language: "en",
+      heading: "Edit MCP Servers",
+      close: "Close",
+      save: "Save",
+    },
+    {
+      language: "ru",
+      heading: "Настройки серверов MCP",
+      close: "Закрыть",
+      save: "Сохранить",
+    },
+  ])(
+    "saves the MCP selection using the $language dialog",
+    async ({ language, heading, close, save }) => {
+      const onSave = jest.fn();
 
-    await act(async () => {
-      root.render(
-        <McpServersDialog
-          isOpen
-          onOpenChange={jest.fn()}
-          onSave={onSave}
-          profile={
-            {
-              id: "profile-1",
-              slug: "chat-gpt-1",
-              variant: "artificial-intelligence",
-              adminTitle: "Chat GPT 1",
-              allowedMcpServerIds: [],
-            } as any
-          }
-        />,
-      );
-      await Promise.resolve();
-    });
+      await act(async () => {
+        root.render(
+          <McpServersDialog
+            language={language}
+            isOpen
+            onOpenChange={jest.fn()}
+            onSave={onSave}
+            profile={
+              {
+                id: "profile-1",
+                slug: "chat-gpt-1",
+                variant: "artificial-intelligence",
+                adminTitle: "Chat GPT 1",
+                allowedMcpServerIds: [],
+              } as any
+            }
+          />,
+        );
+        await Promise.resolve();
+      });
 
-    const checkbox = document.querySelector(
-      "#profile-mcp-server-singlepagestartup",
-    );
+      const dialog = within(screen.getByRole("dialog", { name: heading }));
+      const checkbox = dialog.getByRole("checkbox", {
+        name: "SinglePageStartup MCP",
+      });
+      expect(dialog.getByRole("button", { name: close })).toBeTruthy();
 
-    expect(document.body.textContent).toContain("SinglePageStartup MCP");
-    expect(checkbox).not.toBeNull();
+      expect(document.body.textContent).toContain("SinglePageStartup MCP");
+      expect(checkbox).not.toBeNull();
 
-    await act(async () => {
-      checkbox?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
-      await Promise.resolve();
-    });
+      await act(async () => {
+        checkbox?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+        await Promise.resolve();
+      });
 
-    await act(async () => {
-      document
-        .querySelector("form")
-        ?.dispatchEvent(new Event("submit", { bubbles: true }));
-      await Promise.resolve();
-    });
+      await act(async () => {
+        dialog.getByRole("button", { name: save }).click();
+        await Promise.resolve();
+      });
 
-    expect(onSave).toHaveBeenCalledWith(["singlepagestartup"]);
-  });
+      expect(onSave).toHaveBeenCalledWith(["singlepagestartup"]);
+    },
+  );
 });

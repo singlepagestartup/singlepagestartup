@@ -23,6 +23,7 @@ import {
 import { saturateHeaders } from "@sps/shared-frontend-client-utils";
 
 export type IProps = {
+  mute?: boolean;
   reactQueryOptions?: Partial<UseMutationOptions<any, DefaultError, any>>;
   id: string;
   socialModuleProfileId: string;
@@ -60,7 +61,7 @@ export function action(props: IProps) {
           },
         );
       } catch (error: any) {
-        toast.error(error.message);
+        if (!props.mute) toast.error(error.message);
         throw error;
       }
     },
@@ -79,6 +80,9 @@ export function action(props: IProps) {
         const key = String(query.queryKey[0]);
         patchInListQueries(queryClient, key, data.id, data);
       }
+      void queryClient.invalidateQueries({
+        queryKey: [mutationKey + "/files"],
+      });
       globalActionsStore.getState().addAction({
         type: "mutation",
         name: mutationKey,

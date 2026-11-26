@@ -24,6 +24,9 @@ export function Component(props: IComponentPropsExtended) {
     createEntity,
   });
 
+  const scoped = Boolean(
+    props.data?.storeId || props.data?.offerId || props.data?.projectId,
+  );
   const form = useForm<z.infer<typeof insertSchema>>({
     resolver: zodResolver(insertSchema),
     defaultValues: {
@@ -32,12 +35,20 @@ export function Component(props: IComponentPropsExtended) {
       orderIndex: props.data?.orderIndex || 0,
       profileId: props.data?.profileId || "",
       knowledgeModuleSourceId: props.data?.knowledgeModuleSourceId || "",
+      storeId: props.data?.storeId ?? null,
+      offerId: props.data?.offerId ?? null,
+      projectId: props.data?.projectId ?? null,
     },
   });
 
   async function onSubmit(data: z.infer<typeof insertSchema>) {
     if (props.data?.id) {
-      updateEntity.mutate({ id: props.data?.id, data });
+      updateEntity.mutate({
+        id: props.data.id,
+        data: scoped
+          ? { orderIndex: data.orderIndex, className: data.className }
+          : data,
+      });
       return;
     }
 
@@ -75,27 +86,31 @@ export function Component(props: IComponentPropsExtended) {
           form={form}
           placeholder="Type class name"
         />
-        <FormField
-          ui="shadcn"
-          type="select"
-          label="Variant"
-          name="variant"
-          form={form}
-          placeholder="Select variant"
-          options={variants.map((variant) => [variant, variant])}
-        />
-        <Profile
-          isServer={props.isServer}
-          variant="admin-v2-select-input"
-          formFieldName="profileId"
-          form={form}
-        />
-        <Source
-          isServer={props.isServer}
-          variant="admin-v2-select-input"
-          formFieldName="knowledgeModuleSourceId"
-          form={form}
-        />
+        <fieldset disabled={scoped} className="grid min-w-0 gap-6">
+          <FormField
+            ui="shadcn"
+            type="select"
+            label="Variant"
+            name="variant"
+            form={form}
+            placeholder="Select variant"
+            options={(scoped ? [props.data!.variant] : variants).map(
+              (variant) => [variant, variant],
+            )}
+          />
+          <Profile
+            isServer={props.isServer}
+            variant="admin-v2-select-input"
+            formFieldName="profileId"
+            form={form}
+          />
+          <Source
+            isServer={props.isServer}
+            variant="admin-v2-select-input"
+            formFieldName="knowledgeModuleSourceId"
+            form={form}
+          />
+        </fieldset>
       </div>
     </ParentAdminForm>
   );

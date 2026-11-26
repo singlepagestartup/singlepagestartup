@@ -4,8 +4,8 @@
   "totals": {
     "modules": 15,
     "entities": 61,
-    "variants": 1084,
-    "coveredVariants": 255,
+    "variants": 1105,
+    "coveredVariants": 253,
     "representedEntities": 61
   },
   "modules": [
@@ -2075,7 +2075,12 @@
             "apps/studio/modules/crm/widget/singlepage/admin-v2-card/Component.stories.tsx",
             "apps/studio/modules/crm/widget/singlepage/admin-v2-table/Component.stories.tsx",
             "apps/studio/modules/crm/widget/singlepage/form-list-default/Component.stories.tsx",
-            "apps/studio/modules/crm/widget/singlepage/list/Component.stories.tsx"
+            "apps/studio/modules/crm/widget/singlepage/list/Component.stories.tsx",
+            "apps/studio/modules/crm/widget/singlepage/task-detail/Component.stories.tsx",
+            "apps/studio/modules/crm/widget/singlepage/task-kanban/Component.stories.tsx",
+            "apps/studio/modules/crm/widget/singlepage/task-table/Component.stories.tsx",
+            "apps/studio/modules/crm/widget/singlepage/workflow-editor/Component.stories.tsx",
+            "apps/studio/modules/crm/widget/singlepage/workflow-workspace/Component.stories.tsx"
           ]
         }
       ]
@@ -2525,6 +2530,12 @@
               "scope": "singlepage",
               "variantsFile": "libs/modules/ecommerce/models/order/frontend/component/src/lib/singlepage/variants.ts",
               "coveredBy": []
+            },
+            {
+              "variant": "store-list-row",
+              "scope": "singlepage",
+              "variantsFile": "libs/modules/ecommerce/models/order/frontend/component/src/lib/singlepage/variants.ts",
+              "coveredBy": []
             }
           ],
           "storyFiles": [
@@ -2537,7 +2548,8 @@
             "apps/studio/modules/ecommerce/order/singlepage/checkout-stepper-default/Component.stories.tsx",
             "apps/studio/modules/ecommerce/order/singlepage/checkout/tokens/ai-chat/Component.stories.tsx",
             "apps/studio/modules/ecommerce/order/singlepage/history-default/Component.stories.tsx",
-            "apps/studio/modules/ecommerce/order/singlepage/summary-default/Component.stories.tsx"
+            "apps/studio/modules/ecommerce/order/singlepage/summary-default/Component.stories.tsx",
+            "apps/studio/modules/ecommerce/order/singlepage/work-checkout/Component.stories.tsx"
           ]
         },
         {
@@ -2659,6 +2671,12 @@
               "coveredBy": []
             },
             {
+              "variant": "order-line-title",
+              "scope": "singlepage",
+              "variantsFile": "libs/modules/ecommerce/models/product/frontend/component/src/lib/singlepage/variants.ts",
+              "coveredBy": []
+            },
+            {
               "variant": "overview-default",
               "scope": "singlepage",
               "variantsFile": "libs/modules/ecommerce/models/product/frontend/component/src/lib/singlepage/variants.ts",
@@ -2686,6 +2704,7 @@
             "apps/studio/modules/ecommerce/product/singlepage/cart-default/Component.stories.tsx",
             "apps/studio/modules/ecommerce/product/singlepage/gallery/Component.stories.tsx",
             "apps/studio/modules/ecommerce/product/singlepage/overview-cta/Component.stories.tsx",
+            "apps/studio/modules/ecommerce/product/singlepage/overview-customer-work/Component.stories.tsx",
             "apps/studio/modules/ecommerce/product/singlepage/overview-default/Component.stories.tsx",
             "apps/studio/modules/ecommerce/product/singlepage/overview-purchase/Component.stories.tsx",
             "apps/studio/modules/ecommerce/product/singlepage/pinned/Component.stories.tsx",
@@ -2782,6 +2801,12 @@
               "coveredBy": []
             },
             {
+              "variant": "header-default",
+              "scope": "singlepage",
+              "variantsFile": "libs/modules/ecommerce/models/store/frontend/component/src/lib/singlepage/variants.ts",
+              "coveredBy": []
+            },
+            {
               "variant": "hidden",
               "scope": "singlepage",
               "variantsFile": "libs/modules/ecommerce/models/store/frontend/component/src/lib/singlepage/variants.ts",
@@ -2789,6 +2814,12 @@
             },
             {
               "variant": "overview-default",
+              "scope": "singlepage",
+              "variantsFile": "libs/modules/ecommerce/models/store/frontend/component/src/lib/singlepage/variants.ts",
+              "coveredBy": []
+            },
+            {
+              "variant": "product-price-default",
               "scope": "singlepage",
               "variantsFile": "libs/modules/ecommerce/models/store/frontend/component/src/lib/singlepage/variants.ts",
               "coveredBy": []
@@ -2928,6 +2959,12 @@
               "coveredBy": [
                 "ecommerce.widget.product-overview-default"
               ]
+            },
+            {
+              "variant": "store-header-default",
+              "scope": "singlepage",
+              "variantsFile": "libs/modules/ecommerce/models/widget/frontend/component/src/lib/singlepage/variants.ts",
+              "coveredBy": []
             },
             {
               "variant": "store-list-default",
@@ -3071,7 +3108,8 @@
             "apps/studio/modules/file-storage/file/singlepage/id/ai-chat/Component.stories.tsx",
             "apps/studio/modules/file-storage/file/singlepage/list-attachments-ai-chat/Component.stories.tsx",
             "apps/studio/modules/file-storage/file/singlepage/list-item-asset-ai-chat/Component.stories.tsx",
-            "apps/studio/modules/file-storage/file/singlepage/list-item-pending-ai-chat/Component.stories.tsx"
+            "apps/studio/modules/file-storage/file/singlepage/list-item-pending-ai-chat/Component.stories.tsx",
+            "apps/studio/modules/file-storage/file/singlepage/order-delivery/Component.stories.tsx"
           ]
         },
         {
@@ -5142,46 +5180,6 @@
               "coveredBy": []
             },
             {
-              "variant": "me-social-module-profile-id-chat-id-thread-id-ai-chat",
-              "scope": "singlepage",
-              "variantsFile": "libs/modules/rbac/models/subject/frontend/component/src/lib/singlepage/variants.ts",
-              "coveredBy": []
-            },
-            {
-              "variant": "me-social-module-profile-id-chat-id-thread-id-download-ai-chat",
-              "scope": "singlepage",
-              "variantsFile": "libs/modules/rbac/models/subject/frontend/component/src/lib/singlepage/variants.ts",
-              "coveredBy": []
-            },
-            {
-              "variant": "me-social-module-profile-id-chat-id-thread-id-knowledge-module-source-id-update-ai-chat",
-              "scope": "singlepage",
-              "variantsFile": "libs/modules/rbac/models/subject/frontend/component/src/lib/singlepage/variants.ts",
-              "coveredBy": []
-            },
-            {
-              "variant": "me-social-module-profile-id-chat-id-thread-id-knowledge-module-source-list-document-ai-chat",
-              "scope": "singlepage",
-              "variantsFile": "libs/modules/rbac/models/subject/frontend/component/src/lib/singlepage/variants.ts",
-              "coveredBy": [
-                "rbac.subject.me-social-module-profile-id-chat-id-thread-id-knowledge-module-source-list-document-ai-chat"
-              ]
-            },
-            {
-              "variant": "me-social-module-profile-id-chat-id-thread-id-message-create-ai-chat",
-              "scope": "singlepage",
-              "variantsFile": "libs/modules/rbac/models/subject/frontend/component/src/lib/singlepage/variants.ts",
-              "coveredBy": [
-                "rbac.subject.me-social-module-profile-id-chat-id-thread-id-message-create-ai-chat"
-              ]
-            },
-            {
-              "variant": "me-social-module-profile-id-chat-id-thread-id-message-list-ai-chat",
-              "scope": "singlepage",
-              "variantsFile": "libs/modules/rbac/models/subject/frontend/component/src/lib/singlepage/variants.ts",
-              "coveredBy": []
-            },
-            {
               "variant": "me-social-module-profile-id-navigation-ai-chat",
               "scope": "singlepage",
               "variantsFile": "libs/modules/rbac/models/subject/frontend/component/src/lib/singlepage/variants.ts",
@@ -5526,6 +5524,42 @@
               ]
             },
             {
+              "variant": "subject-me-crm-module-store-funnel-create",
+              "scope": "singlepage",
+              "variantsFile": "libs/modules/rbac/models/widget/frontend/component/src/lib/singlepage/variants.ts",
+              "coveredBy": []
+            },
+            {
+              "variant": "subject-me-crm-module-store-funnel-edit",
+              "scope": "singlepage",
+              "variantsFile": "libs/modules/rbac/models/widget/frontend/component/src/lib/singlepage/variants.ts",
+              "coveredBy": []
+            },
+            {
+              "variant": "subject-me-crm-module-store-funnel-list",
+              "scope": "singlepage",
+              "variantsFile": "libs/modules/rbac/models/widget/frontend/component/src/lib/singlepage/variants.ts",
+              "coveredBy": []
+            },
+            {
+              "variant": "subject-me-crm-module-store-workspace",
+              "scope": "singlepage",
+              "variantsFile": "libs/modules/rbac/models/widget/frontend/component/src/lib/singlepage/variants.ts",
+              "coveredBy": []
+            },
+            {
+              "variant": "subject-me-crm-module-task-create",
+              "scope": "singlepage",
+              "variantsFile": "libs/modules/rbac/models/widget/frontend/component/src/lib/singlepage/variants.ts",
+              "coveredBy": []
+            },
+            {
+              "variant": "subject-me-crm-module-task-detail",
+              "scope": "singlepage",
+              "variantsFile": "libs/modules/rbac/models/widget/frontend/component/src/lib/singlepage/variants.ts",
+              "coveredBy": []
+            },
+            {
               "variant": "subject-me-ecommerce-module-category-overview-default",
               "scope": "singlepage",
               "variantsFile": "libs/modules/rbac/models/widget/frontend/component/src/lib/singlepage/variants.ts",
@@ -5552,7 +5586,103 @@
               "coveredBy": []
             },
             {
+              "variant": "subject-me-ecommerce-module-store-create",
+              "scope": "singlepage",
+              "variantsFile": "libs/modules/rbac/models/widget/frontend/component/src/lib/singlepage/variants.ts",
+              "coveredBy": []
+            },
+            {
+              "variant": "subject-me-ecommerce-module-store-customer-detail",
+              "scope": "singlepage",
+              "variantsFile": "libs/modules/rbac/models/widget/frontend/component/src/lib/singlepage/variants.ts",
+              "coveredBy": []
+            },
+            {
+              "variant": "subject-me-ecommerce-module-store-customers",
+              "scope": "singlepage",
+              "variantsFile": "libs/modules/rbac/models/widget/frontend/component/src/lib/singlepage/variants.ts",
+              "coveredBy": []
+            },
+            {
+              "variant": "subject-me-ecommerce-module-store-employee-create",
+              "scope": "singlepage",
+              "variantsFile": "libs/modules/rbac/models/widget/frontend/component/src/lib/singlepage/variants.ts",
+              "coveredBy": []
+            },
+            {
+              "variant": "subject-me-ecommerce-module-store-employee-detail",
+              "scope": "singlepage",
+              "variantsFile": "libs/modules/rbac/models/widget/frontend/component/src/lib/singlepage/variants.ts",
+              "coveredBy": []
+            },
+            {
+              "variant": "subject-me-ecommerce-module-store-employees",
+              "scope": "singlepage",
+              "variantsFile": "libs/modules/rbac/models/widget/frontend/component/src/lib/singlepage/variants.ts",
+              "coveredBy": []
+            },
+            {
+              "variant": "subject-me-ecommerce-module-store-order-detail",
+              "scope": "singlepage",
+              "variantsFile": "libs/modules/rbac/models/widget/frontend/component/src/lib/singlepage/variants.ts",
+              "coveredBy": []
+            },
+            {
+              "variant": "subject-me-ecommerce-module-store-orders",
+              "scope": "singlepage",
+              "variantsFile": "libs/modules/rbac/models/widget/frontend/component/src/lib/singlepage/variants.ts",
+              "coveredBy": []
+            },
+            {
               "variant": "subject-me-ecommerce-module-store-overview-default",
+              "scope": "singlepage",
+              "variantsFile": "libs/modules/rbac/models/widget/frontend/component/src/lib/singlepage/variants.ts",
+              "coveredBy": []
+            },
+            {
+              "variant": "subject-me-ecommerce-module-store-product-attribute-keys",
+              "scope": "singlepage",
+              "variantsFile": "libs/modules/rbac/models/widget/frontend/component/src/lib/singlepage/variants.ts",
+              "coveredBy": []
+            },
+            {
+              "variant": "subject-me-ecommerce-module-store-product-attributes",
+              "scope": "singlepage",
+              "variantsFile": "libs/modules/rbac/models/widget/frontend/component/src/lib/singlepage/variants.ts",
+              "coveredBy": []
+            },
+            {
+              "variant": "subject-me-ecommerce-module-store-product-categories",
+              "scope": "singlepage",
+              "variantsFile": "libs/modules/rbac/models/widget/frontend/component/src/lib/singlepage/variants.ts",
+              "coveredBy": []
+            },
+            {
+              "variant": "subject-me-ecommerce-module-store-product-create",
+              "scope": "singlepage",
+              "variantsFile": "libs/modules/rbac/models/widget/frontend/component/src/lib/singlepage/variants.ts",
+              "coveredBy": []
+            },
+            {
+              "variant": "subject-me-ecommerce-module-store-product-detail",
+              "scope": "singlepage",
+              "variantsFile": "libs/modules/rbac/models/widget/frontend/component/src/lib/singlepage/variants.ts",
+              "coveredBy": []
+            },
+            {
+              "variant": "subject-me-ecommerce-module-store-product-edit",
+              "scope": "singlepage",
+              "variantsFile": "libs/modules/rbac/models/widget/frontend/component/src/lib/singlepage/variants.ts",
+              "coveredBy": []
+            },
+            {
+              "variant": "subject-me-ecommerce-module-store-products",
+              "scope": "singlepage",
+              "variantsFile": "libs/modules/rbac/models/widget/frontend/component/src/lib/singlepage/variants.ts",
+              "coveredBy": []
+            },
+            {
+              "variant": "subject-me-ecommerce-module-store-settings",
               "scope": "singlepage",
               "variantsFile": "libs/modules/rbac/models/widget/frontend/component/src/lib/singlepage/variants.ts",
               "coveredBy": []
@@ -5654,6 +5784,8 @@
             "apps/studio/modules/rbac/widget/singlepage/subject-me-social-module-profile-id-chat-id-thread-id-ai-chat/Component.stories.tsx",
             "apps/studio/modules/rbac/widget/singlepage/subject-me-social-module-profile-id-settings-ai-chat/Component.stories.tsx",
             "apps/studio/modules/rbac/widget/singlepage/subject-me-social-module-profile-list-ai-chat/Component.stories.tsx",
+            "apps/studio/modules/rbac/widget/singlepage/subject-me-store-customer-work/Component.stories.tsx",
+            "apps/studio/modules/rbac/widget/singlepage/subject-me-store-provider-settings/Component.stories.tsx",
             "apps/studio/modules/rbac/widget/singlepage/subject/me/social-module/profile/chat/list-default/Component.stories.tsx",
             "apps/studio/modules/rbac/widget/singlepage/subject/me/social-module/profile/chat/overview-default/Component.stories.tsx"
           ]
@@ -6662,6 +6794,7 @@
             "apps/studio/modules/social/thread/singlepage/admin-v2-table/Component.stories.tsx",
             "apps/studio/modules/social/thread/singlepage/chat-settings/Component.stories.tsx",
             "apps/studio/modules/social/thread/singlepage/create/ai-chat/Component.stories.tsx",
+            "apps/studio/modules/social/thread/singlepage/customer-work/Component.stories.tsx",
             "apps/studio/modules/social/thread/singlepage/download/ai-chat/Component.stories.tsx",
             "apps/studio/modules/social/thread/singlepage/id/ai-chat-settings/Component.stories.tsx",
             "apps/studio/modules/social/thread/singlepage/id/ai-chat/Component.stories.tsx",

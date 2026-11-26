@@ -37,6 +37,7 @@ export default function Client(props: IClientProps) {
       data={props.data}
       variant={props.variant}
       language={props.language}
+      layout={props.layout}
       textContent={<TextContent file={props.data} language={props.language} />}
     />
   );

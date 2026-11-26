@@ -12,8 +12,11 @@ export const variant = "landing-ai-chat" as const;
 export interface IComponentProps extends IParent<IModel, typeof variant> {
   language?: string;
 }
-export interface IComponentPropsExtended
-  extends IParentExtended<IModel, typeof variant, IComponentProps> {}
+export interface IComponentPropsExtended extends IParentExtended<
+  IModel,
+  typeof variant,
+  IComponentProps
+> {}
 
 export interface IChatPreviewProps {
   className?: string;
@@ -22,7 +25,6 @@ export interface IChatPreviewProps {
   reply: string;
   documents: IDemoDocument[];
   settings?: ReactNode;
-  handoff?: ReactNode;
 }
 export interface IDemoAttachment {
   id: string;
@@ -92,7 +94,9 @@ export interface ISectionsProps {
   isServer: boolean;
   language: string;
 }
-export interface IDemoContentProps
-  extends Pick<ISectionsProps, "features" | "isServer" | "language"> {}
+export interface IDemoContentProps extends Pick<
+  ISectionsProps,
+  "features" | "isServer" | "language"
+> {}
 
 export type IDemoFiles = IFileStorageModuleFile[];

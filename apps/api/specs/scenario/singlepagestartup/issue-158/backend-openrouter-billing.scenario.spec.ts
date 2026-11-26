@@ -1,458 +1,406 @@
-/**
- * BDD Suite: issue-158 OpenRouter billing metadata with real API and database.
- *
- * Given: API server, database, and a scenario subject are available from apps/api/.env.
- * When: the subject triggers the OpenRouter reaction route for a text message.
- * Then: the generated assistant message persists metadata.openRouter.billing with the settled usage trace.
- */
-
-import { api as subjectApi } from "@sps/rbac/models/subject/sdk/server";
-import { api as permissionApi } from "@sps/rbac/models/permission/sdk/server";
-import { api as subjectsToBillingModuleCurrenciesApi } from "@sps/rbac/relations/subjects-to-billing-module-currencies/sdk/server";
-import { api as subjectsToSocialModuleProfilesApi } from "@sps/rbac/relations/subjects-to-social-module-profiles/sdk/server";
-import { api as socialModuleMessageApi } from "@sps/social/models/message/sdk/server";
-import { api as socialModuleProfileApi } from "@sps/social/models/profile/sdk/server";
-import { api as socialModuleProfilesToChatsApi } from "@sps/social/relations/profiles-to-chats/sdk/server";
-import type { IModel as ISocialModuleMessage } from "@sps/social/models/message/sdk/model";
-import type { IModel as ISocialModuleChat } from "@sps/social/models/chat/sdk/model";
-import { IModel as ISocialModuleThread } from "@sps/social/models/thread/sdk/model";
-import { authenticateScenarioSubject } from "../issue-152/test-utils/auth";
+import { randomBytes, randomUUID } from "node:crypto";
+import { mkdtemp, rm } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import path from "node:path";
 import {
-  getApiUrl,
-  getRequiredEnv,
-  loadScenarioEnv,
-} from "../issue-154/test-utils/env";
+  createAppAssembly,
+  withConsistencyDatabase,
+} from "@sps/shared-backend-api";
+import {
+  getDrizzle,
+  getPostgresClient,
+  resetPostgresClient,
+} from "@sps/shared-backend-database-config";
+import { createService } from "@sps/agent/models/work-attempt/backend/app/api/src/lib/bootstrap";
+import { Table as Wallet } from "@sps/rbac/relations/subjects-to-billing-module-currencies/backend/repository/database";
+import { Table as Currency } from "@sps/billing/models/currency/backend/repository/database";
+import { Provider as KvProvider } from "@sps/providers-kv";
+import { KV_PROVIDER } from "@sps/shared-utils";
+import { loadScenarioEnv } from "../issue-154/test-utils/env";
 
-describe("Given: issue-158 OpenRouter billing metadata scenario", () => {
-  let host = "";
-  let secretKey = "";
-  let subjectId = "";
-  let jwt = "";
-  let socialModuleProfileId = "";
+loadScenarioEnv();
+const rollback = new Error("rollback scenario fixtures");
+const savedEnvironment = {
+  SPS_PROVIDER_SECRET_DIR: process.env.SPS_PROVIDER_SECRET_DIR,
+  SPS_PROVIDER_ACTIVE_MASTER_KEY: process.env.SPS_PROVIDER_ACTIVE_MASTER_KEY,
+  SPS_PROVIDER_MASTER_KEYS: process.env.SPS_PROVIDER_MASTER_KEYS,
+};
+let vault: string;
 
-  const authHeaders = () => {
-    return {
-      Authorization: `Bearer ${jwt}`,
-    };
-  };
-
-  const secretHeaders = () => {
-    return {
-      "X-RBAC-SECRET-KEY": secretKey,
-    };
-  };
-
-  const getSingleDefaultThread = (threads: ISocialModuleThread[]) => {
-    const defaultThreads = threads.filter((thread) => {
-      return thread.variant === "default";
-    });
-
-    expect(defaultThreads).toHaveLength(1);
-
-    return defaultThreads[0];
-  };
-
-  const getChatId = (
-    chatPayload:
-      | (Partial<Pick<ISocialModuleChat, "id">> & {
-          socialModuleChat?: Pick<ISocialModuleChat, "id">;
-        })
-      | undefined,
-  ) => {
-    const chatId = chatPayload?.id || chatPayload?.socialModuleChat?.id;
-
-    if (!chatId) {
-      throw new Error(
-        `Create chat response has no chat id: ${JSON.stringify(chatPayload)}`,
-      );
-    }
-
-    return chatId;
-  };
-
-  const getMessageId = (
-    messagePayload:
-      | (Partial<Pick<ISocialModuleMessage, "id">> & {
-          socialModule?: { message?: Pick<ISocialModuleMessage, "id"> };
-        })
-      | undefined,
-  ) => {
-    const messageId =
-      messagePayload?.id || messagePayload?.socialModule?.message?.id;
-
-    if (!messageId) {
-      throw new Error(
-        `Message response has no id: ${JSON.stringify(messagePayload)}`,
-      );
-    }
-
-    return messageId;
-  };
-
-  const ensureScenarioSocialProfile = async () => {
-    const subjectToProfiles = await subjectsToSocialModuleProfilesApi.find({
-      params: {
-        filters: {
-          and: [
-            {
-              column: "subjectId",
-              method: "eq",
-              value: subjectId,
-            },
-          ],
-        },
-        limit: 1,
-      },
-      options: {
-        headers: secretHeaders(),
-      },
-    });
-
-    const existingSocialModuleProfileId =
-      subjectToProfiles?.[0]?.socialModuleProfileId;
-
-    if (existingSocialModuleProfileId) {
-      socialModuleProfileId = existingSocialModuleProfileId;
-      return;
-    }
-
-    const socialModuleProfile = await socialModuleProfileApi.create({
-      data: {},
-      options: {
-        headers: secretHeaders(),
-      },
-    });
-
-    if (!socialModuleProfile?.id) {
-      throw new Error("Could not create social profile for scenario subject");
-    }
-
-    await subjectsToSocialModuleProfilesApi.create({
-      data: {
-        subjectId,
-        socialModuleProfileId: socialModuleProfile.id,
-      },
-      options: {
-        headers: secretHeaders(),
-      },
-    });
-
-    socialModuleProfileId = socialModuleProfile.id;
-  };
-
-  const clearSubjectProfileChats = async () => {
-    if (!subjectId || !socialModuleProfileId || !jwt) {
-      return;
-    }
-
-    const chats = await subjectApi.socialModuleProfileFindByIdChatFind({
-      host,
-      id: subjectId,
-      socialModuleProfileId,
-      params: {
-        cb: Date.now().toString(),
-      },
-      options: {
-        headers: authHeaders(),
-      },
-    });
-
-    for (const chat of chats || []) {
-      try {
-        await subjectApi.socialModuleProfileFindByIdChatFindByIdDelete({
-          host,
-          id: subjectId,
-          socialModuleProfileId,
-          socialModuleChatId: chat.id,
-          options: {
-            headers: authHeaders(),
-          },
-        });
-      } catch {}
-    }
-  };
-
-  const ensureScenarioBalance = async () => {
-    const permissionResolution = await permissionApi.resolveByRoute({
-      params: {
-        permission: {
-          method: "POST",
-          route:
-            "/api/rbac/subjects/subject-1/social-module/profiles/profile-1/chats/chat-1/messages/message-1/react-by/openrouter",
-          type: "HTTP",
-        },
-        includeBillingRequirements: true,
-      },
-      options: {
-        headers: secretHeaders(),
-      },
-    });
-
-    const billingModuleCurrencyId =
-      permissionResolution?.permissionsToBillingModuleCurrencies?.[0]
-        ?.billingModuleCurrencyId;
-
-    if (!billingModuleCurrencyId) {
-      throw new Error(
-        "OpenRouter route permission does not resolve a billing currency",
-      );
-    }
-
-    const subjectCurrencies = await subjectsToBillingModuleCurrenciesApi.find({
-      params: {
-        filters: {
-          and: [
-            {
-              column: "subjectId",
-              method: "eq",
-              value: subjectId,
-            },
-            {
-              column: "billingModuleCurrencyId",
-              method: "eq",
-              value: billingModuleCurrencyId,
-            },
-          ],
-        },
-        limit: 1,
-      },
-      options: {
-        headers: secretHeaders(),
-      },
-    });
-
-    const existingCurrency = subjectCurrencies?.[0];
-
-    if (existingCurrency?.id) {
-      await subjectsToBillingModuleCurrenciesApi.update({
-        id: existingCurrency.id,
-        data: {
-          ...existingCurrency,
-          amount: "10",
-        },
-        options: {
-          headers: secretHeaders(),
-        },
-      });
-      return;
-    }
-
-    await subjectsToBillingModuleCurrenciesApi.create({
-      data: {
-        subjectId,
-        billingModuleCurrencyId,
-        amount: "10",
-      },
-      options: {
-        headers: secretHeaders(),
-      },
-    });
-  };
-
-  const getOpenRouterProfile = async () => {
-    const openRouterProfiles = await socialModuleProfileApi.find({
-      params: {
-        filters: {
-          and: [
-            {
-              column: "slug",
-              method: "eq",
-              value: "open-router",
-            },
-          ],
-        },
-        limit: 1,
-      },
-      options: {
-        headers: secretHeaders(),
-      },
-    });
-
-    const openRouterProfile = openRouterProfiles?.[0];
-
-    if (!openRouterProfile?.id) {
-      throw new Error("OpenRouter social profile is not available");
-    }
-
-    return openRouterProfile;
-  };
-
-  const ensureProfileCanReplyInChat = async (props: {
-    socialModuleProfileId: string;
-    socialModuleChatId: string;
-  }) => {
-    const existingRelations = await socialModuleProfilesToChatsApi.find({
-      params: {
-        filters: {
-          and: [
-            {
-              column: "profileId",
-              method: "eq",
-              value: props.socialModuleProfileId,
-            },
-            {
-              column: "chatId",
-              method: "eq",
-              value: props.socialModuleChatId,
-            },
-          ],
-        },
-        limit: 1,
-      },
-      options: {
-        headers: secretHeaders(),
-      },
-    });
-
-    if (existingRelations?.length) {
-      return;
-    }
-
-    await socialModuleProfilesToChatsApi.create({
-      data: {
-        profileId: props.socialModuleProfileId,
-        chatId: props.socialModuleChatId,
-      },
-      options: {
-        headers: secretHeaders(),
-      },
-    });
-  };
-
-  beforeAll(async () => {
-    loadScenarioEnv();
-    host = getApiUrl();
-    secretKey = getRequiredEnv("RBAC_SECRET_KEY");
-
-    const scenarioSubject = await authenticateScenarioSubject();
-    subjectId = scenarioSubject.id;
-    jwt = scenarioSubject.jwt;
-
-    await ensureScenarioSocialProfile();
-  });
-
-  beforeEach(async () => {
-    await clearSubjectProfileChats();
-    await ensureScenarioBalance();
-  });
-
-  afterAll(async () => {
-    await clearSubjectProfileChats();
-  });
-
-  /**
-   * BDD Scenario
-   * Given: the scenario subject has a funded billing relation and a chat with a default thread.
-   * When: the subject triggers one OpenRouter reply for a text message.
-   * Then: the persisted assistant message includes the settled metadata.openRouter.billing payload.
-   */
-  it("persists metadata.openRouter.billing on the generated assistant message", async () => {
-    loadScenarioEnv();
-
-    if (!process.env["OPEN_ROUTER_API_KEY"]) {
-      return;
-    }
-
-    const openRouterProfile = await getOpenRouterProfile();
-    const chat = await subjectApi.socialModuleProfileFindByIdChatCreate({
-      host,
-      id: subjectId,
-      socialModuleProfileId,
-      data: {},
-      options: {
-        headers: authHeaders(),
-      },
-    });
-
-    const socialModuleChatId = getChatId(chat);
-
-    await ensureProfileCanReplyInChat({
-      socialModuleProfileId: openRouterProfile.id,
-      socialModuleChatId,
-    });
-
-    const threads = await subjectApi.socialModuleChatFindByIdThreadFind({
-      host,
-      id: subjectId,
-      socialModuleChatId,
-      params: {
-        cb: Date.now().toString(),
-      },
-      options: {
-        headers: authHeaders(),
-      },
-    });
-
-    const defaultThread = getSingleDefaultThread(threads || []);
-
-    const inputMessage =
-      await subjectApi.socialModuleProfileFindByIdChatFindByIdThreadFindByIdMessageCreate(
-        {
-          host,
-          id: subjectId,
-          socialModuleProfileId,
-          socialModuleChatId,
-          socialModuleThreadId: defaultThread.id,
-          data: {
-            description: "Reply with the word OK and nothing else.",
-          },
-          options: {
-            headers: authHeaders(),
-          },
-        },
-      );
-
-    if (!inputMessage?.id) {
-      throw new Error(
-        `Create input message response has no id: ${JSON.stringify(inputMessage)}`,
-      );
-    }
-
-    const replyMessage =
-      await subjectApi.socialModuleProfileFindByIdChatFindByIdMessageFindByIdReactByOpenrouter(
-        {
-          host,
-          id: subjectId,
-          socialModuleProfileId,
-          socialModuleChatId,
-          socialModuleMessageId: inputMessage.id,
-          data: {
-            shouldReplySocialModuleProfile: openRouterProfile,
-          },
-          options: {
-            headers: authHeaders(),
-          },
-        },
-      );
-
-    const replyMessageId = getMessageId(replyMessage);
-
-    const persistedReply = await socialModuleMessageApi.findById({
-      id: replyMessageId,
-      options: {
-        headers: secretHeaders(),
-      },
-    });
-
-    expect(persistedReply?.metadata?.openRouter?.billing).toMatchObject({
-      prechargeTokens: 1,
-      selectedModelId: expect.any(String),
-      exactTokens: expect.any(Number),
-      deltaTokens: expect.any(Number),
-      totalUsd: expect.any(Number),
-      calls: expect.arrayContaining([
-        expect.objectContaining({
-          purpose: expect.any(String),
-          modelId: expect.any(String),
-          totalUsd: expect.any(Number),
-          status: expect.any(String),
-        }),
-      ]),
-      settlement: expect.objectContaining({
-        prechargeAmount: 1,
-        exactAmount: expect.any(Number),
-        deltaAmount: expect.any(Number),
-      }),
-    });
+beforeAll(async () => {
+  vault = await mkdtemp(path.join(tmpdir(), "sps-test-work-"));
+  process.env.SPS_PROVIDER_SECRET_DIR = vault;
+  process.env.SPS_PROVIDER_ACTIVE_MASTER_KEY = "scenario";
+  process.env.SPS_PROVIDER_MASTER_KEYS = JSON.stringify({
+    scenario: randomBytes(32).toString("base64"),
   });
 });
+
+afterAll(async () => {
+  for (const [key, value] of Object.entries(savedEnvironment)) {
+    if (value === undefined) delete process.env[key];
+    else process.env[key] = value;
+  }
+  await rm(vault, { recursive: true, force: true });
+  await getPostgresClient().end();
+  resetPostgresClient();
+  const kv = new KvProvider({ type: KV_PROVIDER }).client;
+  if (kv.client && "disconnect" in kv.client) kv.client.disconnect();
+});
+
+it.each([
+  { provider: "openrouter", payer: "store-owner" },
+  { provider: "openai", payer: "store-owner" },
+  { provider: "openai", payer: "customer" },
+] as const)(
+  "settles a CRM chat reply once through $provider funded by $payer",
+  async ({ provider, payer }) => {
+    // Exercise the regular services and database. Only the paid HTTP boundary is replaced.
+    const external = jest
+      .spyOn(globalThis, "fetch")
+      .mockImplementation(async (url) => {
+        expect(String(url)).toBe(
+          provider === "openrouter"
+            ? "https://openrouter.ai/api/v1/chat/completions"
+            : "https://api.openai.com/v1/chat/completions",
+        );
+        return Response.json({
+          id: "scenario-completion",
+          choices: [
+            {
+              message: {
+                content: "The selected phone uses a lithium-ion battery.",
+              },
+            },
+          ],
+          usage: {
+            prompt_tokens: 40,
+            completion_tokens: 10,
+            ...(provider === "openrouter" ? { cost: 0.001 } : {}),
+          },
+        });
+      });
+    try {
+      await getDrizzle({}).transaction(async (tx) =>
+        withConsistencyDatabase(tx, async () => {
+          const service = createService(createAppAssembly());
+          const { rbac, ecommerce, crm } = service.modules;
+          const owner = await rbac.subject.create({
+            data: { variant: "default" },
+          });
+          const customer = await rbac.subject.create({
+            data: { variant: "default" },
+          });
+          const identity = await rbac.identity.create({
+            data: {
+              provider: "email_and_password",
+              email: `scenario-${customer.id}@example.invalid`,
+            },
+          });
+          await rbac.subjectsToIdentities.create({
+            data: { subjectId: customer.id, identityId: identity.id },
+          });
+          const store = await ecommerce.store.create({ data: {} });
+          const product = await ecommerce.product.create({
+            data: { adminTitle: "Scenario phone" },
+          });
+          const offer = await ecommerce.storesToProducts.create({
+            data: {
+              storeId: store.id,
+              productId: product.id,
+              sku: randomUUID(),
+            },
+          });
+          const storeId = store.id;
+          const currencyId = randomUUID();
+          const payerId = payer === "customer" ? customer.id : owner.id;
+          await tx
+            .insert(Currency)
+            .values({ id: currencyId, title: "Work credits", symbol: "SPS" });
+          await tx.insert(Wallet).values({
+            subjectId: payerId,
+            billingModuleCurrencyId: currencyId,
+            amount: "20",
+          });
+          await rbac.subjectsToEcommerceModuleStores.create({
+            data: {
+              subjectId: owner.id,
+              ecommerceModuleStoreId: storeId,
+              variant: "owner",
+            },
+          });
+          await crm.funnel.save({
+            storeId,
+            name: "Product question",
+            kind: "consultation",
+            bindings: { offerIds: [offer.id] },
+            definition: {
+              initialStageId: "reply",
+              workFunding: {
+                payer,
+                currencyId,
+                maxTaskAmount: "20",
+                maxRunAmount: "5",
+              },
+              stages: [
+                {
+                  id: "reply",
+                  name: "Reply",
+                  instruction: "Answer the product question.",
+                  actions: [],
+                },
+              ],
+            },
+          });
+          const initial = await rbac.subject.customerWork.execute(customer.id, {
+            operation: "ask",
+            storeId,
+            offerId: offer.id,
+            productId: product.id,
+            operationKey: randomUUID(),
+          });
+          const task = await crm.task.get({ storeId, taskId: initial.taskId });
+          if (!task.assigneeId)
+            throw new Error("Consultation must have an assigned assistant");
+          const connections = rbac.subject.providerConnections;
+          const credential = "synthetic-test-credential";
+          const connected = await connections.change(owner.id, {
+            operation: "connect",
+            storeId,
+            label: provider,
+            provider,
+            externalAccount: "scenario-account",
+            secret: credential,
+          });
+          await connections.change(owner.id, {
+            ...(provider === "openai"
+              ? { operation: "assign-default" as const }
+              : { operation: "assign" as const, assistantId: task.assigneeId }),
+            storeId,
+            connectionId: connected.id,
+            capability: "text",
+            model: "scenario-model",
+            terms: {
+              maxInputTokens: 32000,
+              maxOutputTokens: 128,
+              maxCostUsd: "1",
+              inputUsdPerMillion: "2",
+              outputUsdPerMillion: "4",
+              usdPerSps: "0.01",
+              workMultiplier: "1.5",
+              version: "test-v1",
+            },
+          });
+          await expect(connections.list(customer.id, storeId)).rejects.toThrow(
+            "Store ownership",
+          );
+          if (payer === "customer") {
+            const unapproved = await rbac.subject.customerWork.execute(
+              customer.id,
+              {
+                operation: "message",
+                storeId,
+                taskId: initial.taskId,
+                operationKey: randomUUID(),
+                text: "Before agreement",
+              },
+            );
+            const request = unapproved.messages.find(
+              (row) => row.body === "Before agreement",
+            );
+            if (!request) throw new Error("Expected pre-consent message");
+            expect(
+              await rbac.subject.customerWork.pendingForMessage({
+                threadId: initial.threadId,
+                messageId: request.id,
+              }),
+            ).toBeNull();
+            const quote = await rbac.subject.customerWork.viewForThread(
+              customer.id,
+              initial.threadId,
+            );
+            if (!quote?.price)
+              throw new Error("Expected current prices before approval");
+            await rbac.subject.customerWork.execute(customer.id, {
+              operation: "approve-budget",
+              storeId,
+              taskId: task.id,
+              operationKey: randomUUID(),
+              maximum: "20",
+              priceKey: quote.price.key,
+            });
+          }
+          const posted = await rbac.subject.customerWork.execute(customer.id, {
+            operation: "message",
+            storeId,
+            taskId: initial.taskId,
+            operationKey: randomUUID(),
+            text: "Which battery does this phone use?",
+          });
+          const item = posted.messages.find(
+            (row) => row.body === "Which battery does this phone use?",
+          );
+          if (!item) throw new Error("Customer message missing");
+          const pending = await rbac.subject.customerWork.pendingForMessage({
+            threadId: posted.threadId,
+            messageId: item.id,
+          });
+          if (!pending) throw new Error("Assigned CRM event missing");
+          const reply = await service.dispatch(pending);
+          expect(reply.state).toBe("delivered");
+          expect(await service.dispatch(pending)).toEqual(reply);
+          expect(external).toHaveBeenCalledTimes(1);
+          const view = await rbac.subject.customerWork.viewForThread(
+            customer.id,
+            initial.threadId,
+          );
+          expect(
+            view?.messages.filter((row) => row.body.includes("lithium-ion")),
+          ).toHaveLength(1);
+          const report = await connections.list(owner.id, storeId);
+          expect(JSON.stringify(report)).not.toContain(credential);
+          const held = report.operations.find((op) => op.kind === "reserve");
+          const transfers = report.operations.filter(
+            (op) => op.kind === "transfer",
+          );
+          expect(held?.providerWork).toMatchObject({
+            provider,
+            attemptId: reply.id,
+            state: "delivered",
+            basis: provider === "openrouter" ? "provider" : "rate-card",
+          });
+          expect(transfers).toHaveLength(2);
+          const charge = provider === "openrouter" ? 0.1 : 0.012;
+          expect(
+            Number(transfers.find((op) => op.senderId === payerId)?.amount),
+          ).toBeCloseTo(charge * 1.5, 10);
+          expect(
+            Number(
+              transfers.find(
+                (op) => op.recipientId === report.connections[0].subjectId,
+              )?.amount,
+            ),
+          ).toBeCloseTo(charge, 10);
+          expect(
+            Number(
+              await rbac.subjectsToBillingModuleCurrencies.total(
+                customer.id,
+                currencyId,
+              ),
+            ),
+          ).toBeCloseTo(payer === "customer" ? 20 - charge * 1.5 : 0, 10);
+          const ambiguous = await rbac.subject.customerWork.execute(
+            customer.id,
+            {
+              operation: "message",
+              storeId,
+              taskId: initial.taskId,
+              operationKey: randomUUID(),
+              text: "One more question",
+            },
+          );
+          const messageId = ambiguous.messages.find(
+            (row) => row.body === "One more question",
+          )?.id;
+          if (!messageId) throw new Error("Second customer event missing");
+          const second = await rbac.subject.customerWork.pendingForMessage({
+            threadId: ambiguous.threadId,
+            messageId,
+          });
+          if (!second) throw new Error("Second work request missing");
+          external.mockRejectedValueOnce(new Error("Transport interrupted"));
+          const unknown = await service.dispatch(second);
+          expect(unknown.state).toBe("unknown");
+          expect(await service.dispatch(second)).toEqual(unknown);
+          const resolution =
+            provider === "openai"
+              ? { kind: "no-charge" as const, reference: "statement-218" }
+              : {
+                  kind: "charged" as const,
+                  reference: "statement-418",
+                  usd: "0.0004",
+                  inputTokens: 12,
+                  outputTokens: 6,
+                };
+          await connections.change(owner.id, {
+            operation: "reconcile",
+            storeId,
+            connectionId: connected.id,
+            attemptId: unknown.id,
+            resolution,
+          });
+          await service.reconcile(30, storeId);
+          const reconciled = (
+            await connections.list(owner.id, storeId)
+          ).operations.find((op) => op.providerWork?.attemptId === unknown.id);
+          expect(reconciled?.state).toBe(
+            provider === "openai" ? "released" : "settled",
+          );
+          expect(reconciled?.providerWork?.resolution).toMatchObject({
+            ...resolution,
+            actorId: owner.id,
+          });
+          expect(reconciled?.providerWork?.state).toBe("failed");
+          expect(external).toHaveBeenCalledTimes(2);
+          if (provider === "openrouter") {
+            const text = "Check a generation with delayed usage";
+            const next = await rbac.subject.customerWork.execute(customer.id, {
+              operation: "message",
+              storeId,
+              taskId: task.id,
+              operationKey: randomUUID(),
+              text,
+            });
+            const message = next.messages.find((row) => row.body === text);
+            if (!message)
+              throw new Error("Missing message for automatic reconciliation");
+            const event = await rbac.subject.customerWork.pendingForMessage({
+              threadId: next.threadId,
+              messageId: message.id,
+            });
+            if (!event)
+              throw new Error("Missing assigned reconciliation event");
+            const generationId = "known-generation-418";
+            external.mockResolvedValueOnce(
+              Response.json({ id: generationId }, { status: 502 }),
+            );
+            const interrupted = await service.dispatch(event);
+            expect(interrupted.state).toBe("unknown");
+            external.mockImplementationOnce(async (url, init) => {
+              expect(String(url)).toBe(
+                "https://openrouter.ai/api/v1/generation?id=" + generationId,
+              );
+              expect(init?.method ?? "GET").toBe("GET");
+              return Response.json({
+                data: {
+                  id: generationId,
+                  total_cost: 0.0004,
+                  native_tokens_prompt: 12,
+                  native_tokens_completion: 6,
+                },
+              });
+            });
+            await service.reconcile(30, storeId);
+            const updated = await connections.list(owner.id, storeId);
+            const entry = updated.operations.find(
+              (op) => op.providerWork?.attemptId === interrupted.id,
+            );
+            expect(entry).toMatchObject({
+              state: "settled",
+              providerWork: { basis: "provider", state: "failed" },
+            });
+            await service.reconcile(30, storeId);
+            expect(external).toHaveBeenCalledTimes(4);
+          }
+          throw rollback;
+        }),
+      );
+      throw new Error("Expected scenario rollback");
+    } catch (error) {
+      if (error !== rollback) throw error;
+    } finally {
+      external.mockRestore();
+    }
+  },
+  90_000,
+);

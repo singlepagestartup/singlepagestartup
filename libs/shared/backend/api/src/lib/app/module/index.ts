@@ -132,13 +132,24 @@ export class App<
     seeds: ISeedResult[];
   }): Promise<ISeedResult[]> {
     const seeds: ISeedResult[] = [];
-    await Promise.all(
-      this.apps.apps.map(async ({ type, app }) => {
-        if (type !== props?.type) return;
-        const result = await app.seed(props);
+    const entries = this.apps.apps.filter(({ type }) => type === props?.type);
+    if (props?.type === "relation") {
+      // A relation may refer to another seeded relation, e.g. linked store offers.
+      // Its transformers require the IDs produced earlier in registration order.
+      for (const { app } of entries) {
+        const result = await app.seed({
+          ...props,
+          seeds: [...props.seeds, ...seeds],
+        });
         seeds.push(...(Array.isArray(result) ? result : [result]));
-      }),
-    );
+      }
+    } else {
+      const results = await Promise.all(
+        entries.map(({ app }) => app.seed(props)),
+      );
+      for (const result of results)
+        seeds.push(...(Array.isArray(result) ? result : [result]));
+    }
     return seeds;
   }
 }

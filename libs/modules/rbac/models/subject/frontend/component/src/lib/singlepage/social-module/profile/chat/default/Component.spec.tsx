@@ -14,17 +14,16 @@ it("renders participants from the authorized parent response without relation/pr
           createdAt: "2026-01-01",
           title: "Shared QA",
           participants: [
-            { id: "self", slug: "alice" },
-            { id: "peer", slug: "bob" },
+            { id: "self", title: { en: "Alice" } },
+            { id: "peer", title: { en: "Bob" } },
           ],
         },
       } as any)}
     />,
   );
   expect(html).toContain("Shared QA");
-  expect(html).toContain("alice");
-  expect(html).toContain("bob");
-  expect(html).not.toContain("Participant details unavailable");
+  expect(html).toContain("Bob");
+  expect(html).not.toContain("Alice");
 });
 it("keeps a chat visible when an older API has not supplied the optional projection", () => {
   const html = renderToStaticMarkup(
@@ -44,5 +43,5 @@ it("keeps a chat visible when an older API has not supplied the optional project
     />,
   );
   expect(html).toContain("Shared QA");
-  expect(html).toContain("Participant details unavailable");
+  expect(html).toContain('href="/en/social/chats/chat"');
 });

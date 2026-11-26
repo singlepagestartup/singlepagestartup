@@ -27,6 +27,12 @@ import { insertSchema as subjectOrderInsertSchema } from "@sps/rbac/relations/su
 import { offerSettingsInputSchema } from "@sps/ecommerce/relations/stores-to-products/sdk/model/src/lib/settings";
 import { z } from "zod";
 import type { IModel as ICurrency } from "@sps/billing/models/currency/sdk/model";
+import {
+  storeProductLocaleSchema,
+  storeProductRelationSchema,
+  type IStoreProductRelations,
+  type IStoreProductFunnel,
+} from "./store-product-relations";
 
 export interface ICatalogAttributeValue {
   id: string;
@@ -55,6 +61,187 @@ const money = z
   .max(100)
   .regex(/^(0|[1-9]\d*)(\.\d{1,8})?$/);
 const localized = z.record(z.string(), z.string().max(100000));
+
+export function storeProductOfferVariants(canReadCosts: boolean) {
+  return canReadCosts
+    ? ["default", "hidden", "provider"]
+    : ["default", "hidden"];
+}
+
+export const storeProductListSchema = z.object({
+  offset: z.coerce.number().int().nonnegative().default(0),
+  limit: z.coerce.number().int().min(1).max(100).default(20),
+  search: z.string().trim().max(180).optional(),
+});
+
+export const storeProductDetailSchema = z.object({
+  ordersOffset: z.coerce.number().int().min(0).max(100000).optional(),
+});
+
+const storePriceUpdateSchema = z
+  .object({
+    attributeId: z.uuid(),
+    currencyId: z.uuid(),
+    expectedAmount: money,
+    amount: money,
+  })
+  .strict();
+const priceUpdates = z
+  .array(storePriceUpdateSchema)
+  .max(20)
+  .refine(
+    (prices) =>
+      new Set(prices.map(({ currencyId }) => currencyId)).size ===
+      prices.length,
+  )
+  .default([]);
+
+const newPrices = z
+  .array(z.object({ currencyId: z.uuid(), amount: money }).strict())
+  .max(20)
+  .refine(
+    (prices) =>
+      new Set(prices.map(({ currencyId }) => currencyId)).size ===
+      prices.length,
+  )
+  .default([]);
+
+const translationFields = z
+  .object({
+    title: z.string().trim().max(180).optional(),
+    shortDescription: z.string().trim().max(500).optional(),
+    description: z.string().trim().max(100000).optional(),
+  })
+  .strict()
+  .refine((entry) => Object.keys(entry).length > 0);
+
+const translationsSchema = z
+  .object({
+    expectedUpdatedAt: z.iso.datetime(),
+    entries: z
+      .record(storeProductLocaleSchema, translationFields)
+      .refine(
+        (entries) =>
+          Object.keys(entries).length > 0 && Object.keys(entries).length <= 30,
+      ),
+  })
+  .strict();
+
+export const storeProductUpdateSchema = z
+  .object({
+    product: z
+      .object({
+        expectedUpdatedAt: z.iso.datetime(),
+        language: storeProductLocaleSchema,
+        title: z.string().trim().min(1).max(180),
+        shortDescription: z.string().trim().max(500),
+        description: z.string().trim().max(100000),
+      })
+      .strict()
+      .optional(),
+    translations: translationsSchema.optional(),
+    productPrices: priceUpdates,
+    productNewPrices: newPrices,
+    relation: storeProductRelationSchema.optional(),
+    offer: z
+      .object({
+        id: z.uuid(),
+        sku: z
+          .object({
+            expected: z.string(),
+            value: z.string().trim().min(1).max(200),
+          })
+          .strict()
+          .optional(),
+        prices: priceUpdates,
+        newPrices,
+      })
+      .strict()
+      .refine(
+        ({ sku, prices, newPrices }) =>
+          Boolean(sku) || prices.length > 0 || newPrices.length > 0,
+      )
+      .optional(),
+  })
+  .strict()
+  .refine(({ product, translations }) => !(product && translations))
+  .refine(
+    ({
+      product,
+      translations,
+      offer,
+      productPrices,
+      productNewPrices,
+      relation,
+    }) =>
+      Boolean(
+        product ||
+        translations ||
+        offer ||
+        productPrices.length ||
+        productNewPrices.length ||
+        relation,
+      ),
+  );
+
+export type IStoreProductUpdate = z.input<typeof storeProductUpdateSchema>;
+
+export interface IStoreProductPrice {
+  attributeId: string;
+  currencyId: string;
+  currencyTitle: string;
+  currencySymbol: string;
+  amount: string;
+  editable: boolean;
+}
+
+export interface IStoreProductOffer {
+  id: string;
+  sku: string;
+  variant: IOffer["variant"];
+  configurationKey: string;
+  editable: boolean;
+  prices: IStoreProductPrice[];
+}
+
+export interface IStoreProduct {
+  product: Pick<
+    IProduct,
+    | "id"
+    | "slug"
+    | "title"
+    | "adminTitle"
+    | "shortDescription"
+    | "description"
+    | "kind"
+    | "type"
+  > & { updatedAt: string };
+  offers: IStoreProductOffer[];
+  productPrices: IStoreProductPrice[];
+}
+
+export interface IStoreProductList {
+  items: IStoreProduct[];
+  total: number;
+  nextOffset?: number;
+}
+
+export interface IStoreProductOrder {
+  id: string;
+  type: string;
+  status: string;
+  createdAt: string;
+  quantity: number;
+}
+
+export interface IStoreProductDetail extends IStoreProduct {
+  canEditProduct: boolean;
+  sharedProduct: boolean;
+  orders?: { items: IStoreProductOrder[]; nextOffset?: number };
+  funnels?: IStoreProductFunnel[];
+  relations?: IStoreProductRelations;
+}
+
 export const catalogCreateOfferSchema = z
   .object({
     storeId: z.uuid().optional(),
@@ -74,6 +261,7 @@ export const catalogCreateOfferSchema = z
         description: localized.optional(),
         kind: productInsertSchema.shape.kind.unwrap(),
         type: z.enum(["one_off", "subscription"]).default("one_off"),
+        singleUnitPerOrder: productInsertSchema.shape.singleUnitPerOrder,
         formula: z.string().min(1).max(2000),
         formulaVersion: z.string().min(1).max(100).default("1"),
       })
@@ -109,6 +297,25 @@ export const catalogCreateOfferSchema = z
   );
 
 export type ICatalogCreateOfferInput = z.input<typeof catalogCreateOfferSchema>;
+
+const selectedCatalogIds = z
+  .array(z.uuid())
+  .max(100)
+  .refine((ids) => new Set(ids).size === ids.length);
+
+export const storeProductCreateOfferSchema = catalogCreateOfferSchema
+  .safeExtend({
+    categoryIds: selectedCatalogIds.optional(),
+    attributeIds: selectedCatalogIds.optional(),
+  })
+  .refine(
+    ({ product, categoryIds }) => Boolean(product) || !categoryIds?.length,
+    { message: "Select categories when creating a new product" },
+  );
+
+export type IStoreProductCreateOfferInput = z.input<
+  typeof storeProductCreateOfferSchema
+>;
 export interface ICatalogCreateOfferResult {
   product: IProduct;
   offer: IOffer;
@@ -248,10 +455,21 @@ export const catalogMutationSchema = z
     ),
     method: z.enum(["POST", "PATCH", "DELETE"]),
     recordId: z.uuid().optional(),
+    expectedUpdatedAt: z.iso.datetime().optional(),
     data: z.record(z.string(), z.unknown()).default({}),
   })
   .strict()
   .superRefine((input, context) => {
+    if (
+      input.expectedUpdatedAt &&
+      (input.entity !== "stores" || input.method !== "PATCH")
+    ) {
+      context.addIssue({
+        code: "custom",
+        path: ["expectedUpdatedAt"],
+        message: "A store update is required for this version check",
+      });
+    }
     if (input.entity === "products" && input.method === "POST") {
       context.addIssue({
         code: "custom",

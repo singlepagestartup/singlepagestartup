@@ -743,8 +743,10 @@ list explicitly.
 
 ## Knowledge embedding provider
 
-Knowledge uses the private `apps/llm` service and its Ollama embedding model by
-default. Configure the local route in `tools/deployer/.env` with:
+Knowledge uses the OpenAI API by default. Set `OPEN_AI_API_KEY` for
+`text-embedding-3-large` with 768 dimensions and for file analysis. To use the
+private `apps/llm` service and its Ollama embedding model, configure
+`tools/deployer/.env` with:
 
 ```dotenv
 KNOWLEDGE_EMBEDDING_PROVIDER=llm
@@ -761,14 +763,15 @@ KNOWLEDGE_OPEN_ROUTER_EMBEDDING_MODEL=qwen/qwen3-embedding-8b
 OPEN_ROUTER_API_KEY=sk-or-v1-...
 ```
 
-`api.sh` writes the selected provider, OpenRouter model, and API key into the
+`api.sh` writes the selected provider, OpenRouter model, and API keys into the
 server API environment. `llm.sh` writes the local Ollama model and dimensions
 into the server LLM environment. `github_deployer.sh` stores the provider/model settings in GitHub Actions
 Variables and keeps the API key in Secrets. Preview deployments use their
 `PREVIEW_`-prefixed names.
 
-Changing the provider or embedding model requires a complete Knowledge
-reindex. Do not search a database containing vectors from the previous model.
+Indexing rebuilds incompatible vectors after switching to or from OpenAI.
+Authorized searches refresh their own Source scope. Run the Knowledge index
+command to rebuild the shared catalog before general searches.
 
 The server playbook adds `ANSIBLE_USER` to the `docker` group. An SSH session
 that was already open before provisioning must be closed and opened again
@@ -1061,6 +1064,8 @@ must belong to the same uid:
 
 - `/home/code/api_data`, the API upload directory, mounted at
   `apps/api/public/file-storage/dynamic`;
+- `/home/code/api_private`, mounted outside the web root at
+  `/var/lib/sps/private-files` and readable only by uid 1000;
 - the `host_next_static` volume, which keeps the Next.js chunks of earlier
   releases.
 
@@ -1070,6 +1075,10 @@ uploads show that owner on the host.
 `./api.sh up` creates `/home/code/api_data` with that owner, and `./host.sh up`
 hands an existing `host_next_static` volume to it before deploying the stack.
 Docker fills a new volume from the image, owner included.
+
+Before upgrading an API that stores protected files in PostgreSQL, stop the old
+API writers and run `./api.sh up` so the new stack has the private mount before
+its migration starts. Include `/home/code/api_private` in database backups.
 
 A server that already runs the stacks holds root-owned files in both paths.
 Releases arrive through Portainer webhooks without running the plays, so give

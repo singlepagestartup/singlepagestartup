@@ -1,10 +1,5 @@
 export type JsonValue =
-  | null
-  | string
-  | number
-  | boolean
-  | JsonValue[]
-  | { [key: string]: JsonValue };
+  null | string | number | boolean | JsonValue[] | { [key: string]: JsonValue };
 
 export interface IRecord {
   id: string;
@@ -15,6 +10,11 @@ export interface IRecord {
   status: string;
   interval: string | null;
   type: string;
+  checkoutProvider: string | null;
+  checkoutCurrencyId: string | null;
+  checkoutMetadata: JsonValue | null;
+  checkoutDispatchState: string;
+  checkoutDispatchStartedAt: string | null;
 }
 
 export const variant = "admin-v2-table";

@@ -67,39 +67,39 @@ use shared UI components directly rather than a Website Builder Feature variant.
 
 `ChatWorkspace` and `ChatThreadPanel` are presentation components shared by the
 production Social Profile/Thread views and the Website Builder landing demo.
-The workspace supplies the dark project navigation and fixed-height frame;
-the Thread panel supplies its header, scroll areas and responsive Chat/Document
-switch. Desktop navigation starts at `lg`; the 360px document column appears
-at `xl`. Below those breakpoints, the owner supplies mobile navigation and the
-panel switch selects the visible content.
+The workspace supplies the navigation and fixed-height frame. The Thread panel
+supplies the header, message scroll area and optional context sidebar. Desktop
+navigation starts at `lg`. The header button toggles the 360px sidebar at `xl` and switches between the conversation and its details on smaller screens. The Website Builder landing demo uses
+the same layout with its own document editing and download controls.
 
-Pass navigation, messages, composer, knowledge and download controls as rendered
-nodes. The panel owns only its display tab, with optional controlled `pane` and
-`onPaneChange` props. Labels support `language="ru"`; domain readers, permissions,
-requests and mutations remain in the owning module. The adapter imports no SDK.
+Pass navigation, messages, composer and context as rendered nodes. The panel
+owns its display tab, with optional controlled `pane` and `onPaneChange` props.
+Labels support `language="ru"`. Domain readers and actions stay in the caller.
 
 ### File preview
 
-`FilePreview` from `@sps/ui-adapter` renders a keyboard-accessible thumbnail
-button and a centered dialog. Pass a local `File` through `localFile` to preview
-an unsent attachment, or pass `src`, `mimeType`, `extension` and `name` for a
-stored file. Set `language="ru"` for Russian preview controls and messages; the
-default remains English. Its props live in `src/lib/file-preview/interface.ts`.
+`FilePreview` from `@sps/ui-adapter` accepts a local `File`, a public
+`src` or a callback that reads the file through its owning SDK. Pass `name`
+and any available `mimeType` and `extension`. For a protected attachment,
+pass `onDownload(signal?, maxBytes?)` and omit `src`. Keep the callback
+stable for the lifetime of the authorized file. The adapter aborts pending
+reads and releases object URLs when the file changes or the component unmounts.
 
-Images support zoom. PDF.js loads on demand and renders one PDF page at a time
-with page and zoom controls; its worker is bundled with the app. Markdown has
-Preview and Source modes, while TXT, CSV, JSON, LOG and YAML use plain text.
-Markdown raw HTML is disabled, unsafe links are omitted and inline image
-references remain text. Other formats show an original/download fallback.
-Document thumbnails use foreground-colored Lucide glyphs and a format label
-on the muted background.
+Use `layout="message"` for the conversation or `layout="rail"` for the chat
+sidebar. Message images keep their aspect ratio. The sidebar shows the file name
+and type beside a 72-pixel image thumbnail. Both load images near the viewport.
+Audio and video load when the user selects Play or opens the viewer. The
+viewer supports full screen, image zoom, keyboard dismissal and downloading
+the original when a byte reader or local file is available. Card and row
+layouts are available for the composer and file lists. Set `language="ru"`
+for Russian controls. The full props are in `src/lib/file-preview/interface.ts`.
 
-The adapter imports no business SDK. A stored-file owner supplies a lazy
-`textContent` JSX reader and an `onDownload(signal?)` callback for original
-bytes. The callback also supplies PDF bytes and can abort when the dialog
-closes. Local files use browser object URLs and are never uploaded by preview.
-The adapter revokes these URLs on cleanup. Text preview is limited to 2 MiB;
-opening or downloading the original remains available when preview fails.
+PDF.js renders one page at a time with paging and zoom controls. HTML runs
+in the sandboxed preview frame. Markdown supports Preview and Source,
+disables raw HTML and shows inline image references as text. TXT, CSV, JSON,
+LOG and YAML use plain text. A stored-file owner can supply a lazy
+`textContent` reader. Text previews are limited to 2 MiB. SVG, scripts and
+unsupported formats have a download action when the original is available.
 
 ### Toast notifications
 

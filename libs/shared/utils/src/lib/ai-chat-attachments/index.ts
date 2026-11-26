@@ -46,3 +46,64 @@ export function assertSupportedAiChatAttachments(
     );
   }
 }
+
+/** Bound both declared and streamed response sizes before decoding chat or Knowledge text. */
+export async function readAttachmentPreviewBytes(
+  response: Response,
+  maxBytes: number,
+): Promise<ArrayBuffer> {
+  if (Number(response.headers.get("content-length")) > maxBytes) {
+    await response.body?.cancel();
+    throw new Error(
+      "This file is too large for text preview. Download the original.",
+    );
+  }
+  const reader = response.body?.getReader();
+  if (!reader) {
+    const data = await response.arrayBuffer();
+    if (data.byteLength > maxBytes) {
+      throw new Error(
+        "This file is too large for text preview. Download the original.",
+      );
+    }
+    return data;
+  }
+  let size = 0;
+  const chunks: Uint8Array[] = [];
+  try {
+    let chunk = await reader.read();
+    while (!chunk.done) {
+      size += chunk.value.byteLength;
+      if (size > maxBytes) {
+        await reader.cancel();
+        throw new Error(
+          "This file is too large for text preview. Download the original.",
+        );
+      }
+      chunks.push(chunk.value);
+      chunk = await reader.read();
+    }
+  } finally {
+    reader.releaseLock();
+  }
+  const bytes = new Uint8Array(size);
+  let offset = 0;
+  for (const chunk of chunks) {
+    bytes.set(chunk, offset);
+    offset += chunk.length;
+  }
+  return bytes.buffer;
+}
+
+export async function readChatAttachmentBlob(
+  response: Response,
+  maxBytes?: number,
+) {
+  if (maxBytes === undefined) {
+    return response.blob();
+  }
+  const bytes = await readAttachmentPreviewBytes(response, maxBytes);
+  return new Blob([bytes], {
+    type: response.headers.get("content-type") ?? "",
+  });
+}

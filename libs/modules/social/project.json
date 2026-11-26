@@ -36,6 +36,9 @@
           },
           {
             "command": "nx run @sps/social:relations:repository-generate"
+          },
+          {
+            "command": "nx run @sps/social:relations:chats-to-crm-module-tasks:repository-generate"
           }
         ]
       }
@@ -51,6 +54,9 @@
           },
           {
             "command": "nx run @sps/social:relations:repository-migrate"
+          },
+          {
+            "command": "nx run @sps/social:relations:chats-to-crm-module-tasks:repository-migrate"
           }
         ]
       }
@@ -129,6 +135,9 @@
           },
           {
             "command": "nx run @sps/social:relations:profiles-to-file-storage-module-files:repository-generate"
+          },
+          {
+            "command": "nx run @sps/social:relations:chats-to-file-storage-module-files:repository-generate"
           },
           {
             "command": "nx run @sps/social:relations:messages-to-file-storage-module-files:repository-generate"
@@ -237,6 +246,9 @@
           },
           {
             "command": "nx run @sps/social:relations:profiles-to-file-storage-module-files:repository-migrate"
+          },
+          {
+            "command": "nx run @sps/social:relations:chats-to-file-storage-module-files:repository-migrate"
           },
           {
             "command": "nx run @sps/social:relations:messages-to-file-storage-module-files:repository-migrate"
@@ -716,7 +728,7 @@
         "cwd": "libs/modules/social/relations/profiles-to-ecommerce-module-products/backend/repository/database",
         "commands": [
           {
-            "command": "bun run ./src/lib/migrate.ts"
+            "command": "bun run ./src/lib/migrate.ts --through 1"
           }
         ]
       }
@@ -781,6 +793,22 @@
         ]
       }
     },
+    "relations:chats-to-file-storage-module-files:repository-generate": {
+      "executor": "nx:run-commands",
+      "cache": false,
+      "options": {
+        "parallel": false,
+        "cwd": "libs/modules/social/relations/chats-to-file-storage-module-files/backend/repository/database",
+        "commands": [
+          {
+            "command": "drizzle-kit up --config=./src/lib/config.ts"
+          },
+          {
+            "command": "drizzle-kit generate --config=./src/lib/config.ts"
+          }
+        ]
+      }
+    },
     "relations:messages-to-file-storage-module-files:repository-generate": {
       "executor": "nx:run-commands",
       "cache": false,
@@ -793,6 +821,20 @@
           },
           {
             "command": "drizzle-kit generate --config=./src/lib/config.ts"
+          }
+        ]
+      }
+    },
+    "relations:chats-to-file-storage-module-files:repository-migrate": {
+      "executor": "nx:run-commands",
+      "cache": false,
+      "options": {
+        "parallel": false,
+        "envFile": "apps/api/.env",
+        "cwd": "libs/modules/social/relations/chats-to-file-storage-module-files/backend/repository/database",
+        "commands": [
+          {
+            "command": "bun run ./src/lib/migrate.ts"
           }
         ]
       }
@@ -1164,6 +1206,36 @@
         "parallel": false,
         "envFile": "apps/api/.env",
         "cwd": "libs/modules/social/relations/widgets-to-website-builder-module-widgets/backend/repository/database",
+        "commands": [
+          {
+            "command": "bun run ./src/lib/migrate.ts"
+          }
+        ]
+      }
+    },
+    "relations:chats-to-crm-module-tasks:repository-generate": {
+      "executor": "nx:run-commands",
+      "cache": false,
+      "options": {
+        "parallel": false,
+        "cwd": "libs/modules/social/relations/chats-to-crm-module-tasks/backend/repository/database",
+        "commands": [
+          {
+            "command": "drizzle-kit up --config=./src/lib/config.ts"
+          },
+          {
+            "command": "drizzle-kit generate --config=./src/lib/config.ts"
+          }
+        ]
+      }
+    },
+    "relations:chats-to-crm-module-tasks:repository-migrate": {
+      "executor": "nx:run-commands",
+      "cache": false,
+      "options": {
+        "parallel": false,
+        "envFile": "apps/api/.env",
+        "cwd": "libs/modules/social/relations/chats-to-crm-module-tasks/backend/repository/database",
         "commands": [
           {
             "command": "bun run ./src/lib/migrate.ts"

@@ -5,7 +5,6 @@ import { Context } from "hono";
 import { HTTPException } from "hono/http-exception";
 import { Service } from "../../../../../../../service";
 import { getHttpErrorType } from "@sps/backend-utils";
-import { Service as Presentations } from "../../../../../../../service/startup/social-module/chat/presentations";
 
 export class Handler {
   service: Service;
@@ -83,7 +82,7 @@ export class Handler {
             );
           }
 
-          return this.response(c, socialModuleChat);
+          return this.response(c, socialModuleChat, id);
         }
 
         const socialModuleProfilesToChats =
@@ -123,7 +122,7 @@ export class Handler {
           );
         }
 
-        return this.response(c, socialModuleChat);
+        return this.response(c, socialModuleChat, id);
       });
     } catch (error: any) {
       const { status, message, details } = getHttpErrorType(error);
@@ -134,32 +133,17 @@ export class Handler {
   protected async response(
     c: Context,
     chat: ISocialModuleChat,
+    subjectId: string,
   ): Promise<Response> {
-    let participants;
-    if (c.req.query("includeParticipants") === "true") {
-      participants = await this.service.socialModuleChatParticipants({
-        socialModuleChatId: chat.id,
-      });
-    } else {
-      participants = undefined;
-    }
-    let participantPresentations;
-    if (participants) {
-      participantPresentations = [
-        ...(
-          await new Presentations(this.service).find(
-            participants.map((profile) => profile.id),
-          )
-        ).values(),
-      ];
-    } else {
-      participantPresentations = undefined;
-    }
-    return c.json({
-      data: participants
-        ? { ...chat, participants, participantPresentations }
-        : chat,
+    const data = await this.service.socialChatSettings.detail(chat, {
+      subjectId,
+      viewerProfileId: c.req.param("socialModuleProfileId"),
+      includeParticipants: c.req.query("includeParticipants") === "true",
+      staff: Boolean(c.get("taskChatStaff")),
+      readTaskSettings: Boolean(c.get("readTaskChatSettings")),
+      sharedThread: c.get("sharedTaskThread"),
     });
+    return c.json({ data });
   }
 
   protected async isSubjectAdmin(subjectId: string): Promise<boolean> {

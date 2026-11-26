@@ -1,3 +1,4 @@
+import { serviceBootstrap as chatsToCrmModuleTasks } from "@sps/social/relations/chats-to-crm-module-tasks/backend/app/api/src/lib/bootstrap";
 import { serviceBootstrap as widgetsToWebsiteBuilderModuleWidgets } from "@sps/social/relations/widgets-to-website-builder-module-widgets/backend/app/api/src/lib/bootstrap";
 import { serviceBootstrap as skillsToKnowledgeModuleSources } from "@sps/social/relations/skills-to-knowledge-module-sources/backend/app/api/src/lib/bootstrap";
 import { serviceBootstrap as messagesToKnowledgeModuleSources } from "@sps/social/relations/messages-to-knowledge-module-sources/backend/app/api/src/lib/bootstrap";
@@ -22,6 +23,7 @@ import { serviceBootstrap as profilesToChats } from "@sps/social/relations/profi
 import { serviceBootstrap as profilesToMessages } from "@sps/social/relations/profiles-to-messages/backend/app/api/src/lib/bootstrap";
 import { serviceBootstrap as attributeKeysToAttributes } from "@sps/social/relations/attribute-keys-to-attributes/backend/app/api/src/lib/bootstrap";
 import { serviceBootstrap as profilesToEcommerceModuleProducts } from "@sps/social/relations/profiles-to-ecommerce-module-products/backend/app/api/src/lib/bootstrap";
+import { serviceBootstrap as chatsToFileStorageModuleFiles } from "@sps/social/relations/chats-to-file-storage-module-files/backend/app/api/src/lib/bootstrap";
 import { serviceBootstrap as messagesToFileStorageModuleFiles } from "@sps/social/relations/messages-to-file-storage-module-files/backend/app/api/src/lib/bootstrap";
 import { serviceBootstrap as thread } from "@sps/social/models/thread/backend/app/api/src/lib/bootstrap";
 import { serviceBootstrap as chatsToThreads } from "@sps/social/relations/chats-to-threads/backend/app/api/src/lib/bootstrap";
@@ -43,6 +45,11 @@ export class Apps {
   }
 
   bindApps() {
+    this.apps.push({
+      type: "relation",
+      route: "/chats-to-crm-module-tasks",
+      app: createModuleChildApp(chatsToCrmModuleTasks, this.assembly),
+    });
     this.apps.push({
       type: "relation",
       route: "/widgets-to-website-builder-module-widgets",
@@ -94,6 +101,11 @@ export class Apps {
         profilesToKnowledgeModuleSources,
         this.assembly,
       ),
+    });
+    this.apps.push({
+      type: "relation",
+      route: "/chats-to-file-storage-module-files",
+      app: createModuleChildApp(chatsToFileStorageModuleFiles, this.assembly),
     });
     this.apps.push({
       type: "relation",

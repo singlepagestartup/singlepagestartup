@@ -66,6 +66,9 @@
           },
           {
             "command": "nx run @sps/agent:models:widget:repository-generate"
+          },
+          {
+            "command": "nx run @sps/agent:models:work-attempt:repository-generate"
           }
         ]
       }
@@ -89,6 +92,9 @@
           },
           {
             "command": "nx run @sps/agent:models:widget:repository-migrate"
+          },
+          {
+            "command": "nx run @sps/agent:models:work-attempt:repository-migrate"
           }
         ]
       }
@@ -154,6 +160,36 @@
         "parallel": false,
         "envFile": "apps/api/.env",
         "cwd": "libs/modules/agent/models/agent/backend/repository/database",
+        "commands": [
+          {
+            "command": "bun run ./src/lib/migrate.ts"
+          }
+        ]
+      }
+    },
+    "models:work-attempt:repository-generate": {
+      "executor": "nx:run-commands",
+      "cache": false,
+      "options": {
+        "parallel": false,
+        "cwd": "libs/modules/agent/models/work-attempt/backend/repository/database",
+        "commands": [
+          {
+            "command": "drizzle-kit up --config=./src/lib/config.ts"
+          },
+          {
+            "command": "drizzle-kit generate --config=./src/lib/config.ts"
+          }
+        ]
+      }
+    },
+    "models:work-attempt:repository-migrate": {
+      "executor": "nx:run-commands",
+      "cache": false,
+      "options": {
+        "parallel": false,
+        "envFile": "apps/api/.env",
+        "cwd": "libs/modules/agent/models/work-attempt/backend/repository/database",
         "commands": [
           {
             "command": "bun run ./src/lib/migrate.ts"

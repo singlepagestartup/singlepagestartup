@@ -1,0 +1,47 @@
+{
+  "metadata": {
+    "seo": {
+      "title": {
+        "en": "Store CRM Task — SinglePageStartup",
+        "ru": "Задача CRM магазина — SinglePageStartup"
+      },
+      "description": {
+        "en": "View the details and progress of a store CRM task.",
+        "ru": "Просмотрите сведения и ход работы по задаче CRM магазина."
+      }
+    },
+    "seoDisplay": {
+      "twitterTitle": {
+        "en": "Store CRM Task — SinglePageStartup",
+        "ru": "Задача CRM магазина — SinglePageStartup"
+      },
+      "opengraphTitle": {
+        "en": "Store CRM Task — SinglePageStartup",
+        "ru": "Задача CRM магазина — SinglePageStartup"
+      },
+      "opengraphLocale": {
+        "en": "en_US",
+        "ru": "ru_RU"
+      },
+      "twitterDescription": {
+        "en": "View the details and progress of a store CRM task.",
+        "ru": "Просмотрите сведения и ход работы по задаче CRM магазина."
+      },
+      "opengraphDescription": {
+        "en": "View the details and progress of a store CRM task.",
+        "ru": "Просмотрите сведения и ход работы по задаче CRM магазина."
+      }
+    }
+  },
+  "id": "817b248e-0831-4f5f-b54e-1341e0798b1f",
+  "title": "Store CRM Task",
+  "url": "/ecommerce/stores/[ecommerce.stores.slug]/crm/tasks/[crm.tasks.id]",
+  "slug": "crm-workspace-task",
+  "description": "View the details and progress of a store CRM task.",
+  "createdAt": "2026-11-19T08:58:57.995Z",
+  "updatedAt": "2026-11-22T19:16:22.032Z",
+  "variant": "noindex",
+  "className": null,
+  "language": "en",
+  "adminTitle": "Store CRM Task"
+}

@@ -1,8 +1,7 @@
 import { consistencyContext, type IRepository } from "@sps/shared-backend-api";
-import type { Table } from "@sps/ecommerce/models/order/backend/repository/database";
+import type { IModel as IOrder } from "@sps/ecommerce/models/order/sdk/model";
 import type { Repository } from "../../../repository";
 
-type IOrder = typeof Table.$inferSelect;
 export interface ISubscriptionPeriodWrite {
   id: string;
   before: IOrder;

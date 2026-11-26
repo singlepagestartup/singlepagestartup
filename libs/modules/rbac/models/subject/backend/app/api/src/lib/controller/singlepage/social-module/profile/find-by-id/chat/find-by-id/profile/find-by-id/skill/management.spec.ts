@@ -21,6 +21,7 @@ function context(
       query: (name: string) => props.query?.[name],
     },
     json: jest.fn((value) => value),
+    get: jest.fn(),
   } as any;
 }
 

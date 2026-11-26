@@ -1,0 +1,27 @@
+{
+  "id": "social.thread.customer-work",
+  "title": "Обсуждение заказа",
+  "description": "Product conversation, manager handoff and result review.",
+  "layer": "singlepage",
+  "state": "draft",
+  "source": {
+    "module": "social",
+    "entityType": "model",
+    "entity": "thread",
+    "variant": "customer-work"
+  },
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "contentSlots": [],
+  "figma": {
+    "componentName": "social.thread",
+    "pageName": "social",
+    "variantName": "customer-work",
+    "nodeId": null,
+    "variantNodeId": null,
+    "syncStatus": "not-created",
+    "metadataFile": "figma.json"
+  }
+}

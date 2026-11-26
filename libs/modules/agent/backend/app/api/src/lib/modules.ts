@@ -5,7 +5,7 @@ import { createServices as createAnalyticServices } from "@sps/analytic/backend/
 import { createServices as createRbacServices } from "@sps/rbac/backend/app/api/src/lib/services";
 import { createServices as createStartupServices } from "@sps/startup/backend/app/api/src/lib/services";
 import { createServices as createSocialServices } from "@sps/social/backend/app/api/src/lib/services";
-import { createServices as createCrmServices } from "@sps/crm/backend/app/api/src/lib/services";
+import { createModules as createRbacModules } from "@sps/rbac/backend/app/api/src/lib/modules";
 import { createServices as createBlogServices } from "@sps/blog/backend/app/api/src/lib/services";
 import { createServices as createEcommerceServices } from "@sps/ecommerce/backend/app/api/src/lib/services";
 import { createServices as createBillingServices } from "@sps/billing/backend/app/api/src/lib/services";
@@ -33,7 +33,7 @@ export function createModules(assembly: IAppAssembly) {
       return assembly.getOrCreate(createSocialServices);
     },
     get crm() {
-      return assembly.getOrCreate(createCrmServices);
+      return assembly.getOrCreate(createRbacModules).crm;
     },
     get blog() {
       return assembly.getOrCreate(createBlogServices);

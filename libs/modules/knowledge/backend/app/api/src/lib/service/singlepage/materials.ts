@@ -31,10 +31,16 @@ export class Service {
       const files = await this.props.source.sourceFiles(sourceId);
       const snapshot = this.fileSnapshot(files);
       const parts: string[] = [];
-      for (const { file } of files) {
+      for (const { file, relation } of files) {
         try {
+          const privateMaterial = [
+            "private-image",
+            "private-material",
+          ].includes(relation.variant)
+            ? await this.props.source.readPrivateMaterial(sourceId, file.id)
+            : undefined;
           parts.push(
-            `### ${file.adminTitle || file.alt || "Материал"}\n${await this.media.analyze(file, userContext)}`,
+            `### ${file.adminTitle || file.alt || "Материал"}\n${await this.media.analyze(file, userContext, privateMaterial?.bytes)}`,
           );
         } catch (error) {
           throw new Error(

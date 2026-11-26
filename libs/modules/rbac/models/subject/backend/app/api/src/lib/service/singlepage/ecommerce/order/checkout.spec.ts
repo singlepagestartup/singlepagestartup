@@ -436,6 +436,7 @@ function createTestContext(props?: {
     }),
   };
   const service = new Service({
+    assertPaymentStage: jest.fn().mockResolvedValue(undefined),
     repository,
     settledOrderIds: jest.fn(
       async ({ orderIds }) =>
@@ -1476,6 +1477,68 @@ it("validates every requested order before claiming any cart", async () => {
   ).toBe(true);
 });
 
+it.each([[2], [1, 1]])(
+  "rejects an invalid legacy single-unit order before preparing payment",
+  async (...quantities) => {
+    jest.clearAllMocks();
+    const { service, checkoutOrders } = createTestContext({
+      productType: "one_off",
+    });
+    const [{ id: orderId }] = checkoutOrders;
+    service.modules.ecommerce.product.find.mockResolvedValue([
+      { id: "product-target", type: "one_off", singleUnitPerOrder: true },
+    ]);
+    service.modules.ecommerce.ordersToProducts.find.mockResolvedValue(
+      quantities.map((quantity, index) => ({
+        id: `legacy-line-${index}`,
+        orderId,
+        productId: "product-target",
+        offerId: null,
+        quantity,
+      })),
+    );
+    await expect(
+      service.execute({
+        id: "subject-1",
+        provider: "stripe",
+        email: "owner@example.test",
+        ecommerceModule: { orders: [{ id: orderId }] },
+      }),
+    ).rejects.toThrow("one unit at a time");
+    expect(mockBillingModulePaymentIntentCreate).not.toHaveBeenCalled();
+    expect(mockBillingModulePaymentIntentProvider).not.toHaveBeenCalled();
+    expect(checkoutOrders[0]).toMatchObject({ type: "cart", status: "new" });
+  },
+);
+
+it.each([["first"], ["first", "child"], ["first", "foreign"]])(
+  "rejects an incomplete or stale primary line selection %j before claiming the order",
+  async (...lineIds) => {
+    jest.clearAllMocks();
+    const { service, checkoutOrders } = createTestContext({
+      productType: "one_off",
+    });
+    const [{ id: orderId }] = checkoutOrders;
+    (
+      service.modules.ecommerce.ordersToProducts.find as jest.Mock
+    ).mockResolvedValue([
+      { id: "first", orderId, parentLineId: null },
+      { id: "second", orderId, parentLineId: null },
+      { id: "child", orderId, parentLineId: "first" },
+    ]);
+    await expect(
+      service.execute({
+        id: "subject-1",
+        provider: "stripe",
+        email: "owner@example.test",
+        ecommerceModule: { orders: [{ id: orderId, lineIds }] },
+      }),
+    ).rejects.toThrow("The selected cart items changed");
+    expect(mockEcommerceOrderUpdate).not.toHaveBeenCalled();
+    expect(mockBillingModulePaymentIntentCreate).not.toHaveBeenCalled();
+  },
+);
+
 it("creates a separate recurring intent for each subscription order", async () => {
   jest.clearAllMocks();
   const { service, checkoutOrders, transactionActive } = createTestContext({
@@ -1689,6 +1752,7 @@ it.each([
       return context.json({ data: { ok: true } });
     });
     const check = new OrderCheckHandler({
+      deliverConfirmedWork: jest.fn(),
       findById: async () => ({ ...order, updatedAt: new Date().toISOString() }),
       ordersToBillingModulePaymentIntents: {
         find: async () => [
@@ -1801,6 +1865,7 @@ it("fulfills through the webhook pipeline after an earlier pending check consume
     return context.json({ data: { ok: true } });
   });
   const check = new OrderCheckHandler({
+    deliverConfirmedWork: jest.fn(),
     findById: async () => ({ ...order, updatedAt: new Date().toISOString() }),
     ordersToBillingModulePaymentIntents: {
       find: async () => [{ billingModulePaymentIntentId: "payment-intent-1" }],

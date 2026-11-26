@@ -20,6 +20,9 @@ A Product’s `kind` is an extensible text classification. Built-in behavior rec
 Both admin forms accept custom values.
 
 - `type`: product type (default: `one_off`).
+- `singleUnitPerOrder` limits the product to one unit per order across store
+  offers. It defaults to `false` and can be set in product forms and through
+  the Product SDK.
 - `slug`: URL-friendly unique identifier.
 - `title`: localized title.
 - `shortDescription`: localized short description.

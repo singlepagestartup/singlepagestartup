@@ -6,6 +6,15 @@ import {
   dataDirectory,
 } from "@sps/file-storage/models/file/backend/repository/database";
 import { injectable } from "inversify";
+import { isLegacyOrderReceipt } from "@sps/file-storage/models/file/sdk/model";
+
+const include = (entity: Record<string, unknown>) =>
+  !entity.privateDigest &&
+  !String(entity.file ?? "").startsWith("private:") &&
+  !isLegacyOrderReceipt({
+    adminTitle:
+      typeof entity.adminTitle === "string" ? entity.adminTitle : undefined,
+  });
 
 @injectable()
 export class Configuration extends ParentConfiguration {
@@ -20,12 +29,14 @@ export class Configuration extends ParentConfiguration {
           active: true,
           type: "json",
           directory: dataDirectory,
+          include,
         },
         seed: {
           active: true,
           module: "file-storage",
           name: "file",
           type: "model",
+          include,
           filters: [
             {
               column: "slug",

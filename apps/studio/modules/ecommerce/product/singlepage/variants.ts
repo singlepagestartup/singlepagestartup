@@ -13,8 +13,10 @@ import { Component as OverviewDefault } from "./overview-default/index";
 import { Component as OverviewPurchase } from "./overview-purchase/index";
 import { Component as Pinned } from "./pinned/index";
 import { Component as Tier } from "./tier/index";
+import { Component as OverviewCustomerWork } from "./overview-customer-work";
 
 export const variants = {
+  "overview-customer-work": OverviewCustomerWork,
   "seo-editor": SeoEditor,
   "admin-v2-card": AdminV2Card,
   "admin-v2-form": AdminV2Form,

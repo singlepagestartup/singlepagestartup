@@ -89,7 +89,7 @@ function parseSteps(segments: string[]): ITopicStep[] {
  * CANNOT know which trailing segments are verbs rather than collections. A
  * custom action route therefore derives a LITERAL segment topic from its
  * trailing verb — `.../orders/checkout` → `ecommerce.checkout`,
- * `.../messages/{id}/react-by/openrouter` → `social.openrouter` — a topic no
+ * `.../orders/checkout` → `ecommerce.checkout` — a topic no
  * reader subscribes to. Do NOT special-case verbs here (the verb vocabulary is
  * open-ended and project-defined). Instead every action endpoint that must
  * trigger realtime updates MUST be covered by an explicit topic rule (see the
@@ -165,7 +165,7 @@ export function deriveTopicsFromPath(path: string): string[] {
  * overriding the canonical `deriveTopicsFromPath` for that path. Needed for
  * (a) parent scopes that must opt into a child mutation, and (b) RPC/action
  * endpoints whose trailing verb the deriver cannot interpret
- * (`.../orders/checkout`, `.../react-by/openrouter`).
+ * (`.../orders/checkout`).
  *
  * `routeTemplate` and `topics` share `[placeholder]` params (path-to-regexp
  * under the hood); placeholders in `topics` are substituted from the matched

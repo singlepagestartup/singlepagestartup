@@ -1,0 +1,4 @@
+ALTER TABLE "sl_ps_to_ke_me_ss_gch" ADD COLUMN "offer_id" uuid;--> statement-breakpoint
+ALTER TABLE "sl_ps_to_ke_me_ss_gch" ADD CONSTRAINT "sl_ps_to_ke_me_ss_gch_offer_id_sps_ee_ss_to_ps_vn7_id_fk" FOREIGN KEY ("offer_id") REFERENCES "public"."sps_ee_ss_to_ps_vn7"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+CREATE INDEX "sl_profile_source_specification_scope" ON "sl_ps_to_ke_me_ss_gch" USING btree ("pe_id","store_id","offer_id","variant");--> statement-breakpoint
+ALTER TABLE "sl_ps_to_ke_me_ss_gch" ADD CONSTRAINT "sl_profile_source_specification_required_scope" CHECK ("sl_ps_to_ke_me_ss_gch"."variant" <> 'product-specification' OR ("sl_ps_to_ke_me_ss_gch"."store_id" IS NOT NULL AND "sl_ps_to_ke_me_ss_gch"."offer_id" IS NOT NULL AND "sl_ps_to_ke_me_ss_gch"."project_id" IS NULL));

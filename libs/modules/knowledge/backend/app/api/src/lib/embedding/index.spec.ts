@@ -6,7 +6,66 @@
  * Then: vectors are validated before callers use them.
  */
 
-import { LlmEmbeddingClient, OpenRouterEmbeddingClient } from ".";
+import {
+  LlmEmbeddingClient,
+  OpenAiEmbeddingClient,
+  OpenRouterEmbeddingClient,
+} from ".";
+
+it("sends direct embeddings with the server key, configured dimensions and verified response identity", async () => {
+  const vector = [1, 2, 3];
+  const fetcher = jest.fn().mockResolvedValue(
+    Response.json({
+      model: "text-embedding-3-large",
+      data: [{ index: 0, embedding: vector }],
+    }),
+  );
+  const client = new OpenAiEmbeddingClient({
+    baseUrl: "https://api.openai.com/v1",
+    model: "text-embedding-3-large",
+    apiKey: "direct-fixture-key",
+    dimensions: 3,
+    fetcher,
+  });
+  await expect(client.embed("Scoped query")).resolves.toEqual(vector);
+  expect(fetcher).toHaveBeenCalledWith(
+    "https://api.openai.com/v1/embeddings",
+    expect.objectContaining({
+      headers: expect.objectContaining({
+        authorization: "Bearer direct-fixture-key",
+      }),
+      redirect: "error",
+      body: JSON.stringify({
+        model: "text-embedding-3-large",
+        input: ["Scoped query"],
+        dimensions: 3,
+        encoding_format: "float",
+      }),
+    }),
+  );
+  fetcher.mockResolvedValueOnce(
+    Response.json({
+      model: "wrong-model",
+      data: [{ index: 0, embedding: vector }],
+    }),
+  );
+  await expect(client.embed("Scoped query")).rejects.toThrow(
+    "unexpected embedding model",
+  );
+});
+
+it("requires the OpenAI key only when an embedding request is made", async () => {
+  const fetcher = jest.fn();
+  const client = new OpenAiEmbeddingClient({
+    baseUrl: "https://api.openai.com/v1",
+    model: "text-embedding-3-large",
+    apiKey: "",
+    fetcher,
+  });
+  await expect(client.embedMany([])).resolves.toEqual([]);
+  await expect(client.embed("Query")).rejects.toThrow("OPEN_AI_API_KEY");
+  expect(fetcher).not.toHaveBeenCalled();
+});
 
 describe("knowledge embedding client", () => {
   /**

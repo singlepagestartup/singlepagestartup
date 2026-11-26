@@ -37,6 +37,7 @@ export {
   consistencyContext,
   trackRepositoryRead,
   withConsistencyDatabase,
+  withConsistencyTransaction,
   withConsistencySnapshot,
   resourceIdentity,
   scopeDependencyKey,

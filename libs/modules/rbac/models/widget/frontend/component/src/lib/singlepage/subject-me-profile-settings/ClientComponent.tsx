@@ -1,5 +1,6 @@
 "use client";
 import { useId, useState } from "react";
+import { ProfileSettingsPanel } from "@sps/social/models/profile/frontend/component";
 import { Select, Icon } from "@sps/ui-adapter";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -127,18 +128,21 @@ function Settings(props: ISettingsProps) {
             section === "Purchases" ? undefined : sectionLabels[section]
           }
           className={
-            section === "Purchases"
+            section === "Purchases" || section === "Profile"
               ? "min-w-0"
               : "min-w-0 rounded-2xl border border-border bg-card p-5 sm:p-6"
           }
         >
           {section === "Profile" && (
-            <Subject
-              language={props.language}
-              isServer={false}
-              variant="me-social-module-profile-list-settings-ai-chat"
-              data={props.data}
-            />
+            <ProfileSettingsPanel>
+              <Subject
+                language={props.language}
+                isServer={false}
+                variant="me-social-module-profile-list-settings-ai-chat"
+                dataSource="props"
+                data={props.data}
+              />
+            </ProfileSettingsPanel>
           )}
           {section === "Sign-in methods" && (
             <Subject

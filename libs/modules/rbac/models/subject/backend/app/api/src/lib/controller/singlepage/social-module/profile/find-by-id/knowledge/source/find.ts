@@ -7,7 +7,7 @@ import {
   findProfileKnowledgeSourceRelations,
   getKnowledgeSourceIds,
   requireParam,
-  resolveKnowledgeSourceProfileId,
+  resolveKnowledgeSourceScope,
 } from "./helpers";
 
 export class Handler {
@@ -22,7 +22,7 @@ export class Handler {
   async execute(c: Context, next: any): Promise<Response> {
     try {
       const socialModuleProfileId = requireParam(c, "socialModuleProfileId");
-      const documentProfileId = await resolveKnowledgeSourceProfileId({
+      const scope = await resolveKnowledgeSourceScope({
         service: this.service,
         subjectId: requireParam(c, "id"),
         socialModuleProfileId,
@@ -31,14 +31,27 @@ export class Handler {
       });
       const relations = await findProfileKnowledgeSourceRelations({
         service: this.service,
-        socialModuleProfileId: documentProfileId,
+        socialModuleProfileId: scope.profileId,
       });
-      const sourceIds = getKnowledgeSourceIds(relations || []);
+      let visible = relations;
+      if (scope.storeId) {
+        visible = relations.filter(
+          (link) =>
+            link.variant === "default" &&
+            (!link.storeId || link.storeId === scope.storeId) &&
+            !link.offerId &&
+            !link.projectId,
+        );
+      }
+      const sourceIds = getKnowledgeSourceIds(visible || []);
       const documents = await this.knowledgeService.listSources({
         sourceIds,
       });
 
-      return c.json({ data: documents });
+      const data = scope.storeId
+        ? documents.filter(({ variant }) => variant === "default")
+        : documents.filter(({ variant }) => variant !== "customer-memory");
+      return c.json({ data });
     } catch (error: unknown) {
       const { status, message, details } = getHttpErrorType(error);
       throw new HTTPException(status, { message, cause: details });

@@ -12,11 +12,13 @@ import React, {
 } from "react";
 import { UseFormReturn } from "react-hook-form";
 
-export interface MultipleFilesInputProps
-  extends Omit<
-    React.InputHTMLAttributes<HTMLInputElement>,
-    "form" | "onChange"
-  > {
+import { MultipleFilesDropzone } from "./Dropzone";
+export { MultipleFilesDropzone };
+
+export interface MultipleFilesInputProps extends Omit<
+  React.InputHTMLAttributes<HTMLInputElement>,
+  "form" | "onChange"
+> {
   form: UseFormReturn<any>;
   children?: ReactNode;
   className?: string;
@@ -107,23 +109,23 @@ const MultipleFilesInput = React.forwardRef<
   MultipleFilesInputProps
 >(({ className, type, children, ...props }, ref) => {
   const context = useContext(MultipleFilesInputContext);
+  const { form, value, onFilesChange, ...inputProps } = props;
 
-  const fileRef = props.form?.register(props?.name || "");
+  const fileRef = form?.register(props?.name || "");
   const localRef = useRef<HTMLInputElement>(null);
 
   const [localFiles, setLocalFiles] = React.useState<File[]>([]);
 
   useEffect(() => {
-    props.form.setValue(props.name || "", localFiles);
-  }, [localFiles, props.form, props.name]);
+    form.setValue(props.name || "", localFiles);
+  }, [localFiles, form, props.name]);
 
-  function onChange(e: React.ChangeEvent<HTMLInputElement>) {
-    if (e.target?.files?.length) {
-      const newFiles = Array.from(e.target.files);
+  function addFiles(newFiles: File[]) {
+    if (newFiles.length) {
       setLocalFiles((prev) => {
         const updated = [...prev, ...newFiles];
-        if (props.onFilesChange) {
-          props.onFilesChange(updated);
+        if (onFilesChange) {
+          onFilesChange(updated);
         }
         return updated;
       });
@@ -131,18 +133,18 @@ const MultipleFilesInput = React.forwardRef<
     }
   }
   useEffect(() => {
-    if (typeof props.value === "string") {
-      fetch(props.value)
+    if (typeof value === "string") {
+      fetch(value)
         .then((response) => response.blob())
         .then((blob) => {
           const dataTransfer = new DataTransfer();
           const evt = new InputEvent("change");
 
-          if (typeof props.value !== "string") {
+          if (typeof value !== "string") {
             return;
           }
 
-          const splittedPath = props.value?.split("/");
+          const splittedPath = value?.split("/");
           const fileName = splittedPath[splittedPath.length - 1];
           const type = blob.type;
 
@@ -166,37 +168,23 @@ const MultipleFilesInput = React.forwardRef<
           console.log("shadcn file input ~ useEffect ~ error:", error);
         });
     }
-  }, [props.value]);
+  }, [value]);
 
   return (
     <div className={cn("flex gap-2", className)}>
-      <div className="w-20 h-20 border rounded cursor-pointer relative bg-background">
-        <label
-          htmlFor={props.id || "file"}
-          className="absolute inset-0 flex items-center justify-center text-sm"
-        >
-          Select files
-        </label>
-        <input
-          type="file"
-          multiple
-          {...props}
-          id={props.id || "file"}
-          form=""
-          {...fileRef}
-          ref={localRef}
-          className="hidden"
-          value=""
-          onChange={onChange}
-        />
-      </div>
+      <MultipleFilesDropzone
+        label="Select files"
+        disabled={props.disabled}
+        onFiles={addFiles}
+        inputProps={{ ...inputProps, ...fileRef, ref: localRef, form: "" }}
+      />
       <InputContent
         files={localFiles}
         onDelete={(f) => {
           const updated = localFiles.filter((fi) => fi !== f);
           setLocalFiles(updated);
-          if (props.onFilesChange) {
-            props.onFilesChange(updated);
+          if (onFilesChange) {
+            onFilesChange(updated);
           }
         }}
         onMoveIndex={(from, to) => {
@@ -210,8 +198,8 @@ const MultipleFilesInput = React.forwardRef<
             const updated = [...prev];
             const [moved] = updated.splice(from, 1);
             updated.splice(to, 0, moved);
-            if (props.onFilesChange) {
-              props.onFilesChange(updated);
+            if (onFilesChange) {
+              onFilesChange(updated);
             }
             return updated;
           });

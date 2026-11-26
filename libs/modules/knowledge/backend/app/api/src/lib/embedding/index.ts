@@ -27,8 +27,7 @@ export interface LlmEmbeddingClientProps {
   fetcher?: typeof fetch;
 }
 
-export interface OpenRouterEmbeddingClientProps
-  extends LlmEmbeddingClientProps {
+export interface OpenRouterEmbeddingClientProps extends LlmEmbeddingClientProps {
   apiKey: string;
 }
 
@@ -39,6 +38,7 @@ interface OpenAiCompatibleEmbeddingClientProps extends LlmEmbeddingClientProps {
   providerName: string;
   failureHint: string;
   endpointPath?: string;
+  verifyResponseIdentity?: boolean;
   createNetworkError: (error: unknown) => Error;
 }
 
@@ -53,6 +53,7 @@ class OpenAiCompatibleEmbeddingClient implements IKnowledgeEmbeddingClient {
   private providerName: string;
   private failureHint: string;
   private endpointPath: string;
+  private verifyResponseIdentity: boolean;
   private createNetworkError: (error: unknown) => Error;
 
   constructor(props: OpenAiCompatibleEmbeddingClientProps) {
@@ -66,6 +67,7 @@ class OpenAiCompatibleEmbeddingClient implements IKnowledgeEmbeddingClient {
     this.providerName = props.providerName;
     this.failureHint = props.failureHint;
     this.endpointPath = props.endpointPath || "/v1/embeddings";
+    this.verifyResponseIdentity = props.verifyResponseIdentity ?? false;
     this.createNetworkError = props.createNetworkError;
   }
 
@@ -90,6 +92,8 @@ class OpenAiCompatibleEmbeddingClient implements IKnowledgeEmbeddingClient {
     try {
       res = await this.fetcher(`${this.baseUrl}${this.endpointPath}`, {
         method: "POST",
+        redirect: "error",
+        signal: AbortSignal.timeout(60_000),
         headers: {
           "content-type": "application/json",
           ...this.headers,
@@ -106,7 +110,12 @@ class OpenAiCompatibleEmbeddingClient implements IKnowledgeEmbeddingClient {
     }
 
     if (!res.ok) {
-      const body = await res.text();
+      let body;
+      if (this.verifyResponseIdentity) {
+        await res.body?.cancel().catch(() => undefined);
+      } else {
+        body = await res.text();
+      }
       const details = body ? ` Response: ${body.slice(0, 500)}` : "";
 
       throw new Error(
@@ -115,20 +124,28 @@ class OpenAiCompatibleEmbeddingClient implements IKnowledgeEmbeddingClient {
     }
 
     const json = (await res.json()) as {
+      model?: string;
       data?: {
         embedding?: number[];
         index?: number;
       }[];
     };
 
-    const embeddings = Array.isArray(json.data)
-      ? json.data
-          .slice()
-          .sort((a, b) => {
-            return (a.index || 0) - (b.index || 0);
-          })
-          .map((item) => item.embedding || [])
+    const rows = Array.isArray(json?.data)
+      ? json.data.slice().sort((a, b) => {
+          return (a?.index ?? 0) - (b?.index ?? 0);
+        })
       : [];
+    if (
+      this.verifyResponseIdentity &&
+      (json?.model !== this.model ||
+        rows.some((item, index) => item?.index !== index))
+    ) {
+      throw new Error(
+        `${this.providerName} returned an unexpected embedding model or index order.`,
+      );
+    }
+    const embeddings = rows.map((item) => item?.embedding || []);
 
     if (embeddings.length !== inputs.length) {
       throw new Error(
@@ -164,6 +181,58 @@ class OpenAiCompatibleEmbeddingClient implements IKnowledgeEmbeddingClient {
     if (invalidIndex !== -1) {
       throw new Error(`Embedding ${index} contains a non-numeric value.`);
     }
+  }
+}
+
+export class OpenAiEmbeddingClient extends OpenAiCompatibleEmbeddingClient {
+  private static readonly batchSize = 64;
+  private readonly apiKey: string;
+
+  constructor(props: LlmEmbeddingClientProps & { apiKey: string }) {
+    const apiKey = props.apiKey.trim();
+    super({
+      ...props,
+      headers: { authorization: `Bearer ${apiKey}` },
+      requestBody: {
+        dimensions: props.dimensions ?? KNOWLEDGE_EMBEDDING_DIMENSIONS,
+        encoding_format: "float",
+      },
+      requestName: "OpenAI embedding request",
+      providerName: "OpenAI",
+      endpointPath: "/embeddings",
+      failureHint: `Check OPEN_AI_API_KEY and model ${props.model}.`,
+      verifyResponseIdentity: true,
+      createNetworkError: (cause) =>
+        new Error("OpenAI embedding request could not connect to OpenAI.", {
+          cause,
+        }),
+    });
+    this.apiKey = apiKey;
+  }
+
+  override async embedMany(
+    inputs: string[],
+    options?: IKnowledgeEmbeddingOptions,
+  ) {
+    if (inputs.length && !this.apiKey) {
+      throw new Error(
+        "Configuration error. OPEN_AI_API_KEY is required when KNOWLEDGE_EMBEDDING_PROVIDER=openai.",
+      );
+    }
+    const vectors: number[][] = [];
+    for (
+      let offset = 0;
+      offset < inputs.length;
+      offset += OpenAiEmbeddingClient.batchSize
+    ) {
+      const batch = inputs.slice(
+        offset,
+        offset + OpenAiEmbeddingClient.batchSize,
+      );
+      const embedded = await super.embedMany(batch, options);
+      vectors.push(...embedded);
+    }
+    return vectors;
   }
 }
 
@@ -229,6 +298,10 @@ export class OpenRouterEmbeddingClient extends OpenAiCompatibleEmbeddingClient {
 
 export function createKnowledgeEmbeddingClient(): IKnowledgeEmbeddingClient {
   const config = getKnowledgeConfiguration().embedding;
+
+  if (config.provider === "openai") {
+    return new OpenAiEmbeddingClient({ ...config, baseUrl: config.url });
+  }
 
   if (config.provider === "openrouter") {
     return new OpenRouterEmbeddingClient({

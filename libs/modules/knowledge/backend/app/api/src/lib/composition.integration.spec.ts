@@ -21,6 +21,8 @@ import { ConsistencyStore } from "@sps/providers-db";
 import { resourceIdentity, scopeDependencyKey } from "@sps/shared-backend-api";
 const consistency = new ConsistencyStore();
 import { createKnowledgeServices } from "./composition";
+import { KnowledgeIndexer } from "./indexer";
+import { Service as KnowledgeService } from "./service";
 import { Service as StartupSourceService } from "@sps/knowledge/models/source/backend/app/api/src/lib/service/startup";
 import { Service as FileStorageFileService } from "@sps/file-storage/models/file/backend/app/api/src/lib/service";
 import {
@@ -81,6 +83,92 @@ afterEach(() => {
     .mockResolvedValue(Buffer.from("Fixture text"));
 });
 
+it("publishes learned text with its index or rolls back and leaves the previous version searchable", async () => {
+  const embeddingClient = {
+    embed: jest.fn(async () => vector),
+    embedMany: jest.fn(async (parts: string[]) => parts.map(() => vector)),
+    validateEmbedding: jest.fn(),
+  };
+  const knowledge = new KnowledgeService({
+    source: repository,
+    embeddingClient,
+  });
+  const data = {
+    slug: "atomic-" + randomUUID(),
+    title: "Original title",
+    content: "Original searchable text",
+  };
+  embeddingClient.embedMany.mockRejectedValueOnce(
+    new Error("embedding provider offline"),
+  );
+  await expect(knowledge.learnContent(data)).rejects.toMatchObject({
+    status: 503,
+  });
+  expect(
+    await db
+      .select({ id: SourceTable.id })
+      .from(SourceTable)
+      .where(eq(SourceTable.slug, data.slug)),
+  ).toEqual([]);
+
+  const { source: created } = await knowledge.learnContent(data);
+  sourceIds.push(created.id);
+  expect(created.indexedContentHash).toEqual(created.contentHash);
+  const search = () =>
+    knowledge.searchAuthorizedSources({
+      query: "design",
+      sourceIds: [created.id],
+    });
+  const original = await search();
+  expect(original[0]?.text).toBe(data.content);
+  embeddingClient.embedMany.mockRejectedValueOnce(
+    new Error("embedding provider offline"),
+  );
+  await expect(
+    knowledge.updateSource({
+      sourceId: created.id,
+      title: "Changed title",
+      content: "Changed content",
+      expectedContentHash: created.contentHash,
+    }),
+  ).rejects.toMatchObject({ status: 503 });
+  expect(await repository.findSourceById(created.id)).toMatchObject({
+    title: data.title,
+    content: data.content,
+    contentHash: created.contentHash,
+    indexedContentHash: created.indexedContentHash,
+  });
+  expect(await search()).toEqual(original);
+});
+
+it("leaves a legacy Source untouched during search and makes it searchable on explicit indexing", async () => {
+  const legacy = await source("Original legacy text");
+  const embeddingClient = {
+    embed: jest.fn(async () => vector),
+    embedMany: jest.fn(async (parts: string[]) => parts.map(() => vector)),
+    validateEmbedding: jest.fn(),
+  };
+  const knowledge = new KnowledgeService({
+    source: repository,
+    embeddingClient,
+  });
+  const search = () =>
+    knowledge.searchAuthorizedSources({
+      sourceIds: [legacy.id],
+      query: "legacy",
+    });
+  await expect(search()).resolves.toEqual([]);
+  expect(embeddingClient.embedMany).not.toHaveBeenCalled();
+  expect(embeddingClient.embed).not.toHaveBeenCalled();
+  expect(await repository.findSourceById(legacy.id)).toMatchObject({
+    indexedContentHash: null,
+  });
+  await knowledge.indexAuthorizedSource({ sourceId: legacy.id });
+  expect((await search())[0]?.text).toBe("Original legacy text");
+  expect(embeddingClient.embedMany).toHaveBeenCalledTimes(1);
+  expect(embeddingClient.embed).toHaveBeenCalledTimes(1);
+});
+
 it("serves generic Source CRUD through effective services and refreshes a warm HTTP cache before a second client refetch", async () => {
   const { Hono } = await import("hono");
   const { createServer } = await import("node:http");
@@ -103,7 +191,10 @@ it("serves generic Source CRUD through effective services and refreshes a warm H
   const runtime = createConsistencyRuntime({
     verifyAuthorization: async () => {},
   });
-  const graph = createKnowledgeServices({ processing: false });
+  const graph = createKnowledgeServices();
+  const index = jest
+    .spyOn(KnowledgeIndexer.prototype, "index")
+    .mockRejectedValue(new Error("Embedding provider is offline"));
   const sourceApp = new SourceApp(
     new ExceptionFilter(),
     new SourceController(graph.source),
@@ -167,7 +258,13 @@ it("serves generic Source CRUD through effective services and refreshes a warm H
       body: data,
     });
     expect(created.status).toBe(201);
-    sourceId = ((await created.json()) as any).data.id;
+    const saved = ((await created.json()) as any).data;
+    expect(saved).toMatchObject({
+      contentHash: hashContent("Before"),
+      indexedContentHash: null,
+      lastIndexedAt: null,
+    });
+    sourceId = saved.id;
     sourceIds.push(sourceId);
     const read = jest.spyOn(graph.source, "findById");
     const url = baseUrl + "/api/knowledge/sources/" + sourceId;
@@ -185,9 +282,12 @@ it("serves generic Source CRUD through effective services and refreshes a warm H
     expect((await fetch(url, { method: "PATCH", body: update })).status).toBe(
       200,
     );
-    expect(((await (await fetch(url)).json()) as any).data.content).toBe(
-      "After",
-    );
+    expect(((await (await fetch(url)).json()) as any).data).toMatchObject({
+      content: "After",
+      contentHash: hashContent("After"),
+      indexedContentHash: null,
+      lastIndexedAt: null,
+    });
     const [file] = await db
       .insert(FileTable)
       .values({
@@ -218,6 +318,7 @@ it("serves generic Source CRUD through effective services and refreshes a warm H
     expect(
       await db.select().from(FileTable).where(eq(FileTable.id, file.id)),
     ).toHaveLength(1);
+    expect(index).not.toHaveBeenCalled();
   } finally {
     server.closeIdleConnections();
     await new Promise<void>((resolve) => server.close(() => resolve()));
@@ -244,6 +345,34 @@ describe("effective service boundaries and SVG policy", () => {
     fileIds.push(file.id);
     return file;
   }
+  it("invalidates derived content on an admin file link without starting a model call", async () => {
+    const graph = createKnowledgeServices();
+    const current = await source("Owner notes");
+    await repository.publishChunks(current.id, current.contentHash, [
+      chunk("Earlier material"),
+    ]);
+    const file = await storedFile({ extension: "txt", mimeType: "text/plain" });
+    const { Service: Materials } = await import("./service/materials");
+    const rebuild = jest
+      .spyOn(Materials.prototype, "rebuild")
+      .mockRejectedValue(new Error("Analysis unavailable"));
+    const index = jest
+      .spyOn(KnowledgeIndexer.prototype, "index")
+      .mockRejectedValue(new Error("Index unavailable"));
+    await graph.sourcesToFileStorageModuleFiles.create({
+      data: { sourceId: current.id, fileStorageModuleFileId: file.id },
+    });
+    expect(await repository.findSourceById(current.id)).toMatchObject({
+      content: "Owner notes",
+      indexedContentHash: null,
+      lastIndexedAt: null,
+    });
+    expect(
+      (await repository.sourceFiles(current.id)).map(({ file }) => file.id),
+    ).toEqual([file.id]);
+    expect(rebuild).not.toHaveBeenCalled();
+    expect(index).not.toHaveBeenCalled();
+  });
   it.each([
     { extension: "svg", mimeType: "image/svg+xml" },
     { extension: "png", mimeType: "image/svg+xml" },
@@ -627,6 +756,80 @@ describe("Knowledge Source transactions", () => {
         })
       )[0].text,
     ).toBe("Новая редакция");
+  });
+
+  it("reads personal notes only through an authorized OpenAI index scope", async () => {
+    const shared = await source("Shared verified fact");
+    const personal = await repository.upsertSourceBySlug({
+      slug: `knowledge-personal-${randomUUID()}`,
+      title: "Personal note",
+      content: "Personal verified fact",
+      variant: "customer-memory",
+    });
+    sourceIds.push(personal.id);
+    const embeddingIndex = "openai:text-embedding-3-large:768:v1";
+    await repository.publishChunks(shared.id, shared.contentHash, [
+      { ...chunk("Shared verified fact"), metadata: { embeddingIndex } },
+    ]);
+    await repository.publishChunks(personal.id, personal.contentHash, [
+      { ...chunk("Personal verified fact"), metadata: { embeddingIndex } },
+      { ...chunk("Old unknown vector"), chunkIndex: 1 },
+      {
+        ...chunk("Previous OpenAI model"),
+        chunkIndex: 2,
+        metadata: { embeddingIndex: "openai:text-embedding-3-small:768:v1" },
+      },
+    ]);
+
+    const query = { embedding: vector, embeddingIndex, topK: 10 };
+    const global = await repository.searchChunks(query);
+    expect(global.map(({ sourceId }) => sourceId)).toContain(shared.id);
+    expect(global.map(({ sourceId }) => sourceId)).not.toContain(personal.id);
+    await expect(
+      repository.searchChunks({ ...query, sourceIds: [personal.id] }),
+    ).resolves.toEqual([]);
+    const hits = await repository.searchChunks({
+      ...query,
+      sourceIds: [personal.id],
+      includeCustomerMemory: true,
+    });
+    expect(hits).toEqual([
+      expect.objectContaining({
+        text: "Personal verified fact",
+        sourceId: personal.id,
+        sourceVersion: personal.contentHash,
+      }),
+    ]);
+
+    const seeds = [
+      {
+        sourceId: personal.id,
+        sourceVersion: personal.contentHash,
+        chunkIndex: 0,
+      },
+    ];
+    await expect(
+      repository.findNeighborChunks({ seeds, embeddingIndex, window: 2 }),
+    ).resolves.toEqual([]);
+    await expect(
+      repository.findNeighborChunks({
+        seeds,
+        embeddingIndex,
+        window: 2,
+        includeCustomerMemory: true,
+      }),
+    ).resolves.toEqual([
+      expect.objectContaining({
+        text: "Personal verified fact",
+        sourceVersion: personal.contentHash,
+      }),
+    ]);
+    const legacy = await repository.searchChunks({
+      embedding: vector,
+      topK: 10,
+      sourceIds: [shared.id],
+    });
+    expect(legacy).toEqual([]);
   });
 
   it("rolls back chunk replacement when an insert fails", async () => {

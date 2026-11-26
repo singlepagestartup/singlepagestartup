@@ -43,6 +43,13 @@
       "when": 1790373970327,
       "tag": "0005_green_celestials",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1795126153892,
+      "tag": "0006_medical_colossus",
+      "breakpoints": true
     }
   ]
 }

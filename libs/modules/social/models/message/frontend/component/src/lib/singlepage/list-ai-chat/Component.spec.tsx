@@ -170,7 +170,7 @@ it("opens the project assistant for an empty document introduction", () => {
   expect(open).toHaveBeenCalledWith("project");
 });
 
-it("preserves attachment order, opens supported originals and blocks legacy SVG", () => {
+it("preserves attachment order and offers legacy SVG for download", () => {
   render(
     <Component
       {...({
@@ -189,12 +189,11 @@ it("preserves attachment order, opens supported originals and blocks legacy SVG"
   const gallery = screen.getByRole("list", { name: "Message attachments" });
   expect(
     within(gallery)
-      .getAllByRole("button", { name: /^Preview / })
+      .getAllByRole("button", { name: /^(Preview|Download) / })
       .map((link) => link.getAttribute("aria-label")),
-  ).toEqual(["Preview First.png", "Preview Third.pdf"]);
-  expect(within(gallery).getAllByRole("presentation")).toHaveLength(1);
+  ).toEqual(["Preview First.png", "Download Second.svg", "Preview Third.pdf"]);
   expect(within(gallery).getByText("Second.svg")).toBeTruthy();
-  expect(within(gallery).getByText("Unsupported attachment")).toBeTruthy();
+  expect(within(gallery).getByText("SVG")).toBeTruthy();
   expect(
     Array.from(gallery.querySelectorAll('[data-model="file"]')).map((node) =>
       node.getAttribute("data-id"),

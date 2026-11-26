@@ -3,6 +3,7 @@ import { Context } from "hono";
 import { HTTPException } from "hono/http-exception";
 import { Service } from "../../../../service";
 import { getHttpErrorType } from "@sps/backend-utils";
+import type { ICheckoutOrderSelection } from "@sps/rbac/models/subject/sdk/model";
 
 export class Handler {
   service: Service;
@@ -60,6 +61,7 @@ export class Handler {
       }
 
       const requestedOrderIds: string[] = [];
+      const lineIdsByOrder = new Map<string, string[]>();
       for (const order of requestedOrders) {
         if (typeof order?.id !== "string" || !UUID_VALUE_REGEX.test(order.id)) {
           throw new Error(
@@ -67,6 +69,31 @@ export class Handler {
           );
         }
         requestedOrderIds.push(order.id);
+        if (order.lineIds === undefined) {
+          continue;
+        }
+        if (
+          !Array.isArray(order.lineIds) ||
+          !order.lineIds.length ||
+          order.lineIds.some(
+            (lineId: unknown) =>
+              typeof lineId !== "string" || !UUID_VALUE_REGEX.test(lineId),
+          ) ||
+          new Set(order.lineIds).size !== order.lineIds.length
+        ) {
+          throw new Error(
+            "Validation error. Expected unique primary line IDs for the selected order",
+          );
+        }
+        lineIdsByOrder.set(order.id, order.lineIds);
+      }
+      if (
+        lineIdsByOrder.size &&
+        lineIdsByOrder.size !== requestedOrders.length
+      ) {
+        throw new Error(
+          "Validation error. Select primary lines for each checkout order",
+        );
       }
 
       const entity = await this.service.findById({ id });
@@ -99,9 +126,26 @@ export class Handler {
         throw new Error("Not Found error. No ecommerce module orders found");
       }
 
-      const ecommerceModuleOrderIds = subjectsToEcommerceModuleOrders.map(
-        (link) => link.ecommerceModuleOrderId,
-      );
+      const ecommerceModuleOrderIds = subjectsToEcommerceModuleOrders
+        .filter(
+          (link) =>
+            link.subjectId === id &&
+            requestedOrderIds.includes(link.ecommerceModuleOrderId),
+        )
+        .map((link) => link.ecommerceModuleOrderId);
+      if (!ecommerceModuleOrderIds.length) {
+        throw new Error("Not Found error. No ecommerce module orders found");
+      }
+      if (
+        lineIdsByOrder.size &&
+        requestedOrderIds.some(
+          (orderId) => !ecommerceModuleOrderIds.includes(orderId),
+        )
+      ) {
+        throw new Error(
+          "Not Found error. A selected cart order is unavailable",
+        );
+      }
       const ecommerceModuleOrders =
         await this.service.modules.ecommerce.order.find({
           params: {
@@ -120,6 +164,17 @@ export class Handler {
       if (!ecommerceModuleOrders?.length) {
         throw new Error("Not Found error. No ecommerce module orders found");
       }
+      if (
+        lineIdsByOrder.size &&
+        requestedOrderIds.some(
+          (orderId) => !ecommerceModuleOrders.some(({ id }) => id === orderId),
+        )
+      ) {
+        throw new Error("Conflict error. The selected cart orders changed");
+      }
+      const orders: ICheckoutOrderSelection[] = lineIdsByOrder.size
+        ? [...lineIdsByOrder].map(([id, lineIds]) => ({ id, lineIds }))
+        : ecommerceModuleOrders.map(({ id }) => ({ id }));
 
       await this.service.deanonymize({ id, email: data.email });
 
@@ -129,7 +184,7 @@ export class Handler {
         provider: data.provider,
         ecommerceModule: {
           ...data.ecommerceModule,
-          orders: ecommerceModuleOrders.map((order) => ({ id: order.id })),
+          orders,
         },
         comment: data.comment,
       });

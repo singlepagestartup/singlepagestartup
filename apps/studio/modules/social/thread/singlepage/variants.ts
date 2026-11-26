@@ -8,8 +8,10 @@ import { Component as IdAiChatSettings } from "./id/ai-chat-settings/index";
 import { Component as ListDefault } from "./list-default/index";
 import { Component as ListItemSidebarAiChat } from "./list-item-sidebar-ai-chat/index";
 import { Component as MessageListAiChat } from "./message/list/ai-chat/index";
+import { Component as CustomerWork } from "./customer-work";
 
 export const variants = {
+  "customer-work": CustomerWork,
   "admin-v2-card": AdminV2Card,
   "admin-v2-table": AdminV2Table,
   "chat-settings": ChatSettings,

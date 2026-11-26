@@ -1,5 +1,3 @@
-import { api as profileSourcesApi } from "@sps/social/relations/profiles-to-knowledge-module-sources/sdk/server";
-import { RBAC_SECRET_KEY } from "@sps/shared-utils";
 import { getHttpErrorType } from "@sps/backend-utils";
 import { Service as KnowledgeService } from "@sps/knowledge/backend/app/api/src/lib/service";
 import { Context } from "hono";
@@ -26,40 +24,9 @@ export class Handler {
       }
 
       if (c.req.query("unlink") === "true") {
-        const profileId = c.req.param("targetSocialModuleProfileId");
-        if (!profileId) {
-          throw new Error(
-            "Validation error. No targetSocialModuleProfileId provided",
-          );
-        }
-        const source = (
-          await this.knowledgeService.listSources({
-            sourceIds: [knowledgeModuleSourceId],
-          })
-        )[0];
-        const relations =
-          await this.service.modules.social.profilesToKnowledgeModuleSources.find(
-            {
-              params: {
-                filters: {
-                  and: [
-                    { column: "profileId", method: "eq", value: profileId },
-                    {
-                      column: "knowledgeModuleSourceId",
-                      method: "eq",
-                      value: knowledgeModuleSourceId,
-                    },
-                  ],
-                },
-              },
-            },
-          );
-        for (const relation of relations)
-          await profileSourcesApi.delete({
-            id: relation.id,
-            options: { headers: { "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY! } },
-          });
-        return c.json({ data: source });
+        throw new Error(
+          "Validation error. Open the source and confirm deletion.",
+        );
       }
       const source = await this.knowledgeService.deleteSource(
         knowledgeModuleSourceId,

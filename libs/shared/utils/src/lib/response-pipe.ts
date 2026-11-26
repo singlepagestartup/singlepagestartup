@@ -253,6 +253,9 @@ async function util<T>(props: {
       );
     return json as T;
   } catch (error) {
+    if (error instanceof DOMException && error.name === "AbortError") {
+      throw error;
+    }
     // Handle JSON parse errors or empty responses
     console.error("Failed to parse response JSON:", error);
     if (props.catchErrors) {

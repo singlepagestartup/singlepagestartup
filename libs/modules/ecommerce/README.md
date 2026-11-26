@@ -80,4 +80,20 @@ effective Offer service when `find` is called.
 | [widgets-to-products](./relations/widgets-to-products/README.md)                                                   | Curate products inside widgets         |
 | [widgets-to-stores](./relations/widgets-to-stores/README.md)                                                       | Curate stores inside widgets           |
 
----
+## Legacy order receipts
+
+Before deploying over an installation that generated public receipts, back up
+its database and public storage. From `apps/api`, run
+`bun src/db/order-receipts.ts --list` to inventory receipt file IDs. Run
+`bun src/db/order-receipts.ts <file-id>` to check ownership, size, and SHA-256
+without writing. With the old receipt generator disabled, add `--apply` to
+save the verified private copy, withdraw the old file, and publish the private
+receipt for the confirmed buyer. Retrying a linked receipt uses the same copy.
+
+Review results marked `quarantined` before granting any buyer access. The
+command can withdraw local files and old direct URLs from the configured S3
+bucket. Retire objects from other providers and purge any external CDN copies
+using that deployment's storage and CDN controls. After cutover, check that the
+exact prior URL returns 403, 404, or 410 through every configured public origin
+and CDN. Verify the buyer can open the protected receipt and a different
+account cannot read its GET or HEAD endpoint.

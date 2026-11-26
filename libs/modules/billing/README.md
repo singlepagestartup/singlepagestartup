@@ -29,15 +29,19 @@ The Billing module manages payment flows, invoices, and currency configuration. 
 | [currency](./models/currency/README.md)             | Currency configuration and symbols |
 | [invoice](./models/invoice/README.md)               | Invoice records and payment links  |
 | [payment-intent](./models/payment-intent/README.md) | Payment intent lifecycle tracking  |
+| [wallet](./models/wallet/README.md)                 | Wallet holding currency balances   |
+| [transaction](./models/transaction/README.md)       | Holds, transfers and settlements   |
 | [widget](./models/widget/README.md)                 | Billing UI content blocks          |
 
 ---
 
 ## 3. Relations
 
-| Relation                                                                             | Purpose                                      |
-| ------------------------------------------------------------------------------------ | -------------------------------------------- |
-| [payment-intents-to-currencies](./relations/payment-intents-to-currencies/README.md) | Link payment intents to available currencies |
-| [payment-intents-to-invoices](./relations/payment-intents-to-invoices/README.md)     | Link payment intents to generated invoices   |
+| Relation                                                                             | Purpose                                                   |
+| ------------------------------------------------------------------------------------ | --------------------------------------------------------- |
+| [wallets-to-currencies](./relations/wallets-to-currencies/README.md)                 | Currency balances for a wallet                            |
+| [transactions-to-wallets](./relations/transactions-to-wallets/README.md)             | Sender, recipient and advance recipient for a transaction |
+| [payment-intents-to-currencies](./relations/payment-intents-to-currencies/README.md) | Link payment intents to available currencies              |
+| [payment-intents-to-invoices](./relations/payment-intents-to-invoices/README.md)     | Link payment intents to generated invoices                |
 
 ---

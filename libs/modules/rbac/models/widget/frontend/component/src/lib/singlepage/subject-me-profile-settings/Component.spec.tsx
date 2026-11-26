@@ -66,7 +66,7 @@ it("retains Russian in Data and privacy links and sign-out redirect", () => {
     redirectTo: "/ru/rbac/subject/authentication/email-and-password",
   });
 });
-it("passes the authenticated Subject to purchase history without a second Subject reader", () => {
+it("uses the authenticated Subject for the profile and purchase history", () => {
   render(
     <Widget
       {...({
@@ -76,6 +76,13 @@ it("passes the authenticated Subject to purchase history without a second Subjec
         data: { id: "settings" },
       } as any)}
     />,
+  );
+  expect(mockSubjectProps).toHaveBeenLastCalledWith(
+    expect.objectContaining({
+      variant: "me-social-module-profile-list-settings-ai-chat",
+      dataSource: "props",
+      data: { id: "subject" },
+    }),
   );
   fireEvent.click(screen.getByRole("button", { name: "Покупки" }));
   expect(mockSubjectProps).toHaveBeenLastCalledWith(

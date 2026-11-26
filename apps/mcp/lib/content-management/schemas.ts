@@ -108,9 +108,16 @@ export const ContentFindInputSchema = ContentEntitySelectorSchema.extend(
   ContentQueryInputShape,
 );
 
-export const ContentModelFindInputSchema = ContentModelSelectorSchema.extend(
-  ContentQueryInputShape,
-);
+export const ContentModelFindInputSchema = ContentModelSelectorSchema.extend({
+  ...ContentQueryInputShape,
+  fields: z
+    .array(z.string().min(1))
+    .min(1)
+    .optional()
+    .describe(
+      "Top-level fields to return from each matching record. Omit for complete records.",
+    ),
+});
 
 export const ContentRelationFindInputSchema =
   ContentRelationSelectorSchema.extend(ContentQueryInputShape);

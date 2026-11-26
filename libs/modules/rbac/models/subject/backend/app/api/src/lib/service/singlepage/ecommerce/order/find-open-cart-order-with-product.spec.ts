@@ -6,6 +6,7 @@
  * Then: the blocking order is reported, and the lookups stay narrowed to that subject's own orders.
  */
 
+import { STORE_TEST_ORDER_VARIANT } from "@sps/ecommerce/models/order/sdk/model";
 import { Service } from "./find-open-cart-order-with-product";
 
 const SUBJECT_ID = "subject-1";
@@ -164,6 +165,11 @@ describe("Given: a subject and a product the add-to-cart flow is about to write"
             },
             { column: "type", method: "eq", value: "cart" },
             { column: "status", method: "eq", value: "new" },
+            {
+              column: "variant",
+              method: "ne",
+              value: STORE_TEST_ORDER_VARIANT,
+            },
           ],
         },
       },

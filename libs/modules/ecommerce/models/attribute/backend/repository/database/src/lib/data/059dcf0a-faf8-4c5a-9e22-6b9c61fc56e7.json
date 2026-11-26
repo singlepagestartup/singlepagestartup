@@ -1,0 +1,15 @@
+{
+  "id": "059dcf0a-faf8-4c5a-9e22-6b9c61fc56e7",
+  "createdAt": "2026-11-20T10:08:33.807Z",
+  "updatedAt": "2026-11-20T10:08:33.807Z",
+  "variant": "default",
+  "number": null,
+  "boolean": null,
+  "date": null,
+  "datetime": null,
+  "string": {
+    "en": "unit_price * quantity"
+  },
+  "adminTitle": "price_formula",
+  "slug": "straightforward-pink-bobcat-683"
+}

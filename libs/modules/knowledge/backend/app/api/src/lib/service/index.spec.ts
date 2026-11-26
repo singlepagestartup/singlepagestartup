@@ -1,9 +1,8 @@
 /**
  * BDD Suite: Confirmed Knowledge Source attachment processing.
  * Given: an atomic repository update of notes and attachment relations.
- * When: links stay unchanged or post-commit analysis fails.
- * Then: unchanged links avoid another provider request and failure is reported
- * separately from the committed notes and attachments.
+ * When: links stay unchanged or analysis fails before commit.
+ * Then: unchanged files skip analysis and failed analysis rejects the update.
  */
 import { Service as KnowledgeService } from "./index";
 const source = {
@@ -19,11 +18,15 @@ function fixture(attachmentsChanged: boolean) {
       .mockResolvedValue({ source, attachmentsChanged }),
     findSourceById: jest.fn().mockResolvedValue(source),
   };
+  repository.withTransaction = (operation: (scope: any) => unknown) =>
+    operation(repository);
   const service = new KnowledgeService({ source: repository });
   const rebuild = jest
     .spyOn(service, "rebuildFiles")
     .mockResolvedValue(source as any);
-  const index = jest.spyOn(service, "index").mockResolvedValue({} as any);
+  const index = jest
+    .spyOn(service, "indexAuthorizedSource")
+    .mockResolvedValue({} as any);
   return { repository, service, rebuild, index };
 }
 it("does not repeat file analysis for already attached files", async () => {
@@ -41,13 +44,10 @@ it("does not repeat file analysis for already attached files", async () => {
     }),
   );
   expect(f.rebuild).not.toHaveBeenCalled();
-  expect(result).toEqual({
-    source,
-    indexError: undefined,
-    processingError: undefined,
-  });
+  expect(f.index).toHaveBeenCalledWith({ sourceId: "source" }, f.repository);
+  expect(result).toEqual({ source });
 });
-it("reports post-commit analysis failure without rejecting the confirmed update", async () => {
+it("rejects the update when attachment analysis fails", async () => {
   const f = fixture(true);
   f.rebuild.mockRejectedValue(new Error("Provider unavailable"));
   await expect(
@@ -56,11 +56,7 @@ it("reports post-commit analysis failure without rejecting the confirmed update"
       content: "Confirmed notes",
       fileIds: ["file"],
     }),
-  ).resolves.toEqual({
-    source,
-    indexError: undefined,
-    processingError: "Provider unavailable",
-  });
+  ).rejects.toThrow("Provider unavailable");
   expect(f.index).not.toHaveBeenCalled();
 });
 

@@ -60,7 +60,7 @@
       {
         "key": "amount",
         "label": "Amount",
-        "kind": "integer",
+        "kind": "numeric",
         "nullable": false,
         "default": 0
       },

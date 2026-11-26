@@ -15,6 +15,7 @@ import { toast } from "sonner";
 
 interface UseProfileSkillsProps {
   enabled: boolean;
+  language?: string;
   subjectId: string;
   requesterSocialModuleProfileId: string;
   socialModuleChatId: string;
@@ -23,6 +24,7 @@ interface UseProfileSkillsProps {
 }
 
 export function useProfileSkills(props: UseProfileSkillsProps) {
+  const ru = props.language === "ru";
   const [selectedSkillIds, setSelectedSkillIds] = useState<string[]>([]);
   const targetSkillsQuery =
     rbacSubjectApi.socialModuleProfileFindByIdChatFindByIdProfileFindByIdSkillFind(
@@ -166,7 +168,9 @@ export function useProfileSkills(props: UseProfileSkillsProps) {
       },
     });
 
-    toast.success("Skill created and linked to profile");
+    toast.success(
+      ru ? "Навык добавлен в профиль" : "Skill created and linked to profile",
+    );
     refetchProfileSkills();
     props.onSkillSaved?.();
   }
@@ -189,7 +193,7 @@ export function useProfileSkills(props: UseProfileSkillsProps) {
       },
     });
 
-    toast.success("Skill updated");
+    toast.success(ru ? "Навык сохранён" : "Skill updated");
     refetchProfileSkills();
     props.onSkillSaved?.();
   }

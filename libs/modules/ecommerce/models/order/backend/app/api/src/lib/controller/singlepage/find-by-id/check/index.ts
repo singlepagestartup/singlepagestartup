@@ -111,6 +111,7 @@ export class Handler {
               entity: paid,
             });
           }
+          await this.service.deliverConfirmedWork(entity.id);
         } else if (entity.status === "paying") {
           const allFailed =
             paymentIntents.length > 0 &&
@@ -152,6 +153,8 @@ export class Handler {
             }
           }
         }
+      } else if (entity.status === "paid") {
+        await this.service.deliverConfirmedWork(entity.id);
       } else if (
         ["delivering", "requested_cancelation"].includes(entity.status)
       ) {

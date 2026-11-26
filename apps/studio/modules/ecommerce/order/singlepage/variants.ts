@@ -7,8 +7,10 @@ import { Component as CheckoutStepperDefault } from "./checkout-stepper-default/
 import { Component as CheckoutTokensAiChat } from "./checkout/tokens/ai-chat/index";
 import { Component as HistoryDefault } from "./history-default/index";
 import { Component as SummaryDefault } from "./summary-default/index";
+import { Component as WorkCheckout } from "./work-checkout";
 
 export const variants = {
+  "work-checkout": WorkCheckout,
   "admin-v2-card": AdminV2Card,
   "admin-v2-table": AdminV2Table,
   "checkout-confirmation-default": CheckoutConfirmationDefault,

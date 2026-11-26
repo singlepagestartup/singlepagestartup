@@ -9,16 +9,16 @@ export function Component(props: IComponentPropsExtended) {
       language={props.language}
       className={props.className}
       draft={props.draft}
+      attachments={props.attachments}
       isDirty={props.isDirty}
       isDeleting={props.isDeleting}
-      isReindexing={props.isReindexing}
       isSaving={props.isSaving}
       mode={props.mode}
       needsReindex={props.needsReindex}
+      retryIndexOnSave={props.retryIndexOnSave}
+      saveBlocked={props.saveBlocked}
       onDraftChange={props.onDraftChange}
-      onUnlink={props.onUnlink}
       onDelete={props.onDelete}
-      onReindex={props.onReindex}
       onSave={props.onSave}
     />
   );

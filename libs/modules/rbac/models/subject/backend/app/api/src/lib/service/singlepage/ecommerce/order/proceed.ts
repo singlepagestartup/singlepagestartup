@@ -6,6 +6,7 @@ import {
 import { Service as InitialGrantProducts } from "../../billing/initial-grant-products";
 import { isConfirmedInvoice } from "@sps/billing/models/payment-intent/sdk/model";
 import type { FindServiceProps } from "@sps/shared-backend-api";
+import type { IModel as ITask } from "@sps/crm/models/task/sdk/model";
 import { IModel as IEcommerceModuleOrder } from "@sps/ecommerce/models/order/sdk/model";
 import { api } from "@sps/rbac/models/subject/sdk/server";
 import { IModel as IEcommerceModuleAttributesToBillingModuleCurrencies } from "@sps/ecommerce/relations/attributes-to-billing-module-currencies/sdk/model";
@@ -19,6 +20,9 @@ import { logger } from "@sps/backend-utils";
 import type { ICheckout as IEcommerceProductCheckout } from "../product/checkout";
 import { Repository } from "../../../../repository";
 import type { IRenewal } from "./renewal";
+import Decimal from "decimal.js";
+
+const WalletAmount = Decimal.clone({ precision: 56 });
 
 export type IExecuteProps = {
   subjectId?: string;
@@ -38,6 +42,11 @@ interface ILifecycleProps {
   existingRolesIds?: string[];
   productsRolesIds?: string[];
   subjectsToRoles?: ISubjectsToRoles[];
+}
+
+interface ILifecycleLookup {
+  order: Pick<IEcommerceModuleOrder, "id">;
+  subjectToEcommerceModuleOrder: ILifecycleProps["subjectToEcommerceModuleOrder"];
 }
 
 export interface IPaidFulfillmentEffect {
@@ -121,7 +130,7 @@ export interface IConstructorProps {
   >;
   modules: Pick<
     SubjectServiceDependencies["modules"],
-    "ecommerce" | "notification" | "social"
+    "crm" | "ecommerce" | "notification" | "social"
   >;
   repository: Repository;
   ecommerceProductCheckout: IEcommerceProductCheckout;
@@ -292,6 +301,11 @@ export class Service {
               subjectsToRoles: rbacSubjectsToRoles,
             });
           } else if (extendedOrder.status === "paid") {
+            if (
+              await this.modules.ecommerce.order.work?.findByOrder(order.id)
+            ) {
+              continue;
+            }
             await this.fromPaidStatus({
               order: extendedOrder,
               extendedOrder,
@@ -598,16 +612,17 @@ export class Service {
           )
         )
           continue;
-        const amount = Number(attribute.number);
         if (
           typeof attribute.number !== "string" ||
           !attribute.number.trim() ||
-          !Number.isFinite(amount) ||
-          amount <= 0
-        )
+          !Number.isFinite(Number(attribute.number)) ||
+          Number(attribute.number) <= 0
+        ) {
           throw new Error(
             "Validation error. Topup amount must be finite and positive",
           );
+        }
+        const amount = new WalletAmount(attribute.number.trim());
         const links = attribute.attributesToBillingModuleCurrencies ?? [];
         if (!links.length)
           throw new Error("Configuration error. Topup currency is missing");
@@ -622,15 +637,16 @@ export class Service {
             );
           seen.add(link.billingModuleCurrencyId);
           const previous = currencies.get(link.billingModuleCurrencyId);
-          const total = Number(previous?.amount ?? 0) + amount * quantity;
-          if (!Number.isFinite(total) || total <= 0)
+          const total = amount.times(quantity).plus(previous?.amount ?? 0);
+          if (!Number.isFinite(total.toNumber()) || total.lte(0)) {
             throw new Error(
               "Validation error. Topup total must be finite and positive",
             );
+          }
           currencies.set(link.billingModuleCurrencyId, {
             billingModuleCurrencyId: link.billingModuleCurrencyId,
             billingModuleCurrency: link.billingModuleCurrency,
-            amount: String(total),
+            amount: total.toFixed(),
           });
         }
       }
@@ -1070,9 +1086,9 @@ export class Service {
             },
           );
 
-        const topupAmount =
-          parseFloat(topupCurrency.amount) +
-          invitedSocialModuleProfilesIds.length * 3;
+        const topupAmount = new WalletAmount(topupCurrency.amount).plus(
+          invitedSocialModuleProfilesIds.length * 3,
+        );
 
         if (existingSubjectToBillingModuleCurrency) {
           const credited =
@@ -1080,10 +1096,9 @@ export class Service {
               {
                 id: existingSubjectToBillingModuleCurrency.id,
                 expectedAmount: existingSubjectToBillingModuleCurrency.amount,
-                amount: String(
-                  parseFloat(existingSubjectToBillingModuleCurrency.amount) +
-                    topupAmount,
-                ),
+                amount: topupAmount
+                  .plus(existingSubjectToBillingModuleCurrency.amount)
+                  .toFixed(),
               },
             );
           if (!credited)
@@ -1095,7 +1110,7 @@ export class Service {
             data: {
               subjectId: props.subjectToEcommerceModuleOrder.subjectId,
               billingModuleCurrencyId: topupCurrency.billingModuleCurrency.id,
-              amount: String(topupAmount),
+              amount: topupAmount.toFixed(),
             },
           });
         }
@@ -1309,7 +1324,43 @@ export class Service {
     return current.id;
   }
 
-  async delivered(props: ILifecycleProps) {
+  async completeDeliveredTask(task: ITask) {
+    if (
+      !task.orderId ||
+      task.status !== "closed" ||
+      task.outcome !== "completed"
+    ) {
+      return;
+    }
+    const work = await this.modules.ecommerce.order.work.findByOrder(
+      task.orderId,
+    );
+    if (
+      work?.taskId !== task.id ||
+      work.state !== "delivered" ||
+      work.customerId !== task.customerId
+    ) {
+      return;
+    }
+    // A checkout can hold the buyer lock while waiting for this task. Proceed
+    // retries delivered orders after commit if that lock is already taken.
+    if (
+      !(await this.dependencies.repository.tryLockDeliverySubject(
+        task.customerId,
+      ))
+    ) {
+      return;
+    }
+    await this.delivered({
+      order: { id: task.orderId },
+      subjectToEcommerceModuleOrder: {
+        subjectId: task.customerId,
+        ecommerceModuleOrderId: task.orderId,
+      },
+    });
+  }
+
+  async delivered(props: ILifecycleProps | ILifecycleLookup) {
     await this.dependencies.repository.withOrderDelivery(
       {
         subjectId: props.subjectToEcommerceModuleOrder.subjectId,
@@ -1320,7 +1371,28 @@ export class Service {
           id: props.order.id,
         });
         const current = await this.freshLifecycleProps(props);
-        if (!current || current.order.status !== "delivered") return undefined;
+        if (!current || current.order.status !== "delivered") {
+          return;
+        }
+        const work = await this.modules.ecommerce.order.work?.findByOrder(
+          current.order.id,
+        );
+        if (work) {
+          const task = await this.modules.crm.task.get(work);
+          if (
+            work.state !== "delivered" ||
+            !work.paid ||
+            !work.receiptFileId ||
+            task.orderId !== current.order.id ||
+            work.customerId !==
+              current.subjectToEcommerceModuleOrder.subjectId ||
+            task.customerId !== work.customerId ||
+            task.status !== "closed" ||
+            task.outcome !== "completed"
+          ) {
+            return;
+          }
+        }
         return this.applyDeliveredStatus(current);
       },
     );
@@ -1473,7 +1545,10 @@ export class Service {
 
           props.extendedEcommerceModuleOrder.ordersToFileStorageModuleFiles.forEach(
             (orderToFileStorageModuleFile) => {
-              if (!orderToFileStorageModuleFile.fileStorageModuleFile) {
+              if (
+                orderToFileStorageModuleFile.variant === "receipt-default" ||
+                !orderToFileStorageModuleFile.fileStorageModuleFile
+              ) {
                 return;
               }
 
@@ -1654,7 +1729,10 @@ export class Service {
 
           props.extendedEcommerceModuleOrder.ordersToFileStorageModuleFiles.forEach(
             (orderToFileStorageModuleFile) => {
-              if (!orderToFileStorageModuleFile.fileStorageModuleFile) {
+              if (
+                orderToFileStorageModuleFile.variant === "receipt-default" ||
+                !orderToFileStorageModuleFile.fileStorageModuleFile
+              ) {
                 return;
               }
 
@@ -1717,7 +1795,7 @@ export class Service {
   }
 
   private async freshLifecycleProps(
-    props: ILifecycleProps,
+    props: ILifecycleProps | ILifecycleLookup,
   ): Promise<ILifecycleProps | undefined> {
     const ownership = await this.module.subjectsToEcommerceModuleOrders.find({
       params: {

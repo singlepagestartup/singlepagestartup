@@ -6,6 +6,7 @@
   "variant": "default",
   "kind": "service",
   "type": "one_off",
+  "singleUnitPerOrder": false,
   "slug": "demo-accelerated-account-credit",
   "title": {
     "en": "Accelerated credit (demo)",

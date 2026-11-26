@@ -218,6 +218,12 @@ The payment lock permits a separate request to create a child relation that
 references the Order without updating it.
 Receipts and attachments run after the paid transition commits.
 
+SinglePageStartup uses the confirmed Order check to deliver paid work. The
+delivery service revalidates the recorded invoice and payment intent, then
+grants the buyer access to the receipt and the original of the paid version.
+The Agent outbox retries deferred delivery. To retry one order, send an
+authenticated `POST /api/ecommerce/orders/{id}/check` as an operator.
+
 Runtime SDK create calls generate IDs. For partial retries, find an existing side effect by a stable unique key, such as a slug, and use the returned ID in relations. Include all required relation fields when updating a link.
 
 Automatic payment failures retain `paymentFailureCanceledAt` through
@@ -242,3 +248,23 @@ of a shared invoice. Recovery of a committed, unsent purchase uses the saved
 allocation and provider context rather than current catalog prices or retry
 request terms. An unknown provider outcome keeps the attempt and reservation
 pending for reconciliation.
+
+## Order fulfillment
+
+The Order stores its fulfillment history in the `fulfillmentWork` column, with the buyer, store and CRM task IDs. The order API exposes the buyer’s view through RBAC Subject routes. A physical order keeps its preparation, tracking and delivery history here. A commissioned service attaches the private preview and original to the order through `orders-to-file-storage-module-files`. The price and currency agreed for a file are stored on its order.
+
+The offer and cart link to the order’s Social thread. Its message composer accepts both text and files. When the assigned agent publishes a result, its reply references the preview file. The buyer can view the image preview in that message and use the same acceptance controls as in the cart.
+
+The customer can request changes or accept the current file. Acceptance starts checkout for that file. A cost-based price also records the settled reservations, conversion rate, source, timestamp and multiplier that produced it. Checkout uses the accepted amount and selected order lines. Editing the catalogue later affects future quotes.
+
+The order service checks the payment intent, invoice, amount, currency and accepted file before recording payment. Payment makes the receipt available and notifies the task. To send the purchased file, the assigned agent calls `deliver_order_file` for its current task. The server checks the buyer, order, payment and accepted file before granting access. A repeated call returns the same delivery. For a physical order, the assigned employee records preparation, tracking and delivery evidence through the CRM workspace or Subject order API.
+
+Previously delivered orders keep their historical specification snapshots. The employee’s knowledge stays on the employee profile.
+
+For the public Subject routes and authorized artifact reads, see the [order work SDK](../../../rbac/models/subject/sdk/model/src/lib/order-work.ts). To migrate previously public receipts, use the [Ecommerce receipt procedure](../../README.md#legacy-order-receipts).
+
+During the upgrade, stop the old API and workers and run `api:db:migrate`.
+Each Order receives its historical fulfillment record, including existing file references,
+decisions, settlement data, receipt IDs and dispatch state. The former tables
+are archived. Histories whose Order was previously deleted remain available
+in `archived_sps_ee_order_work`.

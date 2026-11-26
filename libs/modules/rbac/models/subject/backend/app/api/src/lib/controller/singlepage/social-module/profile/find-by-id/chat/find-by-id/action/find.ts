@@ -48,7 +48,16 @@ export class Handler {
       const limit = parsedQuery?.limit || 100;
       const offset = parsedQuery?.offset || 0;
       const orderBy = parsedQuery?.orderBy;
-      const socialModuleThreadId = c.req.query("socialModuleThreadId")?.trim();
+      const requestedThread = c.req.query("socialModuleThreadId")?.trim();
+      const sharedThread = c.get("sharedTaskThread");
+      if (
+        requestedThread &&
+        sharedThread &&
+        requestedThread !== sharedThread.threadId
+      ) {
+        throw new Error("Not Found error. This discussion is unavailable");
+      }
+      const socialModuleThreadId = sharedThread?.threadId ?? requestedThread;
 
       if (socialModuleThreadId) {
         const socialModuleChatsToThreads =
@@ -176,7 +185,7 @@ export class Handler {
       );
 
       const actions = await new ActionPresentations(this.service).enrich(
-        socialModuleActions,
+        socialModuleActions.filter((action) => action.variant !== "typing"),
       );
 
       return c.json({

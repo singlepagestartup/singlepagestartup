@@ -1,0 +1,4 @@
+ALTER TABLE "sps_rc_wallet_operation" ADD COLUMN "advance_amount" numeric(38, 12) DEFAULT '0' NOT NULL;--> statement-breakpoint
+ALTER TABLE "sps_rc_wallet_operation" ADD COLUMN "advance_recipient_id" uuid;--> statement-breakpoint
+ALTER TABLE "sps_rc_wallet_operation" ADD CONSTRAINT "sps_rc_wallet_operation_advance_recipient_id_sps_rc_subject_id_fk" FOREIGN KEY ("advance_recipient_id") REFERENCES "public"."sps_rc_subject"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "sps_rc_wallet_operation" ADD CONSTRAINT "sps_rc_advance_maximum" CHECK ("sps_rc_wallet_operation"."advance_amount" >= 0 AND "sps_rc_wallet_operation"."advance_amount" <= "sps_rc_wallet_operation"."amount");

@@ -2,7 +2,7 @@ import { Context } from "hono";
 import { HTTPException } from "hono/http-exception";
 import { getHttpErrorType } from "@sps/backend-utils";
 import { Provider as KvProvider } from "@sps/providers-kv";
-import { KV_PROVIDER } from "@sps/shared-utils";
+import { KV_PROVIDER, providerModelFavoriteId } from "@sps/shared-utils";
 import { Service } from "../../../../../../../../service";
 
 const OPEN_ROUTER_MODEL_FAVORITES_KV_PREFIX =
@@ -149,8 +149,10 @@ export class Handler {
             return typeof item === "string" ? item.trim() : "";
           })
           .filter((item) => {
-            return item && item !== "auto" && item.length <= 200;
-          }),
+            return item && item !== "auto";
+          })
+          .map(providerModelFavoriteId)
+          .filter((item) => item.length <= 200),
       ),
     ).slice(0, 50);
   }

@@ -49,6 +49,15 @@ export class Handler {
       const existingAgentSubjectIds = await this.findAgentSubjectIdsInChat({
         socialModuleChatId,
       });
+      const taskChat = c.get("taskChatScope");
+      const candidates = taskChat
+        ? (
+            await this.service.crmWorkspace.taskChatCandidates(taskChat.storeId)
+          ).filter((employee) => employee.agent)
+        : undefined;
+      if (candidates && !candidates.length) {
+        return c.json({ data: [] });
+      }
       const subjects = await this.service.find({
         params: {
           limit,
@@ -62,6 +71,15 @@ export class Handler {
           },
           filters: {
             and: [
+              ...(candidates
+                ? [
+                    {
+                      column: "id",
+                      method: "inArray" as const,
+                      value: candidates.map(({ subjectId }) => subjectId),
+                    },
+                  ]
+                : []),
               {
                 column: "variant",
                 method: "eq",

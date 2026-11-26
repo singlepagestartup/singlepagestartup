@@ -4,7 +4,9 @@
   "createdAt": "2026-10-23T20:18:08.182Z",
   "updatedAt": "2026-10-23T20:18:08.182Z",
   "variant": "default",
+  "kind": "physical",
   "type": "one_off",
+  "singleUnitPerOrder": false,
   "slug": "framework-startup",
   "title": {
     "en": "Startup development",

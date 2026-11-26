@@ -1,12 +1,19 @@
 "use client";
 
-import { memo, useCallback } from "react";
+import { memo, useCallback, useState } from "react";
 import { Component as EcommerceModuleOrder } from "@sps/ecommerce/models/order/frontend/component";
+import { api } from "@sps/rbac/models/subject/sdk/client";
+import {
+  downloadOrderArtifact,
+  ResultReview,
+} from "../../../../../ecommerce-module/order/create-default/customer-work/ResultReview";
 import type { IOrderRowProps } from "./interface";
 
 export const Component = memo(function Component(props: IOrderRowProps) {
   const ru = props.language === "ru";
   const nextPeriod = props.order.purchaseDetails?.canPayNextPeriod === true;
+  const storeWork = props.order.purchaseDetails?.storeWork;
+  const receipts = props.order.purchaseDetails?.protectedReceipts ?? [];
   const canRepeat =
     nextPeriod || props.order.purchaseDetails?.canRepeatPayment === true;
   const onRepeat = useCallback(
@@ -23,30 +30,49 @@ export const Component = memo(function Component(props: IOrderRowProps) {
       dataSource="props"
       purchaseDetails={props.order.purchaseDetails}
       actions={
-        canRepeat ? (
-          <button
-            type="button"
-            onClick={onRepeat}
-            disabled={props.disabled}
-            aria-expanded={props.confirming}
-            className="inline-flex min-h-11 items-center rounded-xl border border-border px-4 text-sm font-medium disabled:opacity-50"
-          >
-            {props.repeating
-              ? ru
-                ? "Повторяем…"
-                : "Repeating…"
-              : nextPeriod
+        <>
+          {props.subjectId &&
+            receipts.map(({ id }) => (
+              <ReceiptDownload
+                key={id}
+                subjectId={props.subjectId!}
+                orderId={props.order.id}
+                receiptId={id}
+                ru={ru}
+              />
+            ))}
+          {canRepeat ? (
+            <button
+              type="button"
+              onClick={onRepeat}
+              disabled={props.disabled}
+              aria-expanded={props.confirming}
+              className="inline-flex min-h-11 items-center rounded-xl border border-border px-4 text-sm font-medium disabled:opacity-50"
+            >
+              {props.repeating
                 ? ru
-                  ? "Следующая поставка"
-                  : "Next delivery"
-                : ru
-                  ? "Повторить заказ"
-                  : "Repeat order"}
-          </button>
-        ) : null
+                  ? "Повторяем…"
+                  : "Repeating…"
+                : nextPeriod
+                  ? ru
+                    ? "Следующая поставка"
+                    : "Next delivery"
+                  : ru
+                    ? "Повторить заказ"
+                    : "Repeat order"}
+            </button>
+          ) : null}
+        </>
       }
       footer={
-        props.confirming && canRepeat ? (
+        storeWork && props.subjectId ? (
+          <StoreWorkDetails
+            {...storeWork}
+            subjectId={props.subjectId}
+            orderId={props.order.id}
+            language={props.language}
+          />
+        ) : props.confirming && canRepeat ? (
           <div
             role="group"
             aria-label={`${ru ? "Повторить заказ" : "Repeat order"} ${props.order.receipt || props.order.id}`}
@@ -111,3 +137,94 @@ export const Component = memo(function Component(props: IOrderRowProps) {
     />
   );
 });
+
+function ReceiptDownload({
+  subjectId,
+  orderId,
+  receiptId,
+  ru,
+}: {
+  subjectId: string;
+  orderId: string;
+  receiptId: string;
+  ru: boolean;
+}) {
+  const [pending, setPending] = useState(false);
+  const [error, setError] = useState(false);
+  async function download() {
+    setPending(true);
+    setError(false);
+    try {
+      await downloadOrderArtifact(
+        subjectId,
+        orderId,
+        receiptId,
+        `receipt-${orderId}`,
+      );
+    } catch {
+      setError(true);
+    } finally {
+      setPending(false);
+    }
+  }
+  return (
+    <>
+      <button
+        type="button"
+        onClick={download}
+        disabled={pending}
+        className="inline-flex min-h-11 items-center rounded-xl border border-border px-4 text-sm font-medium disabled:opacity-50"
+      >
+        {ru ? "Скачать чек" : "Download receipt"}
+      </button>
+      {error && (
+        <p role="alert" className="text-sm text-destructive">
+          {ru ? "Чек недоступен." : "The receipt is unavailable."}
+        </p>
+      )}
+    </>
+  );
+}
+
+function StoreWorkDetails({
+  subjectId,
+  storeId,
+  taskId,
+  orderId,
+  language,
+}: {
+  subjectId: string;
+  storeId: string;
+  taskId: string;
+  orderId: string;
+  language: string;
+}) {
+  const result = api.orderWork.read({
+    id: subjectId,
+    storeId,
+    taskId,
+    orderId,
+  });
+  if (result.isError) {
+    return (
+      <p role="alert" className="text-sm text-destructive">
+        {language === "ru"
+          ? "Файлы заказа недоступны."
+          : "Order files are unavailable."}
+      </p>
+    );
+  }
+  return result.data ? (
+    <ResultReview
+      subjectId={subjectId}
+      work={result.data}
+      language={language}
+    />
+  ) : (
+    <p role="status" className="text-sm text-muted-foreground">
+      {language === "ru"
+        ? "Загружаем данные заказа…"
+        : "Loading order details…"}
+    </p>
+  );
+}

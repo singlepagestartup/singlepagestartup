@@ -13,6 +13,10 @@ export const fields = {
   variant: pgCore.text("variant").notNull().default("default"),
   kind: pgCore.text("kind").notNull().default("physical"),
   type: pgCore.text("type").notNull().default("one_off"),
+  singleUnitPerOrder: pgCore
+    .boolean("single_unit_per_order")
+    .notNull()
+    .default(false),
   slug: pgCore
     .text("slug")
     .notNull()

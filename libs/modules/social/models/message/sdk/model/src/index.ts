@@ -1,2 +1,7 @@
 export * from "./lib";
-export type { IChatMessage } from "./lib/chat-message";
+export type {
+  IChatMessage,
+  IPrivateChatAttachment,
+  IChatAttachmentIndexEntry,
+  TChatThreadReadResult,
+} from "./lib/chat-message";

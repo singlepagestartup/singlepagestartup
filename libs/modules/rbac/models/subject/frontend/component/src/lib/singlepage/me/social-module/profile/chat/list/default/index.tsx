@@ -1,6 +1,7 @@
 import { Provider } from "@sps/rbac/models/subject/sdk/client";
 import { Component as ParentComponent } from "@sps/shared-frontend-components/singlepage/reader";
 import type { IComponentProps } from "./interface";
+import { ChatWorkspaceSkeleton } from "@sps/ui-adapter";
 import Client from "./client";
 import Server from "./server";
 export function Component(props: IComponentProps) {
@@ -8,7 +9,12 @@ export function Component(props: IComponentProps) {
     <ParentComponent
       Component={props.isServer ? Server : Client}
       Provider={Provider}
-      componentProps={props}
+      componentProps={{
+        ...props,
+        skeleton: props.skeleton ?? (
+          <ChatWorkspaceSkeleton language={props.language} list />
+        ),
+      }}
     />
   );
 }

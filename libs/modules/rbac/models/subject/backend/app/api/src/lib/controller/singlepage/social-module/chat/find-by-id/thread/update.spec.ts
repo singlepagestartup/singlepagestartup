@@ -165,4 +165,23 @@ describe("Given: Telegram-backed SPS thread rename", () => {
     expect(mockSocialModuleThreadUpdate).not.toHaveBeenCalled();
     expect(global.fetch).not.toHaveBeenCalled();
   });
+
+  it("rejects a retired document update before changing thread settings", async () => {
+    const service = createService();
+    await expect(
+      new Handler(service).execute(
+        createContext({
+          document: { key: "brief", profileId: "profile", sourceIds: [] },
+          openRouterModelId: "minimax/minimax-m2.5",
+          title: "Renamed support",
+        }),
+        jest.fn(),
+      ),
+    ).rejects.toThrow("Thread documents are no longer supported");
+    expect(
+      service.socialModuleChatThreadOpenRouterModelUpdate,
+    ).not.toHaveBeenCalled();
+    expect(mockSocialModuleThreadUpdate).not.toHaveBeenCalled();
+    expect(global.fetch).not.toHaveBeenCalled();
+  });
 });

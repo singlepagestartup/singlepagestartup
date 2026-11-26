@@ -9,10 +9,27 @@ import { Component as ChildComponent } from "./Component";
 import { Skeleton } from "./Skeleton";
 
 export function Component(props: IComponentProps) {
+  if (props.dataSource === "props") {
+    return (
+      <ChildComponent
+        isServer={props.isServer}
+        variant={props.variant}
+        data={props.data}
+        language={props.language}
+        productHref={props.productHref}
+        priceSlot={props.priceSlot}
+        middleSlot={props.middleSlot}
+        className={props.className}
+      >
+        {props.children}
+      </ChildComponent>
+    );
+  }
+
   return (
     <ParentComponent
       Skeleton={<Skeleton />}
-      Component={ChildComponent as any}
+      Component={ChildComponent}
       Provider={Provider}
       clientApi={clientApi}
       serverApi={serverApi}

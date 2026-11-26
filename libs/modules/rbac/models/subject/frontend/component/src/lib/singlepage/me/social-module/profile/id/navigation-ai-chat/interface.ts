@@ -19,8 +19,12 @@ export interface IComponentProps extends IParent<IModel, typeof variant> {
   socialModuleThreadId?: string;
   selected?: "settings" | "create";
 }
-export interface IComponentPropsExtended
-  extends IParentExtended<IModel, typeof variant, IComponentProps> {
+export interface IComponentPropsExtended extends IParentExtended<
+  IModel,
+  typeof variant,
+  IComponentProps
+> {
+  canManageChat: boolean;
   /** Loaded by the specialized socialModuleChatFindByIdThreadFind reader; retry is client-only. */
   threadsRead: {
     data?: IResult["ISocialModuleChatFindByIdThreadFindResult"];

@@ -80,7 +80,15 @@ export function getLocalizedProfilePlainText(
   language: string,
 ): string {
   if (typeof value === "string") {
-    return profileTextToPlainText(value).trim();
+    if (value.trimStart().startsWith("{")) {
+      try {
+        const parsed: unknown = JSON.parse(value);
+        return getLocalizedProfilePlainText(parsed, language);
+      } catch {
+        return value.trim();
+      }
+    }
+    return profileTextToPlainText(value);
   }
 
   if (!value || typeof value !== "object" || Array.isArray(value)) {

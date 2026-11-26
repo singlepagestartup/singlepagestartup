@@ -1069,6 +1069,13 @@ paths:
   /social/chats-to-threads/{id}:
     $ref: "../../libs/modules/social/relations/chats-to-threads/sdk/model/src/lib/paths.yaml#/paths/~1social~1chats-to-threads~1{id}"
 
+  # social/relations/chats-to-file-storage-module-files
+  /social/chats-to-file-storage-module-files:
+    $ref: "../../libs/modules/social/relations/chats-to-file-storage-module-files/sdk/model/src/lib/paths.yaml#/paths/~1social~1chats-to-file-storage-module-files"
+  /social/chats-to-file-storage-module-files/count:
+    $ref: "../../libs/modules/social/relations/chats-to-file-storage-module-files/sdk/model/src/lib/paths.yaml#/paths/~1social~1chats-to-file-storage-module-files~1count"
+  /social/chats-to-file-storage-module-files/{id}:
+    $ref: "../../libs/modules/social/relations/chats-to-file-storage-module-files/sdk/model/src/lib/paths.yaml#/paths/~1social~1chats-to-file-storage-module-files~1{id}"
   # social/relations/messages-to-file-storage-module-files
   /social/messages-to-file-storage-module-files:
     $ref: "../../libs/modules/social/relations/messages-to-file-storage-module-files/sdk/model/src/lib/paths.yaml#/paths/~1social~1messages-to-file-storage-module-files"
@@ -1793,6 +1800,10 @@ components:
       $ref: "../../libs/modules/social/relations/chats-to-threads/sdk/model/src/lib/social-chats-to-threads.yaml"
     "social-chats-to-threads-input":
       $ref: "../../libs/modules/social/relations/chats-to-threads/sdk/model/src/lib/social-chats-to-threads-input.yaml"
+    "social-chats-to-file-storage-module-files":
+      $ref: "../../libs/modules/social/relations/chats-to-file-storage-module-files/sdk/model/src/lib/social-chats-to-file-storage-module-files.yaml"
+    "social-chats-to-file-storage-module-files-input":
+      $ref: "../../libs/modules/social/relations/chats-to-file-storage-module-files/sdk/model/src/lib/social-chats-to-file-storage-module-files-input.yaml"
     "social-messages-to-file-storage-module-files":
       $ref: "../../libs/modules/social/relations/messages-to-file-storage-module-files/sdk/model/src/lib/social-messages-to-file-storage-module-files.yaml"
     "social-messages-to-file-storage-module-files-input":

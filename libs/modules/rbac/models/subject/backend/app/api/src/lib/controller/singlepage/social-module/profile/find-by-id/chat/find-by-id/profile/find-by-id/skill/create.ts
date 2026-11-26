@@ -1,6 +1,8 @@
 import {
   getHttpErrorType,
   getPrivateAIChatSkillProfileId,
+  storeEmployeeSkillCommand,
+  storeEmployeeSkillSlug,
 } from "@sps/backend-utils";
 import { Context } from "hono";
 import { HTTPException } from "hono/http-exception";
@@ -27,13 +29,17 @@ export class Handler {
       );
       const body = await parseRequestBody(c);
       const payload = normalizeSkillPayload(body);
-      const professionProfileId = getPrivateAIChatSkillProfileId(payload.slug);
+      const employee = Boolean(c.get("storeEmployeeTrainingStoreId"));
+      const slug = employee
+        ? storeEmployeeSkillSlug(targetSocialModuleProfileId, payload.slug)
+        : payload.slug;
+      const privateSkillProfileId = getPrivateAIChatSkillProfileId(slug);
       if (
-        professionProfileId &&
-        professionProfileId !== targetSocialModuleProfileId
+        privateSkillProfileId &&
+        privateSkillProfileId !== targetSocialModuleProfileId
       )
         throw new Error(
-          "Authorization error. This document skill belongs to another profile.",
+          "Authorization error. This private skill belongs to another profile.",
         );
       const skillIds = await findProfileSkillIds({
         service: this.service,
@@ -44,7 +50,7 @@ export class Handler {
           variant: "default",
           className: "",
           title: payload.title,
-          slug: payload.slug,
+          slug,
           adminTitle: payload.title,
           description: payload.description,
         },
@@ -63,7 +69,10 @@ export class Handler {
         },
       });
 
-      return c.json({ data: skill });
+      const data = employee
+        ? { ...skill, slug: storeEmployeeSkillCommand(skill.slug) }
+        : skill;
+      return c.json({ data });
     } catch (error: unknown) {
       const { status, message, details } = getHttpErrorType(error);
       throw new HTTPException(status, { message, cause: details });

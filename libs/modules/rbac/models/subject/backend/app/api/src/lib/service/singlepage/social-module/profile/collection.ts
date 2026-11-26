@@ -1,6 +1,4 @@
 import { Service as Bootstrap } from "../../../startup/social-module/profile/ai/bootstrap";
-import { Service as Documents } from "../../../startup/social-module/profile/documents";
-import { Service as Skills } from "../../../startup/social-module/profile/skills";
 import type { Service as SubjectService } from "../../index";
 import { api as profileApi } from "@sps/social/models/profile/sdk/server";
 import { api as subjectProfilesApi } from "@sps/rbac/relations/subjects-to-social-module-profiles/sdk/server";
@@ -61,7 +59,6 @@ export class Service {
       throw new Error(
         "Validation error. Profile title must contain 1 to 200 characters",
       );
-    const skills = new Skills(this.service.modules.social);
     const options = {
       headers: {
         "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
@@ -72,19 +69,11 @@ export class Service {
       data: {
         variant: data.variant,
         title: data.title,
-        ...(data.variant === "artificial-intelligence"
-          ? { allowedMcpServerIds: ["singlepagestartup"] }
-          : {}),
+        allowedMcpServerIds: ["singlepagestartup"],
       },
       options,
     });
-    try {
-      await skills.ensure(profile.id);
-    } catch (error) {
-      await profileApi.delete({ id: profile.id, options });
-      throw error;
-    }
-    const context =
+    const { socialModuleChat } =
       await this.service.socialModuleChatLifecycleCreateChatWithDefaultThread({
         subjectId: props.subjectId,
         data: { title, variant: "ai-chat" },
@@ -99,8 +88,8 @@ export class Service {
         this.service.socialModuleProfileKnowledgeAccessEnsure(accessProps),
     }).execute({
       ownerRbacSubject: owner,
-      socialModuleChatId: context.socialModuleChat.id,
-      slug: `profile-${context.socialModuleChat.id}`,
+      socialModuleChatId: socialModuleChat.id,
+      slug: `profile-${socialModuleChat.id}`,
       socialModuleProfile: profile,
       title,
       relationVariant: "default",
@@ -112,11 +101,6 @@ export class Service {
         variant: "assistant",
       },
       options,
-    });
-    await new Documents(this.service.modules.social).execute({
-      profileId: agent.socialModuleProfile.id,
-      chatId: context.socialModuleChat.id,
-      initialThread: context.socialModuleDefaultThread,
     });
     return agent.socialModuleProfile;
   }

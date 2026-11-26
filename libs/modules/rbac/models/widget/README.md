@@ -23,7 +23,14 @@ RBAC widgets provide reusable content blocks for access and account flows.
 - `subject-me-ecommerce-module-token-find`: curated public token catalogue with a monthly Pro card and one selected top-up. Its own default Ecommerce Widget link must contain six unique ordered Product associations: one subscription and five one-off top-ups. The current-Subject product card retains currency selection, cart and one-step checkout through the existing Subject operations. The third top-up is initially selected; switching packages replaces only that card. An independent saved Website Builder frame owns the introduction and terms. The general product-list Widget remains available for a separate service catalogue.
 - `subject-me-ecommerce-module-product-overview-default`: one Product selected by `ecommerceModuleProductSlug`.
 - `subject-me-ecommerce-module-category-overview-default`: Category products and their Store-specific purchase actions, selected by `ecommerceModuleCategorySlug`.
-- `subject-me-ecommerce-module-store-overview-default`: Store products and purchase actions, selected by `ecommerceModuleStoreSlug`.
+- `subject-me-ecommerce-module-store-overview-default` shows product, order and task totals on the store management home page. Each card links to its section. The task total includes all store funnels. Existing links to individual sections still work.
+- `subject-me-ecommerce-module-store-settings` lets a catalog manager edit the store and its translations at `/settings`.
+- `subject-me-ecommerce-module-store-orders` lists orders linked to the selected store through `stores-to-orders`. The signed-in subject must have management access to that store.
+
+The store pages share an Ecommerce Widget through their existing
+`widgets-to-ecommerce-module-widgets` links. The Widget renders the
+Store's `header-default` variant above each section, with the navigation
+available to the current subject.
 
 Product overview composes its category and public seller slots through Subject
 variants `ecommerce-module-product-category-default` and
@@ -46,7 +53,7 @@ scenario registry.
 - `subject-me-social-module-profile-create-ai-chat`: authenticated project chooser and creation flow. Its own `widgets-to-website-builder-module-widgets` link selects the persisted Website Builder creation card. The chooser renders project links; Create project opens the original `content-ai-chat-profile-create` card with its photograph, copy and Subject form. Back to projects returns to the chooser.
 - `subject-me-social-module-profile-id-settings-ai-chat`: project settings for the explicitly selected Profile/Chat.
 - `subject-me-social-module-profile-id-chat-id-thread-create-ai-chat`: Thread creation within a selected, connected project.
-- `subject-me-social-module-profile-id-chat-id-thread-id-ai-chat`: connected-project guard and Social Profile → Chat → Thread composition. Subject components provide messages, composer, Knowledge editors and document export.
+- `subject-me-social-module-profile-id-chat-id-thread-id-ai-chat`: checks access to the project and opens the corresponding Social thread. New projects and existing bookmarks use the same chat navigation and thread context.
 - `subject-me-authentication-*-ai-chat`: separate authentication pages whose own Widget relation selects the Website Builder frame, containing the corresponding Subject form.
 
 AI Chat Widgets use the shared model reader. Auth, project list/create and Help

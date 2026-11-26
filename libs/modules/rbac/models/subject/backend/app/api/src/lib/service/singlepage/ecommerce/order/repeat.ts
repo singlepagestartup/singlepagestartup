@@ -1,4 +1,6 @@
+import { STORE_TEST_ORDER_VARIANT } from "@sps/ecommerce/models/order/sdk/model";
 import type { FindServiceProps } from "@sps/shared-backend-api";
+import { assertSingleUnitPerOrder } from "@sps/backend-utils";
 import {
   REGISTRATION_GRANT_VARIANT,
   ECOMMERCE_ORDER_LINE_QUANTITY_BOUNDS as quantityBounds,
@@ -70,6 +72,11 @@ export class Service {
                   { column: "id", method: "inArray", value: subjectOrderIds },
                   { column: "type", method: "eq", value: "cart" },
                   { column: "status", method: "eq", value: "new" },
+                  {
+                    column: "variant",
+                    method: "ne",
+                    value: STORE_TEST_ORDER_VARIANT,
+                  },
                 ],
               },
             },
@@ -144,6 +151,7 @@ export class Service {
             "Validation error. Source order currency is unavailable",
           );
         }
+        const primaryProductIds = new Set<string>();
         for (const line of lines) {
           if (
             !Number.isInteger(line.quantity) ||
@@ -161,6 +169,13 @@ export class Service {
             throw new Error(
               "Validation error. Source order product is unavailable",
             );
+          }
+          if (!line.parentLineId) {
+            const quantity = primaryProductIds.has(line.productId)
+              ? 2
+              : line.quantity;
+            assertSingleUnitPerOrder(product, quantity);
+            primaryProductIds.add(line.productId);
           }
           if (
             await new InitialGrantProducts(
@@ -622,6 +637,7 @@ export class Service {
       );
     }
     const line = primary[0];
+    assertSingleUnitPerOrder(line.product, line.quantity);
     if (line.product?.kind === "physical") {
       throw new Error(
         "Conflict error. Legacy physical subscription needs an offer for stock reservation",

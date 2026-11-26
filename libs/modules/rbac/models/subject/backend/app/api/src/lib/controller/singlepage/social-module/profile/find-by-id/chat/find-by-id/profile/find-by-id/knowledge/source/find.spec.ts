@@ -5,6 +5,7 @@ jest.mock("@sps/knowledge/backend/app/api/src/lib/service", () => ({
 }));
 
 import { Handler } from "./find";
+import { findProfileKnowledgeSourceIds } from "./helpers";
 
 describe("Knowledge Source find", () => {
   it("does not create an owner grant from shared Chat membership", async () => {
@@ -30,6 +31,7 @@ describe("Knowledge Source find", () => {
         query: () => undefined,
       },
       json: jest.fn((value) => value),
+      get: jest.fn(),
     } as any;
     await new Handler(service).execute(c, undefined);
     expect(
@@ -84,6 +86,7 @@ describe("Knowledge Source find", () => {
         query: (name: string) => ({ limit: "3", offset: "6" })[name],
       },
       json: jest.fn((value) => value),
+      get: jest.fn(),
     } as any;
 
     await new Handler(service).execute(c, undefined);
@@ -101,4 +104,37 @@ describe("Knowledge Source find", () => {
       socialModuleProfileId: "profile-1",
     });
   });
+});
+
+it("keeps the employee sidebar within its store and ignores offer and project sources", async () => {
+  const service = {
+    modules: {
+      social: {
+        profilesToKnowledgeModuleSources: {
+          find: jest.fn().mockResolvedValue([
+            { knowledgeModuleSourceId: "employee", storeId: "store" },
+            { knowledgeModuleSourceId: "legacy" },
+            { knowledgeModuleSourceId: "other", storeId: "other-store" },
+            {
+              knowledgeModuleSourceId: "specific-offer",
+              storeId: "store",
+              offerId: "offer",
+            },
+            {
+              knowledgeModuleSourceId: "specific-project",
+              storeId: "store",
+              projectId: "project",
+            },
+          ]),
+        },
+      },
+    },
+  } as never;
+  await expect(
+    findProfileKnowledgeSourceIds({
+      service,
+      targetSocialModuleProfileId: "employee-profile",
+      storeId: "store",
+    }),
+  ).resolves.toEqual(["employee", "legacy"]);
 });

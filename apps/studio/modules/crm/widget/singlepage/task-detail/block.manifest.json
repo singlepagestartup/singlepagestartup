@@ -1,0 +1,28 @@
+{
+  "$schema": "../../../../../block.schema.json",
+  "id": "crm.widget.task-detail",
+  "title": "CRM Widget / Task Detail",
+  "layer": "singlepage",
+  "state": "draft",
+  "source": {
+    "module": "crm",
+    "entityType": "model",
+    "entity": "widget",
+    "variant": "task-detail"
+  },
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "contentSlots": [],
+  "figma": {
+    "componentName": "crm.widget",
+    "pageName": "crm",
+    "variantName": "task-detail",
+    "nodeId": null,
+    "variantNodeId": null,
+    "syncStatus": "not-created",
+    "metadataFile": "figma.json"
+  },
+  "tags": ["crm", "widget", "workflows"]
+}

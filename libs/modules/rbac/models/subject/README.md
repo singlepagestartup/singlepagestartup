@@ -32,6 +32,32 @@ passes its live Subject through this mode. Cart reads and mutations still use
 the client Subject SDK and the API's JWT/ownership checks. Guest sessions are
 supported; a supplied Subject does not establish API authorization.
 
+### Attachments in customer conversations
+
+The standard Social thread composer accepts files with or without a message.
+The API accepts any extension or declared media type and keeps the bytes in
+private storage. The default limits are 50 MiB per file and 128 MiB per
+multipart request. Set `FILE_STORAGE_MAX_UPLOAD_BYTES` and
+`API_MAX_REQUEST_BODY_BYTES` to change them.
+
+The message shows each filename with a download button. The download requires
+an active buyer session and checks the task, thread, message and file together.
+After guest transfer, the registered buyer can still download files from
+the transferred conversation. The response is an attachment with an opaque
+media type and private cache headers.
+
+For a stage reply, the worker reads the private originals attached to the
+triggering message and supplies them to the chosen model in its request.
+A reply can use multiple files and an empty caption. The provider adapter
+encodes attachments in its native input format and reports incompatible
+files to the conversation. File generation and order delivery have their
+own stages.
+
+The workflow owns conversation membership and history. The standard Social
+composer can add a message to a customer thread. The workflow controls
+participant changes and thread settings. Saved work messages stay in the task
+history.
+
 Product views and actions live in their owning `me` variant directories. The
 former `ecommerce-module-product-cart-default` and
 `ecommerce-module-product-checkout-default` registrations are removed; owned
@@ -168,7 +194,7 @@ to calculate against the saved Order currency and current server offer quotes.
 - For concrete subject routes, add the route to `rbac.permissions` first, then enforce resource ownership with route-level middleware from `backend/app/middlewares/src/lib/*`.
 - Subject-owned routes must keep `RequestSubjectIdOwner` or `RequestProfileSubjectIdOwner` as the first ownership guard.
 - Domain-specific guards must live in the module middleware package and be exported from `backend/app/middlewares/src/index.ts`; do not define middleware bodies inside controllers.
-- For example, chat thread routes use `RequestSubjectOwnsSocialModuleChat` and `RequestSocialModuleThreadBelongsToChat`, which call `socialModuleChatLifecycleAssertSubjectOwnsChat` and `socialModuleChatLifecycleAssertThreadBelongsToChat`.
+- Thread reads check the caller’s access to the chat and the thread’s membership in it. Chat settings, participant management and thread mutations also require the calling Subject’s `subjects-to-social-module-chats` relation with `variant="owner"`. The creation service writes this relation in the same transaction as the chat.
 - Handlers may keep the same assertions as a defense-in-depth check, but the access model must not depend on custom route exceptions inside the global authorization service.
 
 ### Reading the current Subject
@@ -296,7 +322,7 @@ must be available even when the browser's cookie-change event has already fired.
 
 ### Account email changes and project reads
 
-- `GET /rbac/subjects/:id/social-module/profiles/projects` returns the caller's assistant profiles with their Chat and initial document Thread. Ownership comes from the Subject's `assistant` relation, and the caller's personal Profile must also belong to that Chat. Shared Chat membership does not establish project ownership.
+- `GET /rbac/subjects/:id/social-module/profiles/projects` returns the caller's assistant profiles with their Chat and its default Thread. Ownership comes from the Subject's `assistant` relation, and the caller's personal Profile must also belong to that Chat. Shared Chat membership does not establish project ownership.
 - `POST /rbac/subjects/:id/identities/:identityId/email-change/code` sends a verification code through the Notification service. An empty data object requests a code for the current address; a new `email` requires the `verificationId` returned by verifying the current address.
 - `POST /rbac/subjects/:id/identities/:identityId/email-change/verify` verifies `challengeId` and the six-digit `code`. Current-address verification returns a `verificationId`; new-address verification saves the email and returns the public Identity fields.
 
@@ -818,7 +844,7 @@ Public author URLs use `/authors/<Social Profile UUID>`. Social's `authors`, `au
 - `admin-table`: admin table listing subjects.
 - `admin-table-row`: admin row showing subject fields.
 
-### AI Chat workspace documents
+### AI Chat projects
 
 `GET /api/rbac/subjects/:id/social-module/profiles` returns only Profiles
 directly linked to that Subject. With no matching Profiles it returns `[]`.
@@ -863,39 +889,22 @@ states. An empty successful response displays the creation form and a navbar
 Create project action. Errors display a retry action. Studio includes Loading
 and Empty stories for both the Subject selector and the creation page.
 
-Creating an artificial-intelligence Profile through the Subject collection also
-creates Brief.md, Strategy.md, Brand.md, Design.md and Products.md in its Chat,
-in Studio Workspace review order. The form supplies only the project title and
-Profile variant; the backend provisions the documents and the workspace opens
-Brief.md first. Read operations do not initialize documents.
+Creating a project provisions an assistant Profile, a Chat and one default
+Thread. The project list opens the Thread linked by the Chat’s default
+relation. For a Chat without a default relation, it opens the first available
+Thread in relation order.
 
-The Subject-owned `metadata.aiChatDocument` contract has `key`, `profileId` and
-`sourceIds`. Only the five predefined keys identify document Threads. A
-presentation variant or title cannot mark a conversation as a document. Each
-document displays only its listed Sources from the selected project Profile.
-Source attachment preserves the document key and other Thread metadata.
+Existing Threads retain their IDs and message history. The scoped Profile
+Knowledge routes provide access to the project’s saved Sources.
 
-The document Source list includes one development handoff for the whole saved
-document. It uses the same scoped, linked Sources and Thread filename as the
-Markdown export. Copying places instructions on the clipboard; the user reviews
-the text, saves any notes to include, exports the document and attaches it to a
-coding agent separately. Unsaved editor notes and unconfirmed chat proposals
-are excluded from the saved export. The action is disabled when the saved
-document has no effective text or its read is unavailable. Saved-record changes
-reset copy feedback and discard stale clipboard completions. The Framework
-link retains the current locale. Source editing, proposal confirmation and the
-download flow retain their existing owners and behavior.
+Social chat and thread lists include `lastMessageAt` and `unreadCount`.
+Messages received after unread tracking begins count toward the badge. A
+chat’s badge sums its threads. The last message time includes earlier history.
 
-Ordinary Threads show messages and the composer across the workspace width.
-They have no Knowledge editor, export action or document context selector. The
-assistant can still retrieve saved Knowledge from the project Profile. Sidebar
-Documents are ordered separately from ordinary Threads. Documents belonging to
-another Profile in the same Chat remain in that Profile’s workspace.
-
-The document service can initialize an existing web project explicitly while
-preserving its identified Products.md Thread and Source IDs. Repeating it reuses
-the same documents. Additional document relations use `variant="ai-chat"`;
-the Chat’s single primary relation retains `variant="default"`.
+`POST /api/rbac/subjects/:id/social-module/chats/:socialModuleChatId/threads/:socialModuleThreadId/read`
+advances the acting Subject’s read position through the supplied `messageId`.
+The message must belong to both the chat and thread. The operation returns the
+remaining unread counts for the thread and chat.
 
 ### OpenRouter decisions and automatic replies
 
@@ -912,50 +921,7 @@ Agent persists an insufficient-tokens reply in the requesting Chat or Thread,
 marked as system traffic excluded from model context. Web AI Chat receives the
 reply without a Telegram premium keyboard. Telegram retains its premium flow.
 
-Creating an AI Chat assistant also creates and links five separate document
-Skills from `libs/shared/utils/src/lib/constants/ai-chat-skill-templates.ts`.
-Commands include the assistant profile ID; descriptions are independent for
-each assistant. No shared Skill rows need to be seeded before project creation.
-Failed Skill setup removes that attempt's records and the new profile before
-chat creation. Document message creation resolves the linked profession on the
-server and stores its actual command and ID. Ordinary threads activate a
-profession only when explicitly requested.
-
-`react-by/openrouter` selects from the local catalogue in
-`libs/shared/utils/src/lib/constants/open-router-models.ts`. Its only answering
-model is `openai/gpt-6.1-sol`, with `high` reasoning for text, coding, and
-image/file analysis. The same policy restricts manual selection and the
-composer's model list. A single candidate needs no model-selection API call.
-The selection flow supports Jev Decisions when multiple candidates are enabled.
-GPT 6.1 Sol returns text through OpenRouter; automatic image-generation requests
-receive an unavailable notice without a generation call.
-
-Task and Knowledge intent detection, passage reranking, tool-group selection,
-and linked Skill selection use `typesafe/jev-1.13` through OpenRouter's
-`/api/alpha/decisions` endpoint and the same OpenRouter API key. Passage relevance
-selects up to twelve useful chunks from the profile-scoped retrieval results.
-Candidate passages are evaluated in byte-bounded batches to fit JEV context
-limits without truncating the source passages.
-Failed reranking retains retrieval order; failed capability selection retains
-the allowed catalog. Decisions usage and the actual answering model's cost are
-recorded in the existing billing ledger.
-
-Natural-language requests can read, create, or supplement profile Knowledge
-without a control mention. `/learn`, `@knowledge`, and explicit Skills remain
-available. The native create tool supports the first Source and imports the
-current message's attached files. Editing reads the Source first, preserves
-other user notes, and checks its `contentHash` before saving. Source and file
-analysis continue through Knowledge services and framework relations.
-
-Knowledge create and edit tools can wait up to four minutes for analysis and
-indexing, within the tool loop's five-minute total deadline. Other tools retain
-the default thirty-second limit. New imports receive the current attachment
-names and instructions to base titles and notes on the current user input.
-An expired wait does not cancel an operation; check saved state before retrying.
-
-JEV chooses among available capabilities. Backend profile scope, allowed MCP
-servers, and tool argument validation continue to determine access. A routing
-decision does not execute a mutation.
+The store owner configures OpenRouter or OpenAI on a technical Subject. The chat reads the model bindings for its active CRM task. The worker reserves the published maximum, records the provider and model on an attempt, and stores metered usage. The OpenAI text adapter calculates USD using the rates saved with the attempt. OpenRouter reports a generation cost. The assigned employee contributes its profile and knowledge. The buyer contributes authorized personal memory scoped to the customer, store and project.
 
 ### Thread context and exact working drafts
 
@@ -995,8 +961,7 @@ compares the previous namespace value. Concurrent writes to other namespaces or
 other Profiles are preserved. Invalid state versions, edited messages or files,
 changed Source hashes, invalid summaries and repeated conflicts retain the
 original history. `/new` discards conversation memory and ordinary working
-drafts after that marker; saved Knowledge and document proposals keep their
-existing behavior.
+drafts after that marker and preserves saved Knowledge.
 
 `profile_thread_history_read` finds and paginates original messages in the
 current thread snapshot. `profile_thread_attachment_read` adds an original
@@ -1007,13 +972,7 @@ Older media is represented by names and IDs during compact text requests.
 `profile_thread_draft_stage` stores a complete exact ordinary-chat or Telegram
 draft with its hash and file references. Updates require the current draft hash.
 The server displays the stored text, and subsequent prompts pin it independently
-of summaries. This operation does not write Knowledge. Document threads retain
-the exact `rbacAiDocumentProposal`, its original Source hash and confirmation
-state through the existing proposal service. Pending proposals with
-`confirmationMessageId` have claimed confirmation: reject/revise returns
-`applying`, and a later confirm can finish a save after an interrupted request.
-See [Knowledge confirmation semantics](../../../knowledge/README.md) for
-conditional writes, attachment checks and partial failures.
+of summaries. Working drafts stay separate from saved Knowledge.
 
 Stable thread/Profile sessions group answering, summary and JEV requests in
 OpenRouter. Initial and tool-triggered Knowledge search passes that session to
@@ -1028,10 +987,6 @@ exactly one Subject–Identity relation. The exported
 handler reads or changes credentials. A privileged secret alone does not satisfy
 this route. The handler calls the injected Identity service and applies its
 output schema to the saved record.
-
-Document message creation resolves its profession through the public
-`socialModuleProfileDocumentSkillFind` Subject method. Its protected factory
-permits startup specialization; controllers do not construct ProfileSkills.
 
 `ecommerceProductCheckout` creates the Product checkout graph and delegates to
 `ecommerceOrderCheckout`, which performs payment checkout and retains its
@@ -1168,6 +1123,7 @@ session initialization.
 `includeParticipants`. Subject expansion validates the requested owned Profile,
 collects all owned Profile memberships, deduplicates Chat IDs and reads one
 collection. Administrative scope uses the existing Chat lifecycle role check.
+Customer order conversations appear only for the customer who owns the linked task. This check also applies to administrators browsing Social. The collection and direct chat link use the same access rule.
 Participant expansion runs in bulk after access validation. Query identity
 includes these parameters, API host and current principal. A loaded list row
 uses `dataSource="props"` and retains the parent collection subscription.
@@ -1214,6 +1170,14 @@ shown only after checkout returns them.
 
 Order processing resolves its service through `service/startup/ecommerce/order/proceed`. Override protected `getAdminNotificationSubjectIds()` there to select a project channel; the shared default selects unique admin subjects. A dedicated notification recipient does not need an admin role. Configure service actors with `variant="agent"` and an identity through runtime SDKs.
 
+## Store overview
+
+A store owner, CRM manager or administrator can read the store totals with
+`crmWorkspace.overview({ id, params: { storeId } })`. The API counts each
+visible product once and uses the same placed-order rule as the store’s order
+list. The task total includes open and closed tasks whose primary funnel belongs
+to the store. Employee training tasks are excluded.
+
 ## Seller catalogue
 
 The Subject catalogue service supplies the seller’s editing form with the stores,
@@ -1227,6 +1191,12 @@ new ownership from the caller and writes the graph in one transaction. A Store
 owner can sell another owner's Product. The Product owner and administrators
 manage its shared description, formula, delivery methods and add-ons. The
 service offer's Store owner controls its price and provider.
+
+The store product form links each selected directory attribute to the new
+offer through `stores-to-products-to-attributes`. The editor uses the offer ID
+when adding, editing or removing a characteristic. Editing a value shared with
+the directory or another offer creates a copy for the selected offer. Existing
+Product characteristics remain visible under shared product attributes.
 
 `ecommerceModuleCatalogAttributeSet` creates or updates one owned Store rate,
 Product formula or offer price/stock. Stock values are exact non-negative

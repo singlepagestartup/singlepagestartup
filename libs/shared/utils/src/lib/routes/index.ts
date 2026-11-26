@@ -17,7 +17,7 @@ export type IRouteParams = Readonly<Record<string, string | undefined>>;
  *
  * Lives in `@sps/shared-utils` so any layer can match a request path without
  * pulling middleware code: every SPS middleware that gates behavior on the
- * request path (skip auth, bypass cache, log actions, bill route, revalidate,
+ * request path (skip auth, bypass cache, log actions, revalidate,
  * …) declares its route list in a `routes/singlepage.ts` (framework defaults) +
  * `routes/startup.ts` (per-project extension) pair and composes them through
  * this matcher. The matcher is pure, so route configuration is unit-testable in
@@ -160,7 +160,7 @@ export function composeRouteRules(
  * **constructor options → project `startup.ts` → framework `singlepage.ts`**.
  *
  * Every SPS path-gating middleware (`is-authorized`, `observer`,
- * `revalidation`, `actions-logger`, `bill-route`) composed the identical
+ * `revalidation`, `actions-logger`) composed the identical
  * `new RouteMatcher(composeRouteRules([optionRoutes, startup, singlepage]))`
  * in its own `routes/index.ts`; this is the single shared definition each one
  * now delegates to (keeping its own named factory export). Deny rules from any

@@ -4,7 +4,9 @@ import { app as blogApp } from "@sps/blog/backend/app/api";
 import { app as broadcastApp } from "@sps/broadcast/backend/app/api";
 import { app as crmApp } from "@sps/crm/backend/app/api";
 import { app as ecommerceApp } from "@sps/ecommerce/backend/app/api";
+import { createServices as createEcommerceServices } from "@sps/ecommerce/backend/app/api/src/lib/services";
 import { app as fileStorageApp } from "@sps/file-storage/backend/app/api";
+import { createServices as createFileStorageServices } from "@sps/file-storage/backend/app/api/src/lib/services";
 import { app as hostApp } from "@sps/host/backend/app/api";
 import { app as knowledgeApp } from "@sps/knowledge/backend/app/api";
 import { app as notificationApp } from "@sps/notification/backend/app/api";
@@ -13,10 +15,18 @@ import { app as rbacApp } from "@sps/rbac/backend/app/api";
 import { app as startupApp } from "@sps/startup/backend/app/api";
 import { app as websiteBuilderApp } from "@sps/website-builder/backend/app/api";
 import { logger } from "@sps/backend-utils";
+import { defaultAppAssembly } from "@sps/shared-backend-api";
 
 import { exit } from "process";
 
 (async () => {
+  const ecommerce = defaultAppAssembly.getOrCreate(createEcommerceServices);
+  defaultAppAssembly
+    .getOrCreate(createFileStorageServices)
+    .file.configureCommerceReceiptGuard((files) =>
+      ecommerce.order.work.protectedReceiptFileIds(files),
+    );
+
   await broadcastApp.dump({
     type: "model",
     dumps: [],
@@ -28,11 +38,6 @@ import { exit } from "process";
   });
 
   await websiteBuilderApp.dump({
-    type: "model",
-    dumps: [],
-  });
-
-  await crmApp.dump({
     type: "model",
     dumps: [],
   });

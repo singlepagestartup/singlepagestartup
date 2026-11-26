@@ -13,6 +13,7 @@ function LoadedComponent(props: IComponentProps) {
       data={props.data}
       variant={props.variant}
       language={props.language}
+      layout={props.layout}
     />
   );
 }

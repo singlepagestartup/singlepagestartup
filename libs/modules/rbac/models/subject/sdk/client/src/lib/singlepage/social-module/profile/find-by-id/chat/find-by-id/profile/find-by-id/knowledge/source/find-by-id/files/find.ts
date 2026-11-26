@@ -7,6 +7,7 @@ import { queryClient, subscription } from "@sps/shared-frontend-client-api";
 import { deriveTopicsFromPath } from "@sps/shared-utils";
 import {
   action as find,
+  downloadImage as download,
   IProps,
   IResult,
 } from "@sps/rbac/models/subject/sdk/server/src/lib/singlepage/social-module/profile/find-by-id/chat/find-by-id/profile/find-by-id/knowledge/source/find-by-id/files/find";
@@ -34,4 +35,21 @@ export function action(props: IProps) {
         },
       }),
   });
+}
+
+export function downloadImage(
+  scope: IProps,
+  fileId: string,
+  signal?: AbortSignal,
+  maxBytes?: number,
+) {
+  return download(
+    {
+      ...scope,
+      host: clientHost,
+      options: { signal, headers: saturateHeaders() },
+    },
+    fileId,
+    maxBytes,
+  );
 }

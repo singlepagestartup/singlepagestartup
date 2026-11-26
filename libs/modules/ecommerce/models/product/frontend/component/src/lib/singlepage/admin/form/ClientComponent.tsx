@@ -39,6 +39,7 @@ export function Component(props: IComponentPropsExtended) {
       shortDescription: props.data?.shortDescription || {},
       kind: props.data?.kind || "physical",
       type: props.data?.type || "one_off",
+      singleUnitPerOrder: props.data?.singleUnitPerOrder ?? false,
       slug: props.data?.slug || randomWordsGenerator({ type: "slug" }),
       adminTitle:
         props.data?.adminTitle || randomWordsGenerator({ type: "title" }),
@@ -156,6 +157,15 @@ export function Component(props: IComponentPropsExtended) {
           form={form}
           placeholder="Select type"
           options={types.map((type) => [type, type])}
+        />
+        <FormField
+          ui="shadcn"
+          type="checkbox"
+          name="singleUnitPerOrder"
+          label="Limit to one unit per order"
+          form={form}
+          className="flex flex-row items-center gap-2"
+          inputClassName="w-4"
         />
         <FormField
           ui="shadcn"

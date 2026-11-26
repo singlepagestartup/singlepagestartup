@@ -1,0 +1,21 @@
+{
+  "componentName": "rbac.widget",
+  "pageName": "rbac",
+  "variantName": "subject-me-store-provider-settings",
+  "nodeId": null,
+  "variantNodeId": null,
+  "metadata": {
+    "singlepagestartup.studio.blockId": "rbac.widget.subject-me-store-provider-settings",
+    "singlepagestartup.studio.layer": "singlepage",
+    "singlepagestartup.studio.syncKey": "rbac/widget/singlepage/subject-me-store-provider-settings",
+    "sps.figma.component": "rbac.widget",
+    "sps.figma.variant": "subject-me-store-provider-settings",
+    "sps.source.module": "rbac",
+    "sps.source.entityType": "model",
+    "sps.source.entity": "widget",
+    "sps.source.variant": "subject-me-store-provider-settings",
+    "sps.contractVersion": "0.1.0",
+    "sps.code.component": "apps/studio/modules/rbac/widget/singlepage/subject-me-store-provider-settings/Component.tsx",
+    "sps.code.story": "apps/studio/modules/rbac/widget/singlepage/subject-me-store-provider-settings/Component.stories.tsx"
+  }
+}

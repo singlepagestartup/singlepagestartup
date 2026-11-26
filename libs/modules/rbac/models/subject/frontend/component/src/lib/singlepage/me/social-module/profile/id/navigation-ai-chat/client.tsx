@@ -11,11 +11,18 @@ export default function Client(props: IComponentProps) {
     id: props.data.id,
     socialModuleChatId: project.chat.id,
   });
+  const chat = subjectApi.socialModuleProfileFindByIdChatFindById({
+    id: props.data.id,
+    socialModuleProfileId: project.requesterProfileId,
+    socialModuleChatId: project.chat.id,
+    options: props.apiProps?.options,
+  });
   if (threads.isPending)
     return props.skeleton ?? <Skeleton language={props.language} />;
   return (
     <ChildComponent
       {...props}
+      canManageChat={!chat.isError && chat.data?.canManageChat === true}
       threadsRead={{
         data: threads.data,
         isPending: threads.isPending,

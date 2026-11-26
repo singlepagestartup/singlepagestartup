@@ -33,6 +33,26 @@ jest.mock("@sps/shared-utils", () => ({
   },
 }));
 
+const mockAuthenticationMe = jest.fn();
+jest.mock("@sps/rbac/models/subject/sdk/server", () => ({
+  ...jest.requireActual("@sps/rbac/models/subject/sdk/server"),
+  api: {
+    ...jest.requireActual("@sps/rbac/models/subject/sdk/server").api,
+    authenticationMe: (props: unknown) => mockAuthenticationMe(props),
+  },
+}));
+
+beforeEach(() => {
+  mockAuthenticationMe.mockReset().mockImplementation(async ({ options }) => {
+    const token = options.headers.Authorization.slice("Bearer ".length);
+    const payload = jwt.verify(
+      token,
+      process.env.RBAC_JWT_SECRET!,
+    ) as JwtPayload;
+    return { id: payload.subject.id };
+  });
+});
+
 const oauthEnv = {
   MCP_SERVICE_PUBLIC_BASE_URL: "https://mcp.example.com",
   MCP_SERVICE_PUBLIC_URL: "https://mcp.example.com/mcp",
@@ -202,6 +222,39 @@ describe("MCP OAuth helpers", () => {
       client_id: "internal-rbac-subject",
       scope: "mcp:content",
     });
+  });
+
+  it("checks the original session before exchange and again on each MCP request", async () => {
+    const token = createRbacSubjectAuthenticationJwt("original-sender");
+    const exchange = () =>
+      exchangeRbacSubjectAuthenticationJwtForMcpToken({
+        providedSecret: "internal-exchange-secret",
+        body: { subject_token: token },
+      });
+    const issued = await exchange();
+    expect(mockAuthenticationMe).toHaveBeenCalledWith(
+      expect.objectContaining({
+        options: expect.objectContaining({
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Cache-Control": "no-store",
+          },
+          cache: "no-store",
+        }),
+      }),
+    );
+    mockAuthenticationMe.mockResolvedValue(undefined);
+    await expect(verifyMcpAccessToken(issued.access_token)).rejects.toThrow(
+      "session",
+    );
+    await expect(exchange()).rejects.toMatchObject({
+      status: 401,
+      code: "invalid_subject_token",
+    });
+    mockAuthenticationMe.mockResolvedValue({ id: "different-subject" });
+    await expect(verifyMcpAccessToken(issued.access_token)).rejects.toThrow(
+      "session",
+    );
   });
 
   it("caps MCP access at the actual remaining lifetime of the subject JWT", async () => {

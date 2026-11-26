@@ -1,0 +1,28 @@
+{
+  "$schema": "../../../../../block.schema.json",
+  "id": "crm.widget.workflow-workspace",
+  "title": "CRM Widget / Workflow Workspace",
+  "layer": "singlepage",
+  "state": "draft",
+  "source": {
+    "module": "crm",
+    "entityType": "model",
+    "entity": "widget",
+    "variant": "workflow-workspace"
+  },
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "contentSlots": [],
+  "figma": {
+    "componentName": "crm.widget",
+    "pageName": "crm",
+    "variantName": "workflow-workspace",
+    "nodeId": null,
+    "variantNodeId": null,
+    "syncStatus": "not-created",
+    "metadataFile": "figma.json"
+  },
+  "tags": ["crm", "widget", "workflows"]
+}

@@ -1,0 +1,150 @@
+{
+  "id": "e6afbe8b-8216-4da3-a5dc-6600bc214e4b",
+  "prevId": "912fe19d-0885-4021-85e1-8ad67023c680",
+  "version": "7",
+  "dialect": "postgresql",
+  "tables": {
+    "public.sps_cm_funnels_to_tasks": {
+      "name": "sps_cm_funnels_to_tasks",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp (3)",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "variant": {
+          "name": "variant",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'primary'"
+        },
+        "funnel_id": {
+          "name": "funnel_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "task_id": {
+          "name": "task_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {
+        "cm_funnels_to_tasks_pair": {
+          "name": "cm_funnels_to_tasks_pair",
+          "columns": [
+            {
+              "expression": "funnel_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "task_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "cm_funnels_to_tasks_primary": {
+          "name": "cm_funnels_to_tasks_primary",
+          "columns": [
+            {
+              "expression": "task_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "where": "\"sps_cm_funnels_to_tasks\".\"variant\" = 'primary'",
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "cm_funnels_to_tasks_task": {
+          "name": "cm_funnels_to_tasks_task",
+          "columns": [
+            {
+              "expression": "task_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "sps_cm_funnels_to_tasks_funnel_id_sps_cm_funnel_id_fk": {
+          "name": "sps_cm_funnels_to_tasks_funnel_id_sps_cm_funnel_id_fk",
+          "tableFrom": "sps_cm_funnels_to_tasks",
+          "tableTo": "sps_cm_funnel",
+          "columnsFrom": [
+            "funnel_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "restrict",
+          "onUpdate": "no action"
+        },
+        "sps_cm_funnels_to_tasks_task_id_sps_cm_task_id_fk": {
+          "name": "sps_cm_funnels_to_tasks_task_id_sps_cm_task_id_fk",
+          "tableFrom": "sps_cm_funnels_to_tasks",
+          "tableTo": "sps_cm_task",
+          "columnsFrom": [
+            "task_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "restrict",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {
+        "cm_funnels_to_tasks_variant": {
+          "name": "cm_funnels_to_tasks_variant",
+          "value": "\"sps_cm_funnels_to_tasks\".\"variant\" in ('primary', 'related')"
+        }
+      },
+      "isRLSEnabled": false
+    }
+  },
+  "enums": {},
+  "schemas": {},
+  "sequences": {},
+  "roles": {},
+  "policies": {},
+  "views": {},
+  "_meta": {
+    "columns": {},
+    "schemas": {},
+    "tables": {}
+  }
+}

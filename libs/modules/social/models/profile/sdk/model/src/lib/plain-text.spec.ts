@@ -60,3 +60,12 @@ describe("Given: social profile text in supported persisted formats", () => {
     ).toBe("English profile");
   });
 });
+
+it("reads the requested language from a legacy serialized translation map", () => {
+  expect(
+    getLocalizedProfilePlainText(
+      JSON.stringify({ ru: "Роль", en: "Role" }),
+      "ru",
+    ),
+  ).toBe("Роль");
+});

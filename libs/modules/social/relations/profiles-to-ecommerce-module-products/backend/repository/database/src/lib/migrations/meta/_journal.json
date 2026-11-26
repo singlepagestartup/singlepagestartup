@@ -8,6 +8,20 @@
       "when": 1751028324484,
       "tag": "0000_wet_joseph",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1795082599012,
+      "tag": "0001_living_absorbing_man",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1795525321205,
+      "tag": "0002_first_medusa",
+      "breakpoints": true
     }
   ]
 }

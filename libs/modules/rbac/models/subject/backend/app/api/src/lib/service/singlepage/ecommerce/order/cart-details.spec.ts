@@ -27,6 +27,7 @@ it("keeps an unavailable offer in its own row while quoting the remaining legacy
   const service: any = {
     ecommerceModuleOrderAssertAccess: jest.fn(),
     ecommerceModuleCartQuote: jest.fn().mockResolvedValue([quote]),
+    customerWork: { discussionForOrder: jest.fn() },
     modules: {
       ecommerce: {
         order: {
@@ -115,6 +116,7 @@ it("reports the same incomplete delivery once when both total and offer quote ex
         issues: [{ code: "delivery_required", message: reason }],
       },
     ]),
+    customerWork: { discussionForOrder: jest.fn() },
     modules: {
       ecommerce: {
         order: {
@@ -146,3 +148,133 @@ it("reports the same incomplete delivery once when both total and offer quote ex
     { ordersToProductsId: "line", productId: "product", reason },
   ]);
 });
+
+it.each([
+  { accepted: false, state: "awaiting-result" },
+  { accepted: true, state: "awaiting-payment" },
+])(
+  "returns the linked discussion while work is $state",
+  async ({ accepted, state }) => {
+    const discussion = {
+      storeId: "seller",
+      taskId: "task",
+      threadId: "thread",
+      chatId: "chat",
+    };
+    const totals = [{ total: 37.5, billingModuleCurrency: { id: "accepted" } }];
+    const service: any = {
+      ecommerceModuleOrderAssertAccess: jest.fn(),
+      ecommerceModuleCartQuote: jest.fn(),
+      customerWork: {
+        discussionForOrder: jest.fn().mockResolvedValue(discussion),
+      },
+      modules: {
+        ecommerce: {
+          order: {
+            work: {
+              findByOrder: jest.fn().mockResolvedValue({
+                customerId: "subject",
+                storeId: "seller",
+                taskId: "task",
+                kind: "individual-service",
+              }),
+            },
+            fulfillmentQuoteOptions: jest
+              .fn()
+              .mockResolvedValue({ fulfilledLineIds: [] }),
+            findByIdCartDetails: jest.fn().mockResolvedValue({
+              lines: [],
+              ...(accepted
+                ? {
+                    fixedResultPrice: true,
+                    billingModuleCurrencyId: "accepted",
+                    totals,
+                  }
+                : { totals: [] }),
+            }),
+          },
+          storesToOrders: { find: jest.fn().mockResolvedValue([]) },
+        },
+      },
+    };
+    const details = await new Service({ service }).execute({
+      subjectId: "subject",
+      orderId: "order",
+    });
+    expect(details).toMatchObject({
+      work: {
+        paymentTiming: "after-acceptance",
+        state,
+        orderId: "order",
+        storeId: "seller",
+      },
+      discussion,
+      ...(accepted ? { billingModuleCurrencyId: "accepted", totals } : {}),
+    });
+    expect(service.customerWork.discussionForOrder).toHaveBeenCalledWith({
+      customerId: "subject",
+      orderId: "order",
+      taskId: "task",
+    });
+    expect(service.ecommerceModuleCartQuote).not.toHaveBeenCalled();
+  },
+);
+
+it.each([
+  { published: true, state: "requires-discussion" },
+  { published: false, state: "discussion-unavailable" },
+])(
+  "marks the saved post-acceptance offer as $state",
+  async ({ published, state }) => {
+    const offer = {
+      id: "offer",
+      storeId: "seller",
+      variant: "default",
+      settings: { requiresResultAcceptance: true },
+    };
+    const service: any = {
+      ecommerceModuleOrderAssertAccess: jest.fn(),
+      ecommerceModuleCartQuote: jest
+        .fn()
+        .mockResolvedValue([
+          { amount: "30", issues: [], currencyIds: ["rub"] },
+        ]),
+      customerWork: {
+        discussionForOrder: jest.fn(),
+        canOpenCartDiscussion: jest.fn().mockResolvedValue(published),
+      },
+      modules: {
+        ecommerce: {
+          order: {
+            fulfillmentQuoteOptions: jest
+              .fn()
+              .mockResolvedValue({ fulfilledLineIds: [] }),
+            findByIdCartDetails: jest.fn().mockResolvedValue({
+              lines: [{ id: "line", productId: "product", offerId: "offer" }],
+              billingModuleCurrencyId: "rub",
+            }),
+          },
+          storesToOrders: {
+            find: jest.fn().mockResolvedValue([{ storeId: "seller" }]),
+          },
+          storesToProducts: {
+            findById: jest.fn().mockResolvedValue(offer),
+            offersForProduct: jest.fn().mockResolvedValue([offer]),
+          },
+          store: { find: jest.fn().mockResolvedValue([{ id: "seller" }]) },
+        },
+      },
+    };
+    const details = await new Service({ service }).execute({
+      subjectId: "subject",
+      orderId: "order",
+    });
+    expect(details.work).toEqual({
+      paymentTiming: "after-acceptance",
+      state,
+      orderId: "order",
+      storeId: "seller",
+    });
+    expect(details.discussion).toBeUndefined();
+  },
+);

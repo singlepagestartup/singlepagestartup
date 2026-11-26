@@ -1,0 +1,47 @@
+{
+  "metadata": {
+    "seo": {
+      "title": {
+        "en": "Store product — SinglePageStartup",
+        "ru": "Товар магазина — SinglePageStartup"
+      },
+      "description": {
+        "en": "View this store product.",
+        "ru": "Откройте карточку товара магазина."
+      }
+    },
+    "seoDisplay": {
+      "twitterTitle": {
+        "en": "Store product — SinglePageStartup",
+        "ru": "Товар магазина — SinglePageStartup"
+      },
+      "opengraphTitle": {
+        "en": "Store product — SinglePageStartup",
+        "ru": "Товар магазина — SinglePageStartup"
+      },
+      "opengraphLocale": {
+        "en": "en_US",
+        "ru": "ru_RU"
+      },
+      "twitterDescription": {
+        "en": "View this store product.",
+        "ru": "Откройте карточку товара магазина."
+      },
+      "opengraphDescription": {
+        "en": "View this store product.",
+        "ru": "Откройте карточку товара магазина."
+      }
+    }
+  },
+  "id": "a286367a-16de-4f71-9f9a-c4aed79a8c18",
+  "title": "Store product",
+  "url": "/ecommerce/stores/[ecommerce.stores.slug]/products/[ecommerce.products.id]",
+  "slug": "store-product-detail",
+  "description": "View this store product.",
+  "createdAt": "2026-11-22T20:22:56.483Z",
+  "updatedAt": "2026-11-22T20:22:56.483Z",
+  "variant": "noindex",
+  "className": null,
+  "language": "en",
+  "adminTitle": "Store product"
+}

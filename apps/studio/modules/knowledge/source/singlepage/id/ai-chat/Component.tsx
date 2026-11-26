@@ -126,7 +126,7 @@ export const Component = memo(function Component({
       data-id={data.id}
       data-ds-block="knowledge.source.id-ai-chat"
       aria-label={data.title}
-      className="rounded-xl border border-border bg-card p-3"
+      className="min-w-0"
       data-module="knowledge"
       data-model="source"
       data-variant={variant}
@@ -140,7 +140,7 @@ export const Component = memo(function Component({
         onChange={edit}
       />
       {materials && (
-        <details className="mt-3 rounded-lg border border-border p-3 text-xs">
+        <details className="mt-3 border-t border-border pt-3 text-xs">
           <summary className={`min-h-9 cursor-pointer ${kit.focus}`}>
             Изученные материалы
           </summary>

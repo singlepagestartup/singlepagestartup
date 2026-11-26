@@ -268,7 +268,7 @@ describe("Subject order history", () => {
       ],
     });
   });
-  it("enriches only owned purchases with zero totals and linked receipt files", async () => {
+  it("enriches only owned purchases with zero totals and protected receipt routes", async () => {
     const { service, orderFind } = createService();
     orderFind.mockResolvedValue([
       { id: "order-1", type: "history", status: "paid" },
@@ -284,22 +284,11 @@ describe("Subject order history", () => {
       totals,
       unpriced: [],
     });
-    service.modules.ecommerce.ordersToFileStorageModuleFiles = {
-      find: jest
-        .fn()
-        .mockResolvedValue([
-          { orderId: "order-1", fileStorageModuleFileId: "receipt" },
-        ]),
-    };
-    service.modules.fileStorage = {
-      file: {
-        find: jest
-          .fn()
-          .mockResolvedValue([
-            { id: "receipt", file: "/receipt.pdf" },
-            { id: "foreign-file" },
-          ]),
-      },
+    const protectedReceipts = [
+      { id: "private-receipt", path: "/private-artifact" },
+    ];
+    service.orderWork = {
+      publishedReceipts: jest.fn().mockResolvedValue(protectedReceipts),
     };
     const result = await new ListHandler(service).execute(
       createContext({
@@ -314,18 +303,11 @@ describe("Subject order history", () => {
     expect(service.modules.ecommerce.order.findByIdTotal).toHaveBeenCalledWith({
       id: "order-1",
     });
-    expect(
-      service.modules.ecommerce.ordersToFileStorageModuleFiles.find,
-    ).toHaveBeenCalledWith({
-      params: {
-        filters: {
-          and: [
-            { column: "orderId", method: "inArray", value: ["order-1"] },
-            { column: "variant", method: "eq", value: "receipt-default" },
-          ],
-        },
-      },
-    });
+    expect(service.orderWork.publishedReceipts).toHaveBeenCalledTimes(1);
+    expect(service.orderWork.publishedReceipts).toHaveBeenCalledWith(
+      "subject-1",
+      "order-1",
+    );
     expect(result).toEqual({
       data: [
         {
@@ -335,7 +317,8 @@ describe("Subject order history", () => {
           purchaseDetails: {
             canRepeatPayment: false,
             totals,
-            receipts: [{ id: "receipt", file: "/receipt.pdf" }],
+            receipts: [],
+            protectedReceipts,
           },
         },
       ],

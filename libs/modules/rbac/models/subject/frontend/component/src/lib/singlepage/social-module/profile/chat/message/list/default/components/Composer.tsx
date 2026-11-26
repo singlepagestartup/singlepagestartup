@@ -1,20 +1,15 @@
 "use client";
 
 import { KnowledgeCommandPicker } from "./KnowledgeCommandPicker";
-import { OpenRouterControls } from "./OpenRouterControls";
 import {
   SelectedComposerPills,
   type SelectedComposerFile,
 } from "./SelectedComposerPills";
 import { SkillMentionPicker } from "./SkillMentionPicker";
+import { useChatTyping } from "../hooks/use-chat-typing";
 import { useChatComposer } from "../hooks/use-chat-composer";
 import { ThreadMessagesCache } from "../hooks/use-thread-messages-refetch";
-import {
-  OpenRouterChatModelGroup,
-  OpenRouterReasoningOption,
-  OpenRouterReasoningValue,
-  SocialSkill,
-} from "../types";
+import type { IChatModelControls, SocialSkill } from "../types";
 import {
   filterSkillMentionOptions,
   getKnowledgeCommandMatch,
@@ -24,26 +19,27 @@ import {
   knowledgeMentionOption,
   shouldShowKnowledgeMentionOption,
 } from "../utils";
-import { cn } from "@sps/shared-frontend-client-utils";
-import { Button, Form } from "@sps/shared-ui-shadcn";
-import { Paperclip, Send, Smile } from "lucide-react";
+import { Form } from "@sps/shared-ui-shadcn";
+import { ModelPicker } from "@sps/ui-adapter";
+import { Paperclip, Send } from "lucide-react";
 import { Controller, useWatch } from "react-hook-form";
 import {
   useCallback,
   useEffect,
+  useId,
   useMemo,
+  useRef,
   useState,
   type KeyboardEvent,
 } from "react";
-import { toast } from "sonner";
 
 interface ComposerProps {
-  canSelectOpenRouterReasoning: boolean;
+  isEmployeeChat?: boolean;
+  onEmployeeMessageSaved?: () => void;
+  isCustomerWork: boolean;
   canUseKnowledge: boolean;
   clearSelectedSkills: () => void;
   isArtificialIntelligenceOpponent: boolean;
-  isOpenRouterModelFavoritesUpdating: boolean;
-  isOpenRouterModelsLoading: boolean;
   isSkillOptionsLoading: boolean;
   language: string;
   /**
@@ -52,30 +48,20 @@ interface ComposerProps {
    * composer boundary (issue #195).
    */
   markShouldScrollToBottom: () => void;
-  onOpenRouterModelFavoriteToggle: (modelId: string) => void;
-  onOpenRouterModelChange: (value: string) => void;
-  onOpenRouterReasoningChange: (value: OpenRouterReasoningValue) => void;
+  modelControls?: IChatModelControls;
   onRemoveSelectedSkill: (skillId: string) => void;
   onSkillSelect: (skill: SocialSkill) => void;
-  openRouterFavoriteModelIds: string[];
-  openRouterModelGroups: OpenRouterChatModelGroup[];
-  openRouterModelId: string;
-  openRouterModelLabel: string;
-  openRouterReasoning: OpenRouterReasoningValue;
-  openRouterReasoningLabel: string;
-  openRouterReasoningOptions: OpenRouterReasoningOption[];
   profileSkills: SocialSkill[];
   /** Lets the shell focus the textarea (e.g. after a skill is saved). */
   registerFocusComposerTextArea: (focus: () => void) => void;
   selectedSkillIds: string[];
   selectedSkills: SocialSkill[];
-  showOpenRouterControls: boolean;
   socialModuleChatId: string;
   socialModuleProfileId: string;
   socialModuleThreadId: string;
   subjectId: string;
   syncSelectedSkillsToDescription: (description?: string | null) => void;
-  threadMessagesCache: ThreadMessagesCache;
+  threadMessagesCache?: ThreadMessagesCache;
 }
 
 /**
@@ -86,16 +72,27 @@ interface ComposerProps {
  * shell and timeline never rerender because of composer activity.
  */
 export function Composer(props: ComposerProps) {
+  const typing = useChatTyping(props);
+  const ru = props.language === "ru";
+  const keyboardHintId = useId();
+  const keyboardHint = ru
+    ? "Enter — отправить. Shift+Enter — новая строка."
+    : "Enter to send. Shift+Enter for a new line.";
+  const { modelControls } = props;
   const composer = useChatComposer({
+    isCustomerWork: props.isCustomerWork,
+    isEmployeeChat: props.isEmployeeChat,
+    onEmployeeMessageSaved: props.onEmployeeMessageSaved,
     subjectId: props.subjectId,
     socialModuleProfileId: props.socialModuleProfileId,
     socialModuleChatId: props.socialModuleChatId,
     socialModuleThreadId: props.socialModuleThreadId,
     clearSelectedSkills: props.clearSelectedSkills,
     markShouldScrollToBottom: props.markShouldScrollToBottom,
-    openRouterModelId: props.openRouterModelId,
-    openRouterReasoning: props.openRouterReasoning,
-    persistAiReactionRequest: props.isArtificialIntelligenceOpponent,
+    modelId: modelControls?.selectedModelId ?? "auto",
+    reasoning: modelControls?.selectedReasoning ?? "auto",
+    persistAiReactionRequest:
+      props.isArtificialIntelligenceOpponent && !props.isEmployeeChat,
     profileSkills: props.profileSkills,
     selectedSkillIds: props.selectedSkillIds,
     threadMessagesCache: props.threadMessagesCache,
@@ -128,20 +125,16 @@ export function Composer(props: ComposerProps) {
   // state lives in the shell, but its setter bails out when nothing changed,
   // so plain typing does not rerender the shell.
   useEffect(() => {
-    props.syncSelectedSkillsToDescription(description);
-  }, [description, props.syncSelectedSkillsToDescription]);
+    if (!props.isEmployeeChat)
+      props.syncSelectedSkillsToDescription(description);
+  }, [
+    description,
+    props.isEmployeeChat,
+    props.syncSelectedSkillsToDescription,
+  ]);
 
-  function getSelectedFileId(file: unknown, index: number) {
-    if (typeof file === "string") {
-      return `string:${index}:${file}`;
-    }
-
-    if (typeof File !== "undefined" && file instanceof File) {
-      return `file:${index}:${file.name}:${file.size}:${file.lastModified}`;
-    }
-
-    return `unknown:${index}`;
-  }
+  const fileSequence = useRef(0);
+  const fileIds = useRef(new WeakMap<File, string>());
 
   function isFileArray(files: unknown[]): files is File[] {
     return (
@@ -165,13 +158,19 @@ export function Composer(props: ComposerProps) {
 
     return selectedFiles.map((file, index) => {
       return {
-        id: getSelectedFileId(file, index),
+        id:
+          typeof file === "string"
+            ? `stored:${index}:${file}`
+            : (fileIds.current.get(file) ?? `local:${index}`),
         name: typeof file === "string" ? file : file.name,
+        file: typeof file === "string" ? undefined : file,
       };
     });
   }, [selectedFiles]);
   const canSubmit =
-    Boolean(description?.trim()) && !composer.createMessage.isPending;
+    (Boolean(description?.trim()) || selectedFileItems.length > 0) &&
+    !modelControls?.isSelectionUnavailable &&
+    !composer.createMessage.isPending;
 
   const knowledgeCommandMatch = getKnowledgeCommandMatch(description);
   const commandQuery = knowledgeCommandMatch?.query || "";
@@ -199,9 +198,15 @@ export function Composer(props: ComposerProps) {
     props.canUseKnowledge && shouldShowKnowledgeMentionOption(description)
       ? knowledgeMentionOption
       : null;
-  const isKnowledgeSearchSelected = hasKnowledgeMention(description);
+  const isKnowledgeSearchSelected =
+    !props.isEmployeeChat &&
+    !props.isCustomerWork &&
+    hasKnowledgeMention(description);
   const isSkillMentionPickerOpen =
-    Boolean(getSkillMentionMatch(description)) && !isKnowledgeCommandPickerOpen;
+    !props.isEmployeeChat &&
+    !props.isCustomerWork &&
+    Boolean(getSkillMentionMatch(description)) &&
+    !isKnowledgeCommandPickerOpen;
 
   const knowledgeCommandCount =
     visibleKnowledgeChatCommands.length + visibleSlashSkillOptions.length;
@@ -309,60 +314,48 @@ export function Composer(props: ComposerProps) {
     composer.focusComposerTextArea();
   }
 
-  function openSelectedFile(fileId: string) {
-    const files = composer.form.getValues("files");
-
-    if (!Array.isArray(files)) {
-      return;
-    }
-
-    const file = files.find((item, index) => {
-      return getSelectedFileId(item, index) === fileId;
-    });
-
-    if (!(typeof File !== "undefined" && file instanceof File)) {
-      toast.error("Selected file preview is unavailable");
-      return;
-    }
-
-    const fileUrl = URL.createObjectURL(file);
-    const previewWindow = window.open(fileUrl, "_blank", "noopener,noreferrer");
-
-    window.setTimeout(() => {
-      URL.revokeObjectURL(fileUrl);
-    }, 30_000);
-
-    if (!previewWindow) {
-      toast.error("Browser blocked the file preview window");
-    }
-  }
-
-  function removeSelectedFile(fileId: string) {
-    const files = composer.form.getValues("files");
-
-    if (!Array.isArray(files)) {
-      return;
-    }
-
-    const nextFiles = files.filter((file, index) => {
-      return getSelectedFileId(file, index) !== fileId;
-    });
-    const nextValue =
-      nextFiles.length && isFileArray(nextFiles)
-        ? nextFiles
-        : nextFiles.length && isStringArray(nextFiles)
+  const removeSelectedFile = useCallback(
+    (fileId: string) => {
+      const index = selectedFileItems.findIndex((item) => item.id === fileId);
+      const files = composer.form.getValues("files");
+      if (index < 0 || !files) return;
+      const nextFiles = files.filter((_, itemIndex) => itemIndex !== index);
+      const nextValue = nextFiles.length
+        ? isFileArray(nextFiles) || isStringArray(nextFiles)
           ? nextFiles
-          : undefined;
+          : undefined
+        : undefined;
 
-    composer.form.setValue("files", nextValue, {
-      shouldDirty: true,
-      shouldValidate: true,
-    });
+      composer.form.setValue("files", nextValue, {
+        shouldDirty: true,
+        shouldValidate: true,
+      });
 
-    if (composer.fileInputRef.current) {
-      composer.fileInputRef.current.value = "";
-    }
-  }
+      if (composer.fileInputRef.current) {
+        composer.fileInputRef.current.value = "";
+      }
+    },
+    [composer.fileInputRef, composer.form, selectedFileItems],
+  );
+
+  const reorderSelectedFile = useCallback(
+    (fileId: string, targetId: string) => {
+      const from = selectedFileItems.findIndex((item) => item.id === fileId);
+      const to = selectedFileItems.findIndex((item) => item.id === targetId);
+      const files = composer.form.getValues("files");
+      if (from < 0 || to < 0 || from === to || !files) return;
+      const nextFiles = [...files];
+      const [moved] = nextFiles.splice(from, 1);
+      nextFiles.splice(to, 0, moved);
+      if (isFileArray(nextFiles) || isStringArray(nextFiles)) {
+        composer.form.setValue("files", nextFiles, {
+          shouldDirty: true,
+          shouldValidate: true,
+        });
+      }
+    },
+    [composer.form, selectedFileItems],
+  );
 
   const selectActiveSkillMentionOption = useCallback(() => {
     if (!isSkillMentionPickerOpen || skillMentionOptionCount <= 0) {
@@ -416,6 +409,8 @@ export function Composer(props: ComposerProps) {
   function onComposerTextareaKeyDown(
     event: KeyboardEvent<HTMLTextAreaElement>,
   ) {
+    if (event.nativeEvent.isComposing) return;
+
     if (isKnowledgeCommandPickerOpen && knowledgeCommandCount > 0) {
       if (event.key === "ArrowDown") {
         event.preventDefault();
@@ -475,124 +470,31 @@ export function Composer(props: ComposerProps) {
     }
 
     event.preventDefault();
+    if (!canSubmit) return;
+    typing.stop();
     void composer.form.handleSubmit(composer.onSubmit)();
     if (composer.textareaRef.current) {
       composer.textareaRef.current.style.height = "auto";
     }
   }
 
-  const attachmentButton = (
-    <button
-      type="button"
-      className={cn(
-        "inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-slate-500 transition hover:text-slate-900",
-        props.isArtificialIntelligenceOpponent
-          ? "hover:bg-slate-100"
-          : "hover:bg-white",
-      )}
-      onClick={() => {
-        composer.fileInputRef.current?.click();
-      }}
-      aria-label="Attach files"
-    >
-      <Paperclip className="h-4 w-4" />
-    </button>
-  );
-
-  const emojiButton = (
-    <button
-      type="button"
-      className={cn(
-        "hidden h-9 w-9 shrink-0 items-center justify-center rounded-lg text-slate-500 transition hover:text-slate-900 sm:inline-flex",
-        props.isArtificialIntelligenceOpponent
-          ? "hover:bg-slate-100"
-          : "hover:bg-white",
-      )}
-      aria-label="Add emoji"
-    >
-      <Smile className="h-4 w-4" />
-    </button>
-  );
-
-  const openRouterControls = props.showOpenRouterControls ? (
-    <OpenRouterControls
-      favoriteModelIds={props.openRouterFavoriteModelIds}
-      isUpdatingFavorites={props.isOpenRouterModelFavoritesUpdating}
-      isLoadingModels={props.isOpenRouterModelsLoading}
-      modelGroups={props.openRouterModelGroups}
-      onFavoriteToggle={props.onOpenRouterModelFavoriteToggle}
-      selectedModelId={props.openRouterModelId}
-      selectedModelLabel={props.openRouterModelLabel}
-      selectedReasoning={props.openRouterReasoning}
-      selectedReasoningLabel={props.openRouterReasoningLabel}
-      reasoningOptions={props.openRouterReasoningOptions}
-      showReasoningControl={props.canSelectOpenRouterReasoning}
-      onModelChange={props.onOpenRouterModelChange}
-      onReasoningChange={props.onOpenRouterReasoningChange}
-    />
-  ) : null;
-
-  const sendButton = (
-    <Button
-      type="submit"
-      variant="primary"
-      size="icon"
-      className="h-9 w-9 shrink-0"
-      disabled={!canSubmit}
-      aria-label="Send message"
-    >
-      <Send className="h-4 w-4" />
-    </Button>
-  );
-
-  const composerTextarea = (
-    <Controller
-      name="description"
-      control={composer.form.control}
-      render={({ field }) => {
-        return (
-          <textarea
-            {...field}
-            ref={(element) => {
-              field.ref(element);
-              composer.textareaRef.current = element;
-            }}
-            rows={props.isArtificialIntelligenceOpponent ? 3 : 1}
-            placeholder="Write a message..."
-            className={cn(
-              "resize-none bg-transparent text-sm text-slate-900 outline-none placeholder:text-slate-400",
-              props.isArtificialIntelligenceOpponent
-                ? "max-h-44 min-h-20 w-full px-1 py-1 leading-6"
-                : "max-h-32 min-h-9 flex-1 px-1 py-2 leading-5",
-            )}
-            onChange={(event) => {
-              field.onChange(event);
-              event.currentTarget.style.height = "auto";
-              event.currentTarget.style.height = `${event.currentTarget.scrollHeight}px`;
-            }}
-            onKeyDown={onComposerTextareaKeyDown}
-          />
-        );
-      }}
-    />
-  );
+  const showModelPicker =
+    modelControls &&
+    (modelControls.mode === "assistant" ||
+      modelControls.modelGroups.some(({ models }) => models.length) ||
+      modelControls.isSelectionUnavailable);
 
   return (
     <Form {...composer.form}>
       <form
-        className="shrink-0 border-t border-slate-200 bg-white px-4 py-3"
-        onSubmit={composer.form.handleSubmit(composer.onSubmit)}
+        className="max-h-[75%] min-w-0 shrink-0 overflow-y-auto border-t border-border p-4"
+        onSubmit={composer.form.handleSubmit(async (data) => {
+          if (canSubmit) {
+            typing.stop();
+            await composer.onSubmit(data);
+          }
+        })}
       >
-        <SelectedComposerPills
-          files={selectedFileItems}
-          isKnowledgeSearchSelected={isKnowledgeSearchSelected}
-          skills={props.selectedSkills}
-          language={props.language}
-          onOpenFile={openSelectedFile}
-          onRemoveKnowledgeSearch={removeKnowledgeMention}
-          onRemoveFile={removeSelectedFile}
-          onRemoveSkill={removeSelectedSkill}
-        />
         {isKnowledgeCommandPickerOpen ? (
           <KnowledgeCommandPicker
             activeIndex={activeKnowledgeCommandIndex}
@@ -625,6 +527,12 @@ export function Composer(props: ComposerProps) {
             const newlySelectedFiles = event.target.files
               ? Array.from(event.target.files)
               : [];
+            for (const file of newlySelectedFiles) {
+              if (!fileIds.current.has(file)) {
+                fileSequence.current += 1;
+                fileIds.current.set(file, `local-file-${fileSequence.current}`);
+              }
+            }
             const currentFiles = composer.form.getValues("files");
             const files =
               Array.isArray(currentFiles) && isFileArray(currentFiles)
@@ -639,26 +547,126 @@ export function Composer(props: ComposerProps) {
             event.currentTarget.value = "";
           }}
         />
-        {props.isArtificialIntelligenceOpponent ? (
-          <div className="mx-auto flex w-full max-w-4xl flex-col gap-2 rounded-2xl border border-slate-200 bg-white p-3 shadow-sm">
-            {composerTextarea}
-            <div className="flex items-center gap-2">
-              {attachmentButton}
-              {emojiButton}
-              <div className="min-w-0 flex-1" />
-              {openRouterControls}
-              {sendButton}
+        <div className="min-w-0 rounded-2xl border border-border p-3">
+          <SelectedComposerPills
+            files={selectedFileItems}
+            isKnowledgeSearchSelected={isKnowledgeSearchSelected}
+            skills={props.selectedSkills}
+            language={props.language}
+            onRemoveKnowledgeSearch={removeKnowledgeMention}
+            onRemoveFile={removeSelectedFile}
+            onReorderFile={reorderSelectedFile}
+            onRemoveSkill={removeSelectedSkill}
+          />
+          <span id={keyboardHintId} className="sr-only">
+            {keyboardHint}
+          </span>
+          <Controller
+            name="description"
+            control={composer.form.control}
+            render={({ field }) => (
+              <textarea
+                {...field}
+                ref={(element) => {
+                  field.ref(element);
+                  composer.textareaRef.current = element;
+                }}
+                aria-label={ru ? "Сообщение" : "Message"}
+                aria-describedby={keyboardHintId}
+                placeholder={keyboardHint}
+                rows={4}
+                className="h-32 min-h-24 max-h-[min(50dvh,480px)] w-full resize-y rounded-lg bg-transparent text-sm leading-6 outline-none placeholder:text-muted-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+                onChange={(event) => {
+                  field.onChange(event);
+                  typing.input(event.currentTarget.value);
+                  event.currentTarget.style.height = "auto";
+                  event.currentTarget.style.height = `${event.currentTarget.scrollHeight}px`;
+                }}
+                onBlur={() => {
+                  field.onBlur();
+                  typing.stop();
+                }}
+                onKeyDown={onComposerTextareaKeyDown}
+              />
+            )}
+          />
+          <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
+            <button
+              type="button"
+              className="inline-flex min-h-10 shrink-0 items-center gap-2 rounded-md text-xs font-semibold text-muted-foreground hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+              onClick={() => composer.fileInputRef.current?.click()}
+            >
+              <Paperclip className="size-4" aria-hidden="true" />
+              {ru ? "Прикрепить файлы" : "Attach files"}
+            </button>
+            <div className="ml-auto flex min-w-0 flex-wrap items-center justify-end gap-2">
+              {modelControls?.fixedModelLabel && (
+                <span className="inline-flex min-h-10 items-center gap-2 rounded-xl bg-muted px-3 text-sm">
+                  <span className="text-muted-foreground">
+                    {ru ? "Модель этапа" : "Stage model"}
+                  </span>
+                  <span className="font-medium">
+                    {modelControls.fixedModelLabel}
+                  </span>
+                </span>
+              )}
+              {showModelPicker && !modelControls.fixedModelLabel && (
+                <ModelPicker
+                  key={props.socialModuleThreadId}
+                  {...modelControls}
+                  language={props.language}
+                  modelLabel={
+                    props.isCustomerWork || props.isEmployeeChat
+                      ? ru
+                        ? "Модель ответа"
+                        : "Reply model"
+                      : ru
+                        ? "Выбрать модель OpenRouter"
+                        : "Select OpenRouter model"
+                  }
+                  autoLabel={
+                    props.isCustomerWork || props.isEmployeeChat
+                      ? ru
+                        ? props.isEmployeeChat
+                          ? "Модель сотрудника"
+                          : "Модель этапа"
+                        : props.isEmployeeChat
+                          ? "Employee default"
+                          : "Stage default"
+                      : ru
+                        ? "Авто"
+                        : "Auto"
+                  }
+                  reasoningControlLabel={
+                    props.isCustomerWork || props.isEmployeeChat
+                      ? undefined
+                      : ru
+                        ? "Выбрать режим рассуждения OpenRouter"
+                        : "Select OpenRouter thinking"
+                  }
+                  showModelDescription={
+                    props.isCustomerWork || props.isEmployeeChat
+                  }
+                />
+              )}
+              <button
+                type="submit"
+                className="inline-flex min-h-10 shrink-0 items-center gap-2 rounded-xl bg-primary px-4 text-sm font-semibold text-primary-foreground hover:bg-primary/90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring disabled:opacity-50"
+                disabled={!canSubmit}
+                aria-label={ru ? "Отправить сообщение" : "Send message"}
+              >
+                <Send className="size-4" aria-hidden="true" />
+                {composer.createMessage.isPending
+                  ? ru
+                    ? "Отправляем…"
+                    : "Sending…"
+                  : ru
+                    ? "Отправить"
+                    : "Send"}
+              </button>
             </div>
           </div>
-        ) : (
-          <div className="mx-auto flex w-full max-w-4xl items-end gap-2 rounded-xl border border-slate-200 bg-slate-50 p-2">
-            {attachmentButton}
-            {composerTextarea}
-            {emojiButton}
-            {openRouterControls}
-            {sendButton}
-          </div>
-        )}
+        </div>
       </form>
     </Form>
   );

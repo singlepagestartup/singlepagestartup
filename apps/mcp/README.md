@@ -517,8 +517,10 @@ Content-Type: application/json
 ```
 
 The endpoint verifies `subject_token` with `RBAC_JWT_SECRET` and derives the
-`rbac.subject` only from `subject.id` in the verified payload. Requests
-containing a separate `subject`, `subjectId`, `subject_id`, `rbacSubjectId`, or
+`rbac.subject` only from `subject.id` in the verified payload. At exchange and on
+each MCP bearer request, the server calls RBAC's `authentication/me` with the
+original access JWT to check that the session still belongs to this subject.
+API calls made by tools use that same access JWT. Requests containing a separate `subject`, `subjectId`, `subject_id`, `rbacSubjectId`, or
 `rbac_subject_id` are rejected.
 
 A successful exchange returns an access-only bearer with:
@@ -625,7 +627,7 @@ features without a fallback need separate support.
 | Kimi Code                                         | HTTP server configuration and `/mcp-config login <name>`. This does not establish custom-connector support in the Kimi consumer chat. [Kimi Code MCP](https://moonshotai.github.io/kimi-code/en/customization/mcp.html).                                                                    |
 | DeepSeek and other models in an MCP-capable agent | The agent handles MCP and OAuth. DeepSeek's Responses API currently ignores the built-in `mcp` tool; configure an agent adapter such as OpenCode instead. [DeepSeek tool types](https://api-docs.deepseek.com/guides/responses_api/), [OpenCode MCP](https://opencode.ai/docs/mcp-servers). |
 
-All 20 tools declare `readOnlyHint`, `destructiveHint` and `openWorldHint`.
+All 22 tools declare `readOnlyHint`, `destructiveHint` and `openWorldHint`.
 Reads and previews have no mutation or external-effect flags. The six generic
 mutation tools cover every module: they can overwrite or delete records, make
 content public, create notification deliveries, or fetch a file from a supplied

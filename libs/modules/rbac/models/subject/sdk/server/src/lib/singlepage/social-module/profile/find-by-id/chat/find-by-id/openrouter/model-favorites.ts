@@ -60,15 +60,14 @@ export async function update(props: IProps): Promise<IResult> {
       favoriteModelIds: [],
     },
   } = props;
+  const headers = new Headers(options?.headers);
+  headers.set("Content-Type", "application/json");
   const requestOptions: NextRequestOptions = {
     credentials: "include",
-    method: "PATCH",
-    headers: {
-      "content-type": "application/json",
-      ...options?.headers,
-    },
-    body: JSON.stringify({ data }),
     ...options,
+    method: "PATCH",
+    headers,
+    body: JSON.stringify({ data }),
     next: {
       ...options?.next,
     },

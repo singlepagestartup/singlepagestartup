@@ -1,16 +1,29 @@
 "use client";
 
-import { memo, useCallback, useState } from "react";
+import { memo, useCallback, useEffect, useRef, useState } from "react";
 import { useIsFetching, useIsMutating } from "@tanstack/react-query";
 import { Component as Subject } from "@sps/rbac/models/subject/frontend/component";
+import { api } from "@sps/rbac/models/subject/sdk/client";
 import { route } from "@sps/rbac/models/subject/sdk/model";
 import { cn } from "@sps/shared-frontend-client-utils";
 import { Component as CartRow } from "../../../../ecommerce-module/order/list/checkout-default/Row";
+import { hasInvalidSingleUnitQuantity } from "../../../../ecommerce-module/order/list/checkout-default/utils";
+import { DiscussionAction } from "../../../../ecommerce-module/order/list/checkout-default/DiscussionAction";
+import { ResultReview } from "../../../../ecommerce-module/order/create-default/customer-work/ResultReview";
 import type { IComponentPropsExtended, ISavedOrderProps } from "./interface";
 
 const SavedOrder = memo(function SavedOrder(props: ISavedOrderProps) {
   const { ecommerceModuleOrder: order, subject, language } = props;
   const details = order.cartDetails;
+  const discussion = details?.discussion;
+  const result = api.orderWork.read({
+    id: subject.id,
+    storeId: discussion?.storeId ?? "",
+    orderId: order.id,
+    taskId: discussion?.taskId ?? "",
+  });
+  const awaitingResult =
+    details?.work && details.work.state !== "awaiting-payment";
   const [blockedLines, setBlockedLines] = useState<Set<string>>(new Set());
   const onSelectionStateChange = useCallback(
     (_orderId: string, lineId: string, blocked: boolean) => {
@@ -38,6 +51,7 @@ const SavedOrder = memo(function SavedOrder(props: ISavedOrderProps) {
     !blockedLines.size &&
     !updating &&
     !refreshing &&
+    !hasInvalidSingleUnitQuantity(details, props.ecommerceModuleProduct) &&
     !details?.unpriced?.length &&
     Boolean(
       details?.availableCurrencyIds?.includes(
@@ -45,30 +59,61 @@ const SavedOrder = memo(function SavedOrder(props: ISavedOrderProps) {
       ),
     );
   return (
-    <li className="grid min-w-0 gap-2">
+    <li id={`order-${order.id}`} className="grid min-w-0 gap-2">
       <ul>
         <CartRow
           subject={subject}
           ecommerceModuleOrder={order}
+          ecommerceModuleProduct={props.ecommerceModuleProduct}
           language={language}
           onOrderSelectionStateChange={onSelectionStateChange}
         />
       </ul>
-      <Subject
-        isServer={false}
-        variant="ecommerce-module-order-checkout-default"
-        dataSource="props"
-        data={subject}
-        ecommerceModuleProduct={props.ecommerceModuleProduct}
-        ecommerceModuleOrder={order}
-        language={language}
-        disabled={!canPay}
-      />
+      {!awaitingResult && (
+        <Subject
+          isServer={false}
+          variant="ecommerce-module-order-checkout-default"
+          dataSource="props"
+          data={subject}
+          ecommerceModuleProduct={props.ecommerceModuleProduct}
+          ecommerceModuleOrder={order}
+          language={language}
+          disabled={!canPay}
+        />
+      )}
+      {(discussion || awaitingResult) && (
+        <DiscussionAction
+          subjectId={subject.id}
+          ecommerceModuleOrder={order}
+          ecommerceModuleProduct={props.ecommerceModuleProduct}
+          language={language}
+          canOpenDiscussion={props.canOpenDiscussion}
+          buttonVariant={awaitingResult ? "primary" : "outline"}
+        />
+      )}
+      {result.data && (
+        <ResultReview
+          subjectId={subject.id}
+          work={result.data}
+          language={language}
+        />
+      )}
     </li>
   );
 });
 
 export function Component(props: IComponentPropsExtended) {
+  const currentSubject = useRef<string | null>(null);
+  useEffect(() => {
+    currentSubject.current = props.data.id;
+    return () => {
+      currentSubject.current = null;
+    };
+  }, [props.data.id]);
+  const canOpenDiscussion = useCallback(
+    () => currentSubject.current === props.data.id,
+    [props.data.id],
+  );
   return (
     <div
       data-module="rbac"
@@ -103,6 +148,7 @@ export function Component(props: IComponentPropsExtended) {
                     {orders.map((order) => (
                       <SavedOrder
                         key={order.id}
+                        canOpenDiscussion={canOpenDiscussion}
                         subject={props.data}
                         ecommerceModuleOrder={order}
                         ecommerceModuleProduct={props.ecommerceModuleProduct}

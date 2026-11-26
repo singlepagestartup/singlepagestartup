@@ -1,29 +1,14 @@
 "use client";
 import {
-  getAIChatDocument,
   projectHref,
   projectBaseHref,
 } from "@sps/rbac/models/subject/sdk/model";
-import { AI_CHAT_DOCUMENTS } from "@sps/shared-utils";
 import { Component as SocialModuleProfile } from "@sps/social/models/profile/frontend/component";
 import { Component as SocialModuleThread } from "@sps/social/models/thread/frontend/component";
 
 import type { IComponentPropsExtended } from "./interface";
 export function Component(props: IComponentPropsExtended) {
   const project = props.project;
-  const threads = {
-    ...props.threadsRead,
-    refetch: props.threadsRead.refetch || (() => window.location.reload()),
-  };
-  const documents = AI_CHAT_DOCUMENTS.flatMap((definition) =>
-    (threads.data || []).filter((thread) => {
-      const document = getAIChatDocument(thread.metadata);
-      return (
-        document?.profileId === project.profile.id &&
-        document.key === definition.key
-      );
-    }),
-  );
   return (
     <SocialModuleProfile
       isServer={false}
@@ -32,44 +17,30 @@ export function Component(props: IComponentPropsExtended) {
       data={project.profile}
       dataSource="props"
       settingsHref={`${projectBaseHref(project)}/settings`}
-      newThreadHref={`${projectBaseHref(project)}/threads/create`}
+      newThreadHref={
+        props.canManageChat
+          ? `${projectBaseHref(project)}/threads/create`
+          : undefined
+      }
       settingsSelected={props.selected === "settings"}
       creatingThread={props.selected === "create"}
       threads={
         <>
-          {threads.data
-            ?.filter((thread) => !getAIChatDocument(thread.metadata))
-            .map((thread) => (
-              <SocialModuleThread
-                key={thread.id}
-                isServer={false}
-                variant="list-item-sidebar-ai-chat"
-                language={props.language}
-                data={thread}
-                dataSource="props"
-                href={projectHref(project, thread.id)}
-                selected={thread.id === props.socialModuleThreadId}
-                topic
-              />
-            ))}
+          {props.threadsRead.data?.map((thread) => (
+            <SocialModuleThread
+              key={thread.id}
+              isServer={false}
+              variant="list-item-sidebar-ai-chat"
+              language={props.language}
+              data={thread}
+              dataSource="props"
+              href={projectHref(project, thread.id)}
+              selected={thread.id === props.socialModuleThreadId}
+              topic
+            />
+          ))}
         </>
       }
-    >
-      <SocialModuleProfile
-        isServer={false}
-        variant="thread-list-sidebar-ai-chat"
-        language={props.language}
-        data={project.profile}
-        dataSource="props"
-        className="my-4"
-        documents={documents.map((thread) => ({
-          data: thread,
-          dataSource: "props",
-          href: projectHref(project, thread.id),
-          selected:
-            thread.id === (props.socialModuleThreadId || project.thread.id),
-        }))}
-      />
-    </SocialModuleProfile>
+    />
   );
 }

@@ -72,6 +72,12 @@
           },
           {
             "command": "nx run @sps/billing:models:widget:repository-generate"
+          },
+          {
+            "command": "nx run @sps/billing:models:wallet:repository-generate"
+          },
+          {
+            "command": "nx run @sps/billing:models:transaction:repository-generate"
           }
         ]
       }
@@ -87,6 +93,12 @@
           },
           {
             "command": "nx run @sps/billing:relations:payment-intents-to-currencies:repository-generate"
+          },
+          {
+            "command": "nx run @sps/billing:relations:wallets-to-currencies:repository-generate"
+          },
+          {
+            "command": "nx run @sps/billing:relations:transactions-to-wallets:repository-generate"
           }
         ]
       }
@@ -108,6 +120,12 @@
           },
           {
             "command": "nx run @sps/billing:models:widget:repository-migrate"
+          },
+          {
+            "command": "nx run @sps/billing:models:wallet:repository-migrate"
+          },
+          {
+            "command": "nx run @sps/billing:models:transaction:repository-migrate"
           }
         ]
       }
@@ -123,6 +141,12 @@
           },
           {
             "command": "nx run @sps/billing:relations:payment-intents-to-currencies:repository-migrate"
+          },
+          {
+            "command": "nx run @sps/billing:relations:wallets-to-currencies:repository-migrate"
+          },
+          {
+            "command": "nx run @sps/billing:relations:transactions-to-wallets:repository-migrate"
           }
         ]
       }
@@ -300,6 +324,126 @@
         "parallel": false,
         "envFile": "apps/api/.env",
         "cwd": "libs/modules/billing/models/invoice/backend/repository/database",
+        "commands": [
+          {
+            "command": "bun run ./src/lib/migrate.ts"
+          }
+        ]
+      }
+    },
+    "models:wallet:repository-generate": {
+      "executor": "nx:run-commands",
+      "cache": false,
+      "options": {
+        "parallel": false,
+        "cwd": "libs/modules/billing/models/wallet/backend/repository/database",
+        "commands": [
+          {
+            "command": "drizzle-kit up --config=./src/lib/config.ts"
+          },
+          {
+            "command": "drizzle-kit generate --config=./src/lib/config.ts"
+          }
+        ]
+      }
+    },
+    "models:wallet:repository-migrate": {
+      "executor": "nx:run-commands",
+      "cache": false,
+      "options": {
+        "parallel": false,
+        "envFile": "apps/api/.env",
+        "cwd": "libs/modules/billing/models/wallet/backend/repository/database",
+        "commands": [
+          {
+            "command": "bun run ./src/lib/migrate.ts"
+          }
+        ]
+      }
+    },
+    "models:transaction:repository-generate": {
+      "executor": "nx:run-commands",
+      "cache": false,
+      "options": {
+        "parallel": false,
+        "cwd": "libs/modules/billing/models/transaction/backend/repository/database",
+        "commands": [
+          {
+            "command": "drizzle-kit up --config=./src/lib/config.ts"
+          },
+          {
+            "command": "drizzle-kit generate --config=./src/lib/config.ts"
+          }
+        ]
+      }
+    },
+    "models:transaction:repository-migrate": {
+      "executor": "nx:run-commands",
+      "cache": false,
+      "options": {
+        "parallel": false,
+        "envFile": "apps/api/.env",
+        "cwd": "libs/modules/billing/models/transaction/backend/repository/database",
+        "commands": [
+          {
+            "command": "bun run ./src/lib/migrate.ts"
+          }
+        ]
+      }
+    },
+    "relations:wallets-to-currencies:repository-generate": {
+      "executor": "nx:run-commands",
+      "cache": false,
+      "options": {
+        "parallel": false,
+        "cwd": "libs/modules/billing/relations/wallets-to-currencies/backend/repository/database",
+        "commands": [
+          {
+            "command": "drizzle-kit up --config=./src/lib/config.ts"
+          },
+          {
+            "command": "drizzle-kit generate --config=./src/lib/config.ts"
+          }
+        ]
+      }
+    },
+    "relations:wallets-to-currencies:repository-migrate": {
+      "executor": "nx:run-commands",
+      "cache": false,
+      "options": {
+        "parallel": false,
+        "envFile": "apps/api/.env",
+        "cwd": "libs/modules/billing/relations/wallets-to-currencies/backend/repository/database",
+        "commands": [
+          {
+            "command": "bun run ./src/lib/migrate.ts"
+          }
+        ]
+      }
+    },
+    "relations:transactions-to-wallets:repository-generate": {
+      "executor": "nx:run-commands",
+      "cache": false,
+      "options": {
+        "parallel": false,
+        "cwd": "libs/modules/billing/relations/transactions-to-wallets/backend/repository/database",
+        "commands": [
+          {
+            "command": "drizzle-kit up --config=./src/lib/config.ts"
+          },
+          {
+            "command": "drizzle-kit generate --config=./src/lib/config.ts"
+          }
+        ]
+      }
+    },
+    "relations:transactions-to-wallets:repository-migrate": {
+      "executor": "nx:run-commands",
+      "cache": false,
+      "options": {
+        "parallel": false,
+        "envFile": "apps/api/.env",
+        "cwd": "libs/modules/billing/relations/transactions-to-wallets/backend/repository/database",
         "commands": [
           {
             "command": "bun run ./src/lib/migrate.ts"

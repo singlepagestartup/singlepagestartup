@@ -24,7 +24,8 @@ export function action(props: IProps) {
     queryKey: [key],
     meta: {
       topics: [
-        "rbac.subjects-to-billing-module-currencies",
+        "billing.wallets-to-currencies",
+        "rbac.subjects-to-billing-module-wallets",
         "billing.currencies",
       ],
       ...props.reactQueryOptions?.meta,

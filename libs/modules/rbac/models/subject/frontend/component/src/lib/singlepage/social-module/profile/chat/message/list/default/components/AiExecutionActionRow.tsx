@@ -1,4 +1,5 @@
 "use client";
+import { TypingIndicator } from "./TypingIndicator";
 
 import type { ProfileSummary } from "../types";
 import {
@@ -84,6 +85,58 @@ function SourceIcon(props: { kind: IAiExecutionActionStep["kind"] }) {
   return <Wrench className="size-3.5" />;
 }
 
+function McpStepDetails({
+  step,
+  russian,
+}: {
+  step: IAiExecutionActionStep;
+  russian: boolean;
+}) {
+  const parameters = Object.entries(step.parameters ?? {});
+  const result = Object.entries(step.resultSummary ?? {});
+  const fields = step.schemaFields ?? [];
+  let outcome;
+  if (step.status === "failed") {
+    if (step.errorCode === "result_too_large") {
+      outcome = russian
+        ? "Ответ инструмента превышает лимит размера"
+        : "The tool response exceeds the size limit";
+    } else if (step.errorCode === "tool_unavailable") {
+      outcome = russian
+        ? "Не удалось вызвать инструмент"
+        : "The tool call failed";
+    } else {
+      outcome = russian
+        ? "Инструмент вернул ошибку"
+        : "The tool returned an error";
+    }
+  } else if (step.status === "succeeded") {
+    outcome =
+      [
+        ...result.map(([key, value]) => `${key} = ${value}`),
+        ...fields.map(({ name, type }) => `${name} (${type})`),
+      ].join(", ") || (russian ? "Вызов выполнен" : "Call completed");
+  }
+  return (
+    <span className="mt-1 block space-y-0.5 break-words">
+      {parameters.length > 0 && (
+        <span className="block">
+          <strong>{russian ? "Параметры" : "Parameters"}</strong>
+          {" · "}
+          {parameters.map(([key, value]) => `${key} = ${value}`).join(", ")}
+        </span>
+      )}
+      {outcome && (
+        <span className="block">
+          <strong>{russian ? "Результат" : "Result"}</strong>
+          {" · "}
+          {outcome}
+        </span>
+      )}
+    </span>
+  );
+}
+
 function runningTitle(step: IAiExecutionActionStep, isRussian: boolean) {
   if (step.kind === "mcp") {
     return isRussian
@@ -114,11 +167,38 @@ export function AiExecutionActionRow(props: AiExecutionActionRowProps) {
         data-model="subject"
         data-variant={AI_EXECUTION_ACTION_VARIANT}
         data-status="unavailable"
-        className="mx-3 my-2 rounded-lg border border-amber-200 bg-amber-50/70 px-3 py-2 text-xs text-amber-800"
+        className="rounded-xl border border-border bg-muted/50 px-3 py-2 text-xs text-muted-foreground"
       >
         {isRussian
           ? "Статус выполнения инструмента недоступен."
           : "Tool execution status is unavailable."}
+      </div>
+    );
+  }
+
+  if (payload.phase === "reply_generation") {
+    const failed = payload.status === "failed";
+    if (!failed) {
+      return payload.status === "running" ? (
+        <TypingIndicator language={props.language} name={props.profile.slug} />
+      ) : null;
+    }
+    let label = isRussian
+      ? "Не удалось сгенерировать ответ. Отправьте сообщение ещё раз."
+      : "The reply could not be generated. Please send your message again.";
+    if (failed && payload.rejectedFileName && payload.selectedModelId) {
+      label = isRussian
+        ? `Модель ${payload.selectedModelId} не смогла прочитать «${payload.rejectedFileName}». Отправьте файл в другом формате или выберите другую модель.`
+        : `Model ${payload.selectedModelId} could not read “${payload.rejectedFileName}”. Send the file in another format or choose another model.`;
+    }
+    return (
+      <div
+        role="alert"
+        data-id={props.action.id}
+        className="flex items-center gap-2 rounded-xl border border-destructive/30 px-3 py-2 text-sm text-destructive"
+      >
+        <CircleAlert aria-hidden="true" className="size-4 shrink-0" />
+        {label}
       </div>
     );
   }
@@ -139,15 +219,19 @@ export function AiExecutionActionRow(props: AiExecutionActionRowProps) {
         : "Preparing tools"
     : payload.status === "completed"
       ? isRussian
-        ? `Завершил работу с инструментами · ${completedSteps}`
+        ? `Работа с инструментами завершена · ${completedSteps}`
         : `Finished tool work · ${completedSteps}`
       : payload.status === "stopped"
         ? isRussian
           ? "Работа с инструментами остановлена"
           : "Tool work stopped"
-        : isRussian
-          ? "Не получилось завершить задачу"
-          : "The task could not be completed";
+        : payload.phase === "tool_completed"
+          ? isRussian
+            ? "Ошибка при вызове инструмента"
+            : "A tool call failed"
+          : isRussian
+            ? "Не получилось завершить задачу"
+            : "The task could not be completed";
 
   return (
     <Collapsible
@@ -159,8 +243,8 @@ export function AiExecutionActionRow(props: AiExecutionActionRowProps) {
       data-variant={AI_EXECUTION_ACTION_VARIANT}
       data-status={payload.status}
       className={cn(
-        "mx-3 my-2 rounded-xl border bg-white shadow-sm",
-        isRunning ? "border-blue-200 bg-blue-50/40" : "border-slate-200",
+        "rounded-xl border border-border bg-card",
+        isRunning && "bg-muted/50",
       )}
     >
       <CollapsibleTrigger className="group flex w-full items-center gap-3 px-3 py-2.5 text-left">
@@ -168,7 +252,7 @@ export function AiExecutionActionRow(props: AiExecutionActionRowProps) {
           className={cn(
             "flex size-8 shrink-0 items-center justify-center rounded-full",
             isRunning
-              ? "bg-blue-100 text-blue-600"
+              ? "bg-primary/10 text-primary"
               : payload.status === "completed"
                 ? "bg-emerald-100 text-emerald-600"
                 : "bg-rose-100 text-rose-600",
@@ -184,38 +268,53 @@ export function AiExecutionActionRow(props: AiExecutionActionRowProps) {
         </span>
         <span className="min-w-0 flex-1">
           <span
-            className="block truncate text-xs font-medium text-slate-700"
+            className="block truncate text-xs font-medium text-foreground"
             aria-live="polite"
           >
             {title}
           </span>
-          <span className="mt-0.5 block truncate text-[11px] text-slate-400">
+          <span className="mt-0.5 block truncate text-[11px] text-muted-foreground">
             {props.profile.slug}
             {createdAt ? ` · ${createdAt}` : ""}
           </span>
         </span>
-        <ChevronDown className="size-4 shrink-0 text-slate-400 transition-transform group-data-[state=open]:rotate-180" />
+        <ChevronDown className="size-4 shrink-0 text-muted-foreground transition-transform group-data-[state=open]:rotate-180" />
       </CollapsibleTrigger>
       <CollapsibleContent>
-        <div className="space-y-1 border-t border-slate-100 px-3 py-2.5">
+        <div className="space-y-1 border-t border-border px-3 py-2.5">
           {payload.steps.map((step) => {
+            const toolName = formatAiExecutionActionStepToolName(step);
+            const source =
+              step.kind === "mcp" && step.serverId
+                ? serverLabel(step.serverId)
+                : undefined;
+            const subtitle = [
+              source,
+              step.label !== step.toolName && step.label !== toolName
+                ? toolName
+                : undefined,
+            ]
+              .filter(Boolean)
+              .join(" · ");
             return (
               <div
                 key={step.id}
-                className="flex items-start gap-2 rounded-lg px-1 py-1.5 text-xs text-slate-600"
+                className="flex items-start gap-2 rounded-lg px-1 py-1.5 text-xs text-muted-foreground"
               >
                 <StepIcon step={step} />
                 <span className="min-w-0 flex-1">
-                  <span className="flex items-center gap-1.5 font-medium text-slate-700">
+                  <span className="flex items-center gap-1.5 font-medium text-foreground">
                     <SourceIcon kind={step.kind} />
                     <span className="truncate">{step.label}</span>
                   </span>
-                  <span className="mt-0.5 block truncate font-mono text-[10px] text-slate-400">
-                    {step.kind === "mcp" && step.serverId
-                      ? `${serverLabel(step.serverId)} · `
-                      : ""}
-                    {formatAiExecutionActionStepToolName(step)}
-                  </span>
+                  {subtitle && (
+                    <span className="mt-0.5 block truncate font-mono text-[10px] text-muted-foreground">
+                      {subtitle}
+                    </span>
+                  )}
+                  {step.kind === "mcp" && (
+                    <McpStepDetails step={step} russian={isRussian} />
+                  )}
                 </span>
               </div>
             );

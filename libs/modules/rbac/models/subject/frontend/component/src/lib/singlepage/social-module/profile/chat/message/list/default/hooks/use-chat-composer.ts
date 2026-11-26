@@ -7,15 +7,18 @@ import { ThreadMessagesCache } from "./use-thread-messages-refetch";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { api } from "@sps/rbac/models/subject/sdk/client";
 import { RBAC_AI_REACTION_REQUEST_METADATA_KEY } from "@sps/rbac/models/subject/sdk/model";
+import { PROVIDER_MODEL_SELECTION_METADATA_KEY } from "@sps/rbac/models/subject/sdk/model/src/lib/provider-connections";
 import { useCallback, useRef } from "react";
 import { useForm } from "react-hook-form";
-import { toast } from "sonner";
 
 interface UseChatComposerProps {
+  isEmployeeChat?: boolean;
+  onEmployeeMessageSaved?: () => void;
+  isCustomerWork: boolean;
   clearSelectedSkills: () => void;
   markShouldScrollToBottom: () => void;
-  openRouterModelId: string;
-  openRouterReasoning: OpenRouterReasoningValue;
+  modelId: string;
+  reasoning: OpenRouterReasoningValue;
   persistAiReactionRequest: boolean;
   profileSkills: SocialSkill[];
   selectedSkillIds: string[];
@@ -23,19 +26,30 @@ interface UseChatComposerProps {
   socialModuleProfileId: string;
   socialModuleThreadId: string;
   subjectId: string;
-  threadMessagesCache: ThreadMessagesCache;
+  threadMessagesCache?: ThreadMessagesCache;
 }
 
 export function useChatComposer(props: UseChatComposerProps) {
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
+  const lastSend = useRef<
+    | {
+        threadId: string;
+        text: string;
+        files: ChatMessageFormValues["files"];
+        modelId: string;
+        reasoning: OpenRouterReasoningValue;
+        id: string;
+      }
+    | undefined
+  >(undefined);
   const form = useForm<ChatMessageFormValues>({
     resolver: zodResolver(chatMessageFormSchema),
     defaultValues: {
       description: "",
     },
   });
-  const createMessage =
+  const socialCreateMessage =
     api.socialModuleProfileFindByIdChatFindByIdThreadFindByIdMessageCreate({
       id: props.subjectId,
       socialModuleProfileId: props.socialModuleProfileId,
@@ -61,8 +75,17 @@ export function useChatComposer(props: UseChatComposerProps) {
   async function onSubmit(data: ChatMessageFormValues) {
     props.markShouldScrollToBottom();
     const appliedSkillIds = [...props.selectedSkillIds];
-    const isKnowledgeSearchSelected = hasKnowledgeMention(data.description);
+    const isKnowledgeSearchSelected =
+      !props.isCustomerWork && hasKnowledgeMention(data.description);
     const messageMetadata = {
+      ...(props.isCustomerWork || props.isEmployeeChat
+        ? {
+            [PROVIDER_MODEL_SELECTION_METADATA_KEY]: {
+              modelId: props.modelId,
+              ...(props.reasoning !== "auto" && { reasoning: props.reasoning }),
+            },
+          }
+        : {}),
       ...(appliedSkillIds.length
         ? {
             socialSkillMentions: appliedSkillIds.map((skillId) => {
@@ -89,8 +112,8 @@ export function useChatComposer(props: UseChatComposerProps) {
         ? {
             [RBAC_AI_REACTION_REQUEST_METADATA_KEY]: {
               version: 1,
-              modelId: props.openRouterModelId || "auto",
-              reasoning: props.openRouterReasoning || "auto",
+              modelId: props.modelId,
+              reasoning: props.reasoning,
               skillIds: appliedSkillIds,
               useKnowledgeSearch: isKnowledgeSearchSelected,
             },
@@ -99,7 +122,30 @@ export function useChatComposer(props: UseChatComposerProps) {
     };
     const hasMessageMetadata = Object.keys(messageMetadata).length > 0;
 
-    createMessage.mutate(
+    if (socialCreateMessage.isPending) return;
+    const deduplicate = props.isCustomerWork || props.isEmployeeChat;
+    if (
+      deduplicate &&
+      (lastSend.current?.threadId !== props.socialModuleThreadId ||
+        lastSend.current.text !== data.description ||
+        lastSend.current.modelId !== props.modelId ||
+        lastSend.current.reasoning !== props.reasoning ||
+        lastSend.current.files?.length !== data.files?.length ||
+        data.files?.some(
+          (file, index) => file !== lastSend.current?.files?.[index],
+        ))
+    ) {
+      lastSend.current = {
+        threadId: props.socialModuleThreadId,
+        text: data.description,
+        files: data.files,
+        modelId: props.modelId,
+        reasoning: props.reasoning,
+        id: crypto.randomUUID(),
+      };
+    }
+
+    socialCreateMessage.mutate(
       {
         id: props.subjectId,
         socialModuleProfileId: props.socialModuleProfileId,
@@ -107,6 +153,9 @@ export function useChatComposer(props: UseChatComposerProps) {
         socialModuleThreadId: props.socialModuleThreadId,
         data: {
           description: data.description,
+          ...(deduplicate && lastSend.current
+            ? { sourceSystemId: lastSend.current.id }
+            : {}),
           files: data.files,
           ...(hasMessageMetadata
             ? {
@@ -117,15 +166,16 @@ export function useChatComposer(props: UseChatComposerProps) {
       },
       {
         onSuccess(createdMessage) {
-          toast.success("Message created successfully");
           // Targeted append (exact server response) instead of a full
           // invalidation - the timeline gains one row without refetching.
           // WS topic invalidation remains the background consistency check.
           if (createdMessage?.id) {
-            props.threadMessagesCache.append(createdMessage);
+            props.threadMessagesCache?.append(createdMessage);
           } else {
-            props.threadMessagesCache.refetch();
+            props.threadMessagesCache?.refetch();
           }
+          props.onEmployeeMessageSaved?.();
+          lastSend.current = undefined;
           resetComposer();
         },
       },
@@ -145,7 +195,7 @@ export function useChatComposer(props: UseChatComposerProps) {
   }
 
   return {
-    createMessage,
+    createMessage: socialCreateMessage,
     fileInputRef,
     focusComposerTextArea,
     form,

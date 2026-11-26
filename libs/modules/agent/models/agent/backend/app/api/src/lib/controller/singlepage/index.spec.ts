@@ -26,7 +26,16 @@ import { Configuration } from "../../configuration";
 import { Controller } from "../startup";
 
 async function createApp() {
-  const service = { cronQueue: { tick: jest.fn() } };
+  const service = {
+    workAttempt: {
+      consumePayments: jest.fn(),
+      drainKnowledgeIndex: jest.fn(),
+      processTimers: jest.fn(),
+      reconcile: jest.fn(),
+      drain: jest.fn(),
+    },
+    cronQueue: { tick: jest.fn() },
+  };
   const model = new App(
     new ExceptionFilter(),
     new Controller(service as any),

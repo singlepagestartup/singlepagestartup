@@ -1,3 +1,7 @@
+import Link from "next/link";
+import { ADMIN_BASE_PATH } from "@sps/shared-utils";
+import { workflowResources } from "../../admin/workflow/resources";
+import { WorkflowTable } from "../../admin/workflow/client";
 import { IComponentProps } from "./interface";
 import {
   getAdminRoutePath,
@@ -14,6 +18,10 @@ export function Component(props: IComponentProps) {
   const isCurrentModule = isAdminRoute(props.url, "crm");
   const isOverviewRoute = getAdminRoutePath(props.url) === "/crm";
 
+  const resource = workflowResources.find((name) =>
+    isAdminRoute(props.url, "crm", name),
+  );
+
   if (!isCurrentModule) {
     return null;
   }
@@ -23,6 +31,15 @@ export function Component(props: IComponentProps) {
       <div className="mx-auto max-w-7xl space-y-4">
         {isOverviewRoute ? (
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
+            {workflowResources.map((name) => (
+              <Link
+                key={name}
+                className="rounded-md border p-4 font-semibold hover:bg-muted"
+                href={ADMIN_BASE_PATH + "/crm/" + name}
+              >
+                {name}
+              </Link>
+            ))}
             <Form variant="admin-v2-card" isServer={props.isServer} />
             <Input variant="admin-v2-card" isServer={props.isServer} />
             <Option variant="admin-v2-card" isServer={props.isServer} />
@@ -32,6 +49,7 @@ export function Component(props: IComponentProps) {
           </div>
         ) : null}
 
+        {resource && <WorkflowTable key={resource} resource={resource} />}
         <Form
           variant="admin-v2-table"
           isServer={props.isServer}

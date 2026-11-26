@@ -11,7 +11,8 @@ export class Handler {
         throw new Error("Validation error. File id required");
       }
       const file = await this.service.findById({ id });
-      if (!file) {
+      if (!file || (await this.service.isProtectedPublicReceipt(file))) {
+        c.header("Cache-Control", "private, no-store");
         throw new Error("Not Found error. File not found");
       }
       const bytes = await this.service.readBytes(file);

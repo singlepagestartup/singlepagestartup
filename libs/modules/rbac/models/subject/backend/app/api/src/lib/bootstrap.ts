@@ -18,7 +18,6 @@ import { Service as EcommerceCatalog } from "./service/startup/ecommerce/catalog
 import type { IConstructorProps as ICatalogDependencies } from "./service/singlepage/ecommerce/catalog";
 import { Service as SecurityNotifications } from "./service/startup/security-notifications";
 import { Service as IsAuthorizedService } from "./service/startup/is-authorized";
-import { Service as BillRouteService } from "./service/startup/billing/route";
 import { Service as EcommerceOrderProceedService } from "./service/startup/ecommerce/order/proceed";
 
 const bindings = new ContainerModule(({ bind }) => {
@@ -76,18 +75,6 @@ const bindings = new ContainerModule(({ bind }) => {
       });
     })
     .inSingletonScope();
-  bind<BillRouteService>(SubjectDI.IBillRouteService)
-    .toDynamicValue(({ get }) => {
-      const module = get<IAppAssembly>(DI.IAppAssembly).getOrCreate(
-        createModule,
-      );
-      return new BillRouteService(
-        get<Repository>(DI.IRepository),
-        () => module.subjectsToBillingModuleCurrencies,
-        get<IsAuthorizedService>(SubjectDI.IIsAuthorizedService),
-      );
-    })
-    .inSingletonScope();
   bind<EcommerceOrderProceedService>(SubjectDI.IEcommerceOrderProceedService)
     .toDynamicValue(({ get }) => {
       const assembly = get<IAppAssembly>(DI.IAppAssembly);
@@ -109,6 +96,13 @@ export const serviceBootstrap = createAppBootstrap<App, Service>(
   (container, assembly) => {
     const modules = assembly.getOrCreate(createModules);
     const module = assembly.getOrCreate(createModule);
+    modules.crm.task.configureOrderCompletion((task) =>
+      container
+        .get<EcommerceOrderProceedService>(
+          SubjectDI.IEcommerceOrderProceedService,
+        )
+        .completeDeliveredTask(task),
+    );
     container
       .bind<EcommerceCatalog>(SubjectDI.IEcommerceCatalogService)
       .toDynamicValue(({ get }) => {

@@ -17,6 +17,8 @@ Each record is a seller’s offer for one Product. The generated `sku` identifie
 
 ## Price, delivery and inventory
 
+For a commissioned service, the seller can choose **After accepting the result** in the offer editor and configure an individual-service CRM funnel for that offer. The offer stores this choice in `settings.requiresResultAcceptance`. The cart opens the order discussion while the work is in progress. Once the buyer accepts a version, checkout uses its agreed price and currency. Other offers keep their usual checkout terms.
+
 The relation service assembles quote and address-suggestion data through injected CRUD readers. The reservation service supplies held quantities. Catalog traversal, attribute grouping and quote rules belong to services; the repository provides ordinary persistence. The bootstrap composes these services without initializing their REST apps.
 
 The offer owns its currency prices through `stores-to-products-to-attributes`. Use the `price` key and link the attribute to exactly one Billing currency. Each Product declares `price_formula` and `formula_version` through `products-to-attributes`. Store attributes supply named tariff coefficients. A basic item uses `unit_price * quantity`. A road delivery can use `dispatch_fee + rate_per_km * distance_km`. An assembly service can charge for `serviced_qty` or a percentage of `serviced_subtotal`.

@@ -25,11 +25,6 @@ export {
   type IMiddlewareOptions as IActionLoggerMiddlewareOptions,
 } from "./actions-logger";
 export {
-  Middleware as BillRouteMiddleware,
-  type IMiddlewareGeneric as IBillRouteMiddlewareGeneric,
-  type IMiddlewareOptions as IBillRouteMiddlewareOptions,
-} from "./bill-route";
-export {
   Middleware as OperatorSecretMiddleware,
   type IMiddlewareGeneric as IOperatorSecretMiddlewareGeneric,
 } from "./operator-secret";

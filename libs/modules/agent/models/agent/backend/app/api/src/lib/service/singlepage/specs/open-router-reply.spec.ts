@@ -20,8 +20,6 @@ jest.mock("@sps/shared-utils", () => {
 jest.mock("@sps/rbac/models/subject/sdk/server", () => {
   return {
     api: {
-      socialModuleProfileFindByIdChatFindByIdMessageFindByIdReactByOpenrouter:
-        jest.fn(),
       socialModuleProfileFindByIdChatFindByIdThreadFindByIdMessageCreate:
         jest.fn(),
       socialModuleProfileFindByIdChatFindByIdMessageCreate: jest.fn(),
@@ -49,8 +47,15 @@ import { api as socialModuleMessageApi } from "@sps/social/models/message/sdk/se
 import * as jwt from "hono/jwt";
 
 const mockedSign = jwt.sign as jest.Mock;
-const mockedReactByOpenRouter =
-  rbacModuleSubjectApi.socialModuleProfileFindByIdChatFindByIdMessageFindByIdReactByOpenrouter as jest.Mock;
+const mockDispatch = jest.fn();
+const assignedWork = {
+  storeId: "store",
+  taskId: "task",
+  eventId: "message",
+  assigneeId: "assistant",
+  assignmentRevision: 1,
+  capability: "text",
+};
 const mockedThreadMessageCreate =
   rbacModuleSubjectApi.socialModuleProfileFindByIdChatFindByIdThreadFindByIdMessageCreate as jest.Mock;
 const mockedMessageCreate =
@@ -79,7 +84,16 @@ function createService() {
   (service as any).telegramBotPremiumMessageWithKeyboardCreate = jest
     .fn()
     .mockResolvedValue(undefined);
+  Object.defineProperty(service, "workAttempt", {
+    value: { dispatch: mockDispatch },
+  });
   (service as any).modules.rbac = {
+    subject: {
+      customerWork: {
+        pendingForMessage: jest.fn().mockResolvedValue(assignedWork),
+        ack: jest.fn(),
+      },
+    },
     rolesToEcommerceModuleProducts: {
       find: jest.fn().mockResolvedValue([
         {
@@ -121,6 +135,7 @@ function createService() {
 
 describe("Given: agent OpenRouter reply fallback and prompt gating", () => {
   beforeEach(() => {
+    mockDispatch.mockResolvedValue({ id: "attempt", state: "delivered" });
     jest.clearAllMocks();
     mockedSign.mockResolvedValue("signed-jwt");
   });
@@ -195,11 +210,16 @@ describe("Given: agent OpenRouter reply fallback and prompt gating", () => {
     const commandReply = jest.fn().mockResolvedValue(undefined);
 
     mockedSocialMessageUpdate.mockResolvedValue({ id: "message-command" });
+
     (service as any).modules.rbac = {
       subjectsToSocialModuleProfiles: {
         find: jest.fn().mockResolvedValue([{ subjectId: "bot-subject" }]),
       },
       subject: {
+        customerWork: {
+          pendingForMessage: jest.fn().mockResolvedValue(assignedWork),
+          ack: jest.fn(),
+        },
         findById: jest.fn().mockResolvedValue({ id: "bot-subject" }),
       },
     };
@@ -267,11 +287,16 @@ describe("Given: agent OpenRouter reply fallback and prompt gating", () => {
     const transport = {};
 
     mockedSocialMessageUpdate.mockResolvedValue({ id: "message-avatar" });
+
     (service as any).modules.rbac = {
       subjectsToSocialModuleProfiles: {
         find: jest.fn().mockResolvedValue([{ subjectId: "bot-subject" }]),
       },
       subject: {
+        customerWork: {
+          pendingForMessage: jest.fn().mockResolvedValue(assignedWork),
+          ack: jest.fn(),
+        },
         findById: jest.fn().mockResolvedValue({ id: "bot-subject" }),
       },
     };
@@ -381,6 +406,10 @@ describe("Given: agent OpenRouter reply fallback and prompt gating", () => {
         find: jest.fn().mockResolvedValue([{ subjectId: "reply-subject" }]),
       },
       subject: {
+        customerWork: {
+          pendingForMessage: jest.fn().mockResolvedValue(assignedWork),
+          ack: jest.fn(),
+        },
         findById: jest.fn().mockResolvedValue({ id: "reply-subject" }),
       },
     };
@@ -493,72 +522,7 @@ describe("Given: agent OpenRouter reply fallback and prompt gating", () => {
     expect(
       (service as any).resolveThreadIdForMessageInChat,
     ).not.toHaveBeenCalled();
-    expect(mockedReactByOpenRouter).not.toHaveBeenCalled();
-  });
-
-  /**
-   * BDD Scenario
-   * Given: a Telegram user has no role granting a payable OpenRouter subscription.
-   * When: Agent creates the subscription status response instead of generating.
-   * Then: the response is marked as system traffic and cannot enter later OpenRouter context.
-   */
-  it("marks the missing-subscription response as excluded from OpenRouter", async () => {
-    const service = createService();
-    const statusMessage = { id: "subscription-status-message" };
-
-    (service as any).modules.rbac.subjectsToRoles.find = jest
-      .fn()
-      .mockResolvedValue([]);
-    mockedThreadMessageCreate.mockResolvedValue(statusMessage);
-
-    await expect(
-      service.openRouterReplyMessageCreate({
-        jwtToken: "caller-jwt",
-        rbacModuleSubject: {
-          id: "caller-subject",
-        } as any,
-        shouldReplySocialModuleProfile: {
-          id: "assistant-profile",
-        } as any,
-        socialModuleChat: {
-          id: "chat-1",
-        } as any,
-        socialModuleMessage: {
-          id: "message-1",
-          description: "Hello",
-        } as any,
-        messageFromSocialModuleProfile: {
-          id: "sender-profile",
-        } as any,
-      }),
-    ).resolves.toBe(statusMessage);
-
-    expect(mockedThreadMessageCreate).toHaveBeenCalledWith({
-      id: "caller-subject",
-      socialModuleProfileId: "assistant-profile",
-      socialModuleChatId: "chat-1",
-      socialModuleThreadId: "thread-1",
-      data: {
-        description: "Нет активной подписки",
-        interaction: {
-          inline_keyboard: [
-            [
-              {
-                text: "Premium",
-                callback_data: "command_premium",
-              },
-            ],
-          ],
-        },
-        metadata: openRouterStatusMetadata,
-      },
-      options: {
-        headers: {
-          Authorization: "Bearer caller-jwt",
-        },
-      },
-    });
-    expect(mockedReactByOpenRouter).not.toHaveBeenCalled();
+    expect(mockDispatch).not.toHaveBeenCalled();
   });
 
   /**
@@ -571,10 +535,8 @@ describe("Given: agent OpenRouter reply fallback and prompt gating", () => {
     const service = createService();
     mockedThreadMessageCreate.mockResolvedValue({ id: "insufficient-tokens" });
 
-    mockedReactByOpenRouter.mockRejectedValue(
-      new Error(
-        "Validation error. You do not have access to this resource because your 'subjectsToBillingModuleCurrencies' do not have enough balance for that route.",
-      ),
+    mockDispatch.mockRejectedValue(
+      new Error("Payment required. Insufficient available balance"),
     );
 
     await expect(
@@ -633,8 +595,8 @@ describe("Given: agent OpenRouter reply fallback and prompt gating", () => {
     (service as any).resolveThreadIdForMessageInChat.mockResolvedValue(
       threadId,
     );
-    mockedReactByOpenRouter.mockRejectedValue(
-      new Error("do not have enough balance for that route"),
+    mockDispatch.mockRejectedValue(
+      new Error("Payment required. Insufficient available balance"),
     );
     mockedThreadMessageCreate.mockResolvedValue({
       id: "insufficient-tokens",
@@ -674,7 +636,7 @@ describe("Given: agent OpenRouter reply fallback and prompt gating", () => {
   it("posts recoverable OpenRouter certificate errors without rethrowing", async () => {
     const service = createService();
 
-    mockedReactByOpenRouter.mockRejectedValue(
+    mockDispatch.mockRejectedValue(
       new Error(
         "Internal server error: unknown certificate verification error",
       ),
@@ -728,7 +690,7 @@ describe("Given: agent OpenRouter reply fallback and prompt gating", () => {
   it("posts recoverable no-valid-model-response errors without rethrowing", async () => {
     const service = createService();
 
-    mockedReactByOpenRouter.mockRejectedValue(
+    mockDispatch.mockRejectedValue(
       new Error(
         "No valid model response received. model=openai/gpt-5.2: generation error",
       ),
@@ -776,111 +738,6 @@ describe("Given: agent OpenRouter reply fallback and prompt gating", () => {
 
   /**
    * BDD Scenario
-   * Given: the downstream RBAC route resolves with its own terminal OpenRouter message.
-   * When: the agent service returns that route result to the caller.
-   * Then: it does not create a second agent-level OpenRouter error message.
-   */
-  it("does not duplicate error messages when RBAC returns a terminal OpenRouter message", async () => {
-    const service = createService();
-    const terminalMessage = {
-      data: {
-        socialModule: {
-          message: {
-            id: "status-message-1",
-            description:
-              "Ошибка OpenRouter\n`No valid model response received. model=openai/gpt-5.2: generation error`",
-          },
-        },
-      },
-    };
-
-    mockedReactByOpenRouter.mockResolvedValue(terminalMessage);
-
-    await expect(
-      service.openRouterReplyMessageCreate({
-        jwtToken: "caller-jwt",
-        rbacModuleSubject: {
-          id: "caller-subject",
-        } as any,
-        shouldReplySocialModuleProfile: {
-          id: "assistant-profile",
-        } as any,
-        socialModuleChat: {
-          id: "chat-1",
-        } as any,
-        socialModuleMessage: {
-          id: "message-1",
-          description: "Hello",
-        } as any,
-        messageFromSocialModuleProfile: {
-          id: "sender-profile",
-        } as any,
-      }),
-    ).resolves.toBe(terminalMessage);
-
-    expect(mockedReactByOpenRouter).toHaveBeenCalledWith({
-      id: "subject-openrouter",
-      socialModuleChatId: "chat-1",
-      socialModuleMessageId: "message-1",
-      socialModuleProfileId: "sender-profile",
-      data: {
-        shouldReplySocialModuleProfile: {
-          id: "assistant-profile",
-        },
-      },
-      options: {
-        headers: {
-          Authorization: "Bearer signed-jwt",
-        },
-      },
-    });
-    expect(mockedThreadMessageCreate).not.toHaveBeenCalled();
-    expect(mockedMessageCreate).not.toHaveBeenCalled();
-  });
-
-  /**
-   * BDD Scenario
-   * Given: the downstream RBAC route already wrote the terminal OpenRouter status message before throwing.
-   * When: the agent service catches the marked fatal route error.
-   * Then: it does not write a duplicate agent-level error message.
-   */
-  it("does not duplicate error messages when RBAC throws after writing terminal status", async () => {
-    const service = createService();
-
-    mockedReactByOpenRouter.mockRejectedValue(
-      new Error(
-        "No valid model response received. model=openai/gpt-5.2: generation error [open-router-terminal-message-written]",
-      ),
-    );
-
-    await expect(
-      service.openRouterReplyMessageCreate({
-        jwtToken: "caller-jwt",
-        rbacModuleSubject: {
-          id: "caller-subject",
-        } as any,
-        shouldReplySocialModuleProfile: {
-          id: "assistant-profile",
-        } as any,
-        socialModuleChat: {
-          id: "chat-1",
-        } as any,
-        socialModuleMessage: {
-          id: "message-1",
-          description: "Hello",
-        } as any,
-        messageFromSocialModuleProfile: {
-          id: "sender-profile",
-        } as any,
-      }),
-    ).resolves.toBeUndefined();
-
-    expect(mockedThreadMessageCreate).not.toHaveBeenCalled();
-    expect(mockedMessageCreate).not.toHaveBeenCalled();
-  });
-
-  /**
-   * BDD Scenario
    * Given: a Telegram-origin social message has no text description because the user only sent an attachment.
    * When: the agent service considers that message for an OpenRouter reply.
    * Then: it skips generation without calling OpenRouter or writing an error message.
@@ -913,61 +770,9 @@ describe("Given: agent OpenRouter reply fallback and prompt gating", () => {
     expect(
       (service as any).resolveThreadIdForMessageInChat,
     ).not.toHaveBeenCalled();
-    expect(mockedReactByOpenRouter).not.toHaveBeenCalled();
+    expect(mockDispatch).not.toHaveBeenCalled();
     expect(mockedThreadMessageCreate).not.toHaveBeenCalled();
     expect(mockedMessageCreate).not.toHaveBeenCalled();
-  });
-
-  /**
-   * BDD Scenario
-   * Given: the downstream OpenRouter route rejects a selected model response because generated text is empty.
-   * When: the agent service handles that generation failure while replying in-thread.
-   * Then: it writes the existing OpenRouter error message into the thread and rethrows for observability.
-   */
-  it("posts an OpenRouter error reply when generated model output is empty", async () => {
-    const service = createService();
-
-    mockedReactByOpenRouter.mockRejectedValue(
-      new Error("Generated message is empty"),
-    );
-
-    await expect(
-      service.openRouterReplyMessageCreate({
-        jwtToken: "caller-jwt",
-        rbacModuleSubject: {
-          id: "caller-subject",
-        } as any,
-        shouldReplySocialModuleProfile: {
-          id: "assistant-profile",
-        } as any,
-        socialModuleChat: {
-          id: "chat-1",
-        } as any,
-        socialModuleMessage: {
-          id: "message-1",
-          description: "Hello",
-        } as any,
-        messageFromSocialModuleProfile: {
-          id: "sender-profile",
-        } as any,
-      }),
-    ).rejects.toThrow("Generated message is empty");
-
-    expect(mockedThreadMessageCreate).toHaveBeenCalledWith({
-      id: "caller-subject",
-      socialModuleProfileId: "assistant-profile",
-      socialModuleChatId: "chat-1",
-      socialModuleThreadId: "thread-1",
-      data: {
-        description: "Ошибка OpenRouter",
-        metadata: openRouterStatusMetadata,
-      },
-      options: {
-        headers: {
-          Authorization: "Bearer caller-jwt",
-        },
-      },
-    });
   });
 
   /**
@@ -990,6 +795,7 @@ describe("Given: agent OpenRouter reply fallback and prompt gating", () => {
 
       (service as any).openRouterReplyMessageCreate =
         openRouterReplyMessageCreate;
+
       (service as any).modules.rbac = {
         subjectsToSocialModuleProfiles: {
           find: jest.fn().mockResolvedValue([
@@ -999,6 +805,10 @@ describe("Given: agent OpenRouter reply fallback and prompt gating", () => {
           ]),
         },
         subject: {
+          customerWork: {
+            pendingForMessage: jest.fn().mockResolvedValue(assignedWork),
+            ack: jest.fn(),
+          },
           findById: jest.fn().mockResolvedValue({
             id: "rbac-subject",
           }),
@@ -1074,6 +884,7 @@ describe("Given: agent OpenRouter reply fallback and prompt gating", () => {
         threadId: "thread-1",
         senderProfileId: props.messageFromSocialModuleProfile.id,
       }));
+
     (service as any).modules.rbac = {
       subjectsToSocialModuleProfiles: {
         find: jest.fn().mockResolvedValue([
@@ -1083,6 +894,10 @@ describe("Given: agent OpenRouter reply fallback and prompt gating", () => {
         ]),
       },
       subject: {
+        customerWork: {
+          pendingForMessage: jest.fn().mockResolvedValue(assignedWork),
+          ack: jest.fn(),
+        },
         findById: jest.fn().mockResolvedValue({
           id: "rbac-subject",
         }),
@@ -1154,6 +969,7 @@ describe("Given: agent OpenRouter reply fallback and prompt gating", () => {
       openRouterReplyMessageCreate;
     (service as any).telegramBotCommandReplyMessageCreate =
       telegramBotCommandReplyMessageCreate;
+
     (service as any).modules.rbac = {
       subjectsToSocialModuleProfiles: {
         find: jest.fn().mockResolvedValue([
@@ -1163,6 +979,10 @@ describe("Given: agent OpenRouter reply fallback and prompt gating", () => {
         ]),
       },
       subject: {
+        customerWork: {
+          pendingForMessage: jest.fn().mockResolvedValue(assignedWork),
+          ack: jest.fn(),
+        },
         findById: jest.fn().mockResolvedValue({
           id: "rbac-subject",
         }),
@@ -1238,21 +1058,16 @@ describe("Given web AI Chat uses token billing and Telegram uses subscription ga
   beforeEach(() => {
     jest.clearAllMocks();
     mockedSign.mockResolvedValue("signed-jwt");
-    mockedReactByOpenRouter.mockResolvedValue({});
+    mockDispatch.mockResolvedValue({ id: "attempt", state: "delivered" });
   });
-  it("When a web project has no Telegram or tariff membership Then it reaches the existing RBAC OpenRouter billing route", async () => {
+  it("dispatches the assigned work from a web chat without a tariff membership", async () => {
     await withoutSubscription().openRouterReplyMessageCreate(props("ai-chat"));
-    expect(mockedReactByOpenRouter).toHaveBeenCalledWith(
-      expect.objectContaining({
-        id: "subject-openrouter",
-        socialModuleChatId: "chat",
-      }),
-    );
+    expect(mockDispatch).toHaveBeenCalledWith(assignedWork);
     expect(mockedThreadMessageCreate).not.toHaveBeenCalled();
   });
   it("When a Telegram member lacks required channel membership Then its channel gate still applies", async () => {
     await withoutSubscription().openRouterReplyMessageCreate(props("telegram"));
-    expect(mockedReactByOpenRouter).not.toHaveBeenCalled();
+    expect(mockDispatch).not.toHaveBeenCalled();
     expect(mockedThreadMessageCreate).toHaveBeenCalledWith(
       expect.objectContaining({
         data: expect.objectContaining({

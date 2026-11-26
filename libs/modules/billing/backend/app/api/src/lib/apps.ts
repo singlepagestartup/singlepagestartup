@@ -1,3 +1,7 @@
+import { serviceBootstrap as walletsToCurrenciesApp } from "@sps/billing/relations/wallets-to-currencies/backend/app/api/src/lib/bootstrap";
+import { serviceBootstrap as transactionsToWalletsApp } from "@sps/billing/relations/transactions-to-wallets/backend/app/api/src/lib/bootstrap";
+import { serviceBootstrap as transactionApp } from "@sps/billing/models/transaction/backend/app/api/src/lib/bootstrap";
+import { serviceBootstrap as walletApp } from "@sps/billing/models/wallet/backend/app/api/src/lib/bootstrap";
 import {
   createModuleChildApp,
   defaultAppAssembly,
@@ -19,6 +23,26 @@ export class Apps {
   }
 
   bindApps() {
+    this.apps.push({
+      type: "relation",
+      route: "/wallets-to-currencies",
+      app: createModuleChildApp(walletsToCurrenciesApp, this.assembly),
+    });
+    this.apps.push({
+      type: "relation",
+      route: "/transactions-to-wallets",
+      app: createModuleChildApp(transactionsToWalletsApp, this.assembly),
+    });
+    this.apps.push({
+      type: "model",
+      route: "/transactions",
+      app: createModuleChildApp(transactionApp, this.assembly),
+    });
+    this.apps.push({
+      type: "model",
+      route: "/wallets",
+      app: createModuleChildApp(walletApp, this.assembly),
+    });
     this.apps.push({
       type: "model",
       route: "/widgets",

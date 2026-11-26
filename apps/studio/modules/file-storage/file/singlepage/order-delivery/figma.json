@@ -1,0 +1,21 @@
+{
+  "componentName": "file-storage.file",
+  "pageName": "file-storage",
+  "variantName": "order-delivery",
+  "nodeId": null,
+  "variantNodeId": null,
+  "metadata": {
+    "singlepagestartup.studio.blockId": "file-storage.file.order-delivery",
+    "singlepagestartup.studio.layer": "singlepage",
+    "singlepagestartup.studio.syncKey": "file-storage/file/singlepage/order-delivery",
+    "sps.figma.component": "file-storage.file",
+    "sps.figma.variant": "order-delivery",
+    "sps.source.module": "file-storage",
+    "sps.source.entityType": "model",
+    "sps.source.entity": "file",
+    "sps.source.variant": "order-delivery",
+    "sps.contractVersion": "0.1.0",
+    "sps.code.component": "apps/studio/modules/file-storage/file/singlepage/order-delivery/Component.tsx",
+    "sps.code.story": "apps/studio/modules/file-storage/file/singlepage/order-delivery/Component.stories.tsx"
+  }
+}

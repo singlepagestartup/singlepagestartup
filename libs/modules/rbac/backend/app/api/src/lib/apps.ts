@@ -1,3 +1,6 @@
+import { serviceBootstrap as subjectsToCrmModuleTasks } from "@sps/rbac/relations/subjects-to-crm-module-tasks/backend/app/api/src/lib/bootstrap";
+import { serviceBootstrap as subjectsToSocialModuleChats } from "@sps/rbac/relations/subjects-to-social-module-chats/backend/app/api/src/lib/bootstrap";
+import { serviceBootstrap as subjectsToBillingModuleWalletsApp } from "@sps/rbac/relations/subjects-to-billing-module-wallets/backend/app/api/src/lib/bootstrap";
 import { serviceBootstrap as subjectsToEcommerceModuleStores } from "@sps/rbac/relations/subjects-to-ecommerce-module-stores/backend/app/api/src/lib/bootstrap";
 import { serviceBootstrap as widgetsToEcommerceModuleWidgets } from "@sps/rbac/relations/widgets-to-ecommerce-module-widgets/backend/app/api/src/lib/bootstrap";
 import { serviceBootstrap as widgetsToCrmModuleWidgets } from "@sps/rbac/relations/widgets-to-crm-module-widgets/backend/app/api/src/lib/bootstrap";
@@ -42,6 +45,24 @@ export class Apps {
   }
 
   bindApps() {
+    this.apps.push({
+      type: "relation",
+      route: "/subjects-to-crm-module-tasks",
+      app: createModuleChildApp(subjectsToCrmModuleTasks, this.assembly),
+    });
+    this.apps.push({
+      type: "relation",
+      route: "/subjects-to-social-module-chats",
+      app: createModuleChildApp(subjectsToSocialModuleChats, this.assembly),
+    });
+    this.apps.push({
+      type: "relation",
+      route: "/subjects-to-billing-module-wallets",
+      app: createModuleChildApp(
+        subjectsToBillingModuleWalletsApp,
+        this.assembly,
+      ),
+    });
     this.apps.push({
       type: "relation",
       route: "/subjects-to-ecommerce-module-stores",

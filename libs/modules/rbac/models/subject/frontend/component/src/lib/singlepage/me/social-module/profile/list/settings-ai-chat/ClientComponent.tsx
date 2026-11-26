@@ -54,6 +54,7 @@ export function Component(props: IComponentPropsExtended) {
       language={props.language}
       isServer={false}
       variant="me-social-module-profile-id-update-ai-chat"
+      dataSource="props"
       data={props.data}
       profile={profile}
     />

@@ -6,14 +6,24 @@ import type { IComponentProps } from "./interface";
 export default async function Server(props: IComponentProps) {
   const project = props.project;
   try {
-    const data = await subjectApi.socialModuleChatFindByIdThreadFind({
+    const chatScope = {
       id: props.data.id,
       socialModuleChatId: project.chat.id,
       options: props.apiProps?.options,
-    });
+    };
+    const [data, chat] = await Promise.all([
+      subjectApi.socialModuleChatFindByIdThreadFind(chatScope),
+      subjectApi
+        .socialModuleProfileFindByIdChatFindById({
+          ...chatScope,
+          socialModuleProfileId: project.requesterProfileId,
+        })
+        .catch(() => null),
+    ]);
     return (
       <ChildComponent
         {...props}
+        canManageChat={chat?.canManageChat === true}
         threadsRead={{ data, isPending: false, isError: false }}
       />
     );
@@ -21,6 +31,7 @@ export default async function Server(props: IComponentProps) {
     return (
       <ChildComponent
         {...props}
+        canManageChat={false}
         threadsRead={{
           isPending: false,
           isError: true,

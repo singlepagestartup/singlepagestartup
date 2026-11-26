@@ -19,7 +19,10 @@ import { IComponentProps as IStoreListDefaultComponentProps } from "./store/list
 import { IComponentProps as ICategoryOverviewDefaultComponentProps } from "./category/overview-default/interface";
 import { IComponentProps as IStoreOverviewDefaultComponentProps } from "./store/overview-default/interface";
 
+import type { IComponentProps as IStoreHeaderDefaultProps } from "./store/header-default/interface";
+
 export type IComponentProps =
+  | IStoreHeaderDefaultProps
   | IHiddenComponentProps
   | IFindComponentProps
   | IAdminTableRowComponentProps

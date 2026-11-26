@@ -1,0 +1,27 @@
+{
+  "id": "ecommerce.order.work-checkout",
+  "title": "Оплата заказа",
+  "description": "Checkout for one order with its fixed result version and price.",
+  "layer": "singlepage",
+  "state": "draft",
+  "source": {
+    "module": "ecommerce",
+    "entityType": "model",
+    "entity": "order",
+    "variant": "work-checkout"
+  },
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "contentSlots": [],
+  "figma": {
+    "componentName": "ecommerce.order",
+    "pageName": "ecommerce",
+    "variantName": "work-checkout",
+    "nodeId": null,
+    "variantNodeId": null,
+    "syncStatus": "not-created",
+    "metadataFile": "figma.json"
+  }
+}

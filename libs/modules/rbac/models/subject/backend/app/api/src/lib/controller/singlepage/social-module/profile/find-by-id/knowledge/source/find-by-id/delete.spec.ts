@@ -64,8 +64,23 @@ describe("rbac profile-scoped Knowledge Source deletion", () => {
       .fn()
       .mockResolvedValue([{ id: "profile-source-link" }]);
     const service = {
+      module: {
+        subjectsToSocialModuleProfiles: {
+          find: jest.fn().mockResolvedValue([]),
+        },
+      },
       modules: {
+        knowledge: {
+          source: {
+            findById: jest
+              .fn()
+              .mockResolvedValue({ id: "source-1", variant: "default" }),
+          },
+        },
         social: {
+          chat: {
+            findById: jest.fn().mockResolvedValue({ variant: "default" }),
+          },
           profilesToChats: {
             find: profilesToChatsFind,
           },
@@ -118,8 +133,16 @@ describe("rbac profile-scoped Knowledge Source deletion", () => {
    */
   it("does not delete a source that is not linked to the target profile", async () => {
     const service = {
+      module: {
+        subjectsToSocialModuleProfiles: {
+          find: jest.fn().mockResolvedValue([]),
+        },
+      },
       modules: {
         social: {
+          chat: {
+            findById: jest.fn().mockResolvedValue({ variant: "default" }),
+          },
           profilesToChats: {
             find: jest
               .fn()

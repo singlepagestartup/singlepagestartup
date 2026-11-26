@@ -16,7 +16,10 @@ import { Component as AdminV2SidebarItem } from "./admin-v2/sidebar-item";
 import { Component as Default } from "./default";
 import { Component as OverviewDefault } from "./overview-default";
 
+import { Component as HeaderDefault } from "./header-default";
+
 export const variants = {
+  "header-default": HeaderDefault,
   "product-price-default": ProductPriceDefault,
   service: Service,
   delivery: Delivery,

@@ -34,9 +34,9 @@ export {
   isBcryptSalt,
 } from "./bcrypt-columns";
 export {
-  getProfileDocumentSkillSlug,
-  getAIChatDocumentForSkill,
   getPrivateAIChatSkillProfileId,
+  storeEmployeeSkillCommand,
+  storeEmployeeSkillSlug,
 } from "./ai-chat-document-skills";
 export {
   validateWebhookIdentifiers,
@@ -92,6 +92,7 @@ export {
 export { resolveCorsOrigin } from "./cors-origin";
 
 export { compileTariffFormula, type ITariffFormula } from "./tariff-formula";
+export { assertSingleUnitPerOrder } from "./ecommerce-quantity";
 export {
   moneyMinorUnits,
   moneyFromMinorUnits,

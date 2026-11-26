@@ -341,12 +341,23 @@ export async function findContentModelRecords(
 
   await assertContentModelSelector(parsed.data, options);
 
-  return await findContentRecords(
+  const records = await findContentRecords(
     {
       ...parsed.data,
       entity: modelSelectorToEntity(parsed.data),
     },
     options,
+  );
+  const fields = parsed.data.fields;
+  if (!fields || !records) {
+    return records;
+  }
+  return records.map((record) =>
+    Object.fromEntries(
+      fields
+        .filter((key) => Object.hasOwn(record, key))
+        .map((key) => [key, record[key]]),
+    ),
   );
 }
 

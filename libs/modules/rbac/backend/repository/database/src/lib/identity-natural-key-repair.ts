@@ -151,7 +151,8 @@ function inspectionQuery(tables: IIdentityNaturalKeyRepairTables) {
     ),
     identity_link_duplicate_groups AS (
       SELECT COUNT(*)::bigint AS row_count
-      FROM "${tables.subjectsToIdentities}"
+      FROM "${tables.subjectsToIdentities}" relation
+      WHERE relation.variant NOT IN ('provider-assignment', 'provider-default')
       GROUP BY iy_id
       HAVING COUNT(*) > 1
     )
@@ -319,7 +320,8 @@ async function inspectDiagnostics(
           PARTITION BY iy_id
           ORDER BY created_at DESC, id DESC
         ) AS row_number
-      FROM "${tables.subjectsToIdentities}"
+      FROM "${tables.subjectsToIdentities}" relation
+      WHERE relation.variant NOT IN ('provider-assignment', 'provider-default')
     )
     SELECT identity_id, link_id, subject_id, row_number
     FROM ranked
@@ -534,7 +536,8 @@ async function apply(
           PARTITION BY iy_id
           ORDER BY created_at DESC, id DESC
         ) AS row_number
-      FROM "${tables.subjectsToIdentities}"
+      FROM "${tables.subjectsToIdentities}" relation
+      WHERE relation.variant NOT IN ('provider-assignment', 'provider-default')
     )
     DELETE FROM "${tables.subjectsToIdentities}" relation
     USING ranked

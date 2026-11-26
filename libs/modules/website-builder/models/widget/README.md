@@ -29,7 +29,7 @@ Widgets store reusable content blocks (text, media, structured sections) for bui
 - `content-ai-chat-reset-password`: password reset presentation with its own RBAC form slot.
 - `navbar-ai-chat`: server navigation presentation with children for project and account controls composed by Host. Host supplies `language` and `helpSelected`; the Widget does not receive or parse the current Page URL.
 - `footer-ai-chat`: server footer presentation with locale-aware destinations.
-- `landing-ai-chat`: Russian landing presentation with a local demonstration using the production Social views’ shared `ChatWorkspace` and `ChatThreadPanel` from `@sps/ui-adapter`: all five documents in the canonical `AI_CHAT_DOCUMENTS` order (Brief, Strategy, Brand, Design, Products), chat, editable Markdown with explicit local saving, local file previews and new discussions. Each document retains its own draft, saved text, attachments and conversation while switching between sections. The dark navigation, responsive Chat/Document switch, 360px editor column and independent scroll areas use the production layout. The demonstration uses prepared copy and local state without a Social Chat record, API writes or AI calls. It imports no Social or RBAC components. Its links target saved Host pages and preserve the current URL language. Russian default copy lives in `AI_CHAT_LANDING_CONTENT`; localized saved Widget titles remain editable.
+- `landing-ai-chat`: Russian landing presentation with a local demonstration using the production Social views’ shared `ChatWorkspace` and `ChatThreadPanel` from `@sps/ui-adapter`: five example documents (Brief, Strategy, Brand, Design, Products), chat, editable Markdown with explicit local saving, local file previews and new discussions. Each document retains its own draft, saved text, attachments and conversation while switching between sections. The dark navigation, responsive Chat/Document switch, 360px editor column and independent scroll areas use the production layout. The demonstration uses prepared copy and local state without a Social Chat record, API writes or AI calls. It imports no Social or RBAC components. Its links target saved Host pages and preserve the current URL language. Russian default copy lives in `AI_CHAT_LANDING_CONTENT`; localized saved Widget titles remain editable.
 
 - `default`: sample component, for debugging.
 - `content-default`: saved hero copy, ordered media, sliders, features and CTA groups.
@@ -123,7 +123,7 @@ The workflow receives a local demo built from linked `demo-project` and
 record. Each document uses its UUID as its local key, title as its filename,
 subtitle as its introduction and description as its rich document source, converted to Markdown for the local editor. Associated
 File Storage records supply previewable attachments. `demo-project` buttons
-supply sidebar links; `demo-handoff` supplies the editable continuation card.
+supply sidebar links.
 The demo does not create a live project or call an AI provider. Generic editor
 controls are interface translations; example business content is stored in the
 records. No source-side catalog supplies missing landing records.

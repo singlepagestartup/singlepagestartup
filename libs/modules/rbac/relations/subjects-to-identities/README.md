@@ -2,7 +2,7 @@
 
 ## Purpose
 
-Links subjects to identities for authentication.
+Links subjects to sign-in identities and to credentials used for outbound provider requests.
 
 ## Fields
 
@@ -15,8 +15,9 @@ Links subjects to identities for authentication.
 - `subjectId`: linked subject ID.
 - `identityId`: linked identity ID.
 
-`identityId` is unique: one authentication identity resolves to at most one
-subject. A subject may still own multiple identities for different providers.
+Each authentication identity resolves to at most one subject. A subject can own identities for several providers.
+
+For outbound credentials, `provider-connection` records the technical subject, identity, store, owner and credential version. A `provider-assignment` grants a capability and rate card to a store assistant. A `provider-default` supplies the store fallback. Ordinary identity reads and mutations exclude all three variants. Store owners use the provider settings to manage them.
 
 ## Variants
 

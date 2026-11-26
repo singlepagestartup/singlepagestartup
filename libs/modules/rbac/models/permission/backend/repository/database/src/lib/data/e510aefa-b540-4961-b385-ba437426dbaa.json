@@ -1,0 +1,9 @@
+{
+  "id": "e510aefa-b540-4961-b385-ba437426dbaa",
+  "createdAt": "2026-11-16T08:28:02.340Z",
+  "updatedAt": "2026-11-16T08:28:02.340Z",
+  "variant": "default",
+  "type": "HTTP",
+  "method": "POST",
+  "path": "/api/rbac/subjects/[rbac.subjects.id]/social-module/profiles/ensure"
+}

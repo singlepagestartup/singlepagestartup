@@ -10,21 +10,19 @@ export function Component(props: IComponentPropsExtended) {
       name="skill"
       variant={props.variant}
     >
-      <div className="flex flex-col gap-6 pt-8 p-4">
-        {props.data.map((entity, index) => {
-          return (
-            <AdminTableRow
-              key={index}
-              module="social"
-              name="skill"
-              isServer={props.isServer}
-              variant="admin-table-row"
-              adminForm={props.adminForm}
-              data={entity}
-            />
-          );
-        })}
-      </div>
+      {props.data.map((entity) => {
+        return (
+          <AdminTableRow
+            key={entity.id}
+            module="social"
+            name="skill"
+            isServer={props.isServer}
+            variant="admin-table-row"
+            adminForm={props.adminForm}
+            data={entity}
+          />
+        );
+      })}
     </ParentComponent>
   );
 }

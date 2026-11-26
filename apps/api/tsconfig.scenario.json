@@ -1,6 +1,7 @@
 {
   "extends": "../../tsconfig.spec.json",
   "compilerOptions": {
+    "lib": ["es2023", "dom", "dom.iterable"],
     "module": "esnext",
     "types": ["jest", "node"]
   },

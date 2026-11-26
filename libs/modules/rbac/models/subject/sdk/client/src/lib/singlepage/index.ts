@@ -1,5 +1,25 @@
 "use client";
 import {
+  customerWork,
+  customerWorkAvailability,
+  customerWorkForOrder,
+  customerWorkForThread,
+  customerWorkAttachment,
+  changeCustomerWork,
+} from "./ecommerce-module/customer-work";
+import { socialModuleProfileChatCoverContent } from "./social-module/profile/find-by-id/chat/find-by-id/cover";
+import { protectedFileContent } from "./protected-file";
+import { orderWork } from "./ecommerce-module/order/work";
+import { crmWorkspace } from "./crm-module/workspace";
+import {
+  providerConnections,
+  changeProviderConnection,
+  type IProps as IProviderConnectionsProps,
+  type IChangeProps as IChangeProviderConnectionProps,
+} from "./provider-connections";
+import {
+  storeCatalogDirectories,
+  storeProducts,
   mutation as ecommerceModuleCatalogMutation,
   type IMutationProps as IEcommerceModuleCatalogMutationProps,
   context as ecommerceModuleCatalogContext,
@@ -429,6 +449,16 @@ import {
   type IResult as ISocialModuleChatFindByIdThreadUpdateResult,
 } from "./social-module/chat/find-by-id/thread/update";
 import {
+  action as socialModuleChatFindByIdThreadTyping,
+  type IProps as ISocialModuleChatFindByIdThreadTypingProps,
+  type IResult as ISocialModuleChatFindByIdThreadTypingResult,
+} from "./social-module/chat/find-by-id/thread/typing";
+import {
+  action as socialModuleChatFindByIdThreadMarkRead,
+  type IProps as ISocialModuleChatFindByIdThreadMarkReadProps,
+  type IResult as ISocialModuleChatFindByIdThreadMarkReadResult,
+} from "./social-module/chat/find-by-id/thread/mark-read";
+import {
   action as socialModuleChatFindByIdThreadDelete,
   type IProps as ISocialModuleChatFindByIdThreadDeleteProps,
   type IResult as ISocialModuleChatFindByIdThreadDeleteResult,
@@ -464,6 +494,8 @@ import {
 } from "./host-cache/revalidate";
 
 export type IProps = {
+  IProviderConnectionsProps: IProviderConnectionsProps;
+  IChangeProviderConnectionProps: IChangeProviderConnectionProps;
   IEcommerceModuleCatalogMutationProps: IEcommerceModuleCatalogMutationProps;
   IEcommerceModuleCatalogContextProps: IEcommerceModuleCatalogContextProps;
   IEcommerceModuleOfferCreateProps: IEcommerceModuleOfferCreateProps;
@@ -552,6 +584,8 @@ export type IProps = {
   ISocialModuleChatFindByIdThreadCreateProps: ISocialModuleChatFindByIdThreadCreateProps;
   ISocialModuleChatFindByIdThreadUpdateProps: ISocialModuleChatFindByIdThreadUpdateProps;
   ISocialModuleChatFindByIdThreadDeleteProps: ISocialModuleChatFindByIdThreadDeleteProps;
+  ISocialModuleChatFindByIdThreadMarkReadProps: ISocialModuleChatFindByIdThreadMarkReadProps;
+  ISocialModuleChatFindByIdThreadTypingProps: ISocialModuleChatFindByIdThreadTypingProps;
   ISocialModuleChatFindByIdProfileCreateProps: ISocialModuleChatFindByIdProfileCreateProps;
   ISocialModuleChatFindByIdProfileSearchProps: ISocialModuleChatFindByIdProfileSearchProps;
   ISocialModuleChatFindByIdAgentSubjectSearchProps: ISocialModuleChatFindByIdAgentSubjectSearchProps;
@@ -645,6 +679,8 @@ export type IResult = {
   ISocialModuleChatFindByIdThreadCreateResult: ISocialModuleChatFindByIdThreadCreateResult;
   ISocialModuleChatFindByIdThreadUpdateResult: ISocialModuleChatFindByIdThreadUpdateResult;
   ISocialModuleChatFindByIdThreadDeleteResult: ISocialModuleChatFindByIdThreadDeleteResult;
+  ISocialModuleChatFindByIdThreadMarkReadResult: ISocialModuleChatFindByIdThreadMarkReadResult;
+  ISocialModuleChatFindByIdThreadTypingResult: ISocialModuleChatFindByIdThreadTypingResult;
   ISocialModuleChatFindByIdProfileCreateResult: ISocialModuleChatFindByIdProfileCreateResult;
   ISocialModuleChatFindByIdProfileSearchResult: ISocialModuleChatFindByIdProfileSearchResult;
   ISocialModuleChatFindByIdAgentSubjectSearchResult: ISocialModuleChatFindByIdAgentSubjectSearchResult;
@@ -652,6 +688,20 @@ export type IResult = {
 };
 
 export const api = {
+  customerWork,
+  customerWorkAvailability,
+  customerWorkForOrder,
+  customerWorkForThread,
+  customerWorkAttachment,
+  changeCustomerWork,
+  orderWork,
+  protectedFileContent,
+  socialModuleProfileChatCoverContent,
+  crmWorkspace,
+  providerConnections,
+  changeProviderConnection,
+  storeCatalogDirectories,
+  storeProducts,
   ecommerceModuleCatalogMutation,
   ecommerceModuleCatalogContext,
   ecommerceModuleOfferCreate,
@@ -751,6 +801,8 @@ export const api = {
   socialModuleChatFindByIdThreadCreate,
   socialModuleChatFindByIdThreadUpdate,
   socialModuleChatFindByIdThreadDelete,
+  socialModuleChatFindByIdThreadMarkRead,
+  socialModuleChatFindByIdThreadTyping,
   socialModuleChatFindByIdProfileCreate,
   socialModuleChatFindByIdProfileSearch,
   socialModuleChatFindByIdAgentSubjectSearch,

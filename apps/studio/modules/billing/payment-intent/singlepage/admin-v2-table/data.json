@@ -32,7 +32,7 @@
       {
         "key": "amount",
         "label": "Amount",
-        "kind": "integer",
+        "kind": "numeric",
         "nullable": false,
         "default": 0
       },
@@ -55,6 +55,37 @@
         "kind": "text",
         "nullable": false,
         "default": "one_off"
+      },
+      {
+        "key": "checkoutProvider",
+        "label": "Checkout Provider",
+        "kind": "text",
+        "nullable": true
+      },
+      {
+        "key": "checkoutCurrencyId",
+        "label": "Checkout Currency Id",
+        "kind": "uuid",
+        "nullable": true
+      },
+      {
+        "key": "checkoutMetadata",
+        "label": "Checkout Metadata",
+        "kind": "jsonb",
+        "nullable": true
+      },
+      {
+        "key": "checkoutDispatchState",
+        "label": "Checkout Dispatch State",
+        "kind": "text",
+        "nullable": false,
+        "default": "legacy"
+      },
+      {
+        "key": "checkoutDispatchStartedAt",
+        "label": "Checkout Dispatch Started At",
+        "kind": "timestamp",
+        "nullable": true
       }
     ]
   },
@@ -67,7 +98,12 @@
       "amount": 0,
       "status": "requires_payment_method",
       "interval": null,
-      "type": "one_off"
+      "type": "one_off",
+      "checkoutProvider": null,
+      "checkoutCurrencyId": null,
+      "checkoutMetadata": {},
+      "checkoutDispatchState": "legacy",
+      "checkoutDispatchStartedAt": null
     },
     {
       "id": "bf8311ba-e9e1-4e7f-a9d7-b01ca2f42eb0",
@@ -77,7 +113,12 @@
       "amount": 0,
       "status": "requires_payment_method",
       "interval": null,
-      "type": "one_off"
+      "type": "one_off",
+      "checkoutProvider": null,
+      "checkoutCurrencyId": null,
+      "checkoutMetadata": {},
+      "checkoutDispatchState": "legacy",
+      "checkoutDispatchStartedAt": null
     },
     {
       "id": "a28f4286-4966-4234-a49f-94578bbf4af0",
@@ -87,7 +128,12 @@
       "amount": 0,
       "status": "requires_payment_method",
       "interval": null,
-      "type": "one_off"
+      "type": "one_off",
+      "checkoutProvider": null,
+      "checkoutCurrencyId": null,
+      "checkoutMetadata": {},
+      "checkoutDispatchState": "legacy",
+      "checkoutDispatchStartedAt": null
     }
   ]
 }

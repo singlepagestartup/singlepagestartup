@@ -261,15 +261,6 @@ async function getRequestAuth(req: IncomingMessage): Promise<
   | { ok: false; message: string }
 > {
   // OAuth identifies the connection; API RBAC owns operation permissions.
-  if (process.env["MCP_SERVICE_AUTH_REQUIRED"] === "false") {
-    return {
-      ok: true,
-      token: "anonymous",
-      clientId: "anonymous",
-      scopes: [...MCP_SCOPES],
-    };
-  }
-
   const authorization = getHeader(req, "authorization");
   const bearerToken = authorization?.match(/^Bearer\s+(.+)$/i)?.[1];
 
@@ -306,6 +297,15 @@ async function getRequestAuth(req: IncomingMessage): Promise<
         rbacSecretKey: providedSecret,
       };
     }
+  }
+
+  if (process.env["MCP_SERVICE_AUTH_REQUIRED"] === "false") {
+    return {
+      ok: true,
+      token: "anonymous",
+      clientId: "anonymous",
+      scopes: [...MCP_SCOPES],
+    };
   }
 
   return {

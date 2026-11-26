@@ -1,7 +1,10 @@
 import type { ComponentProps, ComponentPropsWithoutRef } from "react";
 import type { FormField } from "@sps/ui-adapter";
 export { type IModel } from "@sps/rbac/models/subject/sdk/model";
-import { IModel } from "@sps/rbac/models/subject/sdk/model";
+import type {
+  IModel,
+  ISubjectCartDetails,
+} from "@sps/rbac/models/subject/sdk/model";
 import {
   IComponentProps as IParentComponentProps,
   IComponentPropsExtended as IParentComponentPropsExtended,
@@ -18,7 +21,9 @@ export interface IComponentProps extends IParentComponentProps<
 > {
   language: string;
   ecommerceModuleProduct: IEcommerceModuleProduct;
-  ecommerceModuleOrder: IEcommerceModuleOrder;
+  ecommerceModuleOrder: IEcommerceModuleOrder & {
+    cartDetails?: ISubjectCartDetails;
+  };
   disabled?: boolean;
   ecommerceModuleStore?: IEcommerceModuleStore;
 }

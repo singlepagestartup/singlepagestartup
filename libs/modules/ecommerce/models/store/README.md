@@ -21,6 +21,7 @@ Seller rates such as `dispatch_fee` and `rate_per_km` are Store attributes. An o
 ## Variants
 
 - `default`: store card with attributes and description.
+- `header-default` displays the store’s localized name above the navigation supplied by its parent.
 - `overview-default`: overview card wrapper for store pages.
 - `service`, `delivery`: saved Store classification strings with the default card presentation.
 - `product-price-default`: reads `stores-to-products.find` and `quote`, resolves the currency through its SDK and passes the result to Product `price-default`. Client and server readers share that result contract. The shared record reader cannot express these dependent operations. Supply a loaded `product`, with optional `storeId`, `offerId`, quantity and currency. Without an explicit offer, the reader uses the earliest eligible Store–Product link by creation time, with the link ID breaking ties. A store page limits that choice to its own offers. Catalog cards display the store name and its quoted price for one unit.

@@ -6,6 +6,7 @@ import {
   type IConsistencyMetadata,
   type IConsistencyDelivery,
 } from "@sps/shared-utils";
+import { reconcileQuery } from "../cache/reconcile";
 
 interface IEntry {
   query: Query<any, any, any, any>;
@@ -77,32 +78,9 @@ export function consistencyQueryKey(
 function createClient(client: QueryClient) {
   const entries = new Map<string, IEntry>();
   const listeners = new Set<() => void>();
-  const pending = new Map<string, { running: boolean; again: boolean }>();
   let active = false;
   let accepted = new Set<string>();
   const notify = () => listeners.forEach((listener) => listener());
-  const invalidate = async (query: Query<any, any, any, any>) => {
-    const previous = pending.get(query.queryHash);
-    if (previous?.running) {
-      previous.again = true;
-      return;
-    }
-    const state = { running: true, again: false };
-    pending.set(query.queryHash, state);
-    try {
-      if (query.state.fetchStatus === "fetching")
-        await query.promise?.catch(() => undefined);
-      do {
-        state.again = false;
-        await client.invalidateQueries(
-          { queryKey: query.queryKey, exact: true, refetchType: "active" },
-          { cancelRefetch: false },
-        );
-      } while (state.again);
-    } finally {
-      pending.delete(query.queryHash);
-    }
-  };
   const response = async (event: Event) => {
     const detail = (
       event as CustomEvent<{ url: string; metadata: IConsistencyMetadata }>
@@ -195,8 +173,7 @@ function createClient(client: QueryClient) {
       for (const { query, metadata } of entries.values()) {
         if (message.renewedRefs?.includes(metadata.ref) && message.expiresAt)
           metadata.expiresAt = message.expiresAt;
-        if (refs.has(metadata.ref))
-          void invalidate(query).catch(() => undefined);
+        if (refs.has(metadata.ref)) void reconcileQuery(client, query);
       }
     },
     async check(

@@ -2,16 +2,17 @@ import "reflect-metadata";
 import { injectFromBase, injectable } from "inversify";
 import {
   DatabaseRepository,
+  withConsistencyTransaction,
   trackRepositoryRead,
 } from "@sps/shared-backend-api";
 import { Table } from "@sps/knowledge/models/source/backend/repository/database";
-import { asc, inArray, sql } from "drizzle-orm";
+import { and, asc, inArray, ne, sql } from "drizzle-orm";
 
 @injectable()
 @injectFromBase()
 export class Repository extends DatabaseRepository<typeof Table> {
   transaction<T>(operation: (tx: typeof this.db) => Promise<T>) {
-    return this.db.transaction(operation);
+    return withConsistencyTransaction(this.db, () => operation(this.db));
   }
   readSnapshot<T>(operation: (tx: typeof this.db) => Promise<T>) {
     return this.db.transaction(operation, {
@@ -36,7 +37,7 @@ export class Repository extends DatabaseRepository<typeof Table> {
   async lockSlug(slug: string) {
     await this.db.execute(sql`SELECT pg_advisory_xact_lock(hashtext(${slug}))`);
   }
-  async freshHeaders(ids: string[]) {
+  async freshHeaders(ids: string[], includeCustomerMemory = false) {
     if (!ids.length) return [];
     await trackRepositoryRead(Table, this.db, {
       and: [{ column: "id", method: "inArray", value: ids }],
@@ -50,7 +51,23 @@ export class Repository extends DatabaseRepository<typeof Table> {
       })
       .from(Table)
       .where(
-        sql`${Table.id} = ANY(${sql.param(ids)}::uuid[]) AND ${Table.indexedContentHash} = ${Table.contentHash}`,
+        and(
+          sql`${Table.id} = ANY(${sql.param(ids)}::uuid[]) AND ${Table.indexedContentHash} = ${Table.contentHash}`,
+          includeCustomerMemory
+            ? undefined
+            : ne(Table.variant, "customer-memory"),
+        ),
       );
+  }
+
+  async privateSourceIds() {
+    await trackRepositoryRead(Table, this.db, {
+      and: [{ column: "variant", method: "eq", value: "customer-memory" }],
+    });
+    const rows = await this.db
+      .select({ id: Table.id })
+      .from(Table)
+      .where(sql`${Table.variant} = ${"customer-memory"}`);
+    return rows.map(({ id }) => id);
   }
 }

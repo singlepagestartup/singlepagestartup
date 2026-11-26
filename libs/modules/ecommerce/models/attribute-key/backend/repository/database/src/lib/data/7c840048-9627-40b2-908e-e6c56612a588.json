@@ -1,0 +1,15 @@
+{
+  "id": "7c840048-9627-40b2-908e-e6c56612a588",
+  "createdAt": "2026-11-17T07:10:36.979Z",
+  "updatedAt": "2026-11-17T07:10:36.979Z",
+  "variant": "default",
+  "type": "feature",
+  "field": "number",
+  "adminTitle": "stock_quantity",
+  "slug": "stock_quantity",
+  "title": {
+    "en": "stock_quantity"
+  },
+  "prefix": {},
+  "suffix": {}
+}

@@ -1,5 +1,6 @@
 import { RBAC_JWT_SECRET, RBAC_SECRET_KEY } from "@sps/shared-utils";
 import { Context } from "hono";
+import { STORE_EMPLOYEE_CHAT_VARIANT } from "@sps/rbac/models/subject/sdk/model/src/lib/crm-workspace";
 import { HTTPException } from "hono/http-exception";
 import { Service } from "../../../../../../service";
 import { getHttpErrorType } from "@sps/backend-utils";
@@ -80,12 +81,19 @@ export class Handler {
         throw new Error("Validation error. Thread title is required");
       }
 
+      if (
+        socialModuleChat.variant === STORE_EMPLOYEE_CHAT_VARIANT &&
+        data.variant &&
+        !["default", "custom"].includes(data.variant)
+      ) {
+        throw new Error(
+          "Validation error. Training discussions use the custom variant",
+        );
+      }
       if (data.metadata?.aiChatDocument !== undefined) {
-        data.metadata.aiChatDocument =
-          await this.service.socialModuleChatLifecycleValidateDocument({
-            socialModuleChatId,
-            document: data.metadata.aiChatDocument,
-          });
+        throw new Error(
+          "Validation error. Thread documents are no longer supported",
+        );
       }
 
       let telegramTopic;

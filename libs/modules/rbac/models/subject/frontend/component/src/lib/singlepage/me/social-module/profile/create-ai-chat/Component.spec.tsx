@@ -30,13 +30,11 @@ jest.mock("next/link", () => ({
 jest.mock("@sps/rbac/models/subject/sdk/client", () => ({
   queryClient: new (jest.requireActual("@tanstack/react-query").QueryClient)(),
   api: {
+    socialModuleProfileProjects: () => ({
+      refetch: async () => ({ data: await projectsRead() }),
+    }),
     socialModuleProfileCreate: () => ({ mutateAsync: createProfile }),
     socialModuleChatFindByIdThreadCreate: () => ({ mutateAsync: createThread }),
-  },
-}));
-jest.mock("@sps/rbac/models/subject/sdk/server", () => ({
-  api: {
-    socialModuleProfileProjects: (...args: any[]) => projectsRead(...args),
   },
 }));
 jest.mock("@sps/rbac/models/subject/frontend/component", () => ({
@@ -73,9 +71,7 @@ it("opens a newly created project and its back link in the current locale", asyn
   });
   fireEvent.click(screen.getByRole("button", { name: "Создать проект" }));
   await waitFor(() =>
-    expect(push).toHaveBeenCalledWith(
-      "/ru/ai-chat/social/profiles/profile/chats/chat/threads/thread",
-    ),
+    expect(push).toHaveBeenCalledWith("/ru/social/chats/chat/threads/thread"),
   );
 });
 
@@ -100,9 +96,7 @@ it("retries opening a saved project without creating another Profile", async () 
   fireEvent.click(screen.getByRole("button", { name: "Открыть проект" }));
   await waitFor(() => expect(push).toHaveBeenCalled());
   expect(createProfile).toHaveBeenCalledTimes(1);
-  expect(push).toHaveBeenCalledWith(
-    "/ru/ai-chat/social/profiles/profile/chats/chat/threads/thread",
-  );
+  expect(push).toHaveBeenCalledWith("/ru/social/chats/chat/threads/thread");
 });
 
 it("opens a new thread and its cancel destination in the current locale", async () => {
@@ -118,14 +112,14 @@ it("opens a new thread and its cancel destination in the current locale", async 
   );
   expect(
     screen.getByRole("link", { name: "Отмена" }).getAttribute("href"),
-  ).toBe("/ru/ai-chat/social/profiles/profile/chats/chat/threads/thread");
+  ).toBe("/ru/social/chats/chat/threads/thread");
   fireEvent.change(screen.getByLabelText("Название обсуждения"), {
     target: { value: "New topic" },
   });
   fireEvent.click(screen.getByRole("button", { name: "Создать обсуждение" }));
   await waitFor(() =>
     expect(push).toHaveBeenCalledWith(
-      "/ru/ai-chat/social/profiles/profile/chats/chat/threads/new-thread",
+      "/ru/social/chats/chat/threads/new-thread",
     ),
   );
 });

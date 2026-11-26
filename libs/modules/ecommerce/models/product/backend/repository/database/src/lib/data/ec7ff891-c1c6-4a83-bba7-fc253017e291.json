@@ -6,6 +6,7 @@
   "variant": "default",
   "kind": "service",
   "type": "one_off",
+  "singleUnitPerOrder": false,
   "slug": "demo-ai-chat-setup",
   "title": {
     "en": "AI chat setup (demo)",

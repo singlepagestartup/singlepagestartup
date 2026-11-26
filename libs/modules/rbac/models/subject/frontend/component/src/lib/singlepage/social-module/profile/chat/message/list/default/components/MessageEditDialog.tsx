@@ -17,24 +17,30 @@ interface MessageEditDialogProps {
   form: UseFormReturn<MessageEditFormValues>;
   isOpen: boolean;
   isUpdating: boolean;
+  language: string;
   onOpenChange: (open: boolean) => void;
   onSubmit: (data: MessageEditFormValues) => Promise<void> | void;
 }
 
 export function MessageEditDialog(props: MessageEditDialogProps) {
+  const ru = props.language === "ru";
+  const textLabel = ru ? "Текст сообщения" : "Message text";
   return (
     <Dialog open={props.isOpen} onOpenChange={props.onOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Edit Message</DialogTitle>
+          <DialogTitle>
+            {ru ? "Изменить сообщение" : "Edit Message"}
+          </DialogTitle>
           <DialogDescription>
-            Update the message text and save changes.
+            {ru
+              ? "Измените текст и сохраните изменения."
+              : "Update the message text and save changes."}
           </DialogDescription>
         </DialogHeader>
         <Form {...props.form}>
           <div className="grid w-full gap-4">
             <div className="flex w-full flex-col gap-2" data-color-mode="light">
-              <label className="text-sm font-medium">Text</label>
               <Controller
                 name="description"
                 control={props.form.control}
@@ -47,6 +53,7 @@ export function MessageEditDialog(props: MessageEditDialogProps) {
                       }}
                       height={200}
                       visibleDragbar={false}
+                      textareaProps={{ "aria-label": textLabel }}
                     />
                   );
                 }}
@@ -58,7 +65,13 @@ export function MessageEditDialog(props: MessageEditDialogProps) {
               onClick={props.form.handleSubmit(props.onSubmit)}
               disabled={props.isUpdating}
             >
-              {props.isUpdating ? "Updating..." : "Save changes"}
+              {props.isUpdating
+                ? ru
+                  ? "Сохраняем…"
+                  : "Updating..."
+                : ru
+                  ? "Сохранить"
+                  : "Save changes"}
             </Button>
           </div>
         </Form>

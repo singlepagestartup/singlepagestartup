@@ -207,6 +207,25 @@ describe("MCP content-management generic operations", () => {
     );
   });
 
+  it("returns full records by default and only the requested top-level fields for a summary", async () => {
+    const article = {
+      id: "entry",
+      title: { ru: "Статья" },
+      description: "Ж".repeat(65_536),
+    };
+    const registry = [createDescriptor(createApi([article]))];
+    const selector = { module: "blog", model: "widget" };
+    await expect(
+      findContentModelRecords(selector, { registry, authHeaders }),
+    ).resolves.toEqual([article]);
+    await expect(
+      findContentModelRecords(
+        { ...selector, fields: ["id", "title", "unknown", "toString"] },
+        { registry, authHeaders },
+      ),
+    ).resolves.toEqual([{ id: article.id, title: article.title }]);
+  });
+
   /**
    * BDD Scenario: Filtered find forwards query arguments
    * Given a content entity SDK adapter supports filtered find

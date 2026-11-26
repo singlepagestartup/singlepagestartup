@@ -1,3 +1,8 @@
+import { serviceBootstrap as FunnelsToEcommerceModuleStoresToProductsApp } from "@sps/crm/relations/funnels-to-ecommerce-module-stores-to-products/backend/app/api/src/lib/bootstrap";
+import { serviceBootstrap as FunnelsToTasksApp } from "@sps/crm/relations/funnels-to-tasks/backend/app/api/src/lib/bootstrap";
+import { serviceBootstrap as FunnelsToStagesApp } from "@sps/crm/relations/funnels-to-stages/backend/app/api/src/lib/bootstrap";
+import { serviceBootstrap as TasksToStagesApp } from "@sps/crm/relations/tasks-to-stages/backend/app/api/src/lib/bootstrap";
+import { serviceBootstrap as StageApp } from "@sps/crm/models/stage/backend/app/api/src/lib/bootstrap";
 import { serviceBootstrap as formsToSteps } from "@sps/crm/relations/forms-to-steps/backend/app/api/src/lib/bootstrap";
 import { serviceBootstrap as stepsToInputs } from "@sps/crm/relations/steps-to-inputs/backend/app/api/src/lib/bootstrap";
 import { serviceBootstrap as step } from "@sps/crm/models/step/backend/app/api/src/lib/bootstrap";
@@ -17,6 +22,10 @@ import { serviceBootstrap as requestApp } from "@sps/crm/models/request/backend/
 import { serviceBootstrap as widgetsToFormsApp } from "@sps/crm/relations/widgets-to-forms/backend/app/api/src/lib/bootstrap";
 import { serviceBootstrap as formsToRequestsApp } from "@sps/crm/relations/forms-to-requests/backend/app/api/src/lib/bootstrap";
 import { serviceBootstrap as widgetsToWebsiteBuilderModuleWidgets } from "@sps/crm/relations/widgets-to-website-builder-module-widgets/backend/app/api/src/lib/bootstrap";
+import { serviceBootstrap as FunnelApp } from "@sps/crm/models/funnel/backend/app/api/src/lib/bootstrap";
+import { serviceBootstrap as TaskApp } from "@sps/crm/models/task/backend/app/api/src/lib/bootstrap";
+import { serviceBootstrap as TasksToEcommerceModuleStoresToProductsApp } from "@sps/crm/relations/tasks-to-ecommerce-module-stores-to-products/backend/app/api/src/lib/bootstrap";
+import { serviceBootstrap as TasksToEcommerceModuleOrdersApp } from "@sps/crm/relations/tasks-to-ecommerce-module-orders/backend/app/api/src/lib/bootstrap";
 
 export class Apps {
   apps: IModuleAppEntry[] = [];
@@ -26,6 +35,34 @@ export class Apps {
   }
 
   bindApps() {
+    this.apps.push({
+      type: "relation",
+      route: "/funnels-to-ecommerce-module-stores-to-products",
+      app: createModuleChildApp(
+        FunnelsToEcommerceModuleStoresToProductsApp,
+        this.assembly,
+      ),
+    });
+    this.apps.push({
+      type: "relation",
+      route: "/funnels-to-tasks",
+      app: createModuleChildApp(FunnelsToTasksApp, this.assembly),
+    });
+    this.apps.push({
+      type: "relation",
+      route: "/funnels-to-stages",
+      app: createModuleChildApp(FunnelsToStagesApp, this.assembly),
+    });
+    this.apps.push({
+      type: "relation",
+      route: "/tasks-to-stages",
+      app: createModuleChildApp(TasksToStagesApp, this.assembly),
+    });
+    this.apps.push({
+      type: "model",
+      route: "/stages",
+      app: createModuleChildApp(StageApp, this.assembly),
+    });
     this.apps.push({
       type: "relation",
       route: "/forms-to-steps",
@@ -93,6 +130,29 @@ export class Apps {
         widgetsToWebsiteBuilderModuleWidgets,
         this.assembly,
       ),
+    });
+    this.apps.push({
+      type: "model",
+      route: "/funnels",
+      app: createModuleChildApp(FunnelApp, this.assembly),
+    });
+    this.apps.push({
+      type: "model",
+      route: "/tasks",
+      app: createModuleChildApp(TaskApp, this.assembly),
+    });
+    this.apps.push({
+      type: "relation",
+      route: "/tasks-to-ecommerce-module-stores-to-products",
+      app: createModuleChildApp(
+        TasksToEcommerceModuleStoresToProductsApp,
+        this.assembly,
+      ),
+    });
+    this.apps.push({
+      type: "relation",
+      route: "/tasks-to-ecommerce-module-orders",
+      app: createModuleChildApp(TasksToEcommerceModuleOrdersApp, this.assembly),
     });
   }
 }

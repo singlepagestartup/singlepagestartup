@@ -69,6 +69,17 @@ function markdown(node: IRichTextNode): string {
   return text;
 }
 /** CMS fields can contain legacy plain text or the admin editor's TipTap JSON. */
+export function getRichTextEditorValue(value: string): string {
+  if (!value || read(value)) return value;
+  return JSON.stringify({
+    type: "doc",
+    content: value.split(/\r\n|\n|\r/).map((line) => ({
+      type: "paragraph",
+      ...(line && { content: [{ type: "text", text: line }] }),
+    })),
+  });
+}
+
 export function getRichTextPlainText(value: string | undefined): string {
   if (!value) return "";
   const node = read(value);

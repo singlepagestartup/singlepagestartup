@@ -17,6 +17,8 @@ export const route = "/api/ecommerce/orders-to-file-storage-module-files";
 export const variants = [
   "default",
   "attachment-default",
+  "result-preview",
+  "result-original",
   "receipt-default",
   "hidden",
 ] as const;

@@ -8,6 +8,10 @@ import {
 } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { globalActionsStore } from "@sps/shared-frontend-client-store";
+import {
+  queryClient,
+  patchInListQueries,
+} from "@sps/shared-frontend-client-api";
 import { createId } from "@paralleldrive/cuid2";
 import {
   api,
@@ -53,11 +57,21 @@ export function action(props: IProps) {
         throw error;
       }
     },
-    onSuccess(data) {
+    onSuccess(data, variables) {
+      patchInListQueries(queryClient, "/api/social/chats", data.id, data);
+      if (variables.socialModuleProfileId) {
+        const chats = `${route}/${variables.id}/social-module/profiles/${variables.socialModuleProfileId}/chats`;
+        patchInListQueries(queryClient, chats, data.id, data);
+        queryClient.setQueriesData<
+          IParentResult["ISocialModuleProfileFindByIdChatFindByIdResult"]
+        >({ queryKey: [`${chats}/${data.id}`] }, (old) =>
+          old ? { ...old, ...data } : old,
+        );
+      }
       globalActionsStore.getState().addAction({
         type: "mutation",
         name: `${route}/${props.id}/social-module/chats/${props.socialModuleChatId}`,
-        props: this,
+        props: variables,
         result: data,
         timestamp: Date.now(),
         requestId: createId(),

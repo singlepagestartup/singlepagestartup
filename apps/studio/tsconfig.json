@@ -4,6 +4,13 @@
       "@sps/shared-utils/metadata": [
         "../../libs/shared/utils/src/lib/metadata/index.ts"
       ],
+      "@sps/shared-utils/provider-models": [
+        "../../libs/shared/utils/src/lib/provider-models/index.ts"
+      ],
+      "@sps/shared-frontend-client-utils/cn": [
+        "../../libs/shared/frontend/client/utils/src/lib/cn/index.ts"
+      ],
+      "@sps/shared-ui-shadcn/*": ["../../libs/shared/ui/shadcn/src/lib/*"],
       "@sps/shared-frontend-client-utils/chat-scroll": [
         "../../libs/shared/frontend/client/utils/src/lib/chat-scroll/index.ts"
       ],
@@ -12,6 +19,9 @@
       ],
       "@sps/ui-adapter/toast": [
         "../../libs/shared/ui/adapter/src/lib/toast/index.tsx"
+      ],
+      "@sps/ui-adapter/openai-work-model-picker": [
+        "../../libs/shared/ui/adapter/src/lib/model-picker/OpenAIWorkModelPicker.tsx"
       ]
     },
     "target": "ES2022",

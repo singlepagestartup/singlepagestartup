@@ -6,6 +6,7 @@
   "variant": "default",
   "kind": "digital",
   "type": "subscription",
+  "singleUnitPerOrder": false,
   "slug": "free-subscription",
   "title": {},
   "shortDescription": {},

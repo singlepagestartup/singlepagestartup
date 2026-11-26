@@ -16,6 +16,8 @@ export const clientHost = NEXT_PUBLIC_API_SERVICE_URL;
 export const route = "/api/file-storage/files";
 export const defaultSocialModulePersonalAssistantVariant =
   "default-social-module-personal-assistant";
+export const isLegacyOrderReceipt = ({ adminTitle }: { adminTitle?: string }) =>
+  /^Ecommerce Module \| Order [\da-f-]+ \| Receipt$/i.test(adminTitle ?? "");
 export const variants = [
   "hidden",
   "default",

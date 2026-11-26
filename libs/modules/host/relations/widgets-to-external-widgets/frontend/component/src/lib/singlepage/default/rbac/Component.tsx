@@ -38,6 +38,11 @@ export function Component(props: IExternalWidgetProps) {
                 socialModuleChatId={routeParams?.["social.chats.id"]}
                 socialModuleThreadId={routeParams?.["social.threads.id"]}
                 subjectSlug={routeParams?.["rbac.subjects.slug"]}
+                rbacSubjectId={routeParams?.["rbac.subjects.id"]}
+                ecommerceModuleOrderId={routeParams?.["ecommerce.orders.id"]}
+                ecommerceModuleProductId={
+                  routeParams?.["ecommerce.products.id"]
+                }
                 ecommerceModuleProductSlug={
                   routeParams?.["ecommerce.products.slug"]
                 }
@@ -47,6 +52,8 @@ export function Component(props: IExternalWidgetProps) {
                 ecommerceModuleStoreSlug={
                   routeParams?.["ecommerce.stores.slug"]
                 }
+                crmModuleFunnelSlug={routeParams?.["crm.funnels.slug"]}
+                crmModuleTaskId={routeParams?.["crm.tasks.id"]}
                 variant={entity.variant as any}
               />
             ))

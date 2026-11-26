@@ -7,12 +7,18 @@ import {
   waitFor,
 } from "@testing-library/react";
 const checkout = jest.fn();
+const openWork = jest.fn();
+const push = jest.fn();
+jest.mock("next/navigation", () => ({
+  useRouter: () => ({ push }),
+}));
 let pending = 0;
 let fetching = 0;
 let currencyId = "rub";
 let identityRows: { provider: string; email: string }[] = [];
 let orderIds = ["order"];
 let linesByOrder: Record<string, { id: string }[]> = {};
+let extraDetails: Record<string, object> = {};
 const selectionCallbacks = new Map<
   string,
   (lineId: string, blocked: boolean) => void
@@ -30,6 +36,7 @@ jest.mock("@sps/rbac/models/subject/sdk/model", () => ({
 }));
 jest.mock("@sps/rbac/models/subject/sdk/client", () => ({
   api: {
+    changeCustomerWork: () => ({ mutateAsync: openWork, isPending: false }),
     identityFind: () => ({ data: identityRows }),
     ecommerceModuleOrderCheckout: () => ({
       mutateAsync: checkout,
@@ -38,33 +45,45 @@ jest.mock("@sps/rbac/models/subject/sdk/client", () => ({
   },
 }));
 jest.mock("@sps/rbac/models/subject/frontend/component", () => ({
-  Component: ({ children }: any) =>
-    children({
-      data: orderIds.map((id) => ({
-        id,
-        cartDetails: {
-          lines: linesByOrder[id] ?? [],
-          availableCurrencyIds: ["usd", "rub"],
-          billingModuleCurrencyId: currencyId,
-          totals: [
-            {
-              total: 10,
-              billingModuleCurrency: { id: "usd", slug: "usd", symbol: "$" },
-            },
-            {
-              total: 100,
-              billingModuleCurrency: { id: "rub", slug: "rub", symbol: "₽" },
-            },
-          ],
-        },
-      })),
-    }),
+  Component: ({ children, variant, ecommerceModuleOrder }: any) =>
+    variant === "ecommerce-module-order-checkout-default" ? (
+      <div
+        role="group"
+        aria-label={`accepted-checkout-${ecommerceModuleOrder.id}`}
+      />
+    ) : (
+      children({
+        data: orderIds.map((id) => ({
+          id,
+          cartDetails: {
+            lines: linesByOrder[id] ?? [],
+            ...extraDetails[id],
+            availableCurrencyIds: ["usd", "rub"],
+            billingModuleCurrencyId: currencyId,
+            totals: [
+              {
+                total: 10,
+                billingModuleCurrency: { id: "usd", slug: "usd", symbol: "$" },
+              },
+              {
+                total: 100,
+                billingModuleCurrency: { id: "rub", slug: "rub", symbol: "₽" },
+              },
+            ],
+          },
+        })),
+      })
+    ),
 }));
 jest.mock("./Row", () => ({
   Component: ({
     ecommerceModuleOrder,
     onOrderSelectionStateChange,
     onOrderSelectionPendingChange,
+    onCartItemSelectionChange,
+    selected,
+    headerSlot,
+    children,
   }: any) => {
     selectionCallbacks.set(ecommerceModuleOrder.id, (lineId, blocked) =>
       onOrderSelectionStateChange(ecommerceModuleOrder.id, lineId, blocked),
@@ -72,7 +91,26 @@ jest.mock("./Row", () => ({
     pendingCallbacks.set(ecommerceModuleOrder.id, (lineId, pending) =>
       onOrderSelectionPendingChange(ecommerceModuleOrder.id, lineId, pending),
     );
-    return <li data-testid={`order-${ecommerceModuleOrder.id}`} />;
+    return (
+      <li data-testid={`order-${ecommerceModuleOrder.id}`}>
+        {headerSlot ?? (
+          <label>
+            <input
+              type="checkbox"
+              checked={selected ?? true}
+              onChange={(e) =>
+                onCartItemSelectionChange(
+                  ecommerceModuleOrder.id,
+                  e.target.checked,
+                )
+              }
+            />
+            {ecommerceModuleOrder.id}
+          </label>
+        )}
+        {children}
+      </li>
+    );
   },
 }));
 import { Component } from "./ClientComponent";
@@ -84,12 +122,15 @@ const props = {
 } as any;
 beforeEach(() => {
   checkout.mockReset();
+  openWork.mockReset();
+  push.mockReset();
   pending = 0;
   fetching = 0;
   currencyId = "rub";
   identityRows = [];
   orderIds = ["order"];
   linesByOrder = {};
+  extraDetails = {};
   selectionCallbacks.clear();
   pendingCallbacks.clear();
 });
@@ -138,6 +179,211 @@ it("shows only the selected currency amount", () => {
   expect(screen.getByText("100 ₽")).toBeTruthy();
   expect(screen.queryByText("10 $")).toBeNull();
 });
+
+it("opens the service discussion and charges only the selected prepaid product in a mixed cart", async () => {
+  orderIds = ["cover", "chair", "lamp"];
+  linesByOrder = {
+    cover: [{ id: "cover-line" }],
+    chair: [{ id: "chair-line" }],
+    lamp: [{ id: "lamp-line" }],
+  };
+  extraDetails.cover = {
+    work: {
+      orderId: "cover",
+      storeId: "store",
+      paymentTiming: "after-acceptance",
+      state: "awaiting-result",
+    },
+    discussion: {
+      storeId: "store",
+      taskId: "task",
+      chatId: "chat",
+      threadId: "thread",
+    },
+  };
+  checkout.mockResolvedValue({ billingModule: { invoices: [] } });
+  render(<Component {...props} />);
+  const discussion = screen.getByRole("button", { name: "Перейти в чат" });
+  openWork.mockResolvedValue({ chatId: "chat", threadId: "thread" });
+  fireEvent.click(discussion);
+  await waitFor(() =>
+    expect(openWork).toHaveBeenCalledWith({
+      id: "subject",
+      data: {
+        operation: "enter-order-discussion",
+        orderId: "cover",
+        storeId: "store",
+        taskId: "task",
+        operationKey: expect.any(String),
+      },
+    }),
+  );
+  fireEvent.click(screen.getByRole("checkbox", { name: "lamp" }));
+  expect(screen.getByText("100 ₽")).toBeTruthy();
+  fireEvent.change(screen.getByLabelText("Email для чека"), {
+    target: { value: "buyer@example.test" },
+  });
+  fireEvent.click(screen.getByRole("button", { name: /оплат/i }));
+  await waitFor(() =>
+    expect(checkout).toHaveBeenCalledWith({
+      id: "subject",
+      data: expect.objectContaining({
+        ecommerceModule: { orders: [{ id: "chair", lineIds: ["chair-line"] }] },
+      }),
+    }),
+  );
+  fireEvent.click(screen.getByRole("checkbox", { name: "chair" }));
+  expect(screen.queryByRole("textbox", { name: "Email для чека" })).toBeNull();
+  expect(screen.getByRole("button", { name: "Перейти в чат" })).toBeTruthy();
+  expect(screen.queryByRole("checkbox", { name: "cover" })).toBeNull();
+  expect(screen.getByTestId("order-cover").contains(discussion)).toBe(true);
+  expect(screen.queryByRole("button", { name: /оплат/i })).toBeNull();
+  expect(checkout).toHaveBeenCalledTimes(1);
+});
+it("requires an explicit choice for a legacy order containing multiple primary products", async () => {
+  orderIds = ["bundle"];
+  linesByOrder = { bundle: [{ id: "first" }, { id: "second" }] };
+  checkout.mockResolvedValue({ billingModule: { invoices: [] } });
+  render(<Component {...props} />);
+  const choice = screen.getByRole("checkbox", {
+    name: "bundle",
+  }) as HTMLInputElement;
+  expect(choice.checked).toBe(false);
+  expect(screen.queryByRole("button", { name: /оплат/i })).toBeNull();
+  fireEvent.click(choice);
+  fireEvent.change(screen.getByLabelText("Email для чека"), {
+    target: { value: "buyer@example.test" },
+  });
+  fireEvent.click(screen.getByRole("button", { name: /оплат/i }));
+  await waitFor(() =>
+    expect(checkout).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          ecommerceModule: {
+            orders: [{ id: "bundle", lineIds: ["first", "second"] }],
+          },
+        }),
+      }),
+    ),
+  );
+});
+
+it("keeps a selected accepted result's checkout separate from prepaid products", () => {
+  orderIds = ["cover", "chair"];
+  linesByOrder = { chair: [{ id: "chair-line" }] };
+  extraDetails.cover = {
+    lines: [
+      {
+        id: "cover-line",
+        product: { id: "cover-product", title: { ru: "Обложка" } },
+      },
+    ],
+    work: {
+      orderId: "cover",
+      storeId: "store",
+      paymentTiming: "after-acceptance",
+      state: "awaiting-payment",
+    },
+  };
+  render(<Component {...props} />);
+  expect(
+    screen.getByRole("group", { name: "accepted-checkout-cover" }),
+  ).toBeTruthy();
+  expect(screen.getByText("100 ₽")).toBeTruthy();
+  fireEvent.click(screen.getByRole("checkbox", { name: "cover" }));
+  expect(
+    screen.queryByRole("group", { name: "accepted-checkout-cover" }),
+  ).toBeNull();
+  expect(screen.getByRole("button", { name: /оплат/i })).toBeTruthy();
+  expect(checkout).not.toHaveBeenCalled();
+});
+
+it("blocks checkout for invalid saved quantities and duplicate limited products until the cart is corrected", async () => {
+  const line = {
+    id: "line",
+    productId: "limited",
+    product: { singleUnitPerOrder: true },
+    quantity: 5,
+  };
+  linesByOrder = { order: [line] };
+  const { rerender } = render(<Component {...props} />);
+  const pay = screen.getByRole("button", {
+    name: "Перейти к оплате",
+  }) as HTMLButtonElement;
+  expect(pay.disabled).toBe(true);
+  expect(checkout).not.toHaveBeenCalled();
+
+  const corrected = { ...line, quantity: 1 };
+  linesByOrder = { order: [corrected, { ...corrected, id: "duplicate" }] };
+  rerender(<Component {...props} />);
+  fireEvent.click(screen.getByRole("checkbox", { name: "order" }));
+  expect(pay.disabled).toBe(true);
+
+  linesByOrder = { order: [corrected] };
+  rerender(<Component {...props} />);
+  expect(pay.disabled).toBe(false);
+});
+
+it("starts the discussion for the exact saved service order after an explicit click", async () => {
+  orderIds = ["cover"];
+  extraDetails.cover = {
+    lines: [{ id: "line", productId: "item", offerId: "offer" }],
+    work: {
+      orderId: "cover",
+      storeId: "store",
+      paymentTiming: "after-acceptance",
+      state: "requires-discussion",
+    },
+  };
+  let resolve!: (result: { chatId: string; threadId: string }) => void;
+  openWork.mockReturnValue(
+    new Promise((done) => {
+      resolve = done;
+    }),
+  );
+  const { rerender } = render(<Component {...props} />);
+  expect(openWork).not.toHaveBeenCalled();
+  fireEvent.click(screen.getByRole("button", { name: "Перейти в чат" }));
+  orderIds = [];
+  rerender(<Component {...props} />);
+  await act(async () => resolve({ chatId: "chat", threadId: "thread" }));
+  await waitFor(() =>
+    expect(push).toHaveBeenCalledWith("/ru/social/chats/chat/threads/thread"),
+  );
+  expect(openWork).toHaveBeenCalledWith({
+    id: "subject",
+    data: {
+      operation: "open-cart-discussion",
+      orderId: "cover",
+      storeId: "store",
+      offerId: "offer",
+      productId: "item",
+      operationKey: expect.any(String),
+    },
+  });
+  expect(checkout).not.toHaveBeenCalled();
+});
+
+it("offers no payment or unrelated chat when the store has no service funnel", () => {
+  orderIds = ["cover"];
+  extraDetails.cover = {
+    lines: [{ id: "line", productId: "item", offerId: "offer" }],
+    work: {
+      orderId: "cover",
+      storeId: "store",
+      paymentTiming: "after-acceptance",
+      state: "discussion-unavailable",
+    },
+  };
+  render(<Component {...props} />);
+  expect(screen.getByText(/Обсуждение недоступно/)).toBeTruthy();
+  expect(
+    screen.queryByRole("button", { name: /оплат|обсуждение/i }),
+  ).toBeNull();
+  expect(openWork).not.toHaveBeenCalled();
+  expect(checkout).not.toHaveBeenCalled();
+});
+
 it("shows an English message when checkout returns no payment link", async () => {
   checkout.mockResolvedValue({ billingModule: { invoices: [] } });
   render(<Component {...props} language="en" />);

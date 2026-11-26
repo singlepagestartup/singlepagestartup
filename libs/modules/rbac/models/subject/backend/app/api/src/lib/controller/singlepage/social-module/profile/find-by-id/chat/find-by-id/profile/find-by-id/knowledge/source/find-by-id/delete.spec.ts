@@ -49,29 +49,12 @@ describe("chat-scoped Knowledge Source removal", () => {
     findRelations.mockResolvedValue([{ id: "profile-source-link" }]);
   });
 
-  it("unlinks only the target profile and preserves the Source", async () => {
-    const c = context(true);
-    await new Handler(service).execute(c, undefined);
-
-    expect(findRelations).toHaveBeenCalledWith({
-      params: {
-        filters: {
-          and: [
-            { column: "profileId", method: "eq", value: "target-profile" },
-            {
-              column: "knowledgeModuleSourceId",
-              method: "eq",
-              value: "source-1",
-            },
-          ],
-        },
-      },
-    });
-    expect(deleteRelation).toHaveBeenCalledWith(
-      expect.objectContaining({ id: "profile-source-link" }),
-    );
+  it("rejects a legacy unlink request without escalating it to deletion", async () => {
+    await expect(
+      new Handler(service).execute(context(true), undefined),
+    ).rejects.toThrow();
+    expect(deleteRelation).not.toHaveBeenCalled();
     expect(deleteSource).not.toHaveBeenCalled();
-    expect(c.json).toHaveBeenCalledWith({ data: source });
   });
 
   it("delegates global deletion without using the unlink path", async () => {

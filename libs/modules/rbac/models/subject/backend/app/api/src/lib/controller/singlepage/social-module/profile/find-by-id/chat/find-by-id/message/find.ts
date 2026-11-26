@@ -1,5 +1,11 @@
-import { RBAC_JWT_SECRET, RBAC_SECRET_KEY } from "@sps/shared-utils";
+import {
+  CHAT_THREAD_MESSAGES_PAGE_SIZE,
+  RBAC_JWT_SECRET,
+  RBAC_SECRET_KEY,
+} from "@sps/shared-utils";
+import { withConsistencySnapshot } from "@sps/shared-backend-api";
 import { Context } from "hono";
+import { z } from "zod";
 import { HTTPException } from "hono/http-exception";
 import { Service } from "../../../../../../../../service";
 import { getHttpErrorType } from "@sps/backend-utils";
@@ -49,7 +55,7 @@ export class Handler {
       });
 
       const parsedQuery = c.get("parsedQuery");
-      const limit = parsedQuery?.limit || 100;
+      const limit = parsedQuery?.limit || CHAT_THREAD_MESSAGES_PAGE_SIZE;
       const offset = parsedQuery?.offset || 0;
       const orderBy = parsedQuery?.orderBy;
 
@@ -59,6 +65,17 @@ export class Handler {
           socialModuleThreadId,
         });
 
+        const reader = new SocialModuleChatMessages(this.service);
+        if (parsedQuery?.populate === "attachment-index") {
+          const data = await withConsistencySnapshot(() =>
+            reader.threadAttachmentIndex(socialModuleThreadId),
+          );
+          return c.json({ data });
+        }
+        const messageId = c.req.query("attachmentMessageId");
+        if (messageId !== undefined && !z.uuid().safeParse(messageId).success) {
+          throw new Error("Validation error. Invalid attachment message ID");
+        }
         const socialModuleThreadsToMessages =
           await this.service.modules.social.threadsToMessages.find({
             params: {
@@ -69,6 +86,15 @@ export class Handler {
                     method: "eq",
                     value: socialModuleThreadId,
                   },
+                  ...(messageId
+                    ? [
+                        {
+                          column: "messageId",
+                          method: "eq" as const,
+                          value: messageId,
+                        },
+                      ]
+                    : []),
                 ],
               },
               limit,
@@ -103,9 +129,7 @@ export class Handler {
             },
           });
 
-        const messages = await new SocialModuleChatMessages(
-          this.service,
-        ).enrich(socialModuleMessages);
+        const messages = await reader.enrich(socialModuleMessages);
 
         return c.json({
           data: messages,

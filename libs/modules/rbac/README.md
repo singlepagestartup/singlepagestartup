@@ -37,95 +37,78 @@ The RBAC module defines authentication subjects, identities, roles, permissions,
 - Controllers should compose exported middleware instances, not define middleware bodies inline.
 - Do not put social chat/thread/profile ownership logic, billing rules, or other domain rules into the global authorization service.
 
-### Social AI reactions:
+### Store work in Social conversations
 
-RBAC owns the authenticated subject endpoint that lets an AI `social.profile` react to a chat message through OpenRouter, profile-scoped Knowledge, and linked skills:
+Open **Funnels** on a store page to see its CRM funnels. The list lives at `/:language/ecommerce/stores/:storeSlug/crm/funnels`. Open `/new` under that path to create a funnel, or open `/:funnelSlug` to edit its stages and run a store test. Renaming a funnel preserves its address. The link in a test chat returns to the editor for that funnel.
 
-```text
-POST /api/rbac/subjects/:id/social-module/profiles/:socialModuleProfileId/chats/:socialModuleChatId/messages/:socialModuleMessageId/react-by/openrouter
-```
+Stores link to their catalog at `/products`, employees at `/employees`, tasks at `/crm` and funnels at `/crm/funnels`, relative to the store URL. Owners can open `/settings` to connect a provider, assign it to an agent and inspect token reservations and transfers for tasks. Set the payer and spending limits in the funnel editor.
 
-The endpoint validates subject/profile/chat/message access, requires the replying `social.profile` to have `variant="artificial-intelligence"`, requires that profile to be connected to the chat, and fails closed unless it has exactly one linked `rbac.subject`.
+The **Employees** page lets an owner or administrator create a named AI Subject and open a private conversation with its Social profile. Reopening the employee returns to the same conversation for that operator. Send “Remember…” or “Запомни…” to save a source in the employee’s profile. The sidebar also lets the operator edit sources, upload reference files and manage the employee’s skills.
 
-The web composer does not call this endpoint. It creates one message and persists the complete user-selected execution settings in `message.metadata.rbacAiReactionRequest`: contract version, model id, reasoning, skill ids, and Knowledge-search flag. The RBAC Subject SDK model owns the typed parser/normalizer; Social stores the envelope as opaque metadata. The action logger launches Agent once, Agent dispatches every automatic profile connected to the chat, and each OpenRouter execution reloads the same answer settings from the saved message. The replying profile is supplied by Agent from chat membership and is validated by the endpoint; it is not selected by message metadata. Internal query/body data cannot override persisted model, skill, or Knowledge settings. Messages without an envelope use safe automatic defaults.
+Attach files to a message or send them on their own. The operator can download
+them from the conversation. A file-only message is saved without requesting
+an AI reply. When the operator includes a message, the employee can read
+excerpts from up to three UTF-8 TXT, Markdown, CSV, or JSON files of up to
+128 KiB each. Attach a JPEG, PNG or WebP with a question, or ask about the
+last picture you sent in this conversation. A supported text model receives
+one image in the same paid reply. The worker checks the original (up to 8 MiB
+and 16 megapixels) and sends a JPEG copy with a longest side of 512 pixels.
+The question keeps its selected image if another upload arrives before the reply.
+Operators can preview images and PDFs, play supported audio or
+video, and download the original upload. To add a reference to the employee’s
+Knowledge, use the sidebar.
 
-If the message starts with `@knowledge /learn`, the endpoint strips the controls, calls `KnowledgeService.learnContent(...)` once for the message text and all of its Files (PDF, image, video, audio, or UTF-8 text), and creates the Social `profiles-to-knowledge-module-sources` relation for the replying AI profile if needed. AI Chat replies enable Knowledge search by default; other channels can request it with `useKnowledgeSearch` or `@knowledge`. Jev can also classify a request as reading or editing Knowledge. Retrieval stays scoped to the profile-Source relation, and the final AI answer is saved as a social message in the same thread. A separate Knowledge-only reaction endpoint is not exposed.
+Choose the employee as the assignee in a funnel stage and select the skills that stage needs. An operator can also assign an existing task from its details. Customer replies use the assigned employee’s knowledge. The worker includes the chosen skills for the current stage. Private training messages stay in the operator’s conversation.
 
-The persisted control syntax is channel-independent. The web composer inserts
-`@knowledge /learn`, while the Telegram adapter maps private `/learn`, group
-`/learn@<bot-username>`, and group `@<bot-username> /learn` messages to that
-same text before creating the Social message. Telegram `@knowledge` queries are
-handled by this endpoint as well; Telegram does not implement a separate
-learning or retrieval pipeline.
+A customer's message belongs to a Social thread linked to a CRM task. RBAC verifies the customer and the current assignment. The Agent worker claims the message event and calls the provider connection assigned to that assistant and capability. The store's current funnel determines who funds the task and its spending limit. A task funded by the customer also requires the customer's approval.
 
-The shared OpenRouter generation context is transport-neutral and does not force text-only output or a Telegram response length. This keeps tool-call protocol messages available to every supported model and channel. Telegram-specific message splitting remains in the Notification delivery service.
+Store owners can assign provider capabilities to AI Subjects with an `assistant` or `crm-agent` grant in that store. The same grant check applies when the worker resolves a model for the current assignee.
 
-Auto model selection uses the local enabled catalogue in
-`libs/shared/utils/src/lib/constants/open-router-models.ts`. The catalogue allows
-only `openai/gpt-6.1-sol` for text, coding, and image/file analysis. Every reply
-uses `high` reasoning, including messages saved with another reasoning setting.
-Manual selection requires an enabled catalogue entry, and the composer model
-list exposes that model with `high` as its only reasoning effort.
+The worker processes each CRM task’s pending messages in order for the current assignment, and a manager can take over in the same thread. Knowledge draws on permitted sources linked to the customer’s sending profile and the assigned product expert’s profile. The composer saves the model choice on each message, and RBAC resolves it through an active provider connection allowed for the current stage.
 
-RBAC filters candidates by input/output modalities and provider availability.
-A single compatible candidate is selected without a Jev model-selection call.
-For multiple candidates, Jev Decisions chooses using capabilities and pricing;
-an invalid decision retains the compatible list in priority order. Generation
-sends a concrete model ID. GPT 6.1 Sol has text output through OpenRouter.
-The automatic image-generation route returns an unavailable notice and settles
-only the decision calls already made; it does not call another answering model.
+Each external call has an attempt ID and a reserved maximum. Settlement records the provider's charge or a rate-card estimate, the internal currency transfers and the released amount. The technical provider Subject identifies the external account. Replies use the assigned executor and the current stage. The customer can read the result from the original conversation. [Billing transactions](../billing/models/transaction/README.md)
 
 AI Chat composers accumulate file selections in one horizontally scrolling row
 above the text field. Cards have previews, removal, drag reordering and arrow
-controls. Cmd+Enter or Ctrl+Enter submits; Enter inserts a line.
-The document target selector is hidden; section discussion can still set the
-Source target. New message and Knowledge uploads accept PNG, JPG, WebP, GIF,
-PDF, TXT, MD, CSV and JSON. Both pickers and RBAC endpoints reject other formats,
-including SVG. Previously stored SVG images remain readable and are rendered
-as PNG for model input without changing their originals.
+controls. Enter submits the message. Shift+Enter inserts a line.
+AI Chat messages and Knowledge uploads accept PNG, JPG, WebP, GIF, PDF, TXT,
+MD, CSV and JSON. Messages also accept AVIF, HTML, audio and video. The AI Chat
+message endpoint rejects new standalone SVG uploads. Private customer work and
+employee chats accept SVG and scripts as downloadable files. Previously stored
+SVG images remain readable and are rendered as PNG for model input without
+changing their originals.
 The Knowledge sidebar shows two file cards in two columns. Show more expands
 all remaining rows vertically. Each card opens the original File and can
 unlink it from that Source; its pending state is scoped to the selected file.
-Sent messages and document proposals show attachments in a horizontally
-scrolling gallery, in submission order; each card opens the original File.
-Proposal replies link every proposed File without duplicating its stored bytes.
-Their `knowledge.documentProposalFileIds` metadata marks these links as previews;
-OpenRouter receives the originals from user messages without repeating the
-assistant's gallery in the model context.
-Confirmation transfers the same complete File list to the Source. Background
-refetches retain mounted chat records. New replies scroll to the latest message;
+Messages show attachments in submission order. Images open at a larger size.
+Supported audio and video play in the message or in the discussion’s Files
+sidebar. Files shows the first three distinct attachments in message order.
+With four or more, More opens the full gallery. Escape returns from a preview to
+its tile. For discussions longer than the timeline page, the sidebar reads a
+scoped index of filenames and fetches checked public File records as their
+tiles come into view. Private attachments use the buyer’s or employee’s authorized message
+route, or the manager’s CRM task route. Background refetches retain mounted
+chat records. New replies scroll to the latest message;
 loading previews keeps that position unless the user has scrolled to older messages.
 The text field starts at 128 px and can be resized vertically from its bottom
 right corner, between 96 px and the smaller of half the viewport or 480 px.
 The project frame fills the viewport below the header and page margins. The
 composer can scroll within three quarters of the conversation pane, leaving
 the message history accessible when the input and attachment strip are tall.
-The submitted order is preserved in message-file relations. A successful
-document proposal completes the generation loop; its exact text and attachments
-remain pending until a later confirmation. Revising that proposal preserves its
-attachments. A revision request makes the earlier proposal unconfirmable with
-`needs_revision` status; its files remain available if generation must be retried.
-Draft and revision requests require a successful proposal tool call before the
-generation loop reports completion. Confirmed updates attach new files while retaining existing Source
-attachments and indexing the saved content.
+The submitted order is preserved in message-file relations.
 
-When the replying `social.profile` invokes a linked skill, profile Knowledge search, or MCP tool, the bounded tool loop emits presentation-safe lifecycle events. RBAC lazily creates one `social.action` with `variant="ai-execution"` for that run, relates it to the current chat, thread, and replying profile, and updates the same action through requested, running, succeeded/failed, and terminal states. The typed action payload contains only safe labels, tool/server identifiers, normalized status, timestamps, result byte counts, and message/profile/run ids; it never contains tool arguments/results, bearer credentials, prompts, hidden reasoning, or stack traces. Existing WebSocket invalidation updates the specialized conversation row in place. Runs without tool calls create no execution action, and progress persistence cannot prevent the final `social.profile` reply.
+The chat renders tool activity from a Social Action with `variant="ai-execution"`, linked to the current chat, thread and replying profile. For employee and order MCP calls, the worker adds one step per call to the action for the triggering event. Its public fields include the server, tool, status and timing. The chat can show supported parameters and results, such as a model name and its schema fields, or a failure code. Message and run IDs associate the trace with the conversation.
+
+The employee profile selects which MCP servers the model can use. Tools run with the original access JWT of the person who sent the message. Queued work retrieves that JWT from an encrypted, message-bound KV entry that expires with the token. The worker checks the sender's session again before each call.
 
 `profile_knowledge_files` lists a linked Source's attachment IDs and current
 content hash in pages. An explicit current request to remove an attachment
-exposes `profile_knowledge_file_detach`, including in document threads where
-generic MCP and direct text writes remain disabled. The tool uses the scoped
-RBAC Files SDK, validates the document target, and checks the Source hash and
-attachment list inside the database transaction. Detachment retains the stored
+exposes `profile_knowledge_file_detach`. The tool uses the scoped RBAC Files SDK
+and checks the Source hash and attachment list inside the database transaction. Detachment retains the stored
 File and chat attachments, preserves human notes, and rebuilds materials and
-the index. Detachment returns after the database write with `analysisPending`
-when rebuilding remains unfinished. A separate scoped reanalysis request
-publishes completion through the existing cache and WebSocket middleware.
-The model reports the unlink separately from index readiness; analysis errors
-leave the Source unindexed and are logged without retrying the removal.
-Attachment requests neither approve a pending text proposal nor replace it.
+the index. If indexing fails, the request returns an error and the transaction restores the prior attachment list and searchable content.
 
-RBAC also owns profile-scoped document operations for the Social chat sidebar:
+RBAC owns the profile-scoped Knowledge routes used by the Social chat sidebar.
 
 ```text
 GET /api/rbac/subjects/:id/social-module/profiles/:socialModuleProfileId/knowledge/sources
@@ -218,8 +201,7 @@ through self-service checkout. Its interval remains Order metadata, not a
 daily credit schedule. Paid subscription cycles and one-off top-ups add their
 configured credits once per accepted Invoice; pack quantities multiply the
 credit amount. Expiry, cancellation and revocation do not reset wallets or
-remove previously granted credits. Requests continue to debit the balance
-through the existing BillRoute calculation. Order and Subject jobs still
+remove previously granted credits. CRM work debits the funding wallet through the work ledger. Order and Subject jobs still
 manage paid subscription lifecycle and access. Repository data snapshots are
 not the configuration interface.
 
@@ -290,6 +272,7 @@ may share the `default` variant and remain separate records.
 | [subjects-to-identities](./relations/subjects-to-identities/README.md)                                         | Link subjects to identities      |
 | [subjects-to-notification-module-topics](./relations/subjects-to-notification-module-topics/README.md)         | Link subjects to topics          |
 | [subjects-to-roles](./relations/subjects-to-roles/README.md)                                                   | Link subjects to roles           |
+| [subjects-to-social-module-chats](./relations/subjects-to-social-module-chats/README.md)                       | Record the creator of a chat     |
 | [subjects-to-social-module-profiles](./relations/subjects-to-social-module-profiles/README.md)                 | Link subjects to social profiles |
 
 ---
@@ -304,3 +287,11 @@ copy. Screen names and modes do not belong in relation renderers. See the
 [Widget documentation](./models/widget/README.md),
 [Website Builder links](./relations/widgets-to-website-builder-module-widgets/README.md)
 and [CRM links](./relations/widgets-to-crm-module-widgets/README.md).
+
+## Store provider credentials
+
+An authenticated store owner manages connections in the store settings. A provider connection links an outbound Identity to a Subject with the `provider-agent` variant. The store owner manages this link and its capability assignments through `subjects-to-identities`. The Subject receives computation charges in its Billing wallet. Assign a provider, model and rate card to a capability on an individual assistant or as the store default. A direct assignment takes precedence. Revocation stops dispatch through that connection. Confirmed external charges remain attributed to the original account and version.
+
+Set `SPS_PROVIDER_SECRET_DIR` to an absolute private directory on persistent storage shared by API workers. `SPS_PROVIDER_MASTER_KEYS` is a JSON object mapping key IDs to base64-encoded 32-byte keys. `SPS_PROVIDER_ACTIVE_MASTER_KEY` selects the encryption key for new credentials. The service stores each credential version in an authenticated ciphertext file with owner-only permissions. Keep the key ring in deployment secrets and retain keys needed to read stored versions. A user supplies a provider key over HTTPS when connecting or rotating a credential. The settings API returns metadata and the affected record ID.
+
+When a request times out, its reserve remains visible. The owner can request lookup of a recorded OpenRouter generation or reconcile against the external statement. A confirmed charge posts the two transfers up to the authorized amount and records any uncovered external cost. Confirmation that there was no charge releases the reserve. A second generation requires a new work event.

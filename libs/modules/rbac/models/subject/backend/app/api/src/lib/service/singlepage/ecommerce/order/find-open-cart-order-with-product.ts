@@ -1,3 +1,4 @@
+import { STORE_TEST_ORDER_VARIANT } from "@sps/ecommerce/models/order/sdk/model";
 import type { SubjectServiceDependencies } from "../../index";
 import type { Service as SubjectsToEcommerceModuleOrdersService } from "@sps/rbac/relations/subjects-to-ecommerce-module-orders/backend/app/api/src/lib/service";
 
@@ -121,6 +122,11 @@ export class Service {
               column: "status",
               method: "eq",
               value: "new",
+            },
+            {
+              column: "variant",
+              method: "ne",
+              value: STORE_TEST_ORDER_VARIANT,
             },
           ],
         },

@@ -14,12 +14,24 @@ import { act } from "react";
 import { createRoot, Root } from "react-dom/client";
 import { Component, normalizeChatMessageMarkdown } from "./ClientComponent";
 
+const mockRelationComponent = jest.fn<React.ReactNode, [any]>();
+const mockFilesReader = jest.fn<React.ReactNode, [any]>();
 jest.mock(
   "@sps/social/relations/messages-to-file-storage-module-files/frontend/component",
   () => ({
-    Component: () => null,
+    Component: (props: any) => mockRelationComponent(props),
   }),
 );
+jest.mock("@sps/file-storage/models/file/frontend/component", () => ({
+  Component: (props: any) =>
+    props.variant === "find" ? (
+      mockFilesReader(props)
+    ) : (
+      <span data-file-id={props.data.id} data-layout={props.layout}>
+        {props.data.id}
+      </span>
+    ),
+}));
 
 jest.mock("@sps/social/models/profile/frontend/component", () => ({
   Component: (props: {
@@ -65,6 +77,8 @@ describe("GIVEN: social profile chat message markdown rendering", () => {
   });
 
   beforeEach(() => {
+    mockRelationComponent.mockReset();
+    mockFilesReader.mockReset();
     writeText = jest.fn().mockResolvedValue(undefined);
     Object.defineProperty(navigator, "clipboard", {
       configurable: true,
@@ -83,6 +97,102 @@ describe("GIVEN: social profile chat message markdown rendering", () => {
       root.unmount();
     });
     container.remove();
+  });
+
+  it("renders ordered scoped files and skips the relation when the list was loaded", () => {
+    const view = (ids: string[]) => (
+      <Component
+        isServer={false}
+        language="en"
+        data={{ id: "profile", title: {}, subtitle: {} }}
+        message={
+          {
+            id: "message",
+            attachments: ids.map((id) => ({ id })),
+          } as any
+        }
+      />
+    );
+    act(() => root.render(view(["first", "second"])));
+    expect(
+      Array.from(container.querySelectorAll("[data-file-id]"), (file) =>
+        file.getAttribute("data-file-id"),
+      ),
+    ).toEqual(["first", "second"]);
+    expect(container.querySelectorAll('[data-layout="message"]')).toHaveLength(
+      2,
+    );
+    expect(
+      container.querySelector('button[aria-label="Copy message"]'),
+    ).toBeNull();
+    act(() => root.render(view([])));
+    expect(container.querySelector("ul")).toBeNull();
+    expect(mockRelationComponent).not.toHaveBeenCalled();
+  });
+
+  it("renders files resolved through older message relations in their saved order after the caption", () => {
+    mockRelationComponent.mockImplementation((props) =>
+      props.children({
+        data: [
+          { fileStorageModuleFileId: "photo" },
+          { fileStorageModuleFileId: "document" },
+        ],
+      }),
+    );
+    mockFilesReader.mockImplementation((props) =>
+      props.children({ data: [{ id: "document" }, { id: "photo" }] }),
+    );
+    act(() =>
+      root.render(
+        <Component
+          isServer={false}
+          language="en"
+          data={{ id: "profile", title: {}, subtitle: {} }}
+          message={{ id: "legacy", description: "Caption" } as any}
+        />,
+      ),
+    );
+    expect(mockRelationComponent.mock.calls[0][0].apiProps.params).toEqual({
+      filters: {
+        and: [{ column: "messageId", method: "eq", value: "legacy" }],
+      },
+      orderBy: { and: [{ column: "orderIndex", method: "asc" }] },
+    });
+    expect(
+      mockFilesReader.mock.calls[0][0].apiProps.params.filters.and,
+    ).toEqual([
+      { column: "id", method: "inArray", value: ["photo", "document"] },
+    ]);
+    expect(container.textContent).toContain("Captionphotodocument");
+    expect(container.querySelectorAll('[data-layout="message"]')).toHaveLength(
+      2,
+    );
+  });
+
+  it("places both protected files and generated results after the caption without a public file read", () => {
+    act(() =>
+      root.render(
+        <Component
+          isServer={false}
+          language="en"
+          data={{ id: "profile", title: {}, subtitle: {} }}
+          attachmentsSlot={<span>Private image</span>}
+          messageContentSlot={<span>Work result</span>}
+          message={
+            {
+              id: "task",
+              variant: "customer-work",
+              description: "Caption",
+              attachments: [{ id: "private" }],
+            } as any
+          }
+        />,
+      ),
+    );
+    expect(container.textContent).toContain("CaptionPrivate imageWork result");
+    expect(mockRelationComponent).not.toHaveBeenCalled();
+    expect(mockFilesReader).not.toHaveBeenCalled();
+    expect(container.querySelector("[data-file-id]")).toBeNull();
   });
 
   /**
@@ -198,7 +308,7 @@ describe("GIVEN: social profile chat message markdown rendering", () => {
     });
 
     const avatarButton = container.querySelector(
-      "button[aria-label='Open Chat GPT 1 profile']",
+      "button[aria-label='Открыть профиль «Chat GPT 1»']",
     );
 
     expect(avatarButton?.className).toContain("sticky");
@@ -207,6 +317,47 @@ describe("GIVEN: social profile chat message markdown rendering", () => {
     expect(avatarButton?.className).toContain("h-8");
     expect(avatarButton?.className).toContain("w-8");
   });
+
+  it.each([false, true])(
+    "opens the exact sender from name or avatar (own message %s)",
+    (isOwnMessage) => {
+      const profile = {
+        id: isOwnMessage ? "manager" : "alice",
+        slug: isOwnMessage ? "Manager" : "Alice",
+        title: { en: isOwnMessage ? "rogwild" : "Alice" },
+        subtitle: {},
+      };
+      const avatar = { id: "authorized-avatar" };
+      const openProfile = jest.fn();
+      act(() =>
+        root.render(
+          <Component
+            isServer={false}
+            language="en"
+            data={profile}
+            profile={profile as any}
+            avatar={avatar as any}
+            isOwnMessage={isOwnMessage}
+            onProfileOpen={openProfile}
+            message={{ id: "message", description: "Hello" } as any}
+          />,
+        ),
+      );
+      const buttons = container.querySelectorAll<HTMLButtonElement>(
+        'button[aria-haspopup="dialog"]',
+      );
+      expect(buttons).toHaveLength(2);
+      for (const button of Array.from(buttons)) {
+        act(() => button.click());
+        expect(openProfile).toHaveBeenLastCalledWith(
+          profile,
+          button,
+          avatar,
+          profile.title.en,
+        );
+      }
+    },
+  );
 
   test("departed sender presentations render without a private profile link or drawer action", () => {
     const onProfileOpen = jest.fn();
@@ -254,6 +405,7 @@ describe("GIVEN: social profile chat message markdown rendering", () => {
         <Component
           isServer={false}
           language="ru"
+          isOwnMessage
           data={
             {
               id: "profile-1",
@@ -279,8 +431,9 @@ describe("GIVEN: social profile chat message markdown rendering", () => {
     });
 
     const copyButton = container.querySelector(
-      "button[aria-label='Copy message']",
+      "button[aria-label='Скопировать сообщение']",
     );
+    expect(container.querySelector("article")?.classList).toContain("ml-auto");
 
     await act(async () => {
       copyButton?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
@@ -289,7 +442,7 @@ describe("GIVEN: social profile chat message markdown rendering", () => {
 
     expect(writeText).toHaveBeenCalledWith(description);
     expect(
-      container.querySelector("button[aria-label='Message copied']"),
+      container.querySelector("button[aria-label='Сообщение скопировано']"),
     ).not.toBeNull();
   });
 });

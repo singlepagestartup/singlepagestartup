@@ -1,0 +1,1 @@
+CREATE INDEX "cm_task_due" ON "sps_cm_task" USING btree ("next_action_at","id") WHERE "sps_cm_task"."status" = 'waiting';

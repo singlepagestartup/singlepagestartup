@@ -13,6 +13,7 @@ type ILocalizedChatText = Record<string, string | undefined>;
 export interface IProps {
   id: string;
   socialModuleChatId: string;
+  socialModuleProfileId?: string;
   host?: string;
   tag?: string;
   revalidate?: number;
@@ -20,13 +21,18 @@ export interface IProps {
     [key: string]: any;
   };
   options?: Partial<NextRequestOptions>;
-  data: Partial<Omit<ISocialModuleChat, "title" | "description">> & {
-    title: ILocalizedChatText;
-    description?: ILocalizedChatText;
-  };
+  data:
+    | (Partial<Omit<ISocialModuleChat, "title" | "description">> & {
+        title: ILocalizedChatText;
+        description?: ILocalizedChatText;
+        coverFile?: never;
+        removeCover?: never;
+      })
+    | { coverFile: File; removeCover?: never }
+    | { removeCover: true; coverFile?: never };
 }
 
-export type IResult = ISocialModuleChat;
+export type IResult = ISocialModuleChat & { coverFileId: string | null };
 
 export async function action(props: IProps): Promise<IResult> {
   const {

@@ -25,7 +25,18 @@ function getFallbackSortKey(item: TimelineItem) {
 }
 
 export function sortSocialModuleMessagesAndActions(items: TimelineItem[]) {
+  function isTyping(item: TimelineItem) {
+    return (
+      item.type === "action" &&
+      (item.data.variant === "typing" ||
+        (item.data.variant === "ai-execution" &&
+          item.data.payload?.phase === "reply_generation" &&
+          item.data.payload?.status === "running"))
+    );
+  }
   return items.slice().sort((a, b) => {
+    const typingOrder = Number(isTyping(a)) - Number(isTyping(b));
+    if (typingOrder) return typingOrder;
     const timeDiff = getTime(a.data.createdAt) - getTime(b.data.createdAt);
 
     if (timeDiff !== 0) {

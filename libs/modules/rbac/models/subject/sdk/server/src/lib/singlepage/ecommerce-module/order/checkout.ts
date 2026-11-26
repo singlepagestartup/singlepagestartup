@@ -1,4 +1,8 @@
-import { serverHost, route, IModel } from "@sps/rbac/models/subject/sdk/model";
+import {
+  serverHost,
+  route,
+  type ICheckoutOrderSelection,
+} from "@sps/rbac/models/subject/sdk/model";
 import {
   NextRequestOptions,
   prepareFormDataToSend,
@@ -20,7 +24,7 @@ export interface IProps {
   data: {
     email: string;
     provider: string;
-    ecommerceModule: { orders: { id: string }[] };
+    ecommerceModule: { orders: ICheckoutOrderSelection[] };
     comment?: string;
   };
 }

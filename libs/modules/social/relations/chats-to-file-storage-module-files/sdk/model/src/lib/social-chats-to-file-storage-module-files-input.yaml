@@ -1,0 +1,3 @@
+type: string
+description: JSON string
+example: '{"variant": "cover", "orderIndex": 0, "chatId": "00000000-0000-0000-0000-000000000000", "fileStorageModuleFileId": "00000000-0000-0000-0000-000000000000"}'

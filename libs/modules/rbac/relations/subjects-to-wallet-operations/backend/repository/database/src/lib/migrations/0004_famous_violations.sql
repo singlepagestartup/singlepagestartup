@@ -1,0 +1,1 @@
+ALTER TABLE "sps_rc_wallet_operation" ADD COLUMN "stage_id" text;

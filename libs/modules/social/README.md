@@ -51,6 +51,7 @@ Both normal OpenRouter chats and `social.chat.variant="knowledge"` use Sources l
 | [chats-to-actions](./relations/chats-to-actions/README.md)                                                     | Link chats to actions                                           |
 | [chats-to-messages](./relations/chats-to-messages/README.md)                                                   | Link chats to messages                                          |
 | [chats-to-threads](./relations/chats-to-threads/README.md)                                                     | Link chats to threads                                           |
+| [chats-to-file-storage-module-files](./relations/chats-to-file-storage-module-files/README.md)                 | Attach a cover file to a chat                                   |
 | [messages-to-file-storage-module-files](./relations/messages-to-file-storage-module-files/README.md)           | Attach files to messages                                        |
 | [profiles-to-actions](./relations/profiles-to-actions/README.md)                                               | Link profiles to actions                                        |
 | [profiles-to-attributes](./relations/profiles-to-attributes/README.md)                                         | Link profiles to attributes                                     |

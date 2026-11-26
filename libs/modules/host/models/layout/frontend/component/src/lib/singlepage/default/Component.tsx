@@ -55,7 +55,15 @@ export function Component(props: IComponentPropsExtended) {
       ) : (
         props.before
       )}
-      <div className="min-w-0 w-full flex-1 pb-12">{props.children}</div>
+      <div
+        className={cn(
+          "w-full min-w-0 flex-1 pb-12",
+          "group-[&]/social-chat-layout:mx-auto group-[&]/social-chat-layout:min-h-0 group-[&]/social-chat-layout:max-w-7xl group-[&]/social-chat-layout:[container-type:size]",
+          "group-[&]/social-chat-layout:px-4 group-[&]/social-chat-layout:py-3 sm:group-[&]/social-chat-layout:px-6 lg:group-[&]/social-chat-layout:px-8",
+        )}
+      >
+        {props.children}
+      </div>
       {props.after === undefined ? (
         <LayoutsToWidgets
           isServer={props.isServer}

@@ -2,7 +2,6 @@ import { Service as AudioTranscriptionService } from "../../../../../../../../se
 import {
   RBAC_JWT_SECRET,
   RBAC_SECRET_KEY,
-  AI_CHAT_DOCUMENTS,
   assertSupportedAiChatAttachments,
 } from "@sps/shared-utils";
 import { Context } from "hono";
@@ -12,6 +11,7 @@ import { api as socialModuleMessageApi } from "@sps/social/models/message/sdk/se
 import { api } from "@sps/rbac/models/subject/sdk/server";
 import { IModel as ISocialModuleMessagesToFileStorageModuleFile } from "@sps/social/relations/messages-to-file-storage-module-files/sdk/model";
 import {
+  authorization,
   assertKnowledgeAttachmentBytes,
   getHttpErrorType,
   currentRequestDiagnostics,
@@ -25,13 +25,19 @@ import { api as fileStorageModuleFileApi } from "@sps/file-storage/models/file/s
 import { IModel as IFileStorageModuleFile } from "@sps/file-storage/models/file/sdk/model";
 import { shouldSkipOrdinaryNotificationForAudioTranscription } from "./audio-transcription";
 import {
+  CRM_WORKSPACE_STAFF_MESSAGE_PREFIX,
   normalizeRbacAiReactionRequestMetadata,
-  parseRbacAiReactionRequestMetadata,
-  getAIChatDocument,
-  RBAC_AI_REACTION_REQUEST_METADATA_KEY,
+  STORE_EMPLOYEE_CHAT_VARIANT,
 } from "@sps/rbac/models/subject/sdk/model";
+import { isStoreEmployeeTraining } from "@sps/crm/models/task/sdk/model";
+import {
+  PROVIDER_MODEL_SELECTION_METADATA_KEY,
+  providerModelSelection,
+  type IProviderModelSelection,
+} from "@sps/rbac/models/subject/sdk/model/src/lib/provider-connections";
 import { getDrizzle } from "@sps/shared-backend-database-config";
 import { withConsistencyDatabase } from "@sps/shared-backend-api";
+import { projectCustomerWorkAttachments } from "../../../../../../../../service/singlepage/ecommerce/customer-work/media";
 
 export class Handler {
   service: Service;
@@ -127,14 +133,28 @@ export class Handler {
         throw new Error("Validation error. Invalid JSON in body['data']");
       }
 
-      const aiReactionRequest = parseRbacAiReactionRequestMetadata(
-        parsedBody.data?.metadata,
-      );
-
-      if (aiReactionRequest && parsedBody.data) {
-        parsedBody.data.metadata = normalizeRbacAiReactionRequestMetadata(
+      let requestMetadata: Record<string, unknown> | undefined;
+      let providerSelection: IProviderModelSelection | undefined;
+      if (parsedBody.data?.metadata !== undefined) {
+        const metadata = normalizeRbacAiReactionRequestMetadata(
           parsedBody.data.metadata,
         );
+        if (metadata) {
+          if (PROVIDER_MODEL_SELECTION_METADATA_KEY in metadata) {
+            const provider = providerModelSelection.safeParse(
+              metadata[PROVIDER_MODEL_SELECTION_METADATA_KEY],
+            );
+            if (!provider.success) {
+              throw new Error(
+                "Validation error. Invalid provider model selection",
+              );
+            }
+            metadata[PROVIDER_MODEL_SELECTION_METADATA_KEY] = provider.data;
+            providerSelection = provider.data;
+          }
+          parsedBody.data.metadata = metadata;
+          requestMetadata = metadata;
+        }
       }
 
       const requestedThreadId =
@@ -148,87 +168,92 @@ export class Handler {
         requestedThreadId: requestedThreadId || undefined,
       });
 
-      const thread = await this.service.modules.social.thread.findById({
-        id: socialModuleThreadId,
-      });
-      operation.stage = "message.prepare";
-      const document = getAIChatDocument(thread?.metadata);
-      if (
-        document &&
-        document.profileId !== socialModuleProfileId &&
-        parsedBody.data
-      ) {
-        const selectedSourceId =
-          parsedBody.data.metadata?.aiChatDocumentSourceId;
-        if (
-          selectedSourceId !== undefined &&
-          (typeof selectedSourceId !== "string" ||
-            !document.sourceIds.includes(selectedSourceId))
-        ) {
-          throw new Error(
-            "Authorization error. Selected Knowledge Source does not belong to this document.",
-          );
-        }
-        const skill = await this.service.socialModuleProfileDocumentSkillFind({
-          socialModuleProfileId: document.profileId,
-          documentKey: document.key,
-        });
-        const description =
-          typeof parsedBody.data.description === "string"
-            ? parsedBody.data.description
-            : "";
-        const baseSlug = AI_CHAT_DOCUMENTS.find(
-          (definition) => definition.key === document.key,
-        )?.skillSlug;
-        const leadingCommand = description.match(/^\/([^\s]+)(?=\s|$)\s*/);
-        const content =
-          leadingCommand && [skill.slug, baseSlug].includes(leadingCommand[1])
-            ? description.slice(leadingCommand[0].length)
-            : description;
-        parsedBody.data.description = `/${skill.slug}\n\n${content}`;
-        parsedBody.data.metadata = {
-          ...parsedBody.data.metadata,
-          [RBAC_AI_REACTION_REQUEST_METADATA_KEY]: {
-            ...(aiReactionRequest || {
-              version: 1,
-              modelId: "auto",
-              reasoning: "auto",
-              useKnowledgeSearch: true,
-            }),
-            skillIds: [skill.id],
-          },
-        };
-      }
-
-      if (parsedBody.data && "threadId" in parsedBody.data) {
-        delete parsedBody.data.threadId;
-      }
-
+      const incomingId = parsedBody.data?.sourceSystemId;
       const sourceSystemId =
-        typeof parsedBody.data?.sourceSystemId === "string"
-          ? parsedBody.data.sourceSystemId.trim()
-          : "";
-
+        typeof incomingId === "string" ? incomingId.trim() : "";
+      if (sourceSystemId.startsWith(CRM_WORKSPACE_STAFF_MESSAGE_PREFIX)) {
+        throw new Error("Validation error. This message key is reserved");
+      }
+      const chat = await this.service.modules.social.chat.findById({
+        id: socialModuleChatId,
+      });
+      if (chat?.variant === STORE_EMPLOYEE_CHAT_VARIANT) {
+        operation.stage = "employee-training.message";
+        const message = await this.service.customerWork.sendEmployeeTraining({
+          actorId: id,
+          senderAccessToken: authorization(c),
+          actorProfileId: socialModuleProfileId,
+          chat,
+          threadId: socialModuleThreadId,
+          text: parsedBody.data?.description,
+          sourceSystemId: sourceSystemId || undefined,
+          selection: providerSelection,
+          attachments: files,
+        });
+        c.header("X-SPS-SKIP-ACTION-LOGGER", "1");
+        return c.json({
+          data: {
+            ...projectCustomerWorkAttachments(message),
+            authorProfileIds: [socialModuleProfileId],
+            attachments: [],
+          },
+        });
+      }
+      if (isStoreEmployeeTraining(sourceSystemId)) {
+        throw new Error("Validation error. This message key is reserved");
+      }
       if (sourceSystemId) {
         const existingMessage = await this.findExistingBySourceSystemId({
           sourceSystemId,
           socialModuleChatId,
           socialModuleThreadId,
         });
-
-        if (existingMessage) {
+        if (existingMessage && existingMessage.variant !== "customer-work") {
+          if (providerSelection?.reasoning) {
+            throw new Error(
+              "Conflict error. This request key belongs to another message",
+            );
+          }
           c.header("X-SPS-SKIP-ACTION-LOGGER", "1");
-          return c.json({
-            data: existingMessage,
-          });
+          return c.json({ data: existingMessage });
         }
+      }
+      const workMessage = await this.service.customerWork.messageFromThread({
+        senderAccessToken: authorization(c),
+        customerId: id,
+        chatId: socialModuleChatId,
+        threadId: socialModuleThreadId,
+        profileId: socialModuleProfileId,
+        text: parsedBody.data?.description,
+        ...(requestMetadata ? { metadata: requestMetadata } : {}),
+        sourceSystemId: sourceSystemId || undefined,
+        hasAttachments: files.length > 0,
+        ...(files.length ? { attachments: files } : {}),
+      });
+      if (workMessage) {
+        c.header("X-SPS-SKIP-ACTION-LOGGER", "1");
+        return c.json({
+          data: {
+            ...projectCustomerWorkAttachments(workMessage),
+            authorProfileIds: [socialModuleProfileId],
+            attachments: [],
+          },
+        });
+      }
+      if (providerSelection?.reasoning) {
+        throw new Error(
+          "Validation error. Reasoning effort is unavailable for this conversation",
+        );
+      }
+
+      operation.stage = "message.prepare";
+
+      if (parsedBody.data && "threadId" in parsedBody.data) {
+        delete parsedBody.data.threadId;
       }
 
       operation.stage = "attachment.validate";
       if (files.length) {
-        const chat = await this.service.modules.social.chat.findById({
-          id: socialModuleChatId,
-        });
         if (chat?.variant === "ai-chat") {
           try {
             assertSupportedAiChatAttachments(files, "message");
@@ -379,8 +404,8 @@ export class Handler {
         data: {
           ...socialModuleMessage,
           authorProfileIds: [socialModuleProfileId],
-          attachments: (socialModuleMessagesToFileStorageModuleFiles || [])
-            .toSorted((a, b) => (a.orderIndex || 0) - (b.orderIndex || 0))
+          attachments: [...(socialModuleMessagesToFileStorageModuleFiles || [])]
+            .sort((a, b) => (a.orderIndex || 0) - (b.orderIndex || 0))
             .flatMap((link) => {
               const file = fileStorageModuleFiles?.find(
                 (file) => file.id === link.fileStorageModuleFileId,

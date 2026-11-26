@@ -512,6 +512,7 @@ export async function exchangeRbacSubjectAuthenticationJwtForMcpToken(props: {
     rbacSubjectId = getVerifiedRbacSubjectIdFromAuthenticationJwt(
       rbacSubjectAuthenticationJwt,
     );
+    await assertActiveRbacSubject(rbacSubjectAuthenticationJwt, rbacSubjectId);
   } catch {
     throw new InternalTokenExchangeError(
       401,
@@ -566,6 +567,10 @@ export async function verifyMcpAccessToken(
     throw new Error("Token is expired or revoked");
   }
 
+  await assertActiveRbacSubject(
+    record.rbacSubjectAuthenticationJwt,
+    record.rbacSubjectId,
+  );
   return {
     token: accessToken,
     clientId: record.clientId,
@@ -1333,6 +1338,23 @@ function getRbacTokenRemainingSeconds(
   }
 
   return remaining;
+}
+
+async function assertActiveRbacSubject(token: string, subjectId: string) {
+  const authorization = `Bearer ${token}`;
+  const subject = await runWithMcpRequestAuthContext({ authorization }, () =>
+    rbacSubjectApi.authenticationMe({
+      catchErrors: true,
+      options: {
+        headers: { Authorization: authorization, "Cache-Control": "no-store" },
+        cache: "no-store",
+        redirect: "error",
+      },
+    }),
+  );
+  if (subject?.id !== subjectId) {
+    throw new Error("The RBAC session is no longer valid");
+  }
 }
 
 function getVerifiedRbacSubjectIdFromAuthenticationJwt(

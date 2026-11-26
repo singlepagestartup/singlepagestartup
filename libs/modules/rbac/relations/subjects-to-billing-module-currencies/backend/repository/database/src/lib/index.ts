@@ -1,6 +1,7 @@
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 export * from "./schema";
-import { Table } from "./schema";
+export { BalanceView as Table } from "./schema";
+import { BalanceView as Table } from "./schema";
 
 export const insertSchema = createInsertSchema(Table);
 export const selectSchema = createSelectSchema(Table);

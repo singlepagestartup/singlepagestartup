@@ -4,6 +4,69 @@ import { internationalization } from "@sps/shared-configuration";
 import { saveLanguageContext } from "@sps/shared-utils";
 import type { IModel as ISocialModuleProfile } from "@sps/social/models/profile/sdk/model";
 
+export function isChatAccessError(error: unknown) {
+  return (
+    typeof error === "object" &&
+    error !== null &&
+    "status" in error &&
+    (error.status === 401 || error.status === 403 || error.status === 404)
+  );
+}
+
+export function knowledgeWriteError(
+  error: unknown,
+  ru: boolean,
+  creating = false,
+) {
+  const status =
+    typeof error === "object" &&
+    error &&
+    "status" in error &&
+    typeof error.status === "number"
+      ? error.status
+      : undefined;
+  if (status === 503) {
+    return {
+      message: ru
+        ? "Не удалось сохранить изменения, потому что индексация временно недоступна. Попробуйте ещё раз."
+        : "Could not save changes because indexing is temporarily unavailable. Try again.",
+      status,
+    };
+  }
+  if (status === 409) {
+    const message = creating
+      ? ru
+        ? "Этот запрос уже использован для другой заметки. Нажмите «Создать» ещё раз."
+        : "This request was already used for another note. Select Create again."
+      : ru
+        ? "Источник изменился. Скопируйте нужные правки и заново откройте источник, чтобы загрузить его текущую версию."
+        : "The source has changed. Copy any edits you want to keep and reopen it to load the current version.";
+    return { message, status };
+  }
+  if (isChatAccessError(error)) {
+    return {
+      message: ru
+        ? "Источник недоступен для изменения."
+        : "This source is unavailable for editing.",
+      status,
+    };
+  }
+  if (status === 400 || status === 422 || status === 413 || status === 415) {
+    return {
+      message: ru
+        ? "Проверьте введённые данные и формат файлов."
+        : "Check the details you entered and the file format.",
+      status,
+    };
+  }
+  return {
+    message: ru
+      ? "Не удалось подтвердить сохранение. Попробуйте ещё раз."
+      : "Could not confirm that your changes were saved. Try again.",
+    status,
+  };
+}
+
 export const scrollBottomThreshold = 120;
 
 export const knowledgeChatCommands = [

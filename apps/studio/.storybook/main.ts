@@ -3,6 +3,7 @@ import tailwindcss from "@tailwindcss/postcss";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { syncProductStories } from "../../../tools/studio/products/stories";
+import { pureStudioAliases } from "../../../tools/studio/design-system/isolation";
 
 const configDirectory = path.dirname(fileURLToPath(import.meta.url));
 const workspace = path.resolve(configDirectory, "../workspace");
@@ -64,22 +65,7 @@ const config: StorybookConfig = {
       ...config.resolve,
       alias: {
         ...config.resolve?.alias,
-        "@sps/shared-utils/metadata": path.resolve(
-          configDirectory,
-          "../../../libs/shared/utils/src/lib/metadata/index.ts",
-        ),
-        "@sps/ui-adapter/toast": path.resolve(
-          configDirectory,
-          "../../../libs/shared/ui/adapter/src/lib/toast/index.tsx",
-        ),
-        "@sps/shared-frontend-client-utils/chat-scroll": path.resolve(
-          configDirectory,
-          "../../../libs/shared/frontend/client/utils/src/lib/chat-scroll/index.ts",
-        ),
-        "@sps/shared-utils/chat-scroll": path.resolve(
-          configDirectory,
-          "../../../libs/shared/utils/src/lib/constants/chat-scroll.ts",
-        ),
+        ...pureStudioAliases(path.resolve(configDirectory, "../../..")),
       },
     },
     css: {

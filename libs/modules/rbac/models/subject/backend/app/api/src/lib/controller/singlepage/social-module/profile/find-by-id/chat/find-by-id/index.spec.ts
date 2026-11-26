@@ -7,6 +7,7 @@ jest.mock("@sps/shared-utils", () => ({
   RBAC_SECRET_KEY: "test-key",
 }));
 import { Handler } from ".";
+import { Service as Settings } from "../../../../../../../service/singlepage/social-module/chat/settings";
 function setup(include: boolean) {
   const profileLinks = jest
     .fn()
@@ -21,7 +22,8 @@ function setup(include: boolean) {
     { id: "peer", slug: "peer" },
   ]);
   const chat = { id: "chat", title: "QA" };
-  const handler = new Handler({
+  const service: any = {
+    chatOwnership: { isOwner: jest.fn().mockResolvedValue(false) },
     socialModuleChatParticipants: participants,
     modules: {
       social: {
@@ -41,8 +43,12 @@ function setup(include: boolean) {
       subjectsToSocialModuleProfiles: { find: profileLinks },
       subjectsToRoles: { find: jest.fn().mockResolvedValue([]) },
     },
-  } as any);
+  };
+  service.socialChatSettings = new Settings(service);
+  jest.spyOn(service.socialChatSettings, "coverId").mockResolvedValue(null);
+  const handler = new Handler(service);
   const context = {
+    get: jest.fn(),
     req: {
       param: (key: string) =>
         (
@@ -70,7 +76,11 @@ it("includes members only after validating both the owned profile and its chat m
 it("preserves the existing response and does not read members without the projection", async () => {
   const s = setup(false);
   const r = await s.handler.execute(s.context, undefined);
-  expect((await r.json()).data).toEqual(s.chat);
+  expect((await r.json()).data).toEqual({
+    ...s.chat,
+    coverFileId: null,
+    canManageChat: false,
+  });
   expect(s.participants).not.toHaveBeenCalled();
 });
 it("does not expose members through another subject's profile", async () => {

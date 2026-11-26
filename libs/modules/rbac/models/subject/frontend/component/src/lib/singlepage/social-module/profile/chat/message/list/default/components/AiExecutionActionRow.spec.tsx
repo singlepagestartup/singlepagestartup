@@ -91,6 +91,58 @@ describe("Given: an ai-execution action in the message timeline", () => {
     container.remove();
   });
 
+  it.each([
+    [
+      "ru",
+      "Alice печатает",
+      "Не удалось сгенерировать ответ. Отправьте сообщение ещё раз.",
+    ],
+    [
+      "en",
+      "Alice is typing",
+      "The reply could not be generated. Please send your message again.",
+    ],
+  ])(
+    "shows preparation and then a retry instruction in %s",
+    async (language, pending, failed) => {
+      const action = createAction();
+      action.payload.phase = "reply_generation";
+      action.payload.steps = [];
+      const render = () =>
+        act(async () =>
+          root.render(
+            <AiExecutionActionRow
+              action={action}
+              language={language}
+              profile={{ id: "agent", initial: "A", slug: "Alice", href: "#" }}
+            />,
+          ),
+        );
+      await render();
+      expect(container.querySelector('[role="status"]')?.textContent).toBe(
+        pending,
+      );
+      expect(
+        container.querySelectorAll('[role="status"] [aria-hidden="true"]'),
+      ).toHaveLength(3);
+      action.payload.status = "failed";
+      await render();
+      expect(container.querySelector('[role="alert"]')?.textContent).toBe(
+        failed,
+      );
+      expect(container.querySelector('[role="status"]')).toBeNull();
+      action.payload.rejectedFileName = "notes.wav";
+      action.payload.selectedModelId = "test-model";
+      await render();
+      expect(container.querySelector('[role="alert"]')?.textContent).toContain(
+        "notes.wav",
+      );
+      expect(container.querySelector('[role="alert"]')?.textContent).toContain(
+        "test-model",
+      );
+    },
+  );
+
   /**
    * BDD Scenario
    * Given: a SinglePageStartup MCP tool is currently running.
@@ -130,10 +182,24 @@ describe("Given: an ai-execution action in the message timeline", () => {
    * Then: the same row reports completion and retains its safe details.
    */
   it("When: MCP work completes Then: the row reports terminal success", async () => {
+    const action = createAction({ status: "completed" });
+    Object.assign(action.payload.steps[0], {
+      toolName: "model-schema",
+      parameters: {
+        module: "social",
+        model: "profile",
+        token: "must-not-render",
+      },
+      resultSummary: { count: 2, password: "must-not-render" },
+      schemaFields: [
+        { name: "slug", type: "text", description: "must-not-render" },
+        { name: "createdAt", type: "timestamp" },
+      ],
+    });
     await act(async () => {
       root.render(
         <AiExecutionActionRow
-          action={createAction({ status: "completed" })}
+          action={action}
           language="ru"
           profile={{
             href: "/profiles/profile-1",
@@ -146,13 +212,22 @@ describe("Given: an ai-execution action in the message timeline", () => {
     });
 
     expect(container.textContent).toContain(
-      "Завершил работу с инструментами · 1",
+      "Работа с инструментами завершена · 1",
     );
     expect(
       container
         .querySelector('[data-variant="ai-execution"]')
         ?.getAttribute("data-status"),
     ).toBe("completed");
+    await act(async () => {
+      container.querySelector("button")!.click();
+    });
+    expect(container.textContent).toContain("module = social");
+    expect(container.textContent).toContain("count = 2");
+    expect(container.textContent).toContain(
+      "slug (text), createdAt (timestamp)",
+    );
+    expect(container.textContent).not.toContain("must-not-render");
   });
 
   /**
@@ -179,6 +254,10 @@ describe("Given: an ai-execution action in the message timeline", () => {
 
     expect(container.textContent).toContain("Не получилось завершить задачу");
     expect(container.textContent?.toLowerCase()).not.toContain("сотрудник");
+    await act(async () => {
+      container.querySelector("button")!.click();
+    });
+    expect(container.textContent).toContain("Инструмент вернул ошибку");
   });
 
   /**

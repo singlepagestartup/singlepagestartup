@@ -8,7 +8,11 @@ import type { Service as OrdersToCurrenciesService } from "@sps/ecommerce/relati
 export interface IConstructorProps {
   ordersToProducts: Pick<OrdersToProductsService, "find">;
   product: Pick<ProductService, "find">;
-  total: (props: { id: string }) => ReturnType<TotalService["execute"]>;
+  total: (props: {
+    id: string;
+  }) => Promise<
+    Awaited<ReturnType<TotalService["execute"]>> & { fixedCurrencyId?: string }
+  >;
   ordersToCurrencies: Pick<OrdersToCurrenciesService, "find">;
 }
 export class Service {
@@ -53,9 +57,14 @@ export class Service {
     return {
       maxLineQuantity,
       availableCurrencyIds: result.availableCurrencyIds,
-      ...(selectedIds.length === 1
-        ? { billingModuleCurrencyId: selectedIds[0] }
-        : {}),
+      ...(result.fixedCurrencyId
+        ? {
+            billingModuleCurrencyId: result.fixedCurrencyId,
+            fixedResultPrice: true,
+          }
+        : selectedIds.length === 1
+          ? { billingModuleCurrencyId: selectedIds[0] }
+          : {}),
       ...(result.unpriced.length ? { unpriced: result.unpriced } : {}),
       lines: lines.map((line) => ({
         ...line,
