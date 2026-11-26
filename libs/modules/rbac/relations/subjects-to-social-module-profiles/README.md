@@ -4,9 +4,11 @@
 
 Links subjects to social profiles.
 
-For a registered user, `variant="default"` identifies the single personal
-Profile, created automatically during registration. `variant="assistant"`
-identifies a Profile owned by that user for AI Chat work. Assistant ownership
+At sign-in, RBAC looks for a Profile of type `default` among the user's
+`default` links. Two such Profiles are a data integrity error. If none exists,
+RBAC reuses a single linked `telegram` Profile or provisions a personal Profile.
+Publication channels (`publication-default`) can each have a `default` link.
+An `assistant` link identifies a Profile owned by the user for AI Chat work. Assistant ownership
 does not make the assistant the user's identity in Chat participants.
 
 Agent Subjects retain their own `default` identity link. Their human owner's

@@ -208,6 +208,74 @@ it("reuses an owned Telegram personal Profile even after its private slug change
   expect(deps.links.rows).toHaveLength(1);
 });
 
+it("selects the default profile at sign-in and preserves all twelve publication channels and their grants", async () => {
+  const deps = dependencies();
+  const ownership = new Service(deps.service as any);
+  const { profile: personal } = await ownership.ensure({ subjectId: "owner" });
+  const channelRole = await deps.role.create({
+    data: { slug: "channel-editor" },
+  });
+  await deps.subjectsToRoles.create({
+    data: { subjectId: "owner", roleId: channelRole.id },
+  });
+  for (let index = 0; index < 12; index++) {
+    const channel = await deps.profiles.create({
+      data: { slug: `channel-${index}`, variant: "publication-default" },
+    });
+    await deps.links.create({
+      data: {
+        subjectId: "owner",
+        socialModuleProfileId: channel.id,
+        variant: "default",
+      },
+    });
+    const permission = await deps.permission.create({
+      data: {
+        path: `/api/social/profiles/${channel.id}`,
+        method: "PATCH",
+        type: "HTTP",
+      },
+    });
+    await deps.rolesToPermissions.create({
+      data: { roleId: channelRole.id, permissionId: permission.id },
+    });
+  }
+  const account = () => ({
+    profiles: deps.profiles.rows,
+    links: deps.links.rows,
+    roles: deps.role.rows,
+    assignments: deps.subjectsToRoles.rows,
+    permissions: deps.permission.rows,
+    grants: deps.rolesToPermissions.rows,
+  });
+  const beforeLogin = structuredClone(account());
+
+  const result = await ownership.ensure({ subjectId: "owner" });
+
+  expect(result.profile.id).toBe(personal.id);
+  expect(account()).toEqual(beforeLogin);
+});
+
+it("prefers the default profile even when the Telegram profile was linked first", async () => {
+  const deps = dependencies();
+  for (const variant of ["telegram", "default"]) {
+    const profile = await deps.profiles.create({
+      data: { variant, slug: variant },
+    });
+    await deps.links.create({
+      data: {
+        subjectId: "owner",
+        socialModuleProfileId: profile.id,
+        variant: "default",
+      },
+    });
+  }
+  const result = await new Service(deps.service as any).ensure({
+    subjectId: "owner",
+  });
+  expect(result.profile.variant).toBe("default");
+});
+
 it("does not create a personal profile or ownership grant for an anonymous session", async () => {
   const deps = dependencies();
   deps.service.module.subjectsToIdentities.find.mockResolvedValue([]);
@@ -256,7 +324,7 @@ it("preserves the existing personal profile and separates assistant ownership", 
   expect(deps.profiles.rows[0].title).toEqual({ en: "Saved name" });
 });
 
-it("does not choose an arbitrary profile when two personal default links already exist", async () => {
+it("rejects two owned profiles of type default before granting personal access", async () => {
   const deps = dependencies();
   for (const id of ["one", "two"]) {
     deps.profiles.rows.push({ id, slug: id, variant: "default" });
@@ -269,6 +337,8 @@ it("does not choose an arbitrary profile when two personal default links already
   await expect(
     new Service(deps.service as any).ensure({ subjectId: "owner" }),
   ).rejects.toThrow("one personal profile");
+  expect(deps.profiles.create).not.toHaveBeenCalled();
+  expect(deps.links.update).not.toHaveBeenCalled();
   expect(deps.permission.create).not.toHaveBeenCalled();
 });
 

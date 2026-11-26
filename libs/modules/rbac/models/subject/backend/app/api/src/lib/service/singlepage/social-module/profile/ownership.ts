@@ -187,19 +187,25 @@ export class Service {
           data: { ...link, variant: "assistant" },
         });
     }
-    const personal = profiles.filter(
-      (profile) =>
-        profile.variant !== "artificial-intelligence" &&
-        links.some(
-          (link) =>
-            link.socialModuleProfileId === profile.id &&
-            link.variant === "default",
-        ),
+    const ownerLinkedIds = new Set(
+      links
+        .filter((link) => link.variant === "default")
+        .map((link) => link.socialModuleProfileId),
     );
-    if (personal.length > 1)
+    const ownedProfiles = profiles.filter((profile) =>
+      ownerLinkedIds.has(profile.id),
+    );
+    const defaultProfiles = ownedProfiles.filter(
+      (profile) => profile.variant === "default",
+    );
+    const personal = defaultProfiles.length
+      ? defaultProfiles
+      : ownedProfiles.filter((profile) => profile.variant === "telegram");
+    if (personal.length > 1) {
       throw new Error(
         "Data integrity error. A Subject must have one personal profile",
       );
+    }
     const profile =
       personal[0] ??
       (await this.ensureEntity({
