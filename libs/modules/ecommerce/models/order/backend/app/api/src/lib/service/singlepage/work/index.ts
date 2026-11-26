@@ -101,7 +101,10 @@ export class Service {
       );
       if (previous) {
         this.verifyScope(previous, input);
-        if (previous.kind !== input.kind) {
+        if (
+          previous.kind !== input.kind ||
+          previous.paymentMode !== input.paymentMode
+        ) {
           throw new Error(
             "Conflict error. Another work type is active for the order",
           );
@@ -261,7 +264,11 @@ export class Service {
   async resultPriceForOrder(orderId: string) {
     const record = await this.order.repository.fulfillmentForOrder(orderId);
     const fileId = record?.paid?.fileId ?? record?.acceptedFileId;
-    if (record?.kind !== "individual-service" || !fileId) {
+    if (
+      record?.kind !== "individual-service" ||
+      record.paymentMode === "work-tokens" ||
+      !fileId
+    ) {
       return null;
     }
     const { currencyId, price } = this.file(record, fileId);
@@ -404,6 +411,38 @@ export class Service {
           "Conflict error. This order cannot accept another result file",
         );
       }
+      if (
+        (record.paymentMode === "work-tokens") !==
+        (input.priceBasis?.kind === "work-tokens")
+      ) {
+        throw new Error(
+          "Conflict error. The result price does not match the order's payment terms",
+        );
+      }
+      if (record.paymentMode === "work-tokens") {
+        if (
+          input.preview.mimeType !== "text/plain" ||
+          input.original.mimeType !== "application/pdf" ||
+          Number(price) !== 0
+        ) {
+          throw new Error(
+            "Validation error. Token-funded results require a text draft and an included PDF original",
+          );
+        }
+        const latest = record.files.at(-1);
+        if (
+          latest &&
+          !latest.invalidatedByCartEdit &&
+          !record.decisions.some(
+            (decision) =>
+              decision.fileId === latest.id && decision.kind === "declined",
+          )
+        ) {
+          throw new Error(
+            "Conflict error. The current draft is still awaiting a decision",
+          );
+        }
+      }
       if (input.purchaseQuote) {
         const total = input.purchaseQuote.charges.reduce(
           (sum, charge) => sum + moneyMinorUnits(charge.amount),
@@ -525,7 +564,11 @@ export class Service {
 
       return this.order.repository.patchFulfillment(record.orderId, {
         acceptedFileId,
-        state: acceptedFileId ? "awaiting-payment" : "awaiting-result",
+        state: acceptedFileId
+          ? record.paymentMode === "work-tokens"
+            ? "accepted"
+            : "awaiting-payment"
+          : "awaiting-result",
         decisions: [
           ...record.decisions,
           {
@@ -569,6 +612,11 @@ export class Service {
     );
     if (record?.kind !== "individual-service") {
       return null;
+    }
+    if (record.paymentMode === "work-tokens") {
+      throw new Error(
+        "Conflict error. This order is covered by token charges for work",
+      );
     }
     if (
       record.customerId !== input.customerId ||
@@ -912,6 +960,38 @@ export class Service {
         state: "delivered",
       });
       return file;
+    });
+  }
+
+  async releaseIncludedFile(
+    input: IOrderWorkScope & { fileId: string },
+    grant: (scope: IOrderWorkScope, ids: string[]) => Promise<void>,
+  ) {
+    return this.withOrderLock(input.orderId, async () => {
+      const work = await this.require(input);
+      if (
+        work.paymentMode !== "work-tokens" ||
+        work.acceptedFileId !== input.fileId ||
+        !["accepted", "delivered"].includes(work.state)
+      ) {
+        throw new Error(
+          "Conflict error. The order has no accepted token-funded file",
+        );
+      }
+      const file = this.file(work, input.fileId);
+      if (work.deliveredAt && work.resultFileId === file.originalFileId) {
+        return work;
+      }
+      await grant(input, [file.originalFileId]);
+      await this.order.update({
+        id: input.orderId,
+        data: { status: "delivered" },
+      });
+      return this.order.repository.patchFulfillment(input.orderId, {
+        resultFileId: file.originalFileId,
+        deliveredAt: new Date().toISOString(),
+        state: "delivered",
+      });
     });
   }
 

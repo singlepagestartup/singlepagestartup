@@ -69,6 +69,7 @@ export function Component({
               note: (
                 <ServicePaymentTiming
                   language={language}
+                  workMetered={Boolean(offer.settings?.workTokenPricing)}
                   afterAcceptance={
                     offer.settings.requiresResultAcceptance === true
                   }

@@ -24,6 +24,7 @@ export const mockToastError = jest.fn();
 export const mockToastSuccess = jest.fn();
 export const mockCustomerWork = jest.fn();
 export const mockOrderWorkRead = jest.fn();
+export const mockOrderWorkContent = jest.fn();
 
 jest.mock("client-only", () => ({}), { virtual: true });
 export const mockChatComponentState = {
@@ -418,6 +419,7 @@ jest.mock("@sps/rbac/models/subject/sdk/client", () => {
       customerWorkForThread: (...args: unknown[]) => mockCustomerWork(...args),
       orderWork: {
         read: (...args: unknown[]) => mockOrderWorkRead(...args),
+        content: (...args: unknown[]) => mockOrderWorkContent(...args),
         decision: jest.fn(() => ({})),
       },
       changeCustomerWork: jest.fn(() => ({})),
@@ -804,6 +806,7 @@ export function resetChatComponentMocks() {
   mockSharedApiQueryClient.clear();
   mockCustomerWork.mockReset().mockReturnValue({});
   mockOrderWorkRead.mockReset().mockReturnValue({});
+  mockOrderWorkContent.mockReset();
   mockMessageCreateMutate.mockReset();
   mockMessageDeleteMutate.mockReset();
   mockMessageUpdateMutate.mockReset();

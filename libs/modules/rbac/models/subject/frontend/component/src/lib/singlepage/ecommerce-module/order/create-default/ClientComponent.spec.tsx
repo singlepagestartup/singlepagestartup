@@ -13,6 +13,7 @@ const mockChangeWork = jest.fn();
 const mockNavigate = jest.fn();
 let mockConsultationAvailable = false;
 let mockServiceAvailable = false;
+let mockTokenMeteredService = false;
 jest.mock("next/navigation", () => ({
   useRouter: () => ({ push: mockNavigate }),
   useSearchParams: () => new URLSearchParams(),
@@ -41,7 +42,8 @@ jest.mock("@sps/rbac/models/subject/sdk/client", () => ({
       data: {
         consultation: mockConsultationAvailable,
         order: mockServiceAvailable,
-        payAfterAcceptance: mockServiceAvailable,
+        payAfterAcceptance: mockServiceAvailable && !mockTokenMeteredService,
+        workMetered: mockTokenMeteredService,
       },
       isPending: false,
     }),
@@ -270,6 +272,7 @@ beforeAll(() => {
 beforeEach(() => {
   mockConsultationAvailable = false;
   mockServiceAvailable = false;
+  mockTokenMeteredService = false;
   mockChangeWork.mockReset();
   mockNavigate.mockReset();
   mockCreate.mockReset().mockResolvedValue({});
@@ -370,6 +373,50 @@ it("books the pinned service offer and opens its order discussion", async () => 
     }),
   });
   expect(mockCreate).not.toHaveBeenCalled();
+});
+it("books a token-funded service in chat and hides the checkout amount", async () => {
+  mockServiceAvailable = true;
+  mockTokenMeteredService = true;
+  mockCurrencyIds = ["token"];
+  mockAmount = "0";
+  mockSingleUnitOffers = ["offer-a"];
+  mockOffers[0].settings = {
+    standalone: true,
+    requiresResultAcceptance: true,
+    workTokenPricing: { currencyId: "token", multiplier: "2" },
+  };
+  mockChangeWork.mockResolvedValue({ chatId: "chat", threadId: "thread" });
+  const checkout = jest.fn();
+  render(
+    <Component
+      {...props}
+      ecommerceModuleProduct={{ id: "product", kind: "service" }}
+      ecommerceModuleStore={{ id: "store-a" }}
+      ecommerceModuleOfferId="offer-a"
+      openServiceDiscussionOnSubmit
+      checkoutSlot={checkout}
+    />,
+  );
+  const book = screen.getByRole("button", { name: "Заказать и открыть чат" });
+  await waitFor(() => expect(book.hasAttribute("disabled")).toBe(false));
+  expect(screen.queryByLabelText("Цена за 1 шт.")).toBeNull();
+  expect(screen.queryByText("Итого")).toBeNull();
+  fireEvent.click(book);
+  await waitFor(() =>
+    expect(mockNavigate).toHaveBeenCalledWith(
+      "/ru/social/chats/chat/threads/thread",
+    ),
+  );
+  expect(mockChangeWork).toHaveBeenCalledWith({
+    id: "subject",
+    data: expect.objectContaining({
+      operation: "add",
+      offerId: "offer-a",
+      selection: expect.objectContaining({ billingModuleCurrencyId: "token" }),
+    }),
+  });
+  expect(mockCreate).not.toHaveBeenCalled();
+  expect(checkout).not.toHaveBeenCalled();
 });
 it("blocks direct booking when a postpaid service has no available work", async () => {
   mockOffers[0].settings = { standalone: true, requiresResultAcceptance: true };

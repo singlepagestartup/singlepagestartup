@@ -83,6 +83,7 @@ const resultConversionSchema = z
 
 const resultPricingSchema = z.discriminatedUnion("kind", [
   z.object({ kind: z.literal("offer") }),
+  z.object({ kind: z.literal("work-tokens") }),
   z.object({
     kind: z.literal("confirmed-cost"),
     multiplier: positiveAmount,

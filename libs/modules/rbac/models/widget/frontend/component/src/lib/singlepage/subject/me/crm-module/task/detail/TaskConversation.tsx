@@ -14,6 +14,7 @@ interface IProps {
   taskId: string;
   language: string;
   thread?: ICrmWorkspaceTaskDetail["thread"];
+  discussionOnly: boolean;
 }
 
 export function TaskConversation({
@@ -22,6 +23,7 @@ export function TaskConversation({
   taskId,
   language,
   thread,
+  discussionOnly,
 }: IProps) {
   const pathname = usePathname();
   const params = useSearchParams();
@@ -40,8 +42,8 @@ export function TaskConversation({
   const defaultThreadId = member ? thread?.id : joined?.threadId;
   const ru = language === "ru";
   const scope = useMemo(
-    () => (chatId ? { storeId, taskId, chatId } : null),
-    [storeId, taskId, chatId],
+    () => (chatId ? { storeId, taskId, chatId, discussionOnly } : null),
+    [storeId, taskId, chatId, discussionOnly],
   );
   if (!chatId || !defaultThreadId) {
     return join.isError ? (

@@ -137,3 +137,22 @@ it("marks each page of the PDF preview while preserving the complete original", 
   expect(original).toContain("Protected original ending");
   expect(original).not.toContain("ПРЕДПРОСМОТР");
 });
+
+it("uses the complete UTF-8 brief draft for explicitly enabled text previews", async () => {
+  const text = "Цели и ограничения проекта.\n".repeat(30) + "Уточнить бюджет.";
+  const result = await pdfOrderResult("business-brief", text, {
+    fullTextPreview: true,
+  });
+  expect(result.preview).toEqual({
+    name: "brief-draft.txt",
+    mimeType: "text/plain",
+    bytes: Buffer.from(text),
+  });
+  expect(result.original).toMatchObject({
+    name: "business-brief.pdf",
+    mimeType: "application/pdf",
+  });
+  expect(Buffer.from(result.original.bytes.subarray(0, 5)).toString()).toBe(
+    "%PDF-",
+  );
+});

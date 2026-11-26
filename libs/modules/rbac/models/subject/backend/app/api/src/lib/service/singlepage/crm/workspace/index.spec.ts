@@ -579,7 +579,8 @@ it.each([
       customerId: f.task.customerId,
       kind: "individual-service",
       state: "delivered",
-      paid: { id: "payment" },
+      paid: { id: "payment", fileId: hasResult ? "preview" : null },
+      files: hasResult ? [{ id: "preview", originalFileId: "original" }] : [],
       receiptFileId: "receipt",
       resultFileId: hasResult ? "original" : null,
       deliveredAt: new Date(),
@@ -1134,6 +1135,7 @@ function conversation(variant: "crm-manager" | "crm-worker" | "owner") {
     assigneeKind: "human",
     status: "active",
     orderId: null as string | null,
+    outcome: null as string | null,
   };
   const message = { id: randomUUID(), description: "Task message" };
   const action = { id: randomUUID(), variant: "ai-execution" };
@@ -1314,6 +1316,27 @@ it("checks attachment membership after authorizing the exact task and thread", a
   expect(customerWork.threadAttachment).toHaveBeenCalledTimes(1);
 });
 
+it("keeps an authorized worker in the completed order discussion without waking work", async () => {
+  const { service, scope, actorId, task, message, customerWork } =
+    conversation("crm-worker");
+  task.assigneeId = actorId;
+  task.status = "closed";
+  task.orderId = randomUUID();
+  task.outcome = "completed";
+  const reply = { text: "Reply", operationKey: randomUUID() };
+  await expect(service.thread(actorId, scope)).resolves.toMatchObject({
+    canSend: true,
+  });
+  await expect(service.send(actorId, scope, reply)).resolves.toMatchObject({
+    id: message.id,
+  });
+  expect(customerWork.wakePendingWork).not.toHaveBeenCalled();
+  task.assigneeId = randomUUID();
+  await expect(service.send(actorId, scope, reply)).rejects.toThrow(
+    "CRM task is unavailable",
+  );
+});
+
 it("authorizes completed task previews and delivered originals within the exact workspace scope", async () => {
   const { service, scope, actorId, task, orderWork, privateFiles, social } =
     conversation("crm-manager");
@@ -1325,6 +1348,7 @@ it("authorizes completed task previews and delivered originals within the exact 
     id: preview,
     previewFileId: preview,
     previewMimeType: "image/png",
+    originalFileId: result,
   };
   const work = {
     orderId,

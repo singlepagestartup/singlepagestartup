@@ -31,4 +31,5 @@ export interface IComponentPropsExtended extends IParentExtended<
 export interface IServicePaymentTimingProps {
   language: string;
   afterAcceptance: boolean;
+  workMetered?: boolean;
 }

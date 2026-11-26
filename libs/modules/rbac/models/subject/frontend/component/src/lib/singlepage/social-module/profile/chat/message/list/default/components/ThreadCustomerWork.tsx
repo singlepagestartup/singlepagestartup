@@ -60,7 +60,7 @@ export function ThreadOrderStage({
   const { order, orderResult } = useThreadOrder(subjectId, work);
   const step = work.workflow?.orderStep;
   if (!step || !order || orderResult.isError) return null;
-  if (prompt)
+  if (prompt && work.status !== "closed")
     return (
       <ResultReview
         subjectId={subjectId}
@@ -99,13 +99,19 @@ export function ThreadCustomerWork(props: IProps) {
   const { order, orderResult } = useThreadOrder(
     subjectId,
     work,
-    !work.workflow?.orderStep,
+    !work.workflow?.orderStep || work.status === "closed",
   );
 
   const status = {
     active: ru ? "В работе" : "In progress",
     waiting: ru ? "Ожидает действия" : "Waiting",
-    closed: ru ? "Закрыта" : "Closed",
+    closed: work.discussionOnly
+      ? ru
+        ? "Завершена"
+        : "Completed"
+      : ru
+        ? "Закрыта"
+        : "Closed",
   }[work.status];
   const assignment = {
     assistant: ru ? "Ассистент" : "Assistant",

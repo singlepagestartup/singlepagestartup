@@ -4,6 +4,9 @@ import { Table as Product } from "@sps/ecommerce/models/product/backend/reposito
 
 export interface IOfferSettings {
   requiresResultAcceptance?: boolean;
+  closedForNewOrders?: boolean;
+  fullTextDraftPreview?: true;
+  workTokenPricing?: { currencyId: string; multiplier: string };
   initialGrant?: boolean;
   initialGrantLegacyHistory?: boolean;
   standalone?: boolean;

@@ -23,7 +23,9 @@ const SavedOrder = memo(function SavedOrder(props: ISavedOrderProps) {
     taskId: discussion?.taskId ?? "",
   });
   const awaitingResult =
-    details?.work && details.work.state !== "awaiting-payment";
+    details?.work &&
+    (details.work.paymentTiming === "work-tokens" ||
+      details.work.state !== "awaiting-payment");
   const [blockedLines, setBlockedLines] = useState<Set<string>>(new Set());
   const onSelectionStateChange = useCallback(
     (_orderId: string, lineId: string, blocked: boolean) => {

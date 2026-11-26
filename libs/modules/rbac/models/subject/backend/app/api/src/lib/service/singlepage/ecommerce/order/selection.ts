@@ -228,6 +228,12 @@ export class Service {
           "Validation error. Comparison requires the same product and configuration",
         );
       }
+      if (
+        target.settings?.closedForNewOrders &&
+        target.id !== primary.offerId
+      ) {
+        throw new Error("Conflict error. This offer is closed to new orders");
+      }
     }
     const quoteOptions = editable.fulfilledLineIds.length
       ? { fulfilledLineIds: editable.fulfilledLineIds }
@@ -362,6 +368,18 @@ export class Service {
             ],
           },
         );
+        const targetId = selections[0].offerId;
+        if (targetId !== currentPrimary.offerId) {
+          const target =
+            await service.modules.ecommerce.storesToProducts.findById({
+              id: targetId,
+            });
+          if (target?.settings?.closedForNewOrders) {
+            throw new Error(
+              "Conflict error. This offer is closed to new orders",
+            );
+          }
+        }
         let currentQuotes: IOfferQuote[];
         try {
           currentQuotes =

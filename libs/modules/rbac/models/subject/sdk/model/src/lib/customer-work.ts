@@ -1,4 +1,5 @@
 import type { IModel as IEcommerceModuleProduct } from "@sps/ecommerce/models/product/sdk/model";
+import type { IModel as ICrmTask } from "@sps/crm/models/task/sdk/model";
 import type { IModel as ISocialModuleThread } from "@sps/social/models/thread/sdk/model";
 import { z } from "zod";
 import { ecommerceOrderCreateSchema } from "./ecommerce-product-purchase";
@@ -145,6 +146,7 @@ export interface ICustomerWorkOfferAvailability {
   consultation: boolean;
   order: boolean;
   payAfterAcceptance: boolean;
+  workMetered?: boolean;
 }
 
 export interface ICustomerWorkMessage {
@@ -238,6 +240,7 @@ export interface ICustomerWorkView {
   };
   assignment: "assistant" | "manager" | "unassigned";
   status: "active" | "waiting" | "closed";
+  discussionOnly?: boolean;
   storeTest?: { storeSlug: string; funnelId: string; funnelSlug: string };
   customerPays: boolean;
   requiredMaximum?: string;
@@ -252,6 +255,14 @@ export interface ICustomerWorkView {
 
 export function isStoreTest(openingKey?: string | null) {
   return openingKey?.startsWith("store-test:") === true;
+}
+
+export function canDiscussCompletedOrder(
+  task: Pick<ICrmTask, "status" | "outcome" | "orderId">,
+) {
+  return (
+    task.status === "closed" && task.outcome === "completed" && !!task.orderId
+  );
 }
 
 export interface IPendingCustomerWork {

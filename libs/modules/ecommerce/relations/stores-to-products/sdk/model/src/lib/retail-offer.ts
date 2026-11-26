@@ -9,6 +9,23 @@ export interface IEligibleRetailOffersInput {
 
 export interface ISelectRetailOfferInput extends IEligibleRetailOffersInput {
   offerId?: IModel["id"];
+  existingOrder?: boolean;
+}
+
+function isEligibleRetailOffer(
+  offer: IModel,
+  { product, storeId }: Pick<IEligibleRetailOffersInput, "product" | "storeId">,
+  existingOrder = false,
+) {
+  return (
+    Boolean(product.id) &&
+    offer.productId === product.id &&
+    offer.variant === "default" &&
+    offer.settings?.initialGrant !== true &&
+    (existingOrder || offer.settings?.closedForNewOrders !== true) &&
+    (!storeId || offer.storeId === storeId) &&
+    (product.kind !== "service" || offer.settings?.standalone === true)
+  );
 }
 
 export function getEligibleRetailOffers({
@@ -17,15 +34,7 @@ export function getEligibleRetailOffers({
   storeId,
 }: IEligibleRetailOffersInput): IModel[] {
   return offers
-    .filter(
-      (offer) =>
-        Boolean(product.id) &&
-        offer.productId === product.id &&
-        offer.variant === "default" &&
-        offer.settings?.initialGrant !== true &&
-        (!storeId || offer.storeId === storeId) &&
-        (product.kind !== "service" || offer.settings?.standalone === true),
-    )
+    .filter((offer) => isEligibleRetailOffer(offer, { product, storeId }))
     .sort((left, right) => {
       const leftTime =
         left.createdAt instanceof Date
@@ -46,8 +55,15 @@ export function getEligibleRetailOffers({
 
 export function selectRetailOffer({
   offerId,
+  existingOrder,
   ...input
 }: ISelectRetailOfferInput): IModel | undefined {
-  const offers = getEligibleRetailOffers(input);
-  return offerId ? offers.find((offer) => offer.id === offerId) : offers[0];
+  if (offerId) {
+    return input.offers.find(
+      (offer) =>
+        offer.id === offerId &&
+        isEligibleRetailOffer(offer, input, existingOrder),
+    );
+  }
+  return getEligibleRetailOffers(input)[0];
 }

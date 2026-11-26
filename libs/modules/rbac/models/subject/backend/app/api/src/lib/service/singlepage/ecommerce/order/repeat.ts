@@ -117,6 +117,29 @@ export class Service {
         if (!lines.length) {
           throw new Error("Validation error. Source order has no products");
         }
+        const offerIds = [
+          ...new Set(
+            lines.flatMap(({ offerId }) => (offerId ? [offerId] : [])),
+          ),
+        ];
+        if (offerIds.length) {
+          const ecommerce = service.modules.ecommerce;
+          await ecommerce.order.ordersToBillingModulePaymentIntents.lockOffers({
+            offerIds,
+          });
+          const offers = await ecommerce.storesToProducts.find({
+            params: {
+              filters: {
+                and: [{ column: "id", method: "inArray", value: offerIds }],
+              },
+            },
+          });
+          if (offers.some(({ settings }) => settings?.closedForNewOrders)) {
+            throw new Error(
+              "Conflict error. The original offer is closed to new orders",
+            );
+          }
+        }
         const stores = await service.modules.ecommerce.storesToOrders.find({
           params: { filters: sourceFilters },
         });

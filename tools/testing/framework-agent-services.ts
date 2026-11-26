@@ -4,6 +4,7 @@ import { DATABASE_HOST } from "@sps/shared-utils";
 import { createAppAssembly } from "@sps/shared-backend-api";
 import { createService } from "@sps/rbac/models/subject/backend/app/api/src/lib/bootstrap";
 import { Service as ProfileKnowledge } from "@sps/rbac/models/subject/backend/app/api/src/lib/service/singlepage/social-module/profile/knowledge/sources";
+import type { IFunnelStage } from "@sps/crm/models/funnel/sdk/model";
 
 interface IPreparedService {
   slug: string;
@@ -89,7 +90,12 @@ const by = (column: string, value: string) => ({
   params: { filters: { and: [{ column, method: "eq" as const, value }] } },
 });
 
-async function setup(ownerId: string) {
+const legacyBriefOfferId = "779f2512-b7a2-4785-93a8-aca7ada1e7bc";
+
+async function setup(
+  ownerId: string,
+  options: { briefOnly: boolean; skipIndex: boolean },
+) {
   const subject = createService(createAppAssembly());
   const { ecommerce, social, billing, knowledge, crm } = subject.modules;
   const slug = "framework-agent-services";
@@ -107,19 +113,25 @@ async function setup(ownerId: string) {
     );
   }
   const catalog = await Promise.all(
-    services.map(async (service) => {
-      const productSlug = "framework-" + service.slug;
-      const [product] = await ecommerce.product.find(by("slug", productSlug));
-      if (product?.kind !== "service")
-        throw new Error("Missing service: " + productSlug);
-      const offers = await ecommerce.storesToProducts.find(
-        by("productId", product.id),
-      );
-      const offer = offers.find((row) => row.storeId === store.id);
-      if (!offer)
-        throw new Error("Missing service store offer: " + productSlug);
-      return { service, product, offer };
-    }),
+    services
+      .filter(
+        (service) => !options.briefOnly || service.slug === "business-brief",
+      )
+      .map(async (service) => {
+        const productSlug = "framework-" + service.slug;
+        const [product] = await ecommerce.product.find(by("slug", productSlug));
+        if (product?.kind !== "service")
+          throw new Error("Missing service: " + productSlug);
+        const offers = await ecommerce.storesToProducts.find(
+          by("productId", product.id),
+        );
+        const offer = offers.find(
+          (row) => row.storeId === store.id && !row.settings.closedForNewOrders,
+        );
+        if (!offer)
+          throw new Error("Missing service store offer: " + productSlug);
+        return { service, product, offer };
+      }),
   );
   await subject.repository.withStoreEmployeeLock(store.id, async () => {
     const grants = await subject.module.subjectsToEcommerceModuleStores.find(
@@ -142,6 +154,24 @@ async function setup(ownerId: string) {
   const records: IPreparedService[] = [];
   for (const { service, product, offer } of catalog) {
     const productSlug = product.slug;
+    if (service.slug === "business-brief") {
+      const legacy = await ecommerce.storesToProducts.findById({
+        id: legacyBriefOfferId,
+      });
+      if (
+        legacy?.storeId === store.id &&
+        legacy.productId === product.id &&
+        legacy.settings.closedForNewOrders &&
+        !legacy.settings.fullTextDraftPreview
+      ) {
+        await ecommerce.storesToProducts.update({
+          id: legacy.id,
+          data: {
+            settings: { ...legacy.settings, fullTextDraftPreview: true },
+          },
+        });
+      }
+    }
     const created = await subject.crmWorkspace.execute(ownerId, {
       kind: "create-employee",
       employee: {
@@ -221,23 +251,67 @@ async function setup(ownerId: string) {
           variant: "default",
         },
       });
-    if (source.indexedContentHash !== source.contentHash)
+    if (!options.skipIndex && source.indexedContentHash !== source.contentHash)
       await new ProfileKnowledge(subject).index(source.id);
     const employeeStage = {
       defaultAssigneeSubjectId: employee.id,
       skillIds: [skill.id],
     };
+    const metered = offer.settings.workTokenPricing;
     const workFunding = {
       payer: "customer" as const,
-      multiplier: "0",
+      multiplier: metered?.multiplier ?? "0",
       currencyId: token.id,
-      maxStageAmount: "0",
-      maxRunAmount: "0",
+      maxRunAmount: metered ? "100" : "0",
+      ...(!metered && { maxStageAmount: "0" }),
     };
+    const paidWork = metered
+      ? {
+          provider: { modelId: "gpt-5.4-mini-2026-03-17" },
+          operations: ["knowledge-search"] as const,
+        }
+      : undefined;
+    const cashStages: IFunnelStage[] = [
+      {
+        id: "payment",
+        name: "Оплата",
+        instruction: "",
+        behavior: "ecommerce-module-order-payment",
+        ...employeeStage,
+        workFunding,
+        actions: [
+          {
+            id: "paid",
+            name: "Оплачено",
+            actors: ["system"],
+            evidence: ["payment"],
+            nextStageId: "delivery",
+          },
+        ],
+      },
+      {
+        id: "delivery",
+        name: "Выдача оригинала",
+        instruction: "",
+        behavior: "order-file-delivery",
+        ...employeeStage,
+        workFunding,
+        actions: [
+          {
+            id: "release",
+            name: "Выдать результат",
+            actors: ["system"],
+            evidence: ["delivery"],
+            deliveryStage: "delivered",
+            outcome: "completed",
+          },
+        ],
+      },
+    ];
     const funnel = await crm.funnel.save({
-      operationKey: productSlug,
+      operationKey: metered ? productSlug + "-work-tokens" : productSlug,
       storeId: store.id,
-      name: service.title[0],
+      name: metered ? service.title[0] + " за токены" : service.title[0],
       kind: "individual-service",
       bindings: { offerIds: [offer.id] },
       definition: {
@@ -248,6 +322,8 @@ async function setup(ownerId: string) {
             name: "Уточнение задачи",
             ...employeeStage,
             workFunding,
+            provider: paidWork?.provider,
+            operations: paidWork && [...paidWork.operations],
             instruction:
               "Выясни вводные и согласуй результат с клиентом. " +
               service.method,
@@ -266,7 +342,15 @@ async function setup(ownerId: string) {
             name: "Результат и правки",
             ...employeeStage,
             workFunding,
-            instruction: service.method,
+            provider: paidWork?.provider,
+            operations: paidWork && [...paidWork.operations],
+            resultPricing: metered ? { kind: "work-tokens" } : undefined,
+            instruction: metered
+              ? [
+                  service.method,
+                  "Составь полный рабочий бриф на русском. Зафиксируй цели, проверенные факты, ограничения и открытые вопросы. Открытые вопросы отметь в самом брифе. Если недостающие сведения не мешают подготовке полезного брифа, выпусти черновик.",
+                ].join(" ")
+              : service.method,
             output: service.visual ? "image" : "pdf",
             actions: [
               {
@@ -274,43 +358,13 @@ async function setup(ownerId: string) {
                 name: "Принять версию",
                 actors: ["system"],
                 evidence: ["result-accepted"],
-                nextStageId: "payment",
+                ...(metered
+                  ? { outcome: "completed" as const }
+                  : { nextStageId: "payment" }),
               },
             ],
           },
-          {
-            id: "payment",
-            name: "Оплата",
-            behavior: "ecommerce-module-order-payment",
-            ...employeeStage,
-            workFunding,
-            actions: [
-              {
-                id: "paid",
-                name: "Оплачено",
-                actors: ["system"],
-                evidence: ["payment"],
-                nextStageId: "delivery",
-              },
-            ],
-          },
-          {
-            id: "delivery",
-            name: "Выдача оригинала",
-            behavior: "order-file-delivery",
-            ...employeeStage,
-            workFunding,
-            actions: [
-              {
-                id: "release",
-                name: "Выдать результат",
-                actors: ["system"],
-                evidence: ["delivery"],
-                deliveryStage: "delivered",
-                outcome: "completed",
-              },
-            ],
-          },
+          ...(metered ? [] : cashStages),
         ],
       },
     });
@@ -330,5 +384,15 @@ if (!ownerId)
   throw new Error(
     "Usage: bun --tsconfig-override ./tsconfig.json --env-file=.env ../../tools/testing/framework-agent-services.ts SELLER_SUBJECT_ID (from apps/api)",
   );
-console.log(JSON.stringify(await setup(ownerId), null, 2));
+const flags = process.argv.slice(3);
+console.log(
+  JSON.stringify(
+    await setup(ownerId, {
+      briefOnly: flags.includes("--brief-only"),
+      skipIndex: flags.includes("--skip-index"),
+    }),
+    null,
+    2,
+  ),
+);
 process.exit(0);

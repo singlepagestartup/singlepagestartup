@@ -5,12 +5,19 @@ import type { IModel as ITask } from "@sps/crm/models/task/sdk/model";
 import type { IFunnelStage } from "@sps/crm/models/stage/sdk/model";
 import { isOrderPaymentStage } from "@sps/crm/models/funnel/sdk/model";
 import { currencyPrecision } from "@sps/billing/models/currency/sdk/model";
-import { orderStatusLabel } from "@sps/ecommerce/models/order/sdk/model";
-import { isSupportedAiChatAttachment } from "@sps/shared-utils";
+import {
+  deliveredOrderWorkFile,
+  orderStatusLabel,
+} from "@sps/ecommerce/models/order/sdk/model";
+import {
+  FILE_PREVIEW_TEXT_MAX_BYTES,
+  isSupportedAiChatAttachment,
+} from "@sps/shared-utils";
 import type {
   IModel as Order,
   IOrderWork,
   IOrderWorkArtifact,
+  IOrderWorkFile,
   IOrderWorkPayment,
   IOrderWorkPurchaseQuote,
   TOrderWorkPriceBasis,
@@ -19,6 +26,7 @@ import type {
 } from "@sps/ecommerce/models/order/sdk/model";
 import {
   orderArtifactPath,
+  orderFileFeedbackOperationKey,
   orderResultFiles,
   type IOrderArtifact,
   type IOrderArtifactKnowledge,
@@ -33,6 +41,7 @@ import {
   imageOrderResult,
   pdfOrderResult,
   priceResultCharges,
+  readOrderPdfText,
 } from "./utils";
 import { LegacyReceipts } from "./receipts";
 
@@ -191,18 +200,93 @@ export class Service {
     });
   }
 
-  private describe(customerId: string, work: IOrderWork): IOrderWorkView {
+  private legacyDraftPdf(file: IOrderWorkFile) {
+    return (
+      file.operationKey?.startsWith("work-result:") &&
+      file.originalFileId !== file.previewFileId &&
+      file.previewMimeType === "application/pdf" &&
+      file.originalMimeType === "application/pdf"
+    );
+  }
+
+  private async hasLegacyFullTextDraft(work: IOrderWork) {
+    if (
+      work.paymentMode ||
+      work.kind !== "individual-service" ||
+      work.state === "canceled" ||
+      !work.files.some((file) => this.legacyDraftPdf(file))
+    ) {
+      return false;
+    }
+    const { crm, ecommerce } = this.subject.modules;
+    const task = await crm.task.findById({ id: work.taskId });
+    if (
+      !task?.productId ||
+      !task.offerId ||
+      task.orderId !== work.orderId ||
+      task.customerId !== work.customerId ||
+      task.storeId !== work.storeId
+    ) {
+      return false;
+    }
+    const [offer, lines] = await Promise.all([
+      ecommerce.storesToProducts.findById({ id: task.offerId }),
+      ecommerce.ordersToProducts.find({
+        params: {
+          limit: 2,
+          filters: {
+            and: [
+              { column: "orderId", method: "eq", value: work.orderId },
+              { column: "parentLineId", method: "isNull", value: null },
+            ],
+          },
+        },
+      }),
+    ]);
+    const [line] = lines;
+    return (
+      offer?.storeId === work.storeId &&
+      offer.productId === task.productId &&
+      offer.settings?.closedForNewOrders === true &&
+      offer.settings.fullTextDraftPreview === true &&
+      lines.length === 1 &&
+      line.orderId === work.orderId &&
+      line.productId === offer.productId &&
+      line.offerId === offer.id
+    );
+  }
+
+  private async describe(
+    customerId: string,
+    work: IOrderWork,
+  ): Promise<IOrderWorkView> {
     const descriptor = (id: string): IOrderArtifact => ({
       id,
       path: orderArtifactPath(customerId, work.orderId, id),
     });
-    const delivered = Boolean(work.paid && work.deliveredAt);
+    const delivered = Boolean(
+      (work.paid && work.deliveredAt) || deliveredOrderWorkFile(work),
+    );
+    const result = orderResultFiles(work, descriptor);
+    const legacyBrief = await this.hasLegacyFullTextDraft(work);
+    if (legacyBrief) {
+      const draftIds = new Set(
+        work.files
+          .filter((file) => this.legacyDraftPdf(file))
+          .map((file) => file.previewFileId),
+      );
+      result.files = result.files.map((file) =>
+        draftIds.has(file.id)
+          ? { ...file, name: "brief-draft.txt", previewMimeType: "text/plain" }
+          : file,
+      );
+    }
     return {
       orderId: work.orderId,
       taskId: work.taskId,
       storeId: work.storeId,
       state: work.state,
-      ...orderResultFiles(work, descriptor),
+      ...result,
       receipt:
         work.paid && work.receiptFileId ? descriptor(work.receiptFileId) : null,
       deliveryStatus: delivered ? "available" : "pending",
@@ -210,7 +294,7 @@ export class Service {
         work.fulfillment.find((event) => event.stage === "in-transit")
           ?.trackingNumber ?? null,
       expertArchive:
-        work.paid && work.expertArchive?.length
+        delivered && work.expertArchive?.length
           ? work.expertArchive
           : undefined,
     };
@@ -224,6 +308,11 @@ export class Service {
 
   async assertPaymentStage(customerId: string, orderId: string) {
     const work = await this.work.findByOrder(orderId);
+    if (work?.paymentMode === "work-tokens") {
+      throw new Error(
+        "Conflict error. This order is covered by token charges for work",
+      );
+    }
     if (!work || work.paid) {
       return;
     }
@@ -393,6 +482,14 @@ export class Service {
           }
 
           const tariff = stage.resultPricing;
+          if (existing.paymentMode === "work-tokens") {
+            if (tariff?.kind !== "work-tokens" || Number(price) !== 0) {
+              throw new Error(
+                "Conflict error. A token-funded result requires token-funded work and no checkout charge",
+              );
+            }
+            priceBasis = { ...stageBasis, kind: "work-tokens" };
+          }
           if (tariff?.kind === "confirmed-cost") {
             const currency =
               await this.subject.modules.billing.currency.findById({
@@ -500,7 +597,10 @@ export class Service {
               operation: "message",
               storeId: scope.storeId,
               taskId: scope.taskId,
-              operationKey: `file-feedback:${file.id}:${command.operationKey}`,
+              operationKey: orderFileFeedbackOperationKey(
+                file.id,
+                command.operationKey,
+              ),
               text: command.reason,
             });
           }
@@ -550,6 +650,15 @@ export class Service {
               "Conflict error. The current stage needs one result acceptance action",
             );
           }
+          if (
+            work.paymentMode === "work-tokens" &&
+            (stage?.resultPricing?.kind !== "work-tokens" ||
+              acceptance[0].outcome !== "completed")
+          ) {
+            throw new Error(
+              "Conflict error. Accepting a token-funded result must complete the task",
+            );
+          }
           const moved = await crm.task.transition({
             ...scope,
             actorId: customerId,
@@ -567,6 +676,9 @@ export class Service {
             (entry) => entry.id === moved.stageId,
           );
           const revised = await this.work.accept(request);
+          if (revised.paymentMode === "work-tokens") {
+            return this.deliverIncludedResult(request, moved);
+          }
           if (moved.status !== "closed" && next) {
             const assigned =
               await this.subject.customerWork.assignStageEmployee(moved, next);
@@ -575,9 +687,32 @@ export class Service {
           return this.describe(customerId, revised);
         }
         const revised = await this.work.accept(request);
+        if (revised.paymentMode === "work-tokens") {
+          const task = await this.subject.modules.crm.task.get(scope);
+          return this.deliverIncludedResult(request, task);
+        }
         return this.describe(customerId, revised);
       },
     );
+  }
+
+  private async deliverIncludedResult(
+    request: IInternalScope & { fileId: string },
+    task: ITask,
+  ) {
+    const delivered = await this.work.releaseIncludedFile(
+      request,
+      (scope, ids) => this.grantFiles(scope, ids),
+    );
+    if (delivered.resultFileId) {
+      await this.subject.customerWork.postOrderNotice(task, {
+        key: `order-result:${delivered.resultFileId}`,
+        source: "order-result",
+        text: "Бриф принят. Оригинал доступен для скачивания.",
+        documentId: delivered.resultFileId,
+      });
+    }
+    return this.describe(request.customerId, delivered);
   }
 
   accept(
@@ -948,15 +1083,28 @@ export class Service {
     }
     await this.owner(customerId, orderId);
     const work = await this.work.findByOrder(orderId);
-    const owned = work?.customerId === customerId ? work : null;
-    const isPreview = owned?.files.some(
-      (file) => file.previewFileId === fileId,
-    );
-    if (!isPreview) {
+    const owned =
+      work?.customerId === customerId && work.orderId === orderId ? work : null;
+    const preview = owned?.files.find((file) => file.previewFileId === fileId);
+    if (
+      owned &&
+      preview &&
+      this.legacyDraftPdf(preview) &&
+      (await this.hasLegacyFullTextDraft(owned))
+    ) {
+      const draft = await this.legacyDraftText(preview);
+      return {
+        id: preview.previewFileId,
+        name: "brief-draft.txt",
+        mimeType: "text/plain",
+        bytes: draft,
+        size: draft.length,
+      };
+    }
+    if (!preview) {
       const isDelivered =
-        owned?.paid &&
-        (owned.receiptFileId === fileId ||
-          (owned.deliveredAt && owned.resultFileId === fileId));
+        (owned?.paid && owned.receiptFileId === fileId) ||
+        deliveredOrderWorkFile(owned)?.originalFileId === fileId;
       const isReceipt =
         !isDelivered &&
         (await this.receiptOwner(orderId)) === customerId &&
@@ -987,13 +1135,61 @@ export class Service {
     return file;
   }
 
+  async readFullTextDraft(work: IOrderWork, fileId: string) {
+    const file = work.files.find(({ id }) => id === fileId);
+    if (!file || file.invalidatedByCartEdit) {
+      return undefined;
+    }
+    if (
+      work.paymentMode === "work-tokens" &&
+      file.previewMimeType === "text/plain"
+    ) {
+      const preview =
+        await this.subject.modules.fileStorage.file.privateContent.findById({
+          id: file.previewFileId,
+          mimeType: "text/plain",
+          maxBytes: FILE_PREVIEW_TEXT_MAX_BYTES,
+        });
+      if (!preview) {
+        throw new Error(
+          "Conflict error. The previous brief draft is unavailable",
+        );
+      }
+      return preview.bytes;
+    }
+    if (
+      this.legacyDraftPdf(file) &&
+      (await this.hasLegacyFullTextDraft(work))
+    ) {
+      return this.legacyDraftText(file);
+    }
+    return undefined;
+  }
+
+  private async legacyDraftText(file: IOrderWorkFile) {
+    const source =
+      await this.subject.modules.fileStorage.file.privateContent.findById({
+        id: file.originalFileId,
+        mimeType: "application/pdf",
+        maxBytes: FILE_PREVIEW_TEXT_MAX_BYTES,
+      });
+    if (!source) {
+      throw new Error("Not Found error. The brief draft is unavailable");
+    }
+    const text = await readOrderPdfText(source.bytes);
+    const bytes = Buffer.from(text);
+    if (!bytes.length || bytes.length > FILE_PREVIEW_TEXT_MAX_BYTES) {
+      throw new Error("Conflict error. The brief draft is unavailable");
+    }
+    return bytes;
+  }
+
   private deliveredVersion(customerId: string, work: IOrderWork | undefined) {
     if (
       work?.customerId !== customerId ||
       work.kind !== "individual-service" ||
       !work.deliveredAt ||
       !work.resultFileId ||
-      !work.paid?.fileId ||
       work.receiptFileId === work.resultFileId ||
       work.files.some(
         ({ previewFileId }) => previewFileId === work.resultFileId,
@@ -1001,12 +1197,7 @@ export class Service {
     ) {
       return undefined;
     }
-    return work.files.find(
-      (version) =>
-        version.id === work.paid?.fileId &&
-        version.originalFileId === work.resultFileId &&
-        !version.invalidatedByCartEdit,
-    );
+    return deliveredOrderWorkFile(work);
   }
 
   async profileKnowledgeResult(customerId: string, work: IOrderWork) {

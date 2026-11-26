@@ -2,6 +2,7 @@
 
 import { toast } from "sonner";
 import { Composer } from "./components/Composer";
+import { WorkspaceOrderFileContext } from "./components/CustomerWorkResult";
 import { KnowledgeSourceDialog } from "./components/KnowledgeSourceDialog";
 import { McpServersDialog } from "./components/McpServersDialog";
 import { MessageTimelineSection } from "./components/MessageTimelineSection";
@@ -23,7 +24,14 @@ import { ChatThreadPanel } from "@sps/ui-adapter";
 import { api } from "@sps/rbac/models/subject/sdk/client";
 import { STORE_EMPLOYEE_CHAT_VARIANT } from "@sps/rbac/models/subject/sdk/model";
 import { Component as SocialModuleSkill } from "@sps/social/models/skill/frontend/component";
-import { useCallback, useImperativeHandle, useRef, useState } from "react";
+import Link from "next/link";
+import {
+  useCallback,
+  useContext,
+  useImperativeHandle,
+  useRef,
+  useState,
+} from "react";
 import type { IModel as SocialProfile } from "@sps/social/models/profile/sdk/model";
 
 interface SkillDialogTarget {
@@ -42,6 +50,8 @@ interface SkillDialogTarget {
  */
 export function Component(props: IComponentPropsExtended) {
   const threadId = props.socialModuleThreadId;
+  const workspace = useContext(WorkspaceOrderFileContext);
+  const ru = props.language === "ru";
   const [isSkillDialogOpen, setIsSkillDialogOpen] = useState(false);
   const [isMcpServersDialogOpen, setIsMcpServersDialogOpen] = useState(false);
   const [isProfileEditDialogOpen, setIsProfileEditDialogOpen] = useState(false);
@@ -92,6 +102,10 @@ export function Component(props: IComponentPropsExtended) {
     !isChatAccessError(workResult.error)
       ? workResult.data
       : undefined;
+  const discussionOnly = work?.discussionOnly || workspace?.discussionOnly;
+  const newOrderHref = work?.productSlug
+    ? `/${props.language}/ecommerce/products/${encodeURIComponent(work.productSlug)}`
+    : undefined;
   const assistantProfile = isCustomerWork
     ? null
     : props.knowledgeAssistantProfile ||
@@ -419,38 +433,60 @@ export function Component(props: IComponentPropsExtended) {
           </>
         }
         composer={
-          <Composer
-            isCustomerWork={isCustomerWork}
-            isEmployeeChat={isEmployeeChat}
-            onEmployeeMessageSaved={
-              isEmployeeChat
-                ? profileSidebar.refetchKnowledgeSourceQueries
-                : undefined
-            }
-            canUseKnowledge={
-              isArtificialIntelligenceAssistant && !isEmployeeChat
-            }
-            clearSelectedSkills={profileSkills.clearSelectedSkills}
-            isArtificialIntelligenceOpponent={isArtificialIntelligenceAssistant}
-            isSkillOptionsLoading={profileSkills.isLoadingSkills}
-            language={props.language}
-            markShouldScrollToBottom={markShouldScrollToBottom}
-            modelControls={modelControls}
-            onRemoveSelectedSkill={profileSkills.removeSelectedSkill}
-            onSkillSelect={profileSkills.selectSkill}
-            profileSkills={profileSkills.profileSkills}
-            registerFocusComposerTextArea={registerFocusComposerTextArea}
-            selectedSkillIds={profileSkills.selectedSkillIds}
-            selectedSkills={profileSkills.selectedSkills}
-            socialModuleChatId={props.socialModuleChat.id}
-            socialModuleProfileId={props.socialModuleProfile.id}
-            socialModuleThreadId={props.socialModuleThreadId}
-            subjectId={props.data.id}
-            syncSelectedSkillsToDescription={
-              profileSkills.syncSelectedSkillsToDescription
-            }
-            threadMessagesCache={threadMessagesCache}
-          />
+          <>
+            {discussionOnly && (
+              <p className="border-t border-border px-4 py-2 text-sm text-muted-foreground">
+                {ru
+                  ? "Заказ завершён. Здесь можно обсудить результат. Для правок нужен новый заказ."
+                  : "This order is complete. You can discuss the result here. Revisions require a new order."}
+                {newOrderHref && (
+                  <>
+                    {" "}
+                    <Link
+                      className="underline underline-offset-4"
+                      href={newOrderHref}
+                    >
+                      {ru ? "Открыть услугу" : "View the service"}
+                    </Link>
+                  </>
+                )}
+              </p>
+            )}
+            <Composer
+              isCustomerWork={isCustomerWork}
+              isEmployeeChat={isEmployeeChat}
+              onEmployeeMessageSaved={
+                isEmployeeChat
+                  ? profileSidebar.refetchKnowledgeSourceQueries
+                  : undefined
+              }
+              canUseKnowledge={
+                isArtificialIntelligenceAssistant && !isEmployeeChat
+              }
+              clearSelectedSkills={profileSkills.clearSelectedSkills}
+              isArtificialIntelligenceOpponent={
+                isArtificialIntelligenceAssistant
+              }
+              isSkillOptionsLoading={profileSkills.isLoadingSkills}
+              language={props.language}
+              markShouldScrollToBottom={markShouldScrollToBottom}
+              modelControls={discussionOnly ? undefined : modelControls}
+              onRemoveSelectedSkill={profileSkills.removeSelectedSkill}
+              onSkillSelect={profileSkills.selectSkill}
+              profileSkills={profileSkills.profileSkills}
+              registerFocusComposerTextArea={registerFocusComposerTextArea}
+              selectedSkillIds={profileSkills.selectedSkillIds}
+              selectedSkills={profileSkills.selectedSkills}
+              socialModuleChatId={props.socialModuleChat.id}
+              socialModuleProfileId={props.socialModuleProfile.id}
+              socialModuleThreadId={props.socialModuleThreadId}
+              subjectId={props.data.id}
+              syncSelectedSkillsToDescription={
+                profileSkills.syncSelectedSkillsToDescription
+              }
+              threadMessagesCache={threadMessagesCache}
+            />
+          </>
         }
         context={
           showThreadContext ? (

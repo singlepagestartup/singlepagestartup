@@ -608,10 +608,16 @@ Redis and the Knowledge embedding provider configured, run the following from
 ```
 
 This prepares each expert's profile, knowledge, skill and CRM funnel for the
-seeded store. Use the same seller ID on repeat runs. Sign in as a buyer to
-order a brief, accept a version, pay using the test payment module and save the
-delivered file to the buyer's personal profile. Open a separate strategy order
-to ask another expert about the saved brief.
+seeded store. Use the same seller ID on repeat runs. Add `--brief-only` to
+prepare only the business brief. Use `--skip-index` when reusing an already
+indexed local expert profile.
+
+Sign in as a buyer, fund the Token wallet, and book the business brief. In the
+order chat, approve the stage rate before the agent starts paid work. Each
+operation charges twice the provider's actual cost, converted to Token using
+the reference top-up pack. Review the draft in chat and accept it to download
+the PDF. Save the accepted brief to your profile knowledge and use it in a
+separate strategy order.
 
 ## Testing Convention (BDD Required)
 

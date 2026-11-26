@@ -25,6 +25,7 @@ interface IWorkspaceScope {
   storeId: string;
   taskId: string;
   chatId: string;
+  discussionOnly?: boolean;
 }
 export const WorkspaceOrderFileContext = createContext<IWorkspaceScope | null>(
   null,
@@ -43,15 +44,21 @@ function WorkspaceFile({
   language,
   scope,
 }: IProps & { scope: IWorkspaceScope }) {
-  const reading = api.crmWorkspace.useThread(subjectId, { ...scope, threadId });
+  const { storeId, taskId, chatId } = scope;
+  const reading = api.crmWorkspace.useThread(subjectId, {
+    storeId,
+    taskId,
+    chatId,
+    threadId,
+  });
   const loadArtifact = useCallback(
     (artifactId: string, signal?: AbortSignal, maxBytes?: number) =>
       api.crmWorkspace.artifact(
         subjectId,
-        { ...scope, threadId, artifactId },
+        { storeId, taskId, chatId, threadId, artifactId },
         { signal, maxBytes },
       ),
-    [subjectId, scope, threadId],
+    [subjectId, storeId, taskId, chatId, threadId],
   );
   if (!reading.data?.order || reading.isError) return null;
   return (
@@ -99,13 +106,16 @@ export function ChatResultFile({
   fileId,
   language,
 }: Pick<IProps, "fileId" | "language"> & { source: IChatResultSource }) {
-  const file = source.work?.files?.find(
-    (entry) => entry.id === fileId || entry.legacyMessageId === fileId,
-  );
+  const fileIndex =
+    source.work?.files?.findIndex(
+      (entry) => entry.id === fileId || entry.legacyMessageId === fileId,
+    ) ?? -1;
+  const file = source.work?.files?.[fileIndex];
+  const draft = file?.previewMimeType === "text/plain";
   const original =
     source.work?.deliveryStatus === "available" &&
     (source.work.result?.id === fileId ||
-      (file && source.work.paidFileId === file.id))
+      (file && !draft && source.work.paidFileId === file.id))
       ? source.work.result
       : null;
   const artifactId = original?.id ?? file?.id;
@@ -115,9 +125,12 @@ export function ChatResultFile({
     [source.loadArtifact, artifactId],
   );
   if (!artifactId) return null;
-  const previewName =
-    file?.name ||
-    (language === "ru" ? "Превью файла заказа" : "Order file preview");
+  const ru = language === "ru";
+  const previewName = draft
+    ? ru
+      ? `Черновик брифа v${fileIndex + 1}.txt`
+      : `Brief draft v${fileIndex + 1}.txt`
+    : file?.name || (ru ? "Превью файла заказа" : "Order file preview");
   const originalName =
     original?.name ||
     (language === "ru" ? "Оригинал файла заказа" : "Original order file");

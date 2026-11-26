@@ -4,7 +4,7 @@ export interface IFrameworkService {
   title: Record<"en" | "ru", string>;
   summary: Record<"en" | "ru", string>;
   description: Record<"en" | "ru", string>;
-  price: string;
+  price: string | Record<"en" | "ru", string>;
 }
 
 export interface IComponentProps {

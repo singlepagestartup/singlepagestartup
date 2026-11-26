@@ -1,6 +1,85 @@
 import { randomUUID } from "node:crypto";
 import { Service } from "./index";
 
+it("saves and replays a buyer message in a completed order without invoking work", async () => {
+  const task = {
+    id: randomUUID(),
+    storeId: randomUUID(),
+    orderId: randomUUID(),
+    customerId: randomUUID(),
+    status: "closed",
+    outcome: "completed",
+  };
+  const input = {
+    customerId: task.customerId,
+    chatId: randomUUID(),
+    threadId: randomUUID(),
+    profileId: randomUUID(),
+    sourceSystemId: randomUUID(),
+    text: "Спасибо за итоговый бриф.",
+    hasAttachments: false,
+  };
+  const message = {
+    id: randomUUID(),
+    description: input.text,
+    variant: "customer-work",
+  };
+  const createWorkMessage = jest.fn().mockResolvedValue(message);
+  const findMessage = jest
+    .fn()
+    .mockResolvedValueOnce([])
+    .mockResolvedValue([message]);
+  const createPlacement = jest.fn();
+  const service = new Service({
+    repository: { withSubjectLock: jest.fn(async (_, callback) => callback()) },
+    module: {
+      subjectsToSocialModuleProfiles: {
+        find: jest.fn().mockResolvedValue([{ variant: "default" }]),
+      },
+    },
+    modules: {
+      crm: {
+        task: {
+          findById: jest.fn().mockResolvedValue(task),
+          withTask: jest.fn(async (_, callback) => callback(task)),
+        },
+      },
+      social: {
+        chatsToCrmModuleTasks: {
+          forThread: jest.fn().mockResolvedValue({ crmModuleTaskId: task.id }),
+        },
+        profilesToChats: { find: jest.fn().mockResolvedValue([{}]) },
+        message: { createWorkMessage, find: findMessage },
+        profilesToMessages: {
+          create: createPlacement,
+          find: jest.fn().mockResolvedValue([{ profileId: input.profileId }]),
+        },
+        threadsToMessages: {
+          create: createPlacement,
+          find: jest.fn().mockResolvedValue([{}]),
+        },
+        chatsToMessages: { create: createPlacement },
+      },
+    },
+  } as unknown as ConstructorParameters<typeof Service>[0]);
+  const internals = service as unknown as {
+    channel: () => Promise<{ chatId: string; threadId: string }>;
+  };
+  jest
+    .spyOn(internals, "channel")
+    .mockResolvedValue({ chatId: input.chatId, threadId: input.threadId });
+  const wake = jest.spyOn(service, "wakePendingWork");
+
+  await expect(service.messageFromThread(input)).resolves.toBe(message);
+  await expect(service.messageFromThread(input)).resolves.toBe(message);
+  await expect(
+    service.messageFromThread({ ...input, text: "Другое сообщение" }),
+  ).rejects.toThrow("another message");
+  expect(createWorkMessage).toHaveBeenCalledTimes(1);
+  expect(createPlacement).toHaveBeenCalledTimes(3);
+  expect(wake).not.toHaveBeenCalled();
+});
+
 function resumptionFixture() {
   const task = {
     id: randomUUID(),
@@ -675,6 +754,110 @@ it("resolves the buyer and offer from the existing order when opening a conversa
     undefined,
     scope.actorId,
   );
+});
+
+it("opens a closed offer only for the order that already has the exact saved offer", async () => {
+  const customerId = randomUUID();
+  const productId = randomUUID();
+  const storeId = randomUUID();
+  const offerId = randomUUID();
+  const orderId = randomUUID();
+  const task = {
+    id: randomUUID(),
+    customerId,
+    orderId,
+    storeId,
+    productId,
+    offerId,
+  };
+  const startServiceDiscussion = jest.fn();
+  const product = { id: productId, kind: "service", type: "one_off" };
+  const offer = {
+    id: offerId,
+    productId,
+    storeId,
+    variant: "default",
+    settings: {
+      standalone: true,
+      closedForNewOrders: true,
+      requiresResultAcceptance: true,
+    },
+  };
+  const lines = jest
+    .fn()
+    .mockResolvedValue([{ productId, offerId, quantity: 1 }]);
+  const service = new Service({
+    findById: jest
+      .fn()
+      .mockResolvedValue({ id: customerId, variant: "default" }),
+    repository: { withSubjectLock: jest.fn(async (_, callback) => callback()) },
+    module: {
+      subjectsToEcommerceModuleOrders: {
+        find: jest.fn().mockResolvedValue([{ subjectId: customerId }]),
+      },
+    },
+    modules: {
+      ecommerce: {
+        product: { findById: jest.fn().mockResolvedValue(product) },
+        storesToProducts: {
+          offersForProduct: jest.fn().mockResolvedValue([offer]),
+        },
+        ordersToProducts: { find: lines },
+        storesToOrders: { find: jest.fn().mockResolvedValue([{ storeId }]) },
+        order: {
+          lockForLifecycle: jest.fn(),
+          findById: jest
+            .fn()
+            .mockResolvedValue({ id: orderId, type: "cart", status: "new" }),
+          work: {
+            findByOrder: jest.fn().mockResolvedValue({
+              kind: "individual-service",
+              taskId: task.id,
+              customerId,
+              storeId,
+            }),
+            startServiceDiscussion,
+          },
+          ordersToBillingModulePaymentIntents: {
+            find: jest.fn().mockResolvedValue([]),
+          },
+        },
+      },
+      crm: {
+        task: {
+          find: jest
+            .fn()
+            .mockResolvedValueOnce([task])
+            .mockResolvedValueOnce([])
+            .mockResolvedValue([task]),
+        },
+      },
+    },
+  } as unknown as ConstructorParameters<typeof Service>[0]);
+  const view = jest.spyOn(service, "view").mockResolvedValue({
+    taskId: task.id,
+    orderId,
+  } as Awaited<ReturnType<Service["view"]>>);
+  const command = {
+    operation: "open-cart-discussion" as const,
+    productId,
+    orderId,
+    storeId,
+    offerId,
+    operationKey: randomUUID(),
+  };
+  await expect(service.execute(customerId, command)).resolves.toMatchObject({
+    taskId: task.id,
+    orderId,
+  });
+  lines.mockResolvedValueOnce([
+    { productId, offerId: randomUUID(), quantity: 1 },
+  ]);
+  await expect(service.execute(customerId, command)).rejects.toThrow(
+    "saved store offer changed",
+  );
+  expect(view).toHaveBeenCalledTimes(1);
+  expect(startServiceDiscussion).toHaveBeenCalledTimes(1);
 });
 
 it("returns an already linked task and rejects orders outside the store or manager scope", async () => {

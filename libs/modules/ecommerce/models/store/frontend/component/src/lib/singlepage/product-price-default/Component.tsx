@@ -3,6 +3,7 @@ import type { IComponentPropsExtended } from "./interface";
 import { cn, formatCurrencyAmount } from "@sps/shared-frontend-client-utils";
 
 export function Component(props: IComponentPropsExtended) {
+  const meter = props.selectedOffer?.settings?.workTokenPricing;
   const amount = props.currencySymbol
     ? props.quote?.charges.find((charge) => charge.role === "product")?.amount
     : undefined;
@@ -32,22 +33,30 @@ export function Component(props: IComponentPropsExtended) {
       data-store-id={props.selectedOffer?.storeId}
       className={cn("flex w-full flex-col gap-1", props.className)}
     >
-      <Product
-        isServer={props.isServer}
-        variant="price-default"
-        dataSource="props"
-        data={props.product}
-        calculatedPrice={{
-          amount:
-            amount === undefined
-              ? undefined
-              : formatCurrencyAmount(amount, props.language),
-          currencySymbol: props.currencySymbol,
-          status,
-          issues,
-        }}
-        language={props.language}
-      />
+      {meter ? (
+        <span className="font-semibold">
+          {props.language === "ru"
+            ? `${meter.multiplier}× фактическая стоимость ИИ в токенах`
+            : `${meter.multiplier}× actual AI cost in tokens`}
+        </span>
+      ) : (
+        <Product
+          isServer={props.isServer}
+          variant="price-default"
+          dataSource="props"
+          data={props.product}
+          calculatedPrice={{
+            amount:
+              amount === undefined
+                ? undefined
+                : formatCurrencyAmount(amount, props.language),
+            currencySymbol: props.currencySymbol,
+            status,
+            issues,
+          }}
+          language={props.language}
+        />
+      )}
       {props.readOnly && props.storeTitle ? (
         <p className="text-xs text-muted-foreground">{props.storeTitle}</p>
       ) : null}

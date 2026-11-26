@@ -30,6 +30,7 @@ export class PrivateContent {
         "image/jpeg",
         "image/webp",
         "audio/wav",
+        "text/plain",
       ].includes(input.mimeType)
     ) {
       throw new Error("Validation error. Unsupported private file type");

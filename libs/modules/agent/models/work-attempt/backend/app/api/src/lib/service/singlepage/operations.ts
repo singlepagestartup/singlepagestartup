@@ -116,7 +116,18 @@ export class Operations {
       knowledgeScopeOnly: true,
     });
     const trigger = context.messages.at(-1);
-    if (trigger?.role !== "user" || !trigger.content.trim()) {
+    let inputText: string;
+    if (trigger?.role === "user" && trigger.content.trim()) {
+      inputText = trigger.content;
+    } else if (
+      context.stageEntryKnowledgeQuery &&
+      enabled.has("knowledge-search") &&
+      context.knowledgeSourceIds?.length
+    ) {
+      inputText = context.stageEntryKnowledgeQuery;
+      enabled.clear();
+      enabled.add("knowledge-search");
+    } else {
       return {};
     }
     if (!funding) {
@@ -135,7 +146,7 @@ export class Operations {
         reasoning: context.requestedReasoning,
       }),
     );
-    const question = trigger.content.slice(0, 1400);
+    const question = inputText.slice(0, 1400);
     const evidence: IWorkRequest["messages"] = [];
     let sourceVersions: IWorkPlan["sourceVersions"];
     let blocked: IModel | undefined;

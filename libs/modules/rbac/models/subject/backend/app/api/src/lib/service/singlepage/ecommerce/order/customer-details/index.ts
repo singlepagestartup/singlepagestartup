@@ -1,5 +1,6 @@
 import { addMoney, getHttpErrorType } from "@sps/backend-utils";
 import { NEXT_PUBLIC_API_SERVICE_URL } from "@sps/shared-utils";
+import { deliveredOrderWorkFile } from "@sps/ecommerce/models/order/sdk/model";
 import {
   orderArtifactPath,
   type ICustomerOrderCheckout,
@@ -84,19 +85,24 @@ export class Service {
         (file) => file.id === work.acceptedFileId,
       );
       const price = work.paid ?? accepted;
-      if (price) {
+      if (price && work.paymentMode !== "work-tokens") {
         workPrices.set(orderId, {
           price: price.price,
           currencyId: price.currencyId,
         });
         currencyIds.add(price.currencyId);
       }
-      if (orderId === requestedOrderId && work.paid) {
-        exactCheckout.paidAt = work.paid.paidAt;
+      if (orderId === requestedOrderId) {
+        const includesResult =
+          work.paymentMode === "work-tokens" && deliveredOrderWorkFile(work);
+        if (work.paid) {
+          exactCheckout.paidAt = work.paid.paidAt;
+        }
         if (
           work.kind === "individual-service" &&
           work.deliveredAt &&
-          work.resultFileId
+          work.resultFileId &&
+          (work.paid || includesResult)
         ) {
           exactCheckout.delivery = [{ kind: "digital" }];
           const result = await service.orderWork.profileKnowledgeResult(
@@ -107,7 +113,7 @@ export class Service {
             order.deliveredResult = result;
           }
         }
-        if (work.receiptFileId) {
+        if (work.paid && work.receiptFileId) {
           const path = orderArtifactPath(
             subjectId,
             orderId,

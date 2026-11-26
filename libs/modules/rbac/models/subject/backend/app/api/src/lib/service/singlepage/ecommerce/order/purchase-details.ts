@@ -32,6 +32,7 @@ export class Service {
       subjectId,
       orders.map((order) => order.id),
     );
+    const closedOfferOrders = await this.ordersWithClosedOffers(retryableIds);
     const productIdByOrder = new Map<string, string>();
     for (const [orderId, payment] of saved) {
       const product = payment.charges?.find(
@@ -160,9 +161,14 @@ export class Service {
           ? { taskId: work.taskId, storeId: work.storeId }
           : undefined;
       const productId = productIdByOrder.get(order.id);
-      const totals = payment
-        ? { totals: payment.totals, unpriced: [] }
-        : await service.modules.ecommerce.order.findByIdTotal({ id: order.id });
+      const totals =
+        work?.paymentMode === "work-tokens"
+          ? { totals: [], unpriced: [] }
+          : payment
+            ? { totals: payment.totals, unpriced: [] }
+            : await service.modules.ecommerce.order.findByIdTotal({
+                id: order.id,
+              });
       const protectedReceipts =
         !retryableIds.has(order.id) && !work
           ? await service.orderWork?.publishedReceipts(subjectId, order.id)
@@ -174,7 +180,10 @@ export class Service {
           primaryProductSlug: productId
             ? slugByProduct.get(productId)
             : undefined,
-          canRepeatPayment: retryableIds.has(order.id),
+          canRepeatPayment:
+            work?.paymentMode !== "work-tokens" &&
+            retryableIds.has(order.id) &&
+            !closedOfferOrders.has(order.id),
           ...(nextBySource.has(order.id)
             ? { nextPeriod: nextBySource.get(order.id) }
             : {}),
@@ -202,6 +211,39 @@ export class Service {
       });
     }
     return purchases;
+  }
+
+  private async ordersWithClosedOffers(orderIds: Set<string>) {
+    const closedOrders = new Set<string>();
+    if (!orderIds.size) return closedOrders;
+    const { ecommerce } = this.dependencies.service.modules;
+    const lines = await ecommerce.ordersToProducts.find({
+      params: {
+        filters: {
+          and: [{ column: "orderId", method: "inArray", value: [...orderIds] }],
+        },
+      },
+    });
+    const offerIds = [
+      ...new Set(lines.flatMap(({ offerId }) => (offerId ? [offerId] : []))),
+    ];
+    if (!offerIds.length) return closedOrders;
+    const offers = await ecommerce.storesToProducts.find({
+      params: {
+        filters: {
+          and: [{ column: "id", method: "inArray", value: offerIds }],
+        },
+      },
+    });
+    const closed = new Set(
+      offers
+        .filter(({ settings }) => settings?.closedForNewOrders)
+        .map(({ id }) => id),
+    );
+    for (const { orderId, offerId } of lines) {
+      if (offerId && closed.has(offerId)) closedOrders.add(orderId);
+    }
+    return closedOrders;
   }
 
   private async savedPayments(subjectId: string, orderIds: string[]) {

@@ -58,6 +58,8 @@ function Checkout(props: IComponentPropsExtended) {
           prepayment: "Предоплата",
           postpayment: "Постоплата",
           postpaymentTerms: "Оплата после принятия результата.",
+          workTokens: "Оплата токенами",
+          workTokensTerms: "Подтвердите тариф в чате заказа.",
           selectItems: "Выберите товары или услуги.",
           selectedTotal: "К оплате сейчас",
           total: "Итого",
@@ -80,6 +82,8 @@ function Checkout(props: IComponentPropsExtended) {
           prepayment: "Payment upfront",
           postpayment: "Payment after acceptance",
           postpaymentTerms: undefined,
+          workTokens: "Token payments",
+          workTokensTerms: "Approve the rate in the order chat.",
           selectItems: "Select items to continue.",
           selectedTotal: "Due now",
           total: "Total",
@@ -351,11 +355,17 @@ function Checkout(props: IComponentPropsExtended) {
             );
             const postpayment = orders.filter(
               (order) =>
-                order.cartDetails?.work &&
+                order.cartDetails?.work?.paymentTiming === "after-acceptance" &&
                 order.cartDetails.work.state !== "awaiting-payment",
             );
             const accepted = orders.filter(
-              (order) => order.cartDetails?.work?.state === "awaiting-payment",
+              (order) =>
+                order.cartDetails?.work?.paymentTiming === "after-acceptance" &&
+                order.cartDetails.work.state === "awaiting-payment",
+            );
+            const workTokens = orders.filter(
+              (order) =>
+                order.cartDetails?.work?.paymentTiming === "work-tokens",
             );
             const paymentOrders = prepayment.filter(isOrderSelected);
             const shouldSelectItems =
@@ -395,6 +405,7 @@ function Checkout(props: IComponentPropsExtended) {
               refreshingCart;
             const partialCheckout =
               paymentOrders.length !== prepayment.length ||
+              workTokens.length > 0 ||
               postpayment.length > 0 ||
               accepted.length > 0;
             const totalHeading = showingSavedTotal
@@ -422,6 +433,24 @@ function Checkout(props: IComponentPropsExtended) {
                 });
               }
             }
+            const discussionRow = (order: (typeof orders)[number]) => (
+              <Row
+                key={order.id}
+                subject={props.data}
+                ecommerceModuleOrder={order}
+                language={props.language}
+                headerSlot={
+                  <DiscussionAction
+                    subjectId={props.data.id}
+                    ecommerceModuleOrder={order}
+                    language={props.language}
+                    canOpenDiscussion={canOpenDiscussion}
+                    onDiscussionOpen={props.onDiscussionOpen}
+                  />
+                }
+                onOrderSelectionPendingChange={onOrderSelectionPendingChange}
+              />
+            );
             return (
               <>
                 <div className="shrink-0 space-y-5 px-4 py-5 sm:flex-1 sm:px-6 [@media(min-width:640px)_and_(min-height:740px)]:min-h-36 [@media(min-width:640px)_and_(min-height:740px)]:overflow-y-auto">
@@ -462,26 +491,7 @@ function Checkout(props: IComponentPropsExtended) {
                         </p>
                       )}
                       <ul className="space-y-3">
-                        {postpayment.map((order) => (
-                          <Row
-                            key={order.id}
-                            subject={props.data}
-                            ecommerceModuleOrder={order}
-                            language={props.language}
-                            headerSlot={
-                              <DiscussionAction
-                                subjectId={props.data.id}
-                                ecommerceModuleOrder={order}
-                                language={props.language}
-                                canOpenDiscussion={canOpenDiscussion}
-                                onDiscussionOpen={props.onDiscussionOpen}
-                              />
-                            }
-                            onOrderSelectionPendingChange={
-                              onOrderSelectionPendingChange
-                            }
-                          />
-                        ))}
+                        {postpayment.map(discussionRow)}
                         {accepted.map((order) => {
                           const details = order.cartDetails;
                           const product = details?.lines.find(
@@ -531,6 +541,19 @@ function Checkout(props: IComponentPropsExtended) {
                             </Row>
                           );
                         })}
+                      </ul>
+                    </section>
+                  )}
+                  {workTokens.length > 0 && (
+                    <section className="space-y-2">
+                      <h2 className="text-sm font-semibold">
+                        {text.workTokens}
+                      </h2>
+                      <p className="text-sm text-muted-foreground">
+                        {text.workTokensTerms}
+                      </p>
+                      <ul className="space-y-3">
+                        {workTokens.map(discussionRow)}
                       </ul>
                     </section>
                   )}

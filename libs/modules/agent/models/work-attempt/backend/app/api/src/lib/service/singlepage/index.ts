@@ -1,4 +1,8 @@
-import { failureLocations, logger } from "@sps/backend-utils";
+import {
+  compileTariffFormula,
+  failureLocations,
+  logger,
+} from "@sps/backend-utils";
 import { McpCatalogUnavailable } from "@sps/rbac/models/subject/backend/app/api/src/lib/service/singlepage/social-module/profile/mcp/catalog";
 import { createHash } from "node:crypto";
 import type { IModel as IWalletOperation } from "@sps/billing/models/transaction/sdk/model";
@@ -80,6 +84,8 @@ interface IOutgoingWork {
   imageActionId?: string;
   deliverableOrderFile?: ICustomerWorkReply["releaseOrderFile"];
   cover?: IConfirmedCover;
+  fullTextPreview?: boolean;
+  briefAwaitingReview?: boolean;
 }
 const orderFileTool = {
   type: "function",
@@ -92,6 +98,9 @@ const orderFileTool = {
 } as const;
 const preparationRetryDelays = [1_000, 5_000, 30_000];
 const Money = Decimal.clone({ precision: 56 });
+const workTariff = compileTariffFormula(
+  "provider_usd * topup_tokens / topup_usd * multiplier",
+);
 const reservationKey = (id: string) => `work:${id}`;
 const now = () => new Date();
 
@@ -113,12 +122,20 @@ export class Service extends CRUDService<IModel> {
     return updated;
   }
 
-  private providerCostInTokens(usd: string, terms: IModel["terms"]) {
-    const cost = new Money(usd);
-    if (terms.topupTokens && terms.topupUsd) {
-      return cost.times(terms.topupTokens).div(terms.topupUsd);
-    }
-    return cost.div(terms.usdPerSps);
+  private workCharge(
+    usd: string,
+    { topupTokens, topupUsd, usdPerSps, workMultiplier }: IModel["terms"],
+    multiplier = workMultiplier,
+  ) {
+    const rate =
+      topupTokens && topupUsd
+        ? { topup_tokens: topupTokens, topup_usd: topupUsd }
+        : { topup_tokens: "1", topup_usd: usdPerSps };
+    return workTariff.evaluate({
+      ...rate,
+      provider_usd: usd,
+      multiplier,
+    });
   }
 
   private projectExpense(attempt: IModel) {
@@ -127,7 +144,7 @@ export class Service extends CRUDService<IModel> {
     }
     const compute =
       attempt.result &&
-      this.providerCostInTokens(attempt.result.usage.usd, attempt.terms);
+      this.workCharge(attempt.result.usage.usd, attempt.terms, "1");
     return this.modules.rbac.subject.workLedger.changeProviderWork(
       attempt.storeId,
       reservationKey(attempt.id),
@@ -401,6 +418,8 @@ export class Service extends CRUDService<IModel> {
               "Permission error. The stage does not generate images",
             );
           }
+          let fullTextPreview = false;
+          let briefAwaitingReview = false;
           if (output !== "chat") {
             const order = task.orderId
               ? await this.modules.ecommerce.order.work.findByOrder(
@@ -418,6 +437,19 @@ export class Service extends CRUDService<IModel> {
                 "Conflict error. File generation requires an unpaid individual-service order",
               );
             }
+            fullTextPreview =
+              output === "pdf" &&
+              stage.resultPricing?.kind === "work-tokens" &&
+              order.paymentMode === "work-tokens";
+            const draft = fullTextPreview ? order.files.at(-1) : undefined;
+            briefAwaitingReview = Boolean(
+              draft &&
+              !draft.invalidatedByCartEdit &&
+              !order.decisions.some(
+                ({ fileId, kind }) =>
+                  fileId === draft.id && kind === "declined",
+              ),
+            );
           }
 
           const context = indexing
@@ -698,6 +730,15 @@ export class Service extends CRUDService<IModel> {
             instructions.push(
               "Return a JSON object with reply (a question if details are missing), artifactText (the finished PDF content as plain text, or null if the brief is incomplete), and actionId (null or an allowed action).",
             );
+            if (briefAwaitingReview) {
+              instructions.push(
+                "The existing draft awaits the buyer's decision. Answer the latest message in reply, and set artifactText and actionId to null. If they ask for changes or accept in a message, direct the buyer to use the matching review button on the current draft.",
+              );
+            } else if (fullTextPreview) {
+              instructions.push(
+                "When revising, apply the buyer's feedback to the previous brief draft and return the entire updated brief in artifactText. Preserve facts and sections unaffected by the feedback. The buyer reviews the exact text before receiving a PDF. Ask for clarification in reply when the requested changes are unclear.",
+              );
+            }
           } else if (!strictStage && capability !== "image" && actions.length) {
             instructions.push(
               "Return a JSON object with reply (customer-facing text) and actionId (null or an allowed action).",
@@ -881,12 +922,10 @@ export class Service extends CRUDService<IModel> {
               secret,
             );
           }
-          const maximum = this.providerCostInTokens(
+          const maximum = this.workCharge(
             estimate.usd.toFixed(),
             terms,
-          )
-            .times(terms.workMultiplier)
-            .toDecimalPlaces(12, Decimal.ROUND_UP);
+          ).toDecimalPlaces(12, Decimal.ROUND_UP);
           if (
             estimate.input > terms.maxInputTokens ||
             estimate.usd.gt(terms.maxCostUsd) ||
@@ -968,6 +1007,8 @@ export class Service extends CRUDService<IModel> {
               imageActionId,
               deliverableOrderFile,
               cover,
+              fullTextPreview,
+              briefAwaitingReview,
               publicationId: task.publicationId,
             },
           };
@@ -1009,13 +1050,14 @@ export class Service extends CRUDService<IModel> {
           data: { state: "settled", updatedAt: now() },
         });
       }
-      const compute = this.providerCostInTokens(
+      const compute = this.workCharge(
         current.result.usage.usd,
         current.terms,
+        "1",
       );
       const work = Money.min(
         current.maximum,
-        compute.times(current.terms.workMultiplier),
+        this.workCharge(current.result.usage.usd, current.terms),
       ).toDecimalPlaces(12, Decimal.ROUND_HALF_UP);
       const cost = Money.min(work, compute).toDecimalPlaces(
         12,
@@ -1211,9 +1253,19 @@ export class Service extends CRUDService<IModel> {
               });
               resultId = version.id;
               const russian = /\p{Script=Cyrillic}/u.test(stage.instruction);
-              const previewMessage = russian
-                ? "Превью готово. Принимаете этот файл или нужны правки?"
-                : "Your preview is ready. Do you accept this file or would you like changes?";
+              const briefDraft =
+                stage.resultPricing?.kind === "work-tokens" &&
+                version.previewMimeType === "text/plain";
+              let previewMessage: string;
+              if (briefDraft) {
+                previewMessage = russian
+                  ? "Прочитайте черновик брифа. Если всё верно, примите его, чтобы получить PDF."
+                  : "Read the brief draft. If it’s ready, approve it to receive the PDF.";
+              } else {
+                previewMessage = russian
+                  ? "Превью готово. Принимаете этот файл или нужны правки?"
+                  : "Your preview is ready. Do you accept this file or would you like changes?";
+              }
               const testPreviewMessage = russian
                 ? "Тестовое превью готово. Откройте его и проверьте результат."
                 : "The test preview is ready to review.";
@@ -1688,9 +1740,11 @@ export class Service extends CRUDService<IModel> {
           })
           .catch(() => undefined);
       }
-    } else if (artifactText) {
+    } else if (artifactText && !outgoing.briefAwaitingReview) {
       artifactFiles = await orderWork
-        .preparePdfResult(attempt.id, artifactText)
+        .preparePdfResult(attempt.id, artifactText, {
+          fullTextPreview: outgoing.fullTextPreview,
+        })
         .catch(() => undefined);
     }
     if (!artifactFiles) {
@@ -1698,7 +1752,10 @@ export class Service extends CRUDService<IModel> {
         // A clarification can be delivered to the thread without completing
         // the stage. A failed conversion must never expose the PDF body.
         reply.actionId = undefined;
-        reply.text = artifactText ? "" : reply.text.trim().slice(0, 600);
+        reply.text =
+          artifactText && !outgoing.briefAwaitingReview
+            ? ""
+            : reply.text.trim().slice(0, 600);
       }
       return this.finish(await this.recordReply(attempt, reply));
     }

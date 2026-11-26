@@ -535,6 +535,51 @@ describe("Customer order details", () => {
     }
   });
 
+  it("shows the delivered token-funded brief and its discussion without a checkout charge", async () => {
+    const { reader, ecommerce, service } = fixture();
+    const file = {
+      id: "second-draft",
+      originalFileId: "accepted-pdf",
+      price: "0",
+      currencyId: "rub",
+    };
+    ecommerce.order.work.statesForCustomer.mockResolvedValue([
+      { orderId: "order", state: "delivered" },
+    ]);
+    ecommerce.order.work.findByOrder.mockResolvedValue({
+      orderId: "order",
+      customerId: subjectId,
+      kind: "individual-service",
+      state: "delivered",
+      paymentMode: "work-tokens",
+      paid: null,
+      acceptedFileId: file.id,
+      resultFileId: file.originalFileId,
+      deliveredAt: new Date().toISOString(),
+      files: [{ id: "first-draft", originalFileId: "prior-pdf" }, file],
+    });
+    const deliveredResult = {
+      id: file.originalFileId,
+      versionId: file.id,
+      name: "business-brief.pdf",
+      mimeType: "application/pdf",
+      savedToKnowledge: false,
+    };
+    service.orderWork.profileKnowledgeResult.mockResolvedValue(deliveredResult);
+    const result = await reader.execute({
+      subjectId,
+      ownedHistoryOrderIds: ["order"],
+      requestedOrderId: "order",
+    });
+    expect(result.get("order")).toMatchObject({
+      deliveredResult,
+      checkout: { delivery: [{ kind: "digital" }] },
+      discussion: { chatId: "chat", threadId: "thread" },
+    });
+    expect(result.get("order")?.checkout?.total).toBeUndefined();
+    expect(result.get("order")?.checkout?.paidAt).toBeUndefined();
+  });
+
   it("returns only the identifiers of the authorized task thread", async () => {
     const { reader, service } = fixture();
     const details = await reader.execute({

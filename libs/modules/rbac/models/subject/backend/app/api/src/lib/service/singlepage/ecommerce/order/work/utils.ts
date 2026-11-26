@@ -179,7 +179,11 @@ function makePdf(
   return new Uint8Array(document.output("arraybuffer"));
 }
 
-export async function pdfOrderResult(attemptId: string, text: string) {
+export async function pdfOrderResult(
+  attemptId: string,
+  text: string,
+  { fullTextPreview = false }: { fullTextPreview?: boolean } = {},
+) {
   const content = text.trim();
   if (content.length < 10 || content.length > 250_000) {
     throw new Error(
@@ -192,23 +196,60 @@ export async function pdfOrderResult(attemptId: string, text: string) {
   );
   const font = (await readFile(fontPath)).toString("base64");
   const excerptLength = Math.min(480, Math.floor(content.length / 2));
+  const preview = fullTextPreview
+    ? {
+        name: "brief-draft.txt",
+        mimeType: "text/plain",
+        bytes: Buffer.from(content),
+      }
+    : {
+        name: "preview.pdf",
+        mimeType: "application/pdf",
+        bytes: makePdf(
+          attemptId,
+          `${content.slice(0, excerptLength).trimEnd()}…`,
+          font,
+          true,
+        ),
+      };
   return {
     original: {
-      name: "result.pdf",
+      name: fullTextPreview ? "business-brief.pdf" : "result.pdf",
       mimeType: "application/pdf",
       bytes: makePdf(attemptId, content, font, false),
     },
-    preview: {
-      name: "preview.pdf",
-      mimeType: "application/pdf",
-      bytes: makePdf(
-        attemptId,
-        `${content.slice(0, excerptLength).trimEnd()}…`,
-        font,
-        true,
-      ),
-    },
+    preview,
   };
+}
+
+export async function readOrderPdfText(bytes: Uint8Array) {
+  const { getDocument } = await import("pdfjs-dist/legacy/build/pdf.mjs");
+  const loading = getDocument({
+    data: Uint8Array.from(bytes),
+    useSystemFonts: false,
+    useWasm: false,
+    disableFontFace: true,
+    stopAtErrors: true,
+  });
+  try {
+    const pdf = await loading.promise;
+    const pages: string[] = [];
+    for (const pageNumber of Array.from(
+      { length: pdf.numPages },
+      (_, index) => index + 1,
+    )) {
+      const page = await pdf.getPage(pageNumber);
+      const content = await page.getTextContent();
+      const text = content.items
+        .filter((item) => "str" in item)
+        .map((item) => item.str + (item.hasEOL ? "\n" : ""))
+        .join("");
+      pages.push(text);
+    }
+    return pages.join("\n").trim();
+  } finally {
+    await loading.destroy();
+  }
 }
 
 export async function imageOrderResult(

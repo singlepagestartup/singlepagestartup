@@ -26,7 +26,9 @@ export function Component({
             description: service.description[language],
             price: (
               <span className="font-semibold tabular-nums">
-                {service.price}
+                {typeof service.price === "string"
+                  ? service.price
+                  : service.price[language]}
               </span>
             ),
           }

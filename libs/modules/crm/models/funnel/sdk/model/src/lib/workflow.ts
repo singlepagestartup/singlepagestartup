@@ -255,7 +255,12 @@ export function stageWorkFunding(
     payer: stage.workFunding.payer ?? "store-owner",
     currencyId: stage.workFunding.currencyId,
     ...(stage.workFunding.payer === "customer"
-      ? { multiplier: stage.workFunding.multiplier }
+      ? {
+          multiplier: stage.workFunding.multiplier,
+          ...(stage.workFunding.maxRunAmount !== undefined && {
+            maxRunAmount: stage.workFunding.maxRunAmount,
+          }),
+        }
       : {
           maxTaskAmount: stage.workFunding.maxStageAmount,
           maxRunAmount: stage.workFunding.maxRunAmount,

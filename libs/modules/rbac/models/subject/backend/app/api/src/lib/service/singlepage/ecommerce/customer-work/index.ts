@@ -43,10 +43,14 @@ import type { IModel as CrmTaskEvent } from "@sps/crm/relations/tasks-to-stages/
 import { selectRetailOffer } from "@sps/ecommerce/relations/stores-to-products/sdk/model";
 import {
   orderFileReviewInteraction,
+  orderFileFeedbackOperationKey,
   orderPaymentMessageKey,
   readOrderPaymentNotice,
 } from "@sps/rbac/models/subject/sdk/model/src/lib/order-work";
-import type { IOrderWorkPayment } from "@sps/ecommerce/models/order/sdk/model";
+import type {
+  IOrderWork,
+  IOrderWorkPayment,
+} from "@sps/ecommerce/models/order/sdk/model";
 import type { IModel as IProduct } from "@sps/ecommerce/models/product/sdk/model";
 import {
   PROVIDER_MODEL_SELECTION_METADATA_KEY,
@@ -58,6 +62,7 @@ import {
   taskChatStaffAuthor,
   parseRbacAiReactionRequestMetadata,
   RBAC_AI_REACTION_REQUEST_METADATA_KEY,
+  canDiscussCompletedOrder,
   isStoreTest,
   STORE_EMPLOYEE_CHAT_VARIANT,
 } from "@sps/rbac/models/subject/sdk/model";
@@ -335,14 +340,20 @@ export class Service {
     const workOrder = Boolean(
       order && (!service || selection.offer.settings.requiresResultAcceptance),
     );
+    const workMetered =
+      workOrder && Boolean(selection.offer.settings?.workTokenPricing);
     return {
       consultation: Boolean(consultation),
       order: workOrder,
-      payAfterAcceptance: workOrder && service,
+      payAfterAcceptance: workOrder && service && !workMetered,
+      ...(workMetered && { workMetered }),
     };
   }
 
-  private async selection(scope: ICustomerWorkOfferScope) {
+  private async selection(
+    scope: ICustomerWorkOfferScope,
+    existingOrder = false,
+  ) {
     const ecommerce = this.subject.modules.ecommerce;
     const [product, offers] = await Promise.all([
       ecommerce.product.findById({ id: scope.productId }),
@@ -354,12 +365,17 @@ export class Service {
     if (!product) {
       return null;
     }
-    const offer = selectRetailOffer({ ...scope, product, offers });
+    const offer = selectRetailOffer({
+      ...scope,
+      product,
+      offers,
+      existingOrder,
+    });
     return offer ? { offer, product } : null;
   }
 
   async canOpenCartDiscussion(scope: ICustomerWorkOfferScope) {
-    const selection = await this.selection(scope);
+    const selection = await this.selection(scope, true);
     if (
       selection?.product.kind !== "service" ||
       selection.product.type !== "one_off" ||
@@ -1030,12 +1046,13 @@ export class Service {
     selectedThreadId?: string,
   ): Promise<ICustomerWorkView> {
     const task = await this.taskForCustomer(customerId, scope);
+    const discussionOnly = canDiscussCompletedOrder(task);
     const funnel = await this.crm.task.getFunnel(scope);
     const stage = funnel.definition.stages.find(
       ({ id }) => id === task.stageId,
     );
     const funding = stage && stageWorkFunding(funnel.definition, stage);
-    const customerPays = customerPaysForWork(funding);
+    const customerPays = !discussionOnly && customerPaysForWork(funding);
     const price = customerPays ? await this.price(task, funding) : undefined;
     const approval =
       customerPays && price
@@ -1152,6 +1169,7 @@ export class Service {
           }
         : undefined,
       status: task.status,
+      ...(discussionOnly && { discussionOnly }),
       storeTest: testStore
         ? {
             storeSlug: testStore.slug,
@@ -1297,7 +1315,8 @@ export class Service {
           throw new Error("Forbidden error. A buyer session is required");
         }
         const ecommerce = this.subject.modules.ecommerce;
-        const selection = await this.selection(input);
+        const adoption = input.operation === "open-cart-discussion";
+        const selection = await this.selection(input, adoption);
         if (!selection) {
           throw new Error("Not Found error. The selected offer is unavailable");
         }
@@ -1324,7 +1343,6 @@ export class Service {
         if (input.operation === "add") {
           assertSingleUnitPerOrder(product, input.selection.quantity ?? 1);
         }
-        const adoption = input.operation === "open-cart-discussion";
         if (
           adoption &&
           (product.kind !== "service" ||
@@ -1332,7 +1350,7 @@ export class Service {
             offer.settings.requiresResultAcceptance !== true)
         ) {
           throw new Error(
-            "Conflict error. The selected offer does not use payment after acceptance",
+            "Conflict error. The selected offer does not support an order discussion",
           );
         }
         const existingDiscussion = adoption
@@ -1382,6 +1400,30 @@ export class Service {
           throw new Error(
             "Not Found error. The store has no workflow for this offer",
           );
+        }
+        const meter = offer.settings?.workTokenPricing;
+        if (meter && kind === "individual-service") {
+          const stages = funnel.definition.stages.filter(
+            ({ archived }) => !archived,
+          );
+          const funded = stages.every((stage) => {
+            const funding = stageWorkFunding(funnel.definition, stage);
+            return (
+              funding?.payer === "customer" &&
+              funding.multiplier === meter.multiplier &&
+              funding.currencyId === meter.currencyId
+            );
+          });
+          if (
+            !funded ||
+            !stages.some(
+              ({ resultPricing }) => resultPricing?.kind === "work-tokens",
+            )
+          ) {
+            throw new Error(
+              "Conflict error. The order workflow does not match its token pricing",
+            );
+          }
         }
 
         let orderId = adoption ? input.orderId : undefined;
@@ -1464,6 +1506,10 @@ export class Service {
             storeId: task.storeId,
             customerId,
             kind: funnel.kind,
+            ...(meter &&
+              kind === "individual-service" && {
+                paymentMode: "work-tokens" as const,
+              }),
           });
         }
         const title =
@@ -3204,14 +3250,18 @@ export class Service {
             "Not Found error. The customer conversation could not be found",
           );
         }
-        const message = await this.crm.task.withTask(
+        return this.crm.task.withTask(
           { storeId: task.storeId, taskId: task.id },
-          (locked) => this.postTaskMessage(locked, input),
+          async (locked) => {
+            const message = await this.postTaskMessage(locked, input);
+            return { message, taskId: locked.id, status: locked.status };
+          },
         );
-        return { message, taskId: task.id };
       },
     );
-    this.wakePendingWork(saved.taskId);
+    if (saved.status !== "closed") {
+      this.wakePendingWork(saved.taskId);
+    }
     return saved.message;
   }
 
@@ -3231,6 +3281,7 @@ export class Service {
     const staff =
       task.customerId !== actorId ||
       (task.assigneeKind === "human" && task.assigneeId === actorId);
+    const discussionOnly = canDiscussCompletedOrder(task);
     if (staff) {
       if (
         !(await this.subject.crmWorkspace.canParticipateInChat(
@@ -3245,6 +3296,7 @@ export class Service {
       }
       if (
         task.status === "closed" &&
+        !discussionOnly &&
         !(await this.subject.crmWorkspace.taskAccess(actorId, task.storeId))
           .canManageTasks
       ) {
@@ -3267,8 +3319,10 @@ export class Service {
         ),
       );
       for (const saved of candidates) {
-        // Ordinary buyer retries are validated with the original activity and model selection below.
-        if (!staff && taskChatStaffAuthor(saved) !== actorId) {
+        const staffAuthor = taskChatStaffAuthor(saved);
+        const passiveBuyerRetry = discussionOnly && !staffAuthor;
+        // Active buyer retries are matched against the original task activity.
+        if (!staff && !passiveBuyerRetry && staffAuthor !== actorId) {
           continue;
         }
         const [[author], [link]] = await Promise.all([
@@ -3302,6 +3356,17 @@ export class Service {
     }
     if (staff) {
       return this.sendStaffMessage(task, input, text, attachments);
+    }
+    if (discussionOnly) {
+      return this.writeMessage({
+        chatId: input.chatId,
+        threadId: input.threadId,
+        profileId: input.profileId,
+        sourceSystemId: input.sourceSystemId,
+        ownerId: actorId,
+        text,
+        attachments,
+      });
     }
     const requestMetadata: Record<string, unknown> = {};
     const legacyRequest = parseRbacAiReactionRequestMetadata(input.metadata);
@@ -4603,6 +4668,7 @@ export class Service {
     knowledgeCandidateVersions?: ICustomerWorkSourceVersion[];
     knowledgeSourceIds?: string[];
     personalKnowledgeSourceIds?: string[];
+    stageEntryKnowledgeQuery?: string;
     referenceGuidance?: string;
     roleGuidance?: string;
     skillGuidance?: string;
@@ -4660,6 +4726,7 @@ export class Service {
       ({ message }) => message.id === event.detail.messageId,
     );
     const stageEntry = event.kind === "stage-entry";
+    const paidKnowledgeSearch = stage.operations?.includes("knowledge-search");
     const trigger = entries[triggerIndex];
     const triggerFiles = trigger
       ? customerWorkAttachments(trigger.message)
@@ -4733,8 +4800,34 @@ export class Service {
     const preparesImageBrief = stage.imageBrief === "marketplace-cover";
     const triggerRevision = event.detail.sourceRevision ?? event.revision;
     const history = await this.historyForRun(entries, triggerIndex, event);
+    const order = task.orderId
+      ? await this.subject.modules.ecommerce.order.work.findByOrder(
+          task.orderId,
+        )
+      : null;
+    const orderMatches =
+      order &&
+      order.orderId === task.orderId &&
+      order.taskId === task.id &&
+      order.customerId === task.customerId &&
+      order.storeId === task.storeId;
+    if (orderMatches && stage.output === "pdf") {
+      const draft = await this.orderDraftForRun(order, event);
+      if (draft) {
+        messages.push({
+          role: "assistant",
+          content: `Previous brief draft:\n${new TextDecoder().decode(draft)}`,
+        });
+      }
+    }
     const priorQuestions: string[] = [];
-    for (const { entry, revision } of history) {
+    const canSearchOnEntry =
+      stageEntry &&
+      paidKnowledgeSearch &&
+      orderMatches &&
+      session?.authenticated;
+    let stageEntryKnowledgeQuery: string | undefined;
+    for (const { entry, revision, customerInputActorId } of history) {
       const { message, profileId, linkedAt } = entry;
       if (
         readOrderPaymentNotice(message) ||
@@ -4820,6 +4913,9 @@ export class Service {
         description?.trim()
       ) {
         priorQuestions.push(description);
+        if (canSearchOnEntry && customerInputActorId === task.customerId) {
+          stageEntryKnowledgeQuery = description;
+        }
       }
       const content = [
         description,
@@ -4868,7 +4964,7 @@ export class Service {
           : undefined,
         agentProfileId: agent.id,
         stage,
-        knowledgeScopeOnly: options.knowledgeScopeOnly,
+        knowledgeScopeOnly: options.knowledgeScopeOnly || paidKnowledgeSearch,
         memory:
           !staffTrigger &&
           !paymentTrigger &&
@@ -4886,24 +4982,17 @@ export class Service {
     );
     let deliverableOrderFile: ICustomerWorkReply["releaseOrderFile"];
     if (task.orderId) {
-      const order = await this.subject.modules.ecommerce.order.work.findByOrder(
-        task.orderId,
-      );
-      const matches =
-        order &&
-        order.taskId === task.id &&
-        order.customerId === task.customerId &&
-        order.storeId === task.storeId;
       const paymentStage = isOrderPaymentStage(stage);
       if (
         (paymentStage || paymentTrigger) &&
-        (!matches || (paymentTrigger && order.paid?.id !== notice?.eventId))
+        (!orderMatches ||
+          (paymentTrigger && order.paid?.id !== notice?.eventId))
       ) {
         throw new Error(
           "Conflict error. The verified order payment is unavailable",
         );
       }
-      if (matches && (order.paid || paymentStage)) {
+      if (orderMatches && (order.paid || paymentStage)) {
         const acceptedPaidFile =
           order.kind === "individual-service" &&
           order.paid?.fileId &&
@@ -5018,6 +5107,7 @@ export class Service {
       knowledgeCandidateVersions: references.knowledgeCandidateVersions,
       knowledgeSourceIds: references.knowledgeSourceIds,
       personalKnowledgeSourceIds: references.personalKnowledgeSourceIds,
+      stageEntryKnowledgeQuery,
       referenceGuidance: references.content,
       roleGuidance,
       skillGuidance: references.skillGuidance,
@@ -5057,6 +5147,52 @@ export class Service {
         : undefined,
       cartOffers,
     };
+  }
+
+  private async orderDraftForRun(order: IOrderWork, event: CrmTaskEvent) {
+    if (!order.files.length) {
+      return undefined;
+    }
+    let source = event;
+    if (
+      event.kind === "customer-work-resumed" &&
+      event.causeId &&
+      event.detail.sourceRevision !== undefined
+    ) {
+      const original = await this.crm.tasksToStages.findById({
+        id: event.causeId,
+      });
+      if (
+        original?.taskId === order.taskId &&
+        original.revision === event.detail.sourceRevision &&
+        original.detail.messageId === event.detail.messageId
+      ) {
+        source = original;
+      }
+    }
+    const decision =
+      source.kind === "customer-message" &&
+      order.decisions.find(
+        (entry) =>
+          entry.kind === "declined" &&
+          source.operationKey ===
+            this.activityKey(
+              order.customerId,
+              orderFileFeedbackOperationKey(entry.fileId, entry.operationKey),
+            ),
+      );
+    const writtenBefore = source.createdAt?.getTime() ?? 0;
+    const fileId = decision
+      ? decision.fileId
+      : order.files.findLast(
+          (entry) =>
+            !entry.invalidatedByCartEdit &&
+            Date.parse(entry.createdAt) < writtenBefore,
+        )?.id;
+    if (!fileId) {
+      return undefined;
+    }
+    return this.subject.orderWork.readFullTextDraft(order, fileId);
   }
 
   private async coverRunAttachments(
@@ -5586,6 +5722,7 @@ export class Service {
       inputs.map((input) => input.detail.messageId),
     );
     const revisions = new Map<string, number>();
+    const customerInputActors = new Map<string, string>();
     if (trigger) {
       revisions.set(
         trigger.message.id,
@@ -5593,11 +5730,19 @@ export class Service {
       );
     }
     for (const input of inputs) {
-      if (input.detail.messageId && !revisions.has(input.detail.messageId)) {
-        revisions.set(
-          input.detail.messageId,
-          input.detail.sourceRevision ?? input.revision,
-        );
+      const messageId = input.detail.messageId;
+      if (!messageId) {
+        continue;
+      }
+      if (!revisions.has(messageId)) {
+        revisions.set(messageId, input.detail.sourceRevision ?? input.revision);
+      }
+      if (
+        input.kind === "customer-message" &&
+        input.actorId &&
+        input.revision <= event.revision
+      ) {
+        customerInputActors.set(messageId, input.actorId);
       }
     }
 
@@ -5605,6 +5750,7 @@ export class Service {
       entry: IMessageEntry;
       revision: number;
       isInput: boolean;
+      customerInputActorId?: string;
     }[] = [];
     let earlierRevision = 0;
     for (const [index, entry] of entries.entries()) {
@@ -5614,7 +5760,12 @@ export class Service {
           earlierRevision = Math.max(earlierRevision, revision);
         }
         if (revision <= event.revision) {
-          history.push({ entry, revision, isInput: true });
+          history.push({
+            entry,
+            revision,
+            isInput: true,
+            customerInputActorId: customerInputActors.get(entry.message.id),
+          });
         }
         continue;
       }

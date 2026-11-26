@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { deliveredOrderWorkFile } from "@sps/ecommerce/models/order/sdk/model";
 import type {
   IOrderWork,
   IOrderWorkExpertArchive,
@@ -170,6 +171,13 @@ export const orderWorkDecisionSchema = z.discriminatedUnion("operation", [
     .strict(),
 ]);
 
+export function orderFileFeedbackOperationKey(
+  fileId: string,
+  operationKey: string,
+) {
+  return `file-feedback:${fileId}:${operationKey}`;
+}
+
 export type TOrderWorkDecision = z.infer<typeof orderWorkDecisionSchema>;
 export interface IOrderWorkScope extends z.infer<typeof orderWorkScopeSchema> {}
 
@@ -192,6 +200,7 @@ export interface IOrderResultFile {
   changesRequested?: boolean;
   createdAt: string;
   price: string;
+  includedInWork?: boolean;
   currencyId: string;
   preview: IOrderArtifact;
   previewMimeType?: string;
@@ -205,6 +214,7 @@ export interface IOrderWorkView {
   state: TWorkFulfillmentState;
   acceptedFileId: string | null;
   paidFileId: string | null;
+  includedInWork?: boolean;
   files: IOrderResultFile[];
   result: IOrderArtifact | null;
   receipt: IOrderArtifact | null;
@@ -217,20 +227,15 @@ export function orderResultFiles(
   work: IOrderWork,
   descriptor: (id: string) => IOrderArtifact,
 ) {
-  const original =
-    work.paid && work.deliveredAt && work.resultFileId
-      ? work.files.find(
-          (file) =>
-            file.id === work.paid?.fileId &&
-            file.originalFileId === work.resultFileId,
-        )
-      : undefined;
+  const original = deliveredOrderWorkFile(work);
+  const includedInWork = work.paymentMode === "work-tokens" || undefined;
   const files = work.files.map((file) => ({
     id: file.previewFileId,
     name: file.previewName,
     legacyMessageId: file.legacyMessageId,
     createdAt: file.createdAt,
     price: file.price,
+    includedInWork,
     currencyId: file.currencyId,
     preview: descriptor(file.previewFileId),
     previewMimeType: file.previewMimeType,
@@ -241,16 +246,16 @@ export function orderResultFiles(
   }));
   return {
     files,
-    result:
-      work.paid && work.deliveredAt && work.resultFileId
-        ? {
-            ...descriptor(work.resultFileId),
-            name: original?.originalName,
-            mimeType: original?.originalMimeType,
-          }
-        : null,
+    result: original
+      ? {
+          ...descriptor(original.originalFileId),
+          name: original?.originalName,
+          mimeType: original?.originalMimeType,
+        }
+      : null,
     acceptedFileId: work.acceptedFileId,
     paidFileId: work.paid?.fileId ?? null,
+    includedInWork,
   };
 }
 

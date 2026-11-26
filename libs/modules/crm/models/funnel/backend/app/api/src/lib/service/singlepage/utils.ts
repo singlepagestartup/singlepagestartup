@@ -1,4 +1,5 @@
 import {
+  customerPaysForWork,
   stageWorkFunding,
   type IFunnelDefinition,
   type TFunnelKind,
@@ -71,6 +72,25 @@ export function validateFunnelDefinition(
       throw new Error(
         "Validation error. Confirmed-cost pricing requires funded individual work",
       );
+    }
+    if (stage.resultPricing?.kind === "work-tokens") {
+      const acceptance = stage.actions.filter(
+        (action) =>
+          action.actors.includes("system") &&
+          action.evidence.includes("result-accepted"),
+      );
+      if (
+        kind !== "individual-service" ||
+        stage.output !== "pdf" ||
+        !customerPaysForWork(funding) ||
+        !funding.multiplier ||
+        acceptance.length !== 1 ||
+        acceptance[0].outcome !== "completed"
+      ) {
+        throw new Error(
+          "Validation error. Token-funded PDF work must complete when the customer accepts the result",
+        );
+      }
     }
     const actionIds = new Set<string>();
     for (const action of stage.actions) {

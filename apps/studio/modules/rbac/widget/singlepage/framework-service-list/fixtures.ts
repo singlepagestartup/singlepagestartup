@@ -12,10 +12,13 @@ export const services: IFrameworkService[] = [
       ru: "Бриф с целями, фактами, ограничениями и открытыми вопросами",
     },
     description: {
-      en: "Account manager.\n\nPrepare business notes and a price list. You can request changes before accepting the version.",
-      ru: "Аккаунт-менеджер.\n\nПодготовьте материалы: описание бизнеса, заметки и прайс. До принятия версии можно запросить правки.",
+      en: "The account manager prepares a brief from your business notes and price list. Review the draft in chat, request edits, or accept it to download the PDF.",
+      ru: "Аккаунт-менеджер подготовит бриф по описанию бизнеса, заметкам и прайсу. В чате можно прочитать черновик, запросить правки и скачать PDF после приёмки.",
     },
-    price: "900 ₽",
+    price: {
+      en: "2× actual AI cost in tokens",
+      ru: "2× фактическая стоимость ИИ в токенах",
+    },
   },
   {
     slug: "framework-offer-analysis",

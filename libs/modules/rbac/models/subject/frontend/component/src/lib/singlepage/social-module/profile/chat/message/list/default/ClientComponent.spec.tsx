@@ -22,6 +22,7 @@ import {
   mockAttachKnowledgeFiles,
   mockCustomerWork,
   mockOrderWorkRead,
+  mockOrderWorkContent,
   mockKnowledgeSourceCreateMutate,
   mockKnowledgeSourceDeleteMutateAsync,
   mockKnowledgeSourceUpdateMutate,
@@ -470,6 +471,92 @@ describe("Social thread context", () => {
     expect(
       screen.getByText("First request").closest("article")?.contains(controls),
     ).toBe(false);
+  });
+
+  it("opens the full brief draft from the review message", async () => {
+    const scope = { storeId: "store-1", taskId: "task-1", orderId: "order-1" };
+    const fileId = "1afa2a3e-d105-4a98-a51d-8a4b2d458c26";
+    const content = `${"Brief detail.\n".repeat(65)}Open question about the budget.`;
+    mockCustomerWork.mockReturnValue({
+      data: {
+        ...scope,
+        chatId: "chat-1",
+        threadId: "thread-1",
+        status: "active",
+        workflow: { title: "Brief", stageTitle: "Review", orderStep: "review" },
+      },
+    });
+    mockOrderWorkRead.mockReturnValue({
+      data: {
+        ...scope,
+        state: "awaiting-result",
+        files: [
+          { id: fileId, includedInWork: true, previewMimeType: "text/plain" },
+        ],
+      },
+    });
+    mockOrderWorkContent.mockResolvedValue(
+      new Blob([content], { type: "text/plain" }),
+    );
+    renderComponent("customer-work", {
+      socialModuleMessagesAndActionsQuery: [
+        {
+          type: "message",
+          data: {
+            id: "draft-1",
+            description: "Read the brief draft.",
+            variant: "customer-work",
+            workReplyKey: "attempt:draft-1",
+            createdAt: new Date(),
+            metadata: { orderResultFileId: fileId },
+            interaction: orderFileReviewInteraction(fileId, false),
+          },
+        },
+      ],
+    });
+    fireEvent.click(
+      screen.getByRole("button", { name: "Preview Brief draft v1.txt" }),
+    );
+    expect(
+      await screen.findByText(/Open question about the budget/),
+    ).toBeTruthy();
+    expect(mockOrderWorkContent).toHaveBeenCalledWith(
+      expect.objectContaining({
+        orderId: scope.orderId,
+        artifactId: fileId,
+      }),
+    );
+  });
+
+  it("keeps the completed order composer available and links to a new order", async () => {
+    mockCustomerWork.mockReturnValue({
+      data: {
+        chatId: "chat-1",
+        threadId: "thread-1",
+        storeId: "store-1",
+        taskId: "task-1",
+        orderId: "order-1",
+        status: "closed",
+        discussionOnly: true,
+        productSlug: "framework-business-brief",
+        offerId: "offer-1",
+      },
+    });
+    renderComponent("customer-work");
+    expect(screen.getByText(/Revisions require a new order/)).toBeTruthy();
+    expect(
+      screen
+        .getByRole("link", { name: "View the service" })
+        .getAttribute("href"),
+    ).toBe("/en/ecommerce/products/framework-business-brief");
+    const textarea = screen.getByRole("textbox", { name: "Message" });
+    fireEvent.change(textarea, {
+      target: { value: "Thank you for the brief." },
+    });
+    fireEvent.keyDown(textarea, { key: "Enter" });
+    await waitFor(() =>
+      expect(mockMessageCreateMutate).toHaveBeenCalledTimes(1),
+    );
   });
 
   it("keeps the file attached to the message when the context sidebar closes", () => {
@@ -2564,6 +2651,7 @@ describe("Given: OpenRouter chat profile sidebar", () => {
     mockChatComponentState.knowledgeSources = [
       {
         id: "note",
+        slug: "personal-note",
         title: "Personal note",
         variant: "customer-memory",
         editable: true,
@@ -2573,6 +2661,7 @@ describe("Given: OpenRouter chat profile sidebar", () => {
       },
       {
         id: "shared",
+        slug: "shared-document",
         title: "Shared document",
         content: "Shared material",
         editable: false,

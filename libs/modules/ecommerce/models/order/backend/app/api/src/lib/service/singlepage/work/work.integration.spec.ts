@@ -62,6 +62,85 @@ it("returns only fulfillment states for the requested customer's history orders"
   ]);
 });
 
+it("releases a token-funded original once on acceptance without opening checkout", async () => {
+  const order = createOrder(createAppAssembly());
+  const db = getDrizzle({});
+  const entity = await order.create({ data: {} });
+  cleanup.push(() => db.delete(Order).where(eq(Order.id, entity.id)));
+  const [currency] = await db
+    .insert(Currency)
+    .values({ slug: `work-${randomUUID()}`, symbol: "T", title: "Token" })
+    .returning();
+  cleanup.push(() => db.delete(Currency).where(eq(Currency.id, currency.id)));
+  const scope = {
+    orderId: entity.id,
+    taskId: randomUUID(),
+    storeId: randomUUID(),
+    customerId: randomUUID(),
+  };
+  await order.work.register({
+    ...scope,
+    kind: "individual-service",
+    paymentMode: "work-tokens",
+  });
+  await order.work.startServiceDiscussion(scope);
+  const input = {
+    ...scope,
+    actorId: scope.customerId,
+    operationKey: randomUUID(),
+    currencyId: currency.id,
+    price: "0",
+    priceBasis: {
+      kind: "work-tokens" as const,
+      publicationId: randomUUID(),
+      stageId: "prepare",
+      quotedAt: new Date().toISOString(),
+    },
+    original: {
+      name: "brief.pdf",
+      mimeType: "application/pdf",
+      bytes: Buffer.from("original"),
+    },
+    preview: {
+      name: "draft.txt",
+      mimeType: "text/plain",
+      bytes: Buffer.from("draft"),
+    },
+  };
+  const result = await order.work.publishResult(input);
+  for (const fileId of [result.originalFileId, result.previewFileId]) {
+    cleanup.push(() =>
+      order.modules.fileStorage.file.privateContent.delete({ id: fileId }),
+    );
+  }
+  await expect(
+    order.work.publishResult({ ...input, operationKey: randomUUID() }),
+  ).rejects.toThrow("current draft is still awaiting a decision");
+  const selection = { ...scope, fileId: result.id, operationKey: randomUUID() };
+  const grant = jest.fn(async () => {});
+  await expect(
+    order.work.releaseIncludedFile(selection, grant),
+  ).rejects.toThrow("no accepted token-funded file");
+  await order.work.accept(selection);
+  await expect(
+    order.work.acceptedCheckout({ ...scope, lines: [] }),
+  ).rejects.toThrow("covered by token charges");
+  const released = await order.work.releaseIncludedFile(selection, grant);
+  expect(released).toMatchObject({
+    paid: null,
+    receiptFileId: null,
+    resultFileId: result.originalFileId,
+    state: "delivered",
+  });
+  expect(await order.work.releaseIncludedFile(selection, grant)).toEqual(
+    released,
+  );
+  expect(grant).toHaveBeenCalledTimes(1);
+  expect((await order.findById({ id: scope.orderId }))?.status).toBe(
+    "delivered",
+  );
+});
+
 async function verifySettlement(hasLegacyArchive: boolean) {
   const order = createOrder(createAppAssembly());
   const db = getDrizzle({});

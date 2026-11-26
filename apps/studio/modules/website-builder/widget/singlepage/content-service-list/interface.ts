@@ -11,7 +11,7 @@ export interface IComponentPropsExtended extends IComponentProps {}
 
 export interface IServiceCardProps {
   title: string;
-  summary: string;
+  summary?: ReactNode;
   href: string;
   target?: "_top";
   language: "en" | "ru";

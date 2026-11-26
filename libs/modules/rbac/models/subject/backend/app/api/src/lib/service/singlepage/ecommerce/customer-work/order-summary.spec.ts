@@ -21,7 +21,10 @@ function setup() {
     order: {
       findById: jest.fn().mockResolvedValue({ id: "order", type: "cart" }),
       findByIdTotal,
-      work: { resultPriceForOrder: jest.fn().mockResolvedValue(undefined) },
+      work: {
+        findByOrder: jest.fn().mockResolvedValue(undefined),
+        resultPriceForOrder: jest.fn().mockResolvedValue(undefined),
+      },
     },
     ordersToProducts: { find: jest.fn().mockResolvedValue([orderLine]) },
     product: {
@@ -117,6 +120,18 @@ it("uses the order's saved purchase price when history has a snapshot", async ()
   expect((await service.find(scope))?.total?.amount).toBe(1590);
   expect(findByIdTotal).toHaveBeenCalledWith({ id: "order" });
 });
+
+it.each(["cart", "history"])(
+  "omits the nominal total of token-funded work in %s",
+  async (type) => {
+    const { service, ecommerce, findByIdTotal } = setup();
+    ecommerce.order.work.findByOrder.mockResolvedValue({
+      paymentMode: "work-tokens",
+    });
+    await expect(service.total("order", type)).resolves.toBeUndefined();
+    expect(findByIdTotal).not.toHaveBeenCalled();
+  },
+);
 
 it("omits a different offer and reads no order data for an unrelated subject", async () => {
   const { service, ecommerce, assertAccess } = setup();

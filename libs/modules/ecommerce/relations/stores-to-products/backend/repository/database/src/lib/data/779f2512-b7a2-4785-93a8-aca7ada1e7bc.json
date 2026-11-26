@@ -1,13 +1,15 @@
 {
   "id": "779f2512-b7a2-4785-93a8-aca7ada1e7bc",
   "createdAt": "2026-11-26T14:02:01.830Z",
-  "updatedAt": "2026-11-26T14:02:01.830Z",
+  "updatedAt": "2026-11-26T19:50:42.042Z",
   "variant": "default",
   "orderIndex": 0,
   "className": null,
   "configurationKey": "",
   "settings": {
     "standalone": true,
+    "closedForNewOrders": true,
+    "fullTextDraftPreview": true,
     "requiresResultAcceptance": true
   },
   "sku": "135a771d-77f3-495d-8fbd-75937ce57b34",

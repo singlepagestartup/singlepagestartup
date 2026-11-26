@@ -3,7 +3,17 @@ import type { IServicePaymentTimingProps } from "./interface";
 export function ServicePaymentTiming({
   language,
   afterAcceptance,
+  workMetered,
 }: IServicePaymentTimingProps) {
+  if (workMetered) {
+    return (
+      <>
+        {language === "ru"
+          ? "Токены списываются за работу ИИ по тарифу, который вы подтвердите в чате."
+          : "AI work uses tokens from your balance at the rate you approve in chat."}
+      </>
+    );
+  }
   const labels =
     language === "ru"
       ? {

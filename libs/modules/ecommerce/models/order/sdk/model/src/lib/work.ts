@@ -5,6 +5,7 @@ export type TWorkFulfillmentState =
   | "canceled"
   | "awaiting-result"
   | "awaiting-payment"
+  | "accepted"
   | "paid"
   | "preparing"
   | "in-transit"
@@ -19,6 +20,7 @@ export interface IOrderWorkScope {
 
 export interface IRegisterOrderWork extends IOrderWorkScope {
   kind: TWorkKind;
+  paymentMode?: "work-tokens";
 }
 
 export interface IOrderWorkArtifact {
@@ -67,6 +69,7 @@ export type TOrderWorkPriceBasis = {
 } & (
   | { kind: "offer"; quoteVersion: string }
   | { kind: "cart-price" }
+  | { kind: "work-tokens" }
   | {
       kind: "confirmed-cost";
       multiplier: string;
@@ -192,4 +195,20 @@ export interface IOrderWork extends IRegisterOrderWork {
   resultFileId: string | null;
   paidDispatchedAt: string | null;
   fulfillment: IOrderPhysicalEvent[];
+}
+
+export function deliveredOrderWorkFile(work: IOrderWork | null | undefined) {
+  if (!work?.deliveredAt || !work.resultFileId) {
+    return undefined;
+  }
+  const fileId =
+    work.paymentMode === "work-tokens"
+      ? work.acceptedFileId
+      : work.paid?.fileId;
+  return work.files.find(
+    (file) =>
+      file.id === fileId &&
+      file.originalFileId === work.resultFileId &&
+      !file.invalidatedByCartEdit,
+  );
 }
