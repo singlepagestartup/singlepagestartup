@@ -1024,12 +1024,10 @@ With `start-first` updates, Swarm retains the previous API task until the new
 task passes this check. Existing services must apply the API compose health
 check once before an image with synchronous migrations is rolled out.
 
-The API release job waits for its Swarm update and every target-image task to
-reach `running` before dependent service jobs can continue. It resolves the
-service and endpoint from the existing Portainer webhook; no separate service
-ID map is required. A paused update, rollback, missing health check or timeout
-fails the job and keeps dependent services on their previous images. Check the
-gate with `node --test tools/deployer/portainer/wait-service.test.mjs`.
+The API release job sends a POST to the selected environment's Portainer webhook
+with the release image tag. A successful response lets dependent service jobs
+start while Swarm rolls out the API and the new container runs migrations and
+seeding. A failed webhook request fails the job.
 
 At the end of `api:db:seed`, the new API task clears the HTTP response cache
 directly in KV if caching is enabled. The previous task can still serve
