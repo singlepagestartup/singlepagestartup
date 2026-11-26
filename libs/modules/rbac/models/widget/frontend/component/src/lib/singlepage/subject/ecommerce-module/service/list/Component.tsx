@@ -30,7 +30,7 @@ export function Component({
                   language={language}
                   price={
                     <EcommerceModuleStore
-                      isServer={isServer}
+                      isServer={false}
                       variant="product-price-default"
                       product={product}
                       storeId={offer.storeId}

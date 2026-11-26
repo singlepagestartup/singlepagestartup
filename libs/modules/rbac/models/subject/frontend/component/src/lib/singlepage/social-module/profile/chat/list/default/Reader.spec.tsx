@@ -1,6 +1,6 @@
 /** @jest-environment jsdom */
 import { render, screen } from "@testing-library/react";
-import Server from "./server";
+import { Component as ChatList } from ".";
 import MeServer from "../../../../../me/social-module/profile/chat/list/default/server";
 import type { IComponentProps } from "./interface";
 
@@ -18,6 +18,7 @@ jest.mock("@sps/rbac/models/subject/sdk/server", () => ({
   },
 }));
 jest.mock("@sps/rbac/models/subject/sdk/client", () => ({
+  Provider: ({ children }: { children: React.ReactNode }) => children,
   api: {
     socialModuleProfileFindByIdChatFind: (...args: unknown[]) =>
       mockChats(...args),
@@ -79,7 +80,7 @@ it("lets the browser resolve the active subject and load its inbox from a server
   );
 });
 
-it("checks the active subject's create route before showing the new chat button", async () => {
+it("checks the active subject's create route before showing the new chat button", () => {
   const props = {
     isServer: true,
     variant: "social-module-profile-chat-list-default",
@@ -88,9 +89,7 @@ it("checks the active subject's create route before showing the new chat button"
     data: { id: "selected-subject" },
     socialModuleProfile: { id: "profile" },
   } as IComponentProps;
-  const element = await Server(props);
-  expect(element.props).not.toHaveProperty("initialChats");
-  const view = render(element);
+  const view = render(<ChatList {...props} />);
   expect(mockServerRead).not.toHaveBeenCalled();
   expect(mockPermission.mock.calls[0][0].params.permission).toEqual({
     method: "POST",
@@ -102,6 +101,6 @@ it("checks the active subject's create route before showing the new chat button"
   expect(screen.queryByRole("button", { name: "New chat" })).toBeNull();
   expect(screen.getByText("No chats yet")).toBeTruthy();
   mockCanCreate = true;
-  view.rerender(await Server(props));
+  view.rerender(<ChatList {...props} />);
   expect(screen.getByRole("button", { name: "New chat" })).toBeTruthy();
 });

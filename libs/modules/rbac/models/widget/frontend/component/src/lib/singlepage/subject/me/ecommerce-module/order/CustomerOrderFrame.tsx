@@ -1,5 +1,9 @@
 import type { ReactNode } from "react";
-import { Component as WidgetsToWebsiteBuilderModuleWidgets } from "@sps/rbac/relations/widgets-to-website-builder-module-widgets/frontend/component";
+import {
+  Default as WidgetsToWebsiteBuilderModuleWidgetsDefault,
+  Find as WidgetsToWebsiteBuilderModuleWidgetsFind,
+} from "@sps/rbac/relations/widgets-to-website-builder-module-widgets/frontend/component/src/lib/presentation";
+
 interface IFrameProps {
   isServer: boolean;
   language: string;
@@ -22,7 +26,7 @@ export function CustomerOrderFrame({
       data-variant={variant}
       className="w-full min-w-0"
     >
-      <WidgetsToWebsiteBuilderModuleWidgets
+      <WidgetsToWebsiteBuilderModuleWidgetsFind
         variant="find"
         isServer={isServer}
         apiProps={{
@@ -35,7 +39,7 @@ export function CustomerOrderFrame({
       >
         {({ data }) =>
           data?.length === 1 ? (
-            <WidgetsToWebsiteBuilderModuleWidgets
+            <WidgetsToWebsiteBuilderModuleWidgetsDefault
               isServer={isServer}
               variant="default"
               dataSource="props"
@@ -43,7 +47,7 @@ export function CustomerOrderFrame({
               language={language}
             >
               {children}
-            </WidgetsToWebsiteBuilderModuleWidgets>
+            </WidgetsToWebsiteBuilderModuleWidgetsDefault>
           ) : (
             <p role="alert">
               {language === "ru"
@@ -52,7 +56,7 @@ export function CustomerOrderFrame({
             </p>
           )
         }
-      </WidgetsToWebsiteBuilderModuleWidgets>
+      </WidgetsToWebsiteBuilderModuleWidgetsFind>
     </div>
   );
 }

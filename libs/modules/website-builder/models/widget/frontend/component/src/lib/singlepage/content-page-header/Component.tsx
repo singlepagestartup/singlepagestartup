@@ -1,7 +1,10 @@
 import { TipTap } from "@sps/shared-ui-shadcn";
 import { TipTapContent } from "@sps/shared-ui-shadcn/tiptap/content";
 import { cn } from "@sps/shared-frontend-client-utils";
-import { Component as WidgetsToButtonsArrays } from "@sps/website-builder/relations/widgets-to-buttons-arrays/frontend/component";
+import {
+  Default as WidgetsToButtonsArraysDefault,
+  Find as WidgetsToButtonsArraysFind,
+} from "@sps/website-builder/relations/widgets-to-buttons-arrays/frontend/component/src/lib/presentation";
 import type { IComponentPropsExtended } from "./interface";
 
 export function Component(props: IComponentPropsExtended) {
@@ -46,7 +49,7 @@ export function Component(props: IComponentPropsExtended) {
             <TipTap value={description} />
           </div>
         ) : null}
-        <WidgetsToButtonsArrays
+        <WidgetsToButtonsArraysFind
           isServer={props.isServer}
           variant="find"
           apiProps={{
@@ -68,7 +71,7 @@ export function Component(props: IComponentPropsExtended) {
                       a.orderIndex - b.orderIndex || a.id.localeCompare(b.id),
                   )
                   .map((link) => (
-                    <WidgetsToButtonsArrays
+                    <WidgetsToButtonsArraysDefault
                       key={link.id}
                       isServer={props.isServer}
                       variant="default"
@@ -80,7 +83,7 @@ export function Component(props: IComponentPropsExtended) {
               </div>
             ) : null
           }
-        </WidgetsToButtonsArrays>
+        </WidgetsToButtonsArraysFind>
         {props.children}
       </div>
     </section>

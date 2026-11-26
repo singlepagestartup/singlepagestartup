@@ -1,5 +1,8 @@
 import type { ReactNode } from "react";
-import { Component as WidgetsToWebsiteBuilderModuleWidgets } from "@sps/rbac/relations/widgets-to-website-builder-module-widgets/frontend/component";
+import {
+  Default as WidgetsToWebsiteBuilderModuleWidgetsDefault,
+  Find as WidgetsToWebsiteBuilderModuleWidgetsFind,
+} from "@sps/rbac/relations/widgets-to-website-builder-module-widgets/frontend/component/src/lib/presentation";
 import type { IModel as IWidget } from "@sps/rbac/models/widget/sdk/model";
 import type { IPresentationSlots } from "@sps/website-builder/models/widget/frontend/component";
 
@@ -26,7 +29,7 @@ export function ServiceFrame({
       data-variant={widget.variant}
       className="w-full min-w-0"
     >
-      <WidgetsToWebsiteBuilderModuleWidgets
+      <WidgetsToWebsiteBuilderModuleWidgetsFind
         variant="find"
         isServer={isServer}
         apiProps={{
@@ -39,7 +42,7 @@ export function ServiceFrame({
       >
         {({ data }) =>
           data?.length === 1 && (
-            <WidgetsToWebsiteBuilderModuleWidgets
+            <WidgetsToWebsiteBuilderModuleWidgetsDefault
               isServer={isServer}
               variant="default"
               dataSource="props"
@@ -48,10 +51,10 @@ export function ServiceFrame({
               slots={slots}
             >
               {children}
-            </WidgetsToWebsiteBuilderModuleWidgets>
+            </WidgetsToWebsiteBuilderModuleWidgetsDefault>
           )
         }
-      </WidgetsToWebsiteBuilderModuleWidgets>
+      </WidgetsToWebsiteBuilderModuleWidgetsFind>
     </div>
   );
 }
