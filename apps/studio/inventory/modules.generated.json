@@ -4,8 +4,8 @@
   "totals": {
     "modules": 15,
     "entities": 61,
-    "variants": 1105,
-    "coveredVariants": 253,
+    "variants": 1109,
+    "coveredVariants": 258,
     "representedEntities": 61
   },
   "modules": [
@@ -5064,6 +5064,14 @@
               "coveredBy": []
             },
             {
+              "variant": "me-ecommerce-module-order-detail-customer-default",
+              "scope": "singlepage",
+              "variantsFile": "libs/modules/rbac/models/subject/frontend/component/src/lib/singlepage/variants.ts",
+              "coveredBy": [
+                "rbac.subject.me-ecommerce-module-order-detail-customer-default"
+              ]
+            },
+            {
               "variant": "me-ecommerce-module-order-list-ai-chat",
               "scope": "singlepage",
               "variantsFile": "libs/modules/rbac/models/subject/frontend/component/src/lib/singlepage/variants.ts",
@@ -5076,6 +5084,14 @@
               "scope": "singlepage",
               "variantsFile": "libs/modules/rbac/models/subject/frontend/component/src/lib/singlepage/variants.ts",
               "coveredBy": []
+            },
+            {
+              "variant": "me-ecommerce-module-order-list-customer-default",
+              "scope": "singlepage",
+              "variantsFile": "libs/modules/rbac/models/subject/frontend/component/src/lib/singlepage/variants.ts",
+              "coveredBy": [
+                "rbac.subject.me-ecommerce-module-order-list-customer-default"
+              ]
             },
             {
               "variant": "me-ecommerce-module-product-card-default",
@@ -5306,7 +5322,9 @@
             "apps/studio/modules/rbac/subject/singlepage/me/delete/ai-chat/Component.stories.tsx",
             "apps/studio/modules/rbac/subject/singlepage/me/delete/default/Component.stories.tsx",
             "apps/studio/modules/rbac/subject/singlepage/me/ecommerce-module/order/checkout/tokens/ai-chat/Component.stories.tsx",
+            "apps/studio/modules/rbac/subject/singlepage/me/ecommerce-module/order/detail/customer-default/Component.stories.tsx",
             "apps/studio/modules/rbac/subject/singlepage/me/ecommerce-module/order/list/ai-chat/Component.stories.tsx",
+            "apps/studio/modules/rbac/subject/singlepage/me/ecommerce-module/order/list/customer-default/Component.stories.tsx",
             "apps/studio/modules/rbac/subject/singlepage/me/identity/change-email/Component.stories.tsx",
             "apps/studio/modules/rbac/subject/singlepage/me/identity/change-password/Component.stories.tsx",
             "apps/studio/modules/rbac/subject/singlepage/me/identity/create/email-and-password/Component.stories.tsx",
@@ -5560,6 +5578,22 @@
               "coveredBy": []
             },
             {
+              "variant": "subject-me-customer-order",
+              "scope": "singlepage",
+              "variantsFile": "libs/modules/rbac/models/widget/frontend/component/src/lib/singlepage/variants.ts",
+              "coveredBy": [
+                "rbac.widget.subject-me-customer-order"
+              ]
+            },
+            {
+              "variant": "subject-me-customer-orders",
+              "scope": "singlepage",
+              "variantsFile": "libs/modules/rbac/models/widget/frontend/component/src/lib/singlepage/variants.ts",
+              "coveredBy": [
+                "rbac.widget.subject-me-customer-orders"
+              ]
+            },
+            {
               "variant": "subject-me-ecommerce-module-category-overview-default",
               "scope": "singlepage",
               "variantsFile": "libs/modules/rbac/models/widget/frontend/component/src/lib/singlepage/variants.ts",
@@ -5777,6 +5811,8 @@
             "apps/studio/modules/rbac/widget/singlepage/subject-me-authentication-select-method-ai-chat/Component.stories.tsx",
             "apps/studio/modules/rbac/widget/singlepage/subject-me-blog-module-article-create/Component.stories.tsx",
             "apps/studio/modules/rbac/widget/singlepage/subject-me-crm-module-form-support-ai-chat/Component.stories.tsx",
+            "apps/studio/modules/rbac/widget/singlepage/subject-me-customer-order/Component.stories.tsx",
+            "apps/studio/modules/rbac/widget/singlepage/subject-me-customer-orders/Component.stories.tsx",
             "apps/studio/modules/rbac/widget/singlepage/subject-me-ecommerce-module-product-list-default/Component.stories.tsx",
             "apps/studio/modules/rbac/widget/singlepage/subject-me-ecommerce-module-token-find/Component.stories.tsx",
             "apps/studio/modules/rbac/widget/singlepage/subject-me-profile-settings/Component.stories.tsx",
@@ -8133,7 +8169,9 @@
               "variant": "content-ecommerce-default",
               "scope": "singlepage",
               "variantsFile": "libs/modules/website-builder/models/widget/frontend/component/src/lib/singlepage/variants.ts",
-              "coveredBy": []
+              "coveredBy": [
+                "website-builder.widget.content-ecommerce-default"
+              ]
             },
             {
               "variant": "content-faq",
@@ -8315,6 +8353,7 @@
             "apps/studio/modules/website-builder/widget/singlepage/content-default/Component.stories.tsx",
             "apps/studio/modules/website-builder/widget/singlepage/content-definition-grid-page/Component.stories.tsx",
             "apps/studio/modules/website-builder/widget/singlepage/content-definition-grid/Component.stories.tsx",
+            "apps/studio/modules/website-builder/widget/singlepage/content-ecommerce-default/Component.stories.tsx",
             "apps/studio/modules/website-builder/widget/singlepage/content-faq/Component.stories.tsx",
             "apps/studio/modules/website-builder/widget/singlepage/content-feature-find-card/Component.stories.tsx",
             "apps/studio/modules/website-builder/widget/singlepage/content-feature-find-default/Component.stories.tsx",

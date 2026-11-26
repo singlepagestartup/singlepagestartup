@@ -144,14 +144,17 @@ export class Service {
       primary?.description,
       plainText(NEXT_PUBLIC_HOST_METADATA_DESCRIPTION),
     );
-    let title = await text(
-      selected?.title,
-      meaningfulPageText(page.title, "Page") || siteTitle,
-    );
-    let description = await text(
-      selected?.description,
-      meaningfulPageText(page.description, "Description") || siteDescription,
-    );
+    let pageTitle = meaningfulPageText(page.title, "Page") || siteTitle;
+    if (page.title === "[host.pages.metadata.seo.title]") {
+      pageTitle = await text(page.title, siteTitle);
+    }
+    let pageDescription =
+      meaningfulPageText(page.description, "Description") || siteDescription;
+    if (page.description === "[host.pages.metadata.seo.description]") {
+      pageDescription = await text(page.description, siteDescription);
+    }
+    let title = await text(selected?.title, pageTitle);
+    let description = await text(selected?.description, pageDescription);
     const pagination = Object.entries(page.routeParams || {}).find(([key]) =>
       key.includes(":pagination:"),
     )?.[1];

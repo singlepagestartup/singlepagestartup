@@ -43,8 +43,12 @@ function createContext(params?: unknown) {
   return {
     get: () => {
       if (!params) return params;
-      const { includePurchaseDetails, includeCartDetails, ...parsed } =
-        params as Record<string, unknown>;
+      const {
+        includePurchaseDetails,
+        includeCartDetails,
+        includeCustomerDetails,
+        ...parsed
+      } = params as Record<string, unknown>;
       return parsed;
     },
     req: {
@@ -229,6 +233,154 @@ describe("Subject order history", () => {
     ).toEqual({ data: [] });
     expect(orderFind).not.toHaveBeenCalled();
   });
+
+  it("pages owned history before expanding customer lines", async () => {
+    const { service, orderFind } = createService();
+    const current = { id: "active", type: "history", status: "delivering" };
+    const historical = { id: "old", type: "history", status: "paid" };
+    orderFind.mockResolvedValue([
+      current,
+      historical,
+      { id: "foreign", type: "history" },
+      { id: "cart", type: "cart" },
+      { id: "preview", type: "history", variant: "store-test" },
+    ]);
+    service.module.subjectsToEcommerceModuleOrders.find.mockResolvedValue([
+      ...["cart", "preview", "old", "active"].map((ecommerceModuleOrderId) => ({
+        subjectId: "subject-1",
+        ecommerceModuleOrderId,
+      })),
+      { subjectId: "other", ecommerceModuleOrderId: "foreign" },
+    ]);
+    const details = { lines: [] };
+    service.ecommerceModuleOrderCustomerDetails = jest.fn().mockResolvedValue(
+      new Map([
+        ["active", details],
+        ["old", details],
+      ]),
+    );
+    const params = { includeCustomerDetails: "true", limit: 10, offset: 5 };
+    const result = await new ListHandler(service).execute(
+      createContext(params),
+      jest.fn(),
+    );
+    expect(orderFind).toHaveBeenCalledWith({
+      params: {
+        limit: 10,
+        offset: 5,
+        filters: {
+          and: [
+            {
+              column: "id",
+              method: "inArray",
+              value: ["cart", "preview", "old", "active"],
+            },
+            { column: "type", method: "eq", value: "history" },
+            { column: "variant", method: "ne", value: "store-test" },
+          ],
+        },
+      },
+    });
+    expect(service.ecommerceModuleOrderCustomerDetails).toHaveBeenCalledWith({
+      subjectId: "subject-1",
+      ownedHistoryOrderIds: ["active", "old"],
+      requestedOrderId: undefined,
+    });
+    expect(result).toEqual({
+      data: [
+        { ...current, customerDetails: details },
+        { ...historical, customerDetails: details },
+      ],
+    });
+  });
+
+  it("passes the exact owned ID even when the subject has other history orders", async () => {
+    const { service, orderFind } = createService();
+    const order = {
+      id: "a293d33c-bc0f-4f61-bef7-fb997c49c5dc",
+      type: "history",
+      status: "delivering",
+    };
+    service.module.subjectsToEcommerceModuleOrders.find.mockResolvedValue([
+      { subjectId: "subject-1", ecommerceModuleOrderId: order.id },
+      { subjectId: "subject-1", ecommerceModuleOrderId: "other" },
+    ]);
+    orderFind.mockResolvedValue([order, { ...order, id: "other" }]);
+    const details = {
+      lines: [],
+      discussion: { chatId: "chat-1", threadId: "thread-1" },
+    };
+    service.ecommerceModuleOrderCustomerDetails = jest
+      .fn()
+      .mockResolvedValue(new Map([[order.id, details]]));
+    const params = {
+      includeCustomerDetails: "true",
+      filters: { and: [{ column: "id", method: "eq", value: order.id }] },
+    };
+    const result = await new ListHandler(service).execute(
+      createContext(params),
+      jest.fn(),
+    );
+    expect(service.ecommerceModuleOrderCustomerDetails).toHaveBeenCalledWith({
+      subjectId: "subject-1",
+      ownedHistoryOrderIds: [order.id],
+      requestedOrderId: order.id,
+    });
+    expect(result).toEqual({ data: [{ ...order, customerDetails: details }] });
+  });
+
+  it("checks membership for the exact order before reading discussion details", async () => {
+    const { service, orderFind } = createService();
+    const foreignId = "26a73c74-d5fe-4f47-b506-5511533a20c8";
+    service.module.subjectsToEcommerceModuleOrders.find.mockResolvedValue([]);
+    service.ecommerceModuleOrderCustomerDetails = jest.fn();
+    const params = {
+      includeCustomerDetails: "true",
+      filters: { and: [{ column: "id", method: "eq", value: foreignId }] },
+    };
+    const result = await new ListHandler(service).execute(
+      createContext(params),
+      jest.fn(),
+    );
+    expect(
+      service.module.subjectsToEcommerceModuleOrders.find,
+    ).toHaveBeenCalledWith({
+      params: {
+        filters: {
+          and: [
+            { column: "subjectId", method: "eq", value: "subject-1" },
+            {
+              column: "ecommerceModuleOrderId",
+              method: "eq",
+              value: foreignId,
+            },
+          ],
+        },
+      },
+    });
+    expect(result).toEqual({ data: [] });
+    expect(orderFind).not.toHaveBeenCalled();
+    expect(service.ecommerceModuleOrderCustomerDetails).not.toHaveBeenCalled();
+  });
+
+  it.each(["bad-id", ""])(
+    "returns an unavailable order for malformed route ID %j before querying UUID columns",
+    async (id) => {
+      const { service, orderFind } = createService();
+      const result = await new ListHandler(service).execute(
+        createContext({
+          includeCustomerDetails: "true",
+          filters: { and: [{ column: "id", method: "eq", value: id }] },
+        }),
+        jest.fn(),
+      );
+      expect(result).toEqual({ data: [] });
+      expect(
+        service.module.subjectsToEcommerceModuleOrders.find,
+      ).not.toHaveBeenCalled();
+      expect(orderFind).not.toHaveBeenCalled();
+    },
+  );
 
   it("exposes the existing invoice to the paying order owner without looking up receipt files", async () => {
     const { service, orderFind } = createService();

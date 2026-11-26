@@ -59,6 +59,31 @@ describe("Subject order collection cache", () => {
       source: "purchases",
     });
   });
+  it("refreshes customer lines and discussion membership without replacing caller topics", () => {
+    action({
+      id: "subject",
+      params: {
+        includeCustomerDetails: true,
+        filters: { and: [{ column: "id", method: "eq", value: "order" }] },
+      },
+      reactQueryOptions: { meta: { topics: ["custom.order"] } },
+    });
+    expect(mockUseQuery.mock.calls[0][0].meta.topics).toEqual(
+      expect.arrayContaining([
+        "ecommerce.orders",
+        "ecommerce.orders-to-products",
+        "ecommerce.products",
+        "ecommerce.orders-to-billing-module-payment-intents",
+        "rbac.subjects-to-ecommerce-module-orders",
+        "crm.tasks",
+        "social.chats-to-crm-module-tasks",
+        "social.chats-to-threads",
+        "social.profiles-to-chats",
+        "rbac.subjects-to-social-module-profiles",
+        "custom.order",
+      ]),
+    );
+  });
   it("refreshes purchase payment eligibility when Billing changes", () => {
     action({
       id: "subject",

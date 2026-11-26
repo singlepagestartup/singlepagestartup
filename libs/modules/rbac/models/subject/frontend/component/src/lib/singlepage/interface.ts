@@ -1,3 +1,5 @@
+import type { IComponentProps as IMeEcommerceModuleOrderDetailCustomerDefaultProps } from "./me/ecommerce-module/order/detail/customer-default/interface";
+import type { IComponentProps as IMeEcommerceModuleOrderListCustomerDefaultProps } from "./me/ecommerce-module/order/list/customer-default/interface";
 import type { IComponentProps as IEmailPasswordForm } from "./authentication/email-and-password/form-default/interface";
 import type { IComponentProps as IEcommerceModuleProductCategoryDefaultProps } from "./ecommerce-module/product/category-default/interface";
 import type { IComponentProps as IEcommerceModuleProductProfileDefaultProps } from "./ecommerce-module/product/profile-default/interface";
@@ -87,6 +89,8 @@ import { IComponentProps as ISocialModuleProfileChatListDefaultComponentProps } 
 import { IComponentProps as ISocialModuleProfileChatOverviewDefaultComponentProps } from "./social-module/profile/chat/overview/default/interface";
 
 export type IComponentProps =
+  | IMeEcommerceModuleOrderDetailCustomerDefaultProps
+  | IMeEcommerceModuleOrderListCustomerDefaultProps
   | IEcommerceModuleProductCategoryDefaultProps
   | IEcommerceModuleProductProfileDefaultProps
   | IHiddenComponentProps

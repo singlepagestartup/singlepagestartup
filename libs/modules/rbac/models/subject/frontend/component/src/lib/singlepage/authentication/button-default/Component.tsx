@@ -17,6 +17,8 @@ import Link from "next/link";
 import { Component as Role } from "@sps/rbac/models/role/frontend/component";
 
 export function Component(props: IComponentPropsExtended) {
+  const prefix = props.language ? `/${props.language}` : "";
+  const ru = props.language === "ru";
   return (
     <div
       data-module="rbac"
@@ -137,8 +139,18 @@ export function Component(props: IComponentPropsExtended) {
             </SubjectsToRoles>
           </DropdownMenuLabel>
           <DropdownMenuSeparator />
-          <DropdownMenuItem>
-            <Link href="/rbac/subjects/settings">Settings</Link>
+          <DropdownMenuItem asChild>
+            <Link href={`${prefix}/rbac/subjects/settings`}>
+              {ru ? "Настройки" : "Settings"}
+            </Link>
+          </DropdownMenuItem>
+          <DropdownMenuItem asChild>
+            <Link href={`${prefix}/rbac/subjects/orders`}>
+              {ru ? "Заказы" : "Orders"}
+            </Link>
+          </DropdownMenuItem>
+          <DropdownMenuItem asChild>
+            <Link href={`${prefix}/social/chats`}>{ru ? "Чаты" : "Chats"}</Link>
           </DropdownMenuItem>
           <LogoutButton
             isServer={props.isServer}

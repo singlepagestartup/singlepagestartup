@@ -47,6 +47,7 @@ export function Component(props: IComponentProps) {
                 return (
                   <RbacModuleSubject
                     variant="authentication-button-default"
+                    language={props.language}
                     data={subject}
                     isServer={false}
                   />

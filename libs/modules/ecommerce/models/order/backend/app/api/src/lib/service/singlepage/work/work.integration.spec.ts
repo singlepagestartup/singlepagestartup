@@ -27,6 +27,41 @@ afterAll(async () => {
   resetPostgresClient();
 });
 
+it("returns only fulfillment states for the requested customer's history orders", async () => {
+  const order = createOrder(createAppAssembly());
+  const db = getDrizzle({});
+  const customerId = randomUUID();
+  const create = async (owner: string, type: string) => {
+    const entity = await order.create({ data: {} });
+    cleanup.push(() => db.delete(Order).where(eq(Order.id, entity.id)));
+    const scope = {
+      orderId: entity.id,
+      customerId: owner,
+      storeId: randomUUID(),
+      taskId: randomUUID(),
+    };
+    await order.work.register({ ...scope, kind: "individual-service" });
+    if (type === "history") {
+      await order.work.startServiceDiscussion(scope);
+    }
+    return entity.id;
+  };
+  const own = await create(customerId, "history");
+  const foreign = await create(randomUUID(), "history");
+  const cart = await create(customerId, "cart");
+  const outside = await create(customerId, "history");
+  const states = await order.work.statesForCustomer(customerId, [
+    own,
+    foreign,
+    cart,
+  ]);
+  expect(states).toEqual([{ orderId: own, state: "awaiting-result" }]);
+  expect(await order.work.statesForCustomer(customerId, [])).toEqual([]);
+  expect(await order.work.statesForCustomer(customerId, [outside])).toEqual([
+    { orderId: outside, state: "awaiting-result" },
+  ]);
+});
+
 async function verifySettlement(hasLegacyArchive: boolean) {
   const order = createOrder(createAppAssembly());
   const db = getDrizzle({});

@@ -3,7 +3,7 @@ import { useId, useState } from "react";
 import { ProfileSettingsPanel } from "@sps/social/models/profile/frontend/component";
 import { Select, Icon } from "@sps/ui-adapter";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { getLocalizedHref } from "@sps/shared-frontend-client-utils";
 import { api } from "@sps/rbac/models/subject/sdk/client";
 import {
@@ -39,18 +39,27 @@ export function Component(props: IComponentPropsExtended) {
 function Settings(props: ISettingsProps) {
   const ru = props.language === "ru";
   const pathname = usePathname();
+  const router = useRouter();
   const id = useId();
   const [section, setSection] = useState("Profile");
   const logout = api.authenticationLogout({});
   const sectionLabels: Record<string, string> = {
     Profile: ru ? "Профиль" : "Profile",
     "Sign-in methods": ru ? "Способы входа" : "Sign-in methods",
+    Orders: ru ? "Заказы" : "Orders",
+    Chats: ru ? "Чаты" : "Chats",
     Purchases: ru ? "Покупки" : "Purchases",
     "Data and privacy": ru ? "Данные и конфиденциальность" : "Data and privacy",
+  };
+  const destinations: Partial<Record<string, string>> = {
+    Orders: getLocalizedHref(pathname, "/rbac/subjects/orders"),
+    Chats: getLocalizedHref(pathname, "/social/chats"),
   };
   const sections = [
     "Profile",
     "Sign-in methods",
+    "Orders",
+    "Chats",
     "Purchases",
     "Data and privacy",
   ];
@@ -97,7 +106,11 @@ function Settings(props: ISettingsProps) {
             id={`${id}-select`}
             aria-label={ru ? "Раздел настроек" : "Settings section"}
             value={section}
-            onValueChange={setSection}
+            onValueChange={(value) => {
+              const href = destinations[value];
+              if (href) router.push(href);
+              else setSection(value);
+            }}
             options={sections.map((item) => ({
               value: item,
               label: sectionLabels[item],
@@ -108,20 +121,30 @@ function Settings(props: ISettingsProps) {
           aria-label={ru ? "Настройки" : "Settings"}
           className="sticky top-24 hidden space-y-1 md:block"
         >
-          {sections.map((item) => (
-            <button
-              key={item}
-              type="button"
-              aria-current={section === item ? "page" : undefined}
-              onClick={() => setSection(item)}
-              className={`flex min-h-12 w-full cursor-pointer items-center gap-3 rounded-xl px-4 py-3 text-left text-sm font-medium transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground ${section === item ? "bg-card" : "text-muted-foreground hover:bg-card"}`}
-            >
-              <span
-                className={`h-5 w-1 rounded-full ${section === item ? "bg-primary text-primary-foreground" : "bg-transparent"}`}
-              />
-              {sectionLabels[item]}
-            </button>
-          ))}
+          {sections.map((item) =>
+            destinations[item] ? (
+              <Link
+                key={item}
+                href={destinations[item]!}
+                className="flex min-h-12 items-center rounded-xl px-7 py-3 text-sm font-medium text-muted-foreground hover:bg-card"
+              >
+                {sectionLabels[item]}
+              </Link>
+            ) : (
+              <button
+                key={item}
+                type="button"
+                aria-current={section === item ? "page" : undefined}
+                onClick={() => setSection(item)}
+                className={`flex min-h-12 w-full cursor-pointer items-center gap-3 rounded-xl px-4 py-3 text-left text-sm font-medium transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground ${section === item ? "bg-card" : "text-muted-foreground hover:bg-card"}`}
+              >
+                <span
+                  className={`h-5 w-1 rounded-full ${section === item ? "bg-primary text-primary-foreground" : "bg-transparent"}`}
+                />
+                {sectionLabels[item]}
+              </button>
+            ),
+          )}
         </nav>
         <section
           aria-label={

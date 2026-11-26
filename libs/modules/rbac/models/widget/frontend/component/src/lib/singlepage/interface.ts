@@ -1,3 +1,5 @@
+import type { IComponentProps as ISubjectMeCustomerOrderProps } from "./subject/me/ecommerce-module/order/detail/interface";
+import type { IComponentProps as ISubjectMeCustomerOrdersProps } from "./subject/me/ecommerce-module/order/list/interface";
 import type { IComponentProps as IStoreCustomers } from "./subject/me/ecommerce-module/store/customers/interface";
 import type { IComponentProps as IStoreCustomerDetail } from "./subject/me/ecommerce-module/store/customers/detail/interface";
 import type { IComponentProps as IStoreOrderDetail } from "./subject/me/ecommerce-module/store/orders/detail/interface";
@@ -66,6 +68,8 @@ import { IComponentProps as ISubjectOverviewDefaultComponentProps } from "./subj
 import { IComponentProps as ISubjectListDefaultComponentProps } from "./subject/list/default/interface";
 
 export type IComponentProps =
+  | ISubjectMeCustomerOrderProps
+  | ISubjectMeCustomerOrdersProps
   | ISubjectMeTaskDetail
   | ISubjectMeTaskCreate
   | ISubjectMeStoreEmployeeDetail

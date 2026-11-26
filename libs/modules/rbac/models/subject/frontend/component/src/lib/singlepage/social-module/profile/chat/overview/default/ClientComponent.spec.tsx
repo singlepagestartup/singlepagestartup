@@ -10,7 +10,8 @@ import {
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import userEvent from "@testing-library/user-event";
 import type { ComponentPropsWithoutRef } from "react";
-import { Component as ChatList } from "../../list/default/ClientComponent";
+import ChatList from "../../list/default/client";
+import { getLocalizedText } from "../../title";
 import { Component } from "./ClientComponent";
 import type { IComponentPropsExtended } from "./interface";
 
@@ -125,10 +126,11 @@ jest.mock("@sps/rbac/models/subject/frontend/component", () => ({
     socialModuleThread?: { title: string };
   }) => {
     if (props.variant === "social-module-profile-chat-list-default") {
-      const List = jest.requireActual(
-        "../../list/default/ClientComponent",
-      ).Component;
-      return <List {...props} socialModuleChats={mockChats} />;
+      const List = jest.requireActual("../../list/default/client").default;
+      return <List {...props} />;
+    }
+    if (props.variant === "authentication-is-authorized-wrapper-default") {
+      return null;
     }
     if (props.variant === "social-module-profile-chat-default") {
       const Chat = jest.requireActual("../../default/Component").Component;
@@ -154,6 +156,17 @@ jest.mock("@sps/rbac/models/subject/sdk/client", () => {
   const empty = () => ({});
   return {
     api: {
+      socialModuleProfileFindByIdChatFind: ({
+        params,
+      }: {
+        params: { search?: string; language?: string };
+      }) => ({
+        data: mockChats.filter(({ title }) =>
+          getLocalizedText(title, params.language ?? "en", "")
+            .toLowerCase()
+            .includes(params.search?.toLowerCase() ?? ""),
+        ),
+      }),
       socialModuleChatFindByIdUpdate: () => ({
         mutate: mockUpdateChat,
         mutateAsync: mockUpdateCover,
@@ -471,7 +484,6 @@ it("renders the searchable chat sidebar before a chat is selected", () => {
       data={mockSubject}
       language="en"
       socialModuleProfile={mockProfile}
-      socialModuleChats={mockChats}
     />,
   );
   const sidebar = within(screen.getByRole("complementary"));

@@ -1,0 +1,25 @@
+{
+  "metadata": {
+    "seo": {
+      "title": {
+        "en": "Orders",
+        "ru": "Заказы"
+      },
+      "description": {
+        "en": "Orders placed from your account.",
+        "ru": "Заказы, оформленные из вашего аккаунта."
+      }
+    }
+  },
+  "id": "8e6ce092-f649-41a6-b761-053fd461a0e5",
+  "title": "[host.pages.metadata.seo.title]",
+  "url": "/rbac/subjects/orders",
+  "slug": "customer-orders",
+  "description": "[host.pages.metadata.seo.description]",
+  "createdAt": "2026-11-26T10:55:12.383Z",
+  "updatedAt": "2026-11-26T11:01:27.021Z",
+  "variant": "noindex",
+  "className": null,
+  "language": "en",
+  "adminTitle": "Profile | Orders"
+}

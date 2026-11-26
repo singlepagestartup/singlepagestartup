@@ -21,6 +21,9 @@ export interface IProps {
   params?: {
     includeSubjectProfiles?: boolean;
     includeParticipants?: boolean;
+    membershipsOnly?: boolean;
+    search?: string;
+    language?: string;
     [key: string]: unknown;
   };
   options?: Partial<NextRequestOptions>;

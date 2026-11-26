@@ -1,3 +1,5 @@
+import { Component as SubjectMeCustomerOrder } from "./subject-me-customer-order";
+import { Component as SubjectMeCustomerOrders } from "./subject-me-customer-orders";
 import { Component as SubjectMeBlogModuleArticleCreate } from "./subject-me-blog-module-article-create";
 import { Component as SubjectMeEcommerceModuleProductListDefault } from "./subject-me-ecommerce-module-product-list-default";
 import { Component as SubjectMeEcommerceModuleTokenFind } from "./subject-me-ecommerce-module-token-find";
@@ -18,6 +20,8 @@ import { Component as SubjectMeStoreCustomerWork } from "./subject-me-store-cust
 import { Component as SubjectMeStoreProviderSettings } from "./subject-me-store-provider-settings";
 
 export const variants = {
+  "subject-me-customer-order": SubjectMeCustomerOrder,
+  "subject-me-customer-orders": SubjectMeCustomerOrders,
   "subject-me-store-provider-settings": SubjectMeStoreProviderSettings,
   "subject-me-store-customer-work": SubjectMeStoreCustomerWork,
   "subject-me-blog-module-article-create": SubjectMeBlogModuleArticleCreate,

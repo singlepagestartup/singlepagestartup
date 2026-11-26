@@ -1,3 +1,4 @@
+import { Component as ContentEcommerceDefault } from "./content-ecommerce-default";
 import { Component as ContentProjectContext } from "./content-project-context";
 import { Component as ContentShowcase } from "./content-showcase";
 import { Component as ContentCollection } from "./content-collection";
@@ -47,6 +48,7 @@ import { Component as NavbarAiChat } from "./navbar/ai-chat/index";
 import { Component as NavbarAiChatLanding } from "./navbar/ai-chat-landing/index";
 
 export const variants = {
+  "content-ecommerce-default": ContentEcommerceDefault,
   "content-project-context": ContentProjectContext,
   "content-showcase": ContentShowcase,
   "content-feature-split": ContentFeatureSplit,

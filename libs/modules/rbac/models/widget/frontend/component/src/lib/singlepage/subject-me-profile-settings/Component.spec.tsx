@@ -11,6 +11,7 @@ const mockSubjectProps = jest.fn();
 jest.mock("client-only", () => ({}), { virtual: true });
 jest.mock("server-only", () => ({}), { virtual: true });
 jest.mock("next/navigation", () => ({
+  useRouter: () => ({ push: jest.fn() }),
   usePathname: () => "/ru/ai-chat/settings",
 }));
 jest.mock("next/link", () => ({
@@ -47,6 +48,12 @@ it("retains Russian in Data and privacy links and sign-out redirect", () => {
         data: { id: "settings" },
       } as any)}
     />,
+  );
+  expect(
+    screen.getByRole("link", { name: "Заказы" }).getAttribute("href"),
+  ).toBe("/ru/rbac/subjects/orders");
+  expect(screen.getByRole("link", { name: "Чаты" }).getAttribute("href")).toBe(
+    "/ru/social/chats",
   );
   fireEvent.click(
     screen.getByRole("button", { name: "Данные и конфиденциальность" }),

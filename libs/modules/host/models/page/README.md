@@ -92,7 +92,10 @@ only Next.js metadata. Neither operation writes generated text to the database.
 The first linked Metadata wins, sorted by relation `orderIndex`, then
 relation ID. Fields from multiple linked records are not merged. For each title
 or description the fallback order is: linked Metadata mask/literal
-→ meaningful Page field → primary Metadata → environment default. Entity
+→ meaningful Page field → primary Metadata → environment default. A Page can
+set its title to `[host.pages.metadata.seo.title]` or its description to
+`[host.pages.metadata.seo.description]` to use that field's translation for the
+requested language. Entity
 metadata is read only when an explicit mask requests it; it does not override
 the Page's linked Metadata automatically. Pagination receives a page-number
 suffix. Hidden or draft Page returns 404; Page.variant alone controls indexing.

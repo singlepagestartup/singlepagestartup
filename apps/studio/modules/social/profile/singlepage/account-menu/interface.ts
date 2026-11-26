@@ -15,6 +15,7 @@ export interface IAccountMenuProps {
   settingsHref?: string;
   createArticleHref?: string;
   authorHref?: string;
+  ordersHref?: string;
   chatsHref?: string;
   settingsTarget?: "_top";
   onNavigate?: () => void;

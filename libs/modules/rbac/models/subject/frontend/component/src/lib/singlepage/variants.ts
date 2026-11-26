@@ -1,3 +1,5 @@
+import { Component as MeEcommerceModuleOrderDetailCustomerDefault } from "./me/ecommerce-module/order/detail/customer-default";
+import { Component as MeEcommerceModuleOrderListCustomerDefault } from "./me/ecommerce-module/order/list/customer-default";
 import { Component as EmailPasswordForm } from "./authentication/email-and-password/form-default";
 import { Component as EcommerceModuleProductCategoryDefault } from "./ecommerce-module/product/category-default";
 import { Component as EcommerceModuleProductProfileDefault } from "./ecommerce-module/product/profile-default";
@@ -87,6 +89,10 @@ import { Component as SocialModuleProfileChatListDefault } from "./social-module
 import { Component as SocialModuleProfileChatOverviewDefault } from "./social-module/profile/chat/overview/default";
 
 export const variants = {
+  "me-ecommerce-module-order-detail-customer-default":
+    MeEcommerceModuleOrderDetailCustomerDefault,
+  "me-ecommerce-module-order-list-customer-default":
+    MeEcommerceModuleOrderListCustomerDefault,
   "ecommerce-module-product-category-default":
     EcommerceModuleProductCategoryDefault,
   "ecommerce-module-product-profile-default":

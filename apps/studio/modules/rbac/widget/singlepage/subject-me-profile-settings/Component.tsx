@@ -96,6 +96,20 @@ export function SubjectMeProfileSettings({
       content: <Subject variant="me-identity-find-information" />,
     },
     {
+      id: "orders",
+      label: "Заказы",
+      href: showTokens
+        ? "/rbac/subjects/orders"
+        : "/?path=/story/modules-rbac-models-widget-singlepage-subject-me-customer-orders--default",
+    },
+    {
+      id: "chats",
+      label: "Чаты",
+      href: showTokens
+        ? "/social/chats"
+        : "/?path=/story/modules-rbac-models-widget-singlepage-subject-me-social-module-profile-chat-list-default--default",
+    },
+    {
       id: "purchases",
       label: showTokens ? "Токены и покупки" : "Покупки",
       content: (
@@ -177,7 +191,11 @@ export function SubjectMeProfileSettings({
                 id={`${id}-select`}
                 aria-label="Раздел настроек"
                 value={activeSection}
-                onValueChange={setActiveSection}
+                onValueChange={(value) => {
+                  const href = sections.find((item) => item.id === value)?.href;
+                  if (href) window.open(href, showTokens ? "_self" : "_top");
+                  else setActiveSection(value);
+                }}
                 options={sections.map(({ id, label }) => ({
                   value: id,
                   label,
@@ -188,25 +206,36 @@ export function SubjectMeProfileSettings({
               aria-label="Настройки"
               className="sticky top-24 hidden space-y-1 md:block"
             >
-              {sections.map(({ id: sectionId, label }) => (
-                <button
-                  key={sectionId}
-                  id={`${id}-nav-${sectionId}`}
-                  aria-controls={`${id}-panel-${sectionId}`}
-                  aria-current={
-                    activeSection === sectionId ? "page" : undefined
-                  }
-                  onClick={() => setActiveSection(sectionId)}
-                  type="button"
-                  className={`flex min-h-12 w-full cursor-pointer items-center gap-3 rounded-xl px-4 py-3 text-left text-sm font-medium transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground ${activeSection === sectionId ? "bg-card" : "text-muted-foreground hover:bg-card"}`}
-                >
-                  <span
-                    aria-hidden="true"
-                    className={`h-5 w-1 shrink-0 rounded-full ${activeSection === sectionId ? "bg-primary text-primary-foreground" : "bg-transparent"}`}
-                  />
-                  {label}
-                </button>
-              ))}
+              {sections.map(({ id: sectionId, label, href }) =>
+                href ? (
+                  <a
+                    key={sectionId}
+                    href={href}
+                    target={showTokens ? undefined : "_top"}
+                    className="flex min-h-12 items-center rounded-xl px-7 py-3 text-sm font-medium text-muted-foreground hover:bg-card"
+                  >
+                    {label}
+                  </a>
+                ) : (
+                  <button
+                    key={sectionId}
+                    id={`${id}-nav-${sectionId}`}
+                    aria-controls={`${id}-panel-${sectionId}`}
+                    aria-current={
+                      activeSection === sectionId ? "page" : undefined
+                    }
+                    onClick={() => setActiveSection(sectionId)}
+                    type="button"
+                    className={`flex min-h-12 w-full cursor-pointer items-center gap-3 rounded-xl px-4 py-3 text-left text-sm font-medium transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground ${activeSection === sectionId ? "bg-card" : "text-muted-foreground hover:bg-card"}`}
+                  >
+                    <span
+                      aria-hidden="true"
+                      className={`h-5 w-1 shrink-0 rounded-full ${activeSection === sectionId ? "bg-primary text-primary-foreground" : "bg-transparent"}`}
+                    />
+                    {label}
+                  </button>
+                ),
+              )}
             </nav>
             <div className="min-w-0">
               {sections.map(({ id: sectionId, label, content }) => (

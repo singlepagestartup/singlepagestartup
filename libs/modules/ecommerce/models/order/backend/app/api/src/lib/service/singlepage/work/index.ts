@@ -155,6 +155,13 @@ export class Service {
     });
   }
 
+  statesForCustomer(customerId: string, orderIds: string[]) {
+    return this.order.repository.fulfillmentStatesForCustomer(
+      customerId,
+      orderIds,
+    );
+  }
+
   findByOrder(orderId: string) {
     return this.order.repository.fulfillmentForOrder(orderId);
   }

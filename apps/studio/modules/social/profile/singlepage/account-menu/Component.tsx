@@ -29,6 +29,7 @@ export function Component({
   settingsTarget,
   createArticleHref,
   authorHref,
+  ordersHref,
   chatsHref,
   onNavigate,
   onSignOut,
@@ -134,6 +135,18 @@ export function Component({
               </a>
             </DropdownMenu.Item>
           ) : null}
+          {ordersHref && (
+            <DropdownMenu.Item asChild>
+              <a
+                href={ordersHref}
+                target={settingsTarget}
+                className={menuItemClassName}
+              >
+                <Icon name="shopping-cart" />
+                Заказы
+              </a>
+            </DropdownMenu.Item>
+          )}
           {chatsHref ? (
             <DropdownMenu.Item asChild>
               <a
@@ -142,7 +155,7 @@ export function Component({
                 className={menuItemClassName}
               >
                 <Icon name="chat-circle" />
-                Мои обсуждения
+                Чаты
               </a>
             </DropdownMenu.Item>
           ) : null}

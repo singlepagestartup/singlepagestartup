@@ -1,3 +1,5 @@
+import { Component as SubjectMeCustomerOrder } from "./subject/me/ecommerce-module/order/detail";
+import { Component as SubjectMeCustomerOrders } from "./subject/me/ecommerce-module/order/list";
 import { Component as StoreCustomers } from "./subject/me/ecommerce-module/store/customers";
 import { Component as StoreCustomerDetail } from "./subject/me/ecommerce-module/store/customers/detail";
 import { Component as StoreOrderDetail } from "./subject/me/ecommerce-module/store/orders/detail";
@@ -66,6 +68,8 @@ import { Component as SubjectOverviewDefault } from "./subject/overview/default"
 import { Component as SubjectListDefault } from "./subject/list/default";
 
 export const variants = {
+  "subject-me-customer-order": SubjectMeCustomerOrder,
+  "subject-me-customer-orders": SubjectMeCustomerOrders,
   "subject-me-ecommerce-module-store-customers": StoreCustomers,
   "subject-me-ecommerce-module-store-customer-detail": StoreCustomerDetail,
   "subject-me-ecommerce-module-store-order-detail": StoreOrderDetail,

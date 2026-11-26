@@ -1114,16 +1114,17 @@ No additional public permissions or relation graph are needed.
 ### Current-Subject chat readers
 
 The two `me-social-module-profile-chat-*-default` entrypoints use the shared
-reader parent and local client/server session readers. Their loaded views
-compose the owned Profile reader and the scoped Chat operation. Interactive
-views receive explicit Subject and Social resource props; they do not repeat
-session initialization.
+reader parent. The inbox resolves the session, owned Profiles and chats in the
+browser, including when a server Widget embeds it. The overview also supports
+a server session reader. Both pass the verified Subject and Social resources
+to their interactive views.
 
 `socialModuleProfileFindByIdChatFind` accepts `includeSubjectProfiles` and
 `includeParticipants`. Subject expansion validates the requested owned Profile,
 collects all owned Profile memberships, deduplicates Chat IDs and reads one
 collection. Administrative scope uses the existing Chat lifecycle role check.
 Customer order conversations appear only for the customer who owns the linked task. This check also applies to administrators browsing Social. The collection and direct chat link use the same access rule.
+The account inbox and the thread sidebar request `membershipsOnly=true` so even an administrator sees personal conversations there. Administrative SDK callers can use the existing role scope. The inbox searches stored titles before paging through conversations visible to the current Subject.
 Participant expansion runs in bulk after access validation. Query identity
 includes these parameters, API host and current principal. A loaded list row
 uses `dataSource="props"` and retains the parent collection subscription.
@@ -1226,6 +1227,8 @@ edits use the model’s validation. The seller’s stock operation also checks
 outstanding reservations.
 
 Buyers read cart and payment details through `GET /api/rbac/subjects/:id/ecommerce-module/orders`.
+The account orders page requests `includeCustomerDetails=true`. Each history order includes its saved lines and available fulfillment state. Adding an exact order ID filter also returns the existing Social discussion when the buyer can access it. The buyer opens this page at `/{language}/rbac/subjects/orders/{orderId}`.
+
 The purchase view requests `includePurchaseDetails=true` with a history filter.
 It returns each owned order's charges, invoice status and available payment link.
 A shared invoice total and the IDs of its orders are visible only when all billed

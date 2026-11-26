@@ -1,3 +1,5 @@
+import { Component as MeEcommerceModuleOrderDetailCustomerDefault } from "./me/ecommerce-module/order/detail/customer-default";
+import { Component as MeEcommerceModuleOrderListCustomerDefault } from "./me/ecommerce-module/order/list/customer-default";
 import { Component as MeBlogModuleArticleCreateDefault } from "./me-blog-module-article-create-default";
 import { Component as AdminV2Card } from "./admin-v2-card/index";
 import { Component as AdminV2Settings } from "./admin-v2-settings/index";
@@ -41,6 +43,10 @@ import { Component as MeSocialModuleProfileIdUpdateNameAiChat } from "./me/socia
 import { Component as MeSocialModuleProfileSelectAiChat } from "./me/social-module/profile/select/ai-chat/index";
 
 export const variants = {
+  "me-ecommerce-module-order-detail-customer-default":
+    MeEcommerceModuleOrderDetailCustomerDefault,
+  "me-ecommerce-module-order-list-customer-default":
+    MeEcommerceModuleOrderListCustomerDefault,
   "me-blog-module-article-create-default": MeBlogModuleArticleCreateDefault,
   "admin-v2-card": AdminV2Card,
   "admin-v2-settings": AdminV2Settings,

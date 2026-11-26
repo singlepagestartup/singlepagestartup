@@ -1,24 +1,22 @@
 "use server";
 import "server-only";
 
-import { IComponentProps } from "./interface";
-import { Component as ChildComponent } from "./Component";
-import { api } from "@sps/rbac/models/subject/sdk/server";
+import type { IComponentProps } from "./interface";
+import Client from "./client";
 
 export default async function Component(props: IComponentProps) {
-  const data = await api.socialModuleProfileFindByIdChatFind({
-    id: props.data.id,
-    socialModuleProfileId: props.socialModuleProfile.id,
-    params: {
-      includeSubjectProfiles: props.includeSubjectProfiles,
-      includeParticipants: true,
-    },
-    options: {
-      headers: {
-        "Cache-Control": "no-store",
-      },
-    },
-  });
-
-  return <ChildComponent {...props} socialModuleChats={data} />;
+  return (
+    <Client
+      isServer={false}
+      variant={props.variant}
+      language={props.language}
+      data={props.data}
+      socialModuleProfile={props.socialModuleProfile}
+      includeSubjectProfiles={props.includeSubjectProfiles}
+      currentSocialModuleChatId={props.currentSocialModuleChatId}
+      compact={props.compact}
+      className={props.className}
+      currentChatActions={props.currentChatActions}
+    />
+  );
 }

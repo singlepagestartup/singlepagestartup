@@ -88,9 +88,14 @@ export function Component({
             ? "/?path=/story/modules-social-models-widget-singlepage-author-overview-default--default"
             : undefined
         }
+        ordersHref={
+          showTokens
+            ? "/rbac/subjects/orders"
+            : "/?path=/story/modules-rbac-models-widget-singlepage-subject-me-customer-orders--default"
+        }
         chatsHref={
           showTokens
-            ? "/ai-chat/projects"
+            ? "/social/chats"
             : "/?path=/story/modules-rbac-models-widget-singlepage-subject-me-social-module-profile-chat-list-default--default"
         }
         settingsTarget={showTokens ? undefined : "_top"}

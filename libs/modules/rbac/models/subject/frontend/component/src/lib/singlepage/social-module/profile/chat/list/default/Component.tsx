@@ -11,6 +11,9 @@ export function Component(props: IComponentPropsExtended) {
       className={props.className}
       socialModuleProfile={props.socialModuleProfile}
       socialModuleChats={props.socialModuleChats}
+      search={props.search}
+      onSearch={props.onSearch}
+      pagination={props.pagination}
       currentSocialModuleChatId={props.currentSocialModuleChatId}
       compact={props.compact}
       currentChatActions={props.currentChatActions}

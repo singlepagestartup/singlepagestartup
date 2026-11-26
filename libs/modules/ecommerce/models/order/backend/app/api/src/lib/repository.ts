@@ -7,12 +7,13 @@ import {
   withConsistencyTransaction,
 } from "@sps/shared-backend-api";
 import { Table } from "@sps/ecommerce/models/order/backend/repository/database";
-import { and, asc, eq, isNotNull, sql } from "drizzle-orm";
+import { and, asc, eq, inArray, isNotNull, sql } from "drizzle-orm";
 import type {
   IOrderWork,
   IOrderWorkFile,
   IOrderWorkPayment,
   IOrderWorkDecision,
+  TWorkFulfillmentState,
 } from "@sps/ecommerce/models/order/sdk/model/src/lib/work";
 
 // Older orders and already-issued payment intents refer to a generated result ID.
@@ -79,6 +80,31 @@ export class Repository extends DatabaseRepository<typeof Table> {
       .from(Table)
       .where(eq(Table.id, orderId));
     return row?.work ? storedWork(row.work) : undefined;
+  }
+
+  async fulfillmentStatesForCustomer(customerId: string, orderIds: string[]) {
+    if (!orderIds.length) {
+      return [];
+    }
+    await this.trackRead({
+      and: [{ column: "id", method: "inArray", value: orderIds }],
+    });
+    const work = Table.fulfillmentWork;
+    return this.db
+      .select({
+        orderId: Table.id,
+        state: sql<TWorkFulfillmentState>`${work}->>'state'`,
+      })
+      .from(Table)
+      .where(
+        and(
+          inArray(Table.id, orderIds),
+          eq(Table.type, "history"),
+          sql`${work}->>'orderId' = ${Table.id}::text`,
+          sql`${work}->>'customerId' = ${customerId}`,
+          sql`${work}->>'state' is not null`,
+        ),
+      );
   }
 
   async saveFulfillment(orderId: string, work: IOrderWork) {

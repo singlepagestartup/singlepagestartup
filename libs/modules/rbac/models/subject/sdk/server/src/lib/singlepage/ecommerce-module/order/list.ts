@@ -2,10 +2,12 @@ import {
   serverHost,
   route,
   type ISubjectCartDetails,
+  type ISubjectCustomerOrderDetails,
 } from "@sps/rbac/models/subject/sdk/model";
 import {
   NextRequestOptions,
   responsePipe,
+  consistencyRequestOptions,
   transformResponseItem,
 } from "@sps/shared-utils";
 import QueryString from "qs";
@@ -22,6 +24,7 @@ export interface IProps {
   params?: {
     includePurchaseDetails?: boolean;
     includeCartDetails?: boolean;
+    includeCustomerDetails?: boolean;
     [key: string]: any;
   };
   options?: Partial<NextRequestOptions>;
@@ -30,6 +33,7 @@ export interface IProps {
 export type IResult = (IEcommerceModuleOrder & {
   purchaseDetails?: IPurchaseDetails;
   cartDetails?: ISubjectCartDetails;
+  customerDetails?: ISubjectCustomerOrderDetails;
 })[];
 
 export async function action(props: IProps): Promise<IResult> {
@@ -53,9 +57,10 @@ export async function action(props: IProps): Promise<IResult> {
     },
   };
 
+  const url = `${host}${route}/${id}/ecommerce-module/orders?${stringifiedQuery}`;
   const res = await fetch(
-    `${host}${route}/${id}/ecommerce-module/orders?${stringifiedQuery}`,
-    requestOptions,
+    url,
+    await consistencyRequestOptions(url, requestOptions),
   );
 
   const json = await responsePipe<{ data: IResult }>({

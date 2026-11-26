@@ -98,6 +98,7 @@
       "@sps/shared-ui-shadcn": ["./libs/shared/ui/shadcn/src/index.ts"],
       "@sps/shared-ui-shadcn/*": ["./libs/shared/ui/shadcn/src/lib/*"],
       "@sps/shared-utils": ["./libs/shared/utils/src/index.ts"],
+      "@sps/shared-utils/localized-text": ["./libs/shared/utils/src/lib/localized-text.ts"],
       "@sps/shared-utils/provider-models": [
         "./libs/shared/utils/src/lib/provider-models/index.ts"
       ],

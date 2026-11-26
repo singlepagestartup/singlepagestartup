@@ -90,6 +90,7 @@ export * from "./token-revocation";
 export * from "./crm-workspace";
 
 export * from "./customer-work";
+export * from "./customer-order";
 
 export * from "./order-work";
 export * from "./protected-file";
