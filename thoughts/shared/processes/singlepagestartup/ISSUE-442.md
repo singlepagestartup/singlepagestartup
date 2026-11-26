@@ -4,8 +4,8 @@ issue_title: Заказы покупателя и Social Chat в профиле
 repository: singlepagestartup
 created_at: 2026-11-26
 last_updated: 2026-11-26
-status: active
-current_phase: implement
+status: complete
+current_phase: complete
 ---
 
 # Журнал работы
@@ -15,8 +15,8 @@ current_phase: implement
 - Create: completed
 - Research: completed
 - Plan: completed
-- Implement: in_progress
-- Next step: core/30-implement
+- Implement: completed
+- Next step: code review / merge
 
 ## Phase Notes
 
@@ -35,6 +35,8 @@ current_phase: implement
 ### Implement
 
 Данные Host и реестры вариантов связывают две страницы заказов с RBAC Subject. Карточка и CRM используют один Social-тред. В личных чатах работают поиск и постраничная выдача по членству. Подробные результаты приёмки записаны в handoffs/singlepagestartup/ISSUE-442-progress.md.
+
+Реализация отправлена на ревью. [PR #444](https://github.com/singlepagestartup/singlepagestartup/pull/444)
 
 ## Incident Log
 
