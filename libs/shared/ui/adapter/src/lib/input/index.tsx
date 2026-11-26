@@ -62,6 +62,8 @@ export const Component = (props: IComponentProps) => {
         <TipTap
           placeholder={props.placeholder}
           disabled={props.disabled}
+          label={typeof props.label === "string" ? props.label : undefined}
+          emptyValue={props.emptyValue}
           {...props.field}
           form={props.form}
           className={props.className}

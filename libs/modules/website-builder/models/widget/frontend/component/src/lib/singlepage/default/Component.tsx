@@ -1,5 +1,6 @@
 import { IComponentPropsExtended } from "./interface";
 import { TipTap } from "@sps/shared-ui-shadcn";
+import { TipTapContent } from "@sps/shared-ui-shadcn/tiptap/content";
 import { cn } from "@sps/shared-frontend-client-utils";
 import { Component as WidgetsToFileStorageFiles } from "@sps/website-builder/relations/widgets-to-file-storage-module-files/frontend/component";
 import { Component as WidgetsToButtonsArrays } from "@sps/website-builder/relations/widgets-to-buttons-arrays/frontend/component";
@@ -7,6 +8,7 @@ import { Component as WidgetsToSliders } from "@sps/website-builder/relations/wi
 import { Component as WidgetsToFeatures } from "@sps/website-builder/relations/widgets-to-features/frontend/component";
 
 export function Component(props: IComponentPropsExtended) {
+  const subtitle = props.data.subtitle?.[props.language];
   return (
     <div
       data-module="website-builder"
@@ -20,10 +22,12 @@ export function Component(props: IComponentPropsExtended) {
       )}
     >
       <div className="w-full flex items-start flex-col gap-5 mx-auto max-w-7xl">
-        {props.data?.subtitle ? (
-          <h3 className="text-base tracking-tight text-gray-600 sm:text-md md:text-xl max-w-xl">
-            {props.data?.subtitle[props.language]}
-          </h3>
+        {subtitle ? (
+          <TipTapContent
+            className="text-base tracking-tight text-gray-600 sm:text-md md:text-xl max-w-xl"
+            typography="inherit"
+            value={subtitle}
+          />
         ) : null}
         {props.data?.title ? (
           <h1 className="text-4xl font-bold tracking-tight xl:inline text-gray-900 sm:text-5xl md:text-6xl max-w-3xl">

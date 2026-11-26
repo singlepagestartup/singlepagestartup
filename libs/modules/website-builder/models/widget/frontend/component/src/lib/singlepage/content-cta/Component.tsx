@@ -1,4 +1,5 @@
 import { TipTap } from "@sps/shared-ui-shadcn";
+import { TipTapContent } from "@sps/shared-ui-shadcn/tiptap/content";
 import { cn } from "@sps/shared-frontend-client-utils";
 import type { IComponentPropsExtended } from "./interface";
 import { Component as WidgetsToFeatures } from "@sps/website-builder/relations/widgets-to-features/frontend/component";
@@ -24,9 +25,11 @@ export function Component(props: IComponentPropsExtended) {
       )}
     >
       <div className="mx-auto max-w-7xl px-5 py-14 text-center @3xl:px-8 @3xl:py-20">
-        <p className="text-xs font-medium uppercase tracking-widest">
-          {subtitle}
-        </p>
+        <TipTapContent
+          className="text-xs font-medium uppercase tracking-widest"
+          typography="inherit"
+          value={subtitle ?? ""}
+        />
         <h2
           id={`${data.id}-title`}
           className="mx-auto mt-4 max-w-5xl text-balance font-default text-3xl font-semibold leading-tight @3xl:text-5xl"

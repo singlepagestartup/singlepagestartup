@@ -6,8 +6,8 @@ Widgets store reusable content blocks (text, media, structured sections) for bui
 
 ## Fields
 
-- `title`: widget title (localized).
-- `subtitle`: widget subtitle (localized).
+- `title`: widget title (localized plain text).
+- `subtitle`: widget subtitle (localized TipTap content or existing plain text).
 - `description`: widget description/content (localized, rich text).
 - `anchor`: HTML anchor for in-page navigation.
 - `className`: custom CSS classes.

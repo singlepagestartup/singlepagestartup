@@ -1,4 +1,5 @@
 import { TipTap } from "@sps/shared-ui-shadcn";
+import { TipTapContent } from "@sps/shared-ui-shadcn/tiptap/content";
 import { cn } from "@sps/shared-frontend-client-utils";
 import { Component as WidgetsToButtonsArrays } from "@sps/website-builder/relations/widgets-to-buttons-arrays/frontend/component";
 import { Component as WidgetsToFeatures } from "@sps/website-builder/relations/widgets-to-features/frontend/component";
@@ -38,14 +39,14 @@ export function Presentation({
         )}
       >
         {subtitle ? (
-          <p
+          <TipTapContent
+            typography="inherit"
+            value={subtitle}
             className={cn(
               "text-sm",
               card ? "text-muted-foreground" : "text-default-muted-foreground",
             )}
-          >
-            {subtitle}
-          </p>
+          />
         ) : null}
         {title ? (
           <h2

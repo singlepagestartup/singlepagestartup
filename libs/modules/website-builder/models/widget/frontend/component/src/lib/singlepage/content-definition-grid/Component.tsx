@@ -1,4 +1,5 @@
 import { TipTap } from "@sps/shared-ui-shadcn";
+import { TipTapContent } from "@sps/shared-ui-shadcn/tiptap/content";
 import { cn } from "@sps/shared-frontend-client-utils";
 import { Component as WidgetsToFeatures } from "@sps/website-builder/relations/widgets-to-features/frontend/component";
 import { Component as WidgetsToButtonsArrays } from "@sps/website-builder/relations/widgets-to-buttons-arrays/frontend/component";
@@ -33,7 +34,11 @@ export function Presentation({
       <header className="flex flex-wrap items-end justify-between gap-5">
         <div>
           {subtitle ? (
-            <p className="text-sm text-muted-foreground">{subtitle}</p>
+            <TipTapContent
+              className="text-sm text-muted-foreground"
+              typography="inherit"
+              value={subtitle}
+            />
           ) : null}
           {title ? (
             <Heading

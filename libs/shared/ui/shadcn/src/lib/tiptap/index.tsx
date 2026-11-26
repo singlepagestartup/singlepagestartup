@@ -1,6 +1,7 @@
 "use client";
 
-import { cn, getRichTextEditorValue } from "@sps/shared-frontend-client-utils";
+import { cn } from "@sps/shared-frontend-client-utils";
+import { getRichTextEditorValue } from "@sps/shared-frontend-client-utils/rich-text";
 import { Node, mergeAttributes, type JSONContent } from "@tiptap/core";
 import {
   useEditor,
@@ -36,7 +37,6 @@ import {
   Copy,
   Check,
 } from "lucide-react";
-import { Input } from "../input";
 import { Button } from "../button";
 import { toast } from "sonner";
 import { TipTapContent, type ITipTapContentProps } from "./content";
@@ -140,6 +140,9 @@ export type ITipTapEditableProps = {
   name: string;
   form: UseFormReturn<any>;
   placeholder?: string;
+  label?: string;
+  disabled?: boolean;
+  emptyValue?: string;
   className?: string;
   editable: boolean;
   field: ControllerRenderProps<any, string>;
@@ -446,7 +449,14 @@ export const TipTapEditable = forwardRef<
     <TipTapEditor
       value={props.value}
       className={props.className}
-      onValueChange={(value) => props.form.setValue(props.name, value)}
+      label={props.label}
+      disabled={props.disabled}
+      onValueChange={(value, empty) =>
+        props.form.setValue(
+          props.name,
+          empty ? (props.emptyValue ?? value) : value,
+        )
+      }
     />
   );
 });
@@ -454,40 +464,13 @@ export const TipTapEditable = forwardRef<
 export const TipTap = forwardRef<HTMLInputElement, ITipTapProps>(
   (props: ITipTapProps, ref) => {
     if ("editable" in props) {
-      try {
-        typeof props.value === "string" && props.value !== ""
-          ? JSON.parse(props.value)
-          : props.value;
-      } catch (error) {
-        console.log(
-          "TipTap editor was replaced by text input, because of error:",
-          error,
-        );
-        return (
-          <Input
-            value={props.value}
-            onChange={props.onChange}
-            className={props.className}
-          />
-        );
-      }
-
-      return (
-        <TipTapEditable
-          {...props}
-          value={
-            typeof props.value === "string" && props.value !== ""
-              ? JSON.parse(props.value)
-              : props.value
-          }
-          ref={ref}
-        />
-      );
+      return <TipTapEditable {...props} ref={ref} />;
     }
 
     return (
       <TipTapContent
         className={props.className}
+        typography={props.typography}
         value={props.value}
         ref={ref}
       />

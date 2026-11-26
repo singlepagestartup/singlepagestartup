@@ -1,4 +1,8 @@
-import { getRichTextMarkdown, getRichTextPlainText } from "./index";
+import {
+  getRichTextEditorValue,
+  getRichTextMarkdown,
+  getRichTextPlainText,
+} from "./index";
 const text = (value: string) => ({ type: "text", text: value });
 it("keeps editable CMS headings and paragraphs readable in a local Markdown document", () => {
   const saved = JSON.stringify({
@@ -24,4 +28,34 @@ it("keeps editable CMS headings and paragraphs readable in a local Markdown docu
     "Competitors\n\nNot known yet.\n\nAdd a link",
   );
   expect(getRichTextMarkdown("## Existing notes")).toBe("## Existing notes");
+});
+
+it.each(['["API","SDK"]', '{"product":"SPS"}'])(
+  "opens %s as literal text in the editor",
+  (saved) => {
+    expect(JSON.parse(getRichTextEditorValue(saved))).toEqual({
+      type: "doc",
+      content: [{ type: "paragraph", content: [text(saved)] }],
+    });
+  },
+);
+
+it("opens saved nodes and node arrays in an editable document", () => {
+  const heading = {
+    type: "heading",
+    attrs: { level: 2 },
+    content: [text("Start")],
+  };
+  const markedText = { ...text("Set up"), marks: [{ type: "bold" }] };
+
+  expect(JSON.parse(getRichTextEditorValue(JSON.stringify(heading)))).toEqual({
+    type: "doc",
+    content: [heading],
+  });
+  expect(
+    JSON.parse(getRichTextEditorValue(JSON.stringify([heading, markedText]))),
+  ).toEqual({
+    type: "doc",
+    content: [heading, { type: "paragraph", content: [markedText] }],
+  });
 });

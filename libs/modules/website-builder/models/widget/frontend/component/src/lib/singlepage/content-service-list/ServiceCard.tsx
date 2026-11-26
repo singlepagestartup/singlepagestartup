@@ -22,7 +22,7 @@ export function ServiceCard({
             className="text-sm leading-6 text-muted-foreground [&_p]:m-0"
           />
         )}
-        <div className="mt-auto flex flex-wrap items-start justify-between gap-3 border-t border-border pt-4">
+        <div className="mt-auto flex flex-wrap items-center justify-between gap-3 border-t border-border pt-4">
           <div className="min-w-0 grow [&>div>p]:hidden">{price}</div>
           <Link
             href={href}

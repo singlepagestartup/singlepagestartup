@@ -77,6 +77,9 @@
       "@sps/shared-frontend-client-utils/cn": [
         "./libs/shared/frontend/client/utils/src/lib/cn/index.ts"
       ],
+      "@sps/shared-frontend-client-utils/rich-text": [
+        "./libs/shared/frontend/client/utils/src/lib/rich-text/index.ts"
+      ],
       "@sps/shared-frontend-client-web3": [
         "./libs/shared/frontend/client/web3/src/index.ts"
       ],

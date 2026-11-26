@@ -15,7 +15,7 @@ export function ServiceCard({
       <article className="flex h-full flex-col gap-4 rounded-2xl border border-border bg-card p-5 text-card-foreground sm:p-6">
         <h2 className="text-xl font-semibold">{title}</h2>
         <p className="text-sm leading-6 text-muted-foreground">{summary}</p>
-        <div className="mt-auto flex flex-wrap items-start justify-between gap-3 border-t border-border pt-4">
+        <div className="mt-auto flex flex-wrap items-center justify-between gap-3 border-t border-border pt-4">
           <div className="min-w-0 grow">{price}</div>
           <a
             href={href}

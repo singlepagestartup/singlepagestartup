@@ -1,4 +1,5 @@
 import { TipTap } from "@sps/shared-ui-shadcn";
+import { TipTapContent } from "@sps/shared-ui-shadcn/tiptap/content";
 import { cn } from "@sps/shared-frontend-client-utils";
 import type { IComponentPropsExtended } from "./interface";
 import { Component as WidgetsToFeatures } from "@sps/website-builder/relations/widgets-to-features/frontend/component";
@@ -25,9 +26,11 @@ export function Component(props: IComponentPropsExtended) {
       <div className="rounded-3xl bg-default p-5 text-default-foreground @3xl:p-8">
         <div className="relative flex min-w-0 flex-col gap-2 @3xl:grid @3xl:min-h-[680px] @3xl:grid-cols-2 @3xl:content-center @3xl:gap-x-10">
           <header className="mb-5 min-w-0 @3xl:col-start-1">
-            <p className="text-xs font-medium uppercase tracking-widest text-default-muted-foreground">
-              {subtitle}
-            </p>
+            <TipTapContent
+              className="text-xs font-medium uppercase tracking-widest text-default-muted-foreground"
+              typography="inherit"
+              value={subtitle ?? ""}
+            />
             <h2
               id={`${data.id}-title`}
               className="mt-4 text-balance font-default text-3xl font-semibold leading-tight @3xl:text-4xl"

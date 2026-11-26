@@ -1,4 +1,5 @@
 import { TipTap } from "@sps/shared-ui-shadcn";
+import { TipTapContent } from "@sps/shared-ui-shadcn/tiptap/content";
 import { cn } from "@sps/shared-frontend-client-utils";
 import { Component as WidgetsToButtonsArrays } from "@sps/website-builder/relations/widgets-to-buttons-arrays/frontend/component";
 import type { IComponentPropsExtended } from "./interface";
@@ -26,9 +27,11 @@ export function Component(props: IComponentPropsExtended) {
     >
       <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8">
         {subtitle ? (
-          <p className="mb-2 text-sm font-semibold tracking-normal text-muted-foreground">
-            {subtitle}
-          </p>
+          <TipTapContent
+            className="mb-2 text-sm font-semibold tracking-normal text-muted-foreground"
+            typography="inherit"
+            value={subtitle}
+          />
         ) : null}
         {title ? (
           <h1
