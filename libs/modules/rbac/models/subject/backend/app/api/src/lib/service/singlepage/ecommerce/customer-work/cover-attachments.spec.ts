@@ -437,6 +437,33 @@ it("keeps the latest eligible buyer text from the same order for stage entry", a
   expect(otherTask.stageEntryKnowledgeQuery).toBeUndefined();
 });
 
+it("continues from the text and attachments that the customer sent before metered work started", async () => {
+  const f = stageEntryFixture();
+  f.trigger.message.description = "The briefing concerns a catalogue studio.";
+  f.findOrderWork.mockResolvedValue({
+    orderId: f.task.orderId,
+    taskId: f.task.id,
+    storeId: f.task.storeId,
+    customerId: f.task.customerId,
+    paymentMode: "work-tokens",
+  });
+
+  const context = await f.service.contextForRun(f.input);
+
+  expect(context.messages).toContainEqual({
+    role: "user",
+    content: f.trigger.message.description,
+  });
+  expect(context.messages.at(-1)?.content).toContain(
+    "Continue from the request and materials that the customer already sent.",
+  );
+  expect(context.attachments).toEqual(
+    expect.arrayContaining([
+      expect.objectContaining({ id: f.legacy.attachment.id }),
+    ]),
+  );
+});
+
 it("carries the visible employee design reply and excludes draft, reminder, result, and later replies", async () => {
   const f = fixture(true);
   const context = await f.service.contextForRun(f.input);

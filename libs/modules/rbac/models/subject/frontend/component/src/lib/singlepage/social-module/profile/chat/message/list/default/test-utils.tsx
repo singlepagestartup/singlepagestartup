@@ -1,5 +1,6 @@
 import { render } from "@testing-library/react";
 import Component from "./client";
+import type { OpenRouterReasoningValue } from "./types";
 
 export const mockMessageCreateMutate = jest.fn();
 export const mockMessageDeleteMutate = jest.fn();
@@ -23,6 +24,7 @@ export const mockProfilesToSkillsCreateMutateAsync = jest.fn();
 export const mockToastError = jest.fn();
 export const mockToastSuccess = jest.fn();
 export const mockCustomerWork = jest.fn();
+export const mockChangeCustomerWork = jest.fn();
 export const mockOrderWorkRead = jest.fn();
 export const mockOrderWorkContent = jest.fn();
 
@@ -31,6 +33,7 @@ export const mockChatComponentState = {
   favoriteModelIds: [] as string[],
   knowledgeSources: [] as any[],
   fixedStageModelId: undefined as string | undefined,
+  fixedStageModelReasoning: undefined as OpenRouterReasoningValue | undefined,
   orderModelIds: ["openai/gpt-5.2"] as string[],
   profileMessageRelations: [] as any[],
   profiles: [] as any[],
@@ -422,7 +425,7 @@ jest.mock("@sps/rbac/models/subject/sdk/client", () => {
         content: (...args: unknown[]) => mockOrderWorkContent(...args),
         decision: jest.fn(() => ({})),
       },
-      changeCustomerWork: jest.fn(() => ({})),
+      changeCustomerWork: () => ({ mutateAsync: mockChangeCustomerWork }),
       socialModuleChatFindByIdThreadTyping: jest
         .fn()
         .mockResolvedValue({ active: true }),
@@ -523,6 +526,8 @@ jest.mock("@sps/rbac/models/subject/sdk/client", () => {
           return {
             data: {
               stageModelId: mockChatComponentState.fixedStageModelId,
+              stageModelReasoning:
+                mockChatComponentState.fixedStageModelReasoning,
               stageModelFixed: Boolean(
                 mockChatComponentState.fixedStageModelId,
               ),
@@ -805,6 +810,7 @@ export function resetChatComponentMocks() {
   // queries do not leak across cache specs (issue #195).
   mockSharedApiQueryClient.clear();
   mockCustomerWork.mockReset().mockReturnValue({});
+  mockChangeCustomerWork.mockReset().mockResolvedValue(undefined);
   mockOrderWorkRead.mockReset().mockReturnValue({});
   mockOrderWorkContent.mockReset();
   mockMessageCreateMutate.mockReset();
@@ -835,6 +841,7 @@ export function resetChatComponentMocks() {
   mockToastSuccess.mockReset();
   mockChatComponentState.favoriteModelIds = [];
   mockChatComponentState.fixedStageModelId = undefined;
+  mockChatComponentState.fixedStageModelReasoning = undefined;
   mockChatComponentState.orderModelIds = ["openai/gpt-5.2"];
   window.localStorage.removeItem("sps.openrouter.modelFavorites.subject-1");
   mockChatComponentState.knowledgeSources = [];

@@ -608,6 +608,13 @@ export function Composer(props: ComposerProps) {
                   <span className="font-medium">
                     {modelControls.fixedModelLabel}
                   </span>
+                  {modelControls.fixedModelReasoning && (
+                    <span className="text-muted-foreground">
+                      {ru
+                        ? `Рассуждение · ${modelControls.fixedModelReasoning.labelRu}`
+                        : `${modelControls.fixedModelReasoning.label} reasoning`}
+                    </span>
+                  )}
                 </span>
               )}
               {showModelPicker && !modelControls.fixedModelLabel && (

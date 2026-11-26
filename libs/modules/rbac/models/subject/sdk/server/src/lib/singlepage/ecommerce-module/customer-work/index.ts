@@ -2,11 +2,13 @@ import {
   route,
   serverHost,
   customerWorkAttachmentPath,
+  customerWorkTelegramRatePath,
   type ICustomerWorkScope,
   type ICustomerWorkView,
   type TCustomerWorkCommand,
   type ICustomerWorkOfferScope,
   type ICustomerWorkOfferAvailability,
+  type ICustomerWorkTelegramRateRequest,
 } from "@sps/rbac/models/subject/sdk/model";
 import {
   readChatAttachmentBlob,
@@ -36,6 +38,10 @@ export interface IAttachmentProps extends IThreadProps {
 }
 export interface ICommandProps extends IRequest {
   data: TCustomerWorkCommand;
+}
+
+export interface ITelegramRateProps extends Omit<IRequest, "id"> {
+  data: ICustomerWorkTelegramRateRequest;
 }
 
 function endpoint(host: string, id: string, storeId: string) {
@@ -148,4 +154,23 @@ export async function changeCustomerWork({
     throw new Error("Customer work returned no data");
   }
   return json.data;
+}
+
+export async function approveCustomerWorkTelegramRate({
+  data,
+  host = serverHost,
+  options,
+}: ITelegramRateProps): Promise<void> {
+  const headers = new Headers(options?.headers);
+  headers.set("content-type", "application/json");
+  const res = await fetch(`${host}${route}${customerWorkTelegramRatePath}`, {
+    ...options,
+    headers,
+    cache: "no-store",
+    method: "POST",
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) {
+    await responsePipe({ res });
+  }
 }

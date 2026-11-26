@@ -19,8 +19,8 @@ export class Service extends CRUDService<Message> {
     return this.appAssembly.getOrCreate(createModule);
   }
 
-  bindWorkReply(id: string, key: string) {
-    return (this.repository as Repository).bindWorkReply(id, key);
+  bindWorkReply(id: string, key: string, interaction?: Message["interaction"]) {
+    return (this.repository as Repository).bindWorkReply(id, key, interaction);
   }
 
   createWorkMessage(

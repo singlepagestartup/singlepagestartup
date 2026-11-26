@@ -78,3 +78,11 @@ Social проверяет связь профиля с Subject, собирает
 
 - `libs/modules/rbac/models/subject/backend/app/api/src/lib/service/singlepage/ecommerce/order/work/index.ts:931`; `libs/modules/rbac/models/subject/backend/app/api/src/lib/service/singlepage/ecommerce/customer-work/knowledge.ts:453`
 - `libs/modules/rbac/models/subject/backend/app/api/src/lib/service/singlepage/social-module/profile/knowledge/{personal,sources}.ts`; `libs/modules/knowledge/models/source/backend/app/api/src/lib/service/singlepage/index.ts:632`
+
+## Цена и начало переписки при заказе брифа
+
+Форма покупки запрашивает доступность предложения, но в предыдущей версии ответа отсутствовала цена за единицу работы модели. Пересчёт в токены кошелька зависит от тарифа модели, множителя этапа и действующего пакета пополнения. Чтение цены до заказа и подтверждение в чате должны использовать одни и те же данные.
+
+В настройке брифа была явно указана GPT-5.4 mini. Для GPT-6.2 Astra реестр провайдера уже содержит ставки и поддерживает уровень рассуждений medium. При переходе нужно проверить резерв на запрос вместе с выходными токенами, поскольку прежний предел в 100 токенов кошелька может остановить работу до ответа.
+
+Первый платный ответ ожидает согласия покупателя. В разделе Social управление тарифом находилось внутри панели контекста треда. При скрытой панели покупатель видел только сообщение о статусе заказа.

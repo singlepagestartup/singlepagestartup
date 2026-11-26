@@ -26,6 +26,7 @@ import {
 } from "../list/checkout-default/ServiceCard";
 import { QuantityInput } from "../list/checkout-default/QuantityInput";
 import { useOfferPriceSelection } from "./OfferPrice";
+import { WorkTokenTariff } from "./customer-work/WorkTokenTariff";
 import type { IComponentPropsExtended, IConfiguredPurchase } from "./interface";
 
 interface IServiceIntent {
@@ -168,6 +169,12 @@ export function Component(props: IComponentPropsExtended) {
     productId: props.ecommerceModuleProduct.id,
   });
   const workMetered = workQuery.data?.workMetered;
+  const tokenTariff = workQuery.data?.workTokenTariff;
+  const canBookMeteredOffer = Boolean(workMetered && tokenTariff?.rates.length);
+  const pendingRateText = ru ? "Загружаем тариф…" : "Loading the rate…";
+  const unavailableRateText = ru
+    ? "Тариф сейчас недоступен."
+    : "The rate is currently unavailable.";
   const usesServiceDiscussion =
     workQuery.data?.payAfterAcceptance || workMetered;
   const startsServiceDiscussion =
@@ -583,7 +590,8 @@ export function Component(props: IComponentPropsExtended) {
   async function submit(event: React.FormEvent) {
     event.preventDefault();
     const configuration = cartConfiguration;
-    if (!configuration || pending || (meteredOffer && !workMetered)) return;
+    if (!configuration || pending || (meteredOffer && !canBookMeteredOffer))
+      return;
     setError("");
     const submittedSignature = signature;
     const submittedIdentity = currentIdentity.current;
@@ -1086,11 +1094,25 @@ export function Component(props: IComponentPropsExtended) {
               </p>
             ) : null}
             {meteredOffer ? (
-              <p className="text-sm text-muted-foreground">
-                {ru
-                  ? "Перед началом работы ИИ чат попросит подтвердить тариф."
-                  : "The chat will ask you to approve the rate before the AI starts work."}
-              </p>
+              <div className="space-y-2">
+                {tokenTariff?.rates.length ? (
+                  <WorkTokenTariff
+                    tariff={tokenTariff}
+                    language={props.language}
+                  />
+                ) : (
+                  <p role="status" className="text-sm text-muted-foreground">
+                    {workQuery.isPending
+                      ? pendingRateText
+                      : unavailableRateText}
+                  </p>
+                )}
+                <p className="text-sm text-muted-foreground">
+                  {ru
+                    ? "Подтвердите тариф в чате заказа перед началом работы. Оплата зависит от числа использованных токенов."
+                    : "Approve the rate in the order chat before work begins. The charge depends on the tokens used."}
+                </p>
+              </div>
             ) : (
               <section
                 aria-label={ru ? "Расчёт" : "Receipt"}
@@ -1176,7 +1198,9 @@ export function Component(props: IComponentPropsExtended) {
             <Button
               type="submit"
               variant="primary"
-              disabled={pending || !ready || (meteredOffer && !workMetered)}
+              disabled={
+                pending || !ready || (meteredOffer && !canBookMeteredOffer)
+              }
               className="min-h-11 w-full rounded-xl"
             >
               {continueConsultation

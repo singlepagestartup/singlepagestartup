@@ -143,6 +143,25 @@ describe("Given: an ai-execution action in the message timeline", () => {
     },
   );
 
+  it("shows the wallet action needed to continue a metered order", async () => {
+    const action = createAction({ status: "failed" });
+    action.payload.phase = "reply_generation";
+    action.payload.replyFailure = "wallet-balance";
+
+    await act(async () =>
+      root.render(
+        <AiExecutionActionRow
+          action={action}
+          language="ru"
+          profile={{ id: "agent", initial: "A", slug: "Alice", href: "#" }}
+        />,
+      ),
+    );
+    expect(container.querySelector('[role="alert"]')?.textContent).toContain(
+      "Пополните баланс и напишите в чат",
+    );
+  });
+
   /**
    * BDD Scenario
    * Given: a SinglePageStartup MCP tool is currently running.

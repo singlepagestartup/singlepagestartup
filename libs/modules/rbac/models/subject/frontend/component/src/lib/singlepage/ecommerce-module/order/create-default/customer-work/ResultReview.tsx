@@ -146,7 +146,10 @@ function ResultReviewContent({
     !work.acceptedFileId &&
     currentFile?.changesRequested;
   const shippingStatus =
-    !storeTest && !work.paidFileId && (work.files?.length ?? 0) === 0
+    !includedInWork &&
+    !storeTest &&
+    !work.paidFileId &&
+    (work.files?.length ?? 0) === 0
       ? {
           "awaiting-payment": ru ? "Ожидает оплаты" : "Awaiting payment",
           paid: ru ? "Оплачен" : "Paid",

@@ -191,6 +191,11 @@ export function AiExecutionActionRow(props: AiExecutionActionRowProps) {
         ? `Модель ${payload.selectedModelId} не смогла прочитать «${payload.rejectedFileName}». Отправьте файл в другом формате или выберите другую модель.`
         : `Model ${payload.selectedModelId} could not read “${payload.rejectedFileName}”. Send the file in another format or choose another model.`;
     }
+    if (payload.replyFailure === "wallet-balance") {
+      label = isRussian
+        ? "В кошельке не хватило токенов для ответа. Пополните баланс и напишите в чат, чтобы продолжить."
+        : "The wallet balance was too low for this reply. Top up and send a message to continue.";
+    }
     return (
       <div
         role="alert"

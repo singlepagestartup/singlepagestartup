@@ -199,6 +199,7 @@ export interface IProviderChatModelGroup {
 export interface IProviderChatModelsResult {
   stageModelFixed?: boolean;
   stageModelId?: string;
+  stageModelReasoning?: IProviderModelSelection["reasoning"];
   auto: {
     id: "auto";
     name: string;

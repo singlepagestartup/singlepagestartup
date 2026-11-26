@@ -7,10 +7,14 @@ import { eq } from "drizzle-orm";
 @injectable()
 @injectFromBase()
 export class Repository extends DatabaseRepository<typeof Table> {
-  async bindWorkReply(id: string, key: string) {
+  async bindWorkReply(
+    id: string,
+    key: string,
+    interaction?: (typeof Table.$inferSelect)["interaction"],
+  ) {
     await this.db
       .update(Table)
-      .set({ workReplyKey: key, updatedAt: new Date() })
+      .set({ workReplyKey: key, updatedAt: new Date(), interaction })
       .where(eq(Table.id, id));
   }
 }

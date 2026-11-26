@@ -18,6 +18,7 @@ import {
 } from "@sps/rbac/models/subject/sdk/model";
 import { saturateHeaders } from "@sps/shared-frontend-client-utils";
 import {
+  consistencyQueryKey,
   invalidateRouteQueries,
   queryClient,
   subscription,
@@ -49,24 +50,43 @@ export function customerWork(props: IReadProps & { enabled?: boolean }) {
 }
 
 export function customerWorkAvailability(props: IAvailabilityProps) {
+  const availabilityPath = path(props.id, props.storeId);
+  const host = props.host ?? clientHost;
+  const { offerId, productId } = props;
+  const enabled = Boolean(props.id && props.storeId && offerId && productId);
+  useEffect(
+    () => (enabled ? subscription(availabilityPath, queryClient) : undefined),
+    [availabilityPath, enabled],
+  );
   return useQuery({
-    queryKey: [
-      path(props.id, props.storeId),
-      "availability",
-      props.offerId,
-      props.productId,
-    ],
-    enabled: Boolean(
-      props.id && props.storeId && props.offerId && props.productId,
+    queryKey: consistencyQueryKey(
+      availabilityPath,
+      { offerId, productId },
+      host,
     ),
+    enabled,
+    meta: {
+      topics: [
+        "crm.funnels",
+        "ecommerce.stores-to-products",
+        "ecommerce.products",
+        "ecommerce.products-to-attributes",
+        "ecommerce.attributes",
+        "ecommerce.attribute-keys-to-attributes",
+        "ecommerce.attribute-keys",
+        "ecommerce.attributes-to-billing-module-currencies",
+        "billing.currencies",
+      ],
+    },
     retry: false,
-    queryFn: () =>
+    queryFn: ({ signal }) =>
       api.customerWorkAvailability({
         ...props,
-        host: props.host ?? clientHost,
+        host,
         options: {
           ...props.options,
           headers: saturateHeaders(props.options?.headers),
+          signal,
         },
       }),
   });
@@ -111,6 +131,7 @@ export function customerWorkForThread(props: IThreadProps) {
         "crm.funnels",
         "crm.tasks",
         "crm.tasks-to-stages",
+        "social.messages",
         "social.threads-to-messages",
         "ecommerce.orders",
         "social.chats-to-crm-module-tasks",
@@ -162,7 +183,19 @@ export function changeCustomerWork() {
         queryKey(props.id, result.storeId, result.taskId),
         result,
       );
-      queryClient.setQueryData(threadKey(props.id, result.threadId), result);
+      queryClient.setQueryData<ICustomerWorkView>(
+        threadKey(props.id, result.threadId),
+        (current) => ({
+          ...result,
+          orderSummary:
+            result.orderSummary ??
+            (current?.taskId === result.taskId &&
+            current.orderId === result.orderId &&
+            current.offerId === result.offerId
+              ? current.orderSummary
+              : undefined),
+        }),
+      );
       if (
         props.data.operation === "add" ||
         props.data.operation === "open-cart-discussion" ||

@@ -1,8 +1,5 @@
-import {
-  compileTariffFormula,
-  failureLocations,
-  logger,
-} from "@sps/backend-utils";
+import { failureLocations, logger } from "@sps/backend-utils";
+import { TokenTopupRate } from "@sps/rbac/models/subject/backend/app/api/src/lib/service/singlepage/billing/token-topup-rate";
 import { McpCatalogUnavailable } from "@sps/rbac/models/subject/backend/app/api/src/lib/service/singlepage/social-module/profile/mcp/catalog";
 import { createHash } from "node:crypto";
 import type { IModel as IWalletOperation } from "@sps/billing/models/transaction/sdk/model";
@@ -98,9 +95,6 @@ const orderFileTool = {
 } as const;
 const preparationRetryDelays = [1_000, 5_000, 30_000];
 const Money = Decimal.clone({ precision: 56 });
-const workTariff = compileTariffFormula(
-  "provider_usd * topup_tokens / topup_usd * multiplier",
-);
 const reservationKey = (id: string) => `work:${id}`;
 const now = () => new Date();
 
@@ -122,29 +116,13 @@ export class Service extends CRUDService<IModel> {
     return updated;
   }
 
-  private workCharge(
-    usd: string,
-    { topupTokens, topupUsd, usdPerSps, workMultiplier }: IModel["terms"],
-    multiplier = workMultiplier,
-  ) {
-    const rate =
-      topupTokens && topupUsd
-        ? { topup_tokens: topupTokens, topup_usd: topupUsd }
-        : { topup_tokens: "1", topup_usd: usdPerSps };
-    return workTariff.evaluate({
-      ...rate,
-      provider_usd: usd,
-      multiplier,
-    });
-  }
-
   private projectExpense(attempt: IModel) {
     if (new Money(attempt.maximum).isZero()) {
       return;
     }
     const compute =
       attempt.result &&
-      this.workCharge(attempt.result.usage.usd, attempt.terms, "1");
+      TokenTopupRate.workCharge(attempt.result.usage.usd, attempt.terms, "1");
     return this.modules.rbac.subject.workLedger.changeProviderWork(
       attempt.storeId,
       reservationKey(attempt.id),
@@ -922,7 +900,7 @@ export class Service extends CRUDService<IModel> {
               secret,
             );
           }
-          const maximum = this.workCharge(
+          const maximum = TokenTopupRate.workCharge(
             estimate.usd.toFixed(),
             terms,
           ).toDecimalPlaces(12, Decimal.ROUND_UP);
@@ -1050,14 +1028,14 @@ export class Service extends CRUDService<IModel> {
           data: { state: "settled", updatedAt: now() },
         });
       }
-      const compute = this.workCharge(
+      const compute = TokenTopupRate.workCharge(
         current.result.usage.usd,
         current.terms,
         "1",
       );
       const work = Money.min(
         current.maximum,
-        this.workCharge(current.result.usage.usd, current.terms),
+        TokenTopupRate.workCharge(current.result.usage.usd, current.terms),
       ).toDecimalPlaces(12, Decimal.ROUND_HALF_UP);
       const cost = Money.min(work, compute).toDecimalPlaces(
         12,
@@ -2095,6 +2073,15 @@ export class Service extends CRUDService<IModel> {
           await intake.defer({ eventId: item.eventId });
         }
       } catch (error) {
+        if (
+          error instanceof Error &&
+          error.message ===
+            "Payment required. Insufficient available wallet balance" &&
+          (await intake.failForCustomerWalletBalance(item))
+        ) {
+          progressed = true;
+          continue;
+        }
         if (
           error instanceof Error &&
           /^(Conflict|Validation) error\./.test(error.message)

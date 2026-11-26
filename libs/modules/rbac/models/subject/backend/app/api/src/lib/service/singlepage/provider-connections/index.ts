@@ -42,8 +42,24 @@ const providerAgentGrantVariants = ["assistant", "crm-agent"];
 interface IWorkProviderScope {
   payer: IWorkFunding["payer"];
   preferredOwnerId?: string;
-  customerPricing?: { multiplier: string; currencyId: string };
+  customerPricing?: ICustomerPricing;
 }
+
+interface ICustomerPricing {
+  multiplier: string;
+  currencyId: string;
+}
+
+type TServerWorkFundingTerms = Partial<
+  Pick<
+    IProviderTerms,
+    | "workMultiplier"
+    | "usdPerSps"
+    | "topupProductId"
+    | "topupTokens"
+    | "topupUsd"
+  >
+>;
 
 interface IWorkModelSelection extends Partial<IProviderModelSelection> {
   provider?: IProviderType;
@@ -234,7 +250,7 @@ export class ProviderConnections {
         "Forbidden error. Profile is outside this employee conversation",
       );
     }
-    let stageModelId: string | undefined;
+    let fixedStageModel: IProviderModelSelection | undefined;
     for (const thread of threads) {
       const scope = employeeChat
         ? {
@@ -245,10 +261,12 @@ export class ProviderConnections {
             fixedModel: undefined,
           }
         : await this.modelScopeForTask(customerId, thread.threadId);
-      if (!scope) continue;
+      if (!scope) {
+        continue;
+      }
       if (scope.fixedModel) {
         if (threadId) {
-          stageModelId = scope.fixedModel;
+          fixedStageModel = scope.fixedModel;
         }
         continue;
       }
@@ -350,7 +368,11 @@ export class ProviderConnections {
       models: options.filter((model) => model.outputModalities.includes(kind)),
     }));
     return {
-      ...(stageModelId && { stageModelFixed: true, stageModelId }),
+      ...(fixedStageModel && {
+        stageModelFixed: true,
+        stageModelId: fixedStageModel.modelId,
+        stageModelReasoning: fixedStageModel.reasoning,
+      }),
       auto: {
         id: "auto",
         name: "Auto",
@@ -389,13 +411,24 @@ export class ProviderConnections {
     if (!stage || !funding) {
       return;
     }
+    const kind: "image" | "text" = stage.output === "image" ? "image" : "text";
+    const customerPays =
+      funding.payer === "customer" && funding.multiplier === undefined;
+    let fixedModel = stage.provider;
+    if (
+      kind === "text" &&
+      !customerPays &&
+      fixedModel?.modelId === OPEN_AI_STAGE_TEXT_DEFAULT.modelId &&
+      !fixedModel.reasoning
+    ) {
+      fixedModel = OPEN_AI_STAGE_TEXT_DEFAULT;
+    }
     return {
       storeId: task.storeId,
       assigneeId: task.assigneeId,
-      kind: stage.output === "image" ? ("image" as const) : ("text" as const),
-      customerPays:
-        funding.payer === "customer" && funding.multiplier === undefined,
-      fixedModel: stage.provider?.modelId,
+      kind,
+      customerPays,
+      fixedModel,
     };
   }
 
@@ -874,6 +907,55 @@ export class ProviderConnections {
 
     await this.assertStoreAgent(storeId, subjectId);
     serverCredential();
+    const { model, prices, reasoning } = await this.serverWorkModel(
+      capability,
+      selection,
+    );
+    let ownerId = scope.preferredOwnerId;
+    if (ownerId) {
+      await this.assertOwner(ownerId, storeId);
+    } else {
+      const owners =
+        await this.subject.module.subjectsToEcommerceModuleStores.find({
+          params: {
+            filters: {
+              and: [
+                {
+                  column: "ecommerceModuleStoreId",
+                  method: "eq",
+                  value: storeId,
+                },
+                { column: "variant", method: "eq", value: "owner" },
+              ],
+            },
+            limit: 2,
+          },
+        });
+      if (owners.length !== 1) {
+        throw new Error(
+          "Permission error. Select the store owner who pays for this stage",
+        );
+      }
+      ownerId = owners[0].subjectId;
+    }
+    const fundingTerms = await this.serverWorkFundingTerms(
+      scope.customerPricing,
+    );
+    return {
+      mode: "server" as const,
+      ownerId,
+      provider: "openai" as const,
+      externalAccount: "server",
+      model,
+      reasoning,
+      terms: { ...serverTerms, ...prices, ...fundingTerms },
+    };
+  }
+
+  private async serverWorkModel(
+    capability: IProviderCapability,
+    selection?: IWorkModelSelection,
+  ) {
     if (selection?.provider && selection.provider !== "openai") {
       throw new Error(
         "Validation error. The selected provider is unavailable for this stage",
@@ -907,56 +989,44 @@ export class ProviderConnections {
         );
       }
     }
-    let ownerId = scope.preferredOwnerId;
-    if (ownerId) {
-      await this.assertOwner(ownerId, storeId);
-    } else {
-      const owners =
-        await this.subject.module.subjectsToEcommerceModuleStores.find({
-          params: {
-            filters: {
-              and: [
-                {
-                  column: "ecommerceModuleStoreId",
-                  method: "eq",
-                  value: storeId,
-                },
-                { column: "variant", method: "eq", value: "owner" },
-              ],
-            },
-            limit: 2,
-          },
-        });
-      if (owners.length !== 1) {
-        throw new Error(
-          "Permission error. Select the store owner who pays for this stage",
-        );
-      }
-      ownerId = owners[0].subjectId;
-    }
-    const { model, ...rates } = chosen;
-    const terms: IProviderTerms = { ...serverTerms, ...rates };
-    if (scope.customerPricing) {
-      terms.workMultiplier = scope.customerPricing.multiplier;
-      if (new Decimal(scope.customerPricing.multiplier).gt(0)) {
-        Object.assign(
-          terms,
-          await new TokenTopupRate(this.subject.modules.ecommerce.product).read(
-            scope.customerPricing.currencyId,
-          ),
-        );
-      }
-    }
+    const { model, ...prices } = chosen;
     return {
-      mode: "server" as const,
-      ownerId,
-      provider: "openai" as const,
-      externalAccount: "server",
       model,
+      prices,
       reasoning:
         reasoning ??
         (usesAstra ? OPEN_AI_STAGE_TEXT_DEFAULT.reasoning : undefined),
-      terms,
+    };
+  }
+
+  async serverWorkFundingTerms(
+    customerPricing?: ICustomerPricing,
+  ): Promise<TServerWorkFundingTerms> {
+    if (!customerPricing) {
+      return {};
+    }
+    const { currencyId, multiplier: workMultiplier } = customerPricing;
+    const topup = new Decimal(workMultiplier).gt(0)
+      ? await new TokenTopupRate(this.subject.modules.ecommerce.product).read(
+          currencyId,
+        )
+      : undefined;
+    return { workMultiplier, ...topup };
+  }
+
+  async serverWorkRate(
+    capability: IProviderCapability,
+    fundingTerms: TServerWorkFundingTerms,
+    selection?: IWorkModelSelection,
+  ) {
+    const { model, prices } = await this.serverWorkModel(capability, selection);
+    return {
+      model,
+      provider: "openai" as const,
+      capability,
+      ...serverTerms,
+      ...prices,
+      ...fundingTerms,
     };
   }
 

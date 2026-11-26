@@ -17,6 +17,8 @@ const mockTelegramThreadCreate = jest.fn();
 const mockTelegramBootstrap = jest.fn();
 const mockTelegramSyncMembership = jest.fn();
 const mockTelegramCheckoutFreeSubscription = jest.fn();
+const mockTelegramRateApproval = jest.fn();
+const mockTelegramSocialAction = jest.fn();
 const mockBillingInvoiceFindById = jest.fn();
 const mockBillingPaymentIntentFind = jest.fn();
 const mockBillingProviderWebhook = jest.fn();
@@ -34,6 +36,7 @@ jest.mock("@sps/shared-third-parties/telegram", () => ({
 
 jest.mock("@sps/shared-utils", () => {
   return {
+    ...jest.requireActual("@sps/shared-utils"),
     NEXT_PUBLIC_TELEGRAM_SERVICE_URL: "https://telegram.example.com",
     RBAC_JWT_SECRET: "jwt-secret",
     RBAC_JWT_TOKEN_LIFETIME_IN_SECONDS: 3600,
@@ -72,15 +75,23 @@ jest.mock("@sps/rbac/models/subject/sdk/server", () => {
         mockTelegramSyncMembership(...args),
       telegramCheckoutFreeSubscription: (...args: unknown[]) =>
         mockTelegramCheckoutFreeSubscription(...args),
+      approveCustomerWorkTelegramRate: (...args: unknown[]) =>
+        mockTelegramRateApproval(...args),
+      socialModuleProfileFindByIdChatFindByIdActionCreate: (
+        ...args: unknown[]
+      ) => mockTelegramSocialAction(...args),
     },
   };
 });
 
 jest.mock("@sps/backend-utils", () => {
   return {
+    ...jest.requireActual("@sps/backend-utils"),
     blobifyFiles: (...args: unknown[]) => mockBlobifyFiles(...args),
   };
 });
+
+jest.mock("@sps/providers-kv", () => ({ Provider: jest.fn() }));
 
 jest.mock("@sps/billing/models/invoice/sdk/server", () => ({
   api: {
@@ -121,6 +132,16 @@ jest.mock("@sps/ecommerce/models/order/sdk/server", () => ({
 }));
 
 import { Hono } from "hono";
+import { Middleware as IsAuthorizedMiddleware } from "../../../../libs/middlewares/src/lib/is-authorized";
+import {
+  customerWorkRateCallback,
+  customerWorkRatePromptKey,
+  customerWorkTelegramRatePath,
+  route as subjectRoute,
+} from "@sps/rbac/models/subject/sdk/model";
+import { approveCustomerWorkTelegramRate } from "@sps/rbac/models/subject/sdk/server/src/lib/singlepage/ecommerce-module/customer-work";
+import { Controller as SubjectController } from "@sps/rbac/models/subject/backend/app/api/src/lib/controller/singlepage";
+import { Service as CustomerWork } from "@sps/rbac/models/subject/backend/app/api/src/lib/service/singlepage/ecommerce/customer-work";
 import {
   isTelegramBotAuthoredMessage,
   isDuplicateTelegramStarPaymentError,
@@ -829,6 +850,259 @@ describe("Given: the Telegram webhook secret", () => {
     );
 
     expect(response.status).toBe(200);
+  });
+});
+
+describe("Private Telegram work rate callbacks", () => {
+  const rateId = "198eb432-0ab7-4579-a50c-861bdac4e854";
+  const taskId = "3deecf14-bfc4-4459-b478-d52cd0a3bac8";
+  const buyerId = "6fc1b594-3fd8-4663-93fa-52451da1df43";
+  const priceKey = "a".repeat(64);
+
+  afterEach(() => {
+    jest.restoreAllMocks();
+    mockTelegramRateApproval.mockReset();
+  });
+
+  function fixture() {
+    const callbackData = customerWorkRateCallback(rateId);
+    const service = new CustomerWork({
+      authenticationMe: async () => ({ authenticated: true }),
+      module: {
+        identity: { find: async () => [{ id: "identity" }] },
+        subjectsToIdentities: { find: async () => [{ subjectId: buyerId }] },
+        subjectsToSocialModuleProfiles: {
+          find: async () => [
+            { variant: "default", socialModuleProfileId: "buyer-profile" },
+          ],
+        },
+      },
+      modules: {
+        crm: {
+          task: {
+            findById: async () => ({
+              id: taskId,
+              customerId: buyerId,
+              storeId: "store",
+            }),
+          },
+        },
+        notification: {
+          notification: {
+            findById: async () => ({
+              status: "sent",
+              reciever: "1834",
+              sourceSystemId: "23",
+            }),
+          },
+        },
+        social: {
+          message: {
+            findById: async () => ({
+              id: rateId,
+              variant: "customer-work",
+              workReplyKey: customerWorkRatePromptKey(taskId, 1, priceKey),
+              metadata: { customerWorkRatePrompt: { taskId, priceKey } },
+              interaction: {
+                inline_keyboard: [
+                  [{ text: "Approve", callback_data: callbackData }],
+                ],
+              },
+            }),
+          },
+          chat: {
+            findById: async () => ({
+              id: "chat",
+              variant: "telegram",
+              sourceSystemId: "1834",
+            }),
+          },
+          chatsToCrmModuleTasks: {
+            channels: async () => [{ chatId: "chat", threadId: "thread" }],
+          },
+          profilesToChats: {
+            find: async () => [{ profileId: "buyer-profile" }],
+          },
+        },
+      },
+    } as unknown as ConstructorParameters<typeof CustomerWork>[0]);
+    const approve = jest
+      .spyOn(service, "execute")
+      .mockResolvedValue({} as never);
+    const assertChatAccess = jest.spyOn(service, "assertChatAccess");
+    const subjectController = new SubjectController({
+      customerWork: service,
+    } as never);
+    const subjects = new Hono();
+    for (const entry of subjectController.httpRoutes) {
+      subjects.on(
+        entry.method,
+        [entry.path],
+        ...(entry.middlewares ?? []),
+        entry.handler,
+      );
+    }
+    const api = new Hono();
+    api.use(new IsAuthorizedMiddleware().init());
+    api.route(subjectRoute, subjects);
+    const statuses: number[] = [];
+    jest.spyOn(globalThis, "fetch").mockImplementation(async (input, init) => {
+      const request =
+        input instanceof Request
+          ? new Request(input, init)
+          : new Request(String(input), init);
+      const response = await api.fetch(request);
+      statuses.push(response.status);
+      return response;
+    });
+    mockTelegramRateApproval.mockImplementation((props) =>
+      approveCustomerWorkTelegramRate({ ...props, host: "http://api.test" }),
+    );
+
+    const bot = new TelegarmBot();
+    (bot.instance as any).botInfo = {
+      id: 11,
+      is_bot: true,
+      first_name: "Test",
+      username: "singlepagestartup_bot",
+    };
+    const acknowledge = jest.fn();
+    bot.instance.api.config.use(async (_next, method, payload) => {
+      acknowledge(method, payload);
+      return { ok: true, result: true } as never;
+    });
+    bot.init();
+    const webhook = new Hono();
+    webhook.post("/", (c) => bot.webhookHandler(c) as any);
+    jest.spyOn(console, "error").mockImplementation(() => undefined);
+    function update(
+      options: {
+        chatType?: string;
+        fromId?: number;
+        messageId?: number;
+        data?: string;
+        webhookSecret?: string;
+      } = {},
+    ) {
+      return webhook.request("/", {
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
+          "X-Telegram-Bot-Api-Secret-Token":
+            options.webhookSecret ?? TELEGRAM_WEBHOOK_SECRET,
+        },
+        body: JSON.stringify({
+          update_id: 10,
+          callback_query: {
+            id: "work-rate-callback",
+            from: {
+              id: options.fromId ?? 1834,
+              is_bot: false,
+              first_name: "Buyer",
+            },
+            chat_instance: "telegram-chat-instance",
+            data: options.data ?? callbackData,
+            message: {
+              message_id: options.messageId ?? 23,
+              date: 1,
+              chat: { id: 1834, type: options.chatType ?? "private" },
+            },
+          },
+        }),
+      });
+    }
+    return {
+      subjects,
+      approve,
+      assertChatAccess,
+      statuses,
+      acknowledge,
+      update,
+      callbackData,
+    };
+  }
+
+  it("approves the delivered rate through the bot, server SDK, and protected RBAC route", async () => {
+    const f = fixture();
+    expect((await f.update()).status).toBe(200);
+    expect(f.statuses).toEqual([204]);
+    expect(f.approve).toHaveBeenCalledWith(buyerId, {
+      operation: "approve-budget",
+      operationKey: rateId,
+      messageId: rateId,
+      storeId: "store",
+      taskId,
+      priceKey,
+    });
+    expect(f.acknowledge).toHaveBeenCalledWith(
+      "answerCallbackQuery",
+      expect.objectContaining({ text: "Rate approved" }),
+    );
+    expect(f.assertChatAccess).not.toHaveBeenCalled();
+    expect(mockTelegramSocialAction).not.toHaveBeenCalled();
+  });
+
+  it("rejects the same button when it is used on a different Telegram message", async () => {
+    const f = fixture();
+    expect((await f.update({ messageId: 24 })).status).toBe(200);
+    expect(f.statuses).toEqual([404]);
+    expect(f.approve).not.toHaveBeenCalled();
+    expect(f.acknowledge).toHaveBeenCalledWith(
+      "answerCallbackQuery",
+      expect.objectContaining({ show_alert: true }),
+    );
+  });
+
+  it("rejects an unsigned webhook, mismatched sender, group chat and non-UUID callback", async () => {
+    const f = fixture();
+    expect((await f.update({ webhookSecret: "wrong" })).status).toBe(401);
+    expect((await f.update({ fromId: 2222 })).status).toBe(200);
+    expect((await f.update({ chatType: "group" })).status).toBe(200);
+    expect(f.statuses).toEqual([]);
+    expect((await f.update({ data: "work-rate:not-a-uuid" })).status).toBe(200);
+    expect(f.statuses).toEqual([400]);
+    expect(f.approve).not.toHaveBeenCalled();
+    expect(mockTelegramSocialAction).not.toHaveBeenCalled();
+  });
+
+  it("requires an operator header at the RBAC route", async () => {
+    const f = fixture();
+    const response = await f.subjects.request(customerWorkTelegramRatePath, {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+        cookie: "X-RBAC-SECRET-KEY=rbac-secret",
+      },
+      body: JSON.stringify({
+        callbackData: f.callbackData,
+        fromId: 1834,
+        chatId: 1834,
+        chatType: "private",
+        telegramMessageId: 23,
+      }),
+    });
+    expect(response.status).toBe(403);
+    expect(f.approve).not.toHaveBeenCalled();
+  });
+
+  it("validates the Telegram sender at the RBAC route independently of the bot", async () => {
+    const f = fixture();
+    const response = await f.subjects.request(customerWorkTelegramRatePath, {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+        "X-RBAC-SECRET-KEY": "rbac-secret",
+      },
+      body: JSON.stringify({
+        callbackData: f.callbackData,
+        fromId: 2222,
+        chatId: 1834,
+        chatType: "private",
+        telegramMessageId: 23,
+      }),
+    });
+    expect(response.status).toBe(400);
+    expect(f.approve).not.toHaveBeenCalled();
   });
 });
 

@@ -20,6 +20,7 @@ import "reflect-metadata";
 import { inject, injectable } from "inversify";
 import { DI, RESTController } from "@sps/shared-backend-api";
 import { Table } from "@sps/rbac/models/subject/backend/repository/database";
+import { customerWorkTelegramRatePath } from "@sps/rbac/models/subject/sdk/model";
 import { Service } from "../../service";
 import { Context } from "hono";
 import {
@@ -701,6 +702,13 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
         method: "POST",
         path: "/telegram/bootstrap",
         handler: this.telegramBootstrap,
+      },
+      {
+        method: "POST",
+        path: customerWorkTelegramRatePath,
+        handler: (c: Context) =>
+          new CustomerWork(this.service).approveTelegramRate(c),
+        middlewares: [new RequestOperatorSecret().init()],
       },
       {
         method: "POST",

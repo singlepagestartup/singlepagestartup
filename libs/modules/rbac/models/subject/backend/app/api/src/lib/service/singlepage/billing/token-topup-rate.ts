@@ -1,11 +1,40 @@
 import Decimal from "decimal.js";
+import { compileTariffFormula } from "@sps/backend-utils";
 import type { Service as Products } from "@sps/ecommerce/models/product/backend/app/api/src/lib/service";
+import type { IProviderTerms } from "@sps/rbac/models/subject/sdk/model/src/lib/provider-connections";
 
 const Money = Decimal.clone({ precision: 56 });
+const workTariff = compileTariffFormula(
+  "provider_usd * topup_tokens / topup_usd * multiplier",
+);
 
 /** Read both sides of the operator's reference Token pack used for wallet top-ups. */
 export class TokenTopupRate {
   constructor(private readonly products: Pick<Products, "findByIdExtended">) {}
+
+  static workCharge(
+    usd: string,
+    {
+      topupTokens,
+      topupUsd,
+      usdPerSps,
+      workMultiplier,
+    }: Pick<
+      IProviderTerms,
+      "topupTokens" | "topupUsd" | "usdPerSps" | "workMultiplier"
+    >,
+    multiplier = workMultiplier,
+  ) {
+    const rate =
+      topupTokens && topupUsd
+        ? { topup_tokens: topupTokens, topup_usd: topupUsd }
+        : { topup_tokens: "1", topup_usd: usdPerSps };
+    return workTariff.evaluate({
+      ...rate,
+      provider_usd: usd,
+      multiplier,
+    });
+  }
 
   async read(tokenCurrencyId: string) {
     const id =

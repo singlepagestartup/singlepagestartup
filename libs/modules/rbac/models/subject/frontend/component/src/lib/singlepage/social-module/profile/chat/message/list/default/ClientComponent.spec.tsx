@@ -15,12 +15,17 @@ import {
   waitFor,
   within,
 } from "@testing-library/react";
+import {
+  customerWorkRateCallback,
+  customerWorkRatePromptKey,
+} from "@sps/rbac/models/subject/sdk/model";
 import { orderFileReviewInteraction } from "@sps/rbac/models/subject/sdk/model/src/lib/order-work";
 import userEvent from "@testing-library/user-event";
 import {
   mockChatComponentState,
   mockAttachKnowledgeFiles,
   mockCustomerWork,
+  mockChangeCustomerWork,
   mockOrderWorkRead,
   mockOrderWorkContent,
   mockKnowledgeSourceCreateMutate,
@@ -74,6 +79,154 @@ function aiReactionRequest(
 
 describe("Social thread context", () => {
   beforeEach(() => resetChatComponentMocks());
+
+  const rateMessageId = "9d2123d3-f25a-4aad-9073-52471d9aab84";
+  const meteredOrder = {
+    chatId: "chat-1",
+    threadId: "thread-1",
+    storeId: "store-1",
+    taskId: "59ffd5b2-5c40-4617-adbd-218b1ab935d3",
+    orderId: "order-1",
+    status: "active",
+    assignment: "assistant",
+    customerPays: true,
+    canApproveRate: true,
+    ratePromptMessageId: rateMessageId,
+    price: { key: "a".repeat(64) },
+    workflow: { title: "Business brief", stageTitle: "Intake" },
+  };
+
+  function rateMessage({
+    id = rateMessageId,
+    priceKey = meteredOrder.price.key,
+    description = "Перед началом работы подтвердите тариф.",
+    label = "Подтвердить тариф",
+    callback = customerWorkRateCallback(id),
+  } = {}) {
+    return {
+      type: "message" as const,
+      data: {
+        id,
+        variant: "customer-work",
+        createdAt: new Date(),
+        description,
+        workReplyKey: customerWorkRatePromptKey(
+          meteredOrder.taskId,
+          1,
+          priceKey,
+        ),
+        metadata: {
+          customerWorkRatePrompt: {
+            taskId: meteredOrder.taskId,
+            priceKey,
+            maximum: "15",
+          },
+        },
+        interaction: {
+          inline_keyboard: [[{ text: label, callback_data: callback }]],
+        },
+      },
+    };
+  }
+
+  it("keeps an empty order conversation empty until the agent sends a message", () => {
+    mockCustomerWork.mockReturnValue({ data: meteredOrder });
+    renderComponent("customer-work", { language: "ru" });
+    expect(screen.getByText("Сообщений пока нет")).toBeTruthy();
+    expect(screen.queryByRole("heading", { name: "Начало работы" })).toBeNull();
+    expect(
+      screen.queryByRole("button", { name: "Подтвердить тариф" }),
+    ).toBeNull();
+    expect(mockChangeCustomerWork).not.toHaveBeenCalled();
+  });
+
+  it("approves the exact saved message from its inline keyboard", async () => {
+    mockCustomerWork.mockReturnValue({ data: meteredOrder });
+    const thread = renderComponent("customer-work", {
+      language: "ru",
+      socialModuleMessagesAndActionsQuery: [
+        rateMessage({
+          id: "a4ef79ed-f2f7-4db1-87ec-beeb4512d642",
+          priceKey: "b".repeat(64),
+          description: "Предыдущий тариф.",
+        }),
+        rateMessage(),
+        rateMessage({
+          id: "3e19abaf-5e6a-4613-aed9-1090559ebaec",
+          description: "Старое подтверждение по той же ставке.",
+        }),
+        rateMessage({
+          id: "63475bf5-4339-43ad-a5ef-fc7c209f4ef7",
+          description: "Сообщение с неверной кнопкой.",
+          callback: customerWorkRateCallback(rateMessageId),
+        }),
+      ],
+    });
+    const timeline = within(screen.getByRole("log", { name: "Сообщения" }));
+    const message = timeline
+      .getByText("Перед началом работы подтвердите тариф.")
+      .closest("article");
+    expect(message).toBeTruthy();
+    expect(
+      screen.getAllByRole("button", { name: "Подтвердить тариф" }),
+    ).toHaveLength(1);
+    const button = within(message!).getByRole("button", {
+      name: "Подтвердить тариф",
+    });
+    expect(button.getAttribute("type")).toBe("button");
+    expect(button.closest("form")).toBeNull();
+    expect(timeline.getByText("Предыдущий тариф.")).toBeTruthy();
+    expect(mockChangeCustomerWork).not.toHaveBeenCalled();
+
+    fireEvent.click(button);
+    await waitFor(() => {
+      expect(mockChangeCustomerWork).toHaveBeenCalledWith({
+        id: "subject-1",
+        data: {
+          operation: "approve-budget",
+          storeId: meteredOrder.storeId,
+          taskId: meteredOrder.taskId,
+          messageId: rateMessageId,
+          priceKey: meteredOrder.price.key,
+          maximum: "15",
+          operationKey: expect.any(String),
+        },
+      });
+      expect(button.hasAttribute("disabled")).toBe(true);
+    });
+
+    mockCustomerWork.mockReturnValue({
+      data: { ...meteredOrder, rateApproved: true },
+    });
+    thread.rerenderThread({ id: meteredOrder.threadId });
+    expect(
+      screen.getByText("Перед началом работы подтвердите тариф."),
+    ).toBeTruthy();
+    expect(
+      screen.queryByRole("button", { name: "Подтвердить тариф" }),
+    ).toBeNull();
+  });
+
+  it("prevents visitors without spending permission from approving a saved rate", () => {
+    mockCustomerWork.mockReturnValue({
+      data: { ...meteredOrder, canApproveRate: false },
+    });
+    renderComponent("customer-work", {
+      socialModuleMessagesAndActionsQuery: [
+        rateMessage({
+          description: "Approve the rate before work starts.",
+          label: "Approve rate",
+        }),
+      ],
+    });
+    expect(
+      screen.getByText("Approve the rate before work starts."),
+    ).toBeTruthy();
+    const button = screen.getByRole("button", { name: "Approve rate" });
+    expect(button.hasAttribute("disabled")).toBe(true);
+    fireEvent.click(button);
+    expect(mockChangeCustomerWork).not.toHaveBeenCalled();
+  });
 
   it("renders the persisted payment confirmation and the customer reply as chat messages", async () => {
     const eventId = "1afa2a3e-d105-4a98-a51d-8a4b2d458c26";
@@ -298,12 +451,14 @@ describe("Social thread context", () => {
     expect(screen.queryByRole("heading", { name: "Favorites" })).toBeNull();
   });
 
-  it("shows the fixed stage model in the customer composer", () => {
+  it("shows the fixed stage model and reasoning in the customer composer", () => {
     mockChatComponentState.orderModelIds = [];
     mockChatComponentState.fixedStageModelId = "gpt-6.2-astra";
+    mockChatComponentState.fixedStageModelReasoning = "medium";
     renderComponent("customer-work");
     expect(screen.getByText("Stage model")).toBeTruthy();
     expect(screen.getByText("GPT-6.2 Astra")).toBeTruthy();
+    expect(screen.getByText("Medium reasoning")).toBeTruthy();
     expect(screen.queryByRole("button", { name: "Reply model" })).toBeNull();
   });
 

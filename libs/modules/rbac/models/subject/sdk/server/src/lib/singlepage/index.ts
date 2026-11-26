@@ -1,4 +1,5 @@
 import {
+  approveCustomerWorkTelegramRate,
   customerWork,
   customerWorkAvailability,
   customerWorkForOrder,
@@ -766,6 +767,7 @@ export type IResult = {
 };
 
 export const api = {
+  approveCustomerWorkTelegramRate,
   customerWork,
   customerWorkAvailability,
   customerWorkForOrder,

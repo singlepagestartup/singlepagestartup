@@ -20,7 +20,10 @@ import {
   webhookCallback,
   Context as GrammyContext,
 } from "grammy";
-import { IModel as IRbacSubject } from "@sps/rbac/models/subject/sdk/model";
+import {
+  isCustomerWorkRateCallback,
+  type IModel as IRbacSubject,
+} from "@sps/rbac/models/subject/sdk/model";
 import { api as rbacModuleSubjectApi } from "@sps/rbac/models/subject/sdk/server";
 import { api as agentModuleAgentApi } from "@sps/agent/models/agent/sdk/server";
 import { IModel as ISocialModuleChat } from "@sps/social/models/chat/sdk/model";
@@ -860,6 +863,47 @@ export class TelegarmBot {
     });
 
     this.instance.on("callback_query:data", async (ctx) => {
+      const callback = ctx.callbackQuery;
+      if (isCustomerWorkRateCallback(callback.data)) {
+        const { from, message } = callback;
+        const ru = from.language_code?.startsWith("ru");
+        let approved = false;
+        if (
+          RBAC_SECRET_KEY &&
+          !from.is_bot &&
+          message?.date &&
+          message?.chat.type === "private" &&
+          from.id === message.chat.id
+        ) {
+          try {
+            await rbacModuleSubjectApi.approveCustomerWorkTelegramRate({
+              data: {
+                callbackData: callback.data,
+                fromId: from.id,
+                chatId: message.chat.id,
+                chatType: message.chat.type,
+                telegramMessageId: message.message_id,
+              },
+              options: { headers: { "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY } },
+            });
+            approved = true;
+          } catch (error) {
+            console.error(
+              "Telegram work rate approval failed",
+              getTelegramBackgroundErrorMetadata(error),
+            );
+          }
+        }
+        const accepted = ru ? "Тариф подтверждён" : "Rate approved";
+        const rejected = ru
+          ? "Не удалось подтвердить тариф. Проверьте последнее сообщение с тарифом."
+          : "Could not approve the rate. Check the latest rate message.";
+        await ctx.answerCallbackQuery({
+          text: approved ? accepted : rejected,
+          show_alert: !approved,
+        });
+        return;
+      }
       console.log(
         "🚀 ~ TelegarmBot ~ init ~ ctx.callbackQuery:",
         ctx.callbackQuery,

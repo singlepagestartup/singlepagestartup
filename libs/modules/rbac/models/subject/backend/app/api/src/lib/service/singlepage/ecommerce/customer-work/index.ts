@@ -13,9 +13,9 @@ import {
   isAutomaticCoverStage,
   isOrderPaymentStage,
   stageCompletionCondition,
-  stageWorkCapabilities,
   stageWorkFunding,
   stageWorkModelSelection,
+  type IFunnelDefinition,
   type IFunnelStage,
   type IWorkFunding,
 } from "@sps/crm/models/funnel/sdk/model";
@@ -62,6 +62,9 @@ import {
   taskChatStaffAuthor,
   parseRbacAiReactionRequestMetadata,
   RBAC_AI_REACTION_REQUEST_METADATA_KEY,
+  customerWorkRateCallback,
+  customerWorkRatePromptKey,
+  readCustomerWorkRatePrompt,
   canDiscussCompletedOrder,
   isStoreTest,
   STORE_EMPLOYEE_CHAT_VARIANT,
@@ -73,6 +76,7 @@ import type {
   ICustomerWorkOfferAvailability,
   ICustomerWorkOfferScope,
   ICustomerWorkPrice,
+  ICustomerWorkTokenTariff,
   ICustomerWorkReply,
   ICustomerWorkRun,
   ICustomerWorkRunAttachment,
@@ -113,7 +117,14 @@ import { OrderChatCheckout } from "./checkout";
 import { Service as CustomerDelivery } from "./delivery";
 import { Service as CustomerCart, type IStoredProposal } from "./cart";
 import { Service as OrderSummary } from "./order-summary";
-import { criteria, inIds } from "./utils";
+import {
+  criteria,
+  customerWorkRateNotice,
+  customerWorkRateCapabilities,
+  inIds,
+  meteredOrderStages,
+  workTokenTariff,
+} from "./utils";
 import { WorkMcpSession } from "../../social-module/profile/mcp/work-session";
 import {
   AI_EXECUTION_ACTION_VARIANT,
@@ -324,6 +335,7 @@ export class Service {
 
   async availability(
     scope: ICustomerWorkOfferScope,
+    { includeTariff = true }: { includeTariff?: boolean } = {},
   ): Promise<ICustomerWorkOfferAvailability> {
     const selection = await this.selection(scope);
     if (!selection) {
@@ -340,14 +352,70 @@ export class Service {
     const workOrder = Boolean(
       order && (!service || selection.offer.settings.requiresResultAcceptance),
     );
-    const workMetered =
-      workOrder && Boolean(selection.offer.settings?.workTokenPricing);
+    const meter = selection.offer.settings?.workTokenPricing;
+    const workMetered = workOrder && Boolean(meter);
+    const tariff =
+      includeTariff && workMetered && order && meter
+        ? await this.offerWorkTokenTariff(order.definition, meter)
+        : undefined;
     return {
       consultation: Boolean(consultation),
       order: workOrder,
       payAfterAcceptance: workOrder && service && !workMetered,
       ...(workMetered && { workMetered }),
+      ...(tariff && { workTokenTariff: tariff }),
     };
+  }
+
+  private async offerWorkTokenTariff(
+    definition: IFunnelDefinition,
+    meter: { currencyId: string; multiplier: string },
+  ): Promise<ICustomerWorkTokenTariff | undefined> {
+    const stages = meteredOrderStages(definition, meter);
+    if (!stages) {
+      return undefined;
+    }
+    const providers = this.subject.providerConnections;
+    try {
+      const fundingTerms = await providers.serverWorkFundingTerms(meter);
+      const rates: ICustomerWorkPrice["rates"] = [];
+      for (const stage of stages) {
+        if (stage.behavior) {
+          continue;
+        }
+        for (const capability of customerWorkRateCapabilities(
+          definition,
+          stage,
+        )) {
+          const selection = stageWorkModelSelection(stage, capability);
+          const rate = await providers.serverWorkRate(
+            capability,
+            fundingTerms,
+            selection,
+          );
+          if (
+            !stage.provider &&
+            (capability === "text" || capability === "image")
+          ) {
+            rates.push(...providers.selectableServerRates(capability, rate));
+          } else {
+            rates.push(rate);
+          }
+        }
+      }
+      if (rates.length) {
+        return workTokenTariff(rates);
+      }
+      return undefined;
+    } catch (error) {
+      if (
+        error instanceof Error &&
+        /^(Configuration|Not Found|Validation) error\./i.test(error.message)
+      ) {
+        return undefined;
+      }
+      throw error;
+    }
   }
 
   private async selection(
@@ -1052,7 +1120,8 @@ export class Service {
       ({ id }) => id === task.stageId,
     );
     const funding = stage && stageWorkFunding(funnel.definition, stage);
-    const customerPays = !discussionOnly && customerPaysForWork(funding);
+    const customerPays =
+      task.status !== "closed" && customerPaysForWork(funding);
     const price = customerPays ? await this.price(task, funding) : undefined;
     const approval =
       customerPays && price
@@ -1068,6 +1137,22 @@ export class Service {
       ...primary,
       threadId: selectedThreadId ?? primary.threadId,
     };
+    const ratePromptMessageId =
+      channel.threadId === primary.threadId &&
+      stage &&
+      !stage.archived &&
+      !funnel.definition.maintenanceSourceId &&
+      customerPays &&
+      price &&
+      !approval
+        ? await this.ensureRatePrompt(task, {
+            stage,
+            initial: stage.id === funnel.definition.initialStageId,
+            funding,
+            price,
+            channel,
+          })
+        : undefined;
     const [customerProfiles, canRequestManager, awaitingManager] =
       await Promise.all([
         this.customerProfiles(task),
@@ -1083,6 +1168,13 @@ export class Service {
         })
       : undefined;
     const entries = await this.messages(channel.threadId);
+    const canApproveRate =
+      customerPays && !approval
+        ? Boolean(
+            (await this.subject.authenticationMe({ subjectId: customerId }))
+              ?.authenticated,
+          )
+        : undefined;
     const proposal = this.cartProposal(entries);
     const confirmed = proposal
       ? await this.crm.tasksToStages.byOperation(
@@ -1183,6 +1275,8 @@ export class Service {
       price,
       approvedMaximum: approval?.approvedMaximum,
       rateApproved: Boolean(approval),
+      canApproveRate,
+      ratePromptMessageId,
       memory,
       cartProposal,
       assignment:
@@ -1402,28 +1496,14 @@ export class Service {
           );
         }
         const meter = offer.settings?.workTokenPricing;
-        if (meter && kind === "individual-service") {
-          const stages = funnel.definition.stages.filter(
-            ({ archived }) => !archived,
+        if (
+          meter &&
+          kind === "individual-service" &&
+          !meteredOrderStages(funnel.definition, meter)
+        ) {
+          throw new Error(
+            "Conflict error. The order workflow does not match its token pricing",
           );
-          const funded = stages.every((stage) => {
-            const funding = stageWorkFunding(funnel.definition, stage);
-            return (
-              funding?.payer === "customer" &&
-              funding.multiplier === meter.multiplier &&
-              funding.currencyId === meter.currencyId
-            );
-          });
-          if (
-            !funded ||
-            !stages.some(
-              ({ resultPricing }) => resultPricing?.kind === "work-tokens",
-            )
-          ) {
-            throw new Error(
-              "Conflict error. The order workflow does not match its token pricing",
-            );
-          }
         }
 
         let orderId = adoption ? input.orderId : undefined;
@@ -1519,7 +1599,7 @@ export class Service {
           consultationTaskId,
         });
         const assigned = await this.assignDefault(task);
-        if (assigned && orderId) {
+        if (assigned) {
           await this.queueStageEntry(assigned);
         }
         return openDiscussion(task);
@@ -1957,7 +2037,7 @@ export class Service {
       expectedQuoteVersion: quoteVersion,
     };
     const scope = { productId, offerId, storeId };
-    const intake = await this.availability(scope);
+    const intake = await this.availability(scope, { includeTariff: false });
     if (intake.order) {
       const funnel = await this.crm.task.getFunnel({
         taskId: task.id,
@@ -2307,14 +2387,10 @@ export class Service {
     }
     const rates: ICustomerWorkPrice["rates"] = [];
     const connectionIds: string[] = [];
-    const required = stageWorkCapabilities(stage);
-    if (
-      funnel.definition.progression === "linear" &&
-      stageCompletionCondition(stage)
-    ) {
-      required.push("decision");
-    }
-    for (const capability of new Set(required)) {
+    for (const capability of customerWorkRateCapabilities(
+      funnel.definition,
+      stage,
+    )) {
       const selection = stageWorkModelSelection(stage, capability);
       try {
         const providers = this.subject.providerConnections;
@@ -2458,6 +2534,12 @@ export class Service {
       documentId?: string;
       interaction?: SocialMessage["interaction"];
     },
+    author?: {
+      chatId: string;
+      threadId: string;
+      profileId: string;
+      interaction?: (messageId: string) => SocialMessage["interaction"];
+    },
   ) {
     const [saved] = await this.social.message.find(
       criteria({ workReplyKey: notice.key }),
@@ -2465,7 +2547,8 @@ export class Service {
     if (saved) {
       return saved.id;
     }
-    let channel = await this.workspaceChannel(task);
+    let channel: { chatId: string; threadId: string } | null =
+      author ?? (await this.workspaceChannel(task));
     if (!channel) {
       const opened = await this.crm.tasksToStages.byOperation(
         task.id,
@@ -2478,11 +2561,13 @@ export class Service {
       }
       channel = await this.ensureWorkspaceChannel(opened.actorId, task);
     }
-    const profile = await this.assignedAgentProfile(task, channel.chatId);
+    const profileId =
+      author?.profileId ??
+      (await this.assignedAgentProfile(task, channel.chatId))?.id;
     const message = await this.writeMessage({
       chatId: channel.chatId,
       threadId: channel.threadId,
-      profileId: profile?.id,
+      profileId,
       text: notice.text,
       interaction: notice.interaction,
       documentId: notice.documentId,
@@ -2491,14 +2576,252 @@ export class Service {
         metadata: notice.metadata,
       }),
     });
-    await this.social.message.bindWorkReply(message.id, notice.key);
+    const interaction = author?.interaction?.(message.id);
+    await this.social.message.bindWorkReply(
+      message.id,
+      notice.key,
+      interaction,
+    );
     await new CustomerDelivery(this.subject).queue({
       ...channel,
       customerId: task.customerId,
-      message,
+      message: interaction ? { ...message, interaction } : message,
       documentId: notice.documentId,
     });
     return message.id;
+  }
+
+  private async ensureRatePrompt(
+    task: CrmTask,
+    input: {
+      stage: IFunnelStage;
+      initial: boolean;
+      funding: IWorkFunding;
+      price: ICustomerWorkPrice;
+      channel: { chatId: string; threadId: string };
+    },
+  ) {
+    if (!this.hasActiveAgentAssignment(task)) {
+      return;
+    }
+    const key = customerWorkRatePromptKey(
+      task.id,
+      task.assignmentRevision,
+      input.price.key,
+    );
+    const [saved] = await this.social.message.find(
+      criteria({ workReplyKey: key }),
+    );
+    if (saved) {
+      return saved.id;
+    }
+    return this.crm.task.withTask(
+      { storeId: task.storeId, taskId: task.id },
+      async (current) => {
+        if (
+          !this.hasActiveAgentAssignment(current) ||
+          current.customerId !== task.customerId ||
+          current.stageId !== task.stageId ||
+          current.publicationId !== task.publicationId ||
+          current.assignmentRevision !== task.assignmentRevision ||
+          (await this.spendingApproval(
+            current,
+            input.funding,
+            current.revision,
+            input.price.key,
+          ))
+        ) {
+          return;
+        }
+        const [profile, currency] = await Promise.all([
+          this.assignedAgentProfile(current, input.channel.chatId),
+          this.subject.modules.billing.currency.findById({
+            id: input.funding.currencyId,
+          }),
+        ]);
+        if (!profile || !currency) {
+          return;
+        }
+        const { text, button } = customerWorkRateNotice({
+          stage: input.stage,
+          initial: input.initial,
+          rates: input.price.rates,
+          currency:
+            currency.slug === "token" ? "SPS" : currency.slug.toUpperCase(),
+          requestMaximum: input.funding.maxRunAmount,
+          taskMaximum: input.funding.maxTaskAmount,
+        });
+        const posted = await this.postOrderNotice(
+          current,
+          {
+            key,
+            source: "customer-work-rate",
+            text,
+            metadata: {
+              customerWorkRatePrompt: {
+                taskId: current.id,
+                priceKey: input.price.key,
+                maximum: input.funding.maxTaskAmount,
+              },
+            },
+          },
+          {
+            ...input.channel,
+            profileId: profile.id,
+            interaction: (messageId) => ({
+              inline_keyboard: [
+                [
+                  {
+                    text: button,
+                    callback_data: customerWorkRateCallback(messageId),
+                  },
+                ],
+              ],
+            }),
+          },
+        );
+        return posted;
+      },
+    );
+  }
+
+  private hasActiveAgentAssignment(task: CrmTask) {
+    const now = new Date();
+    return (
+      task.status !== "closed" &&
+      task.assigneeKind === "ai" &&
+      !!task.assigneeId &&
+      (!task.assignmentExpiresAt || task.assignmentExpiresAt > now) &&
+      (!task.deadlineAt || task.deadlineAt > now)
+    );
+  }
+
+  private async assertRatePrompt(
+    task: CrmTask,
+    channel: { chatId: string; threadId: string },
+    command: Extract<TConversationCommand, { operation: "approve-budget" }>,
+    messageId: string,
+  ) {
+    const [message, [inChat], [inThread], author] = await Promise.all([
+      this.social.message.findById({ id: messageId }),
+      this.social.chatsToMessages.find(
+        criteria({ chatId: channel.chatId, messageId }),
+      ),
+      this.social.threadsToMessages.find(
+        criteria({ threadId: channel.threadId, messageId }),
+      ),
+      this.assignedAgentProfile(task, channel.chatId),
+    ]);
+    const prompt = message && readCustomerWorkRatePrompt(message);
+    if (
+      !this.hasActiveAgentAssignment(task) ||
+      !prompt ||
+      prompt.taskId !== task.id ||
+      prompt.priceKey !== command.priceKey ||
+      prompt.maximum !== command.maximum ||
+      message.workReplyKey !==
+        customerWorkRatePromptKey(
+          task.id,
+          task.assignmentRevision,
+          command.priceKey,
+        ) ||
+      !inChat ||
+      !inThread ||
+      !author
+    ) {
+      throw new Error(
+        "Conflict error. The work rate message is no longer current",
+      );
+    }
+    const [sentByAuthor] = await this.social.profilesToMessages.find(
+      criteria({ messageId, profileId: author.id }),
+    );
+    if (!sentByAuthor) {
+      throw new Error(
+        "Conflict error. The work rate message is no longer current",
+      );
+    }
+  }
+
+  async approveRateFromTelegram(input: {
+    telegramChatId: string;
+    telegramMessageId: string;
+    messageId: string;
+  }) {
+    const unavailable = () =>
+      new Error("Not Found error. The delivered work rate is unavailable");
+    const [message, delivery] = await Promise.all([
+      this.social.message.findById({ id: input.messageId }),
+      this.subject.modules.notification.notification.findById({
+        id: input.messageId,
+      }),
+    ]);
+    const prompt = message && readCustomerWorkRatePrompt(message);
+    if (
+      !prompt ||
+      delivery?.status !== "sent" ||
+      delivery?.reciever !== input.telegramChatId ||
+      delivery.sourceSystemId !== input.telegramMessageId
+    ) {
+      throw unavailable();
+    }
+    const task = await this.crm.task.findById({ id: prompt.taskId });
+    if (!task) {
+      throw unavailable();
+    }
+    const channel = await this.channel(task.id);
+    const [chat, identities, profiles, session] = await Promise.all([
+      this.social.chat.findById({ id: channel.chatId }),
+      this.subject.module.identity.find(
+        criteria({ provider: "telegram", account: input.telegramChatId }),
+      ),
+      this.subject.module.subjectsToSocialModuleProfiles.find(
+        criteria({ subjectId: task.customerId }),
+      ),
+      this.subject.authenticationMe({ subjectId: task.customerId }),
+    ]);
+    const [identity] = identities;
+    const profileIds = profiles
+      .filter(({ variant }) => variant === "default" || variant === "telegram")
+      .map(({ socialModuleProfileId }) => socialModuleProfileId);
+    if (
+      chat?.variant !== "telegram" ||
+      chat.sourceSystemId !== input.telegramChatId ||
+      identities.length !== 1 ||
+      identity.usage === "outbound_api" ||
+      !session?.authenticated ||
+      !profileIds.length
+    ) {
+      throw unavailable();
+    }
+    const [[owner], [member]] = await Promise.all([
+      this.subject.module.subjectsToIdentities.find(
+        criteria({ subjectId: task.customerId, identityId: identity.id }),
+      ),
+      this.social.profilesToChats.find({
+        params: {
+          filters: {
+            and: [
+              { column: "chatId", method: "eq", value: channel.chatId },
+              { column: "profileId", method: "inArray", value: profileIds },
+            ],
+          },
+          limit: 1,
+        },
+      }),
+    ]);
+    if (!owner || !member) {
+      throw unavailable();
+    }
+    await this.execute(task.customerId, {
+      operation: "approve-budget",
+      operationKey: input.messageId,
+      messageId: input.messageId,
+      storeId: task.storeId,
+      taskId: task.id,
+      priceKey: prompt.priceKey,
+      maximum: prompt.maximum,
+    });
   }
 
   async postOrderPayment(task: CrmTask, payment: IOrderWorkPayment) {
@@ -2671,14 +2994,7 @@ export class Service {
   }
 
   async queueStageEntry(task: CrmTask) {
-    if (
-      !task.orderId ||
-      task.status === "closed" ||
-      task.assigneeKind !== "ai" ||
-      !task.assigneeId ||
-      (task.deadlineAt && task.deadlineAt <= new Date()) ||
-      (task.assignmentExpiresAt && task.assignmentExpiresAt <= new Date())
-    ) {
+    if (!this.hasActiveAgentAssignment(task)) {
       return;
     }
     const { definition } = await this.crm.task.getFunnel({
@@ -2692,7 +3008,9 @@ export class Service {
     if (!stage || definition.maintenanceSourceId || !channel) {
       return;
     }
-    const checkout = await this.checkout.context(task, stage);
+    const checkout = task.orderId
+      ? await this.checkout.context(task, stage)
+      : undefined;
     if (checkout) {
       await this.checkout.begin(checkout);
       return;
@@ -2703,12 +3021,24 @@ export class Service {
     }
     if (customerPaysForWork(funding)) {
       const price = await this.price(task, funding);
-      if (
-        !price ||
-        !(await this.spendingApproval(task, funding, task.revision, price.key))
-      ) {
+      if (!price) {
         return;
       }
+      if (
+        !(await this.spendingApproval(task, funding, task.revision, price.key))
+      ) {
+        await this.ensureRatePrompt(task, {
+          stage,
+          initial: stage.id === definition.initialStageId,
+          funding,
+          price,
+          channel,
+        });
+        return;
+      }
+    }
+    if (!task.orderId) {
+      return;
     }
     const queued = await this.crm.task.queueStageEntry(task);
     if (queued) {
@@ -2883,6 +3213,9 @@ export class Service {
     }
 
     for (const [position, { message, profileId }] of entries.entries()) {
+      if (isSocialMessageExcludedFromOpenRouter(message.metadata)) {
+        continue;
+      }
       if (
         profileId !== null &&
         buyerProfiles.has(profileId) &&
@@ -3761,6 +4094,23 @@ export class Service {
                 "Conflict error. Reload the current work price before approving",
               );
             }
+            if (command.messageId) {
+              await this.assertRatePrompt(
+                task,
+                primary,
+                command,
+                command.messageId,
+              );
+            }
+            const existing = await this.spendingApproval(
+              task,
+              funding,
+              task.revision,
+              price.key,
+            );
+            if (existing) {
+              return this.view(customerId, command);
+            }
             const approved = await this.crm.task.activity({
               ...activity,
               kind: "customer-budget-approved",
@@ -4131,6 +4481,7 @@ export class Service {
     eventId: string;
     failed?: boolean;
     rejectedFile?: { name: string; model: string };
+    replyFailure?: IAiExecutionActionPayload["replyFailure"];
   }) {
     await this.crm.tasksToStages.finishPending(
       input.eventId,
@@ -4159,6 +4510,7 @@ export class Service {
                   selectedModelId: input.rejectedFile.model,
                 }),
                 status: "failed",
+                ...(input.replyFailure && { replyFailure: input.replyFailure }),
                 completedAt: new Date().toISOString(),
               },
             },
@@ -4166,6 +4518,46 @@ export class Service {
         }
       },
     );
+  }
+
+  async failForCustomerWalletBalance(input: ICustomerWorkRun) {
+    if (input.purpose === "stage-check") {
+      return false;
+    }
+    return this.crm.task.withTask(input, async (task) => {
+      if (
+        !task.orderId ||
+        task.status === "closed" ||
+        task.assigneeId !== input.assigneeId ||
+        task.assignmentRevision !== input.assignmentRevision
+      ) {
+        return false;
+      }
+      const { definition } = await this.crm.task.getFunnel(input);
+      const stage = definition.stages.find(({ id }) => id === task.stageId);
+      const funding = stage && stageWorkFunding(definition, stage);
+      if (!customerPaysForWork(funding) || funding.multiplier === undefined) {
+        return false;
+      }
+      const event = await this.crm.tasksToStages.findById({
+        id: input.eventId,
+      });
+      if (
+        !event?.pending ||
+        event.taskId !== task.id ||
+        event.detail.assigneeId !== task.assigneeId ||
+        event.assignmentRevision !== task.assignmentRevision ||
+        !(await this.acceptsWorkInput(event, task))
+      ) {
+        return false;
+      }
+      await this.ack({
+        eventId: event.id,
+        failed: true,
+        replyFailure: "wallet-balance",
+      });
+      return true;
+    });
   }
 
   retryPreparation(eventId: string, failures: number, delayMs: number) {
@@ -4827,6 +5219,7 @@ export class Service {
       orderMatches &&
       session?.authenticated;
     let stageEntryKnowledgeQuery: string | undefined;
+    let stageEntryHasCustomerInput = false;
     for (const { entry, revision, customerInputActorId } of history) {
       const { message, profileId, linkedAt } = entry;
       if (
@@ -4895,6 +5288,15 @@ export class Service {
         continue;
       }
       const files = participant ? customerWorkAttachments(message) : [];
+      if (
+        stageEntry &&
+        orderMatches &&
+        order.paymentMode === "work-tokens" &&
+        customer &&
+        (description || files.length)
+      ) {
+        stageEntryHasCustomerInput = true;
+      }
       if (!preparesImageBrief || revision <= triggerRevision) {
         for (const { id, name, digest, mimeType } of files) {
           attachments.push({
@@ -4941,8 +5343,9 @@ export class Service {
     if (stageEntry) {
       messages.push({
         role: "system",
-        content:
-          "The assigned stage has just started. Take the first action in its instructions now. Use the conversation so far. Ask the customer only for missing information and wait for their answer when needed. This event is not a customer message or consent.",
+        content: stageEntryHasCustomerInput
+          ? "The assigned stage has just started. Continue from the request and materials that the customer already sent. Ask only for missing information and wait for their answer when needed. This event is not a customer message or consent."
+          : "The assigned stage has just started. Take the first action in its instructions now. Use the conversation so far. Ask the customer only for missing information and wait for their answer when needed. This event is not a customer message or consent.",
       });
     }
     const customerPays = customerPaysForWork(funding);

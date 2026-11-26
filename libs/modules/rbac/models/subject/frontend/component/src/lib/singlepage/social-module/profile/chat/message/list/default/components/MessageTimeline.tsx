@@ -17,21 +17,23 @@ import type {
 } from "../interface";
 import type { IModel as ISocialModuleMessage } from "@sps/social/models/message/sdk/model";
 import type { IModel as ISocialModuleProfile } from "@sps/social/models/profile/sdk/model";
-import { AI_EXECUTION_ACTION_VARIANT } from "@sps/rbac/models/subject/sdk/model";
+import {
+  AI_EXECUTION_ACTION_VARIANT,
+  readCustomerWorkRatePrompt,
+} from "@sps/rbac/models/subject/sdk/model";
 import {
   readOrderFileReview,
   readOrderCheckoutButtons,
 } from "@sps/rbac/models/subject/sdk/model/src/lib/order-work";
 import { MessageSquare } from "lucide-react";
-import { memo, type RefObject } from "react";
+import { memo, type ReactNode, type RefObject } from "react";
 
 type TimelineItem = ISocialModuleMessagesAndActionsQuery[number];
 type TimelineMessage = Extract<TimelineItem, { type: "message" }>["data"];
 type TimelineAction = Extract<TimelineItem, { type: "action" }>["data"];
 
 interface MessageTimelineProps {
-  reviewMessageId?: string;
-  reviewSlot?: React.ReactNode;
+  interactionSlots?: ReadonlyMap<string, ReactNode>;
   deletingMessageId: string | null;
   items: ISocialModuleMessagesAndActionsQuery | undefined;
   participants?: ISocialModuleProfile[];
@@ -48,7 +50,7 @@ interface MessageTimelineProps {
 }
 
 interface MessageRowProps {
-  reviewSlot?: React.ReactNode;
+  interactionSlot?: ReactNode;
   isDeleting: boolean;
   isOwnMessage: boolean;
   language: string;
@@ -120,10 +122,12 @@ const MemoizedMessageRow = memo(function MemoizedMessageRow(
               )
             }
             interactionSlot={
-              readOrderFileReview(props.message) ||
-              readOrderCheckoutButtons(props.message)
-                ? (props.reviewSlot ?? false)
-                : undefined
+              props.interactionSlot ??
+              (readOrderFileReview(props.message) ||
+              readOrderCheckoutButtons(props.message) ||
+              readCustomerWorkRatePrompt(props.message)
+                ? false
+                : undefined)
             }
             isDeleting={props.isDeleting}
             onProfileOpen={props.onProfileOpen}
@@ -236,11 +240,7 @@ export function MessageTimeline(props: MessageTimelineProps) {
               key={message.id}
               isDeleting={props.deletingMessageId === message.id}
               isOwnMessage={isOwnMessage}
-              reviewSlot={
-                props.reviewMessageId === message.id
-                  ? props.reviewSlot
-                  : undefined
-              }
+              interactionSlot={props.interactionSlots?.get(message.id)}
               language={props.language}
               message={message}
               subjectId={props.subjectId}

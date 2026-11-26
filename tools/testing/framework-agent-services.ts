@@ -1,10 +1,17 @@
 // Run against a local test installation from apps/api with an existing seller's Subject ID.
 import { createHash } from "node:crypto";
-import { DATABASE_HOST } from "@sps/shared-utils";
+import { v5 as funnelIdFromKey } from "uuid";
+import { z } from "zod";
+import { DATABASE_HOST, OPEN_AI_STAGE_TEXT_DEFAULT } from "@sps/shared-utils";
 import { createAppAssembly } from "@sps/shared-backend-api";
+import { createService as createWorkAttempts } from "@sps/agent/models/work-attempt/backend/app/api/src/lib/bootstrap";
 import { createService } from "@sps/rbac/models/subject/backend/app/api/src/lib/bootstrap";
 import { Service as ProfileKnowledge } from "@sps/rbac/models/subject/backend/app/api/src/lib/service/singlepage/social-module/profile/knowledge/sources";
-import type { IFunnelStage } from "@sps/crm/models/funnel/sdk/model";
+import type {
+  IFunnelStage,
+  ISaveFunnel,
+} from "@sps/crm/models/funnel/sdk/model";
+import { isSocialMessageExcludedFromOpenRouter } from "@sps/social/models/message/sdk/model";
 
 interface IPreparedService {
   slug: string;
@@ -91,12 +98,147 @@ const by = (column: string, value: string) => ({
 });
 
 const legacyBriefOfferId = "779f2512-b7a2-4785-93a8-aca7ada1e7bc";
+const briefProvider = {
+  modelId: OPEN_AI_STAGE_TEXT_DEFAULT.modelId,
+  reasoning: "medium",
+} as const;
+// The $0.75 provider limit at 2× and 769.230769 SPS per USD is 1153.8461535 SPS.
+const briefMaxRunAmount = "1200";
+
+async function publishBriefFunnel(
+  subject: ReturnType<typeof createService>,
+  attempts: ReturnType<typeof createWorkAttempts>,
+  ownerId: string,
+  offerId: string,
+  input: ISaveFunnel & { operationKey: string },
+  moveTaskId?: string,
+) {
+  const { crm, ecommerce, social } = subject.modules;
+  return subject.repository.withStoreEmployeeLock(input.storeId, async () => {
+    const owners = await subject.module.subjectsToEcommerceModuleStores.find(
+      by("ecommerceModuleStoreId", input.storeId),
+    );
+    if (
+      !owners.some(
+        (grant) => grant.variant === "owner" && grant.subjectId === ownerId,
+      )
+    ) {
+      throw new Error("The supplied seller no longer owns the service store.");
+    }
+    const previousId = funnelIdFromKey(input.operationKey, input.storeId);
+    const saved = await crm.funnel.findById({ id: previousId });
+    const offerLinks = crm.funnelsToEcommerceModuleStoresToProducts;
+    let oldOfferLink: string | undefined;
+    if (saved) {
+      await crm.funnel.lock(input.storeId, previousId, "update");
+      const previous = await crm.funnel.current(input.storeId, previousId);
+      const [link] = await offerLinks.find({
+        params: {
+          filters: {
+            and: [
+              ...by("funnelId", previous.id).params.filters.and,
+              ...by("offerId", offerId).params.filters.and,
+            ],
+          },
+        },
+      });
+      if (
+        previous.bindings.storeWide !== false ||
+        previous.bindings.formIds.length
+      ) {
+        throw new Error("The legacy Brief funnel has other entry points.");
+      }
+      oldOfferLink = link?.id;
+    }
+    const next = await crm.funnel.save({
+      ...input,
+      operationKey: `${input.operationKey}-astra`,
+      name: `${input.name} (GPT-6.2 Astra)`,
+    });
+    await crm.funnel.lock(input.storeId, next.id, "share");
+    if (oldOfferLink) {
+      await offerLinks.delete({ id: oldOfferLink });
+    }
+    if (moveTaskId) {
+      await crm.task.moveUnstartedTask(
+        {
+          storeId: input.storeId,
+          taskId: moveTaskId,
+          fromId: previousId,
+          toId: next.id,
+          offerId,
+        },
+        async (orderId) => {
+          const [work, runs, channels] = await Promise.all([
+            ecommerce.order.work.findByOrder(orderId),
+            attempts.find({
+              params: { ...by("taskId", moveTaskId).params, limit: 1 },
+            }),
+            social.chatsToCrmModuleTasks.channels({ taskId: moveTaskId }),
+          ]);
+          if (
+            !work ||
+            work.taskId !== moveTaskId ||
+            work.storeId !== input.storeId ||
+            work.paymentMode !== "work-tokens" ||
+            work.state !== "awaiting-result" ||
+            work.paid ||
+            work.files.length ||
+            work.decisions.length ||
+            runs.length ||
+            !channels.length
+          ) {
+            throw new Error(
+              "The task already has work or no longer matches this offer.",
+            );
+          }
+          const messages = await social.threadsToMessages.find({
+            params: {
+              filters: {
+                and: [
+                  {
+                    column: "threadId",
+                    method: "inArray",
+                    value: channels.map(({ threadId }) => threadId),
+                  },
+                ],
+              },
+            },
+          });
+          for (const placement of messages) {
+            const message = await social.message.findById({
+              id: placement.messageId,
+            });
+            if (
+              !message?.workReplyKey?.startsWith(`order-status:${orderId}:`) ||
+              !isSocialMessageExcludedFromOpenRouter(message.metadata)
+            ) {
+              throw new Error(
+                "The task’s conversation already has work messages.",
+              );
+            }
+          }
+        },
+      );
+    }
+    const current = await crm.funnel.resolve({
+      storeId: input.storeId,
+      offerId,
+      kind: input.kind,
+    });
+    if (current?.id !== next.id) {
+      throw new Error("The Brief offer still resolves to a different funnel.");
+    }
+    return next;
+  });
+}
 
 async function setup(
   ownerId: string,
-  options: { briefOnly: boolean; skipIndex: boolean },
+  options: { briefOnly: boolean; skipIndex: boolean; moveTaskId?: string },
 ) {
-  const subject = createService(createAppAssembly());
+  const assembly = createAppAssembly();
+  const subject = createService(assembly);
   const { ecommerce, social, billing, knowledge, crm } = subject.modules;
   const slug = "framework-agent-services";
   const [token] = await billing.currency.find(by("slug", "token"));
@@ -258,16 +400,19 @@ async function setup(
       skillIds: [skill.id],
     };
     const metered = offer.settings.workTokenPricing;
+    const meteredBrief = metered && service.slug === "business-brief";
     const workFunding = {
       payer: "customer" as const,
       multiplier: metered?.multiplier ?? "0",
       currencyId: token.id,
-      maxRunAmount: metered ? "100" : "0",
+      maxRunAmount: metered ? (meteredBrief ? briefMaxRunAmount : "100") : "0",
       ...(!metered && { maxStageAmount: "0" }),
     };
     const paidWork = metered
       ? {
-          provider: { modelId: "gpt-5.4-mini-2026-03-17" },
+          provider: meteredBrief
+            ? briefProvider
+            : { modelId: "gpt-5.4-mini-2026-03-17" },
           operations: ["knowledge-search"] as const,
         }
       : undefined;
@@ -308,7 +453,7 @@ async function setup(
         ],
       },
     ];
-    const funnel = await crm.funnel.save({
+    const funnelInput = {
       operationKey: metered ? productSlug + "-work-tokens" : productSlug,
       storeId: store.id,
       name: metered ? service.title[0] + " за токены" : service.title[0],
@@ -367,7 +512,17 @@ async function setup(
           ...(metered ? [] : cashStages),
         ],
       },
-    });
+    } satisfies ISaveFunnel;
+    const funnel = meteredBrief
+      ? await publishBriefFunnel(
+          subject,
+          createWorkAttempts(assembly),
+          ownerId,
+          offer.id,
+          funnelInput,
+          options.moveTaskId,
+        )
+      : await crm.funnel.save(funnelInput);
     records.push({
       slug: product.slug,
       productId: product.id,
@@ -382,14 +537,22 @@ async function setup(
 const ownerId = process.argv[2];
 if (!ownerId)
   throw new Error(
-    "Usage: bun --tsconfig-override ./tsconfig.json --env-file=.env ../../tools/testing/framework-agent-services.ts SELLER_SUBJECT_ID (from apps/api)",
+    "Usage: bun --tsconfig-override ./tsconfig.json --env-file=.env ../../tools/testing/framework-agent-services.ts SELLER_SUBJECT_ID [--brief-only] [--skip-index] [--move-unstarted-brief-task=TASK_ID] (from apps/api)",
   );
 const flags = process.argv.slice(3);
+const moveTaskFlag = "--move-unstarted-brief-task";
+const moveTaskOption = flags.find(
+  (flag) => flag === moveTaskFlag || flag.startsWith(`${moveTaskFlag}=`),
+);
+const moveTaskId = moveTaskOption
+  ? z.uuid().parse(moveTaskOption.slice(moveTaskFlag.length + 1))
+  : undefined;
 console.log(
   JSON.stringify(
     await setup(ownerId, {
       briefOnly: flags.includes("--brief-only"),
       skipIndex: flags.includes("--skip-index"),
+      moveTaskId,
     }),
     null,
     2,

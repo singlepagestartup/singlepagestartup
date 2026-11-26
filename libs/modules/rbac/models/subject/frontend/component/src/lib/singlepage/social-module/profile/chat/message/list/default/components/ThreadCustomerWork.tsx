@@ -172,14 +172,12 @@ export function ThreadCustomerWork(props: IProps) {
       </Link>
     ));
   const showOrder = Boolean(
-    work.orderId ||
-    work.productSlug ||
-    work.cartProposal ||
-    (work.status !== "closed" && work.customerPays),
+    work.orderId || work.productSlug || work.cartProposal,
   );
   const showResult = Boolean(
     order &&
-    (order.state !== "awaiting-result" ||
+    ((!order.includedInWork && order.state !== "awaiting-result") ||
+      order.state === "canceled" ||
       (order.files?.length ?? 0) > 0 ||
       order.result ||
       order.receipt ||

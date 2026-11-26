@@ -133,7 +133,10 @@ it.each(["store", "customer", "employee", "fixed-model"])(
                       id: "stage",
                       output: "text",
                       ...(payer === "fixed-model" && {
-                        provider: { modelId: "gpt-4.1-mini" },
+                        provider: {
+                          modelId: "gpt-6.2-astra",
+                          reasoning: "medium",
+                        },
                       }),
                     },
                   ],
@@ -150,11 +153,12 @@ it.each(["store", "customer", "employee", "fixed-model"])(
     );
 
     try {
-      const { groups, stageModelFixed, stageModelId } =
+      const { groups, stageModelFixed, stageModelId, stageModelReasoning } =
         await service.chatModels("buyer", "profile", "chat", "thread");
       if (payer === "fixed-model") {
         expect(stageModelFixed).toBe(true);
-        expect(stageModelId).toBe("gpt-4.1-mini");
+        expect(stageModelId).toBe("gpt-6.2-astra");
+        expect(stageModelReasoning).toBe("medium");
         expect(groups).toEqual([]);
         expect(vault.read).not.toHaveBeenCalled();
         return;

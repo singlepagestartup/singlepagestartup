@@ -4,8 +4,13 @@ import type { IChatProfileOpen } from "../interface";
 
 import { MessageEditDialog } from "./MessageEditDialog";
 import { ThreadOrderStage } from "./ThreadCustomerWork";
-import type { ICustomerWorkView } from "@sps/rbac/models/subject/sdk/model";
+import {
+  customerWorkRateCallbackMessageId,
+  readCustomerWorkRatePrompt,
+  type ICustomerWorkView,
+} from "@sps/rbac/models/subject/sdk/model";
 import { OrderPaymentButtons } from "./OrderPaymentButtons";
+import { OrderWorkRateButton } from "./OrderWorkRateButton";
 import {
   readOrderFileReview,
   readOrderCheckoutButtons,
@@ -26,6 +31,7 @@ import {
   useMemo,
   useState,
   type MutableRefObject,
+  type ReactNode,
 } from "react";
 
 interface MessageTimelineSectionProps {
@@ -201,6 +207,67 @@ export const MessageTimelineSection = memo(function MessageTimelineSection(
     props.language,
     socialModuleMessagesAndActionsQuery,
   ]);
+  const interactionSlots = useMemo(() => {
+    const slots = new Map<string, ReactNode>();
+    const work = props.orderWork;
+    if (review) {
+      slots.set(review.messageId, orderStage);
+    } else if (work?.workflow?.checkoutPromptId && payment) {
+      slots.set(work.workflow.checkoutPromptId, payment);
+    }
+    if (
+      !work?.customerPays ||
+      work.chatId !== props.socialModuleChatId ||
+      work.threadId !== props.socialModuleThreadId ||
+      work.status === "closed" ||
+      work.rateApproved ||
+      work.approvedMaximum ||
+      !work.ratePromptMessageId ||
+      !work.price?.key
+    ) {
+      return slots;
+    }
+    const item = socialModuleMessagesAndActionsQuery.find(
+      (entry) =>
+        entry.type === "message" && entry.data.id === work.ratePromptMessageId,
+    );
+    if (item?.type !== "message") return slots;
+    const message = item.data;
+    const prompt = readCustomerWorkRatePrompt(message);
+    if (prompt?.taskId !== work.taskId || prompt.priceKey !== work.price.key) {
+      return slots;
+    }
+    const messageId = customerWorkRateCallbackMessageId(
+      prompt.button.callback_data,
+    );
+    if (messageId !== message.id) return slots;
+    slots.set(
+      messageId,
+      <OrderWorkRateButton
+        key={`${props.subjectId}:${message.id}:${prompt.priceKey}`}
+        subjectId={props.subjectId}
+        language={props.language}
+        storeId={work.storeId}
+        taskId={prompt.taskId}
+        messageId={messageId}
+        priceKey={prompt.priceKey}
+        maximum={prompt.maximum}
+        canApprove={work.canApproveRate === true}
+        label={prompt.button.text}
+      />,
+    );
+    return slots;
+  }, [
+    orderStage,
+    payment,
+    props.language,
+    props.orderWork,
+    props.socialModuleChatId,
+    props.socialModuleThreadId,
+    props.subjectId,
+    review,
+    socialModuleMessagesAndActionsQuery,
+  ]);
   const timelineItemCount = socialModuleMessagesAndActionsQuery.length;
   const messageThreadScroll = useMessageThreadScroll({
     socialModuleThreadId: props.socialModuleThreadId,
@@ -260,10 +327,7 @@ export const MessageTimelineSection = memo(function MessageTimelineSection(
         <MessageTimeline
           deletingMessageId={messageActions.deletingMessageId}
           items={socialModuleMessagesAndActionsQuery}
-          reviewMessageId={
-            review?.messageId ?? props.orderWork?.workflow?.checkoutPromptId
-          }
-          reviewSlot={review ? orderStage : payment}
+          interactionSlots={interactionSlots}
           subjectId={props.subjectId}
           socialModuleProfileId={props.socialModuleProfileId}
           threadId={props.socialModuleThreadId}

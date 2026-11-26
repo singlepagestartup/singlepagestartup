@@ -28,6 +28,10 @@ function fixture() {
       pending = false;
     }),
     deliverEmployeeTrainingFailure: jest.fn().mockResolvedValue(true),
+    failForCustomerWalletBalance: jest.fn(async () => {
+      pending = false;
+      return true;
+    }),
   };
   jest.spyOn(service, "modules", "get").mockReturnValue({
     rbac: { subject: { customerWork: intake } },
@@ -93,6 +97,19 @@ it("leaves an unknown provider outcome to reconciliation", async () => {
   expect(dispatch).toHaveBeenCalledTimes(1);
   expect(intake.ack).not.toHaveBeenCalled();
   expect(intake.deliverEmployeeTrainingFailure).not.toHaveBeenCalled();
+});
+
+it("reports insufficient balance in a metered order without retrying the charge", async () => {
+  const { service, intake, dispatch } = fixture();
+  dispatch.mockRejectedValueOnce(
+    new Error("Payment required. Insufficient available wallet balance"),
+  );
+
+  await expect(service.drain()).resolves.toBe(true);
+
+  expect(intake.failForCustomerWalletBalance).toHaveBeenCalledWith(item);
+  expect(intake.retryPreparation).not.toHaveBeenCalled();
+  expect(dispatch).toHaveBeenCalledTimes(1);
 });
 
 it("does not dispatch after another worker records an attempt during the backoff", async () => {

@@ -610,10 +610,15 @@ Redis and the Knowledge embedding provider configured, run the following from
 This prepares each expert's profile, knowledge, skill and CRM funnel for the
 seeded store. Use the same seller ID on repeat runs. Add `--brief-only` to
 prepare only the business brief. Use `--skip-index` when reusing an already
-indexed local expert profile.
+indexed local expert profile. The brief uses GPT-6.2 Astra with medium reasoning.
+When upgrading, add `--move-unstarted-brief-task=TASK_ID` to move a specific
+untouched order to the new funnel while keeping its order and chat. Booked
+orders with accepted rates continue on their existing funnel.
 
-Sign in as a buyer, fund the Token wallet, and book the business brief. In the
-order chat, approve the stage rate before the agent starts paid work. Each
+Sign in as a buyer, fund the Token wallet, and book the business brief. The
+purchase form shows the input and output prices per model token. In the order
+chat, the assigned agent sends the terms and an inline approval button. Press
+the button to start paid work. Each
 operation charges twice the provider's actual cost, converted to Token using
 the reference top-up pack. Review the draft in chat and accept it to download
 the PDF. Save the accepted brief to your profile knowledge and use it in a
