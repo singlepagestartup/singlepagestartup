@@ -241,3 +241,26 @@ describe("protected media", () => {
     expect(URL.createObjectURL).not.toHaveBeenCalled();
   });
 });
+
+it("reveals six photos at a time and keeps documents visible across both columns", () => {
+  const photos = Array.from({ length: 14 }, (_, i) => ({
+    id: String(i),
+    name: `photo-${i}.jpg`,
+    mimeType: "image/jpeg",
+  }));
+  const { container } = render(
+    <PrivateMessageAttachments
+      {...scope}
+      attachments={[...photos, { id: "notes", name: "brief.txt" }]}
+    />,
+  );
+  expect(container.querySelectorAll("li")).toHaveLength(7);
+  expect(
+    container.querySelector("li:last-child")?.classList.contains("col-span-2"),
+  ).toBe(true);
+  fireEvent.click(screen.getByRole("button", { name: "Show more photos (8)" }));
+  expect(container.querySelectorAll("li")).toHaveLength(13);
+  fireEvent.click(screen.getByRole("button", { name: "Show more photos (2)" }));
+  expect(container.querySelectorAll("li")).toHaveLength(15);
+  expect(screen.queryByRole("button", { name: /Show more photos/ })).toBeNull();
+});

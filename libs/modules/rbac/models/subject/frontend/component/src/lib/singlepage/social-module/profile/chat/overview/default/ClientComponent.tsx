@@ -391,7 +391,9 @@ function ChatOverview(props: IComponentPropsExtended) {
   const socialModuleThreads = useMemo(() => {
     if (accessDenied) return undefined;
     if (scopedThreadId) {
-      return loadedThreads?.filter(({ id }) => id === scopedThreadId);
+      return loadedThreads?.filter(
+        ({ id, isOrderSupport }) => id === scopedThreadId || isOrderSupport,
+      );
     }
     return loadedThreads;
   }, [accessDenied, loadedThreads, scopedThreadId]);
@@ -399,7 +401,8 @@ function ChatOverview(props: IComponentPropsExtended) {
     ? socialModuleThreads?.find(
         (thread) => thread.id === props.socialModuleThreadId,
       )
-    : socialModuleThreads?.[0];
+    : (socialModuleThreads?.find(({ isOrderSupport }) => !isOrderSupport) ??
+      socialModuleThreads?.[0]);
   const activeSocialModuleThreadId = activeSocialModuleThread?.id;
   const hasMultipleThreads = (socialModuleThreads?.length ?? 0) > 1;
   const showThreads =
@@ -491,6 +494,7 @@ function ChatOverview(props: IComponentPropsExtended) {
           ? authors.get(socialModuleThread.lastMessageAuthorId)
           : undefined,
         canDelete:
+          !socialModuleThread.isOrderSupport &&
           (standardChat || socialModuleThread.id !== mainThreadId) &&
           !(employeeChat && socialModuleThread.hasCustomerWork),
         createdAt: new Date(socialModuleThread.createdAt).toLocaleDateString(
@@ -1340,6 +1344,8 @@ function ChatOverview(props: IComponentPropsExtended) {
                   <div className="space-y-1">
                     {threadItems.length ? (
                       threadItems.map((threadItem) => {
+                        const canEditThread =
+                          canManageChat && !threadItem.data.isOrderSupport;
                         const renameLabel = ru
                           ? `Переименовать обсуждение «${threadItem.title}»`
                           : `Rename thread ${threadItem.title}`;
@@ -1362,7 +1368,7 @@ function ChatOverview(props: IComponentPropsExtended) {
                                 {threadItem.createdAt}
                               </p>
                             </div>
-                            {canManageChat && (
+                            {canEditThread && (
                               <>
                                 <Button
                                   type="button"

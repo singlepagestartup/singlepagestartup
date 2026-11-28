@@ -9,12 +9,17 @@ import {
 } from "@sps/shared-utils";
 import Decimal from "decimal.js";
 
-interface IProps {
+export interface IWorkTokenTariffProps {
   tariff: ICustomerWorkTokenTariff;
   language: string;
+  compact?: boolean;
 }
 
-export function WorkTokenTariff({ tariff, language }: IProps) {
+export function WorkTokenTariff({
+  tariff,
+  language,
+  compact,
+}: IWorkTokenTariffProps) {
   const ru = language === "ru";
   const title = ru ? "Тариф за 1 токен модели" : "Rate per model token";
   const models = tariff.rates.filter(
@@ -65,7 +70,9 @@ export function WorkTokenTariff({ tariff, language }: IProps) {
   return (
     <section
       aria-label={title}
-      className="space-y-3 rounded-xl border border-border p-3"
+      className={
+        compact ? "space-y-2" : "space-y-3 rounded-xl border border-border p-3"
+      }
     >
       <div className="space-y-1">
         <h3 className="text-sm font-semibold">{title}</h3>

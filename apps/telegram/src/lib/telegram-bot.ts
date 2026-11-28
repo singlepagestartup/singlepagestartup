@@ -24,6 +24,10 @@ import {
   isCustomerWorkRateCallback,
   type IModel as IRbacSubject,
 } from "@sps/rbac/models/subject/sdk/model";
+import {
+  isOrderCheckoutTelegramCallback,
+  isOrderFileReviewCallback,
+} from "@sps/rbac/models/subject/sdk/model/src/lib/order-work";
 import { api as rbacModuleSubjectApi } from "@sps/rbac/models/subject/sdk/server";
 import { api as agentModuleAgentApi } from "@sps/agent/models/agent/sdk/server";
 import { IModel as ISocialModuleChat } from "@sps/social/models/chat/sdk/model";
@@ -864,7 +868,13 @@ export class TelegarmBot {
 
     this.instance.on("callback_query:data", async (ctx) => {
       const callback = ctx.callbackQuery;
-      if (isCustomerWorkRateCallback(callback.data)) {
+      const rateCallback = isCustomerWorkRateCallback(callback.data);
+      const checkoutCallback = isOrderCheckoutTelegramCallback(callback.data);
+      if (
+        rateCallback ||
+        checkoutCallback ||
+        isOrderFileReviewCallback(callback.data)
+      ) {
         const { from, message } = callback;
         const ru = from.language_code?.startsWith("ru");
         let approved = false;
@@ -876,7 +886,13 @@ export class TelegarmBot {
           from.id === message.chat.id
         ) {
           try {
-            await rbacModuleSubjectApi.approveCustomerWorkTelegramRate({
+            let submit = rbacModuleSubjectApi.customerWorkTelegramFileReview;
+            if (rateCallback) {
+              submit = rbacModuleSubjectApi.approveCustomerWorkTelegramRate;
+            } else if (checkoutCallback) {
+              submit = rbacModuleSubjectApi.customerWorkTelegramCheckout;
+            }
+            await submit({
               data: {
                 callbackData: callback.data,
                 fromId: from.id,
@@ -889,15 +905,25 @@ export class TelegarmBot {
             approved = true;
           } catch (error) {
             console.error(
-              "Telegram work rate approval failed",
+              "Telegram customer work callback failed",
               getTelegramBackgroundErrorMetadata(error),
             );
           }
         }
-        const accepted = ru ? "Тариф подтверждён" : "Rate approved";
-        const rejected = ru
-          ? "Не удалось подтвердить тариф. Проверьте последнее сообщение с тарифом."
-          : "Could not approve the rate. Check the latest rate message.";
+        let accepted = ru ? "Готово" : "Done";
+        let rejected = ru
+          ? "Действие недоступно. Проверьте последнее сообщение с файлом."
+          : "Action unavailable. Check the latest message with the file.";
+        if (rateCallback) {
+          accepted = ru ? "Тариф подтверждён" : "Rate approved";
+          rejected = ru
+            ? "Не удалось подтвердить тариф. Проверьте последнее сообщение с тарифом."
+            : "Could not approve the rate. Check the latest rate message.";
+        } else if (checkoutCallback) {
+          rejected = ru
+            ? "Действие недоступно. Проверьте последнее сообщение об оплате."
+            : "Action unavailable. Check the latest payment message.";
+        }
         await ctx.answerCallbackQuery({
           text: approved ? accepted : rejected,
           show_alert: !approved,
@@ -2177,6 +2203,11 @@ export class TelegarmBot {
             data: {
               ...props.data,
               description: sanitizedDescription,
+              ...(props.ctx.message?.reply_to_message?.message_id && {
+                telegramReplyToMessageId: String(
+                  props.ctx.message.reply_to_message.message_id,
+                ),
+              }),
             },
             options: {
               headers: {

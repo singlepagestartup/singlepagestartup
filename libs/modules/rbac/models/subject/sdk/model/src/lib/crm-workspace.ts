@@ -434,6 +434,7 @@ export interface ICrmWorkspaceTaskDetail {
     title: string;
     chatId: string;
     canSend: boolean;
+    supportThreadId?: string;
     actorProfileId?: string;
   };
   costs?: Array<{

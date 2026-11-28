@@ -1,7 +1,8 @@
 "use client";
 
 import { memo, useCallback } from "react";
-import { FilePreview } from "@sps/ui-adapter";
+import { getFilePreviewKind } from "@sps/shared-frontend-client-utils";
+import { FilePreview, MessageAttachmentList } from "@sps/ui-adapter";
 import { api } from "@sps/rbac/models/subject/sdk/client";
 import type { IPrivateChatAttachment } from "@sps/social/models/message/sdk/model";
 import type { IChatAttachmentDownload } from "../interface";
@@ -19,6 +20,21 @@ interface IProps {
 
 export function PrivateMessageAttachments(props: IProps) {
   const ru = props.language === "ru";
+  if (!props.layout || props.layout === "message") {
+    return (
+      <MessageAttachmentList
+        items={props.attachments}
+        language={props.language}
+        label={ru ? "Вложения" : "Attachments"}
+        itemId={(file) => file.id}
+        isPhoto={(file) => getFilePreviewKind(file) === "image"}
+      >
+        {(attachment) => (
+          <AttachmentPreview {...props} attachment={attachment} />
+        )}
+      </MessageAttachmentList>
+    );
+  }
   return (
     <ul
       aria-label={ru ? "Вложения" : "Attachments"}
@@ -57,6 +73,14 @@ interface IAttachmentRowProps extends Pick<
 export const PrivateMessageAttachment = memo(function PrivateMessageAttachment(
   props: IAttachmentRowProps,
 ) {
+  return (
+    <li className="min-w-0 max-w-full">
+      <AttachmentPreview {...props} />
+    </li>
+  );
+});
+
+function AttachmentPreview(props: IAttachmentRowProps) {
   const download = useCallback(
     (signal?: AbortSignal, maxBytes?: number) =>
       props.onDownload
@@ -85,18 +109,16 @@ export const PrivateMessageAttachment = memo(function PrivateMessageAttachment(
   const imageDocument =
     props.document && props.attachment.mimeType?.startsWith("image/");
   return (
-    <li className="min-w-0 max-w-full">
-      <FilePreview
-        name={props.attachment.name}
-        language={props.language}
-        mimeType={props.attachment.mimeType}
-        layout={props.layout ?? "message"}
-        availability={
-          props.document && !imageDocument ? "download-only" : undefined
-        }
-        showDownload={imageDocument}
-        onDownload={download}
-      />
-    </li>
+    <FilePreview
+      name={props.attachment.name}
+      language={props.language}
+      mimeType={props.attachment.mimeType}
+      layout={props.layout ?? "message"}
+      availability={
+        props.document && !imageDocument ? "download-only" : undefined
+      }
+      showDownload={imageDocument}
+      onDownload={download}
+    />
   );
-});
+}

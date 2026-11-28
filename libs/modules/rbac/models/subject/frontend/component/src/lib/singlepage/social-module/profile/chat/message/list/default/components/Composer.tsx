@@ -601,20 +601,10 @@ export function Composer(props: ComposerProps) {
             </button>
             <div className="ml-auto flex min-w-0 flex-wrap items-center justify-end gap-2">
               {modelControls?.fixedModelLabel && (
-                <span className="inline-flex min-h-10 items-center gap-2 rounded-xl bg-muted px-3 text-sm">
-                  <span className="text-muted-foreground">
-                    {ru ? "Модель этапа" : "Stage model"}
-                  </span>
-                  <span className="font-medium">
-                    {modelControls.fixedModelLabel}
-                  </span>
-                  {modelControls.fixedModelReasoning && (
-                    <span className="text-muted-foreground">
-                      {ru
-                        ? `Рассуждение · ${modelControls.fixedModelReasoning.labelRu}`
-                        : `${modelControls.fixedModelReasoning.label} reasoning`}
-                    </span>
-                  )}
+                <span className="text-xs text-muted-foreground opacity-75">
+                  {modelControls.fixedModelLabel}
+                  {modelControls.fixedModelReasoning &&
+                    ` · ${modelControls.fixedModelReasoning.label.toLowerCase()}`}
                 </span>
               )}
               {showModelPicker && !modelControls.fixedModelLabel && (

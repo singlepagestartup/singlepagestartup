@@ -1,7 +1,7 @@
 import { randomUUID } from "node:crypto";
 import { Service } from "./index";
 
-it("saves and replays a buyer message in a completed order without invoking work", async () => {
+it("refuses new messages in the completed order thread without invoking work", async () => {
   const task = {
     id: randomUUID(),
     storeId: randomUUID(),
@@ -25,10 +25,6 @@ it("saves and replays a buyer message in a completed order without invoking work
     variant: "customer-work",
   };
   const createWorkMessage = jest.fn().mockResolvedValue(message);
-  const findMessage = jest
-    .fn()
-    .mockResolvedValueOnce([])
-    .mockResolvedValue([message]);
   const createPlacement = jest.fn();
   const service = new Service({
     repository: { withSubjectLock: jest.fn(async (_, callback) => callback()) },
@@ -49,7 +45,7 @@ it("saves and replays a buyer message in a completed order without invoking work
           forThread: jest.fn().mockResolvedValue({ crmModuleTaskId: task.id }),
         },
         profilesToChats: { find: jest.fn().mockResolvedValue([{}]) },
-        message: { createWorkMessage, find: findMessage },
+        message: { createWorkMessage },
         profilesToMessages: {
           create: createPlacement,
           find: jest.fn().mockResolvedValue([{ profileId: input.profileId }]),
@@ -70,13 +66,9 @@ it("saves and replays a buyer message in a completed order without invoking work
     .mockResolvedValue({ chatId: input.chatId, threadId: input.threadId });
   const wake = jest.spyOn(service, "wakePendingWork");
 
-  await expect(service.messageFromThread(input)).resolves.toBe(message);
-  await expect(service.messageFromThread(input)).resolves.toBe(message);
-  await expect(
-    service.messageFromThread({ ...input, text: "Другое сообщение" }),
-  ).rejects.toThrow("another message");
-  expect(createWorkMessage).toHaveBeenCalledTimes(1);
-  expect(createPlacement).toHaveBeenCalledTimes(3);
+  await expect(service.messageFromThread(input)).rejects.toThrow("read-only");
+  expect(createWorkMessage).not.toHaveBeenCalled();
+  expect(createPlacement).not.toHaveBeenCalled();
   expect(wake).not.toHaveBeenCalled();
 });
 

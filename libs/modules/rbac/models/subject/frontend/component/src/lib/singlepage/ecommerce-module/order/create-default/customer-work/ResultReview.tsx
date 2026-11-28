@@ -7,7 +7,7 @@ import type {
   IOrderArtifact,
   IOrderWorkView,
 } from "@sps/rbac/models/subject/sdk/model";
-import { Button, Textarea } from "@sps/shared-ui-shadcn";
+import { Button } from "@sps/shared-ui-shadcn";
 import { api as currencyApi } from "@sps/billing/models/currency/sdk/client";
 import { formatCurrencyAmount } from "@sps/shared-frontend-client-utils";
 import { FilePreview } from "@sps/ui-adapter";
@@ -16,6 +16,7 @@ import type { IOrderFileReview } from "@sps/rbac/models/subject/sdk/model/src/li
 
 interface IProps {
   prompt?: IOrderFileReview;
+  promptMessageId?: string;
   subjectId: string;
   work: IOrderWorkView;
   language: string;
@@ -78,12 +79,11 @@ function ResultReviewContent({
   storeTest,
   checkoutHref,
   prompt,
+  promptMessageId,
   onReadArtifact,
   decision,
 }: IResultReviewContentProps) {
   const ru = language === "ru";
-  const [reason, setReason] = useState("");
-  const [declining, setDeclining] = useState(false);
   const [error, setError] = useState("");
   const intent = useRef<{ signature: string; key: string } | undefined>(
     undefined,
@@ -183,9 +183,9 @@ function ResultReviewContent({
     }
   }
 
-  async function choose(operation: "accept" | "decline") {
+  async function choose(operation: "accept" | "request-changes") {
     if (!choosing || !currentFile || !decision || decision.isPending) return;
-    const signature = `${operation}:${currentFile.id}:${reason.trim()}`;
+    const signature = `${operation}:${currentFile.id}`;
     if (intent.current?.signature !== signature) {
       intent.current = { signature, key: crypto.randomUUID() };
     }
@@ -203,7 +203,7 @@ function ResultReviewContent({
         data:
           operation === "accept"
             ? { ...input, operation }
-            : { ...input, operation, reason: reason.trim() },
+            : { ...input, operation, messageId: promptMessageId },
       });
       if (
         operation === "accept" &&
@@ -212,8 +212,6 @@ function ResultReviewContent({
         checkoutHref
       )
         window.location.assign(checkoutHref);
-      setDeclining(false);
-      setReason("");
       intent.current = undefined;
     } catch (cause) {
       setError(
@@ -310,33 +308,12 @@ function ResultReviewContent({
                 variant="outline"
                 className="min-h-11"
                 disabled={decision?.isPending}
-                onClick={() => setDeclining((open) => !open)}
+                onClick={() => void choose("request-changes")}
               >
                 {prompt?.declineText ??
                   (ru ? "Запросить правки" : "Request changes")}
               </Button>
             </div>
-          )}
-          {choosing && declining && (
-            <label className="grid gap-2 text-sm font-medium">
-              {ru ? "Что нужно исправить?" : "What should change?"}
-              <Textarea
-                value={reason}
-                maxLength={4000}
-                rows={2}
-                onChange={(event) => setReason(event.currentTarget.value)}
-                className="rounded-lg border border-input bg-background p-3"
-              />
-              <Button
-                type="button"
-                variant="outline"
-                className="min-h-11 justify-self-start"
-                disabled={!reason.trim() || decision?.isPending}
-                onClick={() => void choose("decline")}
-              >
-                {ru ? "Отправить правки" : "Send feedback"}
-              </Button>
-            </label>
           )}
         </>
       )}

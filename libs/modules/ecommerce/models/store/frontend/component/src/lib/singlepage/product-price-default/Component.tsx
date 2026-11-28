@@ -36,8 +36,8 @@ export function Component(props: IComponentPropsExtended) {
       {meter ? (
         <span className="font-semibold">
           {props.language === "ru"
-            ? `${meter.multiplier}× фактическая стоимость ИИ в токенах`
-            : `${meter.multiplier}× actual AI cost in tokens`}
+            ? "Оплата за использованные токены модели"
+            : "Pay per model token used"}
         </span>
       ) : (
         <Product

@@ -1,7 +1,7 @@
-import { Component as EcommerceModuleStore } from "@sps/ecommerce/models/store/frontend/component";
 import { ServiceCard } from "@sps/website-builder/models/widget/frontend/component";
 import { ServiceFrame } from "../ServiceFrame";
 import { ServiceOffers } from "../ServiceOffers";
+import { ServicePrice } from "../ServicePrice";
 import type { IComponentPropsExtended } from "./interface";
 
 export function Component({
@@ -29,14 +29,10 @@ export function Component({
                   href={`/${language}/framework/services/${encodeURIComponent(product.slug)}`}
                   language={language}
                   price={
-                    <EcommerceModuleStore
-                      isServer={false}
-                      variant="product-price-default"
-                      product={product}
-                      storeId={offer.storeId}
-                      offerId={offer.id}
+                    <ServicePrice
+                      ecommerceModuleProduct={product}
+                      ecommerceModuleOffer={offer}
                       language={language}
-                      readOnly
                     />
                   }
                 />

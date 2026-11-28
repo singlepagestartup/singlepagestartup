@@ -179,6 +179,7 @@ export const MessageTimelineSection = memo(function MessageTimelineSection(
           work={props.orderWork}
           language={props.language}
           prompt={review?.prompt}
+          promptMessageId={review?.messageId}
         />
       ) : undefined,
     [props.subjectId, props.orderWork, props.language, review],

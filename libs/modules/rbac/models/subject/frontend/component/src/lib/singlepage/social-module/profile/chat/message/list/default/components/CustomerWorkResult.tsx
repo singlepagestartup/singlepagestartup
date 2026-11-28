@@ -26,6 +26,7 @@ interface IWorkspaceScope {
   taskId: string;
   chatId: string;
   discussionOnly?: boolean;
+  supportThreadId?: string;
 }
 export const WorkspaceOrderFileContext = createContext<IWorkspaceScope | null>(
   null,

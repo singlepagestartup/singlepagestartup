@@ -234,6 +234,42 @@ beforeEach(() => {
   mockThreadsAccessError = undefined;
 });
 
+it("keeps the order discussion selected on the chat URL and opens authorized support in the staff composition", () => {
+  const support = {
+    ...defaultThread,
+    id: "support",
+    title: "Поддержка",
+    isOrderSupport: true,
+  };
+  mockThreads = [support, defaultThread];
+  const { rerender } = renderChat();
+  expect(screen.getByTestId("conversation").textContent).toBe("General");
+  expect(screen.getByRole("link", { name: /^Поддержка/ })).toBeTruthy();
+
+  rerender(
+    <Component
+      isServer={false}
+      variant="social-module-profile-chat-overview-default"
+      data={mockSubject}
+      language="en"
+      socialModuleProfile={mockProfile}
+      socialModuleChatId={mockChat.id}
+      socialModuleChat={{
+        ...mockChat,
+        taskChatThreadId: defaultThread.id,
+        taskChatStaff: true,
+      }}
+      socialModuleThreadId={support.id}
+      defaultThreadId={defaultThread.id}
+      getThreadHref={(id) => `/en/task?thread=${id}`}
+    />,
+  );
+  expect(screen.getByTestId("conversation").textContent).toBe("Поддержка");
+  expect(
+    screen.getByRole("link", { name: /^Поддержка/ }).getAttribute("href"),
+  ).toBe("/en/task?thread=support");
+});
+
 const employeePath = "/en/ecommerce/stores/shop/employees/employee";
 const employee = {
   id: "employee-profile",

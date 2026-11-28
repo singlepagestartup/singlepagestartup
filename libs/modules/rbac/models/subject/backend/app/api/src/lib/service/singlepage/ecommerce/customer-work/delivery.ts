@@ -1,4 +1,5 @@
 import type { IModel as Message } from "@sps/social/models/message/sdk/model";
+import { orderCheckoutTelegramInteraction } from "@sps/rbac/models/subject/sdk/model/src/lib/order-work";
 import type { Service as SubjectService } from "../../index";
 import { criteria } from "./utils";
 
@@ -65,7 +66,9 @@ export class Service {
         socialModule: {
           message: {
             description: input.message.description,
-            interaction: input.message.interaction,
+            interaction:
+              orderCheckoutTelegramInteraction(input.message) ??
+              input.message.interaction,
           },
           thread,
         },

@@ -44,10 +44,14 @@ import { selectRetailOffer } from "@sps/ecommerce/relations/stores-to-products/s
 import {
   orderFileReviewInteraction,
   orderFileFeedbackOperationKey,
+  orderFileRevisionPromptKey,
   orderPaymentMessageKey,
+  readOrderCheckoutButtons,
+  readOrderFileReview,
   readOrderPaymentNotice,
 } from "@sps/rbac/models/subject/sdk/model/src/lib/order-work";
 import type {
+  IOrderPaymentConversation,
   IOrderWork,
   IOrderWorkPayment,
 } from "@sps/ecommerce/models/order/sdk/model";
@@ -117,6 +121,7 @@ import { OrderChatCheckout } from "./checkout";
 import { Service as CustomerDelivery } from "./delivery";
 import { Service as CustomerCart, type IStoredProposal } from "./cart";
 import { Service as OrderSummary } from "./order-summary";
+import { Service as OrderSupport } from "./order-support";
 import {
   criteria,
   customerWorkRateNotice,
@@ -147,6 +152,15 @@ type TConversationCommand = Extract<
   TCustomerWorkCommand,
   { operation: "message" | "handoff" | "approve-budget" }
 >;
+type TCheckoutCommand = Extract<
+  TCustomerWorkCommand,
+  { operation: "chat-checkout" }
+>;
+type TCheckoutButton = Extract<TCheckoutCommand["input"], { kind: "button" }>;
+
+interface IDeferredCheckout {
+  payment?: TCheckoutCommand;
+}
 type TMemoryCommand = Exclude<
   TCustomerWorkCommand,
   | TOpenCustomerWork
@@ -160,6 +174,31 @@ interface IMessageEntry {
   profile: SocialProfile | null;
   linkedAt: Date;
 }
+
+interface IWorkChannel {
+  chatId: string;
+  threadId: string;
+}
+
+type TChatDecision =
+  | {
+      operation: "approve-budget";
+      messageId: string;
+      priceKey: string;
+      maximum?: string;
+    }
+  | {
+      operation: "accept" | "request-changes" | "decline";
+      fileId: string;
+      prompt: IMessageEntry;
+    }
+  | { operation: "chat-checkout"; input: TCheckoutButton };
+
+const savedCheckoutPaymentSchema = z.object({
+  kind: z.literal("button"),
+  messageId: z.uuid(),
+  value: z.literal("pay"),
+});
 
 interface ICoverDesignMessage {
   id: string;
@@ -189,6 +228,7 @@ interface IThreadMessage {
   text: unknown;
   metadata?: SocialMessage["metadata"];
   sourceSystemId?: string;
+  telegramReplyToMessageId?: string;
   hasAttachments: boolean;
   attachments?: File[];
 }
@@ -207,6 +247,10 @@ export class Service {
     private readonly subject: SubjectService,
     private readonly wake?: (taskId: string) => void,
   ) {}
+
+  get orderSupport() {
+    return new OrderSupport(this.subject);
+  }
 
   private get crm() {
     return this.subject.modules.crm;
@@ -246,14 +290,12 @@ export class Service {
           source: "order-checkout",
         }),
       });
-      await this.social.message.bindWorkReply(
-        message.id,
-        `order-checkout:${message.id}`,
-      );
+      const workReplyKey = `order-checkout:${message.id}`;
+      await this.social.message.bindWorkReply(message.id, workReplyKey);
       await new CustomerDelivery(this.subject).queue({
         ...channel,
         customerId: task.customerId,
-        message,
+        message: { ...message, workReplyKey },
       });
       return message;
     });
@@ -318,12 +360,18 @@ export class Service {
     if (command.operation === "remember" || command.operation === "forget") {
       return this.recordMemory(customerId, command);
     }
+    const deferredCheckout: IDeferredCheckout = {};
     const view = await this.recordActivity(
       customerId,
       command,
       undefined,
       senderAccessToken,
+      deferredCheckout,
     );
+    if (deferredCheckout.payment) {
+      await this.checkout.execute(customerId, deferredCheckout.payment);
+      return this.view(customerId, command);
+    }
     if (
       command.operation === "message" ||
       command.operation === "approve-budget"
@@ -786,6 +834,15 @@ export class Service {
     messageId: string;
     attachmentId: string;
   }) {
+    const support = await this.orderSupport.taskForThread(input.threadId);
+    if (support) {
+      if (!(await this.orderSupport.canRead(input.customerId, support.task))) {
+        throw new Error(
+          "Not Found error. The message attachment is unavailable",
+        );
+      }
+      return this.threadAttachment(input);
+    }
     const placements = await this.social.chatsToThreads.find(
       criteria({ threadId: input.threadId }),
     );
@@ -1001,6 +1058,20 @@ export class Service {
     if (!chat) {
       throw new Error("Not Found error. Chat is unavailable");
     }
+    if (threadId) {
+      const support = await this.orderSupport.taskForThread(threadId, chatId);
+      if (support) {
+        if (!(await this.orderSupport.canRead(subjectId, support.task))) {
+          throw new Error("Not Found error. Order support is unavailable");
+        }
+        if (edit) {
+          throw new Error(
+            "Forbidden error. The order support thread must be preserved",
+          );
+        }
+        return { staff: false, taskChatScope: null, isOrderSupport: true };
+      }
+    }
     const managesChat = [
       "update-chat",
       "delete-chat",
@@ -1115,6 +1186,9 @@ export class Service {
   ): Promise<ICustomerWorkView> {
     const task = await this.taskForCustomer(customerId, scope);
     const discussionOnly = canDiscussCompletedOrder(task);
+    const supportThreadId = discussionOnly
+      ? await this.orderSupport.ensure(task)
+      : undefined;
     const funnel = await this.crm.task.getFunnel(scope);
     const stage = funnel.definition.stages.find(
       ({ id }) => id === task.stageId,
@@ -1262,6 +1336,7 @@ export class Service {
         : undefined,
       status: task.status,
       ...(discussionOnly && { discussionOnly }),
+      ...(supportThreadId && { supportThreadId }),
       storeTest: testStore
         ? {
             storeSlug: testStore.slug,
@@ -2743,6 +2818,379 @@ export class Service {
     }
   }
 
+  private async currentReviewFile(task: CrmTask, stage?: IFunnelStage) {
+    if (
+      !task.orderId ||
+      !stage?.actions.some(
+        (action) =>
+          action.actors.includes("system") &&
+          action.evidence.includes("result-accepted"),
+      )
+    ) {
+      return;
+    }
+    const work = await this.subject.modules.ecommerce.order.work.findByOrder(
+      task.orderId,
+    );
+    const file = work?.files.at(-1);
+    if (
+      !work ||
+      !file ||
+      work.orderId !== task.orderId ||
+      work.storeId !== task.storeId ||
+      work.taskId !== task.id ||
+      work.customerId !== task.customerId ||
+      work.state !== "awaiting-result" ||
+      work.acceptedFileId ||
+      work.paid ||
+      file.invalidatedByCartEdit ||
+      (file.priceBasis &&
+        (file.priceBasis.stageId !== task.stageId ||
+          file.priceBasis.publicationId !== task.publicationId)) ||
+      work.decisions.some(
+        (decision) =>
+          decision.fileId === file.id && decision.kind === "declined",
+      )
+    ) {
+      return;
+    }
+    return file;
+  }
+
+  private async matchesReviewPrompt(
+    task: CrmTask,
+    channel: IWorkChannel,
+    entry: IMessageEntry,
+    fileId: string,
+  ) {
+    const { message, profileId } = entry;
+    if (readOrderFileReview(message)?.fileId !== fileId) {
+      return false;
+    }
+    const event = replyEventSchema.safeParse(
+      message.metadata?.customerWorkReplyEvent,
+    ).data;
+    const [profile, [inChat]] = await Promise.all([
+      this.assignedAgentProfile(task, channel.chatId),
+      this.social.chatsToMessages.find(
+        criteria({ chatId: channel.chatId, messageId: message.id }),
+      ),
+    ]);
+    return Boolean(
+      profile &&
+      profile.id === profileId &&
+      event?.taskId === task.id &&
+      inChat,
+    );
+  }
+
+  async promptForResultChanges(
+    task: CrmTask,
+    fileId: string,
+    messageId?: string,
+  ) {
+    const { definition } = await this.crm.task.getFunnel({
+      storeId: task.storeId,
+      taskId: task.id,
+    });
+    const stage = definition.stages.find(
+      ({ id, archived }) => id === task.stageId && !archived,
+    );
+    const file = await this.currentReviewFile(task, stage);
+    if (
+      !this.hasActiveAgentAssignment(task) ||
+      file?.previewFileId !== fileId
+    ) {
+      throw new Error("Conflict error. This file is no longer awaiting review");
+    }
+    const primary = await this.channel(task.id);
+    const channels = messageId
+      ? [await this.replyChannel(task.id, messageId)]
+      : await this.social.chatsToCrmModuleTasks.channels({ taskId: task.id });
+    const russian = /\p{Script=Cyrillic}/u.test(stage?.instruction ?? "");
+    const isReview = ({ message }: IMessageEntry) =>
+      readOrderFileReview(message)?.fileId === fileId;
+    for (const channel of channels) {
+      if (channel.chatId !== primary.chatId) {
+        continue;
+      }
+      const source = messageId
+        ? (await this.messages(channel.threadId, [messageId])).find(isReview)
+        : await this.findThreadMessage(channel.threadId, isReview);
+      if (
+        !source?.profileId ||
+        !(await this.matchesReviewPrompt(task, channel, source, fileId))
+      ) {
+        continue;
+      }
+      await this.postOrderNotice(
+        task,
+        {
+          key: orderFileRevisionPromptKey(task.id, fileId),
+          source: "order-result-revision",
+          text: russian
+            ? "Что нужно исправить в этом файле? Напишите в чат."
+            : "What should I change in this file? Reply in the chat.",
+        },
+        { ...channel, profileId: source.profileId },
+      );
+      return;
+    }
+    throw new Error("Conflict error. The result review message is unavailable");
+  }
+
+  private async chatDecision(input: {
+    task: CrmTask;
+    stage?: IFunnelStage;
+    funding?: IWorkFunding;
+    channel: IWorkChannel;
+    text: string;
+    telegramReplyToMessageId?: string;
+    checkoutState?: IOrderPaymentConversation;
+    mayDispatchCheckout: boolean;
+    hasAttachments?: boolean;
+  }): Promise<TChatDecision | undefined> {
+    const { task, stage, funding, channel, text, checkoutState } = input;
+    if (
+      !this.hasActiveAgentAssignment(task) ||
+      !text ||
+      text.length > 4000 ||
+      text.startsWith("/")
+    ) {
+      return;
+    }
+    const result = await this.currentReviewFile(task, stage);
+    const mayApprove = !input.hasAttachments && !/[?？]/u.test(text);
+    const mayApproveRate = mayApprove && customerPaysForWork(funding);
+    if (!result && !mayApproveRate && !checkoutState) {
+      return;
+    }
+    const [session, buyerProfiles] = await Promise.all([
+      this.subject.authenticationMe({ subjectId: task.customerId }),
+      this.customerProfiles(task),
+    ]);
+    if (!session?.authenticated && !checkoutState) {
+      return;
+    }
+    const revisionKey =
+      result && orderFileRevisionPromptKey(task.id, result.previewFileId);
+    const prompt = await this.lastDecisionPrompt(
+      channel.threadId,
+      buyerProfiles,
+      revisionKey,
+    );
+    const promptText = prompt?.message.description;
+    if (!prompt || !promptText) {
+      return;
+    }
+    const { message } = prompt;
+    if (input.telegramReplyToMessageId) {
+      const [delivery, chat] = await Promise.all([
+        this.subject.modules.notification.notification.findById({
+          id: message.id,
+        }),
+        this.social.chat.findById({ id: channel.chatId }),
+      ]);
+      if (
+        chat?.variant !== "telegram" ||
+        !chat.sourceSystemId ||
+        delivery?.status !== "sent" ||
+        delivery.reciever !== chat.sourceSystemId ||
+        delivery.sourceSystemId !== input.telegramReplyToMessageId
+      ) {
+        return;
+      }
+    }
+    const candidates: {
+      id: string;
+      action: TChatDecision;
+      instruction: string;
+    }[] = [];
+    const rate =
+      session?.authenticated &&
+      mayApproveRate &&
+      readCustomerWorkRatePrompt(message);
+    if (rate && funding) {
+      const price = await this.price(task, funding);
+      if (
+        price?.key === rate.priceKey &&
+        rate.maximum === funding.maxTaskAmount &&
+        !(await this.spendingApproval(
+          task,
+          funding,
+          task.revision,
+          rate.priceKey,
+        ))
+      ) {
+        const action = {
+          operation: "approve-budget" as const,
+          messageId: message.id,
+          priceKey: rate.priceKey,
+          maximum: rate.maximum,
+        };
+        try {
+          await this.assertRatePrompt(
+            task,
+            channel,
+            {
+              ...action,
+              taskId: task.id,
+              storeId: task.storeId,
+              operationKey: message.id,
+            },
+            message.id,
+          );
+          candidates.push({
+            id: "approve-budget",
+            action,
+            instruction: `${rate.button.text}. The buyer expressly approves the displayed tariff.`,
+          });
+        } catch (error) {
+          if (getHttpErrorType(error).status !== 409) {
+            throw error;
+          }
+        }
+      }
+    }
+    if (result && session?.authenticated) {
+      const fileId = result.previewFileId;
+      const review = readOrderFileReview(message);
+      const revisionPrompt =
+        message.workReplyKey === orderFileRevisionPromptKey(task.id, fileId);
+      const currentReview =
+        review &&
+        (await this.matchesReviewPrompt(task, channel, prompt, fileId));
+      if (currentReview || revisionPrompt) {
+        candidates.push({
+          id: "revise-result",
+          action: { operation: "decline", fileId, prompt },
+          instruction:
+            'Apply specific directions to change the displayed file. A request such as "Change the delivery time to two days" or "Remove the pricing section" selects this action immediately. A generic request for unspecified changes cannot select this action.',
+        });
+      }
+      if (currentReview && !input.hasAttachments) {
+        candidates.push({
+          id: "ask-for-revision-details",
+          action: { operation: "request-changes", fileId, prompt },
+          instruction: `${review.declineText}. The buyer wants revisions but has not said what to change.`,
+        });
+        if (mayApprove) {
+          candidates.push({
+            id: "approve-result",
+            action: { operation: "accept", fileId, prompt },
+            instruction: `${review.acceptText}. The buyer expressly approves this result as it stands.`,
+          });
+        }
+      }
+    }
+    if (checkoutState && !input.hasAttachments) {
+      for (const button of this.checkout.decisionButtons(
+        checkoutState,
+        message,
+        mayApprove && input.mayDispatchCheckout,
+      )) {
+        if (!("callback_data" in button)) {
+          continue;
+        }
+        const value = button.callback_data;
+        let instruction = `${button.text}. The buyer explicitly asks to choose this action.`;
+        if (value.startsWith("method:")) {
+          instruction = `${button.text}. The buyer names or clearly selects this exact payment method. Do not guess when multiple methods match.`;
+        } else if (value === "skip") {
+          instruction = `${button.text}. The buyer explicitly wants to proceed without a comment. Process an actual order comment as normal text.`;
+        } else if (value === "pay") {
+          instruction = `${button.text}. The buyer explicitly and unconditionally asks to start payment for the current order now. A bare yes, confirmation, or acknowledgement without a request to pay is insufficient.`;
+        }
+        candidates.push({
+          id: value === "pay" ? "proceed-to-payment" : value,
+          instruction,
+          action: {
+            operation: "chat-checkout",
+            input: { kind: "button", messageId: message.id, value },
+          },
+        });
+      }
+    }
+    if (!candidates.length) {
+      return;
+    }
+    try {
+      const selected =
+        await this.subject.providerConnections.decideCustomerWorkAction({
+          prompt: promptText.slice(0, 8000),
+          reply: text,
+          actions: candidates.map(({ id, instruction }) => ({
+            id,
+            instruction,
+          })),
+        });
+      const action = candidates.find(
+        ({ id }) => id === selected.actionId,
+      )?.action;
+      if (
+        (action?.operation === "approve-budget" ||
+          action?.operation === "accept" ||
+          (action?.operation === "chat-checkout" &&
+            action.input.value === "pay")) &&
+        (!selected.evidence || !text.includes(selected.evidence))
+      ) {
+        return;
+      }
+      return action;
+    } catch (error) {
+      logger.warn("Customer work could not classify a chat reply", {
+        taskId: task.id,
+        type: error instanceof Error ? error.name : typeof error,
+      });
+      return undefined;
+    }
+  }
+
+  private async lastDecisionPrompt(
+    threadId: string,
+    buyerProfiles: Set<string>,
+    revisionKey?: string,
+  ) {
+    return this.findThreadMessage(threadId, ({ message, profileId }) => {
+      if (
+        profileId &&
+        buyerProfiles.has(profileId) &&
+        !taskChatStaffAuthor(message)
+      ) {
+        return false;
+      }
+      const keyboard: unknown = message.interaction?.inline_keyboard;
+      const hasButtons =
+        Array.isArray(keyboard) &&
+        keyboard.some((row) => Array.isArray(row) && row.length > 0);
+      return (
+        Boolean(revisionKey && message.workReplyKey === revisionKey) ||
+        hasButtons ||
+        (!message.workReplyKey?.startsWith("reminder:") &&
+          !isSocialMessageExcludedFromOpenRouter(message.metadata))
+      );
+    });
+  }
+
+  private async findThreadMessage(
+    threadId: string,
+    test: (entry: IMessageEntry) => boolean,
+  ) {
+    const limit = 24;
+    let offset = 0;
+    let hasNextPage;
+    do {
+      const page = await this.messagePage(threadId, { limit, offset });
+      const prompt = page.entries.findLast(test);
+      if (prompt) {
+        return prompt;
+      }
+      offset += limit;
+      hasNextPage = page.hasNextPage;
+    } while (hasNextPage);
+    return undefined;
+  }
+
   async approveRateFromTelegram(input: {
     telegramChatId: string;
     telegramMessageId: string;
@@ -2770,10 +3218,202 @@ export class Service {
       throw unavailable();
     }
     const channel = await this.channel(task.id);
+    await this.assertTelegramDecisionCustomer(
+      task,
+      channel,
+      input.telegramChatId,
+      unavailable,
+    );
+    await this.execute(task.customerId, {
+      operation: "approve-budget",
+      operationKey: input.messageId,
+      messageId: input.messageId,
+      storeId: task.storeId,
+      taskId: task.id,
+      priceKey: prompt.priceKey,
+      maximum: prompt.maximum,
+    });
+  }
+
+  async reviewFileFromTelegram(input: {
+    fileId: string;
+    operation: "accept" | "request-changes";
+    telegramChatId: string;
+    telegramMessageId: string;
+  }) {
+    const unavailable = () =>
+      new Error("Not Found error. The delivered result review is unavailable");
+    const message = await this.telegramDeliveredMessage(input, unavailable);
+    const review = message && readOrderFileReview(message);
+    const event = replyEventSchema.safeParse(
+      message?.metadata?.customerWorkReplyEvent,
+    ).data;
+    if (review?.fileId !== input.fileId || !event) {
+      throw unavailable();
+    }
+    const task = await this.crm.task.findById({ id: event.taskId });
+    if (!task?.orderId || isStoreEmployeeTraining(task.openingKey)) {
+      throw unavailable();
+    }
+    const orderId = task.orderId;
+    const channel = await this.replyChannel(task.id, message.id);
+    await this.assertTelegramDecisionCustomer(
+      task,
+      channel,
+      input.telegramChatId,
+      unavailable,
+    );
+    await this.subject.repository.withSubjectLock(
+      { subjectId: task.customerId },
+      () =>
+        this.crm.task.withTask(
+          { storeId: task.storeId, taskId: task.id },
+          async (current) => {
+            if (
+              current.orderId !== orderId ||
+              current.customerId !== task.customerId
+            ) {
+              throw unavailable();
+            }
+            const [entry] = await this.messages(channel.threadId, [message.id]);
+            if (
+              !entry ||
+              !(await this.matchesReviewPrompt(
+                current,
+                channel,
+                entry,
+                input.fileId,
+              ))
+            ) {
+              throw unavailable();
+            }
+            await this.subject.orderWork.decision(current.customerId, orderId, {
+              operation: input.operation,
+              operationKey: `telegram:${message.id}:${input.operation}`,
+              storeId: current.storeId,
+              taskId: current.id,
+              fileId: input.fileId,
+              ...(input.operation === "request-changes" && {
+                messageId: message.id,
+              }),
+            });
+          },
+        ),
+    );
+  }
+
+  async checkoutFromTelegram(input: {
+    value: string;
+    telegramChatId: string;
+    telegramMessageId: string;
+  }) {
+    const unavailable = () =>
+      new Error(
+        "Not Found error. The delivered checkout message is unavailable",
+      );
+    const message = await this.telegramDeliveredMessage(input, unavailable);
+    if (
+      !readOrderCheckoutButtons(message)
+        ?.flat()
+        .some(
+          (button) =>
+            "callback_data" in button && button.callback_data === input.value,
+        )
+    ) {
+      throw unavailable();
+    }
+    const placement = {
+      ...criteria({ messageId: message.id }).params,
+      limit: 2,
+    };
+    const [chats, threads] = await Promise.all([
+      this.social.chatsToMessages.find({ params: placement }),
+      this.social.threadsToMessages.find({ params: placement }),
+    ]);
+    if (chats.length !== 1 || threads.length !== 1) {
+      throw unavailable();
+    }
+    const channel = { chatId: chats[0].chatId, threadId: threads[0].threadId };
+    const link = await this.social.chatsToCrmModuleTasks.forThread(
+      channel.threadId,
+      channel.chatId,
+    );
+    const task =
+      link && (await this.crm.task.findById({ id: link.crmModuleTaskId }));
+    if (!task?.orderId || isStoreEmployeeTraining(task.openingKey)) {
+      throw unavailable();
+    }
+    const checkout = this.checkout;
+    await checkout.execute(
+      task.customerId,
+      {
+        operation: "chat-checkout",
+        operationKey: message.id,
+        storeId: task.storeId,
+        taskId: task.id,
+        input: { kind: "button", messageId: message.id, value: input.value },
+      },
+      async ({ task: current, work }) => {
+        const primary = await this.channel(current.id);
+        const state = checkout.current(work);
+        if (
+          primary.chatId !== channel.chatId ||
+          primary.threadId !== channel.threadId ||
+          state?.promptId !== message.id
+        ) {
+          throw unavailable();
+        }
+        await this.assertTelegramDecisionCustomer(
+          current,
+          channel,
+          input.telegramChatId,
+          unavailable,
+        );
+      },
+    );
+  }
+
+  private async telegramDeliveredMessage(
+    input: { telegramChatId: string; telegramMessageId: string },
+    unavailable: () => Error,
+  ) {
+    const deliveries =
+      await this.subject.modules.notification.notification.find({
+        params: {
+          ...criteria({
+            status: "sent",
+            reciever: input.telegramChatId,
+            sourceSystemId: input.telegramMessageId,
+          }).params,
+          limit: 2,
+        },
+      });
+    const [delivery] = deliveries;
+    if (
+      deliveries.length !== 1 ||
+      delivery.status !== "sent" ||
+      delivery.reciever !== input.telegramChatId ||
+      delivery.sourceSystemId !== input.telegramMessageId
+    ) {
+      throw unavailable();
+    }
+    const message = await this.social.message.findById({ id: delivery.id });
+    if (!message) {
+      throw unavailable();
+    }
+    return message;
+  }
+
+  private async assertTelegramDecisionCustomer(
+    task: CrmTask,
+    channel: IWorkChannel,
+    telegramChatId: string,
+    unavailable: () => Error,
+  ) {
     const [chat, identities, profiles, session] = await Promise.all([
       this.social.chat.findById({ id: channel.chatId }),
       this.subject.module.identity.find(
-        criteria({ provider: "telegram", account: input.telegramChatId }),
+        criteria({ provider: "telegram", account: telegramChatId }),
       ),
       this.subject.module.subjectsToSocialModuleProfiles.find(
         criteria({ subjectId: task.customerId }),
@@ -2786,7 +3426,7 @@ export class Service {
       .map(({ socialModuleProfileId }) => socialModuleProfileId);
     if (
       chat?.variant !== "telegram" ||
-      chat.sourceSystemId !== input.telegramChatId ||
+      chat.sourceSystemId !== telegramChatId ||
       identities.length !== 1 ||
       identity.usage === "outbound_api" ||
       !session?.authenticated ||
@@ -2813,15 +3453,6 @@ export class Service {
     if (!owner || !member) {
       throw unavailable();
     }
-    await this.execute(task.customerId, {
-      operation: "approve-budget",
-      operationKey: input.messageId,
-      messageId: input.messageId,
-      storeId: task.storeId,
-      taskId: task.id,
-      priceKey: prompt.priceKey,
-      maximum: prompt.maximum,
-    });
   }
 
   async postOrderPayment(task: CrmTask, payment: IOrderWorkPayment) {
@@ -3187,14 +3818,14 @@ export class Service {
     const byMessage = new Map(
       entries.map(({ message }) => [message.id, message]),
     );
-    const source = sources.find(
-      ({ detail }) =>
-        !isMemoryOnlyMessage(
-          detail.messageId
-            ? byMessage.get(detail.messageId)?.description
-            : undefined,
-        ),
-    );
+    const source = sources.find(({ detail }) => {
+      const message = detail.messageId && byMessage.get(detail.messageId);
+      return (
+        message &&
+        !isMemoryOnlyMessage(message.description) &&
+        !isSocialMessageExcludedFromOpenRouter(message.metadata)
+      );
+    });
     const index = entries.findIndex(
       ({ message }) => message.id === source?.detail.messageId,
     );
@@ -3363,6 +3994,24 @@ export class Service {
     if (messageIds?.length === 0) {
       return [];
     }
+    const page = await this.messagePage(threadId, {
+      limit: messageIds?.length ?? 100,
+      offset: 0,
+      messageIds,
+      through,
+    });
+    return page.entries;
+  }
+
+  private async messagePage(
+    threadId: string,
+    {
+      limit,
+      offset,
+      messageIds,
+      through,
+    }: { limit: number; offset: number; messageIds?: string[]; through?: Date },
+  ) {
     const { and } = criteria({ threadId }).params.filters;
     const links = await this.social.threadsToMessages.find({
       params: {
@@ -3385,7 +4034,8 @@ export class Service {
                   : []),
               ],
         },
-        limit: messageIds?.length ?? 100,
+        limit,
+        offset,
         orderBy: {
           and: [
             { column: "createdAt", method: "desc" },
@@ -3420,7 +4070,7 @@ export class Service {
         linkedAt: link.createdAt,
       });
     }
-    return entries;
+    return { entries, hasNextPage: links.length === limit };
   }
 
   private async writeMessage(props: {
@@ -3537,6 +4187,7 @@ export class Service {
     if (!link && !selection) {
       return null;
     }
+    const deferredCheckout: IDeferredCheckout = {};
     const saved = await this.subject.repository.withSubjectLock(
       { subjectId: input.customerId, savepoint: isPersonalMemoryCommand(text) },
       async () => {
@@ -3586,7 +4237,11 @@ export class Service {
         return this.crm.task.withTask(
           { storeId: task.storeId, taskId: task.id },
           async (locked) => {
-            const message = await this.postTaskMessage(locked, input);
+            const message = await this.postTaskMessage(
+              locked,
+              input,
+              deferredCheckout,
+            );
             return { message, taskId: locked.id, status: locked.status };
           },
         );
@@ -3595,10 +4250,22 @@ export class Service {
     if (saved.status !== "closed") {
       this.wakePendingWork(saved.taskId);
     }
+    if (deferredCheckout.payment) {
+      await this.checkout.execute(input.customerId, deferredCheckout.payment);
+    }
     return saved.message;
   }
 
-  async postTaskMessage(task: CrmTask, input: IThreadMessage) {
+  async postTaskMessage(
+    task: CrmTask,
+    input: IThreadMessage,
+    deferredCheckout?: IDeferredCheckout,
+  ) {
+    if (canDiscussCompletedOrder(task)) {
+      throw new Error(
+        "Forbidden error. The completed order discussion is read-only. Use the support thread.",
+      );
+    }
     const text = typeof input.text === "string" ? input.text.trim() : "";
     const files = input.attachments ?? [];
     if (
@@ -3614,7 +4281,6 @@ export class Service {
     const staff =
       task.customerId !== actorId ||
       (task.assigneeKind === "human" && task.assigneeId === actorId);
-    const discussionOnly = canDiscussCompletedOrder(task);
     if (staff) {
       if (
         !(await this.subject.crmWorkspace.canParticipateInChat(
@@ -3629,7 +4295,6 @@ export class Service {
       }
       if (
         task.status === "closed" &&
-        !discussionOnly &&
         !(await this.subject.crmWorkspace.taskAccess(actorId, task.storeId))
           .canManageTasks
       ) {
@@ -3653,9 +4318,8 @@ export class Service {
       );
       for (const saved of candidates) {
         const staffAuthor = taskChatStaffAuthor(saved);
-        const passiveBuyerRetry = discussionOnly && !staffAuthor;
         // Active buyer retries are matched against the original task activity.
-        if (!staff && !passiveBuyerRetry && staffAuthor !== actorId) {
+        if (!staff && staffAuthor !== actorId) {
           continue;
         }
         const [[author], [link]] = await Promise.all([
@@ -3689,17 +4353,6 @@ export class Service {
     }
     if (staff) {
       return this.sendStaffMessage(task, input, text, attachments);
-    }
-    if (discussionOnly) {
-      return this.writeMessage({
-        chatId: input.chatId,
-        threadId: input.threadId,
-        profileId: input.profileId,
-        sourceSystemId: input.sourceSystemId,
-        ownerId: actorId,
-        text,
-        attachments,
-      });
     }
     const requestMetadata: Record<string, unknown> = {};
     const legacyRequest = parseRbacAiReactionRequestMetadata(input.metadata);
@@ -3737,9 +4390,11 @@ export class Service {
         requestMetadata: Object.keys(requestMetadata).length
           ? requestMetadata
           : undefined,
+        telegramReplyToMessageId: input.telegramReplyToMessageId,
         attachments,
       },
       input.senderAccessToken,
+      deferredCheckout,
     );
     const key = this.activityKey(input.customerId, command.operationKey);
     const event = await this.crm.tasksToStages.byOperation(view.taskId, key);
@@ -3966,10 +4621,12 @@ export class Service {
       profileId: string;
       threadId?: string;
       sourceSystemId?: string;
+      telegramReplyToMessageId?: string;
       requestMetadata?: Record<string, unknown>;
       attachments?: IPreparedAttachment[];
     },
     senderAccessToken?: string,
+    deferredCheckout?: IDeferredCheckout,
   ) {
     return this.subject.repository.withSubjectLock(
       { subjectId: customerId },
@@ -4043,6 +4700,27 @@ export class Service {
                 throw new Error(
                   "Conflict error. This request key belongs to another message",
                 );
+              }
+              const payment = savedCheckoutPaymentSchema.safeParse(
+                previous?.metadata?.customerWorkCheckoutPayment,
+              ).data;
+              if (deferredCheckout && payment) {
+                const [placement] = await this.social.threadsToMessages.find(
+                  criteria({
+                    threadId: channel.threadId,
+                    messageId: event.detail.messageId,
+                  }),
+                );
+                if (!placement) {
+                  throw new Error(
+                    "Conflict error. This payment reply belongs to another thread",
+                  );
+                }
+                deferredCheckout.payment = {
+                  ...command,
+                  operation: "chat-checkout",
+                  input: payment,
+                };
               }
             }
             if (
@@ -4209,11 +4887,29 @@ export class Service {
           const checkoutInput =
             checkoutState?.step === "email" ||
             checkoutState?.step === "comment";
+          const receiptEmail =
+            checkoutState?.step === "email" &&
+            z.email().safeParse(command.text).success;
+          const decision =
+            !receiptEmail && !isPersonalMemoryCommand(command.text)
+              ? await this.chatDecision({
+                  task: workTask,
+                  stage,
+                  funding,
+                  channel,
+                  text: command.text,
+                  telegramReplyToMessageId: author?.telegramReplyToMessageId,
+                  checkoutState,
+                  mayDispatchCheckout: Boolean(deferredCheckout),
+                  hasAttachments: Boolean(author?.attachments?.length),
+                })
+              : undefined;
           const selected = providerModelSelection.safeParse(
             author?.requestMetadata?.[PROVIDER_MODEL_SELECTION_METADATA_KEY],
           ).data;
           if (
             !checkoutInput &&
+            !decision &&
             !stage?.provider &&
             selected &&
             selected.modelId !== "auto"
@@ -4256,7 +4952,43 @@ export class Service {
               { ...command, operationKey },
             );
           }
-          const forWork = !checkoutInput && !isMemoryOnlyMessage(command.text);
+          const executesButton = decision && decision.operation !== "decline";
+          const forWork =
+            !checkoutInput &&
+            !executesButton &&
+            !isMemoryOnlyMessage(command.text);
+          let messageMetadata = author?.requestMetadata;
+          if (decision?.operation === "decline") {
+            const fileId = await this.subject.orderWork.declineFromChat(
+              workTask,
+              {
+                operation: "decline",
+                operationKey: command.operationKey,
+                storeId: command.storeId,
+                taskId: command.taskId,
+                fileId: decision.fileId,
+                reason: command.text,
+              },
+            );
+            messageMetadata = {
+              ...messageMetadata,
+              customerWorkRevisionFileId: fileId,
+            };
+          } else if (executesButton) {
+            messageMetadata = withSocialMessageSystemMetadata({
+              source: "customer-work-decision",
+              metadata: messageMetadata,
+            });
+          }
+          if (
+            decision?.operation === "chat-checkout" &&
+            decision.input.value === "pay"
+          ) {
+            messageMetadata = {
+              ...messageMetadata,
+              customerWorkCheckoutPayment: decision.input,
+            };
+          }
           const message = await this.writeMessage({
             ...channel,
             text: command.text,
@@ -4265,9 +4997,9 @@ export class Service {
             requestMetadata: checkoutInput
               ? withSocialMessageSystemMetadata({
                   source: "order-checkout",
-                  metadata: author?.requestMetadata,
+                  metadata: messageMetadata,
                 })
-              : author?.requestMetadata,
+              : messageMetadata,
             attachments: author?.attachments,
             ownerId: customerId,
           });
@@ -4288,8 +5020,52 @@ export class Service {
                 ? stage?.coverAttachmentRole
                 : undefined,
           });
+          if (decision?.operation === "chat-checkout") {
+            const payment = {
+              ...command,
+              operation: "chat-checkout" as const,
+              input: decision.input,
+            };
+            if (decision.input.value === "pay" && deferredCheckout) {
+              deferredCheckout.payment = payment;
+            } else if (decision.input.value !== "pay") {
+              await this.checkout.execute(customerId, payment);
+            }
+            return this.view(customerId, command);
+          }
           if (checkout && checkoutState && checkoutInput) {
             await this.checkout.answer(checkout, checkoutState, message);
+            return this.view(customerId, command);
+          }
+          if (decision?.operation === "approve-budget") {
+            await this.recordActivity(customerId, {
+              ...decision,
+              storeId: command.storeId,
+              taskId: command.taskId,
+              operationKey: `${command.operationKey}:rate`,
+            });
+            return this.view(customerId, command);
+          }
+          if (decision?.operation === "request-changes") {
+            await this.promptForResultChanges(
+              recorded.task,
+              decision.fileId,
+              decision.prompt.message.id,
+            );
+            return this.view(customerId, command);
+          }
+          if (decision?.operation === "accept" && recorded.task.orderId) {
+            await this.subject.orderWork.decision(
+              customerId,
+              recorded.task.orderId,
+              {
+                operation: "accept",
+                storeId: command.storeId,
+                taskId: command.taskId,
+                operationKey: command.operationKey,
+                fileId: decision.fileId,
+              },
+            );
             return this.view(customerId, command);
           }
           const isConfirmation =
@@ -5573,16 +6349,25 @@ export class Service {
         source = original;
       }
     }
+    const message = source.detail.messageId
+      ? await this.social.message.findById({ id: source.detail.messageId })
+      : null;
+    const revisionFileId = z
+      .uuid()
+      .safeParse(message?.metadata?.customerWorkRevisionFileId).data;
     const decision =
       source.kind === "customer-message" &&
       order.decisions.find(
         (entry) =>
           entry.kind === "declined" &&
-          source.operationKey ===
-            this.activityKey(
-              order.customerId,
-              orderFileFeedbackOperationKey(entry.fileId, entry.operationKey),
-            ),
+          ((entry.fileId === revisionFileId &&
+            source.operationKey ===
+              this.activityKey(order.customerId, entry.operationKey)) ||
+            source.operationKey ===
+              this.activityKey(
+                order.customerId,
+                orderFileFeedbackOperationKey(entry.fileId, entry.operationKey),
+              )),
       );
     const writtenBefore = source.createdAt?.getTime() ?? 0;
     const fileId = decision

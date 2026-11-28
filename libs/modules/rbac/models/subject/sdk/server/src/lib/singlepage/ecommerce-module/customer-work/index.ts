@@ -11,6 +11,12 @@ import {
   type ICustomerWorkTelegramRateRequest,
 } from "@sps/rbac/models/subject/sdk/model";
 import {
+  customerWorkTelegramCheckoutPath,
+  customerWorkTelegramFileReviewPath,
+  type ICustomerWorkTelegramCheckoutRequest,
+  type ICustomerWorkTelegramFileReviewRequest,
+} from "@sps/rbac/models/subject/sdk/model/src/lib/order-work";
+import {
   readChatAttachmentBlob,
   responsePipe,
   type NextRequestOptions,
@@ -156,14 +162,21 @@ export async function changeCustomerWork({
   return json.data;
 }
 
-export async function approveCustomerWorkTelegramRate({
+async function submitTelegramCustomerWorkCallback({
   data,
   host = serverHost,
   options,
-}: ITelegramRateProps): Promise<void> {
+  path,
+}: Omit<IRequest, "id"> & {
+  data:
+    | ICustomerWorkTelegramRateRequest
+    | ICustomerWorkTelegramFileReviewRequest
+    | ICustomerWorkTelegramCheckoutRequest;
+  path: string;
+}): Promise<void> {
   const headers = new Headers(options?.headers);
   headers.set("content-type", "application/json");
-  const res = await fetch(`${host}${route}${customerWorkTelegramRatePath}`, {
+  const res = await fetch(`${host}${route}${path}`, {
     ...options,
     headers,
     cache: "no-store",
@@ -173,4 +186,31 @@ export async function approveCustomerWorkTelegramRate({
   if (!res.ok) {
     await responsePipe({ res });
   }
+}
+
+export function approveCustomerWorkTelegramRate(props: ITelegramRateProps) {
+  return submitTelegramCustomerWorkCallback({
+    ...props,
+    path: customerWorkTelegramRatePath,
+  });
+}
+
+export function customerWorkTelegramFileReview(
+  props: Omit<IRequest, "id"> & {
+    data: ICustomerWorkTelegramFileReviewRequest;
+  },
+) {
+  return submitTelegramCustomerWorkCallback({
+    ...props,
+    path: customerWorkTelegramFileReviewPath,
+  });
+}
+
+export function customerWorkTelegramCheckout(
+  props: Omit<IRequest, "id"> & { data: ICustomerWorkTelegramCheckoutRequest },
+) {
+  return submitTelegramCustomerWorkCallback({
+    ...props,
+    path: customerWorkTelegramCheckoutPath,
+  });
 }

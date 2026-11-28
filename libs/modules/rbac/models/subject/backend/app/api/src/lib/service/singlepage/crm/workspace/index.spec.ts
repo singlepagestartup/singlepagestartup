@@ -1316,8 +1316,8 @@ it("checks attachment membership after authorizing the exact task and thread", a
   expect(customerWork.threadAttachment).toHaveBeenCalledTimes(1);
 });
 
-it("keeps an authorized worker in the completed order discussion without waking work", async () => {
-  const { service, scope, actorId, task, message, customerWork } =
+it("keeps completed order history available to an authorized worker without accepting replies", async () => {
+  const { service, scope, actorId, task, customerWork } =
     conversation("crm-worker");
   task.assigneeId = actorId;
   task.status = "closed";
@@ -1325,11 +1325,11 @@ it("keeps an authorized worker in the completed order discussion without waking 
   task.outcome = "completed";
   const reply = { text: "Reply", operationKey: randomUUID() };
   await expect(service.thread(actorId, scope)).resolves.toMatchObject({
-    canSend: true,
+    canSend: false,
   });
-  await expect(service.send(actorId, scope, reply)).resolves.toMatchObject({
-    id: message.id,
-  });
+  await expect(service.send(actorId, scope, reply)).rejects.toThrow(
+    "read-only",
+  );
   expect(customerWork.wakePendingWork).not.toHaveBeenCalled();
   task.assigneeId = randomUUID();
   await expect(service.send(actorId, scope, reply)).rejects.toThrow(

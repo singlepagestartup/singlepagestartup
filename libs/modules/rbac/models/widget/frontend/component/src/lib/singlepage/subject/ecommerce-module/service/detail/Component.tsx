@@ -1,8 +1,8 @@
-import { Component as EcommerceModuleStore } from "@sps/ecommerce/models/store/frontend/component";
 import { Component as EcommerceModuleProduct } from "@sps/ecommerce/models/product/frontend/component";
 import { ServicePaymentTiming } from "@sps/website-builder/models/widget/frontend/component";
 import { ServiceFrame } from "../ServiceFrame";
 import { ServiceOffers } from "../ServiceOffers";
+import { ServicePrice } from "../ServicePrice";
 import { Component as Booking } from "./ClientComponent";
 import type { IComponentPropsExtended } from "./interface";
 
@@ -56,14 +56,10 @@ export function Component({
                 />
               ),
               price: (
-                <EcommerceModuleStore
-                  isServer={false}
-                  variant="product-price-default"
-                  product={product}
-                  storeId={store.id}
-                  offerId={offer.id}
+                <ServicePrice
+                  ecommerceModuleProduct={product}
+                  ecommerceModuleOffer={offer}
                   language={language}
-                  readOnly
                 />
               ),
               note: (

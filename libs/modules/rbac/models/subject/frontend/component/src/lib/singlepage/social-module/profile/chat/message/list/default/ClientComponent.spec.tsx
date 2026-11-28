@@ -489,9 +489,8 @@ describe("Social thread context", () => {
     mockChatComponentState.fixedStageModelId = "gpt-6.2-astra";
     mockChatComponentState.fixedStageModelReasoning = "medium";
     renderComponent("customer-work");
-    expect(screen.getByText("Stage model")).toBeTruthy();
-    expect(screen.getByText("GPT-6.2 Astra")).toBeTruthy();
-    expect(screen.getByText("Medium reasoning")).toBeTruthy();
+    expect(screen.queryByText("Stage model")).toBeNull();
+    expect(screen.getByText(/GPT-6.2 Astra · medium/)).toBeTruthy();
     expect(screen.queryByRole("button", { name: "Reply model" })).toBeNull();
   });
 
@@ -716,7 +715,7 @@ describe("Social thread context", () => {
     );
   });
 
-  it("keeps the completed order composer available and links to a new order", async () => {
+  it("opens human support from a completed read-only order", () => {
     mockCustomerWork.mockReturnValue({
       data: {
         chatId: "chat-1",
@@ -726,25 +725,16 @@ describe("Social thread context", () => {
         orderId: "order-1",
         status: "closed",
         discussionOnly: true,
-        productSlug: "framework-business-brief",
-        offerId: "offer-1",
+        supportThreadId: "support-1",
       },
     });
     renderComponent("customer-work");
-    expect(screen.getByText(/Revisions require a new order/)).toBeTruthy();
     expect(
       screen
-        .getByRole("link", { name: "View the service" })
+        .getByRole("link", { name: "Contact support" })
         .getAttribute("href"),
-    ).toBe("/en/ecommerce/products/framework-business-brief");
-    const textarea = screen.getByRole("textbox", { name: "Message" });
-    fireEvent.change(textarea, {
-      target: { value: "Thank you for the brief." },
-    });
-    fireEvent.keyDown(textarea, { key: "Enter" });
-    await waitFor(() =>
-      expect(mockMessageCreateMutate).toHaveBeenCalledTimes(1),
-    );
+    ).toBe("/en/social/chats/chat-1/threads/support-1");
+    expect(screen.queryByRole("textbox", { name: "Message" })).toBeNull();
   });
 
   it("keeps the file attached to the message when the context sidebar closes", () => {

@@ -10,6 +10,10 @@ export class Service {
 
   async enrich(
     threads: ISocialModuleThread[],
+    orderSupport?: {
+      completedTaskIds: Set<string>;
+      supportByTask: Map<string, string>;
+    },
   ): Promise<ISocialModuleChatThread[]> {
     if (!threads.length) {
       return [];
@@ -63,17 +67,32 @@ export class Service {
       productIds.add(link.ecommerceModuleProductId);
       productIdsByThread.set(link.threadId, productIds);
     }
-    const threadsWithWork = new Set(workLinks.map(({ threadId }) => threadId));
+    const workByThread = new Map(
+      workLinks.map(({ threadId, crmModuleTaskId }) => [
+        threadId,
+        crmModuleTaskId,
+      ]),
+    );
+    const supportThreads = new Set(orderSupport?.supportByTask.values());
 
-    return threads.map((thread) => ({
-      ...thread,
-      hasCustomerWork: threadsWithWork.has(thread.id),
-      linkedProducts: [...(productIdsByThread.get(thread.id) ?? [])].flatMap(
-        (id) => {
-          const product = productsById.get(id);
-          return product ? [product] : [];
-        },
-      ),
-    }));
+    return threads.map((thread) => {
+      const taskId = workByThread.get(thread.id);
+      return {
+        ...thread,
+        hasCustomerWork: workByThread.has(thread.id),
+        ...(supportThreads.has(thread.id) && { isOrderSupport: true }),
+        ...(taskId &&
+          orderSupport?.completedTaskIds.has(taskId) && {
+            isOrderWorkClosed: true,
+            supportThreadId: orderSupport.supportByTask.get(taskId),
+          }),
+        linkedProducts: [...(productIdsByThread.get(thread.id) ?? [])].flatMap(
+          (id) => {
+            const product = productsById.get(id);
+            return product ? [product] : [];
+          },
+        ),
+      };
+    });
   }
 }

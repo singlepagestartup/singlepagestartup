@@ -18,6 +18,8 @@ const mockTelegramBootstrap = jest.fn();
 const mockTelegramSyncMembership = jest.fn();
 const mockTelegramCheckoutFreeSubscription = jest.fn();
 const mockTelegramRateApproval = jest.fn();
+const mockTelegramFileReview = jest.fn();
+const mockTelegramOrderCheckout = jest.fn();
 const mockTelegramSocialAction = jest.fn();
 const mockBillingInvoiceFindById = jest.fn();
 const mockBillingPaymentIntentFind = jest.fn();
@@ -77,6 +79,10 @@ jest.mock("@sps/rbac/models/subject/sdk/server", () => {
         mockTelegramCheckoutFreeSubscription(...args),
       approveCustomerWorkTelegramRate: (...args: unknown[]) =>
         mockTelegramRateApproval(...args),
+      customerWorkTelegramFileReview: (...args: unknown[]) =>
+        mockTelegramFileReview(...args),
+      customerWorkTelegramCheckout: (...args: unknown[]) =>
+        mockTelegramOrderCheckout(...args),
       socialModuleProfileFindByIdChatFindByIdActionCreate: (
         ...args: unknown[]
       ) => mockTelegramSocialAction(...args),
@@ -139,9 +145,16 @@ import {
   customerWorkTelegramRatePath,
   route as subjectRoute,
 } from "@sps/rbac/models/subject/sdk/model";
-import { approveCustomerWorkTelegramRate } from "@sps/rbac/models/subject/sdk/server/src/lib/singlepage/ecommerce-module/customer-work";
+import {
+  approveCustomerWorkTelegramRate,
+  customerWorkTelegramCheckout,
+  customerWorkTelegramFileReview,
+} from "@sps/rbac/models/subject/sdk/server/src/lib/singlepage/ecommerce-module/customer-work";
 import { Controller as SubjectController } from "@sps/rbac/models/subject/backend/app/api/src/lib/controller/singlepage";
 import { Service as CustomerWork } from "@sps/rbac/models/subject/backend/app/api/src/lib/service/singlepage/ecommerce/customer-work";
+import { OrderChatCheckout } from "@sps/rbac/models/subject/backend/app/api/src/lib/service/singlepage/ecommerce/customer-work/checkout";
+import { orderCheckoutTelegramInteraction } from "@sps/rbac/models/subject/sdk/model/src/lib/order-work";
+import type { IOrderPaymentConversation } from "@sps/ecommerce/models/order/sdk/model";
 import {
   isTelegramBotAuthoredMessage,
   isDuplicateTelegramStarPaymentError,
@@ -853,21 +866,82 @@ describe("Given: the Telegram webhook secret", () => {
   });
 });
 
-describe("Private Telegram work rate callbacks", () => {
+describe("Private Telegram customer work callbacks", () => {
   const rateId = "198eb432-0ab7-4579-a50c-861bdac4e854";
   const taskId = "3deecf14-bfc4-4459-b478-d52cd0a3bac8";
   const buyerId = "6fc1b594-3fd8-4663-93fa-52451da1df43";
   const priceKey = "a".repeat(64);
+  const checkoutId = "92b7dc52-5a29-4dd0-9976-e0d83640e6c1";
 
   afterEach(() => {
     jest.restoreAllMocks();
     mockTelegramRateApproval.mockReset();
+    mockTelegramOrderCheckout.mockReset();
   });
 
   function fixture() {
     const callbackData = customerWorkRateCallback(rateId);
-    const service = new CustomerWork({
-      authenticationMe: async () => ({ authenticated: true }),
+    const task = {
+      id: taskId,
+      customerId: buyerId,
+      storeId: "store",
+      orderId: "order",
+      status: "active",
+      stageId: "payment",
+      assigneeKind: "ai",
+      assigneeId: "agent",
+    };
+    const work = {
+      orderId: task.orderId,
+      taskId,
+      customerId: buyerId,
+      storeId: "store",
+      state: "awaiting-payment",
+      kind: "physical-order",
+      acceptedFileId: null,
+      files: [],
+      paymentConversation: {
+        promptId: checkoutId,
+      } as IOrderPaymentConversation,
+    };
+    const checkoutMessage = {
+      id: checkoutId,
+      variant: "customer-work",
+      workReplyKey: `order-checkout:${checkoutId}`,
+      interaction: {
+        inline_keyboard: [
+          [{ text: "Pay", callback_data: "pay" }],
+          [{ text: "PayKeeper", callback_data: "method:paykeeper" }],
+          [{ text: "Back", callback_data: "back" }],
+          [{ text: "Skip", callback_data: "skip" }],
+        ],
+      },
+    };
+    const delivery = {
+      id: checkoutId,
+      status: "sent",
+      reciever: "1834",
+      sourceSystemId: "42",
+    };
+    const authenticationMe = jest
+      .fn()
+      .mockResolvedValue({ authenticated: true });
+    const providerCheckout = jest.fn().mockResolvedValue({
+      billingModule: {
+        invoices: [
+          { status: "pending", paymentUrl: "https://payments.test/invoice" },
+        ],
+      },
+    });
+    const subject = {
+      authenticationMe,
+      ecommerceModuleOrderAssertAccess: jest.fn(),
+      deanonymize: jest.fn(),
+      ecommerceOrderCheckout: providerCheckout,
+      repository: {
+        withSubjectLock: async (_scope: unknown, run: () => Promise<unknown>) =>
+          run(),
+      },
       module: {
         identity: { find: async () => [{ id: "identity" }] },
         subjectsToIdentities: { find: async () => [{ subjectId: buyerId }] },
@@ -880,15 +954,45 @@ describe("Private Telegram work rate callbacks", () => {
       modules: {
         crm: {
           task: {
-            findById: async () => ({
-              id: taskId,
-              customerId: buyerId,
-              storeId: "store",
+            findById: async () => task,
+            getFunnel: async () => ({
+              definition: {
+                stages: [
+                  {
+                    id: task.stageId,
+                    name: "Pay",
+                    behavior: "ecommerce-module-order-payment",
+                    actions: [],
+                  },
+                ],
+              },
             }),
+            withTask: async (
+              _scope: unknown,
+              run: (value: typeof task) => Promise<unknown>,
+            ) => run(task),
+          },
+        },
+        ecommerce: {
+          order: {
+            work: { findByOrder: async () => work },
+            repository: {
+              patchFulfillment: async (
+                _id: string,
+                patch: Partial<typeof work>,
+              ) => Object.assign(work, patch),
+            },
+          },
+        },
+        billing: {
+          paymentIntent: {
+            isProviderAllowed: ({ provider }: { provider: string }) =>
+              provider === "paykeeper",
           },
         },
         notification: {
           notification: {
+            find: async () => [delivery],
             findById: async () => ({
               status: "sent",
               reciever: "1834",
@@ -898,17 +1002,28 @@ describe("Private Telegram work rate callbacks", () => {
         },
         social: {
           message: {
-            findById: async () => ({
-              id: rateId,
-              variant: "customer-work",
-              workReplyKey: customerWorkRatePromptKey(taskId, 1, priceKey),
-              metadata: { customerWorkRatePrompt: { taskId, priceKey } },
-              interaction: {
-                inline_keyboard: [
-                  [{ text: "Approve", callback_data: callbackData }],
-                ],
-              },
-            }),
+            findById: async ({ id }: { id: string }) =>
+              id === checkoutId
+                ? checkoutMessage
+                : id === "email"
+                  ? { description: "buyer@example.org" }
+                  : {
+                      id: rateId,
+                      variant: "customer-work",
+                      workReplyKey: customerWorkRatePromptKey(
+                        taskId,
+                        1,
+                        priceKey,
+                      ),
+                      metadata: {
+                        customerWorkRatePrompt: { taskId, priceKey },
+                      },
+                      interaction: {
+                        inline_keyboard: [
+                          [{ text: "Approve", callback_data: callbackData }],
+                        ],
+                      },
+                    },
           },
           chat: {
             findById: async () => ({
@@ -919,17 +1034,32 @@ describe("Private Telegram work rate callbacks", () => {
           },
           chatsToCrmModuleTasks: {
             channels: async () => [{ chatId: "chat", threadId: "thread" }],
+            forThread: async () => ({ crmModuleTaskId: taskId }),
           },
+          chatsToMessages: { find: async () => [{ chatId: "chat" }] },
+          threadsToMessages: { find: async () => [{ threadId: "thread" }] },
           profilesToChats: {
             find: async () => [{ profileId: "buyer-profile" }],
           },
         },
       },
-    } as unknown as ConstructorParameters<typeof CustomerWork>[0]);
+    } as unknown as ConstructorParameters<typeof CustomerWork>[0];
+    const service = new CustomerWork(subject);
+    const post = jest.fn().mockResolvedValue({ id: "next-prompt" });
+    jest
+      .spyOn(
+        service as unknown as { checkout: OrderChatCheckout },
+        "checkout",
+        "get",
+      )
+      .mockReturnValue(new OrderChatCheckout(subject, post));
     const approve = jest
       .spyOn(service, "execute")
       .mockResolvedValue({} as never);
     const assertChatAccess = jest.spyOn(service, "assertChatAccess");
+    const review = jest
+      .spyOn(service, "reviewFileFromTelegram")
+      .mockResolvedValue(undefined);
     const subjectController = new SubjectController({
       customerWork: service,
     } as never);
@@ -957,6 +1087,12 @@ describe("Private Telegram work rate callbacks", () => {
     });
     mockTelegramRateApproval.mockImplementation((props) =>
       approveCustomerWorkTelegramRate({ ...props, host: "http://api.test" }),
+    );
+    mockTelegramFileReview.mockImplementation((props) =>
+      customerWorkTelegramFileReview({ ...props, host: "http://api.test" }),
+    );
+    mockTelegramOrderCheckout.mockImplementation((props) =>
+      customerWorkTelegramCheckout({ ...props, host: "http://api.test" }),
     );
 
     const bot = new TelegarmBot();
@@ -1014,6 +1150,13 @@ describe("Private Telegram work rate callbacks", () => {
     return {
       subjects,
       approve,
+      review,
+      work,
+      checkoutMessage,
+      delivery,
+      authenticationMe,
+      providerCheckout,
+      post,
       assertChatAccess,
       statuses,
       acknowledge,
@@ -1040,6 +1183,120 @@ describe("Private Telegram work rate callbacks", () => {
     );
     expect(f.assertChatAccess).not.toHaveBeenCalled();
     expect(mockTelegramSocialAction).not.toHaveBeenCalled();
+  });
+
+  it("routes the saved review button to a request for revision details", async () => {
+    const f = fixture();
+    expect((await f.update({ data: `order:decline:${rateId}` })).status).toBe(
+      200,
+    );
+    expect(f.statuses).toEqual([204]);
+    expect(f.review).toHaveBeenCalledWith({
+      operation: "request-changes",
+      fileId: rateId,
+      telegramChatId: "1834",
+      telegramMessageId: "23",
+    });
+    expect(mockTelegramSocialAction).not.toHaveBeenCalled();
+  });
+
+  it.each([
+    ["method", "method:paykeeper", "email"],
+    ["email", "back", "method"],
+    ["comment", "skip", "ready"],
+    ["ready", "pay", "link"],
+  ] as const)(
+    "runs the delivered %s checkout button %s",
+    async (step, button, next) => {
+      const f = fixture();
+      f.work.paymentConversation = {
+        step,
+        promptId: checkoutId,
+        fileId: null,
+        provider: "paykeeper",
+        emailMessageId: "email",
+      };
+      const keyboard = orderCheckoutTelegramInteraction(
+        f.checkoutMessage,
+      )?.inline_keyboard.flat();
+      const data = `order-checkout:${button}`;
+      expect(
+        keyboard?.some(
+          (row) => "callback_data" in row && row.callback_data === data,
+        ),
+      ).toBe(true);
+      expect((await f.update({ data, messageId: 42 })).status).toBe(200);
+      expect(f.statuses).toEqual([204]);
+      expect(f.work.paymentConversation.step).toBe(next);
+      if (button === "pay") {
+        expect(f.providerCheckout).toHaveBeenCalledWith({
+          id: buyerId,
+          provider: "paykeeper",
+          email: "buyer@example.org",
+          ecommerceModule: { orders: [{ id: "order" }] },
+        });
+        await f.update({ data, messageId: 42 });
+        expect(f.statuses).toEqual([204, 404]);
+        expect(f.providerCheckout).toHaveBeenCalledTimes(1);
+      } else {
+        expect(f.providerCheckout).not.toHaveBeenCalled();
+      }
+      expect(f.post).toHaveBeenCalledTimes(1);
+    },
+  );
+
+  it("rejects a copied checkout button, different recipient, missing buyer authentication or replaced prompt", async () => {
+    const f = fixture();
+    const data = "order-checkout:pay";
+    f.work.paymentConversation = {
+      step: "ready",
+      promptId: checkoutId,
+      fileId: null,
+      provider: "paykeeper",
+      emailMessageId: "email",
+    };
+    await f.update({ data, messageId: 43 });
+    f.delivery.reciever = "9999";
+    await f.update({ data, messageId: 42 });
+    f.delivery.reciever = "1834";
+    f.authenticationMe.mockResolvedValueOnce({ authenticated: false });
+    await f.update({ data, messageId: 42 });
+    f.work.paymentConversation.promptId = rateId;
+    await f.update({ data, messageId: 42 });
+    expect(f.statuses).toEqual([404, 404, 404, 404]);
+    expect(f.providerCheckout).not.toHaveBeenCalled();
+    expect(f.post).not.toHaveBeenCalled();
+  });
+
+  it("rejects a checkout button after its order has left the payment stage", async () => {
+    const f = fixture();
+    f.work.state = "delivered";
+    await f.update({ data: "order-checkout:pay", messageId: 42 });
+    expect(f.statuses).toEqual([409]);
+    expect(f.acknowledge).toHaveBeenCalledWith(
+      "answerCallbackQuery",
+      expect.objectContaining({ show_alert: true }),
+    );
+    expect(f.providerCheckout).not.toHaveBeenCalled();
+  });
+
+  it("acknowledges payment that completes before the follow-up check", async () => {
+    const f = fixture();
+    f.work.paymentConversation = {
+      step: "ready",
+      promptId: checkoutId,
+      fileId: null,
+      provider: "paykeeper",
+      emailMessageId: "email",
+    };
+    f.providerCheckout.mockImplementationOnce(async () => {
+      f.work.state = "paid";
+      return { billingModule: { invoices: [{ status: "paid" }] } };
+    });
+    await f.update({ data: "order-checkout:pay", messageId: 42 });
+    expect(f.statuses).toEqual([204]);
+    expect(f.providerCheckout).toHaveBeenCalledTimes(1);
+    expect(f.post).not.toHaveBeenCalled();
   });
 
   it("rejects the same button when it is used on a different Telegram message", async () => {

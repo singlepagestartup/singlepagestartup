@@ -311,6 +311,9 @@ export interface ILinkedChatProduct extends Pick<
 
 export interface ISocialModuleChatThread extends ISocialModuleThread {
   hasCustomerWork?: boolean;
+  isOrderSupport?: boolean;
+  isOrderWorkClosed?: boolean;
+  supportThreadId?: string;
   linkedProducts?: ILinkedChatProduct[];
 }
 
@@ -349,6 +352,7 @@ export interface ICustomerWorkView {
   assignment: "assistant" | "manager" | "unassigned";
   status: "active" | "waiting" | "closed";
   discussionOnly?: boolean;
+  supportThreadId?: string;
   storeTest?: { storeSlug: string; funnelId: string; funnelSlug: string };
   customerPays: boolean;
   requiredMaximum?: string;

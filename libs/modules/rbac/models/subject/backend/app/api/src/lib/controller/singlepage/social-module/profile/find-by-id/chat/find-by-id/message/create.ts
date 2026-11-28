@@ -174,6 +174,29 @@ export class Handler {
       if (sourceSystemId.startsWith(CRM_WORKSPACE_STAFF_MESSAGE_PREFIX)) {
         throw new Error("Validation error. This message key is reserved");
       }
+      if (c.get("isOrderSupport")) {
+        operation.stage = "order-support.message";
+        const message = await this.service.customerWork.orderSupport.send({
+          customerId: id,
+          chatId: socialModuleChatId,
+          threadId: socialModuleThreadId,
+          profileId: socialModuleProfileId,
+          text: parsedBody.data?.description,
+          sourceSystemId: sourceSystemId || undefined,
+          attachments: files,
+        });
+        if (!message) {
+          throw new Error("Not Found error. Order support is unavailable");
+        }
+        c.header("X-SPS-SKIP-ACTION-LOGGER", "1");
+        return c.json({
+          data: {
+            ...projectCustomerWorkAttachments(message),
+            authorProfileIds: [socialModuleProfileId],
+            attachments: [],
+          },
+        });
+      }
       const chat = await this.service.modules.social.chat.findById({
         id: socialModuleChatId,
       });
@@ -225,6 +248,11 @@ export class Handler {
         threadId: socialModuleThreadId,
         profileId: socialModuleProfileId,
         text: parsedBody.data?.description,
+        telegramReplyToMessageId:
+          typeof parsedBody.data?.telegramReplyToMessageId === "string" &&
+          /^[1-9]\d{0,15}$/.test(parsedBody.data.telegramReplyToMessageId)
+            ? parsedBody.data.telegramReplyToMessageId
+            : undefined,
         ...(requestMetadata ? { metadata: requestMetadata } : {}),
         sourceSystemId: sourceSystemId || undefined,
         hasAttachments: files.length > 0,

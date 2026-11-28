@@ -28,6 +28,7 @@ function fixture() {
     },
   ];
   const social = {
+    chatsToThreads: { find: jest.fn().mockResolvedValue([]) },
     chat: {
       findById: jest.fn(async ({ id }) =>
         [...chats, trainingChat].find((chat) => chat.id === id),

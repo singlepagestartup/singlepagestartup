@@ -41,9 +41,13 @@ export function TaskConversation({
   const chatId = member ? thread?.chatId : joined?.chatId;
   const defaultThreadId = member ? thread?.id : joined?.threadId;
   const ru = language === "ru";
+  const supportThreadId = thread?.supportThreadId;
   const scope = useMemo(
-    () => (chatId ? { storeId, taskId, chatId, discussionOnly } : null),
-    [storeId, taskId, chatId, discussionOnly],
+    () =>
+      chatId
+        ? { storeId, taskId, chatId, discussionOnly, supportThreadId }
+        : null,
+    [storeId, taskId, chatId, discussionOnly, supportThreadId],
   );
   if (!chatId || !defaultThreadId) {
     return join.isError ? (

@@ -20,6 +20,8 @@ import { Table as Message } from "@sps/social/models/message/backend/repository/
 import { Table as ProfileChat } from "@sps/social/relations/profiles-to-chats/backend/repository/database";
 import { Table as ChatTask } from "@sps/social/relations/chats-to-crm-module-tasks/backend/repository/database";
 import { Table as ChatThread } from "@sps/social/relations/chats-to-threads/backend/repository/database";
+import { ORDER_SUPPORT_THREAD_VARIANT } from "@sps/social/relations/chats-to-threads/sdk/model";
+import { Table as SocialThread } from "@sps/social/models/thread/backend/repository/database";
 import { Table as ChatMessage } from "@sps/social/relations/chats-to-messages/backend/repository/database";
 import { Table as ThreadMessage } from "@sps/social/relations/threads-to-messages/backend/repository/database";
 import { Table as ProfileMessage } from "@sps/social/relations/profiles-to-messages/backend/repository/database";
@@ -993,6 +995,71 @@ export class Repository extends DatabaseRepository<typeof Table> {
     return orders;
   }
 
+  private canReadSupportThread(subjectId: string) {
+    const customer = this.db
+      .select({ id: SubjectTask.id })
+      .from(SubjectTask)
+      .where(
+        and(
+          eq(SubjectTask.crmModuleTaskId, CrmTask.id),
+          eq(SubjectTask.subjectId, subjectId),
+          eq(SubjectTask.variant, "customer"),
+        ),
+      );
+    const storeOwner = this.db
+      .select({ id: StoreGrant.id })
+      .from(FunnelTask)
+      .innerJoin(Funnel, eq(Funnel.id, FunnelTask.funnelId))
+      .innerJoin(
+        StoreGrant,
+        and(
+          eq(StoreGrant.ecommerceModuleStoreId, Funnel.storeId),
+          eq(StoreGrant.variant, "owner"),
+          eq(StoreGrant.subjectId, subjectId),
+        ),
+      )
+      .where(
+        and(
+          eq(FunnelTask.taskId, CrmTask.id),
+          eq(FunnelTask.variant, "primary"),
+        ),
+      );
+    return exists(
+      this.db
+        .select({ id: SocialThread.id })
+        .from(SocialThread)
+        .innerJoin(ChatTask, eq(ChatTask.chatId, ChatThread.chatId))
+        .innerJoin(
+          CrmTask,
+          and(
+            eq(CrmTask.id, ChatTask.crmModuleTaskId),
+            sql`${CrmTask.id}::text = ${SocialThread.metadata}->>'orderSupportTaskId'`,
+          ),
+        )
+        .where(
+          and(
+            eq(SocialThread.id, ChatThread.threadId),
+            eq(CrmTask.status, "closed"),
+            eq(CrmTask.outcome, "completed"),
+            or(
+              exists(customer),
+              and(
+                notInArray(Table.variant, ["agent", "anonymous", "hidden"]),
+                exists(storeOwner),
+              ),
+            ),
+          ),
+        ),
+    );
+  }
+
+  private visibleChatThread(subjectId: string) {
+    return or(
+      ne(ChatThread.variant, ORDER_SUPPORT_THREAD_VARIANT),
+      this.canReadSupportThread(subjectId),
+    );
+  }
+
   async socialThreadActivity({
     subjectId,
     chatIds,
@@ -1022,6 +1089,19 @@ export class Repository extends DatabaseRepository<typeof Table> {
     await trackRepositoryRead(SubjectProfile, this.db, {
       and: [{ column: "subjectId", method: "eq", value: subjectId }],
     });
+    await Promise.all([
+      trackRepositoryRead(SocialThread, this.db),
+      trackRepositoryRead(ChatTask, this.db, chatFilter),
+      trackRepositoryRead(CrmTask, this.db),
+      trackRepositoryRead(SubjectTask, this.db, {
+        and: [{ column: "subjectId", method: "eq", value: subjectId }],
+      }),
+      trackRepositoryRead(FunnelTask, this.db),
+      trackRepositoryRead(Funnel, this.db),
+      trackRepositoryRead(StoreGrant, this.db, {
+        and: [{ column: "subjectId", method: "eq", value: subjectId }],
+      }),
+    ]);
 
     if (threadIds) {
       await trackRepositoryRead(ProfileChat, this.db, chatFilter);
@@ -1080,6 +1160,7 @@ export class Repository extends DatabaseRepository<typeof Table> {
         and(
           inArray(ChatThread.chatId, chatIds),
           threadIds ? inArray(ChatThread.threadId, threadIds) : undefined,
+          this.visibleChatThread(subjectId),
         ),
       )
       .orderBy(
@@ -1120,7 +1201,8 @@ export class Repository extends DatabaseRepository<typeof Table> {
         ChatThread,
         and(eq(ChatThread.chatId, chatId), eq(ChatThread.threadId, threadId)),
       )
-      .where(eq(Message.id, messageId));
+      .innerJoin(Table, eq(Table.id, subjectId))
+      .where(and(eq(Message.id, messageId), this.visibleChatThread(subjectId)));
     if (!marker) {
       throw new Error(
         "Not Found error. The message is unavailable in this thread",

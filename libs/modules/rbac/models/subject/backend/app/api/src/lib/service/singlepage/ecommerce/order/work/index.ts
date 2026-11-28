@@ -569,6 +569,26 @@ export class Service {
       async () => {
         await this.owner(customerId, orderId);
         const scope = this.scope(customerId, { ...command, orderId });
+        if (command.operation === "request-changes") {
+          const view = await this.subject.modules.crm.task.withTask(
+            scope,
+            async (task) => {
+              if (task.orderId !== orderId || task.customerId !== customerId) {
+                throw new Error(
+                  "Permission error. Result task does not belong to the purchase",
+                );
+              }
+              await this.subject.customerWork.promptForResultChanges(
+                task,
+                command.fileId,
+                command.messageId,
+              );
+              const work = await this.work.read(scope);
+              return this.describe(customerId, work);
+            },
+          );
+          return view;
+        }
         const work = await this.work.read(scope);
         const file = work.files.find(
           (entry) => entry.previewFileId === command.fileId,
@@ -592,22 +612,28 @@ export class Service {
           operationKey: command.operationKey,
         };
         if (command.operation === "decline") {
-          if (!replay) {
-            await this.subject.customerWork.execute(customerId, {
-              operation: "message",
-              storeId: scope.storeId,
-              taskId: scope.taskId,
-              operationKey: orderFileFeedbackOperationKey(
-                file.id,
-                command.operationKey,
-              ),
-              text: command.reason,
-            });
-          }
-          const revised = await this.work.decline({
-            ...request,
-            reason: command.reason,
-          });
+          const revised = await this.subject.modules.crm.task.withTask(
+            scope,
+            async () => {
+              const decided = await this.work.decline({
+                ...request,
+                reason: command.reason,
+              });
+              if (!replay) {
+                await this.subject.customerWork.execute(customerId, {
+                  operation: "message",
+                  storeId: scope.storeId,
+                  taskId: scope.taskId,
+                  operationKey: orderFileFeedbackOperationKey(
+                    file.id,
+                    command.operationKey,
+                  ),
+                  text: command.reason,
+                });
+              }
+              return decided;
+            },
+          );
           return this.describe(customerId, revised);
         }
 
@@ -694,6 +720,37 @@ export class Service {
         return this.describe(customerId, revised);
       },
     );
+  }
+
+  async declineFromChat(
+    task: ITask,
+    command: Extract<TOrderWorkDecision, { operation: "decline" }>,
+  ) {
+    if (
+      !task.orderId ||
+      task.status === "closed" ||
+      !(await this.subject.authenticationMe({ subjectId: task.customerId }))
+        ?.authenticated
+    ) {
+      throw new Error("Authentication error. Sign in to decide on the result");
+    }
+    await this.owner(task.customerId, task.orderId);
+    const scope = this.scope(task.customerId, {
+      ...command,
+      orderId: task.orderId,
+    });
+    const work = await this.work.read(scope);
+    const file = work.files.at(-1);
+    if (file?.previewFileId !== command.fileId) {
+      throw new Error("Conflict error. This file is no longer awaiting review");
+    }
+    await this.work.decline({
+      ...scope,
+      fileId: file.id,
+      operationKey: command.operationKey,
+      reason: command.reason,
+    });
+    return file.id;
   }
 
   private async deliverIncludedResult(

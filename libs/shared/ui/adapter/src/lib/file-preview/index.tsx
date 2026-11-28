@@ -632,10 +632,7 @@ export function FilePreview(props: IFilePreviewProps) {
   return (
     <div
       ref={container}
-      className={cn(
-        "min-w-0 max-w-full",
-        message && (kind === "image" ? "w-80" : "w-72"),
-      )}
+      className={cn("min-w-0 max-w-full", message && "w-full")}
     >
       <Dialog
         open={open}

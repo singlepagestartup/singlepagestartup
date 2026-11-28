@@ -96,13 +96,16 @@ export const serviceBootstrap = createAppBootstrap<App, Service>(
   (container, assembly) => {
     const modules = assembly.getOrCreate(createModules);
     const module = assembly.getOrCreate(createModule);
-    modules.crm.task.configureOrderCompletion((task) =>
-      container
+    modules.crm.task.configureOrderCompletion(async (task) => {
+      await container
         .get<EcommerceOrderProceedService>(
           SubjectDI.IEcommerceOrderProceedService,
         )
-        .completeDeliveredTask(task),
-    );
+        .completeDeliveredTask(task);
+      await container
+        .get<Service>(DI.IService)
+        .customerWork.orderSupport.ensure(task);
+    });
     container
       .bind<EcommerceCatalog>(SubjectDI.IEcommerceCatalogService)
       .toDynamicValue(({ get }) => {

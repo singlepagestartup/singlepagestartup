@@ -56,7 +56,8 @@ export function ThreadOrderStage({
   work,
   language,
   prompt,
-}: IProps & { prompt?: IOrderFileReview }) {
+  promptMessageId,
+}: IProps & { prompt?: IOrderFileReview; promptMessageId?: string }) {
   const { order, orderResult } = useThreadOrder(subjectId, work);
   const step = work.workflow?.orderStep;
   if (!step || !order || orderResult.isError) return null;
@@ -67,6 +68,7 @@ export function ThreadOrderStage({
         work={order}
         language={language}
         prompt={prompt}
+        promptMessageId={promptMessageId}
         storeTest={Boolean(work.storeTest)}
       />
     );

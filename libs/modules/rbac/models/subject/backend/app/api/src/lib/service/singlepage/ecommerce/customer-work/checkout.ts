@@ -87,6 +87,32 @@ export class OrderChatCheckout {
     return state && state.fileId === work.acceptedFileId ? state : undefined;
   }
 
+  decisionButtons(state: State, message: Message, allowPay: boolean) {
+    if (state.promptId !== message.id) {
+      return [];
+    }
+    const buttons = readOrderCheckoutButtons(message)?.flat() ?? [];
+    return buttons.filter((button) => {
+      if (!("callback_data" in button)) {
+        return false;
+      }
+      const value = button.callback_data;
+      if (state.step === "method") {
+        return (
+          value === "back" ||
+          this.providers().some((provider) => value === `method:${provider}`)
+        );
+      }
+      if (state.step === "email") {
+        return value === "back";
+      }
+      if (state.step === "comment") {
+        return value === "skip" || value === "back";
+      }
+      return state.step === "ready" && allowPay && value === "pay";
+    });
+  }
+
   private providers() {
     return orderCheckoutProviders.filter((provider) =>
       this.subject.modules.billing.paymentIntent.isProviderAllowed({
@@ -311,8 +337,15 @@ export class OrderChatCheckout {
     return undefined;
   }
 
-  async execute(customerId: string, command: Command) {
-    const locked = <T>(operation: (ctx: IContext) => Promise<T>) =>
+  async execute(
+    customerId: string,
+    command: Command,
+    verifyButton?: (context: IContext) => Promise<void>,
+  ) {
+    const locked = <T>(
+      operation: (ctx: IContext) => Promise<T>,
+      requireContext = false,
+    ) =>
       this.subject.repository.withSubjectLock({ subjectId: customerId }, () =>
         this.subject.modules.crm.task.withTask(command, async (task) => {
           if (!task.orderId || task.customerId !== customerId) {
@@ -332,17 +365,26 @@ export class OrderChatCheckout {
           if (ctx) {
             return operation(ctx);
           }
+          if (requireContext) {
+            throw new Error(
+              "Conflict error. The checkout step is no longer current",
+            );
+          }
           return undefined;
         }),
       );
     const input = command.input;
-    const request = await locked(async (ctx) => {
-      if (input.kind === "button") {
-        return this.click(ctx, input);
-      }
-      await this.begin(ctx);
-      return undefined;
-    });
+    const request = await locked(
+      async (ctx) => {
+        if (input.kind === "button") {
+          await verifyButton?.(ctx);
+          return this.click(ctx, input);
+        }
+        await this.begin(ctx);
+        return undefined;
+      },
+      input.kind === "button" && Boolean(verifyButton),
+    );
     if (!request || input.kind !== "button") {
       return;
     }

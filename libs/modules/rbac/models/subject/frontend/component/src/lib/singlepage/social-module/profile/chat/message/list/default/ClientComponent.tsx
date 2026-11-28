@@ -79,7 +79,9 @@ export function Component(props: IComponentPropsExtended) {
       : undefined;
   const isEmployeeChat =
     props.socialModuleChat.variant === STORE_EMPLOYEE_CHAT_VARIANT;
+  const isSupport = thread?.isOrderSupport === true;
   const isCustomerWork =
+    !isSupport &&
     !isEmployeeChat &&
     (props.socialModuleChat.variant === "customer-work" ||
       thread?.hasCustomerWork === true);
@@ -102,15 +104,26 @@ export function Component(props: IComponentPropsExtended) {
     !isChatAccessError(workResult.error)
       ? workResult.data
       : undefined;
-  const discussionOnly = work?.discussionOnly || workspace?.discussionOnly;
-  const newOrderHref = work?.productSlug
-    ? `/${props.language}/ecommerce/products/${encodeURIComponent(work.productSlug)}`
+  const completedThread =
+    !isSupport &&
+    (work?.discussionOnly ||
+      workspace?.discussionOnly ||
+      thread?.isOrderWorkClosed);
+  const supportThreadId =
+    work?.supportThreadId ??
+    workspace?.supportThreadId ??
+    thread?.supportThreadId;
+  const supportHref = supportThreadId
+    ? workspace
+      ? `?thread=${encodeURIComponent(supportThreadId)}`
+      : `/${props.language}/social/chats/${props.socialModuleChat.id}/threads/${encodeURIComponent(supportThreadId)}`
     : undefined;
-  const assistantProfile = isCustomerWork
-    ? null
-    : props.knowledgeAssistantProfile ||
-      props.artificialIntelligenceOpponentProfile ||
-      null;
+  const assistantProfile =
+    isCustomerWork || isSupport
+      ? null
+      : props.knowledgeAssistantProfile ||
+        props.artificialIntelligenceOpponentProfile ||
+        null;
   const isArtificialIntelligenceAssistant =
     assistantProfile?.variant === "artificial-intelligence";
   const profileSidebar = useProfileSidebar({
@@ -433,25 +446,19 @@ export function Component(props: IComponentPropsExtended) {
           </>
         }
         composer={
-          <>
-            {discussionOnly && (
-              <p className="border-t border-border px-4 py-2 text-sm text-muted-foreground">
-                {ru
-                  ? "Заказ завершён. Здесь можно обсудить результат. Для правок нужен новый заказ."
-                  : "This order is complete. You can discuss the result here. Revisions require a new order."}
-                {newOrderHref && (
-                  <>
-                    {" "}
-                    <Link
-                      className="underline underline-offset-4"
-                      href={newOrderHref}
-                    >
-                      {ru ? "Открыть услугу" : "View the service"}
-                    </Link>
-                  </>
-                )}
-              </p>
-            )}
+          completedThread ? (
+            <p className="border-t border-border px-4 py-2 text-sm text-muted-foreground">
+              {ru ? "Заказ завершён." : "Order completed."}{" "}
+              {supportHref && (
+                <Link
+                  className="underline underline-offset-4"
+                  href={supportHref}
+                >
+                  {ru ? "Написать в поддержку" : "Contact support"}
+                </Link>
+              )}
+            </p>
+          ) : (
             <Composer
               isCustomerWork={isCustomerWork}
               isEmployeeChat={isEmployeeChat}
@@ -470,7 +477,7 @@ export function Component(props: IComponentPropsExtended) {
               isSkillOptionsLoading={profileSkills.isLoadingSkills}
               language={props.language}
               markShouldScrollToBottom={markShouldScrollToBottom}
-              modelControls={discussionOnly ? undefined : modelControls}
+              modelControls={isSupport ? undefined : modelControls}
               onRemoveSelectedSkill={profileSkills.removeSelectedSkill}
               onSkillSelect={profileSkills.selectSkill}
               profileSkills={profileSkills.profileSkills}
@@ -486,7 +493,7 @@ export function Component(props: IComponentPropsExtended) {
               }
               threadMessagesCache={threadMessagesCache}
             />
-          </>
+          )
         }
         context={
           showThreadContext ? (

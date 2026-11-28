@@ -6,8 +6,9 @@ import {
 } from "@sps/shared-backend-api";
 import { Table } from "@sps/social/relations/chats-to-crm-module-tasks/backend/repository/database";
 import { Table as ChatThread } from "@sps/social/relations/chats-to-threads/backend/repository/database";
+import { ORDER_SUPPORT_THREAD_VARIANT } from "@sps/social/relations/chats-to-threads/sdk/model";
 import { Table as Task } from "@sps/crm/models/task/backend/repository/database";
-import { and, asc, desc, eq, getTableColumns, inArray } from "drizzle-orm";
+import { and, asc, desc, eq, getTableColumns, inArray, ne } from "drizzle-orm";
 
 @injectable()
 @injectFromBase()
@@ -58,6 +59,7 @@ export class Repository extends DatabaseRepository<typeof Table> {
       .innerJoin(Task, eq(Task.id, Table.crmModuleTaskId))
       .where(
         and(
+          ne(ChatThread.variant, ORDER_SUPPORT_THREAD_VARIANT),
           scope.taskId ? eq(Table.crmModuleTaskId, scope.taskId) : undefined,
           scope.threadIds
             ? inArray(ChatThread.threadId, scope.threadIds)

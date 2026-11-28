@@ -1147,9 +1147,18 @@ export class Service {
         title: channel.title || "Обсуждение задачи",
         chatId: channel.chatId,
         canSend:
-          canManageTasks ||
-          task.status !== "closed" ||
-          canDiscussCompletedOrder(task),
+          !canDiscussCompletedOrder(task) &&
+          (canManageTasks || task.status !== "closed"),
+        ...(canDiscussCompletedOrder(task) &&
+          (await this.subject.customerWork.orderSupport.canRead(
+            actorId,
+            task,
+          )) && {
+            supportThreadId: await this.subject.customerWork.orderSupport.find(
+              task.id,
+              channel.chatId,
+            ),
+          }),
         actorProfileId:
           profile &&
           (
@@ -1513,9 +1522,9 @@ export class Service {
     return {
       title: channel.title ?? "",
       canSend:
-        task.status !== "closed" ||
-        canDiscussCompletedOrder(task) ||
-        (await this.taskAccess(actorId, task.storeId)).canManageTasks,
+        !canDiscussCompletedOrder(task) &&
+        (task.status !== "closed" ||
+          (await this.taskAccess(actorId, task.storeId)).canManageTasks),
       messages,
       actions,
       participants: visibleParticipants.map((profile) => ({
@@ -1542,11 +1551,12 @@ export class Service {
           );
           await this.assertTaskAccess(task, actorId, canManageTasks);
           await this.assertThread(task, scope);
-          if (
-            !canManageTasks &&
-            task.status === "closed" &&
-            !canDiscussCompletedOrder(task)
-          ) {
+          if (canDiscussCompletedOrder(task)) {
+            throw new Error(
+              "Forbidden error. The completed order discussion is read-only. Use the support thread.",
+            );
+          }
+          if (!canManageTasks && task.status === "closed") {
             throw new Error("Permission error. Task chat access is required");
           }
           const profileId = await this.employees.ensureActorProfile(actorId);

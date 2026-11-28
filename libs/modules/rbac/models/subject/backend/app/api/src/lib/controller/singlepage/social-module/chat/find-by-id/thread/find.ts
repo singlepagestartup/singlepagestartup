@@ -41,14 +41,25 @@ export class Handler {
       const parsedQuery = c.get("parsedQuery");
       const requestedThread = c.req.query("threadId");
       const sharedThread = c.get("sharedTaskThread");
+      const support = await this.service.customerWork.orderSupport.prepareChat(
+        id,
+        socialModuleChatId,
+      );
+      const supportThreadIds = new Set(support.supportByTask.values());
+      const sharedThreadIds = sharedThread
+        ? [
+            sharedThread.threadId,
+            support.supportByTask.get(sharedThread.taskId),
+          ].filter((value): value is string => Boolean(value))
+        : undefined;
       if (
         requestedThread &&
-        sharedThread &&
-        requestedThread !== sharedThread.threadId
+        sharedThreadIds &&
+        !sharedThreadIds.includes(requestedThread)
       ) {
         throw new Error("Not Found error. This discussion is unavailable");
       }
-      const threadId = sharedThread?.threadId ?? requestedThread;
+      const threadId = requestedThread;
       if (threadId !== undefined && !z.uuid().safeParse(threadId).success) {
         throw new Error("Validation error. Invalid thread ID");
       }
@@ -57,6 +68,10 @@ export class Handler {
       const orderBy = parsedQuery?.orderBy;
 
       const data = await withConsistencySnapshot(async () => {
+        const orderSupport = this.service.customerWork.orderSupport;
+        const hiddenThreadIds = (
+          await orderSupport.threadIdsForChat(socialModuleChatId)
+        ).filter((id) => !supportThreadIds.has(id));
         const socialModuleChatsToThreads =
           await this.service.modules.social.chatsToThreads.find({
             params: {
@@ -76,6 +91,24 @@ export class Handler {
                         },
                       ]
                     : []),
+                  ...(sharedThreadIds
+                    ? [
+                        {
+                          column: "threadId",
+                          method: "inArray" as const,
+                          value: sharedThreadIds,
+                        },
+                      ]
+                    : []),
+                  ...(hiddenThreadIds.length
+                    ? [
+                        {
+                          column: "threadId",
+                          method: "notInArray" as const,
+                          value: hiddenThreadIds,
+                        },
+                      ]
+                    : []),
                 ],
               },
               limit,
@@ -84,7 +117,7 @@ export class Handler {
             },
           });
 
-        if (!socialModuleChatsToThreads?.length) {
+        if (!socialModuleChatsToThreads.length) {
           return [];
         }
 
@@ -108,6 +141,7 @@ export class Handler {
 
         const threads = await new ThreadContext(this.service).enrich(
           socialModuleThreads,
+          support,
         );
         return new ChatActivity(this.service).forThreads(
           id,

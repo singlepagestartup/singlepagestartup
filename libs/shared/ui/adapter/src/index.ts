@@ -35,3 +35,5 @@ export {
 } from "./lib/chat-workspace/Skeleton";
 
 export { ModelPicker, type IModelPickerProps } from "./lib/model-picker";
+
+export { MessageAttachmentList } from "./lib/file-preview/MessageAttachmentList";

@@ -1,5 +1,7 @@
 import {
   approveCustomerWorkTelegramRate,
+  customerWorkTelegramCheckout,
+  customerWorkTelegramFileReview,
   customerWork,
   customerWorkAvailability,
   customerWorkForOrder,
@@ -768,6 +770,8 @@ export type IResult = {
 
 export const api = {
   approveCustomerWorkTelegramRate,
+  customerWorkTelegramCheckout,
+  customerWorkTelegramFileReview,
   customerWork,
   customerWorkAvailability,
   customerWorkForOrder,

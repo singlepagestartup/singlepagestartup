@@ -6,6 +6,55 @@ import type {
   TWorkFulfillmentState,
 } from "@sps/ecommerce/models/order/sdk/model";
 
+export const customerWorkTelegramFileReviewPath =
+  "/telegram/customer-work-file-review";
+
+export function isOrderFileReviewCallback(value: string) {
+  return (
+    value.startsWith("order:accept:") || value.startsWith("order:decline:")
+  );
+}
+
+export const customerWorkTelegramFileReviewSchema = z
+  .object({
+    callbackData: z.string().max(64),
+    fromId: z.int().positive(),
+    chatId: z.int().positive(),
+    chatType: z.literal("private"),
+    telegramMessageId: z.int().positive(),
+  })
+  .strict()
+  .transform((input, context) => {
+    const [namespace, action, id, extra] = input.callbackData.split(":");
+    const fileId = z.uuid().safeParse(id).data;
+    if (
+      input.fromId !== input.chatId ||
+      namespace !== "order" ||
+      (action !== "accept" && action !== "decline") ||
+      !fileId ||
+      extra !== undefined
+    ) {
+      context.addIssue({
+        code: "custom",
+        message: "Invalid Telegram result review callback",
+      });
+      return z.NEVER;
+    }
+    return {
+      operation:
+        action === "accept"
+          ? ("accept" as const)
+          : ("request-changes" as const),
+      fileId,
+      telegramChatId: String(input.chatId),
+      telegramMessageId: String(input.telegramMessageId),
+    };
+  });
+
+export interface ICustomerWorkTelegramFileReviewRequest extends z.input<
+  typeof customerWorkTelegramFileReviewSchema
+> {}
+
 export function orderFileReviewInteraction(fileId: string, russian: boolean) {
   return {
     inline_keyboard: [
@@ -38,6 +87,54 @@ export const orderCheckoutProviders = [
   "paykeeper",
 ] as const;
 
+const telegramOrderCheckoutPrefix = "order-checkout:";
+const orderCheckoutCallbackValues = [
+  "back",
+  "skip",
+  "pay",
+  ...orderCheckoutProviders.map((provider) => `method:${provider}`),
+];
+
+export const customerWorkTelegramCheckoutPath =
+  "/telegram/customer-work-checkout";
+
+export function isOrderCheckoutTelegramCallback(value: string) {
+  return value.startsWith(telegramOrderCheckoutPrefix);
+}
+
+export const customerWorkTelegramCheckoutSchema = z
+  .object({
+    callbackData: z.string().max(64),
+    fromId: z.int().positive(),
+    chatId: z.int().positive(),
+    chatType: z.literal("private"),
+    telegramMessageId: z.int().positive(),
+  })
+  .strict()
+  .transform((input, context) => {
+    const value = input.callbackData.slice(telegramOrderCheckoutPrefix.length);
+    if (
+      input.fromId !== input.chatId ||
+      !isOrderCheckoutTelegramCallback(input.callbackData) ||
+      !orderCheckoutCallbackValues.includes(value)
+    ) {
+      context.addIssue({
+        code: "custom",
+        message: "Invalid Telegram checkout callback",
+      });
+      return z.NEVER;
+    }
+    return {
+      value,
+      telegramChatId: String(input.chatId),
+      telegramMessageId: String(input.telegramMessageId),
+    };
+  });
+
+export interface ICustomerWorkTelegramCheckoutRequest extends z.input<
+  typeof customerWorkTelegramCheckoutSchema
+> {}
+
 const paymentProviderNames: Readonly<Record<string, string>> = {
   stripe: "Stripe",
   "0xprocessing": "0xProcessing",
@@ -69,18 +166,50 @@ const checkoutKeyboard = z.object({
   ),
 });
 
-export function readOrderCheckoutButtons(message: {
+interface IOrderCheckoutMessage {
   id: string;
   variant: string;
   workReplyKey?: string | null;
   interaction?: unknown;
-}) {
+}
+
+export function readOrderCheckoutButtons(message: IOrderCheckoutMessage) {
   if (
     message.variant !== "customer-work" ||
     message.workReplyKey !== `order-checkout:${message.id}`
   )
     return;
   return checkoutKeyboard.safeParse(message.interaction).data?.inline_keyboard;
+}
+
+export function orderCheckoutTelegramInteraction(
+  message: IOrderCheckoutMessage,
+) {
+  const rows = readOrderCheckoutButtons(message);
+  if (!rows) {
+    return;
+  }
+  return {
+    inline_keyboard: rows
+      .map((row) =>
+        row
+          .filter(
+            (button) =>
+              !("callback_data" in button) ||
+              orderCheckoutCallbackValues.includes(button.callback_data),
+          )
+          .map((button) => {
+            if ("callback_data" in button) {
+              return {
+                ...button,
+                callback_data: `${telegramOrderCheckoutPrefix}${button.callback_data}`,
+              };
+            }
+            return button;
+          }),
+      )
+      .filter((row) => row.length > 0),
+  };
 }
 
 const fileReviewKeyboard = z.object({
@@ -165,6 +294,12 @@ export const orderWorkDecisionSchema = z.discriminatedUnion("operation", [
   decisionSchema.extend({ operation: z.literal("accept") }).strict(),
   decisionSchema
     .extend({
+      operation: z.literal("request-changes"),
+      messageId: z.uuid().optional(),
+    })
+    .strict(),
+  decisionSchema
+    .extend({
       operation: z.literal("decline"),
       reason: z.string().trim().min(1).max(4000),
     })
@@ -176,6 +311,10 @@ export function orderFileFeedbackOperationKey(
   operationKey: string,
 ) {
   return `file-feedback:${fileId}:${operationKey}`;
+}
+
+export function orderFileRevisionPromptKey(taskId: string, fileId: string) {
+  return `order-revision:${taskId}:${fileId}`;
 }
 
 export type TOrderWorkDecision = z.infer<typeof orderWorkDecisionSchema>;

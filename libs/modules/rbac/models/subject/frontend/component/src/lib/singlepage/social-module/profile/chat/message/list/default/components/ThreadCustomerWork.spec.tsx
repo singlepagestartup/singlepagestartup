@@ -331,7 +331,7 @@ it("links the accepted file to the checkout of its exact order and official offe
   );
 });
 
-it("binds the buttons to the current preview and sends the requested corrections as feedback", async () => {
+it("binds revision requests to the current preview without an inline form", async () => {
   const pending = {
     ...accepted,
     state: "awaiting-result" as const,
@@ -342,6 +342,7 @@ it("binds the buttons to the current preview and sends the requested corrections
       subjectId="buyer"
       work={pending}
       language="ru"
+      promptMessageId="review-message"
       prompt={{
         fileId,
         acceptText: "Принять файл",
@@ -357,18 +358,15 @@ it("binds the buttons to the current preview and sends the requested corrections
       .disabled,
   ).toBe(false);
   fireEvent.click(screen.getByRole("button", { name: "Запросить правки" }));
-  fireEvent.change(screen.getByRole("textbox"), {
-    target: { value: "Увеличьте заголовок" },
-  });
-  fireEvent.click(screen.getByRole("button", { name: "Отправить правки" }));
+  expect(screen.queryByRole("textbox")).toBeNull();
   await waitFor(() =>
     expect(mockOrderDecision).toHaveBeenCalledWith({
       id: "buyer",
       orderId: "order",
       data: {
-        operation: "decline",
+        operation: "request-changes",
         fileId: "v2",
-        reason: "Увеличьте заголовок",
+        messageId: "review-message",
         storeId: "store",
         taskId: "task",
         operationKey: expect.any(String),
