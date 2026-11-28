@@ -393,20 +393,22 @@ describe("Social thread context", () => {
     expect(payload.data.metadata?.knowledgeMention).toBeUndefined();
   });
 
-  it("sends the selected CRM model with the triggering message", async () => {
+  it("sends the selected CRM model separately from model names in the message", async () => {
     renderComponent("customer-work");
     fireEvent.click(screen.getByRole("button", { name: "Reply model" }));
     const picker = screen.getByRole("dialog", { name: "Reply model" });
     expect(within(picker).queryByText("GPT Basic")).toBeNull();
     fireEvent.click(within(picker).getByText("GPT-5.2"));
+    const description = "Please review the brief with GPT Basic instead.";
     fireEvent.change(screen.getByRole("textbox", { name: "Message" }), {
-      target: { value: "Please review the brief." },
+      target: { value: description },
     });
     fireEvent.click(screen.getByLabelText("Send message"));
     await waitFor(() => {
       expect(mockMessageCreateMutate).toHaveBeenCalledWith(
         expect.objectContaining({
           data: expect.objectContaining({
+            description,
             metadata: { provider: { modelId: "openai/gpt-5.2" } },
           }),
         }),
@@ -716,19 +718,10 @@ describe("Social thread context", () => {
   });
 
   it("opens human support from a completed read-only order", () => {
-    mockCustomerWork.mockReturnValue({
-      data: {
-        chatId: "chat-1",
-        threadId: "thread-1",
-        storeId: "store-1",
-        taskId: "task-1",
-        orderId: "order-1",
-        status: "closed",
-        discussionOnly: true,
-        supportThreadId: "support-1",
-      },
+    renderComponent("customer-work", {
+      socialModuleThread: { id: "thread-1", variant: "closed", metadata: {} },
+      supportHref: "/en/social/chats/chat-1/threads/support-1",
     });
-    renderComponent("customer-work");
     expect(
       screen
         .getByRole("link", { name: "Contact support" })
@@ -745,7 +738,7 @@ describe("Social thread context", () => {
     renderComponent("customer-work", {
       socialModuleThread: {
         id: "support-1",
-        isOrderSupport: true,
+        variant: "support",
         metadata: {},
       },
     });
@@ -808,7 +801,7 @@ describe("Social thread context", () => {
     expect(screen.queryByRole("complementary", { name: "Context" })).toBeNull();
 
     expect(
-      screen.getByRole("button", { name: "Download Order file preview" }),
+      screen.getByRole("button", { name: "Preview Order file preview" }),
     ).toBeTruthy();
     expect(screen.queryByRole("button", { name: /open version/i })).toBeNull();
   });

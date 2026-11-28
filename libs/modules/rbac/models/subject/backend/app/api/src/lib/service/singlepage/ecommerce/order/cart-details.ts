@@ -1,4 +1,5 @@
 import type { ICartDetails } from "@sps/ecommerce/models/order/sdk/model";
+import { offerUsesOrderDiscussion } from "@sps/ecommerce/relations/stores-to-products/sdk/model";
 import type {
   IModel as IOffer,
   IOfferQuoteInput,
@@ -103,7 +104,7 @@ export class Service {
       }
       if (current) {
         offers.set(current.id, current);
-        if (!work && current.settings.requiresResultAcceptance === true) {
+        if (!work && offerUsesOrderDiscussion(current.settings)) {
           const canOpenDiscussion =
             Boolean(discussion) ||
             (primaries.length === 1 &&

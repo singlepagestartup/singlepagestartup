@@ -1,6 +1,7 @@
 import { Service } from "./index";
 import type { Service as Subject } from "../../../index";
 import { pdfOrderResult } from "./utils";
+import { Service as PersonalSources } from "../../../social-module/profile/knowledge/personal";
 
 it("routes an open renewal invoice to its buyer's existing order chat", async () => {
   const parent = { id: "first" };
@@ -180,4 +181,106 @@ it("renders legacy business brief text under the preview ID while keeping the or
     service.artifact("buyer", "order", "preview", "GET"),
   ).resolves.toBe(preview);
   expect(readPrivate.mock.calls).toEqual([[{ id: "preview" }]]);
+});
+
+it("opens a completed metered document and saves only that granted file to the buyer's knowledge", async () => {
+  const document = {
+    fileId: "pdf-file",
+    name: "brief.pdf",
+    mimeType: "application/pdf",
+    digest: "a".repeat(64),
+  };
+  const work = {
+    kind: "individual-service",
+    orderId: "order",
+    taskId: "task",
+    customerId: "buyer",
+    storeId: "store",
+    paymentMode: "work-tokens",
+    workTokenTariff: {},
+    state: "completed",
+    files: [],
+    sharedDocument: document,
+  };
+  const file = { ...document, id: document.fileId, bytes: Buffer.from("PDF") };
+  const hasGrant = jest.fn().mockResolvedValue(true);
+  const read = jest.fn().mockResolvedValue(file);
+  const service = new Service({
+    ecommerceModuleOrderAssertAccess: async () => undefined,
+    protectedFile: { hasGrant },
+    repository: { withSubjectLock: (_: unknown, run: () => unknown) => run() },
+    module: {
+      subjectsToEcommerceModuleOrders: {
+        find: async () => [{ subjectId: "buyer" }],
+      },
+    },
+    modules: {
+      fileStorage: { file: { privateContent: { findById: read } } },
+      ecommerce: { order: { work: { findByOrder: async () => work } } },
+    },
+  } as unknown as Subject);
+  const profile = jest
+    .spyOn(PersonalSources.prototype, "profileForOwner")
+    .mockResolvedValue("profile");
+  const source = jest
+    .spyOn(PersonalSources.prototype, "orderArtifact")
+    .mockResolvedValue(undefined);
+  const save = jest
+    .spyOn(PersonalSources.prototype, "saveOrderArtifact")
+    .mockResolvedValue("knowledge-source");
+  try {
+    await expect(
+      service.profileKnowledgeResult("buyer", work as never),
+    ).resolves.toEqual({
+      id: document.fileId,
+      versionId: document.fileId,
+      name: document.name,
+      mimeType: document.mimeType,
+      savedToKnowledge: false,
+    });
+    await expect(
+      service.artifact("buyer", "order", document.fileId, "GET"),
+    ).resolves.toBe(file);
+    await expect(
+      service.setArtifactKnowledge("buyer", "order", document.fileId, "POST"),
+    ).resolves.toEqual({
+      profileId: "profile",
+      sourceId: "knowledge-source",
+    });
+    expect(save).toHaveBeenCalledWith(
+      "buyer",
+      "profile",
+      { orderId: "order", versionId: document.fileId },
+      expect.any(File),
+    );
+    expect(read).toHaveBeenCalledWith({
+      id: document.fileId,
+      digest: document.digest,
+      mimeType: document.mimeType,
+    });
+    await expect(
+      service.setArtifactKnowledge(
+        "stranger",
+        "order",
+        document.fileId,
+        "POST",
+      ),
+    ).rejects.toThrow("Delivered order result is unavailable");
+    await expect(
+      service.setArtifactKnowledge("buyer", "order", "other-file", "POST"),
+    ).rejects.toThrow("Delivered order result is unavailable");
+    hasGrant.mockResolvedValueOnce(false);
+    await expect(
+      service.artifact("buyer", "order", document.fileId, "GET"),
+    ).rejects.toThrow("Order artifact does not exist");
+    read.mockResolvedValueOnce(null);
+    await expect(
+      service.artifact("buyer", "order", document.fileId, "GET"),
+    ).rejects.toThrow("Order artifact does not exist");
+    expect(save).toHaveBeenCalledTimes(1);
+  } finally {
+    profile.mockRestore();
+    source.mockRestore();
+    save.mockRestore();
+  }
 });

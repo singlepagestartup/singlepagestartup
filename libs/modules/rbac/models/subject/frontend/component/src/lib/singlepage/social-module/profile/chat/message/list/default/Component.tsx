@@ -23,6 +23,7 @@ export function Component(props: IComponentPropsExtended) {
       socialModuleChat={props.socialModuleChat}
       socialModuleThread={props.socialModuleThread}
       socialModuleThreadId={props.socialModuleThreadId}
+      supportHref={props.supportHref}
       navigation={props.navigation}
       profileOpenRef={props.profileOpenRef}
     />

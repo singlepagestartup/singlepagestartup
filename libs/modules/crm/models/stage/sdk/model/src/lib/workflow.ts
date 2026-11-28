@@ -108,6 +108,7 @@ export const stageWorkFundingSchema = z
   .object({
     payer: z.literal("customer").optional(),
     multiplier: nonnegativeAmount.optional(),
+    orderFormula: z.literal(true).optional(),
     payerSubjectId: z.uuid().optional(),
     currencyId: z.uuid(),
     maxStageAmount: nonnegativeAmount.optional(),
@@ -115,8 +116,11 @@ export const stageWorkFundingSchema = z
   })
   .refine((value) =>
     value.payer === "customer"
-      ? value.multiplier !== undefined && !value.payerSubjectId
-      : Boolean(value.payerSubjectId) && value.multiplier === undefined,
+      ? (value.multiplier !== undefined) !== Boolean(value.orderFormula) &&
+        !value.payerSubjectId
+      : Boolean(value.payerSubjectId) &&
+        value.multiplier === undefined &&
+        !value.orderFormula,
   )
   .refine(
     ({ payer, maxStageAmount, maxRunAmount }) =>
@@ -327,6 +331,7 @@ export interface IWorkFunding extends Omit<
   maxTaskAmount?: string;
   maxRunAmount?: string;
   multiplier?: string;
+  orderFormula?: true;
 }
 
 export function customerPaysForWork(

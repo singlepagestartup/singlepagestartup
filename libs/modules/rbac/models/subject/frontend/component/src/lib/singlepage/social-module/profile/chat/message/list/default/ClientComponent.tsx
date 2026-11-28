@@ -2,7 +2,6 @@
 
 import { toast } from "sonner";
 import { Composer } from "./components/Composer";
-import { WorkspaceOrderFileContext } from "./components/CustomerWorkResult";
 import { KnowledgeSourceDialog } from "./components/KnowledgeSourceDialog";
 import { McpServersDialog } from "./components/McpServersDialog";
 import { MessageTimelineSection } from "./components/MessageTimelineSection";
@@ -24,14 +23,12 @@ import { ChatThreadPanel } from "@sps/ui-adapter";
 import { api } from "@sps/rbac/models/subject/sdk/client";
 import { STORE_EMPLOYEE_CHAT_VARIANT } from "@sps/rbac/models/subject/sdk/model";
 import { Component as SocialModuleSkill } from "@sps/social/models/skill/frontend/component";
-import Link from "next/link";
 import {
-  useCallback,
-  useContext,
-  useImperativeHandle,
-  useRef,
-  useState,
-} from "react";
+  CLOSED_THREAD_VARIANT,
+  SUPPORT_THREAD_VARIANT,
+} from "@sps/social/models/thread/sdk/model";
+import Link from "next/link";
+import { useCallback, useImperativeHandle, useRef, useState } from "react";
 import type { IModel as SocialProfile } from "@sps/social/models/profile/sdk/model";
 
 interface SkillDialogTarget {
@@ -50,7 +47,6 @@ interface SkillDialogTarget {
  */
 export function Component(props: IComponentPropsExtended) {
   const threadId = props.socialModuleThreadId;
-  const workspace = useContext(WorkspaceOrderFileContext);
   const ru = props.language === "ru";
   const [isSkillDialogOpen, setIsSkillDialogOpen] = useState(false);
   const [isMcpServersDialogOpen, setIsMcpServersDialogOpen] = useState(false);
@@ -79,7 +75,7 @@ export function Component(props: IComponentPropsExtended) {
       : undefined;
   const isEmployeeChat =
     props.socialModuleChat.variant === STORE_EMPLOYEE_CHAT_VARIANT;
-  const isSupport = thread?.isOrderSupport === true;
+  const isSupport = thread?.variant === SUPPORT_THREAD_VARIANT;
   const isCustomerWork =
     !isSupport &&
     !isEmployeeChat &&
@@ -104,20 +100,7 @@ export function Component(props: IComponentPropsExtended) {
     !isChatAccessError(workResult.error)
       ? workResult.data
       : undefined;
-  const completedThread =
-    !isSupport &&
-    (work?.discussionOnly ||
-      workspace?.discussionOnly ||
-      thread?.isOrderWorkClosed);
-  const supportThreadId =
-    work?.supportThreadId ??
-    workspace?.supportThreadId ??
-    thread?.supportThreadId;
-  const supportHref = supportThreadId
-    ? workspace
-      ? `?thread=${encodeURIComponent(supportThreadId)}`
-      : `/${props.language}/social/chats/${props.socialModuleChat.id}/threads/${encodeURIComponent(supportThreadId)}`
-    : undefined;
+  const completedThread = thread?.variant === CLOSED_THREAD_VARIANT;
   const assistantProfile =
     isCustomerWork || isSupport
       ? null
@@ -178,7 +161,7 @@ export function Component(props: IComponentPropsExtended) {
           ? "assistant"
           : undefined,
     catalogRevision: [
-      work?.workflow?.stageTitle,
+      work?.workflow?.stageId ?? work?.workflow?.stageTitle,
       work?.assignment,
       work?.status,
     ].join(":"),
@@ -449,10 +432,10 @@ export function Component(props: IComponentPropsExtended) {
           completedThread ? (
             <p className="border-t border-border px-4 py-2 text-sm text-muted-foreground">
               {ru ? "Заказ завершён." : "Order completed."}{" "}
-              {supportHref && (
+              {props.supportHref && (
                 <Link
                   className="underline underline-offset-4"
-                  href={supportHref}
+                  href={props.supportHref}
                 >
                   {ru ? "Написать в поддержку" : "Contact support"}
                 </Link>

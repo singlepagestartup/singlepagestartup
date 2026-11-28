@@ -20,6 +20,7 @@ export interface IComponentProps extends ISpsComponentBase {
   socialModuleChat: IResult["ISocialModuleProfileFindByIdChatFindByIdResult"];
   socialModuleThread: IResult["ISocialModuleChatFindByIdThreadFindResult"][number];
   socialModuleThreadId: string;
+  supportHref?: string;
   navigation?: ReactNode;
   profileOpenRef?: Ref<IChatProfileOpen>;
   variant: typeof variant;

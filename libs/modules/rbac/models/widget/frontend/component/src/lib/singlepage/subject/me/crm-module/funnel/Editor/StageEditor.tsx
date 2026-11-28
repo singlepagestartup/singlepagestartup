@@ -369,6 +369,8 @@ export function StageEditor({
           <section className="grid gap-4 border-t border-border pt-5">
             <h2 className={settingsFormStyles.title}>Оплата</h2>
             <StageFunding
+              language={language}
+              individualService={kind === "individual-service"}
               stage={stage}
               legacyFunding={legacyFunding}
               options={options}

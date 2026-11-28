@@ -156,6 +156,54 @@ function fixture(digits = 2, fulfillmentAlreadySatisfied = false) {
   return { service, catalog, held, routing, attr, formula, addOption };
 }
 describe("per-offer quote", () => {
+  it("quotes work at zero and preserves the cash offer on the same service", async () => {
+    const { attr, catalog, formula, service } = fixture();
+    const base = catalog.offers.get("assembly")!;
+    catalog.products.get("assembly")!.type = "one_off";
+    catalog.currencies.push({
+      ...catalog.currencies[0],
+      id: "token",
+      slug: "token",
+    });
+    catalog.offers.set(base.id, { ...base, settings: { standalone: true } });
+    catalog.offers.set("work", {
+      ...base,
+      id: "work",
+      settings: { standalone: true, workTokenPricing: { currencyId: "token" } },
+    });
+    catalog.offerAttributes.set("work", [attr("price", "0", "token")]);
+    catalog.storeAttributes.set("seller", [attr("work_markup_percent", "200")]);
+    catalog.productAttributes.set(
+      "assembly",
+      formula(
+        "unit_price * quantity + provider_usd * topup_tokens / topup_usd * work_markup_percent / 100",
+      ),
+    );
+    const request = { offerId: "work", currencyId: "token", quantity: 1 };
+    await expect(service.execute(request)).resolves.toMatchObject({
+      amount: "0.00",
+      issues: [],
+    });
+    await expect(
+      service.execute({ ...request, offerId: "assembly", currencyId: "rub" }),
+    ).resolves.toMatchObject({ amount: "2000.00", issues: [] });
+    const offer = catalog.offers.get("work")!;
+    expect(service.workTokenTariff(offer)).toMatchObject({
+      formulaVersion: "1",
+      inputs: { unit_price: "0", quantity: "1", work_markup_percent: "200" },
+    });
+    for (const invalid of ["provider_usd + 1", "provider_usd * provider_usd"]) {
+      expect(() => service.workTokenTariff(offer, invalid)).toThrow(
+        /proportional/,
+      );
+    }
+    catalog.offerAttributes.set("work", [attr("price", "1", "token")]);
+    await expect(service.execute(request)).resolves.toMatchObject({
+      amount: null,
+      issues: [expect.objectContaining({ offerId: "work" })],
+    });
+  });
+
   it("limits a standalone service to one unit without limiting its add-on quantities", async () => {
     const { catalog, service } = fixture();
     catalog.products.get("assembly")!.singleUnitPerOrder = true;

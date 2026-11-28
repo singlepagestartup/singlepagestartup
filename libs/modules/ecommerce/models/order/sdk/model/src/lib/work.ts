@@ -1,8 +1,13 @@
-import type { IOfferQuote } from "@sps/ecommerce/relations/stores-to-products/sdk/model";
+import type {
+  IOfferQuote,
+  IOfferWorkTokenTariff,
+} from "@sps/ecommerce/relations/stores-to-products/sdk/model";
 
 export type TWorkKind = "individual-service" | "physical-order";
 export type TWorkFulfillmentState =
   | "canceled"
+  | "in-progress"
+  | "completed"
   | "awaiting-result"
   | "awaiting-payment"
   | "accepted"
@@ -21,6 +26,7 @@ export interface IOrderWorkScope {
 export interface IRegisterOrderWork extends IOrderWorkScope {
   kind: TWorkKind;
   paymentMode?: "work-tokens";
+  workTokenTariff?: IOfferWorkTokenTariff;
 }
 
 export interface IOrderWorkArtifact {
@@ -179,6 +185,23 @@ export interface IOrderPaymentConversation {
   commentMessageId?: string;
 }
 
+export interface IOrderWorkSharedDocument {
+  fileId: string;
+  digest: string;
+  name: string;
+  mimeType: string;
+  chatId: string;
+  threadId: string;
+  messageId: string;
+  replyKey: string;
+  profileId: string;
+  eventId: string;
+  eventRevision: number;
+  stageId: string;
+  assignmentRevision: number;
+  publicationId: string;
+}
+
 export interface IOrderWork extends IRegisterOrderWork {
   id: string;
   createdAt: string;
@@ -189,6 +212,7 @@ export interface IOrderWork extends IRegisterOrderWork {
   acceptedFileId: string | null;
   paid: IOrderWorkPayment | null;
   paymentConversation?: IOrderPaymentConversation;
+  sharedDocument?: IOrderWorkSharedDocument;
   expertArchive: IOrderWorkExpertArchive | null;
   deliveredAt: string | null;
   receiptFileId: string | null;

@@ -188,6 +188,8 @@ export const serviceBootstrap = createAppBootstrap<App, Service>(
                 link.subjectId === subjectId && ids.includes(link.roleId),
             );
           },
+          validateWorkTariff: (offerId, expression) =>
+            ecommerce.storesToProducts.workTokenTariff(offerId, expression),
           get stock() {
             return ecommerce.order.ordersToBillingModulePaymentIntents;
           },

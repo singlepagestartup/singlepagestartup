@@ -611,18 +611,21 @@ This prepares each expert's profile, knowledge, skill and CRM funnel for the
 seeded store. Use the same seller ID on repeat runs. Add `--brief-only` to
 prepare only the business brief. Use `--skip-index` when reusing an already
 indexed local expert profile. The brief uses GPT-6.2 Astra with medium reasoning.
-When upgrading, add `--move-unstarted-brief-task=TASK_ID` to move a specific
-untouched order to the new funnel while keeping its order and chat. Booked
-orders with accepted rates continue on their existing funnel.
+Existing orders keep their published workflow and agreed terms. Running the
+installer updates the offer binding for future orders.
 
-Sign in as a buyer, fund the Token wallet, and book the business brief. The
-purchase form shows the input and output prices per model token. In the order
-chat, the assigned agent sends the terms and an inline approval button. Press
-the button to start paid work. Each
-operation charges twice the provider's actual cost, converted to Token using
-the reference top-up pack. Review the draft in chat and accept it to download
-the PDF. Save the accepted brief to your profile knowledge and use it in a
-separate strategy order.
+Sign in as a buyer, fund the Token wallet and book the business brief. Check
+the input and output prices on the purchase form, then confirm the tariff in
+the order chat. The agent charges for measured work and shares the working PDF
+in the conversation. Ask for a change, open the revised file and ask to finish.
+From the completed order, the buyer can save the shared brief in their profile
+knowledge and open the support thread to speak with the store.
+
+The seeded store charges twice the measured provider cost. To change this
+rate, open **Products → Edit → Pricing formula**, select the store rates and edit
+`work_markup_percent`. Enter `200` for twice the cost. The product formula,
+the per-offer checkout price, and the stage funding settings are described in
+the [store offer pricing guide](libs/modules/ecommerce/relations/stores-to-products/README.md).
 
 ## Testing Convention (BDD Required)
 

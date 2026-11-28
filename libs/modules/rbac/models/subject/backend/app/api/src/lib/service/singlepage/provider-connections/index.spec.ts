@@ -60,6 +60,11 @@ it.each(["store", "customer", "employee", "fixed-model"])(
       {
         findById: jest.fn().mockResolvedValue({ variant: "agent" }),
         crmWorkspace: { employees: { scopeForChat } },
+        customerWork: {
+          workFunding: async () => ({
+            payer: payer === "customer" ? "customer" : "store-owner",
+          }),
+        },
         module: {
           subjectsToEcommerceModuleStores: {
             find: jest.fn().mockResolvedValue([{ id: "grant" }]),
@@ -177,7 +182,15 @@ it.each(["store", "customer", "employee", "fixed-model"])(
               : ["medium", "high"],
         },
       });
-      expect(group.models).toHaveLength(1);
+      if (payer === "customer") {
+        expect(group.models.map(({ id }) => id)).toEqual([model]);
+      } else {
+        expect(group.models.map(({ id }) => id)).toEqual([
+          "gpt-6.2-astra",
+          "gpt-5.4-mini-2026-03-17",
+          "gpt-4.1-mini",
+        ]);
+      }
       if (payer === "employee") {
         expect(taskLinks).not.toHaveBeenCalled();
         expect(scopeForChat).toHaveBeenCalledWith(
@@ -190,7 +203,9 @@ it.each(["store", "customer", "employee", "fixed-model"])(
         ).rejects.toThrow("outside this employee conversation");
       }
       expect(vault.read).not.toHaveBeenCalled();
-      expect(catalog).not.toHaveBeenCalled();
+      if (payer !== "customer") {
+        expect(catalog).not.toHaveBeenCalled();
+      }
     } finally {
       catalog.mockRestore();
     }
@@ -378,6 +393,19 @@ it.each(["assistant", "crm-agent"])(
       identityId: fallback.identityId,
     });
     await expect(
+      service.resolveWork(...dispatch, { payer: "customer" }, selection),
+    ).rejects.toThrow("unavailable for this stage");
+    const workBinding = await service.resolveWork(
+      ...dispatch,
+      { payer: "customer", stage: { output: "chat", provider: selection } },
+      selection,
+    );
+    expect(workBinding).toMatchObject({
+      model: fallback.model,
+      identityId: fallback.identityId,
+      reasoning: "high",
+    });
+    await expect(
       service.resolve(...dispatch, { ...selection, defaultOnly: true }),
     ).rejects.toThrow("unavailable for this stage");
     await expect(
@@ -411,6 +439,9 @@ it.each(["assistant", "crm-agent"])(
     expect(vault.read).not.toHaveBeenCalled();
     await expect(
       service.credential(...dispatch, binding, selection),
+    ).resolves.toBe("private-key");
+    await expect(
+      service.workCredential(...dispatch, workBinding, selection),
     ).resolves.toBe("private-key");
     expect(vault.read).toHaveBeenCalledWith(
       expect.objectContaining({

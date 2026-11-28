@@ -51,8 +51,11 @@ it("shows the filename and uses only an authenticated download for a script", as
       />,
     );
     expect(container.querySelector("a, iframe, object, embed, img")).toBeNull();
+    fireEvent.click(screen.getByRole("button", { name: "Preview preview.js" }));
     fireEvent.click(
-      screen.getByRole("button", { name: "Download preview.js" }),
+      within(screen.getByRole("dialog")).getByRole("button", {
+        name: "Download",
+      }),
     );
     await waitFor(() =>
       expect(download).toHaveBeenCalledWith("blob:fixture", "preview.js"),
@@ -217,7 +220,7 @@ describe("protected media", () => {
     expect(screen.getByText(source).tagName).toBe("PRE");
   });
 
-  it("previews the delivered business brief and lets the user download it without opening the viewer", async () => {
+  it("previews the delivered business brief and downloads the original only from the viewer", async () => {
     const pdf = new jsPDF();
     pdf.text("Completed business brief", 10, 10);
     const bytes = pdf.output("arraybuffer");
@@ -252,7 +255,6 @@ describe("protected media", () => {
       render(
         <PrivateMessageAttachments
           {...orderScope}
-          document
           attachments={[
             {
               id: "result",
@@ -263,23 +265,7 @@ describe("protected media", () => {
         />,
       );
       expect(mockDownload).not.toHaveBeenCalled();
-      fireEvent.click(
-        screen.getByRole("button", { name: "Download business-brief.pdf" }),
-      );
-      await waitFor(() =>
-        expect(download).toHaveBeenCalledWith(
-          "blob:authorized-media",
-          "business-brief.pdf",
-        ),
-      );
-      expect(screen.queryByRole("dialog")).toBeNull();
-      expect(URL.createObjectURL).toHaveBeenCalledWith(
-        expect.objectContaining({
-          type: "application/octet-stream",
-          size: bytes.byteLength,
-        }),
-      );
-
+      expect(screen.queryByRole("button", { name: /Download/ })).toBeNull();
       fireEvent.click(
         screen.getByRole("button", { name: "Preview business-brief.pdf" }),
       );
@@ -291,7 +277,14 @@ describe("protected media", () => {
       expect(
         dialog.getByRole("img", { name: "Page 1: business-brief.pdf" }),
       ).toBeTruthy();
-      expect(dialog.getByRole("button", { name: "Download" })).toBeTruthy();
+      fireEvent.click(dialog.getByRole("button", { name: "Download" }));
+      await waitFor(() =>
+        expect(download).toHaveBeenCalledWith(
+          "blob:authorized-media",
+          "business-brief.pdf",
+        ),
+      );
+
       expect(dialog.queryByRole("link")).toBeNull();
       expect(mockPdfDocument).toHaveBeenCalledWith(
         expect.objectContaining({ data: new Uint8Array(bytes) }),
@@ -321,7 +314,6 @@ describe("protected media", () => {
     render(
       <PrivateMessageAttachments
         {...orderScope}
-        document
         attachments={[{ id: "draft", name: "brief-draft.txt" }]}
       />,
     );
@@ -386,15 +378,18 @@ it("reveals six photos at a time and keeps documents visible across both columns
   const { container } = render(
     <PrivateMessageAttachments
       {...scope}
-      attachments={[...photos, { id: "notes", name: "brief.txt" }]}
+      attachments={[{ id: "notes", name: "brief.txt" }, ...photos]}
     />,
   );
-  expect(container.querySelectorAll("li")).toHaveLength(7);
+  expect(container.querySelectorAll("li")).toHaveLength(8);
+  expect(container.querySelector("li:last-child")?.textContent).toContain(
+    "brief.txt",
+  );
   expect(
     container.querySelector("li:last-child")?.classList.contains("col-span-2"),
   ).toBe(true);
   fireEvent.click(screen.getByRole("button", { name: "Show more photos (8)" }));
-  expect(container.querySelectorAll("li")).toHaveLength(13);
+  expect(container.querySelectorAll("li")).toHaveLength(14);
   fireEvent.click(screen.getByRole("button", { name: "Show more photos (2)" }));
   expect(container.querySelectorAll("li")).toHaveLength(15);
   expect(screen.queryByRole("button", { name: /Show more photos/ })).toBeNull();

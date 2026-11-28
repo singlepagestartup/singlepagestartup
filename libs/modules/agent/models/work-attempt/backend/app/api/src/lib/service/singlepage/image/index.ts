@@ -1,6 +1,7 @@
 import { createHash } from "node:crypto";
 import { z } from "zod";
 import {
+  customerPaysForWork,
   isAutomaticCoverStage,
   stageWorkModelSelection,
 } from "@sps/crm/models/funnel/sdk/model";
@@ -10,6 +11,7 @@ import type {
 } from "@sps/rbac/models/subject/sdk/model";
 import type { IProviderType } from "@sps/rbac/models/subject/sdk/model/src/lib/provider-connections";
 import { StageSkillsUnavailable } from "@sps/rbac/models/subject/backend/app/api/src/lib/service/singlepage/ecommerce/customer-work/knowledge";
+import { assertApprovedWorkRate } from "@sps/rbac/models/subject/backend/app/api/src/lib/service/singlepage/ecommerce/customer-work/utils";
 import type {
   IImageWorkCoverArtwork,
   IImageWorkStyleReference,
@@ -211,11 +213,14 @@ export class CoverWork {
   ): Promise<
     IConfirmedCover | ICoverReply | ICoverSkip | ICoverConversation | null
   > {
-    const { task, stage, funding } =
-      await this.service.modules.crm.task.getWork({
-        ...input,
-        expectedAssignmentRevision: input.assignmentRevision,
-      });
+    const {
+      task,
+      stage,
+      funding: stageFunding,
+    } = await this.service.modules.crm.task.getWork({
+      ...input,
+      expectedAssignmentRevision: input.assignmentRevision,
+    });
     if (stage.output !== "image" || stage.imageBrief !== "marketplace-cover") {
       return null;
     }
@@ -330,20 +335,27 @@ export class CoverWork {
       return this.clarify(parsed.issues, russian);
     }
 
+    const subject = this.service.modules.rbac.subject;
+    const funding = stageFunding?.orderFormula
+      ? await subject.customerWork.effectiveWorkFunding(task, stageFunding)
+      : stageFunding;
     if (!funding) {
       throw new Error("Permission error. No funded AI assignment");
     }
-    const providers = this.service.modules.rbac.subject.providerConnections;
+    const providers = subject.providerConnections;
     const binding = await providers.resolveWork(
       task.storeId,
       input.assigneeId,
       "image",
       providers.workScope(task, stage, funding),
       stageWorkModelSelection(stage, "image", {
-        modelId: newDraft ? undefined : context.requestedModelId,
-        reasoning: newDraft ? undefined : context.requestedReasoning,
+        modelId: context.requestedModelId,
+        reasoning: context.requestedReasoning,
       }),
     );
+    if (customerPaysForWork(funding)) {
+      assertApprovedWorkRate(context.approvedRates, "image", binding);
+    }
     const useProviderArtwork =
       preferProviderArtwork && binding.provider === "openai";
     if (preferProviderArtwork && !useProviderArtwork) {

@@ -2,6 +2,7 @@ export type * from "./quote";
 export type * from "./address-suggestions";
 export {
   getEligibleRetailOffers,
+  offerUsesOrderDiscussion,
   selectRetailOffer,
   type IEligibleRetailOffersInput,
   type ISelectRetailOfferInput,

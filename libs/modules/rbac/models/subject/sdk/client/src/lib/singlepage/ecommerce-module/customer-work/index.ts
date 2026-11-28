@@ -69,6 +69,8 @@ export function customerWorkAvailability(props: IAvailabilityProps) {
       topics: [
         "crm.funnels",
         "ecommerce.stores-to-products",
+        "ecommerce.stores-to-products-to-attributes",
+        "ecommerce.stores-to-attributes",
         "ecommerce.products",
         "ecommerce.products-to-attributes",
         "ecommerce.attributes",

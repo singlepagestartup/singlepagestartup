@@ -1,0 +1,15 @@
+{
+  "id": "b7ce8ba8-ed8f-419d-ab6e-45e53ae255f1",
+  "createdAt": "2026-11-28T12:36:19.443Z",
+  "updatedAt": "2026-11-28T12:36:19.443Z",
+  "variant": "default",
+  "type": "feature",
+  "field": "number",
+  "adminTitle": "work_markup_percent",
+  "slug": "work_markup_percent",
+  "title": {
+    "en": "work_markup_percent"
+  },
+  "prefix": {},
+  "suffix": {}
+}

@@ -14,8 +14,12 @@ import {
 export const serverHost = API_SERVICE_URL;
 export const clientHost = NEXT_PUBLIC_API_SERVICE_URL;
 export const route = "/api/social/threads";
+export const CLOSED_THREAD_VARIANT = "closed";
+export const SUPPORT_THREAD_VARIANT = "support";
 export const variants = [
   "hidden",
+  CLOSED_THREAD_VARIANT,
+  SUPPORT_THREAD_VARIANT,
   "list-item-sidebar-ai-chat",
   "download-ai-chat",
   "id-ai-chat",

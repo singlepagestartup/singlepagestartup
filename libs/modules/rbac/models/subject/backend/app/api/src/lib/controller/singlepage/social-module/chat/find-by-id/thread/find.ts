@@ -5,6 +5,7 @@ import { HTTPException } from "hono/http-exception";
 import { Service } from "../../../../../../service";
 import { getHttpErrorType } from "@sps/backend-utils";
 import { withConsistencySnapshot } from "@sps/shared-backend-api";
+import { SUPPORT_THREAD_VARIANT } from "@sps/social/models/thread/sdk/model";
 import { Service as ChatActivity } from "../../../../../../service/singlepage/social-module/chat/activity";
 import { Service as ThreadContext } from "../../../../../../service/singlepage/social-module/chat/thread-context";
 
@@ -39,29 +40,37 @@ export class Handler {
       });
 
       const parsedQuery = c.get("parsedQuery");
-      const requestedThread = c.req.query("threadId");
+      const threadId = c.req.query("threadId");
+      const variant = c.req.query("variant");
+      if (threadId !== undefined && !z.uuid().safeParse(threadId).success) {
+        throw new Error("Validation error. Invalid thread ID");
+      }
+      if (variant !== undefined && variant !== SUPPORT_THREAD_VARIANT) {
+        throw new Error("Validation error. Invalid thread variant");
+      }
       const sharedThread = c.get("sharedTaskThread");
-      const support = await this.service.customerWork.orderSupport.prepareChat(
-        id,
-        socialModuleChatId,
-      );
-      const supportThreadIds = new Set(support.supportByTask.values());
+      const supportByTask =
+        await this.service.customerWork.orderSupport.prepareChat(
+          id,
+          socialModuleChatId,
+          sharedThread?.taskId,
+        );
+      const visibleSupportIds = [...supportByTask.values()];
       const sharedThreadIds = sharedThread
         ? [
             sharedThread.threadId,
-            support.supportByTask.get(sharedThread.taskId),
+            supportByTask.get(sharedThread.taskId),
           ].filter((value): value is string => Boolean(value))
         : undefined;
-      if (
-        requestedThread &&
-        sharedThreadIds &&
-        !sharedThreadIds.includes(requestedThread)
-      ) {
+      if (threadId && sharedThreadIds && !sharedThreadIds.includes(threadId)) {
         throw new Error("Not Found error. This discussion is unavailable");
       }
-      const threadId = requestedThread;
-      if (threadId !== undefined && !z.uuid().safeParse(threadId).success) {
-        throw new Error("Validation error. Invalid thread ID");
+      const allowedThreadIds =
+        variant === SUPPORT_THREAD_VARIANT
+          ? visibleSupportIds
+          : sharedThreadIds;
+      if (allowedThreadIds?.length === 0) {
+        return c.json({ data: [] });
       }
       const limit = parsedQuery?.limit || 100;
       const offset = parsedQuery?.offset || 0;
@@ -71,7 +80,7 @@ export class Handler {
         const orderSupport = this.service.customerWork.orderSupport;
         const hiddenThreadIds = (
           await orderSupport.threadIdsForChat(socialModuleChatId)
-        ).filter((id) => !supportThreadIds.has(id));
+        ).filter((id) => !visibleSupportIds.includes(id));
         const socialModuleChatsToThreads =
           await this.service.modules.social.chatsToThreads.find({
             params: {
@@ -91,12 +100,12 @@ export class Handler {
                         },
                       ]
                     : []),
-                  ...(sharedThreadIds
+                  ...(allowedThreadIds
                     ? [
                         {
                           column: "threadId",
                           method: "inArray" as const,
-                          value: sharedThreadIds,
+                          value: allowedThreadIds,
                         },
                       ]
                     : []),
@@ -141,7 +150,6 @@ export class Handler {
 
         const threads = await new ThreadContext(this.service).enrich(
           socialModuleThreads,
-          support,
         );
         return new ChatActivity(this.service).forThreads(
           id,

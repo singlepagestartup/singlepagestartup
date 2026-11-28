@@ -726,6 +726,7 @@ interface RenderComponentOptions {
   knowledgeAssistantProfile?: any | null;
   socialModuleMessagesAndActionsQuery?: any[];
   socialModuleThread?: any;
+  supportHref?: string;
 }
 
 export function renderComponent(
@@ -793,6 +794,7 @@ export function renderComponent(
       }
       socialModuleThread={activeThread}
       socialModuleThreadId={activeThread.id}
+      supportHref={options.supportHref}
     />
   );
   const result = render(view(thread));

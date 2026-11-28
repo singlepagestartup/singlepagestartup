@@ -19,6 +19,7 @@ import type {
   IOrderWorkArtifact,
   IOrderWorkFile,
   IOrderWorkPayment,
+  IOrderWorkSharedDocument,
   IOrderWorkPurchaseQuote,
   TOrderWorkPriceBasis,
   IOrderWorkScope as IInternalScope,
@@ -39,6 +40,7 @@ import { Service as PersonalSources } from "../../../social-module/profile/knowl
 import {
   calculateConfirmedResultPrice,
   imageOrderResult,
+  pdfChatDocument,
   pdfOrderResult,
   priceResultCharges,
   readOrderPdfText,
@@ -341,6 +343,7 @@ export class Service {
     }
   }
 
+  preparePdfDocument = pdfChatDocument;
   preparePdfResult = pdfOrderResult;
   prepareImageResult = imageOrderResult;
 
@@ -798,6 +801,17 @@ export class Service {
     });
   }
 
+  async recordSharedMeteredDocument(
+    scope: IInternalScope,
+    document: IOrderWorkSharedDocument,
+  ) {
+    if ((await this.receiptOwner(scope.orderId)) !== scope.customerId) {
+      throw new Error("Not Found error. The order owner is unavailable");
+    }
+    await this.work.recordMeteredDocument(scope, document);
+    await this.grantFiles(scope, [document.fileId]);
+  }
+
   private async grantFiles(
     payment: { customerId: string; orderId: string },
     fileIds: string[],
@@ -1142,6 +1156,19 @@ export class Service {
     const work = await this.work.findByOrder(orderId);
     const owned =
       work?.customerId === customerId && work.orderId === orderId ? work : null;
+    if (owned?.workTokenTariff) {
+      if (
+        owned.sharedDocument?.fileId !== fileId ||
+        !(await this.hasSharedDocumentGrant(customerId, owned, method))
+      ) {
+        throw new Error("Not Found error. Order artifact does not exist");
+      }
+      const file = await this.readSharedDocument(owned.sharedDocument);
+      if (!file) {
+        throw new Error("Not Found error. Order artifact does not exist");
+      }
+      return file;
+    }
     const preview = owned?.files.find((file) => file.previewFileId === fileId);
     if (
       owned &&
@@ -1257,21 +1284,89 @@ export class Service {
     return deliveredOrderWorkFile(work);
   }
 
-  async profileKnowledgeResult(customerId: string, work: IOrderWork) {
+  private async hasSharedDocumentGrant(
+    customerId: string,
+    work: IOrderWork,
+    method: "GET" | "HEAD",
+  ) {
+    const document = work.sharedDocument;
+    return (
+      work.kind === "individual-service" &&
+      work.paymentMode === "work-tokens" &&
+      work.state === "completed" &&
+      work.customerId === customerId &&
+      Boolean(work.workTokenTariff) &&
+      document !== undefined &&
+      (await this.receiptOwner(work.orderId)) === customerId &&
+      (await this.subject.protectedFile.hasGrant(
+        customerId,
+        orderArtifactPath(customerId, work.orderId, document.fileId),
+        method,
+      ))
+    );
+  }
+
+  private readSharedDocument(document: IOrderWorkSharedDocument) {
+    return this.subject.modules.fileStorage.file.privateContent.findById({
+      id: document.fileId,
+      digest: document.digest,
+      mimeType: document.mimeType,
+    });
+  }
+
+  private async knowledgeArtifact(
+    customerId: string,
+    work: IOrderWork | undefined,
+    requireLegacyGrant = true,
+  ) {
+    if (work?.workTokenTariff) {
+      const document = work.sharedDocument;
+      if (
+        !document ||
+        !(await this.hasSharedDocumentGrant(customerId, work, "GET"))
+      ) {
+        return;
+      }
+      return {
+        id: document.fileId,
+        versionId: document.fileId,
+        name: document.name,
+        mimeType: document.mimeType,
+      };
+    }
     const version = this.deliveredVersion(customerId, work);
     if (
+      !work ||
       !version?.originalName ||
-      !isSupportedAiChatAttachment({
-        name: version.originalName,
-        type: version.originalMimeType,
-      }) ||
-      !(await this.subject.protectedFile.hasGrant(
-        customerId,
-        orderArtifactPath(customerId, work.orderId, version.originalFileId),
-        "GET",
-      ))
+      (requireLegacyGrant &&
+        !(await this.subject.protectedFile.hasGrant(
+          customerId,
+          orderArtifactPath(customerId, work.orderId, version.originalFileId),
+          "GET",
+        )))
     ) {
-      return undefined;
+      return;
+    }
+    return {
+      id: version.originalFileId,
+      versionId: version.id,
+      name: version.originalName,
+      mimeType: version.originalMimeType,
+    };
+  }
+
+  async profileKnowledgeResult(customerId: string, work: IOrderWork) {
+    const result = await this.knowledgeArtifact(customerId, work);
+    if (
+      !result ||
+      !isSupportedAiChatAttachment({
+        name: result.name,
+        type: result.mimeType,
+      }) ||
+      (work.sharedDocument &&
+        !(await this.readSharedDocument(work.sharedDocument)))
+    ) {
+      return;
     }
     const personal = new PersonalSources(this.subject);
     const profileId = await personal.profileForOwner(customerId);
@@ -1280,13 +1375,10 @@ export class Service {
     }
     const source = await personal.orderArtifact(profileId, {
       orderId: work.orderId,
-      versionId: version.id,
+      versionId: result.versionId,
     });
     return {
-      id: version.originalFileId,
-      versionId: version.id,
-      name: version.originalName,
-      mimeType: version.originalMimeType,
+      ...result,
       savedToKnowledge: Boolean(source),
     };
   }
@@ -1302,11 +1394,12 @@ export class Service {
       async () => {
         await this.owner(customerId, orderId);
         const work = await this.work.findByOrder(orderId);
-        const version = this.deliveredVersion(customerId, work);
-        if (
-          work?.orderId !== orderId ||
-          version?.originalFileId !== artifactId
-        ) {
+        const result = await this.knowledgeArtifact(
+          customerId,
+          work,
+          method === "POST",
+        );
+        if (work?.orderId !== orderId || result?.id !== artifactId) {
           throw new Error(
             "Not Found error. Delivered order result is unavailable",
           );
@@ -1318,7 +1411,7 @@ export class Service {
             "Not Found error. The personal profile is unavailable",
           );
         }
-        const origin = { orderId, versionId: version.id };
+        const origin = { orderId, versionId: result.versionId };
         if (method === "DELETE") {
           await personal.removeOrderArtifact(customerId, profileId, origin);
           return { profileId, sourceId: null };

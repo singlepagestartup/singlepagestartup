@@ -179,11 +179,7 @@ function makePdf(
   return new Uint8Array(document.output("arraybuffer"));
 }
 
-export async function pdfOrderResult(
-  attemptId: string,
-  text: string,
-  { fullTextPreview = false }: { fullTextPreview?: boolean } = {},
-) {
+async function workPdfContent(text: string) {
   const content = text.trim();
   if (content.length < 10 || content.length > 250_000) {
     throw new Error(
@@ -195,6 +191,24 @@ export async function pdfOrderResult(
     "../../../../../../../../../../../../../../shared/frontend/client/pdf/visual/assets/Manrope-wght.ttf",
   );
   const font = (await readFile(fontPath)).toString("base64");
+  return { content, font };
+}
+
+export async function pdfChatDocument(attemptId: string, text: string) {
+  const { content, font } = await workPdfContent(text);
+  return {
+    name: "result.pdf",
+    mimeType: "application/pdf",
+    bytes: makePdf(attemptId, content, font, false),
+  };
+}
+
+export async function pdfOrderResult(
+  attemptId: string,
+  text: string,
+  { fullTextPreview = false }: { fullTextPreview?: boolean } = {},
+) {
+  const { content, font } = await workPdfContent(text);
   const excerptLength = Math.min(480, Math.floor(content.length / 2));
   const preview = fullTextPreview
     ? {

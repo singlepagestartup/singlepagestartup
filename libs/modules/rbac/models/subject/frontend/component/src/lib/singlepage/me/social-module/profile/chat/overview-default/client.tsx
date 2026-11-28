@@ -3,29 +3,27 @@ import "client-only";
 import { ChatNotice } from "../Notice";
 import AuthenticationMe from "../../../../../authentication/me-default/client";
 import { api } from "@sps/rbac/models/subject/sdk/client";
+import { SUPPORT_THREAD_VARIANT } from "@sps/social/models/thread/sdk/model";
 import { Component as ChildComponent } from "./Component";
 import type { IComponentProps, IComponentPropsExtended } from "./interface";
 
 function GuestChat(props: IComponentPropsExtended) {
-  const lookupThread = !props.socialModuleThreadId;
   const threads = api.socialModuleChatFindByIdThreadFind({
     id: props.data.id,
     socialModuleChatId: props.socialModuleChatId,
-    reactQueryOptions: { enabled: lookupThread, retry: false },
+    params: { threadId: props.socialModuleThreadId },
+    reactQueryOptions: { retry: false },
   });
-  const orderThread =
-    threads.data?.length === 1 && threads.data[0].hasCustomerWork
-      ? threads.data[0].id
-      : undefined;
-  const threadId = props.socialModuleThreadId ?? orderThread;
-  const result = api.customerWorkForThread({
-    id: props.data.id,
-    threadId: threadId ?? "",
-  });
-  if (result.data?.chatId === props.socialModuleChatId) {
+  if (
+    !threads.error &&
+    threads.data?.some(
+      ({ hasCustomerWork, variant }) =>
+        hasCustomerWork || variant === SUPPORT_THREAD_VARIANT,
+    )
+  ) {
     return <ChildComponent {...props} />;
   }
-  if ((lookupThread && threads.isPending) || (threadId && result.isPending)) {
+  if (threads.isPending) {
     return props.skeleton;
   }
   return <ChatNotice language={props.language} />;

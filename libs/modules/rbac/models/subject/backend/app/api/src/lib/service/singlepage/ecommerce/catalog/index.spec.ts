@@ -66,6 +66,7 @@ function setup(onCommit?: () => void) {
     },
     entities: {},
     isAdmin: async (subjectId) => subjectId === admin,
+    validateWorkTariff: jest.fn(async () => undefined),
     stock: {
       async withOfferLocks({ offerIds }, operation) {
         locks.push([...offerIds].sort());

@@ -16,24 +16,67 @@ import type {
   ICustomerWorkTokenTariff,
 } from "@sps/rbac/models/subject/sdk/model";
 import Decimal from "decimal.js";
+import type { IWorkFunding } from "@sps/crm/models/funnel/sdk/model";
+import type { IOfferWorkTokenTariff } from "@sps/ecommerce/relations/stores-to-products/sdk/model";
+import type { IProviderTerms } from "@sps/rbac/models/subject/sdk/model/src/lib/provider-connections";
 import { TokenTopupRate } from "../../billing/token-topup-rate";
+
+export interface ICustomerWorkFunding extends IWorkFunding {
+  workTokenTariff?: IOfferWorkTokenTariff;
+}
+
+export function usesPlatformWorkPricing(funding: ICustomerWorkFunding) {
+  return funding.multiplier !== undefined || Boolean(funding.workTokenTariff);
+}
+
+interface IWorkRateBinding {
+  model: string;
+  provider: ICustomerWorkRate["provider"];
+  terms: IProviderTerms;
+}
+
+export function assertApprovedWorkRate(
+  rates: ICustomerWorkRate[] | undefined,
+  capability: ICustomerWorkRate["capability"],
+  { model, provider, terms }: IWorkRateBinding,
+) {
+  const approved = rates?.find(
+    (rate) =>
+      rate.capability === capability &&
+      rate.model === model &&
+      rate.provider === provider,
+  );
+  if (
+    !approved ||
+    Object.entries(terms).some(
+      ([key, value]) => approved[key as keyof IProviderTerms] !== value,
+    )
+  ) {
+    throw new Error(
+      "Payment required. The customer must approve the current stage rate",
+    );
+  }
+}
 
 export function meteredOrderStages(
   definition: IFunnelDefinition,
-  pricing: { currencyId: string; multiplier: string },
+  pricing: { currencyId: string; multiplier?: string },
 ) {
   const stages = definition.stages.filter(({ archived }) => !archived);
   const funded = stages.every((stage) => {
     const funding = stageWorkFunding(definition, stage);
     return (
       funding?.payer === "customer" &&
-      funding.multiplier === pricing.multiplier &&
+      (pricing.multiplier === undefined
+        ? funding.orderFormula
+        : funding.multiplier === pricing.multiplier) &&
       funding.currencyId === pricing.currencyId
     );
   });
   if (
     funded &&
-    stages.some(({ resultPricing }) => resultPricing?.kind === "work-tokens")
+    (pricing.multiplier === undefined ||
+      stages.some(({ resultPricing }) => resultPricing?.kind === "work-tokens"))
   ) {
     return stages;
   }

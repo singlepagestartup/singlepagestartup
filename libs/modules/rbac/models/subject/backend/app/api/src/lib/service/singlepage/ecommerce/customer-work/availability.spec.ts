@@ -6,16 +6,19 @@
  */
 import { OPEN_AI_STAGE_TEXT_DEFAULT } from "@sps/shared-utils";
 import { ProviderConnections } from "../../provider-connections";
+import { TokenTopupRate } from "../../billing/token-topup-rate";
 import { Service } from "./index";
+import { assertApprovedWorkRate } from "./utils";
 
 const scope = { productId: "product", storeId: "store", offerId: "offer" };
 const workTokenPricing = { currencyId: "token", multiplier: "2" };
 
-function fixture() {
+function fixture(formulaPricing = false) {
+  const pricing = formulaPricing ? { currencyId: "token" } : workTokenPricing;
   const settings = {
     standalone: true,
-    requiresResultAcceptance: true,
-    workTokenPricing,
+    requiresResultAcceptance: !formulaPricing,
+    workTokenPricing: pricing,
   };
   const offers = [
     { id: scope.offerId, ...scope, variant: "default", settings },
@@ -28,9 +31,16 @@ function fixture() {
         modelId: OPEN_AI_STAGE_TEXT_DEFAULT.modelId,
         reasoning: "medium",
       },
-      workFunding: { payer: "customer", ...workTokenPricing },
+      workFunding: {
+        payer: "customer",
+        ...pricing,
+        ...(formulaPricing && { orderFormula: true }),
+      },
       operations: ["knowledge-search"],
-      resultPricing: id === "prepare" ? { kind: "work-tokens" } : undefined,
+      resultPricing:
+        !formulaPricing && id === "prepare"
+          ? { kind: "work-tokens" }
+          : undefined,
     })),
   };
   const attribute = (type: string, slug: string, amount: string) => ({
@@ -49,6 +59,13 @@ function fixture() {
       attribute("topup", "token", "1000"),
     ],
   });
+  const catalogTariff = {
+    formula:
+      "provider_usd * topup_tokens / topup_usd * work_markup_percent / 100",
+    formulaVersion: "2",
+    currencyId: "token",
+    inputs: { work_markup_percent: "250" },
+  };
   const subject = {
     modules: {
       ecommerce: {
@@ -60,6 +77,7 @@ function fixture() {
         },
         storesToProducts: {
           offersForProduct: jest.fn().mockResolvedValue(offers),
+          workTokenTariff: jest.fn().mockResolvedValue(catalogTariff),
         },
       },
       crm: {
@@ -82,8 +100,70 @@ function fixture() {
     offers,
     topup,
     vault,
+    catalogTariff,
+    providerConnections,
   };
 }
+
+it("uses the Product formula for live rates and keeps pinned settlement terms", async () => {
+  const { service, catalogTariff, providerConnections } = fixture(true);
+  const first = await service.availability(scope);
+  expect(first.workMetered).toBe(true);
+  expect(first.payAfterAcceptance).toBe(false);
+  expect(first.workTokenTariff?.rates[0].input).toBe("0.01");
+  const customerPricing = {
+    currencyId: "token",
+    workTokenTariff: catalogTariff,
+  };
+  const funding =
+    await providerConnections.serverWorkFundingTerms(customerPricing);
+  const terms = await providerConnections.serverWorkRate("text", funding);
+  expect(TokenTopupRate.workCharge("0.08", terms).toFixed()).toBe("100");
+  expect(TokenTopupRate.workCharge("0.08", terms, "1").toFixed()).toBe("40");
+
+  catalogTariff.inputs.work_markup_percent = "400";
+  expect(
+    (await service.availability(scope)).workTokenTariff?.rates[0].input,
+  ).toBe("0.016");
+  expect(TokenTopupRate.workCharge("0.08", terms).toFixed()).toBe("100");
+});
+
+it.each([false, true])(
+  "requires consent for the chosen model and actual dispatch terms (Product formula %s)",
+  async (formula) => {
+    const { providerConnections, catalogTariff } = fixture(formula);
+    const funding = await providerConnections.serverWorkFundingTerms(
+      formula
+        ? { currencyId: "token", workTokenTariff: catalogTariff }
+        : undefined,
+    );
+    const rate = await providerConnections.serverWorkRate("text", funding);
+    expect(() =>
+      assertApprovedWorkRate([rate], "text", {
+        model: rate.model,
+        provider: rate.provider,
+        terms: rate,
+      }),
+    ).not.toThrow();
+    expect(() =>
+      assertApprovedWorkRate([rate], "text", {
+        model: "unapproved",
+        provider: rate.provider,
+        terms: rate,
+      }),
+    ).toThrow("approve the current stage rate");
+    expect(() =>
+      assertApprovedWorkRate([rate], "text", {
+        model: rate.model,
+        provider: rate.provider,
+        terms: {
+          ...rate,
+          outputUsdPerMillion: "1000",
+        },
+      }),
+    ).toThrow("approve the current stage rate");
+  },
+);
 
 it("converts the configured model and retrieval rates using the actual wallet pack", async () => {
   const { service, topup, vault } = fixture();

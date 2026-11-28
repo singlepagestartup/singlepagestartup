@@ -98,7 +98,11 @@ export class Operations {
     perform: (step: IWorkStep) => Promise<IModel>,
   ): Promise<IWorkPlan> {
     const { crm, rbac, knowledge } = this.service.modules;
-    const { stage, task, funding } = await crm.task.getWork({
+    const {
+      stage,
+      task,
+      funding: stageFunding,
+    } = await crm.task.getWork({
       ...input,
       expectedAssignmentRevision: input.assignmentRevision,
     });
@@ -130,6 +134,9 @@ export class Operations {
     } else {
       return {};
     }
+    const funding = stageFunding?.orderFormula
+      ? await rbac.subject.customerWork.effectiveWorkFunding(task, stageFunding)
+      : stageFunding;
     if (!funding) {
       throw new Error("Permission error. No funded AI assignment");
     }

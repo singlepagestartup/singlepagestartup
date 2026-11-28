@@ -7,6 +7,7 @@ import {
   moneyMinorUnits,
 } from "@sps/backend-utils";
 import { isLegacyOrderReceipt } from "@sps/file-storage/models/file/sdk/model";
+import { offerUsesOrderDiscussion } from "@sps/ecommerce/relations/stores-to-products/sdk/model";
 import type {
   IDecideOrderWorkResult,
   IDeclineOrderWorkResult,
@@ -17,6 +18,7 @@ import type {
   IOrderWorkOrderLine,
   IOrderWorkPayment,
   IOrderWorkScope,
+  IOrderWorkSharedDocument,
   IOrderWorkFile,
   IPublishOrderWorkResult,
   IRegisterOrderWork,
@@ -118,6 +120,10 @@ export class Service {
       }
 
       const now = new Date().toISOString();
+      let state: IWork["state"] = "awaiting-payment";
+      if (input.kind === "individual-service") {
+        state = input.workTokenTariff ? "in-progress" : "awaiting-result";
+      }
       const record: IWork = {
         id: randomUUID(),
         createdAt: now,
@@ -133,10 +139,7 @@ export class Service {
         resultFileId: null,
         paidDispatchedAt: null,
         ...input,
-        state:
-          input.kind === "individual-service"
-            ? "awaiting-result"
-            : "awaiting-payment",
+        state,
       };
       return this.order.repository.saveFulfillment(input.orderId, record);
     });
@@ -155,6 +158,66 @@ export class Service {
           data: { type: "history", status: "delivering" },
         });
       }
+    });
+  }
+
+  async recordMeteredDocument(
+    input: IOrderWorkScope,
+    document: IOrderWorkSharedDocument,
+  ) {
+    await this.withOrderLock(input.orderId, async () => {
+      const work = await this.require(input);
+      if (
+        work.kind !== "individual-service" ||
+        work.paymentMode !== "work-tokens" ||
+        !work.workTokenTariff ||
+        (work.state !== "in-progress" && work.state !== "awaiting-result")
+      ) {
+        throw new Error(
+          "Conflict error. The order cannot attach a work document",
+        );
+      }
+      if (
+        work.sharedDocument &&
+        work.sharedDocument.eventRevision >= document.eventRevision
+      ) {
+        return;
+      }
+      await this.order.repository.patchFulfillment(input.orderId, {
+        sharedDocument: document,
+      });
+    });
+  }
+
+  async completeMeteredDiscussion(
+    input: IOrderWorkScope,
+    verifyOwner: () => Promise<boolean>,
+  ) {
+    await this.withOrderLock(input.orderId, async () => {
+      const work = await this.require(input);
+      if (
+        work.kind !== "individual-service" ||
+        work.paymentMode !== "work-tokens" ||
+        !work.workTokenTariff ||
+        (work.state !== "in-progress" && work.state !== "awaiting-result") ||
+        !(await verifyOwner())
+      ) {
+        return;
+      }
+      const order = await this.order.findById({ id: input.orderId });
+      if (
+        !order ||
+        !["new", "delivering", "completed"].includes(order.status)
+      ) {
+        return;
+      }
+      await this.order.update({
+        id: input.orderId,
+        data: { type: "history", status: "completed" },
+      });
+      await this.order.repository.patchFulfillment(input.orderId, {
+        state: "completed",
+      });
     });
   }
 
@@ -252,9 +315,7 @@ export class Service {
         },
       },
     });
-    return offers.some(
-      (offer) => offer.settings.requiresResultAcceptance === true,
-    );
+    return offers.some(({ settings }) => offerUsesOrderDiscussion(settings));
   }
 
   read(input: IOrderWorkScope) {

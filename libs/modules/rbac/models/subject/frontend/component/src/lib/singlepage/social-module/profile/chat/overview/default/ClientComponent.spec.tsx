@@ -239,13 +239,39 @@ it("keeps the order discussion selected on the chat URL and opens authorized sup
     ...defaultThread,
     id: "support",
     title: "Поддержка",
-    isOrderSupport: true,
+    variant: "support",
   };
-  mockThreads = [support, defaultThread];
+  mockThreads = [support, { ...defaultThread, variant: "closed" }];
   const { rerender } = renderChat();
   expect(screen.getByTestId("conversation").textContent).toBe("General");
   expect(screen.getByRole("link", { name: /^Поддержка/ })).toBeTruthy();
+  expect(mockThreadView).toHaveBeenLastCalledWith(
+    expect.objectContaining({
+      supportHref: "/en/social/chats/chat/threads/support",
+    }),
+  );
 
+  rerender(
+    <Component
+      isServer={false}
+      variant="social-module-profile-chat-overview-default"
+      data={mockSubject}
+      language="en"
+      socialModuleProfile={mockProfile}
+      socialModuleChatId={mockChat.id}
+      socialModuleChat={{
+        ...mockChat,
+        taskChatThreadId: defaultThread.id,
+        taskChatStaff: true,
+      }}
+      socialModuleThreadId={defaultThread.id}
+      defaultThreadId={defaultThread.id}
+      getThreadHref={(id) => `/en/task?thread=${id}`}
+    />,
+  );
+  expect(mockThreadView).toHaveBeenLastCalledWith(
+    expect.objectContaining({ supportHref: "/en/task?thread=support" }),
+  );
   rerender(
     <Component
       isServer={false}

@@ -102,10 +102,6 @@ const MemoizedMessageRow = memo(function MemoizedMessageRow(
                   messageId={props.message.id}
                   language={props.language}
                   attachments={privateAttachments}
-                  document={Boolean(
-                    props.message.workReplyKey &&
-                    props.message.metadata?.orderDocument,
-                  )}
                   onDownload={props.onAttachmentDownload}
                 />
               ) : undefined

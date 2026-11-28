@@ -1,4 +1,5 @@
 const labels: Record<string, readonly [string, string]> = {
+  "in-progress": ["В работе", "In progress"],
   "awaiting-result": ["Готовим результат", "Preparing the result"],
   "awaiting-payment": ["Ожидает оплаты", "Awaiting payment"],
   paid: ["Оплачен", "Paid"],

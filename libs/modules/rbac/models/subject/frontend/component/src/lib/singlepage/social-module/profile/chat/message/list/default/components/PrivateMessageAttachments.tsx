@@ -12,7 +12,6 @@ interface IProps {
   threadId: string;
   messageId: string;
   attachments: IPrivateChatAttachment[];
-  document?: boolean;
   language: string;
   layout?: "message" | "rail" | "gallery";
   onDownload?: IChatAttachmentDownload;
@@ -45,7 +44,6 @@ export function PrivateMessageAttachments(props: IProps) {
           key={`${props.subjectId}:${props.threadId}:${props.messageId}:${attachment.id}`}
           attachment={attachment}
           layout={props.layout}
-          document={props.document}
           subjectId={props.subjectId}
           threadId={props.threadId}
           messageId={props.messageId}
@@ -59,13 +57,7 @@ export function PrivateMessageAttachments(props: IProps) {
 
 interface IAttachmentRowProps extends Pick<
   IProps,
-  | "subjectId"
-  | "threadId"
-  | "messageId"
-  | "language"
-  | "layout"
-  | "onDownload"
-  | "document"
+  "subjectId" | "threadId" | "messageId" | "language" | "layout" | "onDownload"
 > {
   attachment: IPrivateChatAttachment;
 }
@@ -112,7 +104,6 @@ function AttachmentPreview(props: IAttachmentRowProps) {
       language={props.language}
       mimeType={props.attachment.mimeType}
       layout={props.layout ?? "message"}
-      showDownload={props.document}
       onDownload={download}
     />
   );

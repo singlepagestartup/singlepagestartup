@@ -9,6 +9,7 @@ import {
   transformResponseItem,
 } from "@sps/shared-utils";
 import QueryString from "qs";
+import { SUPPORT_THREAD_VARIANT } from "@sps/social/models/thread/sdk/model";
 
 export interface IProps {
   id: string;
@@ -18,6 +19,7 @@ export interface IProps {
   revalidate?: number;
   params?: {
     threadId?: string;
+    variant?: typeof SUPPORT_THREAD_VARIANT;
     [key: string]: any;
   };
   options?: Partial<NextRequestOptions>;

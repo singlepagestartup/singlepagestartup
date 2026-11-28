@@ -18,6 +18,7 @@ export default function Client(props: IComponentProps) {
           <ChildComponent
             isServer={false}
             variant={props.variant}
+            language={props.language}
             ecommerceModuleStoreId={props.ecommerceModuleStoreId}
             subjectId={data.id}
           />

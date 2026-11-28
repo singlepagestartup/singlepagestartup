@@ -11,8 +11,11 @@ import type {
   IOfferQuote,
   IOfferServiceOption,
   IOfferServiceSelection,
+  IOfferWorkTokenTariff,
 } from "@sps/ecommerce/relations/stores-to-products/sdk/model";
 import type { IDeliveryRouting } from "./routing";
+
+const workInputs = { provider_usd: "0", topup_tokens: "1", topup_usd: "1" };
 
 interface IDependencies {
   catalog: IOfferCatalog;
@@ -52,6 +55,57 @@ export class Service {
   ]);
 
   constructor(private readonly deps: IDependencies) {}
+
+  workTokenTariff(
+    offer: IModel,
+    proposedFormula?: string,
+  ): IOfferWorkTokenTariff | undefined {
+    const pricing = offer.settings.workTokenPricing;
+    if (!pricing || pricing.multiplier !== undefined) {
+      return undefined;
+    }
+    const { catalog } = this.deps;
+    const { currencyId } = pricing;
+    const product = catalog.products.get(offer.productId);
+    const currency = catalog.currencies.find(({ id }) => id === currencyId);
+    const offerAttrs = catalog.offerAttributes.get(offer.id) ?? [];
+    if (
+      product?.kind !== "service" ||
+      product.type !== "one_off" ||
+      !offer.settings.standalone ||
+      currency?.slug !== "token" ||
+      !new Decimal(this.priceFor(offerAttrs, currencyId)).isZero()
+    ) {
+      throw new Error(
+        "Metered work requires a service and a zero Token offer price",
+      );
+    }
+    const productAttrs = catalog.productAttributes.get(offer.productId) ?? [];
+    const formula =
+      proposedFormula ?? this.textSetting(productAttrs, "price_formula");
+    const formulaVersion = this.textSetting(productAttrs, "formula_version");
+    const compiled = compileTariffFormula(formula);
+    const inputs: Record<string, string> = {};
+    for (const name of compiled.variables) {
+      if (name === "unit_price" || name === "quantity") {
+        inputs[name] = name === "unit_price" ? "0" : "1";
+      } else if (!Object.hasOwn(workInputs, name)) {
+        inputs[name] = this.coefficient(
+          catalog.storeAttributes.get(offer.storeId) ?? [],
+          name,
+          currencyId,
+        );
+      }
+    }
+    if (
+      !compiled.isLinearIn("provider_usd") ||
+      !compiled.evaluate({ ...inputs, ...workInputs }).isZero() ||
+      !compiled.evaluate({ ...inputs, ...workInputs, provider_usd: "1" }).gt(0)
+    ) {
+      throw new Error("The work tariff must be proportional to provider_usd");
+    }
+    return { currencyId, formula, formulaVersion, inputs };
+  }
 
   async execute(request: IOfferQuoteInput): Promise<IOfferQuote> {
     const input: IOfferQuoteInput = {
@@ -150,6 +204,11 @@ export class Service {
     }
     const currenciesByOffer = new Map<string, string[]>();
     const formulas = new Map<string, ReturnType<typeof compileTariffFormula>>();
+    const isFormulaMetered = (offer: IModel) =>
+      Boolean(
+        offer.settings.workTokenPricing &&
+        offer.settings.workTokenPricing.multiplier === undefined,
+      );
     const supportedCurrencies = (offer: IModel) => {
       const cached = currenciesByOffer.get(offer.id);
       if (cached) {
@@ -158,6 +217,7 @@ export class Service {
       const productAttrs = catalog.productAttributes.get(offer.productId) ?? [];
       const coefficients = catalog.storeAttributes.get(offer.storeId) ?? [];
       try {
+        const workTariff = this.workTokenTariff(offer);
         const formula = compileTariffFormula(
           this.textSetting(productAttrs, "price_formula"),
         );
@@ -166,6 +226,9 @@ export class Service {
         const supported = catalog.currencies
           .filter((entry) => {
             try {
+              if (workTariff && workTariff.currencyId !== entry.id) {
+                return false;
+              }
               const pricedCoefficient = coefficients.some(
                 (row) =>
                   formula.variables.includes(row.key) &&
@@ -210,6 +273,7 @@ export class Service {
         !offer ||
         !product ||
         !this.retail(offer) ||
+        isFormulaMetered(offer) ||
         product.kind !== "service" ||
         ambiguous.has(offer.id) ||
         (link.variant !== "delivery" && link.variant !== "add-on")
@@ -322,6 +386,7 @@ export class Service {
         isService &&
         (!link ||
           !this.retail(offer) ||
+          isFormulaMetered(offer) ||
           catalog.products.get(offer.productId)?.kind !== "service")
       ) {
         throw new Error("Service is not available for this product");
@@ -419,6 +484,8 @@ export class Service {
             .routing()
             .distance(origin, geocoded, settings.routeProfile ?? "drive");
           inputs[name] = new Decimal(metres).div(1000).toFixed();
+        } else if (Object.hasOwn(workInputs, name)) {
+          inputs[name] = workInputs[name as keyof typeof workInputs];
         } else if (this.isRuntimeInput(name)) {
           inputs[name] = this.packageInput(main, name, input.quantity);
         } else {
@@ -432,6 +499,9 @@ export class Service {
       const amount = compiled
         .evaluate(inputs)
         .toFixed(precision(currency), Decimal.ROUND_HALF_UP);
+      if (isFormulaMetered(offer) && !new Decimal(amount).isZero()) {
+        throw new Error("Metered work cannot include a checkout charge");
+      }
       const role = (link?.variant ?? "product") as IOfferCharge["role"];
       const priced: IOfferCharge = {
         offerId: offer.id,
@@ -621,9 +691,18 @@ export class Service {
       )
       .sort();
     if (currency && !result.issues.length) {
-      result.amount = result.charges
+      const total = result.charges
         .reduce((total, item) => total.plus(item.amount), new Decimal(0))
         .toFixed(precision(currency));
+      if (isFormulaMetered(main) && !new Decimal(total).isZero()) {
+        result.issues.push({
+          code: "pricing_unavailable",
+          offerId: main.id,
+          message: "Metered work cannot include a checkout charge",
+        });
+      } else {
+        result.amount = total;
+      }
     }
     return this.finalize(result, expiryMinutes);
   }
@@ -817,6 +896,7 @@ export class Service {
   private isRuntimeInput(name: string) {
     return (
       this.runtimeInputs.has(name) ||
+      Object.hasOwn(workInputs, name) ||
       /^package_[1-9][0-9]*_(length_cm|width_cm|height_cm|weight_kg|count)$/.test(
         name,
       )
@@ -887,7 +967,8 @@ export class Service {
           this.isRuntimeInput(name) &&
           name !== "unit_price" &&
           name !== "distance_km" &&
-          name !== "serviced_subtotal"
+          name !== "serviced_subtotal" &&
+          !Object.hasOwn(workInputs, name)
         ) {
           inputs[name] = this.packageInput(main, name, 1);
         }
@@ -984,6 +1065,8 @@ export class Service {
               props.currency.id,
             ),
           );
+        } else if (Object.hasOwn(workInputs, name)) {
+          inputs[name] = exact(workInputs[name as keyof typeof workInputs]);
         } else if (this.isRuntimeInput(name)) {
           dynamic = true;
           inputs[name] = exact(

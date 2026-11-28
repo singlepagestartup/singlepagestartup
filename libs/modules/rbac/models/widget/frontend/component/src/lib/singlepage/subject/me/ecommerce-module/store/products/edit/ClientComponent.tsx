@@ -45,6 +45,8 @@ import {
   priceFieldKey,
   PriceFields,
 } from "./PriceFields";
+import { ScopedAttributeForm } from "../../../offer/create/ScopedAttributeForm";
+import { ProductOfferPayment } from "./ProductOfferPayment";
 import { ProductRelations } from "./ProductRelations";
 import {
   ProductTranslations,
@@ -65,6 +67,65 @@ interface IPriceRemoval {
   owner: "product" | "offer";
   offerId?: string;
   price: IStoreProductPrice;
+}
+
+function ProductTariff(
+  props: Pick<IProductEditFormProps, "subjectId" | "storeId" | "language"> & {
+    productId: string;
+    editableOfferId?: string;
+  },
+) {
+  const catalog = api.ecommerceModuleCatalogContext({ id: props.subjectId });
+  const ru = props.language === "ru";
+  if (catalog.isPending)
+    return <p role="status">{ru ? "Загружаем тариф…" : "Loading pricing…"}</p>;
+  if (!catalog.data || catalog.isError)
+    return (
+      <p role="alert">
+        {ru ? "Не удалось загрузить тариф." : "Could not load pricing."}
+      </p>
+    );
+  const token = catalog.data.currencies.find(
+    (item) => item.slug?.toLowerCase() === "token",
+  );
+  const offer = catalog.data.offers.find(
+    (item) =>
+      item.id === props.editableOfferId &&
+      item.storeId === props.storeId &&
+      item.productId === props.productId,
+  );
+  const hasZeroPrice =
+    !!token &&
+    !!offer &&
+    catalog.data.attributes.some(
+      (item) =>
+        item.owner.type === "offer" &&
+        item.owner.id === offer.id &&
+        item.type === "price" &&
+        item.currencyId === token.id &&
+        /^0(?:\.0+)?$/.test(item.number ?? ""),
+    );
+  return (
+    <div className={settingsFormStyles.panel}>
+      {offer && (
+        <ProductOfferPayment
+          key={offer.id}
+          subjectId={props.subjectId}
+          language={props.language}
+          offer={offer}
+          tokenId={token?.id}
+          hasZeroPrice={hasZeroPrice}
+          onRefresh={catalog.refetch}
+        />
+      )}
+      <ScopedAttributeForm
+        {...props}
+        startWithFormula
+        context={catalog.data}
+        onRefresh={catalog.refetch}
+      />
+    </div>
+  );
 }
 
 function ProductEditForm({
@@ -344,7 +405,7 @@ function ProductEditForm({
             {productName(data.product, language)}
           </Link>
 
-          {data.relations && (
+          {(data.relations || data.canEditProduct || offer?.editable) && (
             <TabsList
               aria-label={
                 ru ? "Разделы редактирования" : "Product editor sections"
@@ -354,12 +415,22 @@ function ProductEditForm({
               <TabsTrigger value="details" disabled={relationsBusy}>
                 {ru ? "Карточка и цены" : "Details and prices"}
               </TabsTrigger>
-              <TabsTrigger
-                value="relations"
-                disabled={update.isPending || refreshing}
-              >
-                {ru ? "Связи" : "Relations"}
-              </TabsTrigger>
+              {(data.canEditProduct || offer?.editable) && (
+                <TabsTrigger
+                  value="tariff"
+                  disabled={relationsBusy || update.isPending}
+                >
+                  {ru ? "Тариф" : "Pricing formula"}
+                </TabsTrigger>
+              )}
+              {data.relations && (
+                <TabsTrigger
+                  value="relations"
+                  disabled={update.isPending || refreshing}
+                >
+                  {ru ? "Связи" : "Relations"}
+                </TabsTrigger>
+              )}
             </TabsList>
           )}
         </header>
@@ -581,6 +652,23 @@ function ProductEditForm({
               )}
             </div>
           </form>
+        </TabsContent>
+        <TabsContent value="tariff" className="mt-4">
+          {tab === "tariff" && (data.canEditProduct || offer?.editable) && (
+            <ProductTariff
+              subjectId={subjectId}
+              storeId={storeId}
+              productId={product.id}
+              editableOfferId={
+                product.kind === "service" &&
+                product.type === "one_off" &&
+                offer?.editable
+                  ? offer.id
+                  : undefined
+              }
+              language={language}
+            />
+          )}
         </TabsContent>
         {data.relations && (
           <TabsContent

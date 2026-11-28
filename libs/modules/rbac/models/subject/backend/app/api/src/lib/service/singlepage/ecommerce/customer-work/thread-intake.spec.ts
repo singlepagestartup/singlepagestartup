@@ -200,6 +200,81 @@ function resumptionFixture() {
   };
 }
 
+it("rejects an explicit model override before writing to a fixed stage", async () => {
+  const task = {
+    id: randomUUID(),
+    storeId: randomUUID(),
+    stageId: "fixed",
+    customerId: randomUUID(),
+    status: "active",
+  };
+  const chatId = randomUUID();
+  const threadId = randomUUID();
+  const resolveWork = jest.fn();
+  const createWorkMessage = jest.fn();
+  const service = new Service({
+    repository: { withSubjectLock: jest.fn(async (_, callback) => callback()) },
+    providerConnections: { resolveWork },
+    modules: {
+      crm: {
+        task: {
+          withTask: jest.fn(async (_, callback) => callback(task)),
+          getFunnel: jest.fn().mockResolvedValue({
+            definition: {
+              stages: [
+                { id: task.stageId, provider: { modelId: "gpt-6.2-astra" } },
+              ],
+            },
+          }),
+        },
+        tasksToStages: { byOperation: jest.fn() },
+      },
+      social: {
+        chatsToCrmModuleTasks: {
+          channels: jest.fn().mockResolvedValue([{ chatId, threadId }]),
+        },
+        message: { createWorkMessage },
+      },
+    },
+  } as unknown as ConstructorParameters<typeof Service>[0]);
+  const internals = service as unknown as {
+    checkout: { context: () => Promise<undefined> };
+    chatDecision: () => Promise<undefined>;
+    recordActivity: (
+      customerId: string,
+      command: { operation: "message"; operationKey: string; text: string },
+      author: {
+        profileId: string;
+        requestMetadata: { provider: { modelId: string } };
+      },
+    ) => Promise<unknown>;
+  };
+  jest
+    .spyOn(service, "assignStageEmployee")
+    .mockImplementation(async (current) => current);
+  jest.spyOn(internals, "checkout", "get").mockReturnValue({
+    context: jest.fn().mockResolvedValue(undefined),
+  });
+  jest.spyOn(internals, "chatDecision").mockResolvedValue(undefined);
+
+  await expect(
+    internals.recordActivity(
+      task.customerId,
+      {
+        operation: "message",
+        operationKey: "message",
+        text: "Check the brief",
+      },
+      {
+        profileId: randomUUID(),
+        requestMetadata: { provider: { modelId: "gpt-4o" } },
+      },
+    ),
+  ).rejects.toThrow("This stage has a fixed model");
+  expect(resolveWork).not.toHaveBeenCalled();
+  expect(createWorkMessage).not.toHaveBeenCalled();
+});
+
 it("resumes the latest file-only input by audit order without writing a Social message", async () => {
   const f = resumptionFixture();
   f.messages.mockResolvedValue([

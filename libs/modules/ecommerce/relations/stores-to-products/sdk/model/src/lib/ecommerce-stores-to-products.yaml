@@ -27,9 +27,9 @@ allOf:
                 format: uuid
               multiplier:
                 type: string
+                description: Legacy offer multiplier. Omit to use the Product price formula.
             required:
               - currencyId
-              - multiplier
           initialGrant:
             type: boolean
             description: An administrator can assign this offer to registered Subjects once per Product.

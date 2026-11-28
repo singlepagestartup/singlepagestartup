@@ -4,10 +4,7 @@ import { MoveRight } from "lucide-react";
 import { useRef, useState } from "react";
 
 import { api } from "@sps/rbac/models/subject/sdk/client";
-import {
-  canDiscussCompletedOrder,
-  type ICrmWorkspaceStore,
-} from "@sps/rbac/models/subject/sdk/model";
+import { type ICrmWorkspaceStore } from "@sps/rbac/models/subject/sdk/model";
 import {
   StoreSection,
   type IStoreSectionContentProps,
@@ -90,7 +87,6 @@ export function TaskForStore({
       storeId={store.id}
       taskId={taskId}
       thread={thread}
-      discussionOnly={canDiscussCompletedOrder(task)}
       language={language}
     />
   );

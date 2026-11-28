@@ -111,8 +111,14 @@ async function publishBriefFunnel(
   ownerId: string,
   offerId: string,
   input: ISaveFunnel & { operationKey: string },
-  moveTaskId?: string,
+  moveTaskId: string | undefined,
+  orderFormula: boolean,
 ) {
+  if (moveTaskId && orderFormula) {
+    throw new Error(
+      "Existing Brief orders keep their original terms and workflow.",
+    );
+  }
   const { crm, ecommerce, social } = subject.modules;
   return subject.repository.withStoreEmployeeLock(input.storeId, async () => {
     const owners = await subject.module.subjectsToEcommerceModuleStores.find(
@@ -126,12 +132,21 @@ async function publishBriefFunnel(
       throw new Error("The supplied seller no longer owns the service store.");
     }
     const previousId = funnelIdFromKey(input.operationKey, input.storeId);
-    const saved = await crm.funnel.findById({ id: previousId });
+    const previousIds = orderFormula
+      ? [
+          previousId,
+          funnelIdFromKey(`${input.operationKey}-astra`, input.storeId),
+        ]
+      : [previousId];
     const offerLinks = crm.funnelsToEcommerceModuleStoresToProducts;
-    let oldOfferLink: string | undefined;
-    if (saved) {
-      await crm.funnel.lock(input.storeId, previousId, "update");
-      const previous = await crm.funnel.current(input.storeId, previousId);
+    const oldOfferLinks: string[] = [];
+    for (const id of previousIds) {
+      const saved = await crm.funnel.findById({ id });
+      if (!saved) {
+        continue;
+      }
+      await crm.funnel.lock(input.storeId, id, "update");
+      const previous = await crm.funnel.current(input.storeId, id);
       const [link] = await offerLinks.find({
         params: {
           filters: {
@@ -142,21 +157,24 @@ async function publishBriefFunnel(
           },
         },
       });
+      if (!link) {
+        continue;
+      }
       if (
         previous.bindings.storeWide !== false ||
         previous.bindings.formIds.length
       ) {
         throw new Error("The legacy Brief funnel has other entry points.");
       }
-      oldOfferLink = link?.id;
+      oldOfferLinks.push(link.id);
     }
     const next = await crm.funnel.save({
       ...input,
-      operationKey: `${input.operationKey}-astra`,
+      operationKey: `${input.operationKey}-${orderFormula ? "chat" : "astra"}`,
       name: `${input.name} (GPT-6.2 Astra)`,
     });
     await crm.funnel.lock(input.storeId, next.id, "share");
-    if (oldOfferLink) {
+    for (const oldOfferLink of oldOfferLinks) {
       await offerLinks.delete({ id: oldOfferLink });
     }
     if (moveTaskId) {
@@ -401,9 +419,12 @@ async function setup(
     };
     const metered = offer.settings.workTokenPricing;
     const meteredBrief = metered && service.slug === "business-brief";
+    const orderFormula = Boolean(metered && metered.multiplier === undefined);
     const workFunding = {
       payer: "customer" as const,
-      multiplier: metered?.multiplier ?? "0",
+      ...(orderFormula
+        ? { orderFormula: true as const }
+        : { multiplier: metered?.multiplier ?? "0" }),
       currencyId: token.id,
       maxRunAmount: metered ? (meteredBrief ? briefMaxRunAmount : "100") : "0",
       ...(!metered && { maxStageAmount: "0" }),
@@ -453,6 +474,30 @@ async function setup(
         ],
       },
     ];
+    const collaborativeStage: IFunnelStage = {
+      id: "work",
+      name: "Работа с экспертом",
+      ...employeeStage,
+      workFunding,
+      provider: paidWork?.provider,
+      operations: paidWork && [...paidWork.operations],
+      instruction: [
+        service.method,
+        "Работай над задачей в чате. Если данных достаточно для части работы, покажи её и уточни то, что ещё нужно. Учитывай предыдущие ответы и правки клиента. По просьбе клиента прикрепи рабочий документ и укажи в нём открытые вопросы.",
+      ].join(" "),
+      output: service.visual ? "image" : "pdf",
+      actions: [
+        {
+          id: "finish",
+          name: "Завершить работу",
+          instruction:
+            "Заверши работу, только если в последнем сообщении клиент прямо просит её завершить и не просит внести правки.",
+          actors: ["ai"],
+          evidence: ["model-result"],
+          outcome: "completed",
+        },
+      ],
+    };
     const funnelInput = {
       operationKey: metered ? productSlug + "-work-tokens" : productSlug,
       storeId: store.id,
@@ -460,57 +505,59 @@ async function setup(
       kind: "individual-service",
       bindings: { offerIds: [offer.id] },
       definition: {
-        initialStageId: "intake",
-        stages: [
-          {
-            id: "intake",
-            name: "Уточнение задачи",
-            ...employeeStage,
-            workFunding,
-            provider: paidWork?.provider,
-            operations: paidWork && [...paidWork.operations],
-            instruction:
-              "Выясни вводные и согласуй результат с клиентом. " +
-              service.method,
-            actions: [
+        initialStageId: orderFormula ? collaborativeStage.id : "intake",
+        stages: orderFormula
+          ? [collaborativeStage]
+          : [
+              {
+                id: "intake",
+                name: "Уточнение задачи",
+                ...employeeStage,
+                workFunding,
+                provider: paidWork?.provider,
+                operations: paidWork && [...paidWork.operations],
+                instruction:
+                  "Выясни вводные и согласуй результат с клиентом. " +
+                  service.method,
+                actions: [
+                  {
+                    id: "prepare",
+                    name: "Подготовить результат",
+                    actors: ["ai", "human"],
+                    evidence: ["model-result"],
+                    nextStageId: "prepare",
+                  },
+                ],
+              },
               {
                 id: "prepare",
-                name: "Подготовить результат",
-                actors: ["ai", "human"],
-                evidence: ["model-result"],
-                nextStageId: "prepare",
+                name: "Результат и правки",
+                ...employeeStage,
+                workFunding,
+                provider: paidWork?.provider,
+                operations: paidWork && [...paidWork.operations],
+                resultPricing: metered ? { kind: "work-tokens" } : undefined,
+                instruction: metered
+                  ? [
+                      service.method,
+                      "Составь полный рабочий бриф на русском. Зафиксируй цели, проверенные факты, ограничения и открытые вопросы. Открытые вопросы отметь в самом брифе. Если недостающие сведения не мешают подготовке полезного брифа, выпусти черновик.",
+                    ].join(" ")
+                  : service.method,
+                output: service.visual ? "image" : "pdf",
+                actions: [
+                  {
+                    id: "accept",
+                    name: "Принять версию",
+                    actors: ["system"],
+                    evidence: ["result-accepted"],
+                    ...(metered
+                      ? { outcome: "completed" as const }
+                      : { nextStageId: "payment" }),
+                  },
+                ],
               },
+              ...(metered ? [] : cashStages),
             ],
-          },
-          {
-            id: "prepare",
-            name: "Результат и правки",
-            ...employeeStage,
-            workFunding,
-            provider: paidWork?.provider,
-            operations: paidWork && [...paidWork.operations],
-            resultPricing: metered ? { kind: "work-tokens" } : undefined,
-            instruction: metered
-              ? [
-                  service.method,
-                  "Составь полный рабочий бриф на русском. Зафиксируй цели, проверенные факты, ограничения и открытые вопросы. Открытые вопросы отметь в самом брифе. Если недостающие сведения не мешают подготовке полезного брифа, выпусти черновик.",
-                ].join(" ")
-              : service.method,
-            output: service.visual ? "image" : "pdf",
-            actions: [
-              {
-                id: "accept",
-                name: "Принять версию",
-                actors: ["system"],
-                evidence: ["result-accepted"],
-                ...(metered
-                  ? { outcome: "completed" as const }
-                  : { nextStageId: "payment" }),
-              },
-            ],
-          },
-          ...(metered ? [] : cashStages),
-        ],
       },
     } satisfies ISaveFunnel;
     const funnel = meteredBrief
@@ -521,6 +568,7 @@ async function setup(
           offer.id,
           funnelInput,
           options.moveTaskId,
+          orderFormula,
         )
       : await crm.funnel.save(funnelInput);
     records.push({

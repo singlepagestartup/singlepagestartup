@@ -10,6 +10,7 @@ export function Component(props: IComponentProps) {
       componentProps={{
         isServer: false,
         variant: props.variant,
+        language: props.language,
         ecommerceModuleStoreId: props.ecommerceModuleStoreId,
       }}
     />

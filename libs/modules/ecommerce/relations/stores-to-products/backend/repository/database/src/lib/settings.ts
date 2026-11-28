@@ -12,7 +12,9 @@ export const offerSettingsSchema = z
     workTokenPricing: z
       .object({
         currencyId: z.uuid(),
-        multiplier: measurement.refine((value) => /[1-9]/.test(value)),
+        multiplier: measurement
+          .refine((value) => /[1-9]/.test(value))
+          .optional(),
       })
       .strict()
       .optional(),

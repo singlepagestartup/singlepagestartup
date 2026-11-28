@@ -1,4 +1,8 @@
 import { isSocialMessageExcludedFromOpenRouter } from "@sps/social/models/message/sdk/model";
+import {
+  CLOSED_THREAD_VARIANT,
+  SUPPORT_THREAD_VARIANT,
+} from "@sps/social/models/thread/sdk/model";
 import { ORDER_SUPPORT_THREAD_VARIANT } from "@sps/social/relations/chats-to-threads/sdk/model";
 import type { IModel as CrmTask } from "@sps/crm/models/task/sdk/model";
 import { Service } from "./order-support";
@@ -14,14 +18,33 @@ function fixture() {
   } as CrmTask;
   const members = [{ profileId: "buyer-profile" }];
   const messages: Array<{ sourceSystemId?: string; description: string }> = [];
-  const thread = { id: "support", metadata: { orderSupportTaskId: task.id } };
+  const work = { id: "work", variant: "default" };
+  const support = {
+    id: "support",
+    variant: "default",
+    metadata: { orderSupportTaskId: task.id },
+  };
   const placements: Array<{
     chatId: string;
     threadId: string;
     variant: string;
   }> = [];
-  const findThread = jest.fn(async () => (placements.length ? [thread] : []));
-  const createThread = jest.fn().mockResolvedValue(thread);
+  const findThread = jest.fn(async ({ params }) => {
+    const filter = params.filters.and[0];
+    if (filter.column === "id") {
+      return filter.value.includes(work.id) ? [work] : [];
+    }
+    return placements.length ? [support] : [];
+  });
+  const createThread = jest.fn(async ({ data }) => {
+    support.variant = data.variant;
+    return support;
+  });
+  const updateThread = jest.fn(async ({ id, data }) => {
+    const thread = id === support.id ? support : work;
+    thread.variant = data.variant;
+    return thread;
+  });
   const createPlacement = jest.fn(async ({ data }) => placements.push(data));
   const createAuthor = jest.fn();
   const createWorkMessage = jest.fn(async (data) => {
@@ -49,6 +72,7 @@ function fixture() {
       crm: {
         task: {
           findById: async () => task,
+          find: async () => [task],
           withTask: async (
             _: unknown,
             run: (current: CrmTask) => Promise<unknown>,
@@ -67,7 +91,8 @@ function fixture() {
         thread: {
           create: createThread,
           find: findThread,
-          findById: async () => thread,
+          findById: async () => support,
+          update: updateThread,
         },
         profile: { findById: async () => ({ variant: "default" }) },
         profilesToChats: {
@@ -95,6 +120,8 @@ function fixture() {
     createPlacement,
     createAuthor,
     createWorkMessage,
+    support,
+    updateThread,
     service,
     task,
   };
@@ -109,7 +136,15 @@ it("creates the support thread and owner-authored greeting only once for a compl
   await expect(f.service.ensure(f.task)).resolves.toBe("support");
   expect(f.createThread).toHaveBeenCalledTimes(1);
   expect(f.createThread).toHaveBeenCalledWith({
-    data: expect.objectContaining({ title: "Поддержка" }),
+    data: expect.objectContaining({
+      title: "Поддержка",
+      variant: SUPPORT_THREAD_VARIANT,
+    }),
+  });
+  expect(f.updateThread).toHaveBeenCalledTimes(1);
+  expect(f.updateThread).toHaveBeenCalledWith({
+    id: "work",
+    data: { variant: CLOSED_THREAD_VARIANT },
   });
   expect(f.createPlacement).toHaveBeenCalledWith({
     data: {
@@ -127,6 +162,25 @@ it("creates the support thread and owner-authored greeting only once for a compl
   expect(f.createAuthor).toHaveBeenCalledWith({
     data: { profileId: "owner-profile", messageId: "message-0" },
   });
+});
+
+it("promotes an existing support thread and keeps it private without replacing its link", async () => {
+  const f = fixture();
+  await f.service.ensure(f.task);
+  f.support.variant = "default";
+
+  await expect(f.service.prepareChat("worker", "chat")).resolves.toEqual(
+    new Map(),
+  );
+  await expect(f.service.prepareChat("buyer", "chat")).resolves.toEqual(
+    new Map([["task", "support"]]),
+  );
+  expect(f.updateThread).toHaveBeenLastCalledWith({
+    id: "support",
+    data: { variant: SUPPORT_THREAD_VARIANT },
+  });
+  expect(f.createPlacement).toHaveBeenCalledTimes(1);
+  expect(f.createWorkMessage).toHaveBeenCalledTimes(1);
 });
 
 it("accepts and de-duplicates buyer and owner replies with no provider metadata", async () => {

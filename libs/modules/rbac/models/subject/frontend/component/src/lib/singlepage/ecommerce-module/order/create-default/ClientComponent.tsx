@@ -17,6 +17,7 @@ import type {
 } from "@sps/rbac/models/subject/sdk/model";
 import {
   getEligibleRetailOffers,
+  offerUsesOrderDiscussion,
   type IOfferServiceOption,
 } from "@sps/ecommerce/relations/stores-to-products/sdk/model";
 import { DeliveryAddress } from "../list/checkout-default/DeliveryAddress";
@@ -144,7 +145,8 @@ export function Component(props: IComponentPropsExtended) {
   const consultation = consultationQuery.data;
   const newServiceOrder =
     props.ecommerceModuleProduct.kind === "service" &&
-    returnOffer?.settings.requiresResultAcceptance &&
+    returnOffer &&
+    offerUsesOrderDiscussion(returnOffer.settings) &&
     consultation?.offerId === returnOffer.id &&
     !consultation.orderId;
   const offers = retailOffers.filter(
@@ -181,7 +183,7 @@ export function Component(props: IComponentPropsExtended) {
     props.openServiceDiscussionOnSubmit && usesServiceDiscussion;
   const serviceUnavailable =
     props.openServiceDiscussionOnSubmit &&
-    consultationOffer?.settings.requiresResultAcceptance &&
+    offerUsesOrderDiscussion(consultationOffer?.settings) &&
     !workQuery.isPending &&
     !startsServiceDiscussion;
   const workMutation = api.changeCustomerWork();

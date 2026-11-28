@@ -2,6 +2,10 @@ import { createHash } from "node:crypto";
 import type { IModel as CrmTask } from "@sps/crm/models/task/sdk/model";
 import { canDiscussCompletedOrder } from "@sps/rbac/models/subject/sdk/model";
 import { withSocialMessageSystemMetadata } from "@sps/social/models/message/sdk/model";
+import {
+  CLOSED_THREAD_VARIANT,
+  SUPPORT_THREAD_VARIANT,
+} from "@sps/social/models/thread/sdk/model";
 import { ORDER_SUPPORT_THREAD_VARIANT } from "@sps/social/relations/chats-to-threads/sdk/model";
 import type { Service as Subject } from "../../index";
 import { Service as AssignmentCandidates } from "../../crm/workspace/assignment-candidates";
@@ -60,7 +64,7 @@ export class Service {
     );
   }
 
-  async find(taskId: string, chatId: string) {
+  private async find(taskId: string, chatId: string) {
     const [thread] = await this.social.thread.find(
       criteria({ slug: `order-support-${taskId}` }),
     );
@@ -74,10 +78,10 @@ export class Service {
         variant: ORDER_SUPPORT_THREAD_VARIANT,
       }),
     );
-    return placement ? thread.id : undefined;
+    return placement ? thread : undefined;
   }
 
-  async ensure(task: CrmTask) {
+  async ensure(task: CrmTask, allowCreateSupport = true) {
     if (!canDiscussCompletedOrder(task)) {
       return;
     }
@@ -98,9 +102,29 @@ export class Service {
           return;
         }
         const { chatId } = channel;
+        const discussions = await this.social.thread.find(
+          inIds("id", [...new Set(channels.map(({ threadId }) => threadId))]),
+        );
+        for (const discussion of discussions) {
+          if (discussion.variant !== CLOSED_THREAD_VARIANT) {
+            await this.social.thread.update({
+              id: discussion.id,
+              data: { variant: CLOSED_THREAD_VARIANT },
+            });
+          }
+        }
         const existing = await this.find(locked.id, chatId);
         if (existing) {
-          return existing;
+          if (existing.variant !== SUPPORT_THREAD_VARIANT) {
+            await this.social.thread.update({
+              id: existing.id,
+              data: { variant: SUPPORT_THREAD_VARIANT },
+            });
+          }
+          return existing.id;
+        }
+        if (!allowCreateSupport) {
+          return;
         }
         const ownerId = await this.storeOwner(locked.storeId);
         if (!ownerId) {
@@ -119,6 +143,7 @@ export class Service {
         const thread = await this.social.thread.create({
           data: {
             slug: `order-support-${locked.id}`,
+            variant: SUPPORT_THREAD_VARIANT,
             title: "Поддержка",
             metadata: { orderSupportTaskId: locked.id },
           },
@@ -186,9 +211,9 @@ export class Service {
     return placements.map(({ messageId }) => messageId);
   }
 
-  async prepareChat(subjectId: string, chatId: string) {
+  async prepareChat(subjectId: string, chatId: string, taskId?: string) {
     const links = await this.social.chatsToCrmModuleTasks.find(
-      criteria({ chatId }),
+      criteria({ chatId, ...(taskId && { crmModuleTaskId: taskId }) }),
     );
     const tasks = links.length
       ? await this.tasks.find(
@@ -199,21 +224,18 @@ export class Service {
           ),
         )
       : [];
-    const completedTaskIds = new Set<string>();
     const supportByTask = new Map<string, string>();
     for (const task of tasks) {
       if (!canDiscussCompletedOrder(task)) {
         continue;
       }
-      completedTaskIds.add(task.id);
-      if (await this.canRead(subjectId, task)) {
-        const threadId = await this.ensure(task);
-        if (threadId) {
-          supportByTask.set(task.id, threadId);
-        }
+      const canRead = await this.canRead(subjectId, task);
+      const threadId = await this.ensure(task, canRead);
+      if (threadId && canRead) {
+        supportByTask.set(task.id, threadId);
       }
     }
-    return { completedTaskIds, supportByTask };
+    return supportByTask;
   }
 
   async send(input: IMessageInput) {

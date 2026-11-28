@@ -56,6 +56,9 @@ function saveOrderArtifact(blob: Blob, filename: string) {
 }
 
 export function ResultReview(props: IProps) {
+  if (props.work.state === "in-progress" || props.work.state === "completed") {
+    return null;
+  }
   return props.onReadArtifact ? (
     <ResultReviewContent {...props} />
   ) : (
@@ -157,6 +160,8 @@ function ResultReviewContent({
           "in-transit": ru ? "В пути" : "In transit",
           delivered: ru ? "Вручён" : "Delivered",
           "awaiting-result": undefined,
+          "in-progress": undefined,
+          completed: undefined,
           canceled: undefined,
         }[work.state]
       : undefined;

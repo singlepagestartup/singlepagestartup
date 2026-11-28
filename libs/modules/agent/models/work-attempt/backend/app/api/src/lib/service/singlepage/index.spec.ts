@@ -88,6 +88,109 @@ it.each(["generate", "wait"] as const)(
   },
 );
 
+it.each([undefined, "finish"])(
+  "delivers the metered file in chat and closes only on the CRM action (%s)",
+  async (actionId) => {
+    const service = new Service({} as never);
+    const scope = {
+      storeId: "store",
+      taskId: "task",
+      assigneeId: "agent",
+      eventId: "event",
+      assignmentRevision: 1,
+    };
+    const attempt = {
+      ...scope,
+      id: "attempt",
+      stageId: "work",
+      publicationId: "publication",
+      stepKey: "reply",
+      state: "settled",
+      result: {
+        text: "Готовый раздел приложен.",
+        actionId,
+        artifact: {
+          originalFileId: "document",
+          publicationId: "publication",
+        },
+      },
+    } as const;
+    const task = {
+      stageId: "work",
+      publicationId: "publication",
+      orderId: "order",
+      customerId: "customer",
+      revision: 4,
+    };
+    const stage = {
+      instruction: "Составь бриф",
+      name: "Работа",
+      workFunding: { orderFormula: true },
+      actions: [
+        {
+          id: "finish",
+          actors: ["ai"],
+          evidence: ["model-result"],
+          outcome: "completed",
+        },
+      ],
+    };
+    const deliverReply = jest.fn();
+    const publishResultFromRun = jest.fn();
+    const transition = jest.fn().mockResolvedValue({
+      ...task,
+      status: "closed",
+      outcome: "completed",
+    });
+
+    jest.spyOn(service, "findById").mockResolvedValue(attempt as never);
+    jest
+      .spyOn(service, "change")
+      .mockImplementation(
+        async ({ data }) => ({ ...attempt, ...data }) as never,
+      );
+    jest.spyOn(service, "modules", "get").mockReturnValue({
+      crm: {
+        task: {
+          withWork: async (
+            _input: unknown,
+            operation: (value: object) => unknown,
+          ) => operation({ task, stage }),
+          get: jest.fn().mockResolvedValue(task),
+          transition,
+        },
+      },
+      rbac: {
+        subject: {
+          customerWork: { deliverReply },
+          orderWork: { publishResultFromRun },
+        },
+      },
+    } as never);
+
+    await expect(service["finish"](attempt as never)).resolves.toEqual({
+      id: attempt.id,
+      state: "delivered",
+    });
+    expect(deliverReply).toHaveBeenCalledWith(
+      expect.objectContaining({
+        ...scope,
+        attemptId: attempt.id,
+        text: attempt.result.text,
+        workDocumentId: "document",
+      }),
+    );
+    expect(publishResultFromRun).not.toHaveBeenCalled();
+    if (actionId) {
+      expect(transition).toHaveBeenCalledWith(
+        expect.objectContaining({ actionId }),
+      );
+    } else {
+      expect(transition).not.toHaveBeenCalled();
+    }
+  },
+);
+
 async function prepareStageReply(
   provider: "openai" | "openrouter",
   hasKnowledge: boolean,

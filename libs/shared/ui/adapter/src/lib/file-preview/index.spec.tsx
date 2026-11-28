@@ -124,7 +124,10 @@ it("aborts an old private read and ignores its late response when the reader cha
   rerender(<FilePreview name="same.png" onDownload={next} layout="message" />);
   expect(previous.mock.calls[0][0]?.aborted).toBe(true);
   await act(async () => resolve(png));
-  await screen.findByRole("button", { name: "Download same.png" });
+  await waitFor(() =>
+    expect(screen.queryByText("Loading preview…")).toBeNull(),
+  );
+  expect(screen.getByRole("button", { name: "Preview same.png" })).toBeTruthy();
   expect(URL.createObjectURL).not.toHaveBeenCalled();
   expect(document.querySelector("img, video, audio, iframe")).toBeNull();
 });
@@ -148,14 +151,22 @@ it.each([
       />,
     );
     expect(read).not.toHaveBeenCalled();
-    fireEvent.click(screen.getByRole("button", { name: `Play ${name}` }));
-    await waitFor(() =>
-      expect(container.querySelector(tag)?.hasAttribute("controls")).toBe(true),
-    );
+    if (layout === "rail") {
+      fireEvent.click(screen.getByRole("button", { name: `Play ${name}` }));
+      await waitFor(() =>
+        expect(container.querySelector(tag)?.hasAttribute("controls")).toBe(
+          true,
+        ),
+      );
+    } else {
+      expect(screen.queryByRole("button", { name: `Play ${name}` })).toBeNull();
+    }
     fireEvent.click(screen.getByRole("button", { name: `Preview ${name}` }));
-    expect(
-      screen.getByRole("dialog").querySelector(tag)?.getAttribute("src"),
-    ).toBe("blob:fixture");
+    await waitFor(() =>
+      expect(
+        screen.getByRole("dialog").querySelector(tag)?.getAttribute("src"),
+      ).toBe("blob:fixture"),
+    );
     expect(screen.getByRole("button", { name: "Download" })).toBeTruthy();
     expect(read).toHaveBeenCalledTimes(1);
     unmount();

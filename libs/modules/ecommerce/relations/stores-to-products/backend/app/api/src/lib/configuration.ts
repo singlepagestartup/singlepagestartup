@@ -68,6 +68,35 @@ export class Configuration extends ParentConfiguration {
                 return relationEntites?.[0].new.id;
               },
             },
+            {
+              field: "settings",
+              transform: (data) => {
+                const { settings } = data.entity
+                  .dump as typeof Table.$inferSelect;
+                const pricing = settings?.workTokenPricing;
+                if (!pricing) {
+                  return undefined;
+                }
+                const currency = data.seeds
+                  .find(
+                    (seed) =>
+                      seed.module === "billing" &&
+                      seed.type === "model" &&
+                      seed.name === "currency",
+                  )
+                  ?.seeds.find(({ dump }) => dump.id === pricing.currencyId);
+                if (currency) {
+                  return {
+                    ...settings,
+                    workTokenPricing: {
+                      ...pricing,
+                      currencyId: currency.new.id,
+                    },
+                  };
+                }
+                return undefined;
+              },
+            },
           ],
         },
       },

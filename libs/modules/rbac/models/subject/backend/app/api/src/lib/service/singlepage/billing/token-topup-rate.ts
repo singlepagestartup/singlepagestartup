@@ -2,6 +2,7 @@ import Decimal from "decimal.js";
 import { compileTariffFormula } from "@sps/backend-utils";
 import type { Service as Products } from "@sps/ecommerce/models/product/backend/app/api/src/lib/service";
 import type { IProviderTerms } from "@sps/rbac/models/subject/sdk/model/src/lib/provider-connections";
+import type { IOfferWorkTokenTariff } from "@sps/ecommerce/relations/stores-to-products/sdk/model";
 
 const Money = Decimal.clone({ precision: 56 });
 const workTariff = compileTariffFormula(
@@ -10,7 +11,9 @@ const workTariff = compileTariffFormula(
 
 /** Read both sides of the operator's reference Token pack used for wallet top-ups. */
 export class TokenTopupRate {
-  constructor(private readonly products: Pick<Products, "findByIdExtended">) {}
+  constructor(
+    private readonly products: Pick<Products, "findByIdExtended" | "find">,
+  ) {}
 
   static workCharge(
     usd: string,
@@ -19,28 +22,70 @@ export class TokenTopupRate {
       topupUsd,
       usdPerSps,
       workMultiplier,
+      workTokenTariff,
     }: Pick<
       IProviderTerms,
-      "topupTokens" | "topupUsd" | "usdPerSps" | "workMultiplier"
+      | "topupTokens"
+      | "topupUsd"
+      | "usdPerSps"
+      | "workMultiplier"
+      | "workTokenTariff"
     >,
-    multiplier = workMultiplier,
+    multiplier?: string,
   ) {
     const rate =
       topupTokens && topupUsd
         ? { topup_tokens: topupTokens, topup_usd: topupUsd }
         : { topup_tokens: "1", topup_usd: usdPerSps };
+    if (workTokenTariff && multiplier === undefined) {
+      const tariff: IOfferWorkTokenTariff = JSON.parse(workTokenTariff);
+      return compileTariffFormula(tariff.formula).evaluate({
+        ...tariff.inputs,
+        ...rate,
+        provider_usd: usd,
+      });
+    }
     return workTariff.evaluate({
       ...rate,
       provider_usd: usd,
-      multiplier,
+      multiplier: multiplier ?? workMultiplier,
     });
   }
 
+  private async referenceProduct() {
+    const override = process.env.AI_WORK_TOKEN_TOPUP_PRODUCT_ID;
+    const id = override ?? "8aab55ed-f82d-49de-87b2-9625f5261f4c";
+    try {
+      return await this.products.findByIdExtended({ id });
+    } catch (error) {
+      if (
+        override ||
+        !(error instanceof Error) ||
+        error.message !== "Not found error. 'product' not found."
+      ) {
+        throw error;
+      }
+    }
+    const [seeded] = await this.products.find({
+      params: {
+        limit: 1,
+        filters: {
+          and: [
+            { column: "slug", method: "eq", value: "ai-chat-tokens-100-rub" },
+          ],
+        },
+      },
+    });
+    if (!seeded) {
+      throw new Error(
+        "Configuration error. The platform Token top-up product is missing",
+      );
+    }
+    return this.products.findByIdExtended({ id: seeded.id });
+  }
+
   async read(tokenCurrencyId: string) {
-    const id =
-      process.env.AI_WORK_TOKEN_TOPUP_PRODUCT_ID ??
-      "8aab55ed-f82d-49de-87b2-9625f5261f4c";
-    const product = await this.products.findByIdExtended({ id });
+    const product = await this.referenceProduct();
     const attributes = product.productsToAttributes ?? [];
     const amount = (type: "price" | "topup", currency: "usd" | "token") => {
       const values = attributes.filter(

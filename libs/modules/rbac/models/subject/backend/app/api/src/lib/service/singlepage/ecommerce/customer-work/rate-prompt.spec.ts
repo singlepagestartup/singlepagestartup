@@ -126,7 +126,7 @@ function chatDecisionFixture() {
       entry: object,
       fileId: string,
     ) => Promise<boolean>;
-    customerProfiles: () => Promise<Set<string>>;
+    assignedAgentProfile: () => Promise<{ id: string }>;
     messagePage: (
       threadId: string,
       page: { limit: number; offset: number },
@@ -136,8 +136,8 @@ function chatDecisionFixture() {
     assertRatePrompt: () => Promise<void>;
   };
   jest
-    .spyOn(internals, "customerProfiles")
-    .mockResolvedValue(new Set(["buyer-profile"]));
+    .spyOn(internals, "assignedAgentProfile")
+    .mockResolvedValue({ id: "agent" });
   jest
     .spyOn(internals, "price")
     .mockResolvedValue({ key: f.priceKey, rates: [] });
@@ -216,11 +216,12 @@ it.each([
       priceKey: f.priceKey,
     });
     expect(f.decideCustomerWorkAction).toHaveBeenCalledWith({
-      prompt: f.rate.message.description,
+      prompts: [{ id: f.message.id, text: f.rate.message.description }],
       reply: text,
       actions: [
         {
           id: "approve-budget",
+          messageId: f.message.id,
           instruction: expect.stringContaining("Подтвердить тариф"),
         },
       ],
@@ -234,11 +235,23 @@ it("does not infer authorization from a question, invented evidence, or a reply 
     actionId: "approve-budget",
     evidence: "Подтверждаю",
   });
-  await expect(f.classify("А как подтвердить тариф?")).resolves.toBeUndefined();
+  await expect(f.classify("А как подтвердить тариф?")).resolves.toMatchObject({
+    operation: "clarify",
+    choices: ["Подтвердить тариф"],
+  });
   await expect(f.classify("Подтверждаю", "9012")).resolves.toBeUndefined();
   expect(f.decideCustomerWorkAction).not.toHaveBeenCalled();
-  await expect(f.classify("Я ещё думаю")).resolves.toBeUndefined();
-  expect(f.decideCustomerWorkAction).toHaveBeenCalledTimes(1);
+  await expect(f.classify("Я ещё думаю")).resolves.toMatchObject({
+    operation: "clarify",
+  });
+  f.decideCustomerWorkAction.mockResolvedValueOnce({
+    actionId: "approve-budget",
+    evidence: "подтверждаю",
+  });
+  await expect(f.classify("Я не подтверждаю")).resolves.toMatchObject({
+    operation: "clarify",
+  });
+  expect(f.decideCustomerWorkAction).toHaveBeenCalledTimes(2);
 });
 
 function checkoutReply(
@@ -306,8 +319,13 @@ it("requires the current payment button and explicit grounded consent before dis
     actionId: "proceed-to-payment",
     evidence: "Перейдём к оплате",
   });
-  await expect(f.answer("А можно оплатить позже?")).resolves.toBeUndefined();
-  await expect(f.answer("Подумаю и решу позже")).resolves.toBeUndefined();
+  await expect(f.answer("А можно оплатить позже?")).resolves.toMatchObject({
+    operation: "clarify",
+    choices: ["Перейти к оплате"],
+  });
+  await expect(f.answer("Подумаю и решу позже")).resolves.toMatchObject({
+    operation: "clarify",
+  });
   await expect(f.answer("Перейдём к оплате")).resolves.toMatchObject({
     input: { value: "pay" },
   });
@@ -343,6 +361,59 @@ it("finds the current keyboard beyond a page of status and buyer messages", asyn
   expect(f.messagePage).toHaveBeenNthCalledWith(2, f.channel.threadId, {
     limit: 24,
     offset: 24,
+  });
+});
+
+it("uses three current agent messages and can retry after a clarification", async () => {
+  const f = chatDecisionFixture();
+  const earlier = { id: randomUUID(), description: "Назовите вашу задачу." };
+  const latest = { id: randomUUID(), description: "Тариф указан выше." };
+  const ignored = { id: randomUUID(), description: "Старое сообщение." };
+  const clarification = {
+    ...f.status.message,
+    metadata: withSocialMessageSystemMetadata({
+      source: "customer-work-decision-clarification",
+    }),
+  };
+  f.messagePage.mockResolvedValue({
+    entries: [
+      { profileId: "agent", message: ignored },
+      { profileId: "agent", message: earlier },
+      f.rate,
+      { profileId: "different-author", message: ignored },
+      { profileId: "agent", message: latest },
+      { profileId: "agent", message: clarification },
+    ],
+    hasNextPage: false,
+  });
+  f.decideCustomerWorkAction
+    .mockResolvedValueOnce({ evidence: "" })
+    .mockResolvedValueOnce({
+      actionId: "approve-budget",
+      evidence: "С тарифом согласен",
+    });
+
+  await expect(f.classify("А что дальше")).resolves.toMatchObject({
+    operation: "clarify",
+    choices: ["Подтвердить тариф"],
+  });
+  await expect(f.classify("С тарифом согласен")).resolves.toMatchObject({
+    operation: "approve-budget",
+    messageId: f.message.id,
+  });
+  expect(f.decideCustomerWorkAction).toHaveBeenLastCalledWith({
+    prompts: [
+      { id: earlier.id, text: earlier.description },
+      { id: f.message.id, text: f.rate.message.description },
+      { id: latest.id, text: latest.description },
+    ],
+    reply: "С тарифом согласен",
+    actions: [
+      expect.objectContaining({
+        id: "approve-budget",
+        messageId: f.message.id,
+      }),
+    ],
   });
 });
 

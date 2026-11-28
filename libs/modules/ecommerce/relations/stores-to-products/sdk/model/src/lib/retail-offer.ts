@@ -12,6 +12,12 @@ export interface ISelectRetailOfferInput extends IEligibleRetailOffersInput {
   existingOrder?: boolean;
 }
 
+export function offerUsesOrderDiscussion(settings?: IModel["settings"]) {
+  return Boolean(
+    settings?.requiresResultAcceptance || settings?.workTokenPricing,
+  );
+}
+
 function isEligibleRetailOffer(
   offer: IModel,
   { product, storeId }: Pick<IEligibleRetailOffersInput, "product" | "storeId">,

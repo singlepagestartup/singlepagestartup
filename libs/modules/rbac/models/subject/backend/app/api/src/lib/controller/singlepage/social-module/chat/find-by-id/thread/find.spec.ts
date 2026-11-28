@@ -33,10 +33,7 @@ it("filters a private support thread before paging the remaining discussions", a
     socialModuleChatLifecycleAssertSubjectOwnsChat: jest.fn(),
     customerWork: {
       orderSupport: {
-        prepareChat: async () => ({
-          completedTaskIds: new Set(),
-          supportByTask: new Map(),
-        }),
+        prepareChat: async () => new Map(),
         threadIdsForChat: async () => ["private-support"],
       },
     },

@@ -98,11 +98,16 @@ export class Service {
         if (work.paid) {
           exactCheckout.paidAt = work.paid.paidAt;
         }
+        const sharedDocument =
+          work.workTokenTariff &&
+          work.state === "completed" &&
+          work.sharedDocument;
         if (
           work.kind === "individual-service" &&
-          work.deliveredAt &&
-          work.resultFileId &&
-          (work.paid || includesResult)
+          (sharedDocument ||
+            (work.deliveredAt &&
+              work.resultFileId &&
+              (work.paid || includesResult)))
         ) {
           exactCheckout.delivery = [{ kind: "digital" }];
           const result = await service.orderWork.profileKnowledgeResult(

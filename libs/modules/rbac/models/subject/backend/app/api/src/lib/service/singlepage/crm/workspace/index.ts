@@ -1149,16 +1149,6 @@ export class Service {
         canSend:
           !canDiscussCompletedOrder(task) &&
           (canManageTasks || task.status !== "closed"),
-        ...(canDiscussCompletedOrder(task) &&
-          (await this.subject.customerWork.orderSupport.canRead(
-            actorId,
-            task,
-          )) && {
-            supportThreadId: await this.subject.customerWork.orderSupport.find(
-              task.id,
-              channel.chatId,
-            ),
-          }),
         actorProfileId:
           profile &&
           (

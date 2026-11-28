@@ -1631,6 +1631,10 @@ paths:
           in: query
           description: Return only this thread if it belongs to the chat.
           schema: { type: string, format: uuid }
+        - name: variant
+          in: query
+          description: Return only the order support threads available to this subject.
+          schema: { type: string, enum: [support] }
         - name: socialModuleChatId
           in: path
           required: true

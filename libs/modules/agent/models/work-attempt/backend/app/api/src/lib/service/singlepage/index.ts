@@ -2,6 +2,10 @@ import { failureLocations, logger } from "@sps/backend-utils";
 import { TokenTopupRate } from "@sps/rbac/models/subject/backend/app/api/src/lib/service/singlepage/billing/token-topup-rate";
 import { McpCatalogUnavailable } from "@sps/rbac/models/subject/backend/app/api/src/lib/service/singlepage/social-module/profile/mcp/catalog";
 import { createHash } from "node:crypto";
+import {
+  assertApprovedWorkRate,
+  type ICustomerWorkFunding,
+} from "@sps/rbac/models/subject/backend/app/api/src/lib/service/singlepage/ecommerce/customer-work/utils";
 import type { IModel as IWalletOperation } from "@sps/billing/models/transaction/sdk/model";
 import type {
   ICustomerWorkReply,
@@ -81,6 +85,7 @@ interface IOutgoingWork {
   imageActionId?: string;
   deliverableOrderFile?: ICustomerWorkReply["releaseOrderFile"];
   cover?: IConfirmedCover;
+  deliverFileInChat: boolean;
   fullTextPreview?: boolean;
   briefAwaitingReview?: boolean;
 }
@@ -292,10 +297,14 @@ export class Service extends CRUDService<IModel> {
           task,
           stage,
           progression,
-          funding,
+          funding: stageFunding,
           taskFunding,
           maintenanceSourceId,
         }) => {
+          const funding: ICustomerWorkFunding | undefined =
+            stageFunding?.orderFormula
+              ? await rbac.customerWork.effectiveWorkFunding(task, stageFunding)
+              : stageFunding;
           if (
             plan?.mcpAdvice &&
             (task.stageId !== plan.mcpAdvice.stageId ||
@@ -396,6 +405,7 @@ export class Service extends CRUDService<IModel> {
               "Permission error. The stage does not generate images",
             );
           }
+          let deliverFileInChat = false;
           let fullTextPreview = false;
           let briefAwaitingReview = false;
           if (output !== "chat") {
@@ -415,7 +425,11 @@ export class Service extends CRUDService<IModel> {
                 "Conflict error. File generation requires an unpaid individual-service order",
               );
             }
+            deliverFileInChat = Boolean(
+              order.workTokenTariff && stage.workFunding?.orderFormula,
+            );
             fullTextPreview =
+              !deliverFileInChat &&
               output === "pdf" &&
               stage.resultPricing?.kind === "work-tokens" &&
               order.paymentMode === "work-tokens";
@@ -583,28 +597,10 @@ export class Service extends CRUDService<IModel> {
             );
           }
 
-          if (
-            funding.multiplier !== undefined &&
-            customerPaysForWork(funding)
-          ) {
+          if (customerPaysForWork(funding)) {
             const rates =
               "approvedRates" in context ? context.approvedRates : undefined;
-            const approved = rates?.find(
-              (rate) =>
-                rate.capability === capability &&
-                rate.model === binding.model &&
-                rate.provider === binding.provider,
-            );
-            if (
-              !approved ||
-              Object.entries(terms).some(
-                ([key, value]) => approved[key as keyof typeof terms] !== value,
-              )
-            ) {
-              throw new Error(
-                "Payment required. The customer must approve the current stage rate",
-              );
-            }
+            assertApprovedWorkRate(rates, capability, binding);
           }
 
           const actions = (
@@ -705,9 +701,15 @@ export class Service extends CRUDService<IModel> {
             !cartOffers?.length &&
             supportsStrictStageDecision(binding);
           if (output === "pdf") {
-            instructions.push(
-              "Return a JSON object with reply (a question if details are missing), artifactText (the finished PDF content as plain text, or null if the brief is incomplete), and actionId (null or an allowed action).",
-            );
+            if (deliverFileInChat) {
+              instructions.push(
+                "Return a JSON object with reply (your full response to the customer), artifactText (the requested PDF content as plain text, or null when a file is not needed), and actionId (null or an allowed action). Work through the brief in the chat. If the customer asks for a file, write the working document with the information available and identify open questions in it. If the customer asks to revise a document, use the latest shared document and their new instructions. The application attaches any generated PDF directly to your reply.",
+              );
+            } else {
+              instructions.push(
+                "Return a JSON object with reply (a question if details are missing), artifactText (the finished PDF content as plain text, or null if the brief is incomplete), and actionId (null or an allowed action).",
+              );
+            }
             if (briefAwaitingReview) {
               instructions.push(
                 "The existing draft awaits the buyer's decision. Answer the latest message in reply, and set artifactText and actionId to null. If they ask for changes or accept in a message, direct the buyer to use the matching review button on the current draft.",
@@ -728,15 +730,17 @@ export class Service extends CRUDService<IModel> {
             const russian = /\p{Script=Cyrillic}/u.test(
               stage.name + stage.instruction,
             );
-            stageClarification = russian
-              ? `Уточните недостающие данные для этапа «${stage.name}».`
-              : `Please clarify the missing details for the “${stage.name}” stage.`;
+            if (!deliverFileInChat) {
+              stageClarification = russian
+                ? `Уточните недостающие данные для этапа «${stage.name}».`
+                : `Please clarify the missing details for the “${stage.name}” stage.`;
+            }
             stageAccepted = russian ? "Принято." : "Details received.";
             if (strictStage) {
               instructions.push(
                 'Set decision.kind to "advance" and give the allowed actionId when the customer has supplied the evidence for the current stage. Put the customer-facing response in decision.reply. If the evidence is missing or ambiguous, set decision.kind to "clarify" and put the customer-facing response in decision.clarification. Ask only for missing current-stage information.',
               );
-            } else {
+            } else if (!deliverFileInChat) {
               instructions.push(
                 "When actionId is null and you are not proposing a cart or delivering a document, put the customer-facing response in the separate JSON string field clarification. Ask only for missing information about the current stage. Leave reply empty. Reserve reply for a confirmed transition or a valid cart proposal.",
               );
@@ -747,12 +751,19 @@ export class Service extends CRUDService<IModel> {
               actionId: id,
               ...condition,
             }));
+            let evidenceInstruction =
+              "If required evidence is missing or ambiguous, set actionId to null and ask only for the missing information in the current stage. Advance at most one stage in this response. Do not invent an actionId. For an outstanding cart proposal, keep actionId null until the customer confirms the quote.";
+            if (deliverFileInChat) {
+              evidenceInstruction =
+                "Continue work in reply with actionId null until the buyer supplies clear evidence for a transition. Sending a document or receiving a request for edits leaves the conversation active.";
+            } else if (strictStage) {
+              evidenceInstruction =
+                "Choose based on the current stage's evidence only. A complete answer can be written in natural language. Treat additional details for earlier or later stages as context, and do not require them again. Advance at most one stage.";
+            }
             instructions.push(
               `The task is currently in stage ${JSON.stringify(stage.id)}. Use the latest customer reply and relevant earlier messages to check the evidence for this stage.`,
               "When the evidence clearly satisfies an allowed transition, include its exact actionId in the same JSON response. Do this even if reply also acknowledges completion or asks the first question for the next stage. Never acknowledge that the stage is complete, announce a next stage, or ask the customer for information from a later stage with actionId set to null.",
-              strictStage
-                ? "Choose based on the current stage's evidence only. A complete answer can be written in natural language. Treat additional details for earlier or later stages as context, and do not require them again. Advance at most one stage."
-                : "If required evidence is missing or ambiguous, set actionId to null and ask only for the missing information in the current stage. Advance at most one stage in this response. Do not invent an actionId. For an outstanding cart proposal, keep actionId null until the customer confirms the quote.",
+              evidenceInstruction,
               "Allowed transitions: " + JSON.stringify(transitions),
             );
           }
@@ -974,7 +985,7 @@ export class Service extends CRUDService<IModel> {
           }
           await this.projectExpense(attempt);
           const imageActionId =
-            capability === "image" && actions.length === 1
+            !deliverFileInChat && capability === "image" && actions.length === 1
               ? actions[0].id
               : undefined;
           return {
@@ -985,6 +996,7 @@ export class Service extends CRUDService<IModel> {
               imageActionId,
               deliverableOrderFile,
               cover,
+              deliverFileInChat,
               fullTextPreview,
               briefAwaitingReview,
               publicationId: task.publicationId,
@@ -1196,7 +1208,21 @@ export class Service extends CRUDService<IModel> {
               assignmentRevision,
             };
             let resultId = id;
-            if (result.artifact) {
+            if (result.artifact && !result.artifact.previewFileId) {
+              const russian = /\p{Script=Cyrillic}/u.test(
+                stage.name + stage.instruction,
+              );
+              const attachmentMessage = russian
+                ? "Файл прикреплён к сообщению."
+                : "The file is attached.";
+              await subject.customerWork.deliverReply({
+                ...scope,
+                attemptId: id,
+                workDocumentId: result.artifact.originalFileId,
+                sourceVersions: current.sourceVersions,
+                text: result.text.trim() || attachmentMessage,
+              });
+            } else if (result.artifact?.previewFileId) {
               if (isAutomaticCoverStage(stage)) {
                 const context = await subject.customerWork.contextForRun(
                   scope,
@@ -1719,14 +1745,35 @@ export class Service extends CRUDService<IModel> {
           .catch(() => undefined);
       }
     } else if (artifactText && !outgoing.briefAwaitingReview) {
-      artifactFiles = await orderWork
-        .preparePdfResult(attempt.id, artifactText, {
-          fullTextPreview: outgoing.fullTextPreview,
-        })
-        .catch(() => undefined);
+      if (outgoing.deliverFileInChat) {
+        const original = await orderWork
+          .preparePdfDocument(attempt.id, artifactText)
+          .catch(() => undefined);
+        if (original) {
+          artifactFiles = { original, preview: undefined };
+        }
+      } else {
+        artifactFiles = await orderWork
+          .preparePdfResult(attempt.id, artifactText, {
+            fullTextPreview: outgoing.fullTextPreview,
+          })
+          .catch(() => undefined);
+      }
     }
     if (!artifactFiles) {
-      if ("artifact" in request && request.artifact === "pdf") {
+      if (outgoing.deliverFileInChat && artifactText) {
+        reply.actionId = undefined;
+        const russian = /\p{Script=Cyrillic}/u.test(
+          "messages" in request ? (request.messages[0]?.content ?? "") : "",
+        );
+        reply.text = russian
+          ? "Не удалось подготовить PDF. Попросите меня повторить."
+          : "I couldn't create the PDF. Ask me to try again.";
+      } else if (
+        !outgoing.deliverFileInChat &&
+        "artifact" in request &&
+        request.artifact === "pdf"
+      ) {
         // A clarification can be delivered to the thread without completing
         // the stage. A failed conversion must never expose the PDF body.
         reply.actionId = undefined;
@@ -1741,17 +1788,20 @@ export class Service extends CRUDService<IModel> {
     const received = await this.repository.atomic(attempt.id, async () => {
       const files = this.modules.fileStorage.file.privateContent;
       const original = await files.write(artifactFiles.original);
-      const preview = await files.write(artifactFiles.preview);
+      let preview;
+      if (!outgoing.deliverFileInChat && artifactFiles.preview) {
+        preview = await files.write(artifactFiles.preview);
+      }
       return this.recordReply(attempt, {
         ...reply,
-        text: "",
+        text: outgoing.deliverFileInChat ? reply.text : "",
         actionId:
           request.capability === "image"
             ? outgoing.imageActionId
             : reply.actionId,
         artifact: {
           originalFileId: original.id,
-          previewFileId: preview.id,
+          previewFileId: preview?.id,
           publicationId: outgoing.publicationId,
         },
       });

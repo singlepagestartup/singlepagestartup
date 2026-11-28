@@ -257,6 +257,7 @@ export function stageWorkFunding(
     ...(stage.workFunding.payer === "customer"
       ? {
           multiplier: stage.workFunding.multiplier,
+          ...(stage.workFunding.orderFormula && { orderFormula: true }),
           ...(stage.workFunding.maxRunAmount !== undefined && {
             maxRunAmount: stage.workFunding.maxRunAmount,
           }),
@@ -274,11 +275,12 @@ export function customerStageFunding(
 ): IStageWorkFunding & { payer: "customer" } {
   const existing = stage.workFunding;
   if (existing?.payer === "customer") {
-    const { currencyId, multiplier, maxRunAmount } = existing;
+    const { currencyId, multiplier, orderFormula, maxRunAmount } = existing;
     return {
       payer: "customer",
       currencyId,
       multiplier,
+      ...(orderFormula && { orderFormula }),
       ...(maxRunAmount !== undefined && { maxRunAmount }),
     };
   }

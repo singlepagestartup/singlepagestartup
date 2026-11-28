@@ -311,9 +311,6 @@ export interface ILinkedChatProduct extends Pick<
 
 export interface ISocialModuleChatThread extends ISocialModuleThread {
   hasCustomerWork?: boolean;
-  isOrderSupport?: boolean;
-  isOrderWorkClosed?: boolean;
-  supportThreadId?: string;
   linkedProducts?: ILinkedChatProduct[];
 }
 
@@ -344,6 +341,7 @@ export interface ICustomerWorkView {
   awaitingManager?: boolean;
   workflow?: {
     title: string;
+    stageId?: string;
     stageTitle: string;
     checkoutPromptId?: string;
     orderStep?:
@@ -352,7 +350,6 @@ export interface ICustomerWorkView {
   assignment: "assistant" | "manager" | "unassigned";
   status: "active" | "waiting" | "closed";
   discussionOnly?: boolean;
-  supportThreadId?: string;
   storeTest?: { storeSlug: string; funnelId: string; funnelSlug: string };
   customerPays: boolean;
   requiredMaximum?: string;
@@ -421,6 +418,7 @@ export function customerWorkAttachmentPath(
 export interface ICustomerWorkReply extends ICustomerWorkRun {
   releaseOrderFile?: { paymentId: string; fileId: string };
   orderResultFileId?: string;
+  workDocumentId?: string;
   attemptId: string;
   text: string;
   sourceVersions?: ICustomerWorkSourceVersion[];

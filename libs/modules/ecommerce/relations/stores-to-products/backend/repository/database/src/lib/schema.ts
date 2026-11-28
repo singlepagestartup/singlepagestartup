@@ -6,7 +6,7 @@ export interface IOfferSettings {
   requiresResultAcceptance?: boolean;
   closedForNewOrders?: boolean;
   fullTextDraftPreview?: true;
-  workTokenPricing?: { currencyId: string; multiplier: string };
+  workTokenPricing?: { currencyId: string; multiplier?: string };
   initialGrant?: boolean;
   initialGrantLegacyHistory?: boolean;
   standalone?: boolean;
