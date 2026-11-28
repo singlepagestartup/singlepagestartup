@@ -1,0 +1,15 @@
+{
+  "id": "0ff5499d-4044-4099-a1fd-7ba01b11fd20",
+  "createdAt": "2026-11-26T14:02:39.334Z",
+  "updatedAt": "2026-11-26T14:02:39.334Z",
+  "variant": "default",
+  "number": null,
+  "boolean": null,
+  "date": null,
+  "datetime": null,
+  "string": {
+    "en": "unit_price * quantity"
+  },
+  "adminTitle": "price_formula",
+  "slug": "brilliant-harlequin-planarian-458"
+}

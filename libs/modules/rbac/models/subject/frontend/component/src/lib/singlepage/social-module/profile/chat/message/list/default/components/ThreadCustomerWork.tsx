@@ -56,17 +56,19 @@ export function ThreadOrderStage({
   work,
   language,
   prompt,
-}: IProps & { prompt?: IOrderFileReview }) {
+  promptMessageId,
+}: IProps & { prompt?: IOrderFileReview; promptMessageId?: string }) {
   const { order, orderResult } = useThreadOrder(subjectId, work);
   const step = work.workflow?.orderStep;
   if (!step || !order || orderResult.isError) return null;
-  if (prompt)
+  if (prompt && work.status !== "closed")
     return (
       <ResultReview
         subjectId={subjectId}
         work={order}
         language={language}
         prompt={prompt}
+        promptMessageId={promptMessageId}
         storeTest={Boolean(work.storeTest)}
       />
     );
@@ -99,13 +101,19 @@ export function ThreadCustomerWork(props: IProps) {
   const { order, orderResult } = useThreadOrder(
     subjectId,
     work,
-    !work.workflow?.orderStep,
+    !work.workflow?.orderStep || work.status === "closed",
   );
 
   const status = {
     active: ru ? "В работе" : "In progress",
     waiting: ru ? "Ожидает действия" : "Waiting",
-    closed: ru ? "Закрыта" : "Closed",
+    closed: work.discussionOnly
+      ? ru
+        ? "Завершена"
+        : "Completed"
+      : ru
+        ? "Закрыта"
+        : "Closed",
   }[work.status];
   const assignment = {
     assistant: ru ? "Ассистент" : "Assistant",
@@ -166,14 +174,12 @@ export function ThreadCustomerWork(props: IProps) {
       </Link>
     ));
   const showOrder = Boolean(
-    work.orderId ||
-    work.productSlug ||
-    work.cartProposal ||
-    (work.status !== "closed" && work.customerPays),
+    work.orderId || work.productSlug || work.cartProposal,
   );
   const showResult = Boolean(
     order &&
-    (order.state !== "awaiting-result" ||
+    ((!order.includedInWork && order.state !== "awaiting-result") ||
+      order.state === "canceled" ||
       (order.files?.length ?? 0) > 0 ||
       order.result ||
       order.receipt ||

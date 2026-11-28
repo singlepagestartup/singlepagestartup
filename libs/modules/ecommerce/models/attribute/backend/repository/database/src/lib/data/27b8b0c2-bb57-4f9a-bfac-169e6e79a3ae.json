@@ -1,0 +1,15 @@
+{
+  "id": "27b8b0c2-bb57-4f9a-bfac-169e6e79a3ae",
+  "createdAt": "2026-11-26T14:03:05.685Z",
+  "updatedAt": "2026-11-26T14:03:05.685Z",
+  "variant": "default",
+  "number": null,
+  "boolean": null,
+  "date": null,
+  "datetime": null,
+  "string": {
+    "en": "unit_price * quantity"
+  },
+  "adminTitle": "price_formula",
+  "slug": "silly-turquoise-marmoset-9881"
+}

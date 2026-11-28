@@ -56,6 +56,29 @@ export function Component(props: IComponentProps) {
     }
     return path;
   }
+  function formAction(
+    action: "authentication" | "registration" | "forgot-password",
+    className: string,
+    label: string,
+  ) {
+    if (props.onModeChange) {
+      return (
+        <button
+          type="button"
+          disabled={!isHydrated}
+          className={className}
+          onClick={() => props.onModeChange?.(action)}
+        >
+          {label}
+        </button>
+      );
+    }
+    return (
+      <Link className={className} href={formHref(action)}>
+        {label}
+      </Link>
+    );
+  }
 
   const [isHydrated, setIsHydrated] = useState(false);
   useEffect(() => {
@@ -234,14 +257,14 @@ export function Component(props: IComponentProps) {
             />
           </label>
         )}
-        {!registration && !forgot && !reset && (
-          <Link
-            className="text-sm underline"
-            href={formHref("forgot-password")}
-          >
-            {ru ? "Забыли пароль?" : "Forgot password?"}
-          </Link>
-        )}
+        {!registration &&
+          !forgot &&
+          !reset &&
+          formAction(
+            "forgot-password",
+            "text-sm underline justify-self-start",
+            ru ? "Забыли пароль?" : "Forgot password?",
+          )}
         {registration && (
           <label className="flex items-start gap-3 text-sm leading-6 text-muted-foreground">
             <input
@@ -311,12 +334,11 @@ export function Component(props: IComponentProps) {
         )}
       </form>
       {forgot || reset ? (
-        <Link
-          href={formHref("authentication")}
-          className="mt-6 block text-center text-sm font-semibold underline"
-        >
-          {ru ? "Вернуться ко входу" : "Back to sign in"}
-        </Link>
+        formAction(
+          "authentication",
+          "mt-6 block w-full text-center text-sm font-semibold underline",
+          ru ? "Вернуться ко входу" : "Back to sign in",
+        )
       ) : (
         <p className="mt-6 text-center text-sm text-muted-foreground">
           {registration
@@ -326,18 +348,17 @@ export function Component(props: IComponentProps) {
             : ru
               ? "Ещё нет аккаунта? "
               : "No account yet? "}
-          <Link
-            className="font-semibold text-foreground underline"
-            href={formHref(registration ? "authentication" : "registration")}
-          >
-            {registration
+          {formAction(
+            registration ? "authentication" : "registration",
+            "font-semibold text-foreground underline",
+            registration
               ? ru
                 ? "Войти"
                 : "Sign in"
               : ru
                 ? "Создать аккаунт"
-                : "Create an account"}
-          </Link>
+                : "Create an account",
+          )}
         </p>
       )}
     </section>

@@ -37,7 +37,7 @@ export interface IWorkResult {
   indexing?: { sourceId: string; contentHash: string; indexKey: string };
   artifact?: {
     originalFileId: string;
-    previewFileId: string;
+    previewFileId?: string;
     publicationId: string;
   };
 }

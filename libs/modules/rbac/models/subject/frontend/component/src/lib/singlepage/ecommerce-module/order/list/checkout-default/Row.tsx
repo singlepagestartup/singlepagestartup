@@ -197,7 +197,8 @@ export const Component = memo(function Row(props: IRowProps) {
           ) : undefined)
         }
         priceLabel={
-          work && work.state !== "awaiting-payment"
+          work?.paymentTiming === "after-acceptance" &&
+          work.state !== "awaiting-payment"
             ? ru
               ? "Цена предложения"
               : "Offer price"

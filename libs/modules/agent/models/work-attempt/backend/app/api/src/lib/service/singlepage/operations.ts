@@ -98,7 +98,11 @@ export class Operations {
     perform: (step: IWorkStep) => Promise<IModel>,
   ): Promise<IWorkPlan> {
     const { crm, rbac, knowledge } = this.service.modules;
-    const { stage, task, funding } = await crm.task.getWork({
+    const {
+      stage,
+      task,
+      funding: stageFunding,
+    } = await crm.task.getWork({
       ...input,
       expectedAssignmentRevision: input.assignmentRevision,
     });
@@ -116,9 +120,23 @@ export class Operations {
       knowledgeScopeOnly: true,
     });
     const trigger = context.messages.at(-1);
-    if (trigger?.role !== "user" || !trigger.content.trim()) {
+    let inputText: string;
+    if (trigger?.role === "user" && trigger.content.trim()) {
+      inputText = trigger.content;
+    } else if (
+      context.stageEntryKnowledgeQuery &&
+      enabled.has("knowledge-search") &&
+      context.knowledgeSourceIds?.length
+    ) {
+      inputText = context.stageEntryKnowledgeQuery;
+      enabled.clear();
+      enabled.add("knowledge-search");
+    } else {
       return {};
     }
+    const funding = stageFunding?.orderFormula
+      ? await rbac.subject.customerWork.effectiveWorkFunding(task, stageFunding)
+      : stageFunding;
     if (!funding) {
       throw new Error("Permission error. No funded AI assignment");
     }
@@ -135,7 +153,7 @@ export class Operations {
         reasoning: context.requestedReasoning,
       }),
     );
-    const question = trigger.content.slice(0, 1400);
+    const question = inputText.slice(0, 1400);
     const evidence: IWorkRequest["messages"] = [];
     let sourceVersions: IWorkPlan["sourceVersions"];
     let blocked: IModel | undefined;
@@ -329,16 +347,16 @@ export class Operations {
         return { blocked };
       }
       const candidates = new Map(
-        context.knowledgeCandidateVersions?.map(({ id, version }) => [
-          id,
-          version,
+        context.knowledgeCandidateVersions?.map((source) => [
+          source.id,
+          source,
         ]),
       );
       const current = chunks.filter(
         (chunk) =>
           chunk.sourceId &&
           chunk.sourceVersion &&
-          candidates.get(chunk.sourceId) === chunk.sourceVersion,
+          candidates.get(chunk.sourceId)?.version === chunk.sourceVersion,
       );
       const used = new Set(current.map((chunk) => chunk.sourceId));
       sourceVersions =
@@ -346,6 +364,11 @@ export class Operations {
         [];
       const personal = new Set(context.personalKnowledgeSourceIds);
       const excerpts = current.map((chunk) => {
+        const origin =
+          chunk.sourceId && candidates.get(chunk.sourceId)?.orderResultPath;
+        if (origin) {
+          return `Customer's delivered order result. Cite ${origin} when using facts from this source.\n${chunk.text.slice(0, 1800)}`;
+        }
         const label =
           chunk.sourceId && personal.has(chunk.sourceId)
             ? "Interlocutor preference"

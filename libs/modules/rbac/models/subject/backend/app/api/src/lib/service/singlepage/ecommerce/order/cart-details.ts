@@ -1,4 +1,5 @@
 import type { ICartDetails } from "@sps/ecommerce/models/order/sdk/model";
+import { offerUsesOrderDiscussion } from "@sps/ecommerce/relations/stores-to-products/sdk/model";
 import type {
   IModel as IOffer,
   IOfferQuoteInput,
@@ -52,11 +53,13 @@ export class Service {
     });
     let work: ICartWork | undefined;
     if (customerWork?.kind === "individual-service") {
+      const workMetered = customerWork.paymentMode === "work-tokens";
       work = {
-        paymentTiming: "after-acceptance",
-        state: details.fixedResultPrice
-          ? "awaiting-payment"
-          : "awaiting-result",
+        paymentTiming: workMetered ? "work-tokens" : "after-acceptance",
+        state:
+          !workMetered && details.fixedResultPrice
+            ? "awaiting-payment"
+            : "awaiting-result",
         orderId: props.orderId,
         storeId: customerWork.storeId,
       };
@@ -67,6 +70,7 @@ export class Service {
     if (details.fixedResultPrice) {
       return {
         ...details,
+        ...(work?.paymentTiming === "work-tokens" && { totals: [] }),
         storeIds: storeIdsForOrder,
         ...(work ? { work } : {}),
         ...conversation,
@@ -87,17 +91,20 @@ export class Service {
             id: line.offerId,
           })
         : null;
-      const alternatives =
+      const listed =
         await service.modules.ecommerce.storesToProducts.offersForProduct({
           productId: line.productId,
           ...(current ? { configurationKey: current.configurationKey } : {}),
         });
+      const alternatives = listed.filter(
+        (offer) => !offer.settings?.closedForNewOrders,
+      );
       for (const offer of alternatives) {
         offers.set(offer.id, offer);
       }
       if (current) {
         offers.set(current.id, current);
-        if (!work && current.settings.requiresResultAcceptance === true) {
+        if (!work && offerUsesOrderDiscussion(current.settings)) {
           const canOpenDiscussion =
             Boolean(discussion) ||
             (primaries.length === 1 &&
@@ -109,7 +116,9 @@ export class Service {
                 offerId: current.id,
               })));
           work = {
-            paymentTiming: "after-acceptance",
+            paymentTiming: current.settings.workTokenPricing
+              ? "work-tokens"
+              : "after-acceptance",
             state: canOpenDiscussion
               ? "requires-discussion"
               : "discussion-unavailable",
@@ -201,6 +210,7 @@ export class Service {
     }
     return {
       ...details,
+      ...(work?.paymentTiming === "work-tokens" && { totals: [] }),
       availableCurrencyIds,
       offerQuotes: quotes,
       offers: [...offers.values()].map((offer) => ({

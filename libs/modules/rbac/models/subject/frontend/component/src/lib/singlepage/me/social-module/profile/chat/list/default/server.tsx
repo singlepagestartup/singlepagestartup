@@ -1,36 +1,17 @@
 "use server";
 import "server-only";
-import { ChatNotice } from "../../Notice";
-import AuthenticationMe from "../../../../../../authentication/me-default/server";
-import { Component as ChildComponent } from "./Component";
 import type { IComponentProps } from "./interface";
 import Client from "./client";
 export default async function Server(props: IComponentProps) {
   return (
-    <AuthenticationMe
-      isServer={true}
-      variant="authentication-me-default"
-      apiProps={props.apiProps}
+    <Client
+      isServer={false}
+      variant={props.variant}
+      language={props.language}
+      className={props.className}
       skeleton={props.skeleton}
-      fallback={
-        <Client
-          isServer={false}
-          variant={props.variant}
-          language={props.language}
-          className={props.className}
-          skeleton={props.skeleton}
-          socialModuleChatId={props.socialModuleChatId}
-          socialModuleThreadId={props.socialModuleThreadId}
-        />
-      }
-    >
-      {({ data, authenticated }) =>
-        data && authenticated ? (
-          <ChildComponent {...props} isServer={true} data={data} />
-        ) : (
-          <ChatNotice language={props.language} />
-        )
-      }
-    </AuthenticationMe>
+      socialModuleChatId={props.socialModuleChatId}
+      socialModuleThreadId={props.socialModuleThreadId}
+    />
   );
 }

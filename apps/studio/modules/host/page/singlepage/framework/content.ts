@@ -33,8 +33,6 @@ export interface ICodeFrameworkWebsiteContent {
   foundation: IWebsiteSection;
   journey: IWebsiteSection;
   request: IWebsiteSection;
-  change: IWebsiteSection;
-  chat: IWebsiteSection;
   modules: IWebsiteSection;
   articles: IWebsiteSection;
   handoff: IWebsiteSection;
@@ -180,8 +178,6 @@ export function parseCodeFrameworkWebsite(
     foundation: section("foundation"),
     journey: section("journey"),
     request: section("request"),
-    change: section("change"),
-    chat: section("chat"),
     modules: section("modules"),
     articles: section("articles"),
     handoff: section("handoff"),
@@ -206,14 +202,6 @@ export const landingModuleIds = [
   "crm",
 ];
 export const launchStepIds = ["account", "design", "publish"];
-export const projectDocumentKeys = [
-  "document-one",
-  "document-two",
-  "document-three",
-  "document-four",
-  "document-five",
-  "document-six",
-];
 export const productExamplePreviews = [
   {
     id: "contacts",

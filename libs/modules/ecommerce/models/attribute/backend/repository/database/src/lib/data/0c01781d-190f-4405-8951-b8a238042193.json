@@ -1,0 +1,15 @@
+{
+  "id": "0c01781d-190f-4405-8951-b8a238042193",
+  "createdAt": "2026-11-26T14:02:51.737Z",
+  "updatedAt": "2026-11-26T14:02:51.737Z",
+  "variant": "default",
+  "number": null,
+  "boolean": null,
+  "date": null,
+  "datetime": null,
+  "string": {
+    "en": "1"
+  },
+  "adminTitle": "formula_version",
+  "slug": "male-gold-quelea-8546"
+}

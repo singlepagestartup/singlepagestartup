@@ -32,6 +32,7 @@ export type TTypedProps =
     }
   | {
       type: "tiptap";
+      emptyValue?: string;
     }
   | {
       type: "textarea";

@@ -18,6 +18,7 @@ import { saturateHeaders } from "@sps/shared-frontend-client-utils";
 type IReadProps = Parameters<typeof api.orderWork.read>[0];
 type IDecisionProps = Parameters<typeof api.orderWork.decision>[0];
 type IContentProps = Parameters<typeof api.orderWork.content>[0];
+type IKnowledgeProps = Parameters<typeof api.orderWork.setArtifactKnowledge>[0];
 
 const queryKey = ({ id, orderId, taskId, storeId }: IReadProps) =>
   [orderWorkPath(id, orderId), taskId, storeId] as const;
@@ -93,4 +94,23 @@ function content(props: IContentProps) {
   return api.orderWork.content(clientRequest(props));
 }
 
-export const orderWork = { read, decision, content };
+function setArtifactKnowledge() {
+  return useMutation({
+    mutationFn: (props: IKnowledgeProps) =>
+      api.orderWork.setArtifactKnowledge(clientRequest(props)),
+    onSuccess: async ({ profileId }, { id }) => {
+      await Promise.all([
+        invalidateRouteQueries(
+          queryClient,
+          `${route}/${id}/ecommerce-module/orders`,
+        ),
+        invalidateRouteQueries(
+          queryClient,
+          `${route}/${id}/social-module/profiles/${profileId}/knowledge/sources/personal`,
+        ),
+      ]);
+    },
+  });
+}
+
+export const orderWork = { read, decision, content, setArtifactKnowledge };

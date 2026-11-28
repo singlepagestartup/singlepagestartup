@@ -12,6 +12,8 @@ import type { Service as EcommerceCatalog } from "./ecommerce/catalog";
 import type { Service as SecurityNotifications } from "./security-notifications";
 import { Service as MutateCart } from "../startup/ecommerce/order/mutate-cart";
 import { Service as CartSelection } from "../startup/ecommerce/order/selection";
+import { Service as CustomerOrderDetails } from "../startup/ecommerce/order/customer-details";
+import type { IExecuteProps as ICustomerOrderDetailsProps } from "./ecommerce/order/customer-details";
 import { Service as CartDetails } from "../startup/ecommerce/order/cart-details";
 import type { IExecuteProps as ICartDetailsProps } from "./ecommerce/order/cart-details";
 import type {
@@ -281,6 +283,10 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
       repository: this.repository,
       service: this,
     }).quote(props);
+  }
+
+  async ecommerceModuleOrderCustomerDetails(props: ICustomerOrderDetailsProps) {
+    return new CustomerOrderDetails({ service: this }).execute(props);
   }
 
   async ecommerceModuleOrderCartDetails(props: ICartDetailsProps) {

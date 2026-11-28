@@ -6,7 +6,6 @@ import { Component as Layout } from "../../../layout/index";
 import { Component as RbacModuleSubject } from "../../../../rbac/subject/index";
 import { Component as RbacModuleWidget } from "../../../../rbac/widget";
 import { useNavigate } from "../../../layout/singlepage/ai-chat-landing/Navigation";
-import { aiChatServiceHrefs } from "../../../layout/singlepage/ai-chat-landing/routes";
 
 export function Component({
   variant = "rbac-module-subject-me-authentication-select-method-ai-chat",
@@ -29,7 +28,7 @@ export function Component({
         <RbacModuleWidget
           variant="subject-me-authentication-select-method-ai-chat"
           copy={copy}
-          onSuccess={() => navigate(aiChatServiceHrefs["profile-list"])}
+          onSuccess={() => navigate("/framework")}
         />
       </Layout>
     </div>

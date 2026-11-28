@@ -13,15 +13,18 @@ import { Handler as SubjectProfileAvatarUpdate } from "./social-module/profile/f
 import { Handler as SubjectBalance } from "./billing-module/balance";
 import { Handler as SubjectProfileAvatarFind } from "./social-module/profile/find-by-id/avatar/find";
 import { Handler as SubjectProfileUpdate } from "./social-module/profile/find-by-id/update";
-import { Handler as SocialModuleProfileCreate } from "./social-module/profile/create";
 import { Handler as SocialModuleProfileFind } from "./social-module/profile/find";
-import { Handler as SocialModuleProfileProjects } from "./social-module/profile/projects";
 import { Handler as IdentityChangeEmail } from "./identity/change-email";
 import { Handler as KnowledgeSourceFiles } from "./social-module/profile/find-by-id/chat/find-by-id/profile/find-by-id/knowledge/source/find-by-id/files";
 import "reflect-metadata";
 import { inject, injectable } from "inversify";
 import { DI, RESTController } from "@sps/shared-backend-api";
 import { Table } from "@sps/rbac/models/subject/backend/repository/database";
+import { customerWorkTelegramRatePath } from "@sps/rbac/models/subject/sdk/model";
+import {
+  customerWorkTelegramCheckoutPath,
+  customerWorkTelegramFileReviewPath,
+} from "@sps/rbac/models/subject/sdk/model/src/lib/order-work";
 import { Service } from "../../service";
 import { Context } from "hono";
 import {
@@ -292,6 +295,14 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
       },
       {
         method: "POST" as const,
+        path: "/:id/ecommerce-module/orders/:orderId/work/artifacts/:artifactId/knowledge",
+      },
+      {
+        method: "DELETE" as const,
+        path: "/:id/ecommerce-module/orders/:orderId/work/artifacts/:artifactId/knowledge",
+      },
+      {
+        method: "POST" as const,
         path: "/:id/ecommerce-module/orders/:orderId/work/fulfillment",
       },
     ].map(({ method, path }) => ({
@@ -532,13 +543,6 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
       },
       {
         method: "GET",
-        path: "/:id/social-module/profiles/projects",
-        handler: (c) =>
-          new SocialModuleProfileProjects(this.service).execute(c),
-        middlewares: [new RequestSubjectIdOwner().init()],
-      },
-      {
-        method: "GET",
         path: "/:id/billing-module/balance",
         handler: (c) => new SubjectBalance(this.service).execute(c),
         middlewares: [new RequestSubjectIdOwner().init()],
@@ -548,13 +552,6 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
         path: "/:id/social-module/profiles",
         handler: (c, next) =>
           new SocialModuleProfileFind(this.service).execute(c),
-        middlewares: [new RequestSubjectIdOwner().init()],
-      },
-      {
-        method: "POST",
-        path: "/:id/social-module/profiles",
-        handler: (c, next) =>
-          new SocialModuleProfileCreate(this.service).execute(c),
         middlewares: [new RequestSubjectIdOwner().init()],
       },
       {
@@ -709,6 +706,27 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
         method: "POST",
         path: "/telegram/bootstrap",
         handler: this.telegramBootstrap,
+      },
+      {
+        method: "POST",
+        path: customerWorkTelegramRatePath,
+        handler: (c: Context) =>
+          new CustomerWork(this.service).approveTelegramRate(c),
+        middlewares: [new RequestOperatorSecret().init()],
+      },
+      {
+        method: "POST",
+        path: customerWorkTelegramFileReviewPath,
+        handler: (c: Context) =>
+          new CustomerWork(this.service).telegramFileReview(c),
+        middlewares: [new RequestOperatorSecret().init()],
+      },
+      {
+        method: "POST",
+        path: customerWorkTelegramCheckoutPath,
+        handler: (c: Context) =>
+          new CustomerWork(this.service).telegramCheckout(c),
+        middlewares: [new RequestOperatorSecret().init()],
       },
       {
         method: "POST",

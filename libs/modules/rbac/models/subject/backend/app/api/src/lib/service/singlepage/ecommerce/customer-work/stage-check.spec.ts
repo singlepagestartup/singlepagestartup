@@ -188,3 +188,177 @@ it("checks the actual order, message and paid file before reporting original del
     next,
   );
 });
+
+it("uses only the file shared by the assigned agent in the current formula stage", async () => {
+  const task = {
+    id: randomUUID(),
+    storeId: randomUUID(),
+    customerId: randomUUID(),
+    orderId: randomUUID(),
+    assigneeId: randomUUID(),
+    assignmentRevision: 3,
+    stageId: "prepare",
+    publicationId: randomUUID(),
+    revision: 10,
+  };
+  const channel = { chatId: randomUUID(), threadId: randomUUID() };
+  const source = {
+    id: randomUUID(),
+    taskId: task.id,
+    assignmentRevision: 3,
+    stageId: task.stageId,
+    revision: 8,
+    kind: "customer-message",
+    detail: { assigneeId: task.assigneeId, stageId: task.stageId },
+  };
+  const stage = {
+    id: task.stageId,
+    output: "pdf",
+    evidenceInstruction: "The agent shared the PDF in chat.",
+    workFunding: { orderFormula: true },
+    actions: [{ actors: ["ai"], evidence: ["model-result"] }],
+  };
+  const messageId = randomUUID();
+  const attachment = {
+    id: randomUUID(),
+    name: "brief.pdf",
+    mimeType: "application/pdf",
+    digest: "a".repeat(64),
+  };
+  const metadata = {
+    customerWorkSharedDocument: true,
+    customerWorkReplyEvent: {
+      id: source.id,
+      revision: source.revision,
+      taskId: task.id,
+    },
+    customerWorkAttachments: [attachment],
+  };
+  const replyKey = `attempt:${randomUUID()}`;
+  const entry = {
+    profileId: "assigned-agent",
+    message: {
+      id: messageId,
+      variant: "customer-work",
+      description: "Your brief.",
+      workReplyKey: replyKey,
+      metadata,
+    },
+  };
+  const event = {
+    id: randomUUID(),
+    assignmentRevision: 3,
+    revision: 9,
+    pending: true,
+    kind: "stage-check",
+    detail: { messageId },
+  };
+  const order = {
+    kind: "individual-service",
+    paymentMode: "work-tokens",
+    workTokenTariff: {},
+    orderId: task.orderId,
+    storeId: task.storeId,
+    customerId: task.customerId,
+    taskId: task.id,
+    files: [],
+    sharedDocument: {
+      ...channel,
+      stageId: stage.id,
+      publicationId: task.publicationId,
+      assignmentRevision: task.assignmentRevision,
+      fileId: attachment.id,
+      mimeType: attachment.mimeType,
+      digest: attachment.digest,
+      messageId,
+      profileId: entry.profileId,
+      replyKey,
+      eventId: source.id,
+      eventRevision: source.revision,
+    },
+  };
+  const readFile = jest.fn().mockResolvedValue(attachment);
+  const transition = jest.fn().mockResolvedValue({ status: "closed" });
+  const service = new Service({
+    modules: {
+      crm: {
+        task: {
+          getWork: async () => ({
+            task,
+            stage,
+            progression: "linear",
+            funding: { payer: "customer", multiplier: "0" },
+          }),
+          withTask: (_: unknown, run: () => Promise<void>) => run(),
+          transition,
+        },
+        tasksToStages: {
+          byOperation: async () => null,
+          find: async () => [],
+          findById: async () => source,
+        },
+      },
+      ecommerce: { order: { work: { findByOrder: async () => order } } },
+      social: {
+        threadsToMessages: { find: async () => [{ createdAt: new Date() }] },
+        chatsToMessages: { find: async () => [{}] },
+      },
+      fileStorage: { file: { privateContent: { findById: readFile } } },
+    },
+  } as unknown as ConstructorParameters<typeof Service>[0]);
+  const internals = service as unknown as {
+    requireInputEvent: () => Promise<typeof event>;
+    storeWorker: () => Promise<boolean>;
+    customerProfiles: () => Promise<Set<string>>;
+    replyChannel: () => Promise<typeof channel>;
+    messages: () => Promise<(typeof entry)[]>;
+  };
+  jest.spyOn(internals, "requireInputEvent").mockResolvedValue(event);
+  jest.spyOn(internals, "storeWorker").mockResolvedValue(true);
+  jest.spyOn(internals, "replyChannel").mockResolvedValue(channel);
+  jest
+    .spyOn(internals, "customerProfiles")
+    .mockResolvedValue(new Set(["buyer"]));
+  const messages = jest.spyOn(internals, "messages").mockResolvedValue([entry]);
+  const input = {
+    taskId: task.id,
+    storeId: task.storeId,
+    assigneeId: task.assigneeId,
+    assignmentRevision: task.assignmentRevision,
+    eventId: event.id,
+    purpose: "stage-check" as const,
+  };
+  const evidence = async () =>
+    (await service.stageCheckContext(input)).messages[1].content;
+  expect(await evidence()).toContain('"sharedDocumentAttached":true');
+  messages.mockResolvedValue([{ ...entry, profileId: "buyer" }]);
+  expect(await evidence()).toContain('"sharedDocumentAttached":false');
+  await service.completeStageCheck(input, randomUUID());
+  messages.mockResolvedValue([entry]);
+  readFile.mockResolvedValueOnce(null);
+  await service.completeStageCheck(input, randomUUID());
+  expect(transition).not.toHaveBeenCalled();
+  const resultId = randomUUID();
+  await service.completeStageCheck(input, resultId);
+  expect(transition).toHaveBeenCalledWith(
+    expect.objectContaining({
+      evidence: { kind: "model-result", resultId },
+    }),
+  );
+  const followup = {
+    profileId: "buyer",
+    message: { ...entry.message, id: randomUUID(), workReplyKey: "none" },
+  };
+  messages.mockResolvedValue([entry, followup]);
+  jest.spyOn(internals, "requireInputEvent").mockResolvedValue({
+    ...event,
+    detail: { messageId: followup.message.id },
+  });
+  const followupVerdict = randomUUID();
+  await service.completeStageCheck(input, followupVerdict);
+  expect(transition).toHaveBeenLastCalledWith(
+    expect.objectContaining({
+      evidence: { kind: "model-result", resultId: followupVerdict },
+    }),
+  );
+});

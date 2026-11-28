@@ -33,6 +33,7 @@ const formSchema = z.object({
 export function Component(props: IComponentPropsExtended) {
   const order = props.ecommerceModuleOrder;
   const work = order.cartDetails?.work;
+  if (work?.paymentTiming === "work-tokens") return null;
   const discussion = order.cartDetails?.discussion;
   const ongoing =
     discussion &&

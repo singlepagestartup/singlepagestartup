@@ -1,0 +1,15 @@
+{
+  "title": {
+    "en": "Browse services",
+    "ru": "Выбрать услугу"
+  },
+  "subtitle": {},
+  "url": "/framework/services",
+  "className": "w-fit",
+  "id": "206db7eb-a1ed-45fd-90a7-3cac1a4376ee",
+  "createdAt": "2026-11-26T14:08:15.666Z",
+  "updatedAt": "2026-11-26T14:08:15.666Z",
+  "variant": "action-inverse",
+  "adminTitle": "Framework | Browse services",
+  "slug": "framework-agent-services-entry"
+}

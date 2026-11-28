@@ -17,16 +17,29 @@ export class Handler {
           "Validation error. Subject and Profile IDs are required",
         );
       const parsed = c.get("parsedQuery");
+      const limit = Number(parsed?.limit ?? 100);
+      const offset = Number(parsed?.offset ?? 0);
+      if (
+        !Number.isSafeInteger(limit) ||
+        limit < 1 ||
+        !Number.isSafeInteger(offset) ||
+        offset < 0
+      ) {
+        throw new Error("Validation error. Invalid chat page");
+      }
       const data = await withConsistencySnapshot(() =>
         new Chats(this.service).find({
           subjectId,
           socialModuleProfileId,
+          search: c.req.query("search"),
+          language: c.req.query("language"),
+          membershipsOnly: c.req.query("membershipsOnly") === "true",
           includeSubjectProfiles:
             c.req.query("includeSubjectProfiles") === "true",
           includeParticipants: c.req.query("includeParticipants") === "true",
           params: {
-            limit: parsed?.limit || 100,
-            offset: parsed?.offset || 0,
+            limit,
+            offset,
             orderBy: parsed?.orderBy,
           },
         }),

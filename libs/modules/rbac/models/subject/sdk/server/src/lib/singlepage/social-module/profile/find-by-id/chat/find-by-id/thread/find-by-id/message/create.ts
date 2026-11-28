@@ -25,6 +25,7 @@ export interface IProps {
   options?: Partial<NextRequestOptions>;
   data: Partial<ISocialModuleMessage> & {
     files?: File[] | string[];
+    telegramReplyToMessageId?: string;
   };
 }
 

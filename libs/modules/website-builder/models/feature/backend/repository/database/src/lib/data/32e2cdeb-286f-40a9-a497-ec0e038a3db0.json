@@ -2,7 +2,7 @@
   "className": "",
   "id": "32e2cdeb-286f-40a9-a497-ec0e038a3db0",
   "createdAt": "2026-10-26T00:12:51.483Z",
-  "updatedAt": "2026-10-27T14:59:30.862Z",
+  "updatedAt": "2026-11-26T14:08:38.794Z",
   "variant": "dropdown",
   "title": {
     "en": "How can I develop the code myself?",
@@ -13,8 +13,8 @@
     "ru": ""
   },
   "description": {
-    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Download your repository and open it in Claude Code or Codex. Give the AI assistant your project documents, describe the changes and check the result before publishing.\"}]}]}",
-    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Скачайте свой репозиторий и откройте его в Claude Code или Codex. Передайте ИИ-помощнику документы проекта, опишите изменения и проверьте результат перед публикацией.\"}]}]}"
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Clone the repository, run the project and change the modules you need. Test the customer flow before deployment.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Клонируйте репозиторий, запустите проект и меняйте нужные модули. Перед публикацией проверьте сценарий клиента.\"}]}]}"
   },
   "adminTitle": "Как дорабатывать код самостоятельно?",
   "slug": "framework-reviewed-faq-1"

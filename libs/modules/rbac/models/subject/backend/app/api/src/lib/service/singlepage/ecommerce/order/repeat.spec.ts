@@ -108,6 +108,7 @@ function fixture() {
           ordersToBillingModulePaymentIntents: {
             find: jest.fn().mockResolvedValue([]),
             create: jest.fn(),
+            lockOffers: jest.fn(),
           },
           paymentIntent: {
             findById: jest.fn().mockResolvedValue({ status: "failed" }),
@@ -126,6 +127,22 @@ function fixture() {
   const operation = new Service({ repository, service } as any);
   return { source, carts, lines, service, repository, operation };
 }
+
+it("rejects copying a closed offer into a new cart before changing the existing cart", async () => {
+  const f = fixture();
+  const ecommerce = f.service.modules.ecommerce;
+  ecommerce.ordersToProducts.find.mockResolvedValue([
+    { ...f.lines[0], offerId: "closed-offer" },
+  ]);
+  ecommerce.storesToProducts.find.mockResolvedValue([
+    { id: "closed-offer", settings: { closedForNewOrders: true } },
+  ]);
+  await expect(f.operation.execute(props)).rejects.toThrow(
+    "original offer is closed to new orders",
+  );
+  expect(ecommerce.order.delete).not.toHaveBeenCalled();
+  expect(ecommerce.order.create).not.toHaveBeenCalled();
+});
 
 it.each(["paying", "failed", "canceling", "canceled"])(
   "rebuilds one fresh multiline cart from %s history and replaces all current carts",

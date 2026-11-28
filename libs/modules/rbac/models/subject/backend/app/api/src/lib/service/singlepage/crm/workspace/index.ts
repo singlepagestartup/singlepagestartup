@@ -39,7 +39,9 @@ import {
   orderResultFiles,
   type IOrderWorkView,
 } from "@sps/rbac/models/subject/sdk/model/src/lib/order-work";
+import { canDiscussCompletedOrder } from "@sps/rbac/models/subject/sdk/model";
 import type { IModel as IStore } from "@sps/ecommerce/models/store/sdk/model";
+import { deliveredOrderWorkFile } from "@sps/ecommerce/models/order/sdk/model";
 import { getEligibleRetailOffers } from "@sps/ecommerce/relations/stores-to-products/sdk/model";
 import type { Service as Subject } from "../../index";
 import { criteria } from "../../ecommerce/customer-work/utils";
@@ -1117,9 +1119,8 @@ export class Service {
           order.paymentStatus = "paid";
         }
         if (work?.kind === "individual-service") {
-          order.originalDelivered = Boolean(
-            work.paid && work.resultFileId && work.deliveredAt,
-          );
+          order.workState = work.state;
+          order.originalDelivered = Boolean(deliveredOrderWorkFile(work));
         }
         if (work?.kind === "physical-order") {
           order.fulfillment = {
@@ -1145,7 +1146,9 @@ export class Service {
         id: channel.threadId,
         title: channel.title || "Обсуждение задачи",
         chatId: channel.chatId,
-        canSend: canManageTasks || task.status !== "closed",
+        canSend:
+          !canDiscussCompletedOrder(task) &&
+          (canManageTasks || task.status !== "closed"),
         actorProfileId:
           profile &&
           (
@@ -1499,15 +1502,19 @@ export class Service {
         state: work.state,
         ...orderResultFiles(work, artifact),
         receipt: null,
-        deliveryStatus: work.paid && work.deliveredAt ? "available" : "pending",
+        deliveryStatus:
+          (work.paid && work.deliveredAt) || deliveredOrderWorkFile(work)
+            ? "available"
+            : "pending",
         trackingNumber: null,
       };
     }
     return {
       title: channel.title ?? "",
       canSend:
-        task.status !== "closed" ||
-        (await this.taskAccess(actorId, task.storeId)).canManageTasks,
+        !canDiscussCompletedOrder(task) &&
+        (task.status !== "closed" ||
+          (await this.taskAccess(actorId, task.storeId)).canManageTasks),
       messages,
       actions,
       participants: visibleParticipants.map((profile) => ({
@@ -1534,11 +1541,16 @@ export class Service {
           );
           await this.assertTaskAccess(task, actorId, canManageTasks);
           await this.assertThread(task, scope);
+          if (canDiscussCompletedOrder(task)) {
+            throw new Error(
+              "Forbidden error. The completed order discussion is read-only. Use the support thread.",
+            );
+          }
           if (!canManageTasks && task.status === "closed") {
             throw new Error("Permission error. Task chat access is required");
           }
           const profileId = await this.employees.ensureActorProfile(actorId);
-          return this.subject.customerWork.postTaskMessage(task, {
+          const saved = await this.subject.customerWork.postTaskMessage(task, {
             customerId: actorId,
             profileId,
             chatId: scope.chatId,
@@ -1548,10 +1560,15 @@ export class Service {
             hasAttachments: Boolean(message.files?.length),
             sourceSystemId: message.operationKey,
           });
+          return { message: saved, status: task.status };
         }),
     );
-    this.subject.customerWork.wakePendingWork(scope.taskId);
-    const [projected] = await new SocialMessages(this.subject).enrich([reply]);
+    if (reply.status !== "closed") {
+      this.subject.customerWork.wakePendingWork(scope.taskId);
+    }
+    const [projected] = await new SocialMessages(this.subject).enrich([
+      reply.message,
+    ]);
     return projected;
   }
 
@@ -1608,7 +1625,7 @@ export class Service {
         file.previewFileId === reference || file.legacyMessageId === reference,
     );
     const isDelivered =
-      work?.paid && work.deliveredAt && work.resultFileId === reference;
+      deliveredOrderWorkFile(work)?.originalFileId === reference;
     if (!preview && !isDelivered) {
       throw new Error("Not Found error. The order result file is unavailable");
     }

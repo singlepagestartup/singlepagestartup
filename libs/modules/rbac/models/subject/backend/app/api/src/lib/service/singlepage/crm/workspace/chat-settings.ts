@@ -1,5 +1,6 @@
 import type { IModel as Chat } from "@sps/social/models/chat/sdk/model";
 import type { IModel as ITask } from "@sps/crm/models/task/sdk/model";
+import { ORDER_SUPPORT_THREAD_VARIANT } from "@sps/social/relations/chats-to-threads/sdk/model";
 import type { Service as Subject } from "../../index";
 import { criteria, inIds } from "../../ecommerce/customer-work/utils";
 
@@ -37,7 +38,12 @@ export class Service {
     const threads = await this.subject.modules.social.chatsToThreads.find(
       criteria({ chatId }),
     );
-    if (threads.some(({ threadId }) => threadId !== primary)) {
+    if (
+      threads.some(
+        ({ threadId, variant }) =>
+          threadId !== primary && variant !== ORDER_SUPPORT_THREAD_VARIANT,
+      )
+    ) {
       return { taskId: task.id, threadId: primary };
     }
     return undefined;

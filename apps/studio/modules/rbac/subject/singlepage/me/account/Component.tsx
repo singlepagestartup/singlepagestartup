@@ -39,7 +39,7 @@ export function Component({
       }
     : (session.account.profile ?? aiChatAccount.profile);
   const settingsHref = showTokens
-    ? "/ai-chat/rbac/subjects/settings"
+    ? "/rbac/subjects/settings"
     : "/?path=/story/modules-host-models-page-singlepage-rbac-module-subject-me-settings--default";
   if (!authenticated)
     return (
@@ -88,9 +88,14 @@ export function Component({
             ? "/?path=/story/modules-social-models-widget-singlepage-author-overview-default--default"
             : undefined
         }
+        ordersHref={
+          showTokens
+            ? "/rbac/subjects/orders"
+            : "/?path=/story/modules-rbac-models-widget-singlepage-subject-me-customer-orders--default"
+        }
         chatsHref={
           showTokens
-            ? "/ai-chat/projects"
+            ? "/social/chats"
             : "/?path=/story/modules-rbac-models-widget-singlepage-subject-me-social-module-profile-chat-list-default--default"
         }
         settingsTarget={showTokens ? undefined : "_top"}

@@ -1,4 +1,7 @@
-import type { IStoreOrderRow } from "@sps/ecommerce/models/order/sdk/model";
+import {
+  deliveredOrderWorkFile,
+  type IStoreOrderRow,
+} from "@sps/ecommerce/models/order/sdk/model";
 import { currencyPrecision } from "@sps/shared-utils";
 import { Service as OrderSummary } from "../../ecommerce/customer-work/order-summary";
 import { moneyFromMinorUnits, moneyMinorUnits } from "@sps/backend-utils";
@@ -192,6 +195,7 @@ export class Service {
     }
     const resultFiles: NonNullable<ICrmOrderContents["resultFiles"]> = [];
     if (work?.storeId === storeId) {
+      const original = deliveredOrderWorkFile(work);
       for (const file of work.files) {
         resultFiles.push({
           id: file.previewFileId,
@@ -199,11 +203,7 @@ export class Service {
           name: file.previewName,
           createdAt: file.createdAt,
         });
-        if (
-          work.paid &&
-          work.deliveredAt &&
-          work.resultFileId === file.originalFileId
-        ) {
+        if (file === original && work.deliveredAt) {
           resultFiles.push({
             id: file.originalFileId,
             mime: file.originalMimeType,

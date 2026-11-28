@@ -5,6 +5,7 @@ export function Component(props: IComponentPropsExtended) {
     <ClientComponent
       isServer={false}
       variant={props.variant}
+      language={props.language}
       ecommerceModuleStoreId={props.ecommerceModuleStoreId}
       subjectId={props.subjectId}
     />

@@ -1,0 +1,16 @@
+{
+  "title": {
+    "en": "Order",
+    "ru": "Заказ"
+  },
+  "subtitle": {},
+  "description": {},
+  "anchor": null,
+  "className": null,
+  "id": "61b2ebb0-4cff-4c62-b420-0918352d03d5",
+  "createdAt": "2026-11-26T10:55:39.232Z",
+  "updatedAt": "2026-11-26T10:55:39.232Z",
+  "variant": "content-ecommerce-default",
+  "adminTitle": "Profile | Order",
+  "slug": "customer-order"
+}

@@ -1,0 +1,24 @@
+{
+  "metadata": {},
+  "id": "af657a2f-7454-4266-875e-59d7fa4a9358",
+  "createdAt": "2026-11-26T14:02:43.204Z",
+  "updatedAt": "2026-11-26T14:02:43.204Z",
+  "variant": "default",
+  "kind": "service",
+  "type": "one_off",
+  "singleUnitPerOrder": true,
+  "slug": "framework-promotion-strategy",
+  "title": {
+    "en": "Promotion strategy",
+    "ru": "Стратегия продвижения"
+  },
+  "shortDescription": {
+    "en": "A one-month promotion plan with a priority channel and success measures",
+    "ru": "План продвижения на месяц с приоритетным каналом и критериями результата"
+  },
+  "description": {
+    "en": "Marketing strategist. Inputs: Business brief, audience, budget and constraints. Request changes to the preview before accepting and paying.",
+    "ru": "Маркетинговый стратег. Для работы: Бриф бизнеса, аудитория, бюджет и ограничения. После просмотра результата можно запросить правки. Оплата после приёмки."
+  },
+  "adminTitle": "independent jade hummingbird"
+}

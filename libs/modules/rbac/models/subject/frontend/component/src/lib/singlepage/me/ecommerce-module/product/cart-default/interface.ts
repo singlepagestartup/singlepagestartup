@@ -11,6 +11,8 @@ export const variant = "me-ecommerce-module-product-cart-default" as const;
 export interface IComponentBaseProps extends ISpsComponentBase {
   ecommerceModuleProduct: IEcommerceModuleProduct;
   ecommerceModuleStore?: IEcommerceModuleStore;
+  ecommerceModuleOfferId?: string;
+  openServiceDiscussionOnSubmit?: boolean;
   withOneStepCheckout?: boolean;
   language: string;
   variant: typeof variant;

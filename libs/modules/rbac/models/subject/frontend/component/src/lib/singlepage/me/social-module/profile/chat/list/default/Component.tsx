@@ -24,7 +24,9 @@ export function Component(props: IComponentPropsExtended) {
             currentSocialModuleChatId={props.socialModuleChatId}
           />
         ) : (
-          <p role="status">No chats yet.</p>
+          <p role="status">
+            {props.language === "ru" ? "Чатов пока нет." : "No chats yet."}
+          </p>
         );
       }}
     </Subject>

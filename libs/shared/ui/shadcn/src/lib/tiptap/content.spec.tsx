@@ -195,6 +195,29 @@ describe("server-rendered rich text", () => {
     ).not.toContain("<img");
   });
 
+  it.each(['["API","SDK"]', '{"product":"SPS"}'])(
+    "keeps %s as literal text",
+    (saved) => {
+      expect(markup(saved)).toContain(
+        `<p>${saved.replaceAll('"', "&quot;")}</p>`,
+      );
+    },
+  );
+
+  it("renders a serialized node or array of nodes", () => {
+    const first = {
+      type: "paragraph",
+      content: [{ type: "text", text: "First" }],
+    };
+    const second = {
+      type: "paragraph",
+      content: [{ type: "text", text: "Second" }],
+    };
+
+    expect(markup(first)).toContain("<p>First</p>");
+    expect(markup([first, second])).toContain("<p>First</p><p>Second</p>");
+  });
+
   it("renders parsed documents, keeps children of unknown nodes and ignores arbitrary attributes", () => {
     const html = renderToStaticMarkup(
       <TipTapContent
@@ -234,18 +257,126 @@ describe("server-rendered rich text", () => {
     expect(markup(value)).toContain('aria-label="Copy text"');
   });
 
-  it("keeps the editable mode connected to the editor", () => {
+  it("preserves block and inline markup with inherited text styling", () => {
+    const html = renderToStaticMarkup(
+      <TipTapContent
+        typography="inherit"
+        className="text-xs uppercase"
+        value={{
+          type: "doc",
+          content: [
+            {
+              type: "paragraph",
+              content: [
+                {
+                  type: "text",
+                  text: "Subtitle",
+                  marks: [{ type: "bold" }, { type: "underline" }],
+                },
+              ],
+            },
+            {
+              type: "bulletList",
+              content: [
+                {
+                  type: "listItem",
+                  content: [
+                    {
+                      type: "paragraph",
+                      content: [{ type: "text", text: "Item" }],
+                    },
+                  ],
+                },
+              ],
+            },
+          ],
+        }}
+      />,
+    );
+
+    expect(html).toContain("text-xs uppercase");
+    expect(html).not.toContain("prose");
+    expect(html).toContain("<p><u><strong>Subtitle</strong></u></p>");
+    expect(html).toContain("<ul><li><p>Item</p></li></ul>");
+  });
+
+  it.each(["plain text", "serialized TipTap"])(
+    "opens a saved %s subtitle in the editor and saves its updates",
+    (format) => {
+      const document = {
+        type: "doc",
+        content: [
+          {
+            type: "paragraph",
+            content: [{ type: "text", text: "Saved subtitle" }],
+          },
+        ],
+      };
+      const form = { setValue: jest.fn() };
+
+      renderToStaticMarkup(
+        <TipTap
+          {...({
+            value:
+              format === "plain text"
+                ? "Saved subtitle"
+                : JSON.stringify(document),
+            editable: true,
+            emptyValue: "",
+            name: "subtitle.ru",
+            form,
+            field: {},
+          } as any)}
+        />,
+      );
+      const [options] = jest.mocked(useEditor).mock.calls[0];
+      expect(options?.content).toEqual(document);
+
+      const edited = {
+        ...document,
+        content: [
+          {
+            ...document.content[0],
+            content: [{ type: "text", text: "Дополненный подзаголовок" }],
+          },
+        ],
+      };
+      options?.onUpdate?.({
+        editor: { getJSON: () => edited, isEmpty: false },
+      } as any);
+      expect(form.setValue).toHaveBeenLastCalledWith(
+        "subtitle.ru",
+        JSON.stringify(edited),
+      );
+
+      options?.onUpdate?.({
+        editor: { getJSON: () => ({ type: "doc" }), isEmpty: true },
+      } as any);
+      expect(form.setValue).toHaveBeenLastCalledWith("subtitle.ru", "");
+    },
+  );
+
+  it("keeps the original empty document convention for other rich text fields", () => {
+    const form = { setValue: jest.fn() };
+    const blank = { type: "doc", content: [{ type: "paragraph" }] };
     renderToStaticMarkup(
       <TipTap
         {...({
-          value: '{"type":"doc","content":[]}',
+          value: "",
           editable: true,
-          name: "body",
-          form: { setValue: jest.fn() },
+          name: "description.en",
+          form,
           field: {},
         } as any)}
       />,
     );
-    expect(useEditor).toHaveBeenCalledTimes(1);
+    const [options] = jest.mocked(useEditor).mock.calls[0];
+    options?.onUpdate?.({
+      editor: { getJSON: () => blank, isEmpty: true },
+    } as any);
+    expect(form.setValue).toHaveBeenLastCalledWith(
+      "description.en",
+      JSON.stringify(blank),
+    );
   });
 });

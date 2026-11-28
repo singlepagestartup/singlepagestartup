@@ -271,7 +271,7 @@ export function FilePreview(props: IFilePreviewProps) {
   const row =
     props.layout === "row" ||
     rail ||
-    (message && (!media || availability !== "preview"));
+    (message && (!messagePhoto || availability !== "preview"));
   const extension =
     (props.extension || props.name.match(/\.([^./]+)$/)?.[1])
       ?.replace(/^\./, "")
@@ -413,11 +413,7 @@ export function FilePreview(props: IFilePreviewProps) {
             kind === "image" &&
             availability === "preview" &&
             "size-[4.5rem]",
-          message &&
-            media &&
-            availability === "preview" &&
-            (kind === "audio" ? "h-14" : "min-h-14 h-auto"),
-          message && kind === "video" && "aspect-video",
+          messagePhoto && availability === "preview" && "min-h-14 h-auto",
           props.thumbnailClassName,
         )}
       >
@@ -443,7 +439,7 @@ export function FilePreview(props: IFilePreviewProps) {
           </span>
         ) : (
           <span className="flex flex-col items-center gap-1">
-            {chat && player && availability === "preview" ? (
+            {rail && player && availability === "preview" ? (
               <Play className={rail ? "size-4" : "size-7"} />
             ) : (
               <Glyph className={row ? "size-4" : "size-7"} />
@@ -485,13 +481,16 @@ export function FilePreview(props: IFilePreviewProps) {
           </span>
         )}
       </span>
-      {row && availability === "preview" && !(rail && player) && (
-        <Eye
-          aria-hidden="true"
-          className="size-4 shrink-0 text-muted-foreground"
-        />
-      )}
-      {row && availability === "download-only" && (
+      {row &&
+        (availability === "preview" ||
+          (message && availability === "download-only")) &&
+        !(rail && player) && (
+          <Eye
+            aria-hidden="true"
+            className="size-4 shrink-0 text-muted-foreground"
+          />
+        )}
+      {row && !message && availability === "download-only" && (
         <Download
           aria-hidden="true"
           className="size-4 shrink-0 text-muted-foreground"
@@ -506,7 +505,7 @@ export function FilePreview(props: IFilePreviewProps) {
   );
   if (availability === "unavailable")
     return <div className={triggerClassName}>{label}</div>;
-  if (availability === "download-only" && !open) {
+  if (!message && availability === "download-only" && !open) {
     return (
       <div className="min-w-0">
         <button
@@ -526,6 +525,7 @@ export function FilePreview(props: IFilePreviewProps) {
 
   function renderPreview() {
     if (
+      availability === "download-only" ||
       previewFailed ||
       (kind === "pdf" && !canDownload) ||
       (!src && !canDownload && !props.textContent)
@@ -632,10 +632,7 @@ export function FilePreview(props: IFilePreviewProps) {
   return (
     <div
       ref={container}
-      className={cn(
-        "min-w-0 max-w-full",
-        message && (kind === "image" ? "w-80" : "w-72"),
-      )}
+      className={cn("min-w-0 max-w-full", message && "w-full")}
     >
       <Dialog
         open={open}
@@ -648,7 +645,7 @@ export function FilePreview(props: IFilePreviewProps) {
           setDownloadError("");
         }}
       >
-        {chat && player ? (
+        {rail && player ? (
           <div
             className={cn(
               "overflow-hidden rounded-xl border border-border bg-card",
@@ -697,11 +694,11 @@ export function FilePreview(props: IFilePreviewProps) {
         )}
         <DialogContent
           ref={dialog}
-          overlayClassName={gallery || rail ? "z-[70]" : undefined}
+          overlayClassName="z-[70]"
           closeLabel={ru ? "Закрыть" : "Close"}
           className={cn(
             "flex h-[min(90dvh,900px)] w-[calc(100%-1rem)] max-w-5xl flex-col gap-0 overflow-hidden rounded-xl border-border bg-card p-0 text-foreground fullscreen:inset-0 fullscreen:m-0 fullscreen:translate-x-0 fullscreen:translate-y-0 sm:rounded-2xl",
-            (gallery || rail) && "z-[70]",
+            "z-[70]",
             expanded &&
               "left-0 top-0 h-dvh w-screen max-w-none translate-x-0 translate-y-0 rounded-none border-0 sm:rounded-none",
           )}
@@ -763,7 +760,7 @@ export function FilePreview(props: IFilePreviewProps) {
           )}
         </DialogContent>
       </Dialog>
-      {props.showDownload && canDownload && !open && (
+      {!message && props.showDownload && canDownload && !open && (
         <>
           <button
             type="button"

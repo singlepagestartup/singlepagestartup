@@ -220,6 +220,96 @@ it.each([
   },
 );
 
+it.each([false, true])(
+  "keeps token-funded cart work outside checkout totals (%s registered)",
+  async (registered) => {
+    const offer = {
+      id: "brief-active",
+      productId: "brief",
+      storeId: "seller",
+      variant: "default",
+      settings: {
+        standalone: true,
+        requiresResultAcceptance: true,
+        workTokenPricing: { currencyId: "token", multiplier: "2" },
+      },
+    };
+    const retired = {
+      ...offer,
+      id: "brief-closed",
+      settings: { closedForNewOrders: true, requiresResultAcceptance: true },
+    };
+    const order = { subjectId: "subject", orderId: "order" };
+    const service: any = {
+      ecommerceModuleOrderAssertAccess: jest.fn(),
+      ecommerceModuleCartQuote: jest
+        .fn()
+        .mockResolvedValue([
+          { amount: "0", issues: [], currencyIds: ["token"] },
+        ]),
+      customerWork: {
+        discussionForOrder: jest.fn(),
+        canOpenCartDiscussion: jest.fn().mockResolvedValue(true),
+      },
+      modules: {
+        ecommerce: {
+          order: {
+            work: {
+              findByOrder: jest.fn().mockResolvedValue(
+                registered
+                  ? {
+                      customerId: order.subjectId,
+                      kind: "individual-service",
+                      storeId: offer.storeId,
+                      taskId: "task",
+                      paymentMode: "work-tokens",
+                    }
+                  : null,
+              ),
+            },
+            fulfillmentQuoteOptions: jest.fn().mockResolvedValue({
+              fulfilledLineIds: [],
+            }),
+            findByIdCartDetails: jest.fn().mockResolvedValue({
+              lines: [{ id: "line", productId: "brief", offerId: offer.id }],
+              billingModuleCurrencyId: "token",
+              totals: [{ total: 0, billingModuleCurrency: { id: "token" } }],
+            }),
+          },
+          storesToOrders: {
+            find: jest.fn().mockResolvedValue([{ storeId: offer.storeId }]),
+          },
+          storesToProducts: {
+            findById: jest.fn().mockResolvedValue(offer),
+            offersForProduct: jest.fn().mockResolvedValue([retired, offer]),
+          },
+          store: { find: jest.fn().mockResolvedValue([]) },
+        },
+      },
+    };
+    const result = await new Service({ service }).execute(order);
+    expect(result.offers?.map(({ id }) => id)).toEqual([offer.id]);
+    expect(result.totals).toEqual([]);
+    expect(result.work).toMatchObject({
+      paymentTiming: "work-tokens",
+      state: registered ? "awaiting-result" : "requires-discussion",
+    });
+    service.modules.ecommerce.order.work.findByOrder.mockResolvedValue(null);
+    service.modules.ecommerce.order.findByIdCartDetails.mockResolvedValue({
+      lines: [{ id: "line", productId: "brief", offerId: retired.id }],
+      billingModuleCurrencyId: "rub",
+      totals: [{ total: 900, billingModuleCurrency: { id: "rub" } }],
+    });
+    service.modules.ecommerce.storesToProducts.findById.mockResolvedValue(
+      retired,
+    );
+    const saved = await new Service({ service }).execute(order);
+    expect(saved.offers?.map(({ id }) => id)).toContain(retired.id);
+    expect(saved.totals[0]?.total).toBe(900);
+    expect(saved.work?.paymentTiming).toBe("after-acceptance");
+  },
+);
+
 it.each([
   { published: true, state: "requires-discussion" },
   { published: false, state: "discussion-unavailable" },

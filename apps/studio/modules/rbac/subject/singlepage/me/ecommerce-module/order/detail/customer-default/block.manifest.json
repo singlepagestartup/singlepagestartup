@@ -1,0 +1,27 @@
+{
+  "id": "rbac.subject.me-ecommerce-module-order-detail-customer-default",
+  "title": "Заказ",
+  "description": "Заказ с составом и обсуждением.",
+  "layer": "singlepage",
+  "state": "draft",
+  "source": {
+    "module": "rbac",
+    "entityType": "model",
+    "entity": "subject",
+    "variant": "me-ecommerce-module-order-detail-customer-default"
+  },
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "contentSlots": [],
+  "figma": {
+    "componentName": "rbac.subject",
+    "pageName": "rbac",
+    "variantName": "me-ecommerce-module-order-detail-customer-default",
+    "nodeId": null,
+    "variantNodeId": null,
+    "syncStatus": "not-created",
+    "metadataFile": "figma.json"
+  }
+}

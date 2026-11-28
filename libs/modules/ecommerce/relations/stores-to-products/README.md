@@ -19,6 +19,17 @@ Each record is a seller’s offer for one Product. The generated `sku` identifie
 
 For a commissioned service, the seller can choose **After accepting the result** in the offer editor and configure an individual-service CRM funnel for that offer. The offer stores this choice in `settings.requiresResultAcceptance`. The cart opens the order discussion while the work is in progress. Once the buyer accepts a version, checkout uses its agreed price and currency. Other offers keep their usual checkout terms.
 
+### Usage pricing for an agent service
+
+1. In the seller workspace select **Products → Edit → Details and prices → Store offer**. Choose the SKU and save a checkout price of `0` in the Token currency. The offer owns this numeric price through `stores-to-products-to-attributes`.
+2. Open **Pricing formula**. The product owner sets `price_formula` and `formula_version`. The Framework brief uses `unit_price * quantity + provider_usd * topup_tokens / topup_usd * work_markup_percent / 100`. A store manager can select **This store’s rates** and edit `work_markup_percent`. Use `200` without a currency to charge twice the provider cost. The same product formula can read different rates in each store.
+3. Under **Store offer**, choose **As the agent works · product formula** and save the payment terms for this SKU. The offer records the wallet currency in `settings.workTokenPricing.currencyId`.
+4. In the CRM funnel bound to the offer, set **Work pricing → Product pricing formula** on the customer-funded stage and publish. The stage selects its model and spending limit. The Framework business brief uses a collaborative stage with an explicit finish action. Its working documents are available in the order chat.
+
+RBAC Subject captures the formula and its store coefficients for the order. The per-token rates shown before ordering and the charge for a run use the same evaluator. The Agent records provider usage and its cost in USD. The reference wallet top-up supplies the Token/USD exchange rate. Input, output and supported cache operations have separate rates.
+
+Orders that already use a published approval or postpayment workflow keep their recorded terms. An offer marked `settings.closedForNewOrders` remains accessible through its existing orders. The optional `settings.fullTextDraftPreview` flag lets those buyers read a generated text draft while the original follows the order’s settlement terms.
+
 The relation service assembles quote and address-suggestion data through injected CRUD readers. The reservation service supplies held quantities. Catalog traversal, attribute grouping and quote rules belong to services; the repository provides ordinary persistence. The bootstrap composes these services without initializing their REST apps.
 
 The offer owns its currency prices through `stores-to-products-to-attributes`. Use the `price` key and link the attribute to exactly one Billing currency. Each Product declares `price_formula` and `formula_version` through `products-to-attributes`. Store attributes supply named tariff coefficients. A basic item uses `unit_price * quantity`. A road delivery can use `dispatch_fee + rate_per_km * distance_km`. An assembly service can charge for `serviced_qty` or a percentage of `serviced_subtotal`.

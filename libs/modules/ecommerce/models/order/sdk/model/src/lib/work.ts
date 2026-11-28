@@ -1,10 +1,16 @@
-import type { IOfferQuote } from "@sps/ecommerce/relations/stores-to-products/sdk/model";
+import type {
+  IOfferQuote,
+  IOfferWorkTokenTariff,
+} from "@sps/ecommerce/relations/stores-to-products/sdk/model";
 
 export type TWorkKind = "individual-service" | "physical-order";
 export type TWorkFulfillmentState =
   | "canceled"
+  | "in-progress"
+  | "completed"
   | "awaiting-result"
   | "awaiting-payment"
+  | "accepted"
   | "paid"
   | "preparing"
   | "in-transit"
@@ -19,6 +25,8 @@ export interface IOrderWorkScope {
 
 export interface IRegisterOrderWork extends IOrderWorkScope {
   kind: TWorkKind;
+  paymentMode?: "work-tokens";
+  workTokenTariff?: IOfferWorkTokenTariff;
 }
 
 export interface IOrderWorkArtifact {
@@ -67,6 +75,7 @@ export type TOrderWorkPriceBasis = {
 } & (
   | { kind: "offer"; quoteVersion: string }
   | { kind: "cart-price" }
+  | { kind: "work-tokens" }
   | {
       kind: "confirmed-cost";
       multiplier: string;
@@ -176,6 +185,23 @@ export interface IOrderPaymentConversation {
   commentMessageId?: string;
 }
 
+export interface IOrderWorkSharedDocument {
+  fileId: string;
+  digest: string;
+  name: string;
+  mimeType: string;
+  chatId: string;
+  threadId: string;
+  messageId: string;
+  replyKey: string;
+  profileId: string;
+  eventId: string;
+  eventRevision: number;
+  stageId: string;
+  assignmentRevision: number;
+  publicationId: string;
+}
+
 export interface IOrderWork extends IRegisterOrderWork {
   id: string;
   createdAt: string;
@@ -186,10 +212,27 @@ export interface IOrderWork extends IRegisterOrderWork {
   acceptedFileId: string | null;
   paid: IOrderWorkPayment | null;
   paymentConversation?: IOrderPaymentConversation;
+  sharedDocument?: IOrderWorkSharedDocument;
   expertArchive: IOrderWorkExpertArchive | null;
   deliveredAt: string | null;
   receiptFileId: string | null;
   resultFileId: string | null;
   paidDispatchedAt: string | null;
   fulfillment: IOrderPhysicalEvent[];
+}
+
+export function deliveredOrderWorkFile(work: IOrderWork | null | undefined) {
+  if (!work?.deliveredAt || !work.resultFileId) {
+    return undefined;
+  }
+  const fileId =
+    work.paymentMode === "work-tokens"
+      ? work.acceptedFileId
+      : work.paid?.fileId;
+  return work.files.find(
+    (file) =>
+      file.id === fileId &&
+      file.originalFileId === work.resultFileId &&
+      !file.invalidatedByCartEdit,
+  );
 }

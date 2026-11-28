@@ -1,7 +1,8 @@
+import { Component as ContentServiceList } from "./content-service-list";
+import { Component as ContentServiceDetail } from "./content-service-detail";
 import { Component as Hidden } from "@sps/shared-frontend-components/singlepage/hidden";
 import { Component as ContentRich } from "./content-rich";
 import { Component as ContentCta } from "./content-cta";
-import { Component as ContentProjectContext } from "./content-project-context";
 import { Component as ContentShowcase } from "./content-showcase";
 import { Component as ContentPageHeader } from "./content-page-header";
 import { Component as ContentFeatureSplit } from "./content-feature-split";
@@ -24,8 +25,6 @@ import { Component as ContentAiChatRegistration } from "./content-ai-chat-regist
 import { Component as ContentAiChatAuthentication } from "./content-ai-chat-authentication";
 import { Component as ContentAiChatHelp } from "./content-ai-chat-help";
 import { Component as ContentAiChatMaterialsProcessing } from "./content-ai-chat-materials-processing";
-import { Component as ContentAiChatProfileCreate } from "./content-ai-chat-profile-create";
-import { Component as LandingAiChat } from "./landing-ai-chat";
 import { Component as FooterAiChat } from "./footer-ai-chat";
 import { Component as NavbarAiChat } from "./navbar-ai-chat";
 import { Component as AdminV2SidebarItem } from "./admin-v2/sidebar-item";
@@ -45,10 +44,11 @@ import { Component as FooterDefaultComponent } from "./footer-default";
 import { Component as NavbarDefaultComponent } from "./navbar-default";
 import { Component as ContentFeatureFindRow } from "./content-feature-find-row";
 export const variants = {
+  "content-service-list": ContentServiceList,
+  "content-service-detail": ContentServiceDetail,
   hidden: Hidden,
   "content-rich": ContentRich,
   "content-cta": ContentCta,
-  "content-project-context": ContentProjectContext,
   "content-showcase": ContentShowcase,
   "content-page-header": ContentPageHeader,
   "content-feature-split": ContentFeatureSplit,
@@ -74,8 +74,6 @@ export const variants = {
   "content-ai-chat-authentication": ContentAiChatAuthentication,
   "content-ai-chat-help": ContentAiChatHelp,
   "content-ai-chat-materials-processing": ContentAiChatMaterialsProcessing,
-  "content-ai-chat-profile-create": ContentAiChatProfileCreate,
-  "landing-ai-chat": LandingAiChat,
   "footer-ai-chat": FooterAiChat,
   "navbar-ai-chat": NavbarAiChat,
   find: Find,

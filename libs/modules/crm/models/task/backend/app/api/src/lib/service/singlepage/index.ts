@@ -1,5 +1,6 @@
 import "reflect-metadata";
 import { randomUUID } from "node:crypto";
+import { isDeepStrictEqual } from "node:util";
 import { z } from "zod";
 import { injectFromBase, injectable } from "inversify";
 import { CRUDService } from "@sps/shared-backend-api";
@@ -74,6 +75,12 @@ import {
 type TTask = { [K in keyof IModel]: IModel[K] };
 type TRawTask = typeof Table.$inferSelect;
 type TTaskPatch = Partial<TTask>;
+
+interface IMoveUnstartedTask extends ITaskScope {
+  fromId: string;
+  toId: string;
+  offerId: string;
+}
 
 interface ICommand extends ITaskScope {
   expectedRevision: number;
@@ -304,6 +311,72 @@ export class Service extends CRUDService<TTask> {
     return this.owner().transaction(async () => {
       const task = await this.requireTask(scope, true);
       return operation(task);
+    });
+  }
+
+  async moveUnstartedTask(
+    input: IMoveUnstartedTask,
+    checkExternalActivity: (orderId: string) => Promise<void>,
+  ) {
+    return this.withTask(input, async (task) => {
+      if (task.funnelId === input.toId && task.offerId === input.offerId) {
+        return;
+      }
+      const [source, destination, history] = await Promise.all([
+        this.module.funnel.current(input.storeId, input.fromId),
+        this.module.funnel.current(input.storeId, input.toId),
+        this.module.tasksToStages.page(task.id, { limit: 3 }),
+      ]);
+      const stage = source.definition.stages.find(
+        ({ id }) => id === task.stageId,
+      );
+      const nextStage = destination.definition.stages.find(
+        ({ id }) => id === task.stageId,
+      );
+      const stages = (definition: IFunnelDefinition) =>
+        definition.stages
+          .filter(({ archived }) => !archived)
+          .map(({ id }) => id);
+      const [assigned, opened] = history.items;
+      if (
+        task.funnelId !== source.id ||
+        task.publicationId !== source.id ||
+        task.offerId !== input.offerId ||
+        task.offerIds.length !== 1 ||
+        !task.orderId ||
+        task.status !== "active" ||
+        task.assigneeKind !== "ai" ||
+        !task.assigneeId ||
+        task.stageId !== source.definition.initialStageId ||
+        task.stageId !== destination.definition.initialStageId ||
+        task.assigneeId !== stage?.defaultAssigneeSubjectId ||
+        task.assigneeId !== nextStage?.defaultAssigneeSubjectId ||
+        source.kind !== destination.kind ||
+        !destination.bindings.offerIds.includes(input.offerId) ||
+        !isDeepStrictEqual(
+          stages(source.definition),
+          stages(destination.definition),
+        ) ||
+        history.items.length !== 2 ||
+        assigned?.kind !== "assigned" ||
+        assigned.pending ||
+        assigned.revision !== task.revision ||
+        opened?.kind !== "opened" ||
+        opened.pending
+      ) {
+        throw new Error(
+          "Conflict error. The task is no longer eligible to move",
+        );
+      }
+      await checkExternalActivity(task.orderId);
+      // Keep the original opening event and its publication ID for replay.
+      await this.module.funnel.replaceTaskPrimaryFunnel({
+        taskId: task.id,
+        fromId: source.id,
+        toId: destination.id,
+        revision: task.revision + 1,
+        assignmentRevision: task.assignmentRevision + 1,
+      });
     });
   }
 

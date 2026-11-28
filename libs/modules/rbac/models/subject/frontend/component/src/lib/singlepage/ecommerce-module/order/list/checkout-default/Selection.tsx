@@ -154,6 +154,8 @@ export function Selection(props: ISelectionProps) {
       offer.productId === props.line.productId &&
       offer.variant === "default" &&
       offer.settings?.initialGrant !== true &&
+      (!offer.settings?.closedForNewOrders ||
+        offer.id === props.line.offerId) &&
       (props.line.product?.kind !== "service" ||
         offer.settings?.standalone === true),
   );

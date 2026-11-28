@@ -68,6 +68,21 @@ it("excludes hidden, provider, grant and unrelated associations before selecting
   ).toBeUndefined();
 });
 
+it("selects a closed offer by ID only for an existing order", () => {
+  const retired = {
+    ...offer,
+    id: "older-offer",
+    createdAt: new Date("2026-01-01"),
+    settings: { closedForNewOrders: true },
+  };
+  const input = { offers: [retired, offer], product };
+  expect(selectRetailOffer(input)).toBe(offer);
+  expect(selectRetailOffer({ ...input, offerId: retired.id })).toBeUndefined();
+  expect(
+    selectRetailOffer({ ...input, offerId: retired.id, existingOrder: true }),
+  ).toBe(retired);
+});
+
 it("permits a service only when its offer is sold standalone", () => {
   const standalone = {
     ...offer,

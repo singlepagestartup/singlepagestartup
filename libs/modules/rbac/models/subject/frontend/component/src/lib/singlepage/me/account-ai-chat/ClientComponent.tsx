@@ -1,7 +1,14 @@
 "use client";
 import Link from "next/link";
 import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
-import { ChevronDown, LogOut, Settings, Store } from "lucide-react";
+import {
+  ChevronDown,
+  LogOut,
+  MessageCircle,
+  Receipt,
+  Settings,
+  Store,
+} from "lucide-react";
 import { api as subjectApi } from "@sps/rbac/models/subject/sdk/client";
 import { Component as SocialModuleProfile } from "@sps/social/models/profile/frontend/component";
 import type {
@@ -157,12 +164,30 @@ function AccountMenu({
             <DropdownMenu.Separator className="my-1 h-px bg-border" />
             <DropdownMenu.Item asChild>
               <Link
-                href={`${localeBase}/ai-chat/settings`}
+                href={`${localeBase}/rbac/subjects/settings`}
                 aria-current={settingsSelected ? "page" : undefined}
                 className={menuItemClassName}
               >
                 <Settings className="size-5" />
                 {language === "ru" ? "Настройки" : "Settings"}
+              </Link>
+            </DropdownMenu.Item>
+            <DropdownMenu.Item asChild>
+              <Link
+                href={`${localeBase}/rbac/subjects/orders`}
+                className={menuItemClassName}
+              >
+                <Receipt aria-hidden="true" className="size-5" />
+                {language === "ru" ? "Заказы" : "Orders"}
+              </Link>
+            </DropdownMenu.Item>
+            <DropdownMenu.Item asChild>
+              <Link
+                href={`${localeBase}/social/chats`}
+                className={menuItemClassName}
+              >
+                <MessageCircle aria-hidden="true" className="size-5" />
+                {language === "ru" ? "Чаты" : "Chats"}
               </Link>
             </DropdownMenu.Item>
             <DropdownMenu.Item asChild>

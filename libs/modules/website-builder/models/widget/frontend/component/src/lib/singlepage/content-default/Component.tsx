@@ -1,5 +1,6 @@
 import type { IComponentPropsExtended } from "./interface";
 import { TipTap } from "@sps/shared-ui-shadcn";
+import { TipTapContent } from "@sps/shared-ui-shadcn/tiptap/content";
 import { cn } from "@sps/shared-frontend-client-utils";
 import { Component as WidgetsToButtonsArrays } from "@sps/website-builder/relations/widgets-to-buttons-arrays/frontend/component";
 import { Component as WidgetsToFileStorageModuleFiles } from "@sps/website-builder/relations/widgets-to-file-storage-module-files/frontend/component";
@@ -9,6 +10,7 @@ import { Component as WidgetsToFeatures } from "@sps/website-builder/relations/w
 export function Component(props: IComponentPropsExtended) {
   const title = props.data.title?.[props.language];
   const description = props.data.description?.[props.language];
+  const subtitle = props.data.subtitle?.[props.language];
   return (
     <section
       id={props.data.anchor || undefined}
@@ -24,10 +26,12 @@ export function Component(props: IComponentPropsExtended) {
     >
       <div className="mx-auto w-full max-w-7xl min-w-0 space-y-8 px-6 lg:px-8">
         <div className="flex min-w-0 flex-col gap-5 overflow-hidden rounded-3xl bg-default p-6 text-default-foreground sm:p-10 lg:p-12">
-          {props.data.subtitle?.[props.language] ? (
-            <p className="text-sm font-medium text-default-muted-foreground">
-              {props.data.subtitle[props.language]}
-            </p>
+          {subtitle ? (
+            <TipTapContent
+              className="text-sm font-medium text-default-muted-foreground"
+              typography="inherit"
+              value={subtitle}
+            />
           ) : null}
           {title ? (
             <h1 className="max-w-4xl text-3xl font-semibold leading-tight tracking-tight sm:text-4xl lg:text-5xl">

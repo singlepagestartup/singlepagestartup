@@ -1,0 +1,21 @@
+{
+  "componentName": "ecommerce.product",
+  "pageName": "ecommerce",
+  "variantName": "customer-order-line",
+  "nodeId": null,
+  "variantNodeId": null,
+  "metadata": {
+    "singlepagestartup.studio.blockId": "ecommerce.product.customer-order-line",
+    "singlepagestartup.studio.layer": "singlepage",
+    "singlepagestartup.studio.syncKey": "ecommerce/product/singlepage/customer-order-line",
+    "sps.figma.component": "ecommerce.product",
+    "sps.figma.variant": "customer-order-line",
+    "sps.source.module": "ecommerce",
+    "sps.source.entityType": "model",
+    "sps.source.entity": "product",
+    "sps.source.variant": "customer-order-line",
+    "sps.contractVersion": "0.1.0",
+    "sps.code.component": "apps/studio/modules/ecommerce/product/singlepage/customer-order-line/Component.tsx",
+    "sps.code.story": "apps/studio/modules/ecommerce/product/singlepage/customer-order-line/Component.stories.tsx"
+  }
+}

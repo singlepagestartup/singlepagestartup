@@ -3,6 +3,11 @@ import type { Service as Subject } from "../../../index";
 import { criteria } from "../../../ecommerce/customer-work/utils";
 import { Service as ProfileSources } from "./sources";
 
+interface IOrderArtifactOrigin {
+  orderId: string;
+  versionId: string;
+}
+
 interface IPersonalSource {
   id: string;
   slug: string;
@@ -12,21 +17,123 @@ interface IPersonalSource {
 export class Service {
   constructor(private readonly subject: Subject) {}
 
+  async profileForOwner(actorId: string) {
+    const links = await this.subject.module.subjectsToSocialModuleProfiles.find(
+      criteria({ subjectId: actorId, variant: "default" }),
+    );
+    if (links.length !== 1) {
+      return undefined;
+    }
+    const profileId = links[0].socialModuleProfileId;
+    return (await this.owns(actorId, profileId)) ? profileId : undefined;
+  }
+
   private async assertOwner(actorId: string, profileId: string) {
+    if (!(await this.owns(actorId, profileId))) {
+      throw new Error("Not Found error. The personal profile is unavailable");
+    }
+  }
+
+  private async owns(actorId: string, profileId: string) {
     const [profile, owners] = await Promise.all([
       this.subject.modules.social.profile.findById({ id: profileId }),
       this.subject.module.subjectsToSocialModuleProfiles.find(
         criteria({ socialModuleProfileId: profileId }),
       ),
     ]);
+    return (
+      profile &&
+      ["default", "telegram"].includes(profile.variant) &&
+      owners.length === 1 &&
+      owners[0].variant === "default" &&
+      owners[0].subjectId === actorId
+    );
+  }
+
+  private artifactSlug(profileId: string, origin: IOrderArtifactOrigin) {
+    return `personal-profile-${profileId}-order-${origin.orderId}-result-${origin.versionId}`;
+  }
+
+  async orderArtifact(profileId: string, origin: IOrderArtifactOrigin) {
+    const { knowledge, social } = this.subject.modules;
+    const [source] = await knowledge.source.find(
+      criteria({ slug: this.artifactSlug(profileId, origin) }),
+    );
+    if (!source) {
+      return undefined;
+    }
+    const links = await social.profilesToKnowledgeModuleSources.find(
+      criteria({ knowledgeModuleSourceId: source.id }),
+    );
     if (
-      !profile ||
-      !["default", "telegram"].includes(profile.variant) ||
-      owners.length !== 1 ||
-      owners[0].variant !== "default" ||
-      owners[0].subjectId !== actorId
+      source.variant !== "customer-memory" ||
+      links.length !== 1 ||
+      links[0].profileId !== profileId ||
+      links[0].variant !== "customer-memory" ||
+      links[0].storeId ||
+      links[0].projectId ||
+      links[0].offerId
     ) {
-      throw new Error("Not Found error. The personal profile is unavailable");
+      throw new Error("Conflict error. Order result belongs to another scope");
+    }
+    return source;
+  }
+
+  async saveOrderArtifact(
+    actorId: string,
+    profileId: string,
+    origin: IOrderArtifactOrigin,
+    file: File,
+  ) {
+    await this.assertOwner(actorId, profileId);
+    const { knowledge, social } = this.subject.modules;
+    const profileSources = new ProfileSources(this.subject);
+    const existing = await this.orderArtifact(profileId, origin);
+    if (existing) {
+      if (existing.indexedContentHash !== existing.contentHash) {
+        await profileSources.index(existing.id);
+      }
+      return existing.id;
+    }
+    const { entity: source, statusCode } = await knowledge.source.findOrCreate({
+      data: {
+        slug: this.artifactSlug(profileId, origin),
+        variant: "customer-memory",
+        title: file.name,
+        content: file.name,
+        description: `/rbac/subjects/orders/${origin.orderId}#result-${origin.versionId}`,
+      },
+    });
+    if (statusCode !== 201) {
+      throw new Error("Conflict error. Order result already exists");
+    }
+    await social.profilesToKnowledgeModuleSources.create({
+      data: {
+        variant: "customer-memory",
+        profileId,
+        knowledgeModuleSourceId: source.id,
+      },
+    });
+    await profileSources.edit({
+      sourceId: source.id,
+      title: file.name,
+      content: file.name,
+      files: [file],
+    });
+    return source.id;
+  }
+
+  async removeOrderArtifact(
+    actorId: string,
+    profileId: string,
+    origin: IOrderArtifactOrigin,
+  ) {
+    await this.assertOwner(actorId, profileId);
+    const source = await this.orderArtifact(profileId, origin);
+    if (source) {
+      await this.subject.modules.knowledge.source.deleteSourceWithDerivedData(
+        source.id,
+      );
     }
   }
 
@@ -87,7 +194,8 @@ export class Service {
       }
       const memory =
         source.variant === "customer-memory" &&
-        link.variant === "customer-memory";
+        link.variant === "customer-memory" &&
+        !source.slug.startsWith(`personal-profile-${profileId}-order-`);
       const ownDocument =
         source.variant === "default" &&
         link.variant === "default" &&

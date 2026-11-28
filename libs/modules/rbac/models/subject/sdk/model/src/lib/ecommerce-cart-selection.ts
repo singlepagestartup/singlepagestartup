@@ -9,7 +9,7 @@ export interface ICheckoutOrderSelection {
 }
 
 export interface ICartWork {
-  paymentTiming: "after-acceptance";
+  paymentTiming: "after-acceptance" | "work-tokens";
   state:
     | "requires-discussion"
     | "discussion-unavailable"

@@ -67,8 +67,6 @@ export function useChatComposer(props: UseChatComposerProps) {
       textarea.focus();
       textarea.selectionStart = textarea.value.length;
       textarea.selectionEnd = textarea.value.length;
-      textarea.style.height = "auto";
-      textarea.style.height = `${textarea.scrollHeight}px`;
     });
   }, []);
 

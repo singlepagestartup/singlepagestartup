@@ -109,9 +109,10 @@ previews. It imports no SDK, Provider, entity cache or application code.
 
 The renderer owns the card, typography, border, shadow, close/action controls
 and status icons. `Component.tsx` is the style entry and `icons.tsx` maps states
-to Phosphor Regular glyphs from the existing static Icon library. Success uses
-the primary accent, error uses destructive, and the remaining states use muted
-surfaces. Cards use semantic theme colors. The spinner respects reduced motion.
+to Phosphor Regular glyphs from the existing static Icon library. Success uses a
+green check, info a blue information icon, and warnings and errors orange and
+red warning triangles. A short message sits beside the icon. A description and
+an optional action appear below the title. The spinner respects reduced motion.
 
 Default placement is bottom-right, duration 4.5 seconds, with a close button.
 Sonner keeps its existing store and transport API, so current SDK

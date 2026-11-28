@@ -1,0 +1,24 @@
+{
+  "metadata": {},
+  "id": "1231cd65-f830-4d64-9a5b-284d0afe9ce2",
+  "createdAt": "2026-11-26T14:02:40.972Z",
+  "updatedAt": "2026-11-26T14:02:40.972Z",
+  "variant": "default",
+  "kind": "service",
+  "type": "one_off",
+  "singleUnitPerOrder": true,
+  "slug": "framework-search-demand",
+  "title": {
+    "en": "Search demand",
+    "ru": "Поисковый спрос"
+  },
+  "shortDescription": {
+    "en": "Keyword clusters with target pages and priorities",
+    "ru": "Группы запросов с целевыми страницами и приоритетом"
+  },
+  "description": {
+    "en": "Search analyst. Inputs: Offer, region and a keyword report. Request changes to the preview before accepting and paying.",
+    "ru": "Исследователь спроса. Для работы: Предложение, регион и выгрузка запросов. После просмотра результата можно запросить правки. Оплата после приёмки."
+  },
+  "adminTitle": "racial rose wildfowl"
+}

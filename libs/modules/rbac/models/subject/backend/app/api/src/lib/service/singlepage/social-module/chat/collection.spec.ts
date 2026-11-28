@@ -130,3 +130,64 @@ it("omits inaccessible customer orders before loading their participants, includ
     "shared",
   );
 });
+
+it("pages the personal inbox after checking membership and work access, including for admins", async () => {
+  const s = setup(true);
+  const candidates = Array.from({ length: 55 }, (_, i) => ({ id: String(i) }));
+  s.memberships.mockResolvedValue(
+    candidates.map(({ id }) => ({ chatId: id, profileId: "primary" })),
+  );
+  s.chatFind.mockImplementation(async ({ params }) =>
+    candidates.slice(params.offset, params.offset + params.limit),
+  );
+  s.service.customerWork.chatAccess.mockImplementation(
+    async (_id, chats) =>
+      new Map(
+        chats
+          .filter(({ id }) => Number(id) > 48)
+          .map(({ id }) => [id, "ordinary"]),
+      ),
+  );
+  const rows = await s.reader.find({
+    ...props,
+    membershipsOnly: true,
+    params: { offset: 2, limit: 3 },
+  });
+  expect(rows.map((row) => row.id)).toEqual(["51", "52", "53"]);
+  expect(
+    s.service.socialModuleChatLifecycleIsSubjectAdmin,
+  ).not.toHaveBeenCalled();
+  expect(s.chatFind).toHaveBeenCalledTimes(2);
+});
+
+it("searches titles across the member's entire collection before paging", async () => {
+  const s = setup();
+  const chats = Array.from({ length: 111 }, (_, i) => ({
+    id: String(i),
+    title:
+      i === 110
+        ? "Последний заказ"
+        : i === 109
+          ? null
+          : JSON.stringify({ ru: "Переписка", en: "Order" }),
+  }));
+  s.memberships.mockResolvedValue(
+    chats.map(({ id }) => ({ chatId: id, profileId: "primary" })),
+  );
+  s.chatFind.mockImplementation(async ({ params }) =>
+    chats.slice(params.offset, params.offset + params.limit),
+  );
+  const search = (query: string) =>
+    s.reader.find({
+      ...props,
+      membershipsOnly: true,
+      language: "ru",
+      search: query,
+      params: { limit: 31, offset: 0 },
+    });
+  expect((await search("ЗаКаз")).map((row) => row.id)).toEqual(["110"]);
+  expect(s.chatFind).toHaveBeenCalledTimes(3);
+  expect((await search("без названия")).map((row) => row.id)).toEqual(["109"]);
+  expect(await search("ru")).toEqual([]);
+  expect(await search("Order")).toEqual([]);
+});

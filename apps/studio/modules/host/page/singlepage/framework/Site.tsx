@@ -45,7 +45,7 @@ interface ISiteShellProps {
   children: ReactNode;
   content?: ICodeFrameworkWebsiteContent;
   resolveLink?: IFrameworkPageViewProps["resolveLink"];
-  active?: "framework" | "modules" | "blog" | "tokens";
+  active?: "framework" | "services" | "modules" | "blog" | "tokens";
   acquisition?: boolean;
   lang?: "en" | "ru";
 }
@@ -75,9 +75,7 @@ export function SiteShell({
       title: labels["footer-prepare"],
       links: content.footer.links.filter(
         ({ href }) =>
-          href === "/" ||
-          href === "/ecommerce" ||
-          href.includes("/authentication/"),
+          href === "/ecommerce" || href.includes("/authentication/"),
       ),
     },
     {
@@ -86,7 +84,6 @@ export function SiteShell({
         ({ href }) =>
           !href.startsWith("/framework") &&
           !href.includes("#readme") &&
-          href !== "/" &&
           href !== "/ecommerce" &&
           !href.includes("/authentication/"),
       ),
@@ -97,6 +94,11 @@ export function SiteShell({
       id: "framework",
       text: labels["navigation-framework"],
       href: "/framework",
+    },
+    {
+      id: "services",
+      text: lang === "ru" ? "Услуги" : "Services",
+      href: "/framework/services",
     },
     {
       id: "modules",
@@ -144,16 +146,6 @@ export function SiteShell({
                 {item.text}
               </PreviewLink>
             ))}
-            <PreviewLink
-              href={acquisition ? content.hero.links[0].href : "/"}
-              resolveLink={resolveLink}
-              className={`${acquisition ? kit.button : kit.secondary} gap-2`}
-            >
-              <Icon name="chat-circle" size={20} />
-              {acquisition
-                ? labels["navigation-start"]
-                : labels["navigation-chat"]}
-            </PreviewLink>
             {!acquisition ? (
               <a
                 href={repositoryHref}
@@ -174,7 +166,7 @@ export function SiteShell({
                 resolveLink={resolveLink}
                 className={kit.button}
               >
-                {labels["navigation-start-mobile"]}
+                {content.hero.links[0].text}
                 <Icon name="arrow-right" size={20} />
               </PreviewLink>
               <details className="relative">

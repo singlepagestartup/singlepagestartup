@@ -21,6 +21,8 @@ export const options = {
   },
 } as NextRequestOptions;
 export const variants = [
+  "content-service-list",
+  "content-service-detail",
   "hidden",
   "content-collection",
   "content-form",
@@ -34,8 +36,6 @@ export const variants = [
   "content-ai-chat-registration",
   "content-ai-chat-help",
   "content-ai-chat-materials-processing",
-  "content-ai-chat-profile-create",
-  "landing-ai-chat",
   "footer-ai-chat",
   "navbar-ai-chat",
   "default",

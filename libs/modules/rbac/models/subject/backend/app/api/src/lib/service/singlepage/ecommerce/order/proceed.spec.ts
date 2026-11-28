@@ -65,6 +65,7 @@ import {
   ECOMMERCE_ORDER_PROCEED_STATUSES,
   Service,
 } from "./proceed";
+import { Service as OrderWork } from "@sps/ecommerce/models/order/backend/app/api/src/lib/service/singlepage/work";
 import { Service as PeriodService } from "@sps/ecommerce/models/order/backend/app/api/src/lib/service/singlepage/subscription-period";
 
 describe("durable subscription grant revocation", () => {
@@ -1723,4 +1724,73 @@ describe("quantity-aware additive token collection", () => {
       ).rejects.toThrow("finite and positive");
     },
   );
+});
+
+it("completes scoped formula work once through the common CRM completion callback", async () => {
+  const task = {
+    id: "task",
+    customerId: "buyer",
+    storeId: "store",
+    orderId: "order",
+    stageId: "manager-review",
+    status: "closed",
+    outcome: "completed",
+  } as const;
+  let work = {
+    kind: "individual-service",
+    paymentMode: "work-tokens",
+    workTokenTariff: {},
+    state: "in-progress",
+    orderId: task.orderId,
+    storeId: task.storeId,
+    customerId: task.customerId,
+    taskId: task.id,
+  };
+  const update = jest.fn();
+  const patchFulfillment = jest.fn(
+    (_id: string, patch: Partial<typeof work>) => {
+      work = { ...work, ...patch };
+    },
+  );
+  const owners = jest
+    .fn()
+    .mockResolvedValue([
+      { subjectId: "stranger", ecommerceModuleOrderId: task.orderId },
+    ]);
+  const orderService = {
+    findById: async () => ({ status: "delivering" }),
+    update,
+    repository: {
+      withLifecycleLock: (_id: string, run: () => unknown) => run(),
+      fulfillmentForOrder: async () => work,
+      patchFulfillment,
+    },
+  };
+  const service = new Service({
+    module: { subjectsToEcommerceModuleOrders: { find: owners } },
+    modules: {
+      ecommerce: {
+        order: { ...orderService, work: new OrderWork(orderService as never) },
+      },
+    },
+  } as never);
+  await service.completeDeliveredTask(task as never);
+  expect(update).not.toHaveBeenCalled();
+  owners.mockResolvedValue([
+    { subjectId: task.customerId, ecommerceModuleOrderId: task.orderId },
+  ]);
+  await service.completeDeliveredTask({
+    ...task,
+    storeId: "other-store",
+  } as never);
+  expect(update).not.toHaveBeenCalled();
+  await service.completeDeliveredTask(task as never);
+  await service.completeDeliveredTask(task as never);
+  expect(update).toHaveBeenCalledTimes(1);
+  expect(update).toHaveBeenCalledWith({
+    id: task.orderId,
+    data: { type: "history", status: "completed" },
+  });
+  expect(patchFulfillment).toHaveBeenCalledTimes(1);
+  expect(work.state).toBe("completed");
 });

@@ -71,6 +71,37 @@ jest.mock("@sps/rbac/relations/subjects-to-identities/sdk/server", () => ({
 }));
 
 import { Service } from "./bootstrap";
+
+it("keeps a completed Telegram discussion as the default thread when support exists", async () => {
+  const discussion = { id: "work", variant: "closed" };
+  const service = new Service({
+    social: {
+      chatsToThreads: {
+        find: async () => [
+          { threadId: "support", variant: "order-support" },
+          { threadId: discussion.id, variant: "default" },
+        ],
+      },
+      thread: {
+        find: async ({ params }) =>
+          [{ id: "support", variant: "default" }, discussion].filter(({ id }) =>
+            params.filters.and[0].value.includes(id),
+          ),
+      },
+    },
+  } as unknown as ConstructorParameters<typeof Service>[0]);
+  const internals = service as unknown as {
+    ensureDefaultThreadForChat: (props: {
+      chatId: string;
+      headers: Record<string, string>;
+    }) => Promise<unknown>;
+  };
+
+  await expect(
+    internals.ensureDefaultThreadForChat({ chatId: "chat", headers: {} }),
+  ).resolves.toEqual(discussion);
+});
+
 describe("Given: Telegram bootstrap initializes a topic thread", () => {
   beforeEach(() => {
     jest.clearAllMocks();

@@ -42,12 +42,12 @@ const kit = {
 };
 const buttons: Record<string, IHeaderButton> = {
   "ai-chat-try": {
-    title: "Попробовать чат",
-    url: "#workflow",
+    title: "Услуги ИИ-агентов",
+    url: "/framework/services",
     icon: "play",
     target: "_self",
   },
-  "ai-chat-help": { title: "Помощь", url: "/ai-chat/help", icon: "question" },
+  "ai-chat-help": { title: "Помощь", url: "/framework/help", icon: "question" },
   "ai-chat-login": {
     title: "Войти",
     url: "/rbac/subject/authentication/email-and-password",

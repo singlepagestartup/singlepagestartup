@@ -10,7 +10,7 @@ Threads group messages within chats.
 - `createdAt`: creation timestamp.
 - `updatedAt`: last update timestamp.
 - `className`: optional CSS class name.
-- `variant`: display variant.
+- `variant`: presentation or order conversation lifecycle variant.
 - `title`: thread title.
 - `description`: thread description.
 - `adminTitle`: title used in admin UI.
@@ -30,10 +30,12 @@ Threads group messages within chats.
 - `admin-table`: admin table listing threads.
 - `admin-table-row`: admin row showing thread fields.
 
-`variant` controls presentation only. It does not identify a unique or system
-thread inside a chat. When a legacy flow needs a primary thread, it resolves the
-chat-to-thread relations deterministically by `orderIndex`, relation creation
-time, thread creation time, and finally thread ID.
+Completed order discussions use the stored `closed` variant. Their human
+support conversations use `support` and a protected chat-to-thread link. RBAC
+handles access for the buyer and store owner. A thread keeps its ID and links
+when its variant changes. Primary threads are resolved through chat-to-thread
+relations using `orderIndex`, relation creation time, thread creation time,
+and thread ID.
 
 RBAC stores the versioned `rbacAiThreadPreferences` namespace in `metadata`
 for chat-composer preferences such as the explicitly selected OpenRouter model.

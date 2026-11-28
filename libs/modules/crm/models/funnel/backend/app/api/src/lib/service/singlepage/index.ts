@@ -158,6 +158,24 @@ export class Service extends CRUDService<typeof Table.$inferSelect> {
     return entity;
   }
 
+  async replaceTaskPrimaryFunnel(input: {
+    taskId: string;
+    fromId: string;
+    toId: string;
+    revision: number;
+    assignmentRevision: number;
+  }) {
+    const { taskId, fromId, toId, revision, assignmentRevision } = input;
+    const owner = this.owner();
+    await owner.replacePrimaryFunnel(taskId, fromId, toId);
+    await owner.rebindOpenStageStates(toId, taskId);
+    await owner.reviseTask(taskId, {
+      revision,
+      assignmentRevision,
+      updatedAt: new Date(),
+    });
+  }
+
   async get(
     storeId: string,
     funnelId: string,

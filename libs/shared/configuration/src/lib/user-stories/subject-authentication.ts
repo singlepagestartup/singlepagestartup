@@ -1,6 +1,10 @@
 export const userStory = {
   redirect: {
     success: "/",
-    allowedReturnPaths: ["/ai-chat/projects"],
+    allowedReturnPaths: [
+      "/framework",
+      "/social/chats",
+      "/rbac/subjects/orders",
+    ],
   },
 };

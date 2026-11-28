@@ -494,3 +494,30 @@ Keep the manifest outside Git. Before reopening writers, verify one Page per
 URL, both locales' HTML/SEO, default-language routing, masks, covers, sitemap,
 hidden/noindex, and both admin editors. The retained language column is legacy
 storage and does not select Page records or create language query parameters.
+
+## Framework homepage cutover
+
+An existing SPS installation can move its homepage to the saved Framework widget
+and layout, move account settings and support to their current routes, and
+remove the old AI project and demonstration pages through the owning SDKs.
+
+Run the command against the local API configured in `apps/api/.env`. The
+checked-in inventory contains the exact saved IDs and expected old values.
+Stop other CMS writers while applying it. Run `check` first to review the counts
+and again after `apply`. The second check should report zero updates and
+deletions. The command stops if a selected record has conflicting values.
+
+```sh
+./node_modules/.bin/bun --env-file=apps/api/.env --tsconfig-override ./tsconfig.base.json tools/runtime/framework-home-cutover.ts check
+./node_modules/.bin/bun --env-file=apps/api/.env --tsconfig-override ./tsconfig.base.json tools/runtime/framework-home-cutover.ts apply
+```
+
+The repository snapshots already contain this configuration for a fresh seed.
+An existing installation needs the command because a seed does not delete
+records whose snapshots were removed. The command acts on CMS records only.
+
+The preflight checks references exposed by registered content SDKs. Older
+installations may also have the retired Telegram widget relation
+`sps_tm_ws_to_el_ws_v3b`. If that table or a custom foreign key points to a
+Host Widget in the cutover inventory, migrate its referenced rows before
+applying the cutover. PostgreSQL can cascade those links outside the SDK.

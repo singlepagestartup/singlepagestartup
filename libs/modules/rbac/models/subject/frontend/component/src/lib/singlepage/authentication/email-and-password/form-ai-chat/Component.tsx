@@ -8,7 +8,7 @@ export function Component(props: IComponentProps) {
       isServer={props.isServer}
       variant="authentication-email-and-password-form-default"
       mode={props.mode}
-      successHref="/ai-chat/projects"
+      successHref="/framework"
     />
   );
 }

@@ -53,6 +53,7 @@ type TChatModelGroups =
 export interface IChatModelControls {
   mode: "assistant" | "order";
   fixedModelLabel?: string;
+  fixedModelReasoning?: OpenRouterReasoningOption;
   favoriteModelIds: string[];
   isLoadingModels: boolean;
   isSelectionUnavailable: boolean;

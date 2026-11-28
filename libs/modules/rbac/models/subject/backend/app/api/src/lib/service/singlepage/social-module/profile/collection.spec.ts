@@ -1,23 +1,6 @@
-const mockBootstrap = jest.fn();
-const mockProfileCreate = jest.fn();
-const mockRelationCreate = jest.fn();
-jest.mock("./ai/bootstrap", () => ({
-  Service: class {
-    execute = mockBootstrap;
-  },
-}));
-jest.mock("@sps/shared-utils", () => ({ RBAC_SECRET_KEY: "test-secret" }));
-jest.mock("@sps/social/models/profile/sdk/server", () => ({
-  api: { create: mockProfileCreate },
-}));
-jest.mock(
-  "@sps/rbac/relations/subjects-to-social-module-profiles/sdk/server",
-  () => ({ api: { create: mockRelationCreate } }),
-);
 import { Service } from "./collection";
 
 function dependencies() {
-  let nextChatId = 0;
   const records = [
     { id: "human", slug: "human", variant: "default" },
     { id: "AI-one", slug: "one", variant: "artificial-intelligence" },
@@ -30,13 +13,6 @@ function dependencies() {
     findById: jest.fn().mockResolvedValue({ id: "owner", variant: "default" }),
     socialModuleChatLifecycleIsSubjectAdmin: jest.fn().mockResolvedValue(false),
     socialModuleChatLifecycleAssertSubjectOwnsChat: jest.fn(),
-    socialModuleChatLifecycleCreateChatWithDefaultThread: jest
-      .fn()
-      .mockImplementation(async () => ({
-        socialModuleChat: { id: `chat-${++nextChatId}` },
-        socialModuleDefaultThread: { id: "thread", metadata: { saved: true } },
-      })),
-    socialModuleProfileKnowledgeAccessEnsure: jest.fn(),
     modules: {
       social: {
         chat: { find: jest.fn().mockResolvedValue([]) },
@@ -74,11 +50,6 @@ function dependencies() {
       },
     },
     module: {
-      subjectsToIdentities: {
-        find: jest
-          .fn()
-          .mockResolvedValue([{ subjectId: "owner", identityId: "identity" }]),
-      },
       subjectsToSocialModuleProfiles: {
         find: jest.fn().mockResolvedValue([
           {
@@ -106,15 +77,6 @@ function dependencies() {
 describe("Subject profile collection", () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    mockBootstrap.mockImplementation(async ({ socialModuleProfile }) => ({
-      socialModuleProfile,
-    }));
-    mockProfileCreate.mockImplementation(async ({ data }) => ({
-      id: `profile-${mockProfileCreate.mock.calls.length}`,
-      slug: `automatic-slug-${mockProfileCreate.mock.calls.length}`,
-      adminTitle: "Automatic admin title",
-      ...data,
-    }));
   });
   it("find returns only directly owned personal and assistant profiles", async () => {
     const deps = dependencies();
@@ -126,10 +88,6 @@ describe("Subject profile collection", () => {
     ]);
     expect(deps.modules.social.chat.find).not.toHaveBeenCalled();
     expect(deps.modules.social.profilesToChats.find).not.toHaveBeenCalled();
-    expect(mockBootstrap).not.toHaveBeenCalled();
-    expect(
-      deps.socialModuleChatLifecycleCreateChatWithDefaultThread,
-    ).not.toHaveBeenCalled();
   });
   it("applies caller filters and pagination inside the permitted profile IDs", async () => {
     const deps = dependencies();
@@ -182,91 +140,6 @@ describe("Subject profile collection", () => {
       [],
     );
     expect(deps.modules.social.profile.find).not.toHaveBeenCalled();
-  });
-  it("rejects manually creating another personal profile before any write", async () => {
-    const deps = dependencies();
-    await expect(
-      new Service(deps as any).create({
-        subjectId: "owner",
-        data: {
-          variant: "default",
-          title: { en: "Profile" },
-        },
-      }),
-    ).rejects.toThrow("personal profile is created during registration");
-    expect(mockProfileCreate).not.toHaveBeenCalled();
-    expect(mockRelationCreate).not.toHaveBeenCalled();
-    expect(mockBootstrap).not.toHaveBeenCalled();
-  });
-  it("two projects with the same title receive distinct profiles, conversations and agent identities", async () => {
-    const deps = dependencies();
-    const svc = new Service(deps as any);
-    const first = await svc.create({
-      subjectId: "owner",
-      data: {
-        variant: "artificial-intelligence",
-        title: { en: "Project" },
-      },
-    });
-    const second = await svc.create({
-      subjectId: "owner",
-      data: {
-        variant: "artificial-intelligence",
-        title: { en: "Project" },
-      },
-    });
-    expect(first.id).not.toBe(second.id);
-    expect(
-      mockBootstrap.mock.calls.map(([props]) => props.socialModuleChatId),
-    ).toEqual(["chat-1", "chat-2"]);
-    expect(mockBootstrap.mock.calls.map(([props]) => props.slug)).toEqual([
-      "profile-chat-1",
-      "profile-chat-2",
-    ]);
-    expect(mockProfileCreate).toHaveBeenCalledTimes(2);
-    expect(mockRelationCreate).toHaveBeenNthCalledWith(
-      1,
-      expect.objectContaining({
-        data: {
-          subjectId: "owner",
-          socialModuleProfileId: first.id,
-          variant: "assistant",
-        },
-      }),
-    );
-    expect(mockRelationCreate).toHaveBeenNthCalledWith(
-      2,
-      expect.objectContaining({
-        data: {
-          subjectId: "owner",
-          socialModuleProfileId: second.id,
-          variant: "assistant",
-        },
-      }),
-    );
-    expect(mockProfileCreate).toHaveBeenCalledWith(
-      expect.objectContaining({
-        data: {
-          variant: "artificial-intelligence",
-          title: { en: "Project" },
-          allowedMcpServerIds: ["singlepagestartup"],
-        },
-      }),
-    );
-    expect(
-      deps.socialModuleChatLifecycleCreateChatWithDefaultThread,
-    ).toHaveBeenCalledWith({
-      subjectId: "owner",
-      data: { title: "Project", variant: "ai-chat" },
-      autoBootstrapProfile: true,
-    });
-    expect(
-      deps.socialModuleChatLifecycleCreateChatWithDefaultThread,
-    ).toHaveBeenCalledTimes(2);
-    expect(mockBootstrap.mock.calls[0][0].socialModuleProfile).toBe(first);
-    expect(mockBootstrap.mock.calls[1][0].socialModuleProfile).toBe(second);
-    expect(first).not.toHaveProperty("thread");
-    expect(first).not.toHaveProperty("chat");
   });
 });
 

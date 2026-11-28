@@ -63,11 +63,11 @@ export class Service {
       productIds.add(link.ecommerceModuleProductId);
       productIdsByThread.set(link.threadId, productIds);
     }
-    const threadsWithWork = new Set(workLinks.map(({ threadId }) => threadId));
+    const workThreadIds = new Set(workLinks.map(({ threadId }) => threadId));
 
     return threads.map((thread) => ({
       ...thread,
-      hasCustomerWork: threadsWithWork.has(thread.id),
+      hasCustomerWork: workThreadIds.has(thread.id),
       linkedProducts: [...(productIdsByThread.get(thread.id) ?? [])].flatMap(
         (id) => {
           const product = productsById.get(id);

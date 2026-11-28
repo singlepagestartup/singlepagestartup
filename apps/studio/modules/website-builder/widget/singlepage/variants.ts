@@ -1,4 +1,6 @@
-import { Component as ContentProjectContext } from "./content-project-context";
+import { Component as ContentServiceList } from "./content-service-list";
+import { Component as ContentServiceDetail } from "./content-service-detail";
+import { Component as ContentEcommerceDefault } from "./content-ecommerce-default";
 import { Component as ContentShowcase } from "./content-showcase";
 import { Component as ContentCollection } from "./content-collection";
 import { Component as ContentFeatureSplit } from "./content-feature-split";
@@ -28,15 +30,11 @@ import { Component as ContentPageHeader } from "./content-page-header/index";
 import { Component as ContentRich } from "./content-rich/index";
 import { Component as ContentTestimonials } from "./content-testimonials/index";
 import { Component as ContentAiChatAuthentication } from "./content/ai-chat/authentication/index";
-import { Component as ContentAiChatContinue } from "./content/ai-chat/continue/index";
 import { Component as ContentAiChatForgotPassword } from "./content/ai-chat/forgot-password/index";
 import { Component as ContentAiChatHelp } from "./content/ai-chat/help/index";
-import { Component as ContentAiChatHero } from "./content/ai-chat/hero/index";
 import { Component as ContentAiChatMaterialsProcessing } from "./content/ai-chat/materials-processing/index";
-import { Component as ContentAiChatProfileCreate } from "./content/ai-chat/profile-create/index";
 import { Component as ContentAiChatRegistration } from "./content/ai-chat/registration/index";
 import { Component as ContentAiChatResetPassword } from "./content/ai-chat/reset-password/index";
-import { Component as ContentAiChatTry } from "./content/ai-chat/try/index";
 import { Component as ContentSocialChatDefault } from "./content/social/chat-default/index";
 import { Component as FooterCompact } from "./footer-compact/index";
 import { Component as FooterDefault } from "./footer-default/index";
@@ -44,10 +42,11 @@ import { Component as FooterAiChat } from "./footer/ai-chat/index";
 import { Component as List } from "./list/index";
 import { Component as NavbarDefault } from "./navbar-default/index";
 import { Component as NavbarAiChat } from "./navbar/ai-chat/index";
-import { Component as NavbarAiChatLanding } from "./navbar/ai-chat-landing/index";
 
 export const variants = {
-  "content-project-context": ContentProjectContext,
+  "content-service-list": ContentServiceList,
+  "content-service-detail": ContentServiceDetail,
+  "content-ecommerce-default": ContentEcommerceDefault,
   "content-showcase": ContentShowcase,
   "content-feature-split": ContentFeatureSplit,
   "content-feature-split-reverse": ContentFeatureSplitReverse,
@@ -77,15 +76,11 @@ export const variants = {
   "content-rich": ContentRich,
   "content-testimonials": ContentTestimonials,
   "content-ai-chat-authentication": ContentAiChatAuthentication,
-  "content-ai-chat-continue": ContentAiChatContinue,
   "content-ai-chat-forgot-password": ContentAiChatForgotPassword,
   "content-ai-chat-help": ContentAiChatHelp,
-  "content-ai-chat-hero": ContentAiChatHero,
   "content-ai-chat-materials-processing": ContentAiChatMaterialsProcessing,
-  "content-ai-chat-profile-create": ContentAiChatProfileCreate,
   "content-ai-chat-registration": ContentAiChatRegistration,
   "content-ai-chat-reset-password": ContentAiChatResetPassword,
-  "content-ai-chat-try": ContentAiChatTry,
   "content-social-chat-default": ContentSocialChatDefault,
   "footer-compact": FooterCompact,
   "footer-default": FooterDefault,
@@ -93,5 +88,4 @@ export const variants = {
   list: List,
   "navbar-default": NavbarDefault,
   "navbar-ai-chat": NavbarAiChat,
-  "navbar-ai-chat-landing": NavbarAiChatLanding,
 };

@@ -103,8 +103,7 @@ beforeEach(() => {
 it.each([true, false])(
   "composes persisted slots without giving Layout the URL (isServer=%s)",
   (isServer) => {
-    const url =
-      "/ai-chat/social/profiles/profile-id/chats/chat-id/threads/thread-id";
+    const url = "/social/chats/chat-id/threads/thread-id";
     const html = renderToStaticMarkup(
       <Page
         {...({

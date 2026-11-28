@@ -1,4 +1,7 @@
 import {
+  approveCustomerWorkTelegramRate,
+  customerWorkTelegramCheckout,
+  customerWorkTelegramFileReview,
   customerWork,
   customerWorkAvailability,
   customerWorkForOrder,
@@ -81,11 +84,6 @@ import {
   type IResult as ISocialModuleProfileFindByIdUpdateResult,
 } from "./social-module/profile/find-by-id/update";
 import {
-  action as socialModuleProfileCreate,
-  type IProps as ISocialModuleProfileCreateProps,
-  type IResult as ISocialModuleProfileCreateResult,
-} from "./social-module/profile/create";
-import {
   action as billingModuleBalance,
   type IProps as IBillingModuleBalanceProps,
   type IResult as IBillingModuleBalanceResult,
@@ -95,11 +93,6 @@ import {
   type IProps as ISocialModuleProfileFindProps,
   type IResult as ISocialModuleProfileFindResult,
 } from "./social-module/profile/find";
-import {
-  action as socialModuleProfileProjects,
-  type IProps as ISocialModuleProfileProjectsProps,
-  type IResult as ISocialModuleProfileProjectsResult,
-} from "./social-module/profile/projects";
 import {
   action as socialModuleProfileFindByIdChatFindByIdProfileFindByIdKnowledgeSourceFindByIdFilesUpdate,
   type IProps as ISocialModuleProfileFindByIdChatFindByIdProfileFindByIdKnowledgeSourceFindByIdFilesUpdateProps,
@@ -569,9 +562,7 @@ export type IProps = {
   ISocialModuleProfileFindByIdAvatarFindProps: ISocialModuleProfileFindByIdAvatarFindProps;
   ISocialModuleProfileFindByIdAvatarUpdateProps: ISocialModuleProfileFindByIdAvatarUpdateProps;
   ISocialModuleProfileFindByIdUpdateProps: ISocialModuleProfileFindByIdUpdateProps;
-  ISocialModuleProfileCreateProps: ISocialModuleProfileCreateProps;
   ISocialModuleProfileFindProps: ISocialModuleProfileFindProps;
-  ISocialModuleProfileProjectsProps: ISocialModuleProfileProjectsProps;
   ISocialModuleProfileFindByIdChatFindByIdProfileFindByIdKnowledgeSourceFindByIdFilesUpdateProps: ISocialModuleProfileFindByIdChatFindByIdProfileFindByIdKnowledgeSourceFindByIdFilesUpdateProps;
   ISocialModuleProfileFindByIdChatFindByIdProfileFindByIdKnowledgeSourceFindByIdFilesFindProps: ISocialModuleProfileFindByIdChatFindByIdProfileFindByIdKnowledgeSourceFindByIdFilesFindProps;
   INotifyProps: INotifyProps;
@@ -684,9 +675,7 @@ export type IResult = {
   ISocialModuleProfileFindByIdAvatarFindResult: ISocialModuleProfileFindByIdAvatarFindResult;
   ISocialModuleProfileFindByIdAvatarUpdateResult: ISocialModuleProfileFindByIdAvatarUpdateResult;
   ISocialModuleProfileFindByIdUpdateResult: ISocialModuleProfileFindByIdUpdateResult;
-  ISocialModuleProfileCreateResult: ISocialModuleProfileCreateResult;
   ISocialModuleProfileFindResult: ISocialModuleProfileFindResult;
-  ISocialModuleProfileProjectsResult: ISocialModuleProfileProjectsResult;
   ISocialModuleProfileFindByIdChatFindByIdProfileFindByIdKnowledgeSourceFindByIdFilesUpdateResult: ISocialModuleProfileFindByIdChatFindByIdProfileFindByIdKnowledgeSourceFindByIdFilesUpdateResult;
   ISocialModuleProfileFindByIdChatFindByIdProfileFindByIdKnowledgeSourceFindByIdFilesFindResult: ISocialModuleProfileFindByIdChatFindByIdProfileFindByIdKnowledgeSourceFindByIdFilesFindResult;
   INotifyResult: INotifyResult;
@@ -780,6 +769,9 @@ export type IResult = {
 };
 
 export const api = {
+  approveCustomerWorkTelegramRate,
+  customerWorkTelegramCheckout,
+  customerWorkTelegramFileReview,
   customerWork,
   customerWorkAvailability,
   customerWorkForOrder,
@@ -894,8 +886,6 @@ export const api = {
   socialModuleProfileFind,
   identityChangeEmailRequest,
   identityChangeEmailVerify,
-  socialModuleProfileProjects,
-  socialModuleProfileCreate,
   socialModuleProfileFindByIdUpdate,
   socialModuleProfileFindByIdAvatarFind,
   socialModuleProfileFindByIdAvatarUpdate,

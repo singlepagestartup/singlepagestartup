@@ -1,0 +1,24 @@
+{
+  "metadata": {},
+  "id": "c5774944-0b71-4e59-93d0-750f620b7322",
+  "createdAt": "2026-11-26T14:02:39.923Z",
+  "updatedAt": "2026-11-26T14:02:39.923Z",
+  "variant": "default",
+  "kind": "service",
+  "type": "one_off",
+  "singleUnitPerOrder": true,
+  "slug": "framework-competitor-study",
+  "title": {
+    "en": "Competitor study",
+    "ru": "Исследование конкурентов"
+  },
+  "shortDescription": {
+    "en": "An attributed comparison of competing offers",
+    "ru": "Сравнение предложений с источниками и выводами"
+  },
+  "description": {
+    "en": "Market researcher. Inputs: Audience, region and links to comparable offers. Request changes to the preview before accepting and paying.",
+    "ru": "Исследователь рынка. Для работы: Аудитория, регион и ссылки на сопоставимые предложения. После просмотра результата можно запросить правки. Оплата после приёмки."
+  },
+  "adminTitle": "xenogeneic red whitefish"
+}

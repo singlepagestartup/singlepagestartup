@@ -26,11 +26,7 @@ export const variants = [
   "agent-id-ai-chat",
   "id-settings-ai-chat",
 
-  "sidebar-ai-chat-project",
   "thread-list-sidebar-ai-chat",
-  "select-item-ai-chat-project",
-  "select-ai-chat-project",
-  "id-ai-chat-project",
   "default",
   "artificial-intelligence",
   "agent",

@@ -1,4 +1,5 @@
 import { TipTap } from "@sps/shared-ui-shadcn";
+import { TipTapContent } from "@sps/shared-ui-shadcn/tiptap/content";
 import { cn } from "@sps/shared-frontend-client-utils";
 import { Component as WidgetsToButtonsArrays } from "@sps/website-builder/relations/widgets-to-buttons-arrays/frontend/component";
 import { Component as WidgetsToSliders } from "@sps/website-builder/relations/widgets-to-sliders/frontend/component";
@@ -38,9 +39,11 @@ export function Component(props: IComponentPropsExtended) {
             <header className="flex flex-wrap items-end justify-between gap-5">
               <div className="space-y-3">
                 {subtitle ? (
-                  <p className="text-xs font-medium uppercase tracking-widest text-muted-foreground">
-                    {subtitle}
-                  </p>
+                  <TipTapContent
+                    className="text-xs font-medium uppercase tracking-widest text-muted-foreground"
+                    typography="inherit"
+                    value={subtitle}
+                  />
                 ) : null}
                 {title ? (
                   <h2

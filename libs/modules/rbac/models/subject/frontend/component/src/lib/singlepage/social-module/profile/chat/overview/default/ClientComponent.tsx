@@ -9,6 +9,10 @@ import { Component as Subject } from "@sps/rbac/models/subject/frontend/componen
 import { Component as SocialModuleProfile } from "@sps/social/models/profile/frontend/component";
 import { Component as SocialModuleThread } from "@sps/social/models/thread/frontend/component";
 import {
+  CLOSED_THREAD_VARIANT,
+  SUPPORT_THREAD_VARIANT,
+} from "@sps/social/models/thread/sdk/model";
+import {
   emptyLocalizedTextFields,
   getLocalizedText,
   hasLocalizedText,
@@ -388,18 +392,64 @@ function ChatOverview(props: IComponentPropsExtended) {
   const settingsTab = canManageChat ? selectedSettingsTab : "members";
   const mainThreadId =
     props.socialModuleChat.mainThreadId ?? props.defaultThreadId;
+  const requestedThreadId = props.socialModuleThreadId;
+  const lookupRequestedThread = Boolean(
+    requestedThreadId &&
+    loadedThreads &&
+    !accessDenied &&
+    !loadedThreads.some(({ id }) => id === requestedThreadId),
+  );
+  const requestedThread = api.socialModuleChatFindByIdThreadFind({
+    id: props.data.id,
+    socialModuleChatId: props.socialModuleChat.id,
+    params: { threadId: requestedThreadId },
+    reactQueryOptions: { enabled: lookupRequestedThread, retry: false },
+  });
+  const linkedRequestedThread =
+    lookupRequestedThread && !isChatAccessError(requestedThread.error)
+      ? requestedThread.data?.find(({ id }) => id === requestedThreadId)
+      : undefined;
+  const listedSupport = loadedThreads?.find(
+    ({ variant }) => variant === SUPPORT_THREAD_VARIANT,
+  );
   const socialModuleThreads = useMemo(() => {
     if (accessDenied) return undefined;
+    const threads = linkedRequestedThread
+      ? [...(loadedThreads ?? []), linkedRequestedThread]
+      : loadedThreads;
     if (scopedThreadId) {
-      return loadedThreads?.filter(({ id }) => id === scopedThreadId);
+      return threads?.filter(
+        ({ id, variant }) =>
+          id === scopedThreadId || variant === SUPPORT_THREAD_VARIANT,
+      );
     }
-    return loadedThreads;
-  }, [accessDenied, loadedThreads, scopedThreadId]);
-  const activeSocialModuleThread = props.socialModuleThreadId
-    ? socialModuleThreads?.find(
-        (thread) => thread.id === props.socialModuleThreadId,
-      )
-    : socialModuleThreads?.[0];
+    return threads;
+  }, [accessDenied, linkedRequestedThread, loadedThreads, scopedThreadId]);
+  const activeSocialModuleThread = requestedThreadId
+    ? socialModuleThreads?.find(({ id }) => id === requestedThreadId)
+    : (socialModuleThreads?.find(
+        ({ variant }) => variant !== SUPPORT_THREAD_VARIANT,
+      ) ?? socialModuleThreads?.[0]);
+  const lookupSupport =
+    activeSocialModuleThread?.variant === CLOSED_THREAD_VARIANT &&
+    !listedSupport;
+  const supportThreads = api.socialModuleChatFindByIdThreadFind({
+    id: props.data.id,
+    socialModuleChatId: props.socialModuleChat.id,
+    params: { variant: SUPPORT_THREAD_VARIANT },
+    reactQueryOptions: { enabled: lookupSupport, retry: false },
+  });
+  const supportThread =
+    listedSupport ??
+    (lookupSupport && !isChatAccessError(supportThreads.error)
+      ? supportThreads.data?.find(
+          ({ variant }) => variant === SUPPORT_THREAD_VARIANT,
+        )
+      : undefined);
+  const supportHref =
+    activeSocialModuleThread?.variant === CLOSED_THREAD_VARIANT && supportThread
+      ? threadHref(supportThread.id)
+      : undefined;
   const activeSocialModuleThreadId = activeSocialModuleThread?.id;
   const hasMultipleThreads = (socialModuleThreads?.length ?? 0) > 1;
   const showThreads =
@@ -491,6 +541,7 @@ function ChatOverview(props: IComponentPropsExtended) {
           ? authors.get(socialModuleThread.lastMessageAuthorId)
           : undefined,
         canDelete:
+          socialModuleThread.variant !== SUPPORT_THREAD_VARIANT &&
           (standardChat || socialModuleThread.id !== mainThreadId) &&
           !(employeeChat && socialModuleThread.hasCustomerWork),
         createdAt: new Date(socialModuleThread.createdAt).toLocaleDateString(
@@ -1125,11 +1176,13 @@ function ChatOverview(props: IComponentPropsExtended) {
               knowledgeAssistantProfile={knowledgeAssistantProfile}
               socialModuleThread={activeSocialModuleThread}
               socialModuleThreadId={activeSocialModuleThreadId}
+              supportHref={supportHref}
               variant="social-module-profile-chat-message-list-default"
               navigation={navigationTrigger}
               profileOpenRef={profileOpenRef}
             />
-          ) : socialModuleThreadsIsLoading ? (
+          ) : socialModuleThreadsIsLoading ||
+            (lookupRequestedThread && requestedThread.isLoading) ? (
             <ChatThreadSkeleton />
           ) : (
             <section className="flex min-h-0 min-w-0 flex-1 flex-col">
@@ -1340,6 +1393,9 @@ function ChatOverview(props: IComponentPropsExtended) {
                   <div className="space-y-1">
                     {threadItems.length ? (
                       threadItems.map((threadItem) => {
+                        const canEditThread =
+                          canManageChat &&
+                          threadItem.data.variant !== SUPPORT_THREAD_VARIANT;
                         const renameLabel = ru
                           ? `Переименовать обсуждение «${threadItem.title}»`
                           : `Rename thread ${threadItem.title}`;
@@ -1362,7 +1418,7 @@ function ChatOverview(props: IComponentPropsExtended) {
                                 {threadItem.createdAt}
                               </p>
                             </div>
-                            {canManageChat && (
+                            {canEditThread && (
                               <>
                                 <Button
                                   type="button"

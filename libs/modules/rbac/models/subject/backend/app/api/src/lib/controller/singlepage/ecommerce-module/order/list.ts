@@ -1,10 +1,17 @@
 import { STORE_TEST_ORDER_VARIANT } from "@sps/ecommerce/models/order/sdk/model";
-import { RBAC_JWT_SECRET, RBAC_SECRET_KEY } from "@sps/shared-utils";
+import {
+  RBAC_JWT_SECRET,
+  RBAC_SECRET_KEY,
+  UUID_VALUE_REGEX,
+} from "@sps/shared-utils";
 import { Context } from "hono";
 import { HTTPException } from "hono/http-exception";
 import { authorization, getHttpErrorType, verifyJwt } from "@sps/backend-utils";
 import { Service } from "../../../../service";
-import { withConsistencySnapshot } from "@sps/shared-backend-api";
+import {
+  withConsistencySnapshot,
+  type IQueryBuilderFilter,
+} from "@sps/shared-backend-api";
 import type { IModel as IEcommerceModuleOrder } from "@sps/ecommerce/models/order/sdk/model";
 import type { ISubjectCartDetails } from "@sps/rbac/models/subject/sdk/model";
 
@@ -46,6 +53,33 @@ export class Handler {
       }
 
       return await withConsistencySnapshot(async () => {
+        const params = c.get("parsedQuery");
+        const includeCartDetails = c.req.query("includeCartDetails") === "true";
+        const includePurchaseDetails =
+          c.req.query("includePurchaseDetails") === "true";
+        const includeCustomerDetails =
+          c.req.query("includeCustomerDetails") === "true";
+        if (includeCustomerDetails && includeCartDetails) {
+          throw new Error(
+            "Validation error. Customer history and cart details require separate queries",
+          );
+        }
+        let requestedOrderId: string | undefined;
+        if (includeCustomerDetails && Array.isArray(params?.filters?.and)) {
+          const exact = params.filters.and.find(
+            (item: IQueryBuilderFilter) =>
+              item?.column === "id" &&
+              item.method === "eq" &&
+              typeof item.value === "string",
+          );
+          requestedOrderId = exact?.value;
+          if (
+            requestedOrderId !== undefined &&
+            !UUID_VALUE_REGEX.test(requestedOrderId)
+          ) {
+            return c.json({ data: [] });
+          }
+        }
         const subjectsToEcommerceModuleOrders =
           await this.service.module.subjectsToEcommerceModuleOrders.find({
             params: {
@@ -56,28 +90,45 @@ export class Handler {
                     method: "eq",
                     value: id,
                   },
+                  ...(requestedOrderId
+                    ? [
+                        {
+                          column: "ecommerceModuleOrderId",
+                          method: "eq" as const,
+                          value: requestedOrderId,
+                        },
+                      ]
+                    : []),
                 ],
               },
             },
           });
 
-        if (!subjectsToEcommerceModuleOrders?.length) {
-          return c.json({
-            data: [],
-          });
+        const ownedOrderIds = (subjectsToEcommerceModuleOrders ?? [])
+          .filter(
+            (relation) => !includeCustomerDetails || relation.subjectId === id,
+          )
+          .map((relation) => relation.ecommerceModuleOrderId);
+        if (!ownedOrderIds.length) {
+          return c.json({ data: [] });
         }
 
-        const params = c.get("parsedQuery");
-        const includeCartDetails = c.req.query("includeCartDetails") === "true";
-        const includePurchaseDetails =
-          c.req.query("includePurchaseDetails") === "true";
-        const ownedOrderIds = subjectsToEcommerceModuleOrders.map(
-          (relation) => relation.ecommerceModuleOrderId,
-        );
-        const defaultFilters = [
-          { column: "type", method: "eq", value: "cart" },
-          { column: "status", method: "eq", value: "new" },
-        ];
+        let scopeFilters: IQueryBuilderFilter[] = [];
+        if (includeCustomerDetails) {
+          scopeFilters = [
+            { column: "type", method: "eq", value: "history" },
+            {
+              column: "variant",
+              method: "ne",
+              value: STORE_TEST_ORDER_VARIANT,
+            },
+          ];
+        } else if (includeCartDetails || !params?.filters) {
+          scopeFilters = [
+            { column: "type", method: "eq", value: "cart" },
+            { column: "status", method: "eq", value: "new" },
+          ];
+        }
         const orders = await this.service.modules.ecommerce.order.find({
           params: {
             ...params,
@@ -85,9 +136,7 @@ export class Handler {
               ...params?.filters,
               and: [
                 { column: "id", method: "inArray", value: ownedOrderIds },
-                ...(includeCartDetails || !params?.filters
-                  ? defaultFilters
-                  : []),
+                ...scopeFilters,
                 ...(params?.filters?.and ?? []),
               ],
             },
@@ -99,7 +148,9 @@ export class Handler {
         const ownedOrders = (orders ?? []).filter(
           (order) =>
             ownedIds.has(order.id) &&
-            order.variant !== STORE_TEST_ORDER_VARIANT,
+            order.variant !== STORE_TEST_ORDER_VARIANT &&
+            (!includeCustomerDetails || order.type === "history") &&
+            (!requestedOrderId || order.id === requestedOrderId),
         );
         if (includeCartDetails) {
           const carts: (IEcommerceModuleOrder & {
@@ -122,15 +173,28 @@ export class Handler {
           }
           return c.json({ data: carts });
         }
-        if (!includePurchaseDetails) {
-          return c.json({ data: ownedOrders });
-        }
-        const purchases =
-          await this.service.ecommerceModuleOrderPurchaseDetails({
+        let result: IEcommerceModuleOrder[] = ownedOrders;
+        if (includePurchaseDetails) {
+          result = await this.service.ecommerceModuleOrderPurchaseDetails({
             subjectId: id,
             orders: ownedOrders,
           });
-        return c.json({ data: purchases });
+        }
+        if (includeCustomerDetails) {
+          const details =
+            await this.service.ecommerceModuleOrderCustomerDetails({
+              subjectId: id,
+              ownedHistoryOrderIds: result.map((order) => order.id),
+              requestedOrderId,
+            });
+          return c.json({
+            data: result.map((order) => ({
+              ...order,
+              customerDetails: details.get(order.id),
+            })),
+          });
+        }
+        return c.json({ data: result });
       });
     } catch (error: any) {
       const { status, message, details } = getHttpErrorType(error);

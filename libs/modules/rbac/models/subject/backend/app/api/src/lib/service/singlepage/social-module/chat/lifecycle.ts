@@ -5,7 +5,9 @@ import { api as socialModuleProfileApi } from "@sps/social/models/profile/sdk/se
 import {
   IModel as ISocialModuleThread,
   selectPrimaryLinkedThread,
+  SUPPORT_THREAD_VARIANT,
 } from "@sps/social/models/thread/sdk/model";
+import { ORDER_SUPPORT_THREAD_VARIANT } from "@sps/social/relations/chats-to-threads/sdk/model";
 import { RBAC_SECRET_KEY } from "@sps/shared-utils";
 import { STORE_EMPLOYEE_CHAT_VARIANT } from "@sps/rbac/models/subject/sdk/model/src/lib/crm-workspace";
 import type { Service as SubjectService } from "../../index";
@@ -256,8 +258,12 @@ export class Service {
 
       const primarySocialModuleThread =
         selectPrimaryLinkedThread<ISocialModuleThread>({
-          socialModuleChatsToThreads: socialModuleChatsToThreads || [],
-          socialModuleThreads: socialModuleThreads || [],
+          socialModuleChatsToThreads: (socialModuleChatsToThreads ?? []).filter(
+            ({ variant }) => variant !== ORDER_SUPPORT_THREAD_VARIANT,
+          ),
+          socialModuleThreads: (socialModuleThreads ?? []).filter(
+            ({ variant }) => variant !== SUPPORT_THREAD_VARIANT,
+          ),
         });
 
       if (primarySocialModuleThread) {

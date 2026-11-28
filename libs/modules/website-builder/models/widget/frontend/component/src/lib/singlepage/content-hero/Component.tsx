@@ -1,4 +1,5 @@
 import { TipTap } from "@sps/shared-ui-shadcn";
+import { TipTapContent } from "@sps/shared-ui-shadcn/tiptap/content";
 import { cn } from "@sps/shared-frontend-client-utils";
 import { Component as WidgetsToButtonsArrays } from "@sps/website-builder/relations/widgets-to-buttons-arrays/frontend/component";
 import { Component as WidgetsToFileStorageModuleFiles } from "@sps/website-builder/relations/widgets-to-file-storage-module-files/frontend/component";
@@ -27,13 +28,17 @@ export function Component(props: IComponentPropsExtended) {
       <div className="mx-auto grid w-full max-w-7xl items-center gap-8 px-5 @3xl:grid-cols-2 @3xl:gap-10 @3xl:px-8">
         <div className="min-w-0 py-2">
           {subtitle ? (
-            <p className="inline-flex max-w-full items-center gap-2 text-xs font-medium uppercase tracking-widest text-foreground">
+            <div className="flex items-start gap-2 text-xs font-medium uppercase tracking-widest text-foreground">
               <span
                 aria-hidden="true"
-                className="h-2 w-2 shrink-0 rounded-full bg-primary"
+                className="mt-1 size-2 shrink-0 rounded-full bg-primary"
               />
-              {subtitle}
-            </p>
+              <TipTapContent
+                value={subtitle}
+                typography="inherit"
+                className="min-w-0"
+              />
+            </div>
           ) : null}
           {title ? (
             <h1

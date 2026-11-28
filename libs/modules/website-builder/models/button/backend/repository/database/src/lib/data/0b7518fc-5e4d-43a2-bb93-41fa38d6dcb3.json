@@ -4,11 +4,11 @@
     "ru": "Напишите в поддержку"
   },
   "subtitle": {},
-  "url": "/ai-chat/help",
+  "url": "/framework/help",
   "className": "",
   "id": "0b7518fc-5e4d-43a2-bb93-41fa38d6dcb3",
   "createdAt": "2026-10-27T08:55:53.219Z",
-  "updatedAt": "2026-10-27T15:00:05.753Z",
+  "updatedAt": "2026-11-26T14:08:39.861Z",
   "variant": "footer-link",
   "adminTitle": "Напишите в поддержку",
   "slug": "ai-chat-editable-content-ai-chat-authentication-links-0"

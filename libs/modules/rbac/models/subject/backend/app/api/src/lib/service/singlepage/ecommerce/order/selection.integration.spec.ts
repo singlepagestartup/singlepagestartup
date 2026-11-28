@@ -364,6 +364,80 @@ it("saves the clicked services with the current price and chains edits by the pe
 });
 
 it.each(["preview", "save", "apply"] as const)(
+  "rejects %s for a closed offer that was not originally selected",
+  async (action) => {
+    const f = await fixture();
+    const { order, primary } = await f.order(1);
+    const target = f.selected(1, 1);
+    const attempted = await f.preview({ order, primary }, [target]);
+    await f.services.offer.update({
+      id: target.offerId,
+      data: { settings: { closedForNewOrders: true } },
+    });
+    await expect(
+      f.operation().execute({
+        subjectId: f.subject.id,
+        orderId: order.id,
+        data: { ...attempted, action },
+      }),
+    ).rejects.toThrow("offer is closed to new orders");
+    expect(await f.services.line.findById({ id: primary.id })).toMatchObject({
+      offerId: primary.offerId,
+      selectionUpdatedAt: primary.selectionUpdatedAt,
+    });
+  },
+);
+
+it("keeps a closed offer available to its original cart line", async () => {
+  const f = await fixture();
+  const { order, primary } = await f.order(1);
+  const retained = f.selected(0, 1);
+  await f.services.offer.update({
+    id: retained.offerId,
+    data: { settings: { closedForNewOrders: true } },
+  });
+  const selection = await f.preview({ order, primary }, [retained]);
+  await expect(
+    f.operation().execute({
+      subjectId: f.subject.id,
+      orderId: order.id,
+      data: selection,
+    }),
+  ).resolves.toMatchObject({ applied: true, orderIds: [order.id] });
+  expect(await f.services.line.findById({ id: primary.id })).toMatchObject({
+    offerId: retained.offerId,
+  });
+});
+
+it("rejects a selection when the replacement offer closes before the cart write", async () => {
+  const f = await fixture();
+  const { order, primary } = await f.order(1);
+  const replacement = f.selected(1, 1);
+  const selection = await f.preview({ order, primary }, [replacement]);
+  const quoteMany = f.services.offer.quoteMany;
+  jest
+    .spyOn(f.services.offer, "quoteMany")
+    .mockImplementationOnce(async (inputs) => {
+      const quotes = await quoteMany(inputs);
+      await f.services.offer.update({
+        id: replacement.offerId,
+        data: { settings: { closedForNewOrders: true } },
+      });
+      return quotes;
+    });
+  await expect(
+    f.operation().execute({
+      subjectId: f.subject.id,
+      orderId: order.id,
+      data: selection,
+    }),
+  ).rejects.toThrow("offer is closed to new orders");
+  expect(await f.services.line.findById({ id: primary.id })).toMatchObject({
+    offerId: primary.offerId,
+  });
+});
+
+it.each(["preview", "save", "apply"] as const)(
   "rejects a multiple-destination %s before quoting or writing a cart graph",
   async (action) => {
     const f = await fixture();

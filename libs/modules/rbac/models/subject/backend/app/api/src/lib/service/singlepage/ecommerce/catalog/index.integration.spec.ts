@@ -116,6 +116,7 @@ async function fixture() {
   );
   const service = new Service({
     repository,
+    validateWorkTariff: async () => undefined,
     entities: entities as IConstructorProps["entities"],
     isAdmin: async (subjectId) => {
       const links = await entities["subjects-to-roles"].find({

@@ -32,6 +32,9 @@ export class Handler {
       if (!marker.success) {
         throw new Error("Validation error. A valid typing state is required");
       }
+      if (c.get("isOrderSupport")) {
+        return c.json({ data: { active: false } });
+      }
 
       await new ChatActions(this.service).setTyping({
         chatId,

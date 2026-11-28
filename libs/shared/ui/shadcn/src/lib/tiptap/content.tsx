@@ -13,11 +13,13 @@ import {
 import { Check, Copy } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@sps/shared-frontend-client-utils";
+import { readRichTextContent } from "@sps/shared-frontend-client-utils/rich-text";
 import { Button } from "../button";
 
 export interface ITipTapContentProps {
   value: string | JSONContent | JSONContent[];
   className?: string;
+  typography?: "prose" | "inherit";
 }
 
 function CopyTextButton({ text }: { text: string }) {
@@ -82,6 +84,9 @@ function renderMarks(node: JSONContent): ReactNode {
         break;
       case "italic":
         content = <em>{content}</em>;
+        break;
+      case "underline":
+        content = <u>{content}</u>;
         break;
       case "strike":
         content = <s>{content}</s>;
@@ -196,23 +201,19 @@ function renderNode(node: JSONContent, depth = 0): ReactNode {
 
 /** Read-only content is identical on the server and during hydration. */
 export const TipTapContent = forwardRef<HTMLDivElement, ITipTapContentProps>(
-  function TipTapContent({ value, className }, ref) {
-    let content: ITipTapContentProps["value"] = value;
-    if (typeof value === "string") {
-      try {
-        const parsed: unknown = JSON.parse(value);
-        if (parsed && typeof parsed === "object") {
-          content = parsed as JSONContent | JSONContent[];
-        }
-      } catch {
-        // Legacy plain text remains visible and React escapes its markup.
-      }
-    }
+  function TipTapContent({ value, className, typography = "prose" }, ref) {
+    const content =
+      typeof value === "string" ? (readRichTextContent(value) ?? value) : value;
 
     return (
       <div
         ref={ref}
-        className={cn("w-full prose mx-auto focus:outline-hidden", className)}
+        className={cn(
+          typography === "inherit"
+            ? "space-y-1 wrap-break-word [&_a]:underline [&_a]:underline-offset-2 [&_blockquote]:border-s [&_blockquote]:ps-3 [&_ol]:list-decimal [&_ol]:ps-5 [&_pre]:whitespace-pre-wrap [&_ul]:list-disc [&_ul]:ps-5"
+            : "w-full prose mx-auto focus:outline-hidden",
+          className,
+        )}
       >
         {typeof content === "string" ? (
           <p>{content}</p>

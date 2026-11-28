@@ -1,9 +1,11 @@
 import type { IComponentPropsExtended } from "./interface";
 import { TipTap } from "@sps/shared-ui-shadcn";
+import { TipTapContent } from "@sps/shared-ui-shadcn/tiptap/content";
 import { cn } from "@sps/shared-frontend-client-utils";
 import { Component as WidgetsToFeatures } from "@sps/website-builder/relations/widgets-to-features/frontend/component";
 
 export function Component(props: IComponentPropsExtended) {
+  const subtitle = props.data.subtitle?.[props.language];
   return (
     <section
       id={props.data.anchor || undefined}
@@ -20,10 +22,12 @@ export function Component(props: IComponentPropsExtended) {
       <div className="mx-auto w-full max-w-7xl px-6 lg:px-8">
         <div className="grid min-w-0 overflow-hidden rounded-3xl border border-border bg-card lg:grid-cols-2">
           <div className="flex min-w-0 flex-col justify-center gap-5 bg-default p-6 text-default-foreground sm:p-10">
-            {props.data.subtitle?.[props.language] ? (
-              <p className="text-sm font-medium text-default-muted-foreground">
-                {props.data.subtitle[props.language]}
-              </p>
+            {subtitle ? (
+              <TipTapContent
+                className="text-sm font-medium text-default-muted-foreground"
+                typography="inherit"
+                value={subtitle}
+              />
             ) : null}
             {props.data.title?.[props.language] ? (
               <h2 className="text-3xl font-semibold leading-tight tracking-tight sm:text-4xl">

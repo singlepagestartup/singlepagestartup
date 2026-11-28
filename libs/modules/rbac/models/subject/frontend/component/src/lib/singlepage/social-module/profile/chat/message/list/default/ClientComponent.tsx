@@ -23,6 +23,11 @@ import { ChatThreadPanel } from "@sps/ui-adapter";
 import { api } from "@sps/rbac/models/subject/sdk/client";
 import { STORE_EMPLOYEE_CHAT_VARIANT } from "@sps/rbac/models/subject/sdk/model";
 import { Component as SocialModuleSkill } from "@sps/social/models/skill/frontend/component";
+import {
+  CLOSED_THREAD_VARIANT,
+  SUPPORT_THREAD_VARIANT,
+} from "@sps/social/models/thread/sdk/model";
+import Link from "next/link";
 import { useCallback, useImperativeHandle, useRef, useState } from "react";
 import type { IModel as SocialProfile } from "@sps/social/models/profile/sdk/model";
 
@@ -42,6 +47,7 @@ interface SkillDialogTarget {
  */
 export function Component(props: IComponentPropsExtended) {
   const threadId = props.socialModuleThreadId;
+  const ru = props.language === "ru";
   const [isSkillDialogOpen, setIsSkillDialogOpen] = useState(false);
   const [isMcpServersDialogOpen, setIsMcpServersDialogOpen] = useState(false);
   const [isProfileEditDialogOpen, setIsProfileEditDialogOpen] = useState(false);
@@ -69,7 +75,9 @@ export function Component(props: IComponentPropsExtended) {
       : undefined;
   const isEmployeeChat =
     props.socialModuleChat.variant === STORE_EMPLOYEE_CHAT_VARIANT;
+  const isSupport = thread?.variant === SUPPORT_THREAD_VARIANT;
   const isCustomerWork =
+    !isSupport &&
     !isEmployeeChat &&
     (props.socialModuleChat.variant === "customer-work" ||
       thread?.hasCustomerWork === true);
@@ -92,11 +100,13 @@ export function Component(props: IComponentPropsExtended) {
     !isChatAccessError(workResult.error)
       ? workResult.data
       : undefined;
-  const assistantProfile = isCustomerWork
-    ? null
-    : props.knowledgeAssistantProfile ||
-      props.artificialIntelligenceOpponentProfile ||
-      null;
+  const completedThread = thread?.variant === CLOSED_THREAD_VARIANT;
+  const assistantProfile =
+    isCustomerWork || isSupport
+      ? null
+      : props.knowledgeAssistantProfile ||
+        props.artificialIntelligenceOpponentProfile ||
+        null;
   const isArtificialIntelligenceAssistant =
     assistantProfile?.variant === "artificial-intelligence";
   const profileSidebar = useProfileSidebar({
@@ -151,7 +161,7 @@ export function Component(props: IComponentPropsExtended) {
           ? "assistant"
           : undefined,
     catalogRevision: [
-      work?.workflow?.stageTitle,
+      work?.workflow?.stageId ?? work?.workflow?.stageTitle,
       work?.assignment,
       work?.status,
     ].join(":"),
@@ -419,38 +429,54 @@ export function Component(props: IComponentPropsExtended) {
           </>
         }
         composer={
-          <Composer
-            isCustomerWork={isCustomerWork}
-            isEmployeeChat={isEmployeeChat}
-            onEmployeeMessageSaved={
-              isEmployeeChat
-                ? profileSidebar.refetchKnowledgeSourceQueries
-                : undefined
-            }
-            canUseKnowledge={
-              isArtificialIntelligenceAssistant && !isEmployeeChat
-            }
-            clearSelectedSkills={profileSkills.clearSelectedSkills}
-            isArtificialIntelligenceOpponent={isArtificialIntelligenceAssistant}
-            isSkillOptionsLoading={profileSkills.isLoadingSkills}
-            language={props.language}
-            markShouldScrollToBottom={markShouldScrollToBottom}
-            modelControls={modelControls}
-            onRemoveSelectedSkill={profileSkills.removeSelectedSkill}
-            onSkillSelect={profileSkills.selectSkill}
-            profileSkills={profileSkills.profileSkills}
-            registerFocusComposerTextArea={registerFocusComposerTextArea}
-            selectedSkillIds={profileSkills.selectedSkillIds}
-            selectedSkills={profileSkills.selectedSkills}
-            socialModuleChatId={props.socialModuleChat.id}
-            socialModuleProfileId={props.socialModuleProfile.id}
-            socialModuleThreadId={props.socialModuleThreadId}
-            subjectId={props.data.id}
-            syncSelectedSkillsToDescription={
-              profileSkills.syncSelectedSkillsToDescription
-            }
-            threadMessagesCache={threadMessagesCache}
-          />
+          completedThread ? (
+            <p className="border-t border-border px-4 py-2 text-sm text-muted-foreground">
+              {ru ? "Заказ завершён." : "Order completed."}{" "}
+              {props.supportHref && (
+                <Link
+                  className="underline underline-offset-4"
+                  href={props.supportHref}
+                >
+                  {ru ? "Написать в поддержку" : "Contact support"}
+                </Link>
+              )}
+            </p>
+          ) : (
+            <Composer
+              isCustomerWork={isCustomerWork}
+              isEmployeeChat={isEmployeeChat}
+              onEmployeeMessageSaved={
+                isEmployeeChat
+                  ? profileSidebar.refetchKnowledgeSourceQueries
+                  : undefined
+              }
+              canUseKnowledge={
+                isArtificialIntelligenceAssistant && !isEmployeeChat
+              }
+              clearSelectedSkills={profileSkills.clearSelectedSkills}
+              isArtificialIntelligenceOpponent={
+                isArtificialIntelligenceAssistant
+              }
+              isSkillOptionsLoading={profileSkills.isLoadingSkills}
+              language={props.language}
+              markShouldScrollToBottom={markShouldScrollToBottom}
+              modelControls={isSupport ? undefined : modelControls}
+              onRemoveSelectedSkill={profileSkills.removeSelectedSkill}
+              onSkillSelect={profileSkills.selectSkill}
+              profileSkills={profileSkills.profileSkills}
+              registerFocusComposerTextArea={registerFocusComposerTextArea}
+              selectedSkillIds={profileSkills.selectedSkillIds}
+              selectedSkills={profileSkills.selectedSkills}
+              socialModuleChatId={props.socialModuleChat.id}
+              socialModuleProfileId={props.socialModuleProfile.id}
+              socialModuleThreadId={props.socialModuleThreadId}
+              subjectId={props.data.id}
+              syncSelectedSkillsToDescription={
+                profileSkills.syncSelectedSkillsToDescription
+              }
+              threadMessagesCache={threadMessagesCache}
+            />
+          )
         }
         context={
           showThreadContext ? (

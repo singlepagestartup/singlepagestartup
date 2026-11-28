@@ -58,6 +58,15 @@ export function action(props: IProps) {
         "social.messages",
         "social.chats-to-messages",
         "social.threads-to-messages",
+        ...(props.params?.membershipsOnly
+          ? [
+              "rbac.subjects-to-social-module-profiles",
+              "social.profiles-to-chats",
+              "social.chats-to-crm-module-tasks",
+              "crm.tasks",
+            ]
+          : []),
+        ...((userMeta?.topics as string[] | undefined) ?? []),
       ],
     },
     queryFn: async () => {

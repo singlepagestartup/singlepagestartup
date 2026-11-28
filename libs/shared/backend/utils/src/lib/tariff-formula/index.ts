@@ -9,6 +9,7 @@ interface ITariffInputBounds {
 
 export interface ITariffFormula {
   variables: string[];
+  isLinearIn: (variable: string) => boolean;
   evaluate: (inputs: Record<string, string>) => Decimal;
   evaluateRange: (
     inputs: Record<string, ITariffInputBounds>,
@@ -141,6 +142,25 @@ export function compileTariffFormula(source: string): ITariffFormula {
   }
   const formula: ITariffFormula = {
     variables: [...variables],
+    isLinearIn(variable) {
+      const dependent: boolean[] = [];
+      for (const item of output) {
+        if (!("operator" in item)) {
+          dependent.push("variable" in item && item.variable === variable);
+        } else if (item.operator !== "neg") {
+          const right = dependent.pop()!;
+          const left = dependent.pop()!;
+          if (
+            (item.operator === "*" && left && right) ||
+            (item.operator === "/" && right)
+          ) {
+            return false;
+          }
+          dependent.push(left || right);
+        }
+      }
+      return dependent[0] === true;
+    },
     evaluate(inputs) {
       const values: Decimal[] = [];
       for (const item of output) {

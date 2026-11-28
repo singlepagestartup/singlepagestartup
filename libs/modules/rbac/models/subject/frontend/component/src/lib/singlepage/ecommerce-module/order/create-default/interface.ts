@@ -53,6 +53,8 @@ export interface IComponentProps extends IParentComponentProps<
   language: string;
   ecommerceModuleProduct: IEcommerceModuleProduct;
   ecommerceModuleStore?: IEcommerceModuleStore;
+  ecommerceModuleOfferId?: string;
+  openServiceDiscussionOnSubmit?: boolean;
   excludedOfferIds?: string[];
   /** Hide the new-item form while preserving an active payment slot. */
   hideConfiguration?: boolean;

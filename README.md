@@ -595,6 +595,38 @@ npm run api:dev
 npm run host:dev
 ```
 
+### Testing Framework agent services locally
+
+The standard seed installs the eight example offers shown at
+`/ru/framework/services` and `/en/framework/services`. To test fulfillment,
+use an existing local seller account and its RBAC Subject ID. With PostgreSQL,
+Redis and the Knowledge embedding provider configured, run the following from
+`apps/api`. Replace `SELLER_SUBJECT_ID` with that account's ID.
+
+```sh
+../../node_modules/.bin/bun --tsconfig-override ./tsconfig.json --env-file=.env ../../tools/testing/framework-agent-services.ts SELLER_SUBJECT_ID
+```
+
+This prepares each expert's profile, knowledge, skill and CRM funnel for the
+seeded store. Use the same seller ID on repeat runs. Add `--brief-only` to
+prepare only the business brief. Use `--skip-index` when reusing an already
+indexed local expert profile. The brief uses GPT-6.2 Astra with medium reasoning.
+Existing orders keep their published workflow and agreed terms. Running the
+installer updates the offer binding for future orders.
+
+Sign in as a buyer, fund the Token wallet and book the business brief. Check
+the input and output prices on the purchase form, then confirm the tariff in
+the order chat. The agent charges for measured work and shares the working PDF
+in the conversation. Ask for a change, open the revised file and ask to finish.
+From the completed order, the buyer can save the shared brief in their profile
+knowledge and open the support thread to speak with the store.
+
+The seeded store charges twice the measured provider cost. To change this
+rate, open **Products → Edit → Pricing formula**, select the store rates and edit
+`work_markup_percent`. Enter `200` for twice the cost. The product formula,
+the per-offer checkout price, and the stage funding settings are described in
+the [store offer pricing guide](libs/modules/ecommerce/relations/stores-to-products/README.md).
+
 ## Testing Convention (BDD Required)
 
 All test files in SPS follow a BDD-oriented format (`unit`, `integration`).

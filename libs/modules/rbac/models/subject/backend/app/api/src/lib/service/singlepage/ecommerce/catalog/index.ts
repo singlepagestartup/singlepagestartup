@@ -33,6 +33,7 @@ export interface IConstructorProps {
   };
   entities: Record<string, IEntityService>;
   isAdmin(subjectId: string): Promise<boolean>;
+  validateWorkTariff(offerId: string, expression?: string): Promise<unknown>;
   stock: {
     withOfferLocks<T>(
       props: { offerIds: string[] },
@@ -287,6 +288,51 @@ export class Service {
     throw new Error(
       "Permission error. This catalogue record belongs to another owner",
     );
+  }
+
+  private async validateProductFormula(
+    expression: string,
+    productIds: string[],
+  ) {
+    const compiled = compileTariffFormula(expression);
+    if (
+      compiled.variables.includes("provider_usd") &&
+      !compiled.isLinearIn("provider_usd")
+    ) {
+      throw new Error(
+        "Validation error. Work pricing must be proportional to provider_usd",
+      );
+    }
+    for (const productId of productIds) {
+      const offers = await this.find("stores-to-products", { productId });
+      for (const offer of offers) {
+        const settings = offer.settings as IOffer["settings"] | undefined;
+        if (
+          !settings?.workTokenPricing ||
+          settings.closedForNewOrders ||
+          settings.workTokenPricing.multiplier !== undefined
+        ) {
+          continue;
+        }
+        await this.validateWorkOffer(offer.id, expression);
+      }
+    }
+  }
+
+  private async validateWorkOffer(offerId: string, expression?: string) {
+    try {
+      await this.dependencies.validateWorkTariff(offerId, expression);
+    } catch (error) {
+      if (
+        !(error instanceof Error) ||
+        !error.message.startsWith("Configuration error. ")
+      ) {
+        throw error;
+      }
+      throw new Error(
+        error.message.replace("Configuration error. ", "Validation error. "),
+      );
+    }
   }
 
   async assertOwner(
@@ -761,6 +807,30 @@ export class Service {
               );
             }
             const result = await operation();
+            for (const { mutation, previous } of prepared) {
+              const settings = mutation.data.settings as
+                IOffer["settings"] | undefined;
+              const pricing = settings?.workTokenPricing;
+              if (
+                mutation.entity === "stores-to-products" &&
+                mutation.method === "PATCH" &&
+                mutation.id &&
+                pricing &&
+                pricing.multiplier === undefined &&
+                !settings.closedForNewOrders &&
+                mutation.data.variant !== "hidden"
+              ) {
+                const previousSettings = previous?.settings as
+                  IOffer["settings"] | undefined;
+                if (
+                  previousSettings?.workTokenPricing?.currencyId !==
+                    pricing.currencyId ||
+                  previousSettings.workTokenPricing.multiplier !== undefined
+                ) {
+                  await this.validateWorkOffer(mutation.id);
+                }
+              }
+            }
             const archived = new Set(
               mutations
                 .filter(
@@ -986,7 +1056,13 @@ export class Service {
           if (typeof expression !== "string") {
             throw new Error("Validation error. A Product formula is required");
           }
-          compileTariffFormula(expression);
+          const products = await this.find("products-to-attributes", {
+            attributeId: props.id,
+          });
+          await this.validateProductFormula(
+            expression,
+            products.map(({ productId }) => String(productId)),
+          );
         }
       }
     }
@@ -1313,6 +1389,12 @@ export class Service {
             String(input.stockQuantity),
           );
         }
+        if (
+          input.settings?.workTokenPricing?.multiplier === undefined &&
+          input.settings?.workTokenPricing
+        ) {
+          await this.validateWorkOffer(offer.id);
+        }
         const result = {
           product,
           offer,
@@ -1362,7 +1444,9 @@ export class Service {
                   "Validation error. A price formula belongs to the shared Product",
                 );
               }
-              compileTariffFormula(input.string!);
+              await this.validateProductFormula(input.string!, [
+                input.owner.id,
+              ]);
             }
             const relation =
               input.owner.type === "offer"

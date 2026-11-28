@@ -10,7 +10,8 @@ import {
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import userEvent from "@testing-library/user-event";
 import type { ComponentPropsWithoutRef } from "react";
-import { Component as ChatList } from "../../list/default/ClientComponent";
+import ChatList from "../../list/default/client";
+import { getLocalizedText } from "../../title";
 import { Component } from "./ClientComponent";
 import type { IComponentPropsExtended } from "./interface";
 
@@ -125,10 +126,11 @@ jest.mock("@sps/rbac/models/subject/frontend/component", () => ({
     socialModuleThread?: { title: string };
   }) => {
     if (props.variant === "social-module-profile-chat-list-default") {
-      const List = jest.requireActual(
-        "../../list/default/ClientComponent",
-      ).Component;
-      return <List {...props} socialModuleChats={mockChats} />;
+      const List = jest.requireActual("../../list/default/client").default;
+      return <List {...props} />;
+    }
+    if (props.variant === "authentication-is-authorized-wrapper-default") {
+      return null;
     }
     if (props.variant === "social-module-profile-chat-default") {
       const Chat = jest.requireActual("../../default/Component").Component;
@@ -154,6 +156,17 @@ jest.mock("@sps/rbac/models/subject/sdk/client", () => {
   const empty = () => ({});
   return {
     api: {
+      socialModuleProfileFindByIdChatFind: ({
+        params,
+      }: {
+        params: { search?: string; language?: string };
+      }) => ({
+        data: mockChats.filter(({ title }) =>
+          getLocalizedText(title, params.language ?? "en", "")
+            .toLowerCase()
+            .includes(params.search?.toLowerCase() ?? ""),
+        ),
+      }),
       socialModuleChatFindByIdUpdate: () => ({
         mutate: mockUpdateChat,
         mutateAsync: mockUpdateCover,
@@ -219,6 +232,68 @@ beforeEach(() => {
   mockThreads = [defaultThread];
   mockDeletePending = false;
   mockThreadsAccessError = undefined;
+});
+
+it("keeps the order discussion selected on the chat URL and opens authorized support in the staff composition", () => {
+  const support = {
+    ...defaultThread,
+    id: "support",
+    title: "Поддержка",
+    variant: "support",
+  };
+  mockThreads = [support, { ...defaultThread, variant: "closed" }];
+  const { rerender } = renderChat();
+  expect(screen.getByTestId("conversation").textContent).toBe("General");
+  expect(screen.getByRole("link", { name: /^Поддержка/ })).toBeTruthy();
+  expect(mockThreadView).toHaveBeenLastCalledWith(
+    expect.objectContaining({
+      supportHref: "/en/social/chats/chat/threads/support",
+    }),
+  );
+
+  rerender(
+    <Component
+      isServer={false}
+      variant="social-module-profile-chat-overview-default"
+      data={mockSubject}
+      language="en"
+      socialModuleProfile={mockProfile}
+      socialModuleChatId={mockChat.id}
+      socialModuleChat={{
+        ...mockChat,
+        taskChatThreadId: defaultThread.id,
+        taskChatStaff: true,
+      }}
+      socialModuleThreadId={defaultThread.id}
+      defaultThreadId={defaultThread.id}
+      getThreadHref={(id) => `/en/task?thread=${id}`}
+    />,
+  );
+  expect(mockThreadView).toHaveBeenLastCalledWith(
+    expect.objectContaining({ supportHref: "/en/task?thread=support" }),
+  );
+  rerender(
+    <Component
+      isServer={false}
+      variant="social-module-profile-chat-overview-default"
+      data={mockSubject}
+      language="en"
+      socialModuleProfile={mockProfile}
+      socialModuleChatId={mockChat.id}
+      socialModuleChat={{
+        ...mockChat,
+        taskChatThreadId: defaultThread.id,
+        taskChatStaff: true,
+      }}
+      socialModuleThreadId={support.id}
+      defaultThreadId={defaultThread.id}
+      getThreadHref={(id) => `/en/task?thread=${id}`}
+    />,
+  );
+  expect(screen.getByTestId("conversation").textContent).toBe("Поддержка");
+  expect(
+    screen.getByRole("link", { name: /^Поддержка/ }).getAttribute("href"),
+  ).toBe("/en/task?thread=support");
 });
 
 const employeePath = "/en/ecommerce/stores/shop/employees/employee";
@@ -471,7 +546,6 @@ it("renders the searchable chat sidebar before a chat is selected", () => {
       data={mockSubject}
       language="en"
       socialModuleProfile={mockProfile}
-      socialModuleChats={mockChats}
     />,
   );
   const sidebar = within(screen.getByRole("complementary"));
@@ -501,7 +575,10 @@ it("opens the only thread with the searchable chat list still in the sidebar", (
   expect(screen.getByTestId("conversation").textContent).toBe("General");
   const chats = within(screen.getByRole("navigation", { name: "Chats" }));
   expect(chats.getByRole("button", { name: "Chat settings" })).toBeTruthy();
-  expect(chats.getByRole("link", { name: /Team chat/ })).toBeTruthy();
+  fireEvent.click(chats.getByRole("link", { name: /Team chat/ }));
+  expect(screen.queryByRole("navigation", { name: "Threads" })).toBeNull();
+  expect(screen.queryByRole("button", { name: "Chat threads" })).toBeNull();
+  expect(screen.getByTestId("conversation").textContent).toBe("General");
   fireEvent.click(chats.getByRole("button", { name: "Search chats" }));
   fireEvent.change(chats.getByRole("searchbox", { name: "Search chats" }), {
     target: { value: "SUPPORT" },

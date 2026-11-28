@@ -92,8 +92,8 @@ export function skeletonStory(module: string, model: string) {
             ? ["PreviewLoading", "id-ai-chat"]
             : module === "rbac" && model === "widget"
               ? [
-                  "WorkspaceLoading",
-                  "subject-me-social-module-profile-id-chat-id-thread-id-ai-chat",
+                  "ConversationLoading",
+                  "subject-me-social-module-profile-chat-overview-default",
                 ]
               : undefined;
   return `import type { Meta, StoryObj } from "@storybook/react-vite";\nimport { Skeleton as Component } from "./index";\nconst meta = { id: ${JSON.stringify(`modules-${module}-models-${model}-singlepage-loading`)}, title: ${JSON.stringify(`Modules/${moduleTitle}/${title(model)}/Singlepage/Loading`)}, component: Component, parameters: { layout: "padded" } } satisfies Meta<typeof Component>;\nexport default meta;\nexport const Loading: StoryObj<typeof meta> = {};\n${specialized ? `export const ${specialized[0]}: StoryObj<typeof meta> = { args: { variant: ${JSON.stringify(specialized[1])} } };\n` : ""}`;

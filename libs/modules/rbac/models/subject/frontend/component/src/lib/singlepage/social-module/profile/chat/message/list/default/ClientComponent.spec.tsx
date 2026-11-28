@@ -15,13 +15,19 @@ import {
   waitFor,
   within,
 } from "@testing-library/react";
+import {
+  customerWorkRateCallback,
+  customerWorkRatePromptKey,
+} from "@sps/rbac/models/subject/sdk/model";
 import { orderFileReviewInteraction } from "@sps/rbac/models/subject/sdk/model/src/lib/order-work";
 import userEvent from "@testing-library/user-event";
 import {
   mockChatComponentState,
   mockAttachKnowledgeFiles,
   mockCustomerWork,
+  mockChangeCustomerWork,
   mockOrderWorkRead,
+  mockOrderWorkContent,
   mockKnowledgeSourceCreateMutate,
   mockKnowledgeSourceDeleteMutateAsync,
   mockKnowledgeSourceUpdateMutate,
@@ -73,6 +79,187 @@ function aiReactionRequest(
 
 describe("Social thread context", () => {
   beforeEach(() => resetChatComponentMocks());
+
+  const rateMessageId = "9d2123d3-f25a-4aad-9073-52471d9aab84";
+  const meteredOrder = {
+    chatId: "chat-1",
+    threadId: "thread-1",
+    storeId: "store-1",
+    taskId: "59ffd5b2-5c40-4617-adbd-218b1ab935d3",
+    orderId: "order-1",
+    status: "active",
+    assignment: "assistant",
+    customerPays: true,
+    canApproveRate: true,
+    ratePromptMessageId: rateMessageId,
+    price: { key: "a".repeat(64) },
+    workflow: { title: "Business brief", stageTitle: "Intake" },
+  };
+
+  function rateMessage({
+    id = rateMessageId,
+    priceKey = meteredOrder.price.key,
+    description = "Перед началом работы подтвердите тариф.",
+    label = "Подтвердить тариф",
+    callback = customerWorkRateCallback(id),
+  } = {}) {
+    return {
+      type: "message" as const,
+      data: {
+        id,
+        variant: "customer-work",
+        createdAt: new Date(),
+        description,
+        workReplyKey: customerWorkRatePromptKey(
+          meteredOrder.taskId,
+          1,
+          priceKey,
+        ),
+        metadata: {
+          customerWorkRatePrompt: {
+            taskId: meteredOrder.taskId,
+            priceKey,
+            maximum: "15",
+          },
+        },
+        interaction: {
+          inline_keyboard: [[{ text: label, callback_data: callback }]],
+        },
+      },
+    };
+  }
+
+  it("keeps an empty order conversation empty until the agent sends a message", () => {
+    mockCustomerWork.mockReturnValue({ data: meteredOrder });
+    renderComponent("customer-work", { language: "ru" });
+    expect(screen.getByText("Сообщений пока нет")).toBeTruthy();
+    expect(screen.queryByRole("heading", { name: "Начало работы" })).toBeNull();
+    expect(
+      screen.queryByRole("button", { name: "Подтвердить тариф" }),
+    ).toBeNull();
+    expect(mockChangeCustomerWork).not.toHaveBeenCalled();
+  });
+
+  it("approves the exact saved message from its inline keyboard", async () => {
+    mockCustomerWork.mockReturnValue({ data: meteredOrder });
+    const thread = renderComponent("customer-work", {
+      language: "ru",
+      socialModuleMessagesAndActionsQuery: [
+        rateMessage({
+          id: "a4ef79ed-f2f7-4db1-87ec-beeb4512d642",
+          priceKey: "b".repeat(64),
+          description: "Предыдущий тариф.",
+        }),
+        rateMessage(),
+        rateMessage({
+          id: "3e19abaf-5e6a-4613-aed9-1090559ebaec",
+          description: "Старое подтверждение по той же ставке.",
+        }),
+        rateMessage({
+          id: "63475bf5-4339-43ad-a5ef-fc7c209f4ef7",
+          description: "Сообщение с неверной кнопкой.",
+          callback: customerWorkRateCallback(rateMessageId),
+        }),
+      ],
+    });
+    const timeline = within(screen.getByRole("log", { name: "Сообщения" }));
+    const message = timeline
+      .getByText("Перед началом работы подтвердите тариф.")
+      .closest("article");
+    expect(message).toBeTruthy();
+    expect(
+      screen.getAllByRole("button", { name: "Подтвердить тариф" }),
+    ).toHaveLength(1);
+    const button = within(message!).getByRole("button", {
+      name: "Подтвердить тариф",
+    });
+    expect(button.getAttribute("type")).toBe("button");
+    expect(Array.from(button.classList)).toEqual(
+      expect.arrayContaining(["w-full", "text-sm", "py-2", "px-4"]),
+    );
+    expect(button.closest("form")).toBeNull();
+    expect(timeline.getByText("Предыдущий тариф.")).toBeTruthy();
+    expect(mockChangeCustomerWork).not.toHaveBeenCalled();
+
+    fireEvent.click(button);
+    await waitFor(() => {
+      expect(mockChangeCustomerWork).toHaveBeenCalledWith({
+        id: "subject-1",
+        data: {
+          operation: "approve-budget",
+          storeId: meteredOrder.storeId,
+          taskId: meteredOrder.taskId,
+          messageId: rateMessageId,
+          priceKey: meteredOrder.price.key,
+          maximum: "15",
+          operationKey: expect.any(String),
+        },
+      });
+      expect(button.hasAttribute("disabled")).toBe(true);
+    });
+
+    mockCustomerWork.mockReturnValue({
+      data: { ...meteredOrder, rateApproved: true },
+    });
+    thread.rerenderThread({ id: meteredOrder.threadId });
+    expect(
+      screen.getByText("Перед началом работы подтвердите тариф."),
+    ).toBeTruthy();
+    expect(
+      screen.queryByRole("button", { name: "Подтвердить тариф" }),
+    ).toBeNull();
+  });
+
+  it("prevents visitors without spending permission from approving a saved rate", () => {
+    mockCustomerWork.mockReturnValue({
+      data: { ...meteredOrder, canApproveRate: false },
+    });
+    renderComponent("customer-work", {
+      socialModuleMessagesAndActionsQuery: [
+        rateMessage({
+          description: "Approve the rate before work starts.",
+          label: "Approve rate",
+        }),
+      ],
+    });
+    expect(
+      screen.getByText("Approve the rate before work starts."),
+    ).toBeTruthy();
+    const button = screen.getByRole("button", { name: "Approve rate" });
+    expect(button.hasAttribute("disabled")).toBe(true);
+    fireEvent.click(button);
+    expect(mockChangeCustomerWork).not.toHaveBeenCalled();
+  });
+
+  it("uses the saved button label and retries a failed approval with the same operation key", async () => {
+    mockCustomerWork.mockReturnValue({ data: meteredOrder });
+    mockChangeCustomerWork.mockRejectedValueOnce(new Error("Request failed"));
+    renderComponent("customer-work", {
+      language: "ru",
+      socialModuleMessagesAndActionsQuery: [
+        rateMessage({ label: "Принять тариф" }),
+      ],
+    });
+    const button = screen.getByRole("button", { name: "Принять тариф" });
+    fireEvent.click(button);
+    fireEvent.click(button);
+
+    expect((await screen.findByRole("alert")).textContent).toBe(
+      "Не удалось подтвердить тариф.",
+    );
+    expect(mockChangeCustomerWork).toHaveBeenCalledTimes(1);
+    expect(button.hasAttribute("disabled")).toBe(false);
+
+    fireEvent.click(button);
+    await waitFor(() => {
+      expect(button.hasAttribute("disabled")).toBe(true);
+      expect(screen.queryByRole("alert")).toBeNull();
+    });
+    expect(mockChangeCustomerWork).toHaveBeenCalledTimes(2);
+    expect(mockChangeCustomerWork.mock.calls[1]).toEqual(
+      mockChangeCustomerWork.mock.calls[0],
+    );
+  });
 
   it("renders the persisted payment confirmation and the customer reply as chat messages", async () => {
     const eventId = "1afa2a3e-d105-4a98-a51d-8a4b2d458c26";
@@ -206,20 +393,22 @@ describe("Social thread context", () => {
     expect(payload.data.metadata?.knowledgeMention).toBeUndefined();
   });
 
-  it("sends the selected CRM model with the triggering message", async () => {
+  it("sends the selected CRM model separately from model names in the message", async () => {
     renderComponent("customer-work");
     fireEvent.click(screen.getByRole("button", { name: "Reply model" }));
     const picker = screen.getByRole("dialog", { name: "Reply model" });
     expect(within(picker).queryByText("GPT Basic")).toBeNull();
     fireEvent.click(within(picker).getByText("GPT-5.2"));
+    const description = "Please review the brief with GPT Basic instead.";
     fireEvent.change(screen.getByRole("textbox", { name: "Message" }), {
-      target: { value: "Please review the brief." },
+      target: { value: description },
     });
     fireEvent.click(screen.getByLabelText("Send message"));
     await waitFor(() => {
       expect(mockMessageCreateMutate).toHaveBeenCalledWith(
         expect.objectContaining({
           data: expect.objectContaining({
+            description,
             metadata: { provider: { modelId: "openai/gpt-5.2" } },
           }),
         }),
@@ -297,12 +486,13 @@ describe("Social thread context", () => {
     expect(screen.queryByRole("heading", { name: "Favorites" })).toBeNull();
   });
 
-  it("shows the fixed stage model in the customer composer", () => {
+  it("shows the fixed stage model and reasoning in the customer composer", () => {
     mockChatComponentState.orderModelIds = [];
     mockChatComponentState.fixedStageModelId = "gpt-6.2-astra";
+    mockChatComponentState.fixedStageModelReasoning = "medium";
     renderComponent("customer-work");
-    expect(screen.getByText("Stage model")).toBeTruthy();
-    expect(screen.getByText("GPT-6.2 Astra")).toBeTruthy();
+    expect(screen.queryByText("Stage model")).toBeNull();
+    expect(screen.getByText(/GPT-6.2 Astra · medium/)).toBeTruthy();
     expect(screen.queryByRole("button", { name: "Reply model" })).toBeNull();
   });
 
@@ -472,6 +662,104 @@ describe("Social thread context", () => {
     ).toBe(false);
   });
 
+  it("opens the full brief draft from the review message", async () => {
+    const scope = { storeId: "store-1", taskId: "task-1", orderId: "order-1" };
+    const fileId = "1afa2a3e-d105-4a98-a51d-8a4b2d458c26";
+    const content = `${"Brief detail.\n".repeat(65)}Open question about the budget.`;
+    mockCustomerWork.mockReturnValue({
+      data: {
+        ...scope,
+        chatId: "chat-1",
+        threadId: "thread-1",
+        status: "active",
+        workflow: { title: "Brief", stageTitle: "Review", orderStep: "review" },
+      },
+    });
+    mockOrderWorkRead.mockReturnValue({
+      data: {
+        ...scope,
+        state: "awaiting-result",
+        files: [
+          { id: fileId, includedInWork: true, previewMimeType: "text/plain" },
+        ],
+      },
+    });
+    mockOrderWorkContent.mockResolvedValue(
+      new Blob([content], { type: "text/plain" }),
+    );
+    renderComponent("customer-work", {
+      socialModuleMessagesAndActionsQuery: [
+        {
+          type: "message",
+          data: {
+            id: "draft-1",
+            description: "Read the brief draft.",
+            variant: "customer-work",
+            workReplyKey: "attempt:draft-1",
+            createdAt: new Date(),
+            metadata: { orderResultFileId: fileId },
+            interaction: orderFileReviewInteraction(fileId, false),
+          },
+        },
+      ],
+    });
+    fireEvent.click(
+      screen.getByRole("button", { name: "Preview Brief draft v1.txt" }),
+    );
+    expect(
+      await screen.findByText(/Open question about the budget/),
+    ).toBeTruthy();
+    expect(mockOrderWorkContent).toHaveBeenCalledWith(
+      expect.objectContaining({
+        orderId: scope.orderId,
+        artifactId: fileId,
+      }),
+    );
+  });
+
+  it("opens human support from a completed read-only order", () => {
+    renderComponent("customer-work", {
+      socialModuleThread: { id: "thread-1", variant: "closed", metadata: {} },
+      supportHref: "/en/social/chats/chat-1/threads/support-1",
+    });
+    expect(
+      screen
+        .getByRole("link", { name: "Contact support" })
+        .getAttribute("href"),
+    ).toBe("/en/social/chats/chat-1/threads/support-1");
+    expect(screen.queryByRole("textbox", { name: "Message" })).toBeNull();
+  });
+
+  it("preserves the order support composer's browser-managed height while editing and sending", async () => {
+    const user = userEvent.setup();
+    mockMessageCreateMutate.mockImplementation((_payload, options) => {
+      options.onSuccess({ id: "support-reply" });
+    });
+    renderComponent("customer-work", {
+      socialModuleThread: {
+        id: "support-1",
+        variant: "support",
+        metadata: {},
+      },
+    });
+
+    const textarea = screen.getByRole<HTMLTextAreaElement>("textbox", {
+      name: "Message",
+    });
+    await user.click(textarea);
+    fireEvent.change(textarea, { target: { value: "H" } });
+    expect(textarea.style.height).toBe("");
+
+    // Native textarea resizing sets an inline height.
+    textarea.style.height = "200px";
+    fireEvent.change(textarea, { target: { value: "Hello\nSupport" } });
+    expect(textarea.style.height).toBe("200px");
+
+    fireEvent.keyDown(textarea, { key: "Enter" });
+    await waitFor(() => expect(textarea.value).toBe(""));
+    expect(textarea.style.height).toBe("200px");
+  });
+
   it("keeps the file attached to the message when the context sidebar closes", () => {
     mockCustomerWork.mockReturnValue({
       data: {
@@ -513,7 +801,7 @@ describe("Social thread context", () => {
     expect(screen.queryByRole("complementary", { name: "Context" })).toBeNull();
 
     expect(
-      screen.getByRole("button", { name: "Download Order file preview" }),
+      screen.getByRole("button", { name: "Preview Order file preview" }),
     ).toBeTruthy();
     expect(screen.queryByRole("button", { name: /open version/i })).toBeNull();
   });
@@ -547,7 +835,9 @@ describe("Given: OpenRouter chat profile sidebar", () => {
   it("When: typing slash in a Knowledge chat Then: /learn can be selected", () => {
     renderComponent("knowledge");
 
-    const textarea = screen.getByRole("textbox", { name: "Message" });
+    const textarea = screen.getByRole<HTMLTextAreaElement>("textbox", {
+      name: "Message",
+    });
 
     fireEvent.change(textarea, {
       target: {
@@ -558,10 +848,12 @@ describe("Given: OpenRouter chat profile sidebar", () => {
     expect(screen.getByText("Learn")).toBeTruthy();
     expect(screen.getByText("/learn")).toBeTruthy();
 
+    textarea.style.height = "200px";
     fireEvent.click(screen.getByText("Learn"));
 
-    expect((textarea as HTMLTextAreaElement).value).toBe("@knowledge /learn ");
+    expect(textarea.value).toBe("@knowledge /learn ");
     expect(document.activeElement).toBe(textarea);
+    expect(textarea.style.height).toBe("200px");
   });
 
   /**
@@ -2564,6 +2856,7 @@ describe("Given: OpenRouter chat profile sidebar", () => {
     mockChatComponentState.knowledgeSources = [
       {
         id: "note",
+        slug: "personal-note",
         title: "Personal note",
         variant: "customer-memory",
         editable: true,
@@ -2573,6 +2866,7 @@ describe("Given: OpenRouter chat profile sidebar", () => {
       },
       {
         id: "shared",
+        slug: "shared-document",
         title: "Shared document",
         content: "Shared material",
         editable: false,

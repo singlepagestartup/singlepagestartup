@@ -4,11 +4,13 @@ export const variant = "subject-me-ecommerce-module-offer-create" as const;
 export interface IComponentProps extends ISpsComponentBase {
   variant: typeof variant;
   ecommerceModuleStoreId?: string;
+  language?: string;
 }
 export interface IComponentPropsExtended extends IComponentProps {
   subjectId: string;
 }
 export interface IEditorProps {
+  language?: string;
   subjectId: string;
   storeId: string;
   context: ICatalogContext;

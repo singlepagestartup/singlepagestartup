@@ -15,6 +15,7 @@ import {
 } from "@sps/rbac/models/subject/sdk/model";
 import {
   orderCheckoutProviders,
+  orderPaymentProviderLabel,
   readOrderCheckoutButtons,
 } from "@sps/rbac/models/subject/sdk/model/src/lib/order-work";
 import type { Service as Subject } from "../../index";
@@ -35,16 +36,6 @@ interface IPaymentRequest {
   comment?: string;
   ecommerceModule: { orders: { id: string }[] };
 }
-const methodNames: Record<(typeof orderCheckoutProviders)[number], string> = {
-  stripe: "Stripe",
-  "0xprocessing": "0xProcessing",
-  payselection: "PaySelection",
-  "payselection-international": "PaySelection International",
-  tiptoppay: "TipTopPay",
-  cloudpayments: "CloudPayments",
-  dummy: "Demo",
-  paykeeper: "PayKeeper",
-};
 
 export class OrderChatCheckout {
   constructor(
@@ -96,22 +87,38 @@ export class OrderChatCheckout {
     return state && state.fileId === work.acceptedFileId ? state : undefined;
   }
 
+  decisionButtons(state: State, message: Message, allowPay: boolean) {
+    if (state.promptId !== message.id) {
+      return [];
+    }
+    const buttons = readOrderCheckoutButtons(message)?.flat() ?? [];
+    return buttons.filter((button) => {
+      if (!("callback_data" in button)) {
+        return false;
+      }
+      const value = button.callback_data;
+      if (state.step === "method") {
+        return (
+          value === "back" ||
+          this.providers().some((provider) => value === `method:${provider}`)
+        );
+      }
+      if (state.step === "email") {
+        return value === "back";
+      }
+      if (state.step === "comment") {
+        return value === "skip" || value === "back";
+      }
+      return state.step === "ready" && allowPay && value === "pay";
+    });
+  }
+
   private providers() {
     return orderCheckoutProviders.filter((provider) =>
       this.subject.modules.billing.paymentIntent.isProviderAllowed({
         provider,
       }),
     );
-  }
-
-  private methodName(
-    provider: (typeof orderCheckoutProviders)[number],
-    ru: boolean,
-  ) {
-    if (provider === "dummy") {
-      return ru ? "Тестовая оплата" : "Test payment";
-    }
-    return methodNames[provider];
   }
 
   private async prompt(
@@ -139,7 +146,7 @@ export class OrderChatCheckout {
 
   private methods(ctx: IContext) {
     const buttons = this.providers().map((provider) => ({
-      text: this.methodName(provider, ctx.ru),
+      text: orderPaymentProviderLabel(provider, ctx.ru ? "ru" : "en"),
       callback_data: "method:" + provider,
     }));
     let text = ctx.ru ? "Выберите способ оплаты." : "Choose a payment method.";
@@ -293,7 +300,7 @@ export class OrderChatCheckout {
         await this.methods(ctx);
         return;
       }
-      const name = this.methodName(provider, ctx.ru);
+      const name = orderPaymentProviderLabel(provider, ctx.ru ? "ru" : "en");
       await this.prompt(
         ctx,
         { step: "email", provider },
@@ -330,8 +337,15 @@ export class OrderChatCheckout {
     return undefined;
   }
 
-  async execute(customerId: string, command: Command) {
-    const locked = <T>(operation: (ctx: IContext) => Promise<T>) =>
+  async execute(
+    customerId: string,
+    command: Command,
+    verifyButton?: (context: IContext) => Promise<void>,
+  ) {
+    const locked = <T>(
+      operation: (ctx: IContext) => Promise<T>,
+      requireContext = false,
+    ) =>
       this.subject.repository.withSubjectLock({ subjectId: customerId }, () =>
         this.subject.modules.crm.task.withTask(command, async (task) => {
           if (!task.orderId || task.customerId !== customerId) {
@@ -351,17 +365,26 @@ export class OrderChatCheckout {
           if (ctx) {
             return operation(ctx);
           }
+          if (requireContext) {
+            throw new Error(
+              "Conflict error. The checkout step is no longer current",
+            );
+          }
           return undefined;
         }),
       );
     const input = command.input;
-    const request = await locked(async (ctx) => {
-      if (input.kind === "button") {
-        return this.click(ctx, input);
-      }
-      await this.begin(ctx);
-      return undefined;
-    });
+    const request = await locked(
+      async (ctx) => {
+        if (input.kind === "button") {
+          await verifyButton?.(ctx);
+          return this.click(ctx, input);
+        }
+        await this.begin(ctx);
+        return undefined;
+      },
+      input.kind === "button" && Boolean(verifyButton),
+    );
     if (!request || input.kind !== "button") {
       return;
     }

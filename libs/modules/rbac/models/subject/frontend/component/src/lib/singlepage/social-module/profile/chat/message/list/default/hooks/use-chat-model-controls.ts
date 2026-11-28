@@ -315,15 +315,19 @@ export function useChatModelControls(
   if (!mode) return undefined;
   const isSelectionUnavailable =
     order && selectedModelId !== "auto" && !selectedModel;
+  const stageModel =
+    order && !isChatAccessError(modelsQuery.error)
+      ? modelsQuery.data
+      : undefined;
 
   return {
     mode,
-    fixedModelLabel:
-      order &&
-      modelsQuery.data?.stageModelId &&
-      !isChatAccessError(modelsQuery.error)
-        ? providerModelDisplayName(modelsQuery.data.stageModelId)
-        : undefined,
+    fixedModelLabel: stageModel?.stageModelId
+      ? providerModelDisplayName(stageModel.stageModelId)
+      : undefined,
+    fixedModelReasoning: reasoningChoices.find(
+      ({ value }) => value === stageModel?.stageModelReasoning,
+    ),
     favoriteModelIds,
     isLoadingModels: modelsQuery.isLoading,
     isSelectionUnavailable,

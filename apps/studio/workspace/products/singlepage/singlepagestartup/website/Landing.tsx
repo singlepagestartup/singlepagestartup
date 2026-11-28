@@ -50,45 +50,6 @@ function SectionLink({ href, children, className }: ISectionLinkProps) {
   );
 }
 
-interface IDocumentInfoProps extends IWebsiteCopyProps {
-  documentKey: string;
-  compact?: boolean;
-}
-
-function DocumentInfo({
-  content,
-  documentKey,
-  compact = false,
-}: IDocumentInfoProps) {
-  const label = content.labels;
-  return (
-    <details
-      className={`group w-full min-w-0 rounded-xl ${compact ? "bg-[#eff4e6]" : "bg-white/5"}`}
-    >
-      <summary
-        className={`flex min-h-11 cursor-pointer list-none items-center gap-2 rounded-xl px-3 py-2 text-xs [&::-webkit-details-marker]:hidden focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 ${compact ? "focus-visible:outline-[#18232a]" : "focus-visible:outline-[var(--workspace-brand-accent)]"}`}
-      >
-        <Icon name="file-text" size={20} />
-        <span className="flex-1">{label[documentKey]}</span>
-        <Icon name="question" size={20} />
-      </summary>
-      <div
-        className={`border-t px-3 pb-4 pt-3 text-xs leading-6 ${compact ? "border-[#cad7b7] text-[#42555e]" : "border-white/10 text-[var(--workspace-brand-muted-on-primary)]"}`}
-      >
-        <p>{label[`${documentKey}-description`]}</p>
-        <p
-          className={`mt-3 rounded-lg p-3 ${compact ? "bg-white/70" : "bg-white/5"}`}
-        >
-          <span className="block text-[10px] font-semibold uppercase tracking-wider">
-            {label["document-example"]}
-          </span>
-          {label[`${documentKey}-example`]}
-        </p>
-      </div>
-    </details>
-  );
-}
-
 function RepositoryLink({
   content,
   className = "",
@@ -378,30 +339,13 @@ export default function CodeFrameworkLanding({
                   <p className="mt-3 text-sm leading-6 text-[var(--workspace-brand-muted-on-primary)]">
                     {item.text}
                   </p>
-                  {index === 1 && (
-                    <div className="mt-5 space-y-2">
-                      {[
-                        "document-one",
-                        "document-two",
-                        "document-three",
-                        "document-four",
-                        "document-five",
-                      ].map((key) => (
-                        <DocumentInfo
-                          key={key}
-                          documentKey={key}
-                          content={content}
-                        />
-                      ))}
-                    </div>
-                  )}
                   {index === 0 && (
                     <PreviewLink
                       href={start.href}
                       resolveLink={resolveLink}
                       className={`${kit.button} mt-5 w-full`}
                     >
-                      {label["journey-register"]}
+                      {label["journey-services"]}
                       <Icon name="arrow-right" size={20} />
                     </PreviewLink>
                   )}
@@ -425,88 +369,29 @@ export default function CodeFrameworkLanding({
         </section>
 
         <section
-          id="cf-chat"
-          tabIndex={-1}
-          aria-labelledby="cf-chat-title"
-          className={`${section} outline-none`}
+          id="workflow"
+          aria-labelledby="framework-services-title"
+          className="bg-[var(--workspace-brand-primary)] py-12 text-center text-white"
         >
-          <div className="grid items-start gap-8 @3xl:grid-cols-[0.8fr_1.2fr] @3xl:gap-12">
-            <div>
-              <p
-                className={`text-xs font-medium uppercase tracking-widest ${muted}`}
-              >
-                {content.chat.paragraphs[0]}
-              </p>
-              <h2
-                id="cf-chat-title"
-                className={`mt-4 text-balance text-3xl leading-tight @3xl:text-4xl ${display}`}
-              >
-                {content.chat.title}
-              </h2>
-              <p className={`mt-4 text-sm leading-6 ${muted}`}>
-                {content.chat.paragraphs[1]}
-              </p>
-              <PreviewLink
-                href={content.chat.links[0].href}
-                resolveLink={resolveLink}
-                className={`${kit.button} mt-6`}
-              >
-                {content.chat.links[0].text}
-                <Icon name="arrow-right" size={20} />
-              </PreviewLink>
-            </div>
-            <div className="overflow-hidden rounded-3xl border border-[var(--workspace-brand-line)] bg-white">
-              <p className="border-b border-[var(--workspace-brand-line)] px-6 py-4 text-xs font-semibold">
-                {label["context-project"]}
-              </p>
-              <div className="p-6">
-                <h3 className="text-sm font-semibold">
-                  {label["context-saved"]}
-                </h3>
-                <div className="mt-3 space-y-2">
-                  {[
-                    "document-one",
-                    "document-two",
-                    "document-three",
-                    "document-four",
-                    "document-five",
-                  ].map((key) => (
-                    <DocumentInfo
-                      key={key}
-                      documentKey={key}
-                      content={content}
-                      compact
-                    />
-                  ))}
-                </div>
-                <div className="my-5 flex justify-center">
-                  <Icon name="arrow-down" />
-                </div>
-                <h3 className="text-sm font-semibold">
-                  {label["context-new"]}
-                </h3>
-                <div className="mt-3 rounded-2xl bg-[var(--workspace-brand-primary)] p-4 text-white">
-                  <p className="text-xs text-[var(--workspace-brand-accent)]">
-                    {label["context-attachment"]}
-                  </p>
-                  <p className="mt-3 text-sm leading-6">
-                    {content.change.quote}
-                  </p>
-                </div>
-                <p className={`mt-4 text-sm leading-6 ${muted}`}>
-                  {content.change.paragraphs[1]}
-                </p>
-                <div className="my-5 flex justify-center">
-                  <Icon name="arrow-down" />
-                </div>
-                <h3 className="text-sm font-semibold">
-                  {label["context-publish"]}
-                </h3>
-                <p className="mt-3 rounded-2xl bg-[#eff4e6] p-4 text-sm leading-6">
-                  {label["context-publish-description"]}
-                </p>
-              </div>
-            </div>
+          <div className="mx-auto max-w-3xl px-5">
+            <h2
+              id="framework-services-title"
+              className={`text-balance text-3xl leading-tight @3xl:text-4xl ${display}`}
+            >
+              Услуги ИИ-агентов
+            </h2>
+            <p className="mt-4 text-sm leading-6">
+              Выберите, какой результат вам нужен. Материалы и правки
+              обсуждаются в чате заказа.
+            </p>
+            <PreviewLink
+              href="/framework/services"
+              resolveLink={resolveLink}
+              className={`${kit.button} mt-6`}
+            >
+              Выбрать услугу
+              <Icon name="arrow-right" size={20} />
+            </PreviewLink>
           </div>
         </section>
 

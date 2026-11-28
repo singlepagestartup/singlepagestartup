@@ -5,8 +5,6 @@ import { Icon } from "@sps/ui-adapter";
 import { internationalization } from "@sps/shared-configuration";
 export function Component(props: IComponentProps) {
   const language = props.language || internationalization.defaultLanguage.code;
-  const profileId = props.socialModuleProfileId;
-  const chatId = props.socialModuleChatId;
   const signIn = (
     <a
       href={`/${language}/rbac/subject/authentication/email-and-password`}
@@ -28,23 +26,14 @@ export function Component(props: IComponentProps) {
       {({ data, authenticated }) => {
         if (!data || !authenticated) return signIn;
         return (
-          <>
-            <Subject
-              isServer={false}
-              variant="me-social-module-profile-select-ai-chat"
-              data={data}
-              socialModuleProfileId={profileId}
-              socialModuleChatId={chatId}
-              language={language}
-            />
-            <Subject
-              isServer={false}
-              variant="me-account-ai-chat"
-              data={data}
-              language={language}
-              settingsSelected={props.settingsSelected}
-            />
-          </>
+          <Subject
+            isServer={false}
+            variant="me-account-ai-chat"
+            data={data}
+            dataSource="props"
+            language={language}
+            settingsSelected={props.settingsSelected}
+          />
         );
       }}
     </Subject>

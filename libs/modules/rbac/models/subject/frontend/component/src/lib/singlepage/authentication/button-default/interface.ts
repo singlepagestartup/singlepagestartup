@@ -7,12 +7,15 @@ import {
 
 export const variant = "authentication-button-default" as const;
 
-export interface IComponentProps
-  extends IParentComponentProps<IModel, typeof variant> {}
+export interface IComponentProps extends IParentComponentProps<
+  IModel,
+  typeof variant
+> {
+  language?: string;
+}
 
-export interface IComponentPropsExtended
-  extends IParentComponentPropsExtended<
-    IModel,
-    typeof variant,
-    IComponentProps
-  > {}
+export interface IComponentPropsExtended extends IParentComponentPropsExtended<
+  IModel,
+  typeof variant,
+  IComponentProps
+> {}

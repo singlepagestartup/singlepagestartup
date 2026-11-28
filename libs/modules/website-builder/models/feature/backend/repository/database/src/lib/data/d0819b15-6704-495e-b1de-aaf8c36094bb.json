@@ -2,19 +2,19 @@
   "className": "",
   "id": "d0819b15-6704-495e-b1de-aaf8c36094bb",
   "createdAt": "2026-10-26T00:12:50.964Z",
-  "updatedAt": "2026-10-27T14:59:56.420Z",
+  "updatedAt": "2026-11-26T14:08:38.768Z",
   "variant": "dropdown",
   "title": {
-    "en": "Do I need programming skills to start?",
-    "ru": "Нужно ли уметь программировать, чтобы начать?"
+    "en": "Do I need programming skills?",
+    "ru": "Нужны ли навыки программирования?"
   },
   "subtitle": {
     "en": "",
     "ru": ""
   },
   "description": {
-    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Start by describing your idea in your own words. The AI assistant will help you choose features, prepare pages and publish the first version. Review how the project works and say what to change.\"}]}]}",
-    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Для начала достаточно описать идею своими словами. ИИ-помощник поможет выбрать функции, подготовить страницы и опубликовать первую версию. Вы смотрите, как работает проект, и говорите, что изменить.\"}]}]}"
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Running and deploying the framework requires development tools. The README lists the requirements and commands.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Для запуска и развёртывания понадобятся инструменты разработки. README описывает требования и команды.\"}]}]}"
   },
   "adminTitle": "Нужно ли уметь программировать, чтобы начать?",
   "slug": "framework-reviewed-faq-0"

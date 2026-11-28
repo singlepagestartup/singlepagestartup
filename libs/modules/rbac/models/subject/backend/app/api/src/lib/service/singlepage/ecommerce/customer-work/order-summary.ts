@@ -73,6 +73,10 @@ export class Service {
   async total(orderId: string, type: string) {
     const ecommerce = this.subject.modules.ecommerce;
     try {
+      const work = await ecommerce.order.work?.findByOrder?.(orderId);
+      if (work?.paymentMode === "work-tokens") {
+        return undefined;
+      }
       if (type === "history") {
         const [payments, resultPrice] = await Promise.all([
           ecommerce.ordersToBillingModulePaymentIntents.find(

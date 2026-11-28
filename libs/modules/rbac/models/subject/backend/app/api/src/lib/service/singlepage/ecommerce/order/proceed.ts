@@ -1336,10 +1336,46 @@ export class Service {
       task.orderId,
     );
     if (
-      work?.taskId !== task.id ||
-      work.state !== "delivered" ||
+      !work ||
+      work.taskId !== task.id ||
+      work.storeId !== task.storeId ||
+      work.orderId !== task.orderId ||
       work.customerId !== task.customerId
     ) {
+      return;
+    }
+    if (work.workTokenTariff) {
+      await this.modules.ecommerce.order.work.completeMeteredDiscussion(
+        work,
+        async () => {
+          const owners = await this.module.subjectsToEcommerceModuleOrders.find(
+            {
+              params: {
+                filters: {
+                  and: [
+                    {
+                      column: "ecommerceModuleOrderId",
+                      method: "eq",
+                      value: work.orderId,
+                    },
+                  ],
+                },
+              },
+            },
+          );
+          return (
+            owners.length > 0 &&
+            owners.every(
+              (owner) =>
+                owner.ecommerceModuleOrderId === work.orderId &&
+                owner.subjectId === task.customerId,
+            )
+          );
+        },
+      );
+      return;
+    }
+    if (work.state !== "delivered") {
       return;
     }
     // A checkout can hold the buyer lock while waiting for this task. Proceed

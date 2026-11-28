@@ -147,6 +147,7 @@ function createContext(
       },
       formData: jest.fn().mockResolvedValue(formData),
     },
+    get: jest.fn(),
     header: jest.fn(),
     json: jest.fn((payload: unknown) => {
       events.push("response");
@@ -161,6 +162,7 @@ function createService() {
     customerWork: {
       messageFromThread: jest.fn().mockResolvedValue(null),
       sendEmployeeTraining: jest.fn(),
+      orderSupport: { send: jest.fn() },
     },
     socialModuleChatLifecycleAssertThreadBelongsToChat: jest
       .fn()
@@ -233,6 +235,36 @@ describe("Given: rbac social message create author relation", () => {
     mockFileStorageFileCreate.mockResolvedValue({});
     mockSocialModuleMessageUpdate.mockResolvedValue({});
     mockRbacSubjectNotify.mockResolvedValue({});
+  });
+
+  it("uses human support without starting a workflow or dispatching an AI reaction", async () => {
+    const service = createService();
+    const context = createContext([]);
+    context.get.mockReturnValue(true);
+    service.customerWork.orderSupport.send.mockResolvedValue({
+      id: "support-message",
+      variant: "customer-work",
+    });
+    const response = await new Handler(service).execute(context, jest.fn());
+
+    expect(service.customerWork.orderSupport.send).toHaveBeenCalledWith({
+      customerId: "subject-1",
+      profileId: "profile-1",
+      chatId: "chat-1",
+      threadId: "thread-1",
+      text: "Hello",
+      sourceSystemId: undefined,
+      attachments: [],
+    });
+    expect(service.customerWork.messageFromThread).not.toHaveBeenCalled();
+    expect(mockSocialModuleMessageCreate).not.toHaveBeenCalled();
+    expect(context.header).toHaveBeenCalledWith(
+      "X-SPS-SKIP-ACTION-LOGGER",
+      "1",
+    );
+    expect(response).toMatchObject({
+      data: { id: "support-message", authorProfileIds: ["profile-1"] },
+    });
   });
 
   it("uses the linked customer's workflow before writing an ordinary Social message", async () => {

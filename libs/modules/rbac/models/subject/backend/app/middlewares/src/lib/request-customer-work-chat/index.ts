@@ -17,6 +17,7 @@ interface IService {
         staff: boolean;
         taskChatScope: unknown;
         readTaskChatSettings?: boolean;
+        isOrderSupport?: boolean;
         sharedTaskThread?: { taskId: string; threadId: string };
       }
   >;
@@ -48,6 +49,7 @@ export class Middleware {
             c.set("taskChatScope", access.taskChatScope);
             c.set("readTaskChatSettings", access.readTaskChatSettings);
             c.set("sharedTaskThread", access.sharedTaskThread);
+            c.set("isOrderSupport", access.isOrderSupport);
           }
         }
         return next();

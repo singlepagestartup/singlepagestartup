@@ -1,5 +1,12 @@
 /** @jest-environment jsdom */
+/**
+ * BDD Suite: product purchase configuration.
+ * Given: a product with selected retail offers and their SDK quotes.
+ * When: the buyer configures an offer or starts the order.
+ * Then: the purchase form shows the selected terms and submits that selection.
+ */
 import { useState } from "react";
+import type { ICustomerWorkTokenTariff } from "@sps/rbac/models/subject/sdk/model";
 import {
   act,
   fireEvent,
@@ -13,6 +20,8 @@ const mockChangeWork = jest.fn();
 const mockNavigate = jest.fn();
 let mockConsultationAvailable = false;
 let mockServiceAvailable = false;
+let mockTokenMeteredService = false;
+let mockTariffs: Record<string, ICustomerWorkTokenTariff> = {};
 jest.mock("next/navigation", () => ({
   useRouter: () => ({ push: mockNavigate }),
   useSearchParams: () => new URLSearchParams(),
@@ -37,11 +46,13 @@ let mockSingleUnitOffers: string[] = [];
 jest.mock("@sps/rbac/models/subject/sdk/client", () => ({
   api: {
     customerWork: () => ({ data: undefined }),
-    customerWorkAvailability: () => ({
+    customerWorkAvailability: ({ offerId }: { offerId: string }) => ({
       data: {
         consultation: mockConsultationAvailable,
         order: mockServiceAvailable,
-        payAfterAcceptance: mockServiceAvailable,
+        payAfterAcceptance: mockServiceAvailable && !mockTokenMeteredService,
+        workMetered: mockTokenMeteredService,
+        workTokenTariff: mockTariffs[offerId],
       },
       isPending: false,
     }),
@@ -270,6 +281,8 @@ beforeAll(() => {
 beforeEach(() => {
   mockConsultationAvailable = false;
   mockServiceAvailable = false;
+  mockTokenMeteredService = false;
+  mockTariffs = {};
   mockChangeWork.mockReset();
   mockNavigate.mockReset();
   mockCreate.mockReset().mockResolvedValue({});
@@ -337,6 +350,214 @@ it("adds a postpaid service to the cart before starting its discussion", async (
   expect(mockCreate).toHaveBeenCalledTimes(1);
   expect(mockChangeWork).not.toHaveBeenCalled();
   expect(mockNavigate).not.toHaveBeenCalled();
+});
+it("books the pinned service offer and opens its order discussion", async () => {
+  mockServiceAvailable = true;
+  const settings = { standalone: true, requiresResultAcceptance: true };
+  mockOffers[0].settings = settings;
+  mockOffers.push({ ...mockOffers[0], id: "offer-b" });
+  mockChangeWork.mockResolvedValue({ chatId: "chat", threadId: "thread" });
+  render(
+    <Component
+      {...props}
+      ecommerceModuleProduct={{ id: "product", kind: "service" }}
+      ecommerceModuleStore={{ id: "store-a" }}
+      ecommerceModuleOfferId="offer-b"
+      openServiceDiscussionOnSubmit
+    />,
+  );
+  const book = screen.getByRole("button", { name: "Заказать и открыть чат" });
+  await waitFor(() => expect(book.hasAttribute("disabled")).toBe(false));
+  fireEvent.click(book);
+  await waitFor(() =>
+    expect(mockNavigate).toHaveBeenCalledWith(
+      "/ru/social/chats/chat/threads/thread",
+    ),
+  );
+  expect(mockChangeWork).toHaveBeenCalledWith({
+    id: "subject",
+    data: expect.objectContaining({
+      operation: "add",
+      offerId: "offer-b",
+      storeId: "store-a",
+    }),
+  });
+  expect(mockCreate).not.toHaveBeenCalled();
+});
+it("shows a localized wallet tariff and books a token-funded service in chat", async () => {
+  mockServiceAvailable = true;
+  mockTokenMeteredService = true;
+  mockCurrencyIds = ["token"];
+  mockAmount = "0";
+  mockSingleUnitOffers = ["offer-a"];
+  mockOffers[0].settings = {
+    standalone: true,
+    requiresResultAcceptance: true,
+    workTokenPricing: { currencyId: "token", multiplier: "2" },
+  };
+  mockTariffs["offer-a"] = {
+    rates: [
+      {
+        capability: "text",
+        model: "gpt-6.2-astra",
+        input: "0.012307692307692307692307692",
+        cachedInput: "0.0006153846153846153846153846",
+        cacheWrite: "0.015384615384615384615384615",
+        output: "0.061538461538461538461538461",
+      },
+      {
+        capability: "embedding",
+        model: "text-embedding-3-large",
+        input: "0.0002",
+      },
+    ],
+  };
+  mockChangeWork.mockResolvedValue({ chatId: "chat", threadId: "thread" });
+  const checkout = jest.fn();
+  render(
+    <Component
+      {...props}
+      ecommerceModuleProduct={{ id: "product", kind: "service" }}
+      ecommerceModuleStore={{ id: "store-a" }}
+      ecommerceModuleOfferId="offer-a"
+      openServiceDiscussionOnSubmit
+      checkoutSlot={checkout}
+    />,
+  );
+  const book = screen.getByRole("button", { name: "Заказать и открыть чат" });
+  await waitFor(() => expect(book.hasAttribute("disabled")).toBe(false));
+  expect(screen.queryByLabelText("Цена за 1 шт.")).toBeNull();
+  expect(screen.queryByText("Итого")).toBeNull();
+  const rate = within(
+    screen.getByRole("region", { name: "Тариф за 1 токен модели" }),
+  );
+  expect(rate.getByText("Суммы в токенах кошелька SPS")).toBeTruthy();
+  expect(rate.getByText("Вход (запрос)")).toBeTruthy();
+  expect(rate.getByText("≈ 0,012307692")).toBeTruthy();
+  expect(rate.getByText("Выход (ответ)")).toBeTruthy();
+  expect(rate.getByText("≈ 0,061538462")).toBeTruthy();
+  fireEvent.click(rate.getByText("Кэш и дополнительные операции"));
+  expect(rate.getByText("Вход из кэша")).toBeTruthy();
+  expect(rate.getByText("≈ 0,00061538462")).toBeTruthy();
+  expect(rate.getByText("Поиск по материалам")).toBeTruthy();
+  expect(rate.getByText("0,0002")).toBeTruthy();
+  fireEvent.click(book);
+  await waitFor(() =>
+    expect(mockNavigate).toHaveBeenCalledWith(
+      "/ru/social/chats/chat/threads/thread",
+    ),
+  );
+  expect(mockChangeWork).toHaveBeenCalledWith({
+    id: "subject",
+    data: expect.objectContaining({
+      operation: "add",
+      offerId: "offer-a",
+      selection: expect.objectContaining({ billingModuleCurrencyId: "token" }),
+    }),
+  });
+  expect(mockCreate).not.toHaveBeenCalled();
+  expect(checkout).not.toHaveBeenCalled();
+});
+
+it("switches to the selected offer's English tariff and restores ordinary pricing", async () => {
+  const meteredSettings = {
+    standalone: true,
+    requiresResultAcceptance: true,
+    workTokenPricing: { currencyId: "token", multiplier: "2" },
+  };
+  mockOffers[0].settings = meteredSettings;
+  mockOffers.push(
+    { ...mockOffers[0], id: "offer-b", sku: "B" },
+    {
+      ...mockOffers[0],
+      id: "offer-c",
+      sku: "C",
+      settings: { standalone: true },
+    },
+  );
+  mockTariffs = {
+    "offer-a": {
+      rates: [
+        { capability: "text", model: "model-a", input: "0.01", output: "0.05" },
+      ],
+    },
+    "offer-b": {
+      rates: [
+        {
+          capability: "text",
+          model: "model-b",
+          input: "0.00000001",
+          output: "0.12",
+        },
+      ],
+    },
+  };
+  render(
+    <Component
+      {...props}
+      language="en"
+      ecommerceModuleProduct={{ id: "product", kind: "service" }}
+    />,
+  );
+  const offer = screen.getByLabelText("Store");
+  expect(screen.getByText("0.01")).toBeTruthy();
+  fireEvent.change(offer, { target: { value: "offer-b" } });
+  const rate = within(
+    screen.getByRole("region", { name: "Rate per model token" }),
+  );
+  expect(rate.getByText("Amounts in SPS wallet tokens")).toBeTruthy();
+  expect(rate.getByText("0.00000001")).toBeTruthy();
+  expect(rate.queryByText("0.01")).toBeNull();
+  fireEvent.change(offer, { target: { value: "offer-c" } });
+  expect(
+    screen.queryByRole("region", { name: "Rate per model token" }),
+  ).toBeNull();
+  expect(screen.getByRole("region", { name: "Receipt" })).toBeTruthy();
+});
+
+it("blocks a metered booking while its tariff is unavailable", () => {
+  mockServiceAvailable = true;
+  mockTokenMeteredService = true;
+  mockCurrencyIds = ["token"];
+  mockAmount = "0";
+  mockOffers[0].settings = {
+    standalone: true,
+    requiresResultAcceptance: true,
+    workTokenPricing: { currencyId: "token", multiplier: "2" },
+  };
+  render(
+    <Component
+      {...props}
+      openServiceDiscussionOnSubmit
+      ecommerceModuleProduct={{ id: "product", kind: "service" }}
+    />,
+  );
+  expect(screen.getByText("Тариф сейчас недоступен.")).toBeTruthy();
+  const book = screen.getByRole("button", { name: "Заказать и открыть чат" });
+  expect(book.hasAttribute("disabled")).toBe(true);
+  fireEvent.submit(book.closest("form")!);
+  expect(mockChangeWork).not.toHaveBeenCalled();
+  expect(mockCreate).not.toHaveBeenCalled();
+});
+it("blocks direct booking when a postpaid service has no available work", async () => {
+  mockOffers[0].settings = { standalone: true, requiresResultAcceptance: true };
+  render(
+    <Component
+      {...props}
+      ecommerceModuleProduct={{ id: "product", kind: "service" }}
+      ecommerceModuleStore={{ id: "store-a" }}
+      ecommerceModuleOfferId="offer-a"
+      openServiceDiscussionOnSubmit
+    />,
+  );
+  expect(
+    await screen.findByText("Услуга сейчас недоступна для заказа."),
+  ).toBeTruthy();
+  const button = screen.getByRole("button", { name: "Добавить в корзину" });
+  expect(button.hasAttribute("disabled")).toBe(true);
+  fireEvent.click(button);
+  expect(mockCreate).not.toHaveBeenCalled();
+  expect(mockChangeWork).not.toHaveBeenCalled();
 });
 it("keeps quantity fixed after a live quote corrects stale product data", async () => {
   mockOffers.push({

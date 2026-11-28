@@ -4,6 +4,9 @@ import { Component as FileStorageModuleFile } from "@sps/file-storage/models/fil
 import type { IModel as IFileStorageModuleFile } from "@sps/file-storage/models/file/sdk/model";
 import { Component as MessagesToFileStorageModuleFiles } from "@sps/social/relations/messages-to-file-storage-module-files/frontend/component";
 
+import { MessageAttachmentList } from "@sps/ui-adapter";
+import { getFilePreviewKind } from "@sps/shared-frontend-client-utils";
+
 interface IAttachmentListProps {
   files: IFileStorageModuleFile[];
   language: string;
@@ -12,23 +15,30 @@ interface IAttachmentListProps {
 function AttachmentList({ files, language }: IAttachmentListProps) {
   if (!files.length) return null;
   return (
-    <ul
-      aria-label={language === "ru" ? "Файлы сообщения" : "Message attachments"}
-      className="grid min-w-0 gap-1.5 py-1"
+    <MessageAttachmentList
+      items={files}
+      language={language}
+      label={language === "ru" ? "Файлы сообщения" : "Message attachments"}
+      itemId={(file) => file.id}
+      isPhoto={(file) =>
+        getFilePreviewKind({
+          name: file.file || file.adminTitle || file.id,
+          mimeType: file.mimeType,
+          extension: file.extension,
+        }) === "image"
+      }
     >
-      {files.map((file) => (
-        <li key={file.id} className="min-w-0 max-w-full">
-          <FileStorageModuleFile
-            isServer={false}
-            variant="attachment-ai-chat"
-            layout="message"
-            dataSource="props"
-            data={file}
-            language={language}
-          />
-        </li>
-      ))}
-    </ul>
+      {(file) => (
+        <FileStorageModuleFile
+          isServer={false}
+          variant="attachment-ai-chat"
+          layout="message"
+          dataSource="props"
+          data={file}
+          language={language}
+        />
+      )}
+    </MessageAttachmentList>
   );
 }
 

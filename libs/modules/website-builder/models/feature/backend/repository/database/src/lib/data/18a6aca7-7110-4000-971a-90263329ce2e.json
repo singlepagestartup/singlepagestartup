@@ -2,19 +2,19 @@
   "className": "",
   "id": "18a6aca7-7110-4000-971a-90263329ce2e",
   "createdAt": "2026-10-26T00:12:30.281Z",
-  "updatedAt": "2026-10-27T14:59:25.731Z",
+  "updatedAt": "2026-11-26T14:08:38.671Z",
   "variant": "step",
   "title": {
-    "en": "Create an account",
-    "ru": "Создайте аккаунт"
+    "en": "Describe the task",
+    "ru": "Опишите задачу"
   },
   "subtitle": {
     "en": "01",
     "ru": "01"
   },
   "description": {
-    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Register and open a chat with the AI assistant. Describe what you want to offer customers and how your business will work.\"}]}]}",
-    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Зарегистрируйтесь и откройте чат с ИИ-помощником. Расскажите, что хотите предложить клиентам и как будет работать ваш бизнес.\"}]}]}"
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Define what you want the product to help customers do. If you need a brief or strategy, choose an AI agent service.\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Сформулируйте, что продукт помогает сделать клиенту. Если нужны бриф или стратегия, выберите услугу ИИ-агента.\"}]}]}"
   },
   "adminTitle": "Создайте аккаунт",
   "slug": "framework-reviewed-step-account"

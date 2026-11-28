@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { TipTap } from "@sps/shared-ui-shadcn";
+import { TipTapContent } from "@sps/shared-ui-shadcn/tiptap/content";
 import { cn } from "@sps/shared-frontend-client-utils";
 import type {
   IComponentPropsExtended,
@@ -119,9 +120,11 @@ export function Component(props: IComponentPropsExtended) {
       )}
     >
       <div className="mx-auto max-w-7xl px-5 py-14 @3xl:px-8 @3xl:py-20 [&_[data-variant=document]]:bg-default-foreground/5 [&_[data-variant=document]_.prose]:text-default-muted-foreground [&_[data-document-body]]:border-default-foreground/10 [&_[data-document-body]]:text-default-muted-foreground [&_[data-document-example]]:bg-default-foreground/5">
-        <p className="text-xs font-medium uppercase tracking-widest text-default-muted-foreground">
-          {subtitle}
-        </p>
+        <TipTapContent
+          className="text-xs font-medium uppercase tracking-widest text-default-muted-foreground"
+          typography="inherit"
+          value={subtitle ?? ""}
+        />
         <h2
           id={`${data.id}-title`}
           className="mt-4 max-w-2xl text-balance font-default text-3xl font-semibold leading-tight @3xl:text-4xl"

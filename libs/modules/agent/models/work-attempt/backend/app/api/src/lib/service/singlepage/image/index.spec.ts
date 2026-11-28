@@ -2,13 +2,17 @@ import { createHash } from "node:crypto";
 import { readFile } from "node:fs/promises";
 import sharp from "sharp";
 import { StageSkillsUnavailable } from "@sps/rbac/models/subject/backend/app/api/src/lib/service/singlepage/ecommerce/customer-work/knowledge";
-import type { ICustomerWorkRunAttachment } from "@sps/rbac/models/subject/sdk/model";
+import type {
+  ICustomerWorkRate,
+  ICustomerWorkRunAttachment,
+} from "@sps/rbac/models/subject/sdk/model";
 import { CoverWork, readCoverReview, type IConfirmedCover } from "./index";
 import { coverDigest, readCoverBrief } from "./utils";
 
 function automaticCover(
   triggerText = "Без надписи.",
   storedFiles?: Map<string, Buffer>,
+  orderFormula = false,
 ) {
   const input = {
     storeId: "store",
@@ -49,6 +53,7 @@ function automaticCover(
     sourceVersions: [],
     knowledgeSourceIds: [] as string[],
     skillTitles: ["Cover styling"],
+    approvedRates: undefined as ICustomerWorkRate[] | undefined,
   };
   const work = {
     taskId: input.taskId,
@@ -58,7 +63,39 @@ function automaticCover(
     paid: false,
     files: [] as { id: string; createdAt: string }[],
   };
-  const resolveWork = jest.fn().mockResolvedValue({ provider: "openai" });
+  const tariff = {
+    currencyId: "token",
+    formula: "provider_usd * 2",
+    formulaVersion: "2",
+    inputs: {},
+  };
+  const terms = {
+    maxInputTokens: 1000,
+    maxOutputTokens: 100,
+    maxCostUsd: "1",
+    inputUsdPerMillion: "10",
+    outputUsdPerMillion: "50",
+    usdPerSps: "0.01",
+    workMultiplier: "1",
+    version: "model-terms",
+    workTokenTariff: JSON.stringify(tariff),
+  };
+  const funding = orderFormula
+    ? { payer: "customer", orderFormula: true, currencyId: "token" }
+    : { payer: "store-owner" };
+  const approved = {
+    provider: "openai",
+    model: "image-model",
+    capability: "image",
+    ...terms,
+  } as const;
+  const resolveWork = jest
+    .fn()
+    .mockResolvedValue({ provider: "openai", model: approved.model, terms });
+  const effectiveWorkFunding = jest
+    .fn()
+    .mockResolvedValue({ ...funding, workTokenTariff: tariff });
+  const workScope = jest.fn();
   const service = new CoverWork({
     modules: {
       crm: {
@@ -77,7 +114,7 @@ function automaticCover(
               imageBrief: "marketplace-cover",
               imageBriefAutoGenerate: true,
             },
-            funding: { payer: "store-owner" },
+            funding,
           }),
         },
       },
@@ -102,8 +139,11 @@ function automaticCover(
       },
       rbac: {
         subject: {
-          customerWork: { contextForRun: jest.fn().mockResolvedValue(context) },
-          providerConnections: { workScope: jest.fn(), resolveWork },
+          customerWork: {
+            contextForRun: jest.fn().mockResolvedValue(context),
+            effectiveWorkFunding,
+          },
+          providerConnections: { workScope, resolveWork },
         },
       },
     },
@@ -116,8 +156,32 @@ function automaticCover(
       )
       .mockResolvedValue({ layers: { size: { width: 900, height: 1200 } } });
   }
-  return { service, input, context, work, resolveWork };
+  return {
+    service,
+    input,
+    context,
+    work,
+    resolveWork,
+    workScope,
+    tariff,
+    approved,
+  };
 }
+
+it("requires the approved image rate from the order tariff before preparing a cover", async () => {
+  const f = automaticCover("Без надписи.", undefined, true);
+  f.context.approvedRates = [{ ...f.approved, outputUsdPerMillion: "1" }];
+  await expect(f.service.prepare(f.input)).rejects.toThrow(
+    "approve the current stage rate",
+  );
+  expect(f.workScope).toHaveBeenCalledWith(
+    expect.objectContaining({ orderId: "order" }),
+    expect.objectContaining({ output: "image" }),
+    expect.objectContaining({ workTokenTariff: f.tariff }),
+  );
+  f.context.approvedRates = [f.approved];
+  await expect(f.service.prepare(f.input)).resolves.not.toBeNull();
+});
 
 it.each([true, false])(
   "keeps original input files and free-form design instructions for a clean OpenAI cover (style reference %s)",

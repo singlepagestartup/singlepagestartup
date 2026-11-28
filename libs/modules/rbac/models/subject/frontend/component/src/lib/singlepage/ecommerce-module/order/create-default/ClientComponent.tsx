@@ -17,6 +17,7 @@ import type {
 } from "@sps/rbac/models/subject/sdk/model";
 import {
   getEligibleRetailOffers,
+  offerUsesOrderDiscussion,
   type IOfferServiceOption,
 } from "@sps/ecommerce/relations/stores-to-products/sdk/model";
 import { DeliveryAddress } from "../list/checkout-default/DeliveryAddress";
@@ -26,6 +27,7 @@ import {
 } from "../list/checkout-default/ServiceCard";
 import { QuantityInput } from "../list/checkout-default/QuantityInput";
 import { useOfferPriceSelection } from "./OfferPrice";
+import { WorkTokenTariff } from "./customer-work/WorkTokenTariff";
 import type { IComponentPropsExtended, IConfiguredPurchase } from "./interface";
 
 interface IServiceIntent {
@@ -57,7 +59,8 @@ export function Component(props: IComponentPropsExtended) {
   const ru = props.language === "ru";
   const router = useRouter();
   const search = useSearchParams();
-  const requestedOfferId = search.get("offer") ?? "";
+  const requestedOfferId =
+    props.ecommerceModuleOfferId ?? search.get("offer") ?? "";
   const consultationTaskId = search.get("consultation") ?? "";
   const formId = useId();
   const createOrder = api.ecommerceModuleOrderCreate({});
@@ -105,6 +108,15 @@ export function Component(props: IComponentPropsExtended) {
             value: props.ecommerceModuleProduct.id,
           },
           { column: "variant", method: "eq", value: "default" },
+          ...(props.ecommerceModuleOfferId
+            ? [
+                {
+                  column: "id",
+                  method: "eq",
+                  value: props.ecommerceModuleOfferId,
+                },
+              ]
+            : []),
           ...(props.ecommerceModuleStore
             ? [
                 {
@@ -133,7 +145,8 @@ export function Component(props: IComponentPropsExtended) {
   const consultation = consultationQuery.data;
   const newServiceOrder =
     props.ecommerceModuleProduct.kind === "service" &&
-    returnOffer?.settings.requiresResultAcceptance &&
+    returnOffer &&
+    offerUsesOrderDiscussion(returnOffer.settings) &&
     consultation?.offerId === returnOffer.id &&
     !consultation.orderId;
   const offers = retailOffers.filter(
@@ -147,6 +160,7 @@ export function Component(props: IComponentPropsExtended) {
       : offers[0];
   }
   const selected = offerForDraft(draft);
+  const meteredOffer = Boolean(selected?.settings?.workTokenPricing);
   const continueConsultation =
     newServiceOrder && selected?.id === returnOffer?.id;
   const consultationOffer = selected ?? returnOffer ?? retailOffers[0];
@@ -156,6 +170,22 @@ export function Component(props: IComponentPropsExtended) {
     offerId: consultationOffer?.id ?? "",
     productId: props.ecommerceModuleProduct.id,
   });
+  const workMetered = workQuery.data?.workMetered;
+  const tokenTariff = workQuery.data?.workTokenTariff;
+  const canBookMeteredOffer = Boolean(workMetered && tokenTariff?.rates.length);
+  const pendingRateText = ru ? "Загружаем тариф…" : "Loading the rate…";
+  const unavailableRateText = ru
+    ? "Тариф сейчас недоступен."
+    : "The rate is currently unavailable.";
+  const usesServiceDiscussion =
+    workQuery.data?.payAfterAcceptance || workMetered;
+  const startsServiceDiscussion =
+    props.openServiceDiscussionOnSubmit && usesServiceDiscussion;
+  const serviceUnavailable =
+    props.openServiceDiscussionOnSubmit &&
+    offerUsesOrderDiscussion(consultationOffer?.settings) &&
+    !workQuery.isPending &&
+    !startsServiceDiscussion;
   const workMutation = api.changeCustomerWork();
   const [selectionWork, setSelectionWork] = useState<{
     identity: string;
@@ -355,6 +385,7 @@ export function Component(props: IComponentPropsExtended) {
       : undefined;
   const ready = Boolean(
     selected &&
+    !serviceUnavailable &&
     draft.currencyId &&
     validNumbers &&
     (!singleUnitPerOrder || selection.quantity === 1) &&
@@ -376,7 +407,7 @@ export function Component(props: IComponentPropsExtended) {
         }
       : undefined;
   const configuration =
-    paymentReady && !pending && !workQuery.data?.payAfterAcceptance
+    paymentReady && !pending && !usesServiceDiscussion
       ? cartConfiguration
       : undefined;
 
@@ -561,7 +592,8 @@ export function Component(props: IComponentPropsExtended) {
   async function submit(event: React.FormEvent) {
     event.preventDefault();
     const configuration = cartConfiguration;
-    if (!configuration || pending) return;
+    if (!configuration || pending || (meteredOffer && !canBookMeteredOffer))
+      return;
     setError("");
     const submittedSignature = signature;
     const submittedIdentity = currentIdentity.current;
@@ -580,7 +612,9 @@ export function Component(props: IComponentPropsExtended) {
       };
       if (
         workQuery.data?.order &&
-        (!workQuery.data.payAfterAcceptance || continueConsultation)
+        (!usesServiceDiscussion ||
+          continueConsultation ||
+          startsServiceDiscussion)
       ) {
         const result = await workMutation.mutateAsync({
           id: props.data.id,
@@ -600,7 +634,7 @@ export function Component(props: IComponentPropsExtended) {
         });
         workRequest.current = undefined;
         if (submittedIdentity === currentIdentity.current) {
-          if (continueConsultation) {
+          if (continueConsultation || startsServiceDiscussion) {
             router.push(
               `/${props.language}/social/chats/${result.chatId}/threads/${result.threadId}`,
             );
@@ -732,70 +766,75 @@ export function Component(props: IComponentPropsExtended) {
                   }}
                 />
               ) : null}
-              <div className="grid min-w-0 gap-1 text-xs font-medium">
-                <label htmlFor={`${formId}-currency`}>
-                  {ru ? "Валюта" : "Currency"}
-                </label>
-                <Select
-                  ui="shadcn"
-                  id={`${formId}-currency`}
-                  className={input}
-                  value={
-                    currencyIds.includes(draft.currencyId)
-                      ? draft.currencyId
-                      : ""
-                  }
-                  disabled={!selected || !currencyIds.length}
-                  placeholder={ru ? "Выберите валюту" : "Choose currency"}
-                  options={currencyIds.map((id) => ({
-                    value: id,
-                    label:
-                      currencies.data
-                        ?.find((currency) => currency.id === id)
-                        ?.slug?.toUpperCase() ||
-                      (ru ? "Загружаем…" : "Loading…"),
-                  }))}
-                  onValueChange={(currencyId) =>
-                    edit((value) => ({
-                      ...value,
-                      currencyId,
-                      manualPriceSelection: true,
-                    }))
-                  }
-                />
-              </div>
-              <div className="col-span-2 flex min-w-0 flex-col items-end justify-center gap-0.5 text-right leading-tight @[420px]:col-span-1 @[420px]:min-h-12">
-                <output
-                  aria-label={ru ? "Цена за 1 шт." : "Unit price"}
-                  className="min-w-0 break-words text-sm font-semibold tabular-nums"
-                >
-                  {(() => {
-                    const currentCharge =
-                      productCharge &&
-                      productCharge.offerId === selection.offerId &&
-                      productCharge.quantity === selection.quantity;
-                    const amount =
-                      productCharge?.unitAmount !== undefined
-                        ? productCharge.unitAmount
-                        : productCharge?.quantity === 1
-                          ? productCharge.amount
-                          : undefined;
-                    if (
-                      currentCharge &&
-                      amount !== null &&
-                      amount !== undefined
-                    ) {
-                      return `${formatCurrencyAmount(amount, props.language)} ${symbol}`;
+              {!meteredOffer && (
+                <div className="grid min-w-0 gap-1 text-xs font-medium">
+                  <label htmlFor={`${formId}-currency`}>
+                    {ru ? "Валюта" : "Currency"}
+                  </label>
+                  <Select
+                    ui="shadcn"
+                    id={`${formId}-currency`}
+                    className={input}
+                    value={
+                      currencyIds.includes(draft.currencyId)
+                        ? draft.currencyId
+                        : ""
                     }
-                    return quote.isFetching || signature !== requestedSignature
-                      ? "…"
-                      : "—";
-                  })()}
-                </output>{" "}
-                <span className="whitespace-nowrap text-xs text-muted-foreground">
-                  {ru ? "за 1 шт." : "per item"}
-                </span>
-              </div>
+                    disabled={!selected || !currencyIds.length}
+                    placeholder={ru ? "Выберите валюту" : "Choose currency"}
+                    options={currencyIds.map((id) => ({
+                      value: id,
+                      label:
+                        currencies.data
+                          ?.find((currency) => currency.id === id)
+                          ?.slug?.toUpperCase() ||
+                        (ru ? "Загружаем…" : "Loading…"),
+                    }))}
+                    onValueChange={(currencyId) =>
+                      edit((value) => ({
+                        ...value,
+                        currencyId,
+                        manualPriceSelection: true,
+                      }))
+                    }
+                  />
+                </div>
+              )}
+              {!meteredOffer && (
+                <div className="col-span-2 flex min-w-0 flex-col items-end justify-center gap-0.5 text-right leading-tight @[420px]:col-span-1 @[420px]:min-h-12">
+                  <output
+                    aria-label={ru ? "Цена за 1 шт." : "Unit price"}
+                    className="min-w-0 break-words text-sm font-semibold tabular-nums"
+                  >
+                    {(() => {
+                      const currentCharge =
+                        productCharge &&
+                        productCharge.offerId === selection.offerId &&
+                        productCharge.quantity === selection.quantity;
+                      const amount =
+                        productCharge?.unitAmount !== undefined
+                          ? productCharge.unitAmount
+                          : productCharge?.quantity === 1
+                            ? productCharge.amount
+                            : undefined;
+                      if (
+                        currentCharge &&
+                        amount !== null &&
+                        amount !== undefined
+                      ) {
+                        return `${formatCurrencyAmount(amount, props.language)} ${symbol}`;
+                      }
+                      return quote.isFetching ||
+                        signature !== requestedSignature
+                        ? "…"
+                        : "—";
+                    })()}
+                  </output>{" "}
+                  <span className="whitespace-nowrap text-xs text-muted-foreground">
+                    {ru ? "за 1 шт." : "per item"}
+                  </span>
+                </div>
+              )}
             </div>
             <div className="grid gap-1 text-xs font-medium">
               <label htmlFor={`${formId}-store`}>
@@ -1056,76 +1095,98 @@ export function Component(props: IComponentPropsExtended) {
                 {ru ? "Нет доступных предложений." : "No available offers."}
               </p>
             ) : null}
-            <section
-              aria-label={ru ? "Расчёт" : "Receipt"}
-              aria-busy={quote.isFetching || signature !== requestedSignature}
-              className="space-y-2 rounded-xl border border-border bg-card p-3"
-            >
-              <h3 className="text-sm font-semibold">
-                {ru ? "Расчёт" : "Receipt"}
-              </h3>
-              {quote.isFetching || signature !== requestedSignature ? (
-                <p role="status" className="text-xs text-muted-foreground">
-                  {ru ? "Рассчитываем…" : "Calculating…"}
-                </p>
-              ) : null}
-              {currentQuote?.issues
-                .filter((issue) => !incompleteCodes.has(issue.code))
-                .map((issue) => (
-                  <p
-                    key={`${issue.offerId}-${issue.code}`}
-                    role="alert"
-                    className="text-xs text-destructive"
-                  >
-                    {ru && issue.code === "delivery_required"
-                      ? "Для выбранных условий заказа нет доступного способа получения."
-                      : issue.message}
+            {meteredOffer ? (
+              <div className="space-y-2">
+                {tokenTariff?.rates.length ? (
+                  <WorkTokenTariff
+                    tariff={tokenTariff}
+                    language={props.language}
+                  />
+                ) : (
+                  <p role="status" className="text-sm text-muted-foreground">
+                    {workQuery.isPending
+                      ? pendingRateText
+                      : unavailableRateText}
                   </p>
-                ))}
-              <dl className="space-y-1 text-xs">
-                {currentQuote?.charges.map((charge) => (
-                  <div
-                    key={charge.offerId}
-                    className="flex justify-between gap-3"
-                  >
-                    <dt>
-                      {charge.role === "product"
-                        ? props.ecommerceModuleProduct.title?.[
-                            props.language
-                          ] ||
-                          props.ecommerceModuleProduct.title?.en ||
-                          (ru ? "Товар" : "Product")
-                        : options.find(
-                            (option) => option.offerId === charge.offerId,
-                          )?.titles?.[props.language] ||
-                          options.find(
-                            (option) => option.offerId === charge.offerId,
-                          )?.title ||
-                          (ru ? "Услуга" : "Service")}{" "}
-                      × {charge.quantity}
-                    </dt>
+                )}
+                <p className="text-sm text-muted-foreground">
+                  {ru
+                    ? "Подтвердите тариф в чате заказа перед началом работы. Оплата зависит от числа использованных токенов."
+                    : "Approve the rate in the order chat before work begins. The charge depends on the tokens used."}
+                </p>
+              </div>
+            ) : (
+              <section
+                aria-label={ru ? "Расчёт" : "Receipt"}
+                aria-busy={quote.isFetching || signature !== requestedSignature}
+                className="space-y-2 rounded-xl border border-border bg-card p-3"
+              >
+                <h3 className="text-sm font-semibold">
+                  {ru ? "Расчёт" : "Receipt"}
+                </h3>
+                {quote.isFetching || signature !== requestedSignature ? (
+                  <p role="status" className="text-xs text-muted-foreground">
+                    {ru ? "Рассчитываем…" : "Calculating…"}
+                  </p>
+                ) : null}
+                {currentQuote?.issues
+                  .filter((issue) => !incompleteCodes.has(issue.code))
+                  .map((issue) => (
+                    <p
+                      key={`${issue.offerId}-${issue.code}`}
+                      role="alert"
+                      className="text-xs text-destructive"
+                    >
+                      {ru && issue.code === "delivery_required"
+                        ? "Для выбранных условий заказа нет доступного способа получения."
+                        : issue.message}
+                    </p>
+                  ))}
+                <dl className="space-y-1 text-xs">
+                  {currentQuote?.charges.map((charge) => (
+                    <div
+                      key={charge.offerId}
+                      className="flex justify-between gap-3"
+                    >
+                      <dt>
+                        {charge.role === "product"
+                          ? props.ecommerceModuleProduct.title?.[
+                              props.language
+                            ] ||
+                            props.ecommerceModuleProduct.title?.en ||
+                            (ru ? "Товар" : "Product")
+                          : options.find(
+                              (option) => option.offerId === charge.offerId,
+                            )?.titles?.[props.language] ||
+                            options.find(
+                              (option) => option.offerId === charge.offerId,
+                            )?.title ||
+                            (ru ? "Услуга" : "Service")}{" "}
+                        × {charge.quantity}
+                      </dt>
+                      <dd className="shrink-0 tabular-nums">
+                        {formatCurrencyAmount(charge.amount, props.language)}{" "}
+                        {symbol}
+                      </dd>
+                    </div>
+                  ))}
+                  <div className="flex justify-between gap-3 border-t border-border pt-2 font-semibold">
+                    <dt>{ru ? "Итого" : "Total"}</dt>
                     <dd className="shrink-0 tabular-nums">
-                      {formatCurrencyAmount(charge.amount, props.language)}{" "}
-                      {symbol}
+                      {paymentReady &&
+                      currentQuote?.amount !== null &&
+                      currentQuote?.amount !== undefined
+                        ? `${formatCurrencyAmount(currentQuote.amount, props.language)} ${symbol}`
+                        : quote.isFetching || signature !== requestedSignature
+                          ? "…"
+                          : ru
+                            ? "Нужен выбор"
+                            : "Selection needed"}
                     </dd>
                   </div>
-                ))}
-                <div className="flex justify-between gap-3 border-t border-border pt-2 font-semibold">
-                  <dt>{ru ? "Итого" : "Total"}</dt>
-                  <dd className="shrink-0 tabular-nums">
-                    {paymentReady &&
-                    currentQuote?.amount !== null &&
-                    currentQuote?.amount !== undefined
-                      ? `${formatCurrencyAmount(currentQuote.amount, props.language)} ${symbol}`
-                      : quote.isFetching || signature !== requestedSignature
-                        ? "…"
-                        : ru
-                          ? "Нужен выбор"
-                          : "Selection needed"}
-                  </dd>
-                </div>
-              </dl>
-            </section>
+                </dl>
+              </section>
+            )}
             {ready &&
             currentQuote?.issues.some((issue) =>
               incompleteCodes.has(issue.code),
@@ -1139,7 +1200,9 @@ export function Component(props: IComponentPropsExtended) {
             <Button
               type="submit"
               variant="primary"
-              disabled={pending || !ready}
+              disabled={
+                pending || !ready || (meteredOffer && !canBookMeteredOffer)
+              }
               className="min-h-11 w-full rounded-xl"
             >
               {continueConsultation
@@ -1150,9 +1213,13 @@ export function Component(props: IComponentPropsExtended) {
                   ? ru
                     ? "Добавляем…"
                     : "Adding…"
-                  : ru
-                    ? "Добавить в корзину"
-                    : "Add to cart"}
+                  : startsServiceDiscussion
+                    ? ru
+                      ? "Заказать и открыть чат"
+                      : "Book and open chat"
+                    : ru
+                      ? "Добавить в корзину"
+                      : "Add to cart"}
             </Button>
             {workQuery.data?.payAfterAcceptance && (
               <p className="text-xs text-muted-foreground">
@@ -1193,6 +1260,13 @@ export function Component(props: IComponentPropsExtended) {
           {error}
         </p>
       )}
+      {serviceUnavailable && (
+        <p role="status" className="text-sm text-muted-foreground">
+          {ru
+            ? "Услуга сейчас недоступна для заказа."
+            : "This service is currently unavailable to book."}
+        </p>
+      )}
       {work && !props.hideConfiguration && (
         <Link
           className="inline-flex min-h-11 items-center underline"
@@ -1201,7 +1275,8 @@ export function Component(props: IComponentPropsExtended) {
           {ru ? "Открыть обсуждение" : "Open discussion"}
         </Link>
       )}
-      {!workQuery.data?.payAfterAcceptance &&
+      {!usesServiceDiscussion &&
+        !meteredOffer &&
         props.checkoutSlot?.(configuration, {
           refreshQuote: () => quote.refetch(),
           hideWhenIdle,

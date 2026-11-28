@@ -1,0 +1,24 @@
+{
+  "metadata": {},
+  "id": "6cf87096-77c1-405e-8070-5a28fb20457b",
+  "createdAt": "2026-11-26T14:02:01.830Z",
+  "updatedAt": "2026-11-26T19:18:24.587Z",
+  "variant": "default",
+  "kind": "service",
+  "type": "one_off",
+  "singleUnitPerOrder": true,
+  "slug": "framework-business-brief",
+  "title": {
+    "en": "Business brief",
+    "ru": "Бриф бизнеса"
+  },
+  "shortDescription": {
+    "en": "A brief with goals, facts, constraints and open questions",
+    "ru": "Бриф с целями, фактами, ограничениями и открытыми вопросами"
+  },
+  "description": {
+    "en": "The account manager prepares a brief from your business notes and price list. Review the draft in chat, request edits, or accept it to download the PDF.",
+    "ru": "Аккаунт-менеджер подготовит бриф по описанию бизнеса, заметкам и прайсу. В чате можно прочитать черновик, запросить правки и скачать PDF после приёмки."
+  },
+  "adminTitle": "linear tomato iguana"
+}

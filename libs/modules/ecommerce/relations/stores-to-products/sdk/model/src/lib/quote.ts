@@ -82,3 +82,9 @@ export interface IOfferQuote {
   version: string;
   expiresAt: string;
 }
+export interface IOfferWorkTokenTariff {
+  currencyId: string;
+  formula: string;
+  formulaVersion: string;
+  inputs: Record<string, string>;
+}

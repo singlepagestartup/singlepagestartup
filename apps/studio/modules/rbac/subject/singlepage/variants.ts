@@ -1,3 +1,5 @@
+import { Component as MeEcommerceModuleOrderDetailCustomerDefault } from "./me/ecommerce-module/order/detail/customer-default";
+import { Component as MeEcommerceModuleOrderListCustomerDefault } from "./me/ecommerce-module/order/list/customer-default";
 import { Component as MeBlogModuleArticleCreateDefault } from "./me-blog-module-article-create-default";
 import { Component as AdminV2Card } from "./admin-v2-card/index";
 import { Component as AdminV2Settings } from "./admin-v2-settings/index";
@@ -31,7 +33,6 @@ import { Component as MeIdentityCreateOauthGoogle } from "./me/identity/create/o
 import { Component as MeIdentityCreateTelegram } from "./me/identity/create/telegram/index";
 import { Component as MeIdentityDelete } from "./me/identity/delete/index";
 import { Component as MeIdentityFindInformation } from "./me/identity/find/information/index";
-import { Component as MeSocialModuleProfileCreateAiChat } from "./me/social-module/profile/create/ai-chat/index";
 import { Component as MeSocialModuleProfileIdChatIdThreadCreateFormAiChat } from "./me/social-module/profile/id/chat/id/thread/create/form/ai-chat/index";
 import { Component as MeSocialModuleProfileIdChatIdThreadIdKnowledgeModuleSourceListDocumentAiChat } from "./me/social-module/profile/id/chat/id/thread/id/knowledge-module/source/list/document/ai-chat/index";
 import { Component as MeSocialModuleProfileIdChatIdThreadIdKnowledgeModuleSourceUpdateAiChat } from "./me/social-module/profile/id/chat/id/thread/id/knowledge-module/source/update/ai-chat/index";
@@ -41,6 +42,10 @@ import { Component as MeSocialModuleProfileIdUpdateNameAiChat } from "./me/socia
 import { Component as MeSocialModuleProfileSelectAiChat } from "./me/social-module/profile/select/ai-chat/index";
 
 export const variants = {
+  "me-ecommerce-module-order-detail-customer-default":
+    MeEcommerceModuleOrderDetailCustomerDefault,
+  "me-ecommerce-module-order-list-customer-default":
+    MeEcommerceModuleOrderListCustomerDefault,
   "me-blog-module-article-create-default": MeBlogModuleArticleCreateDefault,
   "admin-v2-card": AdminV2Card,
   "admin-v2-settings": AdminV2Settings,
@@ -88,7 +93,6 @@ export const variants = {
   "me-identity-create-telegram": MeIdentityCreateTelegram,
   "me-identity-delete": MeIdentityDelete,
   "me-identity-find-information": MeIdentityFindInformation,
-  "me-social-module-profile-create-ai-chat": MeSocialModuleProfileCreateAiChat,
   "me-social-module-profile-id-chat-id-thread-create-form-ai-chat":
     MeSocialModuleProfileIdChatIdThreadCreateFormAiChat,
   "me-social-module-profile-id-chat-id-thread-id-knowledge-module-source-list-document-ai-chat":

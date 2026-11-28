@@ -77,6 +77,9 @@
       "@sps/shared-frontend-client-utils/cn": [
         "./libs/shared/frontend/client/utils/src/lib/cn/index.ts"
       ],
+      "@sps/shared-frontend-client-utils/rich-text": [
+        "./libs/shared/frontend/client/utils/src/lib/rich-text/index.ts"
+      ],
       "@sps/shared-frontend-client-web3": [
         "./libs/shared/frontend/client/web3/src/index.ts"
       ],
@@ -98,6 +101,7 @@
       "@sps/shared-ui-shadcn": ["./libs/shared/ui/shadcn/src/index.ts"],
       "@sps/shared-ui-shadcn/*": ["./libs/shared/ui/shadcn/src/lib/*"],
       "@sps/shared-utils": ["./libs/shared/utils/src/index.ts"],
+      "@sps/shared-utils/localized-text": ["./libs/shared/utils/src/lib/localized-text.ts"],
       "@sps/shared-utils/provider-models": [
         "./libs/shared/utils/src/lib/provider-models/index.ts"
       ],

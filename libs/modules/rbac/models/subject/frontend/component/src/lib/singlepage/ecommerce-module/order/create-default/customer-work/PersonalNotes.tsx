@@ -9,11 +9,10 @@ import type {
   TCustomerWorkCommand,
 } from "@sps/rbac/models/subject/sdk/model";
 import { Button } from "@sps/shared-ui-shadcn";
-import { Select } from "@sps/ui-adapter";
 
 type TMemoryCommand = Extract<
   TCustomerWorkCommand,
-  { operation: "memory-project" | "remember" | "forget" }
+  { operation: "remember" | "forget" }
 >;
 type TChange = TMemoryCommand extends infer Command
   ? Command extends TMemoryCommand
@@ -86,31 +85,6 @@ export function PersonalNotes({ subjectId, work, memory, language }: IProps) {
           : "Personal notes for the assistant"}
       </summary>
       <div className="space-y-3 pb-4">
-        {memory.projects.length > 0 && (
-          <label className="block text-sm font-medium">
-            {ru ? "Область заметки" : "Note scope"}
-            <Select
-              ui="shadcn"
-              aria-label={ru ? "Область заметки" : "Note scope"}
-              value={memory.currentProjectId ?? "store"}
-              disabled={mutation.isPending}
-              onValueChange={(value) =>
-                void change({
-                  operation: "memory-project",
-                  projectId: value === "store" ? null : value,
-                })
-              }
-              className="mt-1 min-h-11 w-full"
-              options={[
-                { value: "store", label: ru ? "Этот магазин" : "This store" },
-                ...memory.projects.map(({ id, title }) => ({
-                  value: id,
-                  label: title,
-                })),
-              ]}
-            />
-          </label>
-        )}
         <ul className="space-y-2">
           {memory.notes.map(({ id, text }) => (
             <li key={id} className="rounded-lg border border-border p-3">

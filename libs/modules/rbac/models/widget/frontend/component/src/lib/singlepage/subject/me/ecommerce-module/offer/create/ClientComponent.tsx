@@ -4,7 +4,7 @@ import { api as subjectApi } from "@sps/rbac/models/subject/sdk/client";
 import { catalogCreateOfferSchema } from "@sps/rbac/models/subject/sdk/model";
 import type { IComponentPropsExtended } from "./interface";
 import { Editor } from "./Editor";
-import { PaymentTiming } from "./PaymentTiming";
+import { PaymentTiming, offerPaymentSettings } from "./PaymentTiming";
 
 const field =
   "min-h-11 w-full min-w-0 rounded-xl border border-input bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:bg-muted disabled:text-muted-foreground";
@@ -70,6 +70,9 @@ export function Component(props: IComponentPropsExtended) {
     );
   }
 
+  const token = context.data.currencies.find(
+    (currency) => currency.slug?.toLowerCase() === "token",
+  );
   const selectedProduct =
     mode === "new"
       ? { kind, type }
@@ -84,6 +87,21 @@ export function Component(props: IComponentPropsExtended) {
         ? [{ currencyId: currency.id, amount: value(`price:${currency.id}`) }]
         : [],
     );
+    if (
+      value("paymentTiming") === "work-formula" &&
+      (!token ||
+        !prices.some(
+          (price) =>
+            price.currencyId === token.id && /^0(?:\.0+)?$/.test(price.amount),
+        ))
+    ) {
+      setError(
+        props.language === "ru"
+          ? "Укажите цену оформления 0 Token."
+          : "Set the checkout price to 0 Token.",
+      );
+      return;
+    }
     const packages =
       value("length_cm") ||
       value("width_cm") ||
@@ -118,10 +136,7 @@ export function Component(props: IComponentPropsExtended) {
       configurationKey: value("configurationKey"),
       settings: {
         packages,
-        ...(value("paymentTiming") === "after-acceptance" && {
-          standalone: true,
-          requiresResultAcceptance: true,
-        }),
+        ...offerPaymentSettings(value("paymentTiming") || "in-cart", token?.id),
       },
     });
     setMessage("");
@@ -270,7 +285,11 @@ export function Component(props: IComponentPropsExtended) {
           )}
           {selectedProduct?.kind === "service" &&
             selectedProduct.type === "one_off" && (
-              <PaymentTiming key={mode === "new" ? "new" : productId} />
+              <PaymentTiming
+                key={mode === "new" ? "new" : productId}
+                language={props.language}
+                currencyId={token?.id}
+              />
             )}
           <label className={label}>
             Configuration key
@@ -368,6 +387,7 @@ export function Component(props: IComponentPropsExtended) {
       )}
       <Editor
         key={storeId}
+        language={props.language}
         subjectId={props.subjectId}
         storeId={storeId}
         context={context.data}

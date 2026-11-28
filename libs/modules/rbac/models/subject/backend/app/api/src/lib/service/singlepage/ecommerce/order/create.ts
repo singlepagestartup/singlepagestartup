@@ -37,11 +37,14 @@ export class Service {
     props: IExecuteProps,
   ): Promise<{ orderId: string; lineId: string }> {
     const { repository, service } = this.dependencies;
-    const offers =
+    const listedOffers =
       await service.modules.ecommerce.storesToProducts.offersForProduct({
         productId: props.productId,
         ...(props.storeId ? { storeId: props.storeId } : {}),
       });
+    const offers = listedOffers.filter(
+      ({ settings }) => !settings?.closedForNewOrders,
+    );
     let offer;
     if (props.offerId) {
       offer = offers.find((candidate) => candidate.id === props.offerId);
@@ -125,6 +128,13 @@ export class Service {
             ],
           },
         );
+        const currentOffer =
+          await service.modules.ecommerce.storesToProducts.findById({
+            id: selection.offerId,
+          });
+        if (currentOffer?.settings?.closedForNewOrders) {
+          throw new Error("Conflict error. This offer is closed to new orders");
+        }
         const [lockedQuote] =
           await service.modules.ecommerce.storesToProducts.quotesUnderLock(
             [selection],

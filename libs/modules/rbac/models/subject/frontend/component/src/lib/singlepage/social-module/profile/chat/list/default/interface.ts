@@ -20,6 +20,33 @@ export interface IComponentProps extends ISpsComponentBase {
   onSelectCurrentChat?: () => void;
 }
 
+export const chatPageSize = 30;
+
+export function chatPageParams(
+  includeSubjectProfiles: boolean | undefined,
+  page: number,
+  search = "",
+  language?: string,
+) {
+  return {
+    includeSubjectProfiles,
+    includeParticipants: true,
+    membershipsOnly: true,
+    ...(search.trim() ? { search: search.trim(), language } : {}),
+    limit: chatPageSize + 1,
+    offset: page * chatPageSize,
+    orderBy: {
+      and: [
+        { column: "createdAt", method: "desc" },
+        { column: "id", method: "asc" },
+      ],
+    },
+  };
+}
+
 export interface IComponentPropsExtended extends IComponentProps {
+  pagination?: ReactNode;
+  search: string;
+  onSearch: (search: string) => void;
   socialModuleChats: IResult["ISocialModuleProfileFindByIdChatFindResult"];
 }

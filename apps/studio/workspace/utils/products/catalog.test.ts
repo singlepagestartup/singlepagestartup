@@ -25,10 +25,7 @@ const source = (products: unknown[], extra = {}) =>
   });
 describe("current product catalog", () => {
   test("real products resolve every declared source", async () => {
-    expect(base.products.map((p) => p.id)).toEqual([
-      "singlepagestartup",
-      "ai-chat",
-    ]);
+    expect(base.products.map((p) => p.id)).toEqual(["singlepagestartup"]);
     await validateProductCatalogFiles(base, path.join(root, "singlepage"));
     await validateProductSectionFiles(base, path.join(root, "singlepage"));
     for (const product of base.products) {
@@ -50,7 +47,10 @@ describe("current product catalog", () => {
       resolveProductCatalog(base, parseProductCatalog(source([]), "startup"))
         .catalog,
     ).toBe(base);
-    const own = parseProductCatalog(source([base.products[1]]), "startup");
+    const own = parseProductCatalog(
+      source([{ ...base.products[0], name: "Дочерний продукт" }]),
+      "startup",
+    );
     expect(resolveProductCatalog(base, own)).toEqual({
       catalog: own,
       inherited: false,

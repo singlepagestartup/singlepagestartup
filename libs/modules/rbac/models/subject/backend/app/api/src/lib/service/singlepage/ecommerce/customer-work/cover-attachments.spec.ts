@@ -57,6 +57,7 @@ function fixture(withDesignHistory = false) {
         id: randomUUID(),
         kind: "customer-message",
         taskId,
+        actorId: task.customerId,
         revision,
         detail: { messageId: message.id, coverAttachmentRole },
       },
@@ -189,21 +190,26 @@ function fixture(withDesignHistory = false) {
     }
     return buyerInputs.map(({ event }) => event);
   });
+  const findOrderWork = jest.fn().mockResolvedValue(null);
+  const getWork = jest.fn().mockResolvedValue({
+    task,
+    stage: { imageBrief: "marketplace-cover", actions: [] },
+  });
+  const readFullTextDraft = jest.fn();
+  const findEvent = jest.fn().mockResolvedValue(event);
   const service = new Service({
     authenticationMe: jest.fn().mockResolvedValue({ authenticated: true }),
+    orderWork: { readFullTextDraft },
     module: {
       subjectsToSocialModuleProfiles: { find: jest.fn().mockResolvedValue([]) },
     },
     modules: {
       ecommerce: {
-        order: { work: { findByOrder: jest.fn().mockResolvedValue(null) } },
+        order: { work: { findByOrder: findOrderWork } },
       },
       crm: {
         task: {
-          getWork: jest.fn().mockResolvedValue({
-            task,
-            stage: { imageBrief: "marketplace-cover", actions: [] },
-          }),
+          getWork,
         },
         tasksToStages: {
           find: findEvents,
@@ -215,7 +221,7 @@ function fixture(withDesignHistory = false) {
               )
               .map(({ event }) => event),
           ),
-          findById: jest.fn().mockResolvedValue(event),
+          findById: findEvent,
         },
       },
       social: {
@@ -272,9 +278,16 @@ function fixture(withDesignHistory = false) {
     style,
     alternateStyle,
     legacy,
+    trigger,
+    future,
     findEvents,
     findThreadMessages,
     employeeDesign,
+    findOrderWork,
+    getWork,
+    staffReplies,
+    readFullTextDraft,
+    findEvent,
     input: {
       eventId: event.id,
       taskId: task.id,
@@ -353,6 +366,104 @@ it("keeps the earlier buyer photos by original event order when a cover reply re
   );
 });
 
+function stageEntryFixture() {
+  const f = fixture();
+  const visit = {
+    id: randomUUID(),
+    taskId: f.task.id,
+    variant: "current",
+    revision: 13,
+  };
+  const entry = {
+    ...f.event,
+    kind: "stage-entry",
+    causeId: visit.id,
+    revision: 14,
+    operationKey: `stage-entry:${visit.id}:${visit.revision}`,
+    createdAt: new Date(14_000),
+    detail: {
+      stageId: f.task.stageId,
+      publicationId: f.task.publicationId,
+      assigneeId: f.task.assigneeId,
+    },
+  };
+  f.future.event.revision = 15;
+  f.getWork.mockResolvedValue({
+    task: f.task,
+    stage: { operations: ["knowledge-search"], actions: [] },
+  });
+  f.findOrderWork.mockResolvedValue({
+    orderId: f.task.orderId,
+    taskId: f.task.id,
+    storeId: f.task.storeId,
+    customerId: f.task.customerId,
+  });
+  f.findEvent.mockImplementation(async ({ id }) =>
+    id === visit.id ? visit : entry,
+  );
+  return f;
+}
+
+it("offers no knowledge query for a greeting before the buyer sends text", async () => {
+  const f = stageEntryFixture();
+  f.trigger.message.description = "";
+  const context = await f.service.contextForRun(f.input);
+  expect(context.stageEntryKnowledgeQuery).toBeUndefined();
+});
+
+it("keeps the latest eligible buyer text from the same order for stage entry", async () => {
+  const f = stageEntryFixture();
+  f.legacy.message.description = "Earlier buyer message.";
+  f.trigger.message.description = "The brief is for a catalogue studio.";
+  f.future.message.description = "A message sent after stage entry.";
+
+  const context = await f.service.contextForRun(f.input);
+  expect(context.messages.at(-1)?.role).toBe("system");
+  expect(context.stageEntryKnowledgeQuery).toBe(f.trigger.message.description);
+
+  f.trigger.event.actorId = randomUUID();
+  const afterTransfer = await f.service.contextForRun(f.input);
+  expect(afterTransfer.stageEntryKnowledgeQuery).toBe(
+    f.legacy.message.description,
+  );
+
+  f.findOrderWork.mockResolvedValue({
+    orderId: f.task.orderId,
+    taskId: randomUUID(),
+    storeId: f.task.storeId,
+    customerId: f.task.customerId,
+  });
+  const otherTask = await f.service.contextForRun(f.input);
+  expect(otherTask.stageEntryKnowledgeQuery).toBeUndefined();
+});
+
+it("continues from the text and attachments that the customer sent before metered work started", async () => {
+  const f = stageEntryFixture();
+  f.trigger.message.description = "The briefing concerns a catalogue studio.";
+  f.findOrderWork.mockResolvedValue({
+    orderId: f.task.orderId,
+    taskId: f.task.id,
+    storeId: f.task.storeId,
+    customerId: f.task.customerId,
+    paymentMode: "work-tokens",
+  });
+
+  const context = await f.service.contextForRun(f.input);
+
+  expect(context.messages).toContainEqual({
+    role: "user",
+    content: f.trigger.message.description,
+  });
+  expect(context.messages.at(-1)?.content).toContain(
+    "Continue from the request and materials that the customer already sent.",
+  );
+  expect(context.attachments).toEqual(
+    expect.arrayContaining([
+      expect.objectContaining({ id: f.legacy.attachment.id }),
+    ]),
+  );
+});
+
 it("carries the visible employee design reply and excludes draft, reminder, result, and later replies", async () => {
   const f = fixture(true);
   const context = await f.service.contextForRun(f.input);
@@ -365,6 +476,64 @@ it("carries the visible employee design reply and excludes draft, reminder, resu
     { role: "assistant", content: f.employeeDesign },
     { role: "user", content: "Поменяй заголовок" },
   ]);
+});
+
+it("loads the exact declined draft when its message is outside the history window", async () => {
+  const f = fixture();
+  const previewFileId = randomUUID();
+  const decisionKey = randomUUID();
+  const causeId = randomUUID();
+  Object.assign(f.event, { causeId });
+  f.findEvent.mockImplementation(async ({ id }) => {
+    if (id === causeId) {
+      return {
+        id: causeId,
+        kind: "customer-message",
+        taskId: f.task.id,
+        revision: f.event.detail.sourceRevision,
+        detail: { messageId: f.event.detail.messageId },
+        operationKey: `store-work:${f.task.customerId}:file-feedback:${previewFileId}:${decisionKey}`,
+      };
+    }
+    return f.event;
+  });
+  const draft = "Цель проекта.\nТекущие ограничения.\nНеизвестный бюджет.";
+  f.getWork.mockResolvedValue({
+    task: f.task,
+    stage: {
+      output: "pdf",
+      resultPricing: { kind: "work-tokens" },
+      actions: [],
+    },
+  });
+  const order = {
+    orderId: f.task.orderId,
+    taskId: f.task.id,
+    storeId: f.task.storeId,
+    customerId: f.task.customerId,
+    paymentMode: "work-tokens",
+    files: [
+      { id: previewFileId, previewFileId, previewMimeType: "text/plain" },
+      { id: "newer", previewFileId: "newer", previewMimeType: "text/plain" },
+    ],
+    decisions: [
+      { kind: "declined", fileId: previewFileId, operationKey: decisionKey },
+    ],
+  };
+  f.findOrderWork.mockResolvedValue(order);
+  f.readFullTextDraft.mockResolvedValue(Buffer.from(draft));
+  const context = await f.service.contextForRun(f.input);
+  expect(context.messages).toContainEqual({
+    role: "assistant",
+    content: `Previous brief draft:\n${draft}`,
+  });
+  expect(f.readFullTextDraft).toHaveBeenCalledWith(order, previewFileId);
+  expect(f.readFullTextDraft).toHaveBeenCalledTimes(1);
+
+  f.readFullTextDraft.mockClear();
+  f.findOrderWork.mockResolvedValue({ ...order, taskId: randomUUID() });
+  await f.service.contextForRun(f.input);
+  expect(f.readFullTextDraft).not.toHaveBeenCalled();
 });
 
 it("keeps the legacy upload unmarked when the order has no recorded design reference", async () => {

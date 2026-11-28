@@ -37,12 +37,14 @@ export default async function Page({ params }: IPageProps) {
   return (
     <>
       <Admin isServer={true} />
-      <HostModulePage
-        isServer={true}
-        variant="document"
-        url={`/${url.join("/")}`}
-        language={language}
-      />
+      <div className="isolate">
+        <HostModulePage
+          isServer={true}
+          variant="document"
+          url={`/${url.join("/")}`}
+          language={language}
+        />
+      </div>
     </>
   );
 }

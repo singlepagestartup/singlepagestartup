@@ -1,3 +1,4 @@
+import { getLocalizedText } from "@sps/shared-utils/localized-text";
 import type { Service as SubjectService } from "../../index";
 import { Service as Participants } from "../../../startup/social-module/chat/participants";
 import { Service as Presentations } from "../../../startup/social-module/chat/presentations";
@@ -8,6 +9,9 @@ export interface IFindProps {
   socialModuleProfileId: string;
   includeSubjectProfiles?: boolean;
   includeParticipants?: boolean;
+  membershipsOnly?: boolean;
+  search?: string;
+  language?: string;
   params?: NonNullable<
     Parameters<SubjectService["modules"]["social"]["chat"]["find"]>[0]
   >["params"];
@@ -40,9 +44,11 @@ export class Service {
       throw new Error(
         "Permission error. Requested social-module profile does not belong to subject",
       );
-    const admin = await this.service.socialModuleChatLifecycleIsSubjectAdmin({
-      subjectId: props.subjectId,
-    });
+    const admin =
+      !props.membershipsOnly &&
+      (await this.service.socialModuleChatLifecycleIsSubjectAdmin({
+        subjectId: props.subjectId,
+      }));
     let chatIds: string[] | undefined;
     if (!admin) {
       const links = await this.service.modules.social.profilesToChats.find({
@@ -61,27 +67,68 @@ export class Service {
         },
       });
       chatIds = [...new Set<string>((links || []).map((link) => link.chatId))];
-      if (!chatIds.length) return [];
+      if (!chatIds.length) {
+        return [];
+      }
     }
-    const candidates = await this.service.modules.social.chat.find({
-      params: {
-        ...props.params,
-        ...(!admin
-          ? {
-              filters: {
-                and: [{ column: "id", method: "inArray", value: chatIds! }],
-              },
-            }
-          : {}),
-      },
-    });
-    const access = await this.service.customerWork.chatAccess(
-      props.subjectId,
-      candidates ?? [],
-    );
-    const allowedChats = (candidates ?? []).filter(
-      ({ id }) => typeof access.get(id) === "string",
-    );
+    const filters = chatIds
+      ? {
+          and: [{ column: "id", method: "inArray" as const, value: chatIds }],
+        }
+      : undefined;
+    const search = props.search?.trim().toLowerCase();
+    const language = props.language ?? "en";
+    const untitled = language === "ru" ? "Чат без названия" : "Untitled chat";
+    const chatService = this.service.modules.social.chat;
+    const readAllowed = async (offset?: number, limit?: number) => {
+      const candidates = await chatService.find({
+        params: {
+          ...props.params,
+          filters: filters ?? props.params?.filters,
+          offset,
+          limit,
+        },
+      });
+      const matches = search
+        ? candidates.filter((chat) =>
+            getLocalizedText(chat.title, language, untitled)
+              .toLowerCase()
+              .includes(search),
+          )
+        : candidates;
+      const access = await this.service.customerWork.chatAccess(
+        props.subjectId,
+        matches,
+      );
+      const visible = matches.filter(
+        ({ id }) => typeof access.get(id) === "string",
+      );
+      return { visible, count: candidates.length };
+    };
+    let allowedChats;
+    if (props.membershipsOnly && props.params?.limit) {
+      // An inaccessible conversation must not consume a position in the buyer's inbox.
+      const offset = Math.max(0, props.params.offset ?? 0);
+      const end = offset + props.params.limit;
+      const batchSize = Math.max(50, props.params.limit);
+      const visible: Awaited<ReturnType<typeof chatService.find>> = [];
+      let cursor = 0;
+      while (visible.length < end) {
+        const batch = await readAllowed(cursor, batchSize);
+        visible.push(...batch.visible);
+        if (batch.count < batchSize) {
+          break;
+        }
+        cursor += batch.count;
+      }
+      allowedChats = visible.slice(offset, end);
+    } else {
+      const batch = await readAllowed(
+        props.params?.offset,
+        props.params?.limit,
+      );
+      allowedChats = batch.visible;
+    }
     const chats = await new ChatActivity(this.service).forChats(
       props.subjectId,
       allowedChats,

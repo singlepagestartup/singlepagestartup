@@ -5,6 +5,7 @@ import { HTTPException } from "hono/http-exception";
 import { Service } from "../../../../../../service";
 import { getHttpErrorType } from "@sps/backend-utils";
 import { withConsistencySnapshot } from "@sps/shared-backend-api";
+import { SUPPORT_THREAD_VARIANT } from "@sps/social/models/thread/sdk/model";
 import { Service as ChatActivity } from "../../../../../../service/singlepage/social-module/chat/activity";
 import { Service as ThreadContext } from "../../../../../../service/singlepage/social-module/chat/thread-context";
 
@@ -39,24 +40,47 @@ export class Handler {
       });
 
       const parsedQuery = c.get("parsedQuery");
-      const requestedThread = c.req.query("threadId");
-      const sharedThread = c.get("sharedTaskThread");
-      if (
-        requestedThread &&
-        sharedThread &&
-        requestedThread !== sharedThread.threadId
-      ) {
-        throw new Error("Not Found error. This discussion is unavailable");
-      }
-      const threadId = sharedThread?.threadId ?? requestedThread;
+      const threadId = c.req.query("threadId");
+      const variant = c.req.query("variant");
       if (threadId !== undefined && !z.uuid().safeParse(threadId).success) {
         throw new Error("Validation error. Invalid thread ID");
+      }
+      if (variant !== undefined && variant !== SUPPORT_THREAD_VARIANT) {
+        throw new Error("Validation error. Invalid thread variant");
+      }
+      const sharedThread = c.get("sharedTaskThread");
+      const supportByTask =
+        await this.service.customerWork.orderSupport.prepareChat(
+          id,
+          socialModuleChatId,
+          sharedThread?.taskId,
+        );
+      const visibleSupportIds = [...supportByTask.values()];
+      const sharedThreadIds = sharedThread
+        ? [
+            sharedThread.threadId,
+            supportByTask.get(sharedThread.taskId),
+          ].filter((value): value is string => Boolean(value))
+        : undefined;
+      if (threadId && sharedThreadIds && !sharedThreadIds.includes(threadId)) {
+        throw new Error("Not Found error. This discussion is unavailable");
+      }
+      const allowedThreadIds =
+        variant === SUPPORT_THREAD_VARIANT
+          ? visibleSupportIds
+          : sharedThreadIds;
+      if (allowedThreadIds?.length === 0) {
+        return c.json({ data: [] });
       }
       const limit = parsedQuery?.limit || 100;
       const offset = parsedQuery?.offset || 0;
       const orderBy = parsedQuery?.orderBy;
 
       const data = await withConsistencySnapshot(async () => {
+        const orderSupport = this.service.customerWork.orderSupport;
+        const hiddenThreadIds = (
+          await orderSupport.threadIdsForChat(socialModuleChatId)
+        ).filter((id) => !visibleSupportIds.includes(id));
         const socialModuleChatsToThreads =
           await this.service.modules.social.chatsToThreads.find({
             params: {
@@ -76,6 +100,24 @@ export class Handler {
                         },
                       ]
                     : []),
+                  ...(allowedThreadIds
+                    ? [
+                        {
+                          column: "threadId",
+                          method: "inArray" as const,
+                          value: allowedThreadIds,
+                        },
+                      ]
+                    : []),
+                  ...(hiddenThreadIds.length
+                    ? [
+                        {
+                          column: "threadId",
+                          method: "notInArray" as const,
+                          value: hiddenThreadIds,
+                        },
+                      ]
+                    : []),
                 ],
               },
               limit,
@@ -84,7 +126,7 @@ export class Handler {
             },
           });
 
-        if (!socialModuleChatsToThreads?.length) {
+        if (!socialModuleChatsToThreads.length) {
           return [];
         }
 

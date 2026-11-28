@@ -613,6 +613,121 @@ it("saves the customer multiplier without stage or message limits when a new AI 
   );
 });
 
+it.each([
+  {
+    field: "Инструкция",
+    value: "Укажи открытые вопросы в брифе.",
+    instruction: "Укажи открытые вопросы в брифе.",
+    multiplier: "2",
+  },
+  {
+    field: "Коэффициент стоимости для клиента",
+    value: "2.5",
+    instruction: "Подготовь бриф.",
+    multiplier: "2.5",
+  },
+])(
+  "keeps the saved Token-funded PDF terms when editing $field",
+  async ({ field, value, instruction, multiplier }) => {
+    const currencyId = "9088eecb-4acd-404f-ae35-9e10dc304c0a";
+    const employeeId = "e08a073b-a7e2-44f7-adfa-71a10459d72d";
+    const options = workspace.useOptions("owner", funnel.storeId);
+    workspace.useOptions.mockReturnValue({
+      ...options,
+      data: {
+        ...options.data!,
+        participants: [{ id: employeeId, name: "Редактор", kind: "ai" }],
+        currencies: [
+          { id: currencyId, slug: "token", title: "Token", units: 4 },
+        ],
+      },
+    });
+    const stage = stageSchema.parse({
+      id: "prepare",
+      name: "Результат и правки",
+      instruction: "Подготовь бриф.",
+      defaultAssigneeSubjectId: employeeId,
+      output: "pdf",
+      workFunding: {
+        payer: "customer",
+        multiplier: "2",
+        currencyId,
+        maxRunAmount: "1200",
+      },
+      operations: ["knowledge-search"],
+      resultPricing: { kind: "work-tokens" },
+      actions: [
+        {
+          id: "accept",
+          name: "Принять версию",
+          actors: ["system"],
+          evidence: ["result-accepted"],
+          outcome: "completed",
+        },
+      ],
+    });
+    const current: ICrmWorkspaceFunnel = {
+      ...funnel,
+      kind: "individual-service",
+      definition: { initialStageId: stage.id, stages: [stage] },
+    };
+    workspace.useFunnel.mockReturnValue({ data: current } as ReturnType<
+      typeof workspace.useFunnel
+    >);
+    execute.mockResolvedValue({ kind: "save-funnel-stage", data: current });
+    render(edit);
+
+    const format = screen.getByRole("combobox", { name: "Формат результата" });
+    expect(format).toBeDisabled();
+    expect(format).toHaveTextContent("PDF");
+    const orderAction = screen.getByRole("combobox", {
+      name: "Действие с заказом",
+    });
+    expect(orderAction).toBeDisabled();
+    expect(orderAction).toHaveAccessibleDescription(/Это последний этап/);
+    expect(screen.queryByText(/с водяным знаком/)).toBeNull();
+    expect(
+      screen.getByText(/коэффициент должен быть больше нуля/),
+    ).toBeVisible();
+
+    const input = screen.getByRole("textbox", { name: field });
+    const save = screen.getByRole("button", { name: "Сохранить этап" });
+    if (field === "Коэффициент стоимости для клиента") {
+      fireEvent.change(input, { target: { value: "0" } });
+      fireEvent.click(save);
+      expect(screen.getByRole("alert")).toHaveTextContent(
+        "Для этого этапа укажите коэффициент больше нуля.",
+      );
+      expect(execute).not.toHaveBeenCalled();
+    }
+    fireEvent.change(input, { target: { value } });
+    fireEvent.click(save);
+
+    expect(await screen.findByText("Этап сохранён.")).toBeVisible();
+    expect(execute).toHaveBeenCalledWith({
+      kind: "save-funnel-stage",
+      funnel: {
+        storeId: current.storeId,
+        funnelId: current.id,
+        expectedRevision: current.revision,
+        stage: expect.objectContaining({
+          instruction,
+          output: "pdf",
+          resultPricing: stage.resultPricing,
+          workFunding: {
+            payer: "customer",
+            multiplier,
+            currencyId,
+            maxRunAmount: "1200",
+          },
+          operations: stage.operations,
+          actions: stage.actions,
+        }),
+      },
+    });
+  },
+);
+
 it("defaults to Astra High and saves an explicit Medium selection", async () => {
   execute.mockResolvedValue({ kind: "save-funnel-stage", data: funnel });
   render(edit);
@@ -1097,6 +1212,9 @@ it("uses customer funding for a later AI handoff on a human stage with an inheri
     ...funnel,
     definition: {
       ...funnel.definition,
+      stages: [
+        { ...funnel.definition.stages[0], operations: ["knowledge-search"] },
+      ],
       workFunding: {
         payer: "store-owner",
         currencyId,
@@ -1123,7 +1241,10 @@ it("uses customer funding for a later AI handoff on a human stage with an inheri
   const [command] = execute.mock.calls[0];
   expect(
     command.kind === "save-funnel-stage" && command.funnel.stage.workFunding,
-  ).toMatchObject({ payer: "customer", multiplier: "0", currencyId });
+  ).toEqual({ payer: "customer", multiplier: "0", currencyId });
+  expect(
+    command.kind === "save-funnel-stage" && command.funnel.stage.operations,
+  ).toBeUndefined();
 });
 
 it("saves an AI payment contact and its tariff while reserving payment confirmation for the payment service", async () => {

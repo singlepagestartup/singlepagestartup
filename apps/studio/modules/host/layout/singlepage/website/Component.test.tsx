@@ -3,45 +3,9 @@ import { readFileSync, readdirSync } from "node:fs";
 import path from "node:path";
 import { renderToStaticMarkup } from "react-dom/server";
 import { Component as Layout } from "../../index";
-import { Component as Page } from "../../../page/index";
 import { Component as WebsiteBuilderModuleWidget } from "../../../../website-builder/widget/index";
 
 const studio = path.resolve(import.meta.dir, "../../../../..");
-
-test("landing Page places native widgets inside one Layout and injects Subject and Social Chat", () => {
-  const html = renderToStaticMarkup(<Page variant="ai-chat" />);
-  expect(html.match(/data-ds-block="host\.layout\.[^"]+"/g)).toEqual([
-    'data-ds-block="host.layout.ai-chat-landing"',
-  ]);
-  const header = html.match(/<header\b[\s\S]*?<\/header>/)?.[0] ?? "";
-  for (const block of [
-    "website-builder.widget.navbar-ai-chat-landing",
-    "website-builder.logotype.brand-ai-chat",
-    "website-builder.buttons-array.navbar-ai-chat",
-    "website-builder.button.navbar-ai-chat",
-    "rbac.subject.me-account",
-  ])
-    expect(header).toContain(`data-ds-block="${block}"`);
-  expect(header).toContain('href="#workflow"');
-  expect(header).toContain(
-    'href="/rbac/subject/authentication/email-and-password"',
-  );
-  expect(html).toContain(
-    'data-ds-block="website-builder.widget.footer-ai-chat"',
-  );
-  const main = html.match(/<main\b[\s\S]*?<\/main>/)?.[0] ?? "";
-  for (const block of [
-    "content-ai-chat-hero",
-    "content-ai-chat-try",
-    "content-ai-chat-continue",
-  ])
-    expect(main).toContain(`data-ds-block="website-builder.widget.${block}"`);
-  expect(main).toContain("Check materials");
-  expect(main).not.toContain(
-    'data-ds-block="website-builder.widget.navbar-ai-chat-landing"',
-  );
-  expect(main).not.toContain("<footer");
-});
 
 test("website Layout receives account/cart slots and keeps them out of main", () => {
   const html = renderToStaticMarkup(
@@ -76,7 +40,7 @@ test("website Layout delegates sign in to Subject and cart to Ecommerce", () => 
   );
   expect(html).toContain('data-ds-block="rbac.subject.me-account"');
   expect(html).toContain('data-ds-block="ecommerce.cart.button-default"');
-  expect(html).toContain("Sign in");
+  expect(html).toContain("Войти");
   expect(html).not.toContain("Admin Panel");
   expect(html).not.toContain('href="/admin"');
 });
@@ -87,7 +51,9 @@ test("public Pages declare Layout and do not import their own navigation/footer"
     if (
       !directory.isDirectory() ||
       directory.name.startsWith("admin") ||
-      ["composition", "default", "list", "shared"].includes(directory.name)
+      ["composition", "default", "list", "shared", "seo-preview"].includes(
+        directory.name,
+      )
     )
       continue;
     const source = readFileSync(
@@ -97,6 +63,7 @@ test("public Pages declare Layout and do not import their own navigation/footer"
     expect(source).not.toContain("HostNavbarDefault");
     expect(source).not.toContain('variant="navbar-default"');
     expect(source).not.toContain('variant="footer-');
+    if (/from "(?:\.\.\/framework\/|\.\/Landing")/.test(source)) continue;
     expect(source).toContain("as Layout");
     expect(source).toMatch(/from ["'][^"']+\/layout(?:\/index)?["']/);
   }

@@ -66,6 +66,27 @@ export class Service extends CRUDService<typeof Table.$inferSelect> {
     return quote;
   }
 
+  async workTokenTariff(offerId: string, proposedFormula?: string) {
+    const catalog = await this.catalog.catalog(offerId);
+    const offer = catalog.offers.get(offerId);
+    if (!offer) {
+      return undefined;
+    }
+    try {
+      return new Quote({
+        catalog,
+        held: {},
+        routing: () => this.resolveDeliveryRouting(),
+        precision: currencyPrecision,
+        now: new Date(),
+      }).workTokenTariff(offer, proposedFormula);
+    } catch (error) {
+      throw new Error(
+        `Configuration error. ${error instanceof Error ? error.message : "Invalid work tariff"}`,
+      );
+    }
+  }
+
   async quoteMany(
     inputs: IOfferQuoteInput[],
     options: IQuoteOptions = {},

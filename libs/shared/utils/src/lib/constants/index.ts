@@ -59,11 +59,6 @@ export const READ_ONLY_OPERATION_CONTEXT_KEY = "operation.read-only";
 export * from "./knowledge";
 export * from "./open-router";
 
-export {
-  AI_CHAT_WEBSITE_CONTENT,
-  type IAIChatWebsiteContent,
-} from "./ai-chat-website";
-
 export * from "./ai-chat-service";
 
 export * from "./open-router-models";

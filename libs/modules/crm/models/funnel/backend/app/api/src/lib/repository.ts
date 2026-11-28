@@ -244,7 +244,7 @@ export class Repository extends DatabaseRepository<typeof Table> {
       );
   }
 
-  async rebindOpenStageStates(funnelId: string) {
+  async rebindOpenStageStates(funnelId: string, taskId?: string) {
     const linked = this.db
       .select({
         taskId: FunnelTask.taskId,
@@ -259,6 +259,7 @@ export class Repository extends DatabaseRepository<typeof Table> {
         and(
           eq(FunnelTask.funnelId, funnelId),
           eq(FunnelTask.variant, "primary"),
+          taskId ? eq(FunnelTask.taskId, taskId) : undefined,
           ne(Task.status, "closed"),
         ),
       )
@@ -275,6 +276,23 @@ export class Repository extends DatabaseRepository<typeof Table> {
           eq(sql`${TaskStage.detail}->>'stageId'`, linked.key),
         ),
       );
+  }
+
+  async replacePrimaryFunnel(taskId: string, fromId: string, toId: string) {
+    const [link] = await this.db
+      .update(FunnelTask)
+      .set({ funnelId: toId })
+      .where(
+        and(
+          eq(FunnelTask.taskId, taskId),
+          eq(FunnelTask.funnelId, fromId),
+          eq(FunnelTask.variant, "primary"),
+        ),
+      )
+      .returning({ id: FunnelTask.id });
+    if (!link) {
+      throw new Error("Conflict error. The executing funnel has changed");
+    }
   }
 
   async replaceStageLinks(funnelId: string, definition: IFunnelDefinition) {

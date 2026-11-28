@@ -58,6 +58,36 @@ export function action(props: IProps) {
                 "file-storage.files",
               ]
             : []),
+          ...(props.params?.includeCustomerDetails
+            ? [
+                "rbac.subjects-to-ecommerce-module-orders",
+                "ecommerce.orders-to-products",
+                "ecommerce.products",
+                "ecommerce.products-to-file-storage-module-files",
+                "ecommerce.stores-to-products",
+                "ecommerce.orders-to-file-storage-module-files",
+                "file-storage.files",
+                "billing.currencies",
+                "billing.payment-intents-to-currencies",
+                "rbac.roles-to-permissions",
+                "rbac.permissions",
+                "billing.payment-intents",
+                "billing.payment-intents-to-invoices",
+                "billing.invoices",
+                "ecommerce.orders-to-billing-module-payment-intents",
+                "crm.tasks",
+                "social.chats-to-crm-module-tasks",
+                "social.chats-to-threads",
+                "social.chats",
+                "social.profiles-to-chats",
+                "social.profiles",
+                "social.profiles-to-knowledge-module-sources",
+                "knowledge.sources",
+                "rbac.subjects-to-social-module-profiles",
+                "rbac.subjects-to-roles",
+                "rbac.roles",
+              ]
+            : []),
           ...(props.params?.includeCartDetails
             ? [
                 "ecommerce.orders-to-products",

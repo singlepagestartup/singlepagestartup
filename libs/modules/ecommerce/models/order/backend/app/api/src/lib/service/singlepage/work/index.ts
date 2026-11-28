@@ -7,6 +7,7 @@ import {
   moneyMinorUnits,
 } from "@sps/backend-utils";
 import { isLegacyOrderReceipt } from "@sps/file-storage/models/file/sdk/model";
+import { offerUsesOrderDiscussion } from "@sps/ecommerce/relations/stores-to-products/sdk/model";
 import type {
   IDecideOrderWorkResult,
   IDeclineOrderWorkResult,
@@ -17,6 +18,7 @@ import type {
   IOrderWorkOrderLine,
   IOrderWorkPayment,
   IOrderWorkScope,
+  IOrderWorkSharedDocument,
   IOrderWorkFile,
   IPublishOrderWorkResult,
   IRegisterOrderWork,
@@ -101,7 +103,10 @@ export class Service {
       );
       if (previous) {
         this.verifyScope(previous, input);
-        if (previous.kind !== input.kind) {
+        if (
+          previous.kind !== input.kind ||
+          previous.paymentMode !== input.paymentMode
+        ) {
           throw new Error(
             "Conflict error. Another work type is active for the order",
           );
@@ -115,6 +120,10 @@ export class Service {
       }
 
       const now = new Date().toISOString();
+      let state: IWork["state"] = "awaiting-payment";
+      if (input.kind === "individual-service") {
+        state = input.workTokenTariff ? "in-progress" : "awaiting-result";
+      }
       const record: IWork = {
         id: randomUUID(),
         createdAt: now,
@@ -130,10 +139,7 @@ export class Service {
         resultFileId: null,
         paidDispatchedAt: null,
         ...input,
-        state:
-          input.kind === "individual-service"
-            ? "awaiting-result"
-            : "awaiting-payment",
+        state,
       };
       return this.order.repository.saveFulfillment(input.orderId, record);
     });
@@ -153,6 +159,73 @@ export class Service {
         });
       }
     });
+  }
+
+  async recordMeteredDocument(
+    input: IOrderWorkScope,
+    document: IOrderWorkSharedDocument,
+  ) {
+    await this.withOrderLock(input.orderId, async () => {
+      const work = await this.require(input);
+      if (
+        work.kind !== "individual-service" ||
+        work.paymentMode !== "work-tokens" ||
+        !work.workTokenTariff ||
+        (work.state !== "in-progress" && work.state !== "awaiting-result")
+      ) {
+        throw new Error(
+          "Conflict error. The order cannot attach a work document",
+        );
+      }
+      if (
+        work.sharedDocument &&
+        work.sharedDocument.eventRevision >= document.eventRevision
+      ) {
+        return;
+      }
+      await this.order.repository.patchFulfillment(input.orderId, {
+        sharedDocument: document,
+      });
+    });
+  }
+
+  async completeMeteredDiscussion(
+    input: IOrderWorkScope,
+    verifyOwner: () => Promise<boolean>,
+  ) {
+    await this.withOrderLock(input.orderId, async () => {
+      const work = await this.require(input);
+      if (
+        work.kind !== "individual-service" ||
+        work.paymentMode !== "work-tokens" ||
+        !work.workTokenTariff ||
+        (work.state !== "in-progress" && work.state !== "awaiting-result") ||
+        !(await verifyOwner())
+      ) {
+        return;
+      }
+      const order = await this.order.findById({ id: input.orderId });
+      if (
+        !order ||
+        !["new", "delivering", "completed"].includes(order.status)
+      ) {
+        return;
+      }
+      await this.order.update({
+        id: input.orderId,
+        data: { type: "history", status: "completed" },
+      });
+      await this.order.repository.patchFulfillment(input.orderId, {
+        state: "completed",
+      });
+    });
+  }
+
+  statesForCustomer(customerId: string, orderIds: string[]) {
+    return this.order.repository.fulfillmentStatesForCustomer(
+      customerId,
+      orderIds,
+    );
   }
 
   findByOrder(orderId: string) {
@@ -242,9 +315,7 @@ export class Service {
         },
       },
     });
-    return offers.some(
-      (offer) => offer.settings.requiresResultAcceptance === true,
-    );
+    return offers.some(({ settings }) => offerUsesOrderDiscussion(settings));
   }
 
   read(input: IOrderWorkScope) {
@@ -254,7 +325,11 @@ export class Service {
   async resultPriceForOrder(orderId: string) {
     const record = await this.order.repository.fulfillmentForOrder(orderId);
     const fileId = record?.paid?.fileId ?? record?.acceptedFileId;
-    if (record?.kind !== "individual-service" || !fileId) {
+    if (
+      record?.kind !== "individual-service" ||
+      record.paymentMode === "work-tokens" ||
+      !fileId
+    ) {
       return null;
     }
     const { currencyId, price } = this.file(record, fileId);
@@ -397,6 +472,38 @@ export class Service {
           "Conflict error. This order cannot accept another result file",
         );
       }
+      if (
+        (record.paymentMode === "work-tokens") !==
+        (input.priceBasis?.kind === "work-tokens")
+      ) {
+        throw new Error(
+          "Conflict error. The result price does not match the order's payment terms",
+        );
+      }
+      if (record.paymentMode === "work-tokens") {
+        if (
+          input.preview.mimeType !== "text/plain" ||
+          input.original.mimeType !== "application/pdf" ||
+          Number(price) !== 0
+        ) {
+          throw new Error(
+            "Validation error. Token-funded results require a text draft and an included PDF original",
+          );
+        }
+        const latest = record.files.at(-1);
+        if (
+          latest &&
+          !latest.invalidatedByCartEdit &&
+          !record.decisions.some(
+            (decision) =>
+              decision.fileId === latest.id && decision.kind === "declined",
+          )
+        ) {
+          throw new Error(
+            "Conflict error. The current draft is still awaiting a decision",
+          );
+        }
+      }
       if (input.purchaseQuote) {
         const total = input.purchaseQuote.charges.reduce(
           (sum, charge) => sum + moneyMinorUnits(charge.amount),
@@ -518,7 +625,11 @@ export class Service {
 
       return this.order.repository.patchFulfillment(record.orderId, {
         acceptedFileId,
-        state: acceptedFileId ? "awaiting-payment" : "awaiting-result",
+        state: acceptedFileId
+          ? record.paymentMode === "work-tokens"
+            ? "accepted"
+            : "awaiting-payment"
+          : "awaiting-result",
         decisions: [
           ...record.decisions,
           {
@@ -562,6 +673,11 @@ export class Service {
     );
     if (record?.kind !== "individual-service") {
       return null;
+    }
+    if (record.paymentMode === "work-tokens") {
+      throw new Error(
+        "Conflict error. This order is covered by token charges for work",
+      );
     }
     if (
       record.customerId !== input.customerId ||
@@ -905,6 +1021,38 @@ export class Service {
         state: "delivered",
       });
       return file;
+    });
+  }
+
+  async releaseIncludedFile(
+    input: IOrderWorkScope & { fileId: string },
+    grant: (scope: IOrderWorkScope, ids: string[]) => Promise<void>,
+  ) {
+    return this.withOrderLock(input.orderId, async () => {
+      const work = await this.require(input);
+      if (
+        work.paymentMode !== "work-tokens" ||
+        work.acceptedFileId !== input.fileId ||
+        !["accepted", "delivered"].includes(work.state)
+      ) {
+        throw new Error(
+          "Conflict error. The order has no accepted token-funded file",
+        );
+      }
+      const file = this.file(work, input.fileId);
+      if (work.deliveredAt && work.resultFileId === file.originalFileId) {
+        return work;
+      }
+      await grant(input, [file.originalFileId]);
+      await this.order.update({
+        id: input.orderId,
+        data: { status: "delivered" },
+      });
+      return this.order.repository.patchFulfillment(input.orderId, {
+        resultFileId: file.originalFileId,
+        deliveredAt: new Date().toISOString(),
+        state: "delivered",
+      });
     });
   }
 

@@ -1,15 +1,15 @@
 {
   "title": {
-    "en": "AI Chat",
-    "ru": "AI-чат"
+    "en": "AI agent services",
+    "ru": "Услуги ИИ-агентов"
   },
   "subtitle": {},
-  "url": "/",
+  "url": "/framework/services",
   "className": "w-fit",
   "id": "3f310609-36c7-4f78-8fe4-815e498287c5",
   "createdAt": "2026-10-24T01:06:21.438Z",
-  "updatedAt": "2026-10-24T01:06:21.438Z",
+  "updatedAt": "2026-11-26T14:08:39.385Z",
   "variant": "ghost",
-  "adminTitle": "AI Chat",
+  "adminTitle": "AI agent services",
   "slug": "framework-journey-footer-group-1-0"
 }

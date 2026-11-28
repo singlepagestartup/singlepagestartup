@@ -14,7 +14,12 @@ import {
 export const serverHost = API_SERVICE_URL;
 export const clientHost = NEXT_PUBLIC_API_SERVICE_URL;
 export const route = "/api/social/chats-to-threads";
-export const variants = ["default", "hidden"] as const;
+export const ORDER_SUPPORT_THREAD_VARIANT = "order-support";
+export const variants = [
+  "default",
+  "hidden",
+  ORDER_SUPPORT_THREAD_VARIANT,
+] as const;
 export const query = {};
 export const options = {
   next: {

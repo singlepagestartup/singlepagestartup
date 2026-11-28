@@ -52,6 +52,7 @@ export function StageEditor({
   const russian = language === "ru";
   const removeLabel = russian ? "Удалить этап" : "Delete stage";
   const modelLabel = russian ? "Используемая модель" : "Model in use";
+  const workTokens = stage.resultPricing?.kind === "work-tokens";
   const usesAstraByDefault =
     stage.output !== "image" &&
     (Boolean(stage.workFunding) || legacyFunding?.payer !== "customer");
@@ -197,7 +198,16 @@ export function StageEditor({
         <section className="grid gap-4 border-t border-border pt-5">
           <h2 className={settingsFormStyles.title}>Что делает исполнитель</h2>
           {!stage.behavior && (
-            <Field label="Формат результата">
+            <Field
+              label={russian ? "Формат результата" : "Result format"}
+              hint={
+                workTokens
+                  ? russian
+                    ? "Результат этого этапа с оплатой в Token выдаётся в PDF."
+                    : "This stage delivers a PDF under its Token payment terms."
+                  : undefined
+              }
+            >
               <Select
                 ui="shadcn"
                 className={settingsFormStyles.field}
@@ -212,7 +222,7 @@ export function StageEditor({
                         : undefined,
                   });
                 }}
-                disabled={stage.archived}
+                disabled={stage.archived || workTokens}
                 options={[
                   { value: "chat", label: "Ответ в чате" },
                   {
@@ -229,13 +239,14 @@ export function StageEditor({
               />
             </Field>
           )}
-          {(stage.output === "image" || stage.output === "pdf") && (
-            <p className="text-sm text-muted-foreground">
-              {russian
-                ? "Для предпросмотра в чате сервер создаёт копию с водяным знаком."
-                : "The server creates a watermarked copy for preview in the chat."}
-            </p>
-          )}
+          {!workTokens &&
+            (stage.output === "image" || stage.output === "pdf") && (
+              <p className="text-sm text-muted-foreground">
+                {russian
+                  ? "Для предпросмотра в чате сервер создаёт копию с водяным знаком."
+                  : "The server creates a watermarked copy for preview in the chat."}
+              </p>
+            )}
           {(!stage.behavior || agent) && (
             <Field
               label={modelLabel}
@@ -358,6 +369,8 @@ export function StageEditor({
           <section className="grid gap-4 border-t border-border pt-5">
             <h2 className={settingsFormStyles.title}>Оплата</h2>
             <StageFunding
+              language={language}
+              individualService={kind === "individual-service"}
               stage={stage}
               legacyFunding={legacyFunding}
               options={options}

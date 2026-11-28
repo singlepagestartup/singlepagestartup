@@ -20,9 +20,9 @@ export class Handler {
           "Validation error. Subject, chat and thread IDs are required",
         );
       }
-      const body = await c.req.parseBody();
       let raw: unknown;
       try {
+        const body = await c.req.parseBody();
         raw = typeof body.data === "string" ? JSON.parse(body.data) : undefined;
       } catch {
         throw new Error("Validation error. Invalid read marker");

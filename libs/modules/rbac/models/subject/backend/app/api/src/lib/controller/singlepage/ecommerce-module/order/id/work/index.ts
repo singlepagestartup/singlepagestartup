@@ -17,6 +17,19 @@ export class Handler {
       const actorId = z.uuid().parse(c.get("signedInSubjectId"));
       const orderId = z.uuid().parse(c.req.param("orderId"));
       const artifactId = c.req.param("artifactId");
+      if (
+        artifactId &&
+        (c.req.method === "POST" || c.req.method === "DELETE")
+      ) {
+        c.header("Cache-Control", "private, no-store");
+        const data = await this.service.setArtifactKnowledge(
+          actorId,
+          orderId,
+          z.uuid().parse(artifactId),
+          c.req.method,
+        );
+        return c.json({ data });
+      }
       if (artifactId && (c.req.method === "GET" || c.req.method === "HEAD")) {
         const file = await this.service.artifact(
           actorId,

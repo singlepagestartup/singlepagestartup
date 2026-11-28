@@ -1,0 +1,25 @@
+{
+  "metadata": {
+    "seo": {
+      "title": {
+        "en": "AI agent services",
+        "ru": "Услуги ИИ-агентов"
+      },
+      "description": {
+        "en": "Choose the deliverable you need. Share materials and request revisions in the order chat.",
+        "ru": "Выберите, какой результат вам нужен. Материалы и правки обсуждаются в чате заказа."
+      }
+    }
+  },
+  "id": "7b7397ab-beb2-4575-8a1b-35dc7e75118c",
+  "title": "[host.pages.metadata.seo.title]",
+  "url": "/framework/services",
+  "slug": "framework-services",
+  "description": "[host.pages.metadata.seo.description]",
+  "createdAt": "2026-11-26T14:08:14.868Z",
+  "updatedAt": "2026-11-26T14:08:14.868Z",
+  "variant": "default",
+  "className": null,
+  "language": "en",
+  "adminTitle": "Framework | AI agent services"
+}

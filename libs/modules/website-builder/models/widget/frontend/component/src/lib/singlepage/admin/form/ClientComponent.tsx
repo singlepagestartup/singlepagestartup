@@ -93,8 +93,9 @@ export function Component(props: IComponentPropsExtended) {
               <FormField
                 key={language.code}
                 ui="shadcn"
-                type="text"
+                type="tiptap"
                 name={`subtitle.${language.code}`}
+                emptyValue=""
                 label={language.title}
                 form={form}
                 placeholder="Type subtitle"

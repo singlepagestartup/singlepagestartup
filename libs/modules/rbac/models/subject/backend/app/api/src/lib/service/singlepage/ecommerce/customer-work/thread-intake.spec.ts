@@ -1,6 +1,77 @@
 import { randomUUID } from "node:crypto";
 import { Service } from "./index";
 
+it("refuses new messages in the completed order thread without invoking work", async () => {
+  const task = {
+    id: randomUUID(),
+    storeId: randomUUID(),
+    orderId: randomUUID(),
+    customerId: randomUUID(),
+    status: "closed",
+    outcome: "completed",
+  };
+  const input = {
+    customerId: task.customerId,
+    chatId: randomUUID(),
+    threadId: randomUUID(),
+    profileId: randomUUID(),
+    sourceSystemId: randomUUID(),
+    text: "Спасибо за итоговый бриф.",
+    hasAttachments: false,
+  };
+  const message = {
+    id: randomUUID(),
+    description: input.text,
+    variant: "customer-work",
+  };
+  const createWorkMessage = jest.fn().mockResolvedValue(message);
+  const createPlacement = jest.fn();
+  const service = new Service({
+    repository: { withSubjectLock: jest.fn(async (_, callback) => callback()) },
+    module: {
+      subjectsToSocialModuleProfiles: {
+        find: jest.fn().mockResolvedValue([{ variant: "default" }]),
+      },
+    },
+    modules: {
+      crm: {
+        task: {
+          findById: jest.fn().mockResolvedValue(task),
+          withTask: jest.fn(async (_, callback) => callback(task)),
+        },
+      },
+      social: {
+        chatsToCrmModuleTasks: {
+          forThread: jest.fn().mockResolvedValue({ crmModuleTaskId: task.id }),
+        },
+        profilesToChats: { find: jest.fn().mockResolvedValue([{}]) },
+        message: { createWorkMessage },
+        profilesToMessages: {
+          create: createPlacement,
+          find: jest.fn().mockResolvedValue([{ profileId: input.profileId }]),
+        },
+        threadsToMessages: {
+          create: createPlacement,
+          find: jest.fn().mockResolvedValue([{}]),
+        },
+        chatsToMessages: { create: createPlacement },
+      },
+    },
+  } as unknown as ConstructorParameters<typeof Service>[0]);
+  const internals = service as unknown as {
+    channel: () => Promise<{ chatId: string; threadId: string }>;
+  };
+  jest
+    .spyOn(internals, "channel")
+    .mockResolvedValue({ chatId: input.chatId, threadId: input.threadId });
+  const wake = jest.spyOn(service, "wakePendingWork");
+
+  await expect(service.messageFromThread(input)).rejects.toThrow("read-only");
+  expect(createWorkMessage).not.toHaveBeenCalled();
+  expect(createPlacement).not.toHaveBeenCalled();
+  expect(wake).not.toHaveBeenCalled();
+});
+
 function resumptionFixture() {
   const task = {
     id: randomUUID(),
@@ -128,6 +199,81 @@ function resumptionFixture() {
     findOrderWork,
   };
 }
+
+it("rejects an explicit model override before writing to a fixed stage", async () => {
+  const task = {
+    id: randomUUID(),
+    storeId: randomUUID(),
+    stageId: "fixed",
+    customerId: randomUUID(),
+    status: "active",
+  };
+  const chatId = randomUUID();
+  const threadId = randomUUID();
+  const resolveWork = jest.fn();
+  const createWorkMessage = jest.fn();
+  const service = new Service({
+    repository: { withSubjectLock: jest.fn(async (_, callback) => callback()) },
+    providerConnections: { resolveWork },
+    modules: {
+      crm: {
+        task: {
+          withTask: jest.fn(async (_, callback) => callback(task)),
+          getFunnel: jest.fn().mockResolvedValue({
+            definition: {
+              stages: [
+                { id: task.stageId, provider: { modelId: "gpt-6.2-astra" } },
+              ],
+            },
+          }),
+        },
+        tasksToStages: { byOperation: jest.fn() },
+      },
+      social: {
+        chatsToCrmModuleTasks: {
+          channels: jest.fn().mockResolvedValue([{ chatId, threadId }]),
+        },
+        message: { createWorkMessage },
+      },
+    },
+  } as unknown as ConstructorParameters<typeof Service>[0]);
+  const internals = service as unknown as {
+    checkout: { context: () => Promise<undefined> };
+    chatDecision: () => Promise<undefined>;
+    recordActivity: (
+      customerId: string,
+      command: { operation: "message"; operationKey: string; text: string },
+      author: {
+        profileId: string;
+        requestMetadata: { provider: { modelId: string } };
+      },
+    ) => Promise<unknown>;
+  };
+  jest
+    .spyOn(service, "assignStageEmployee")
+    .mockImplementation(async (current) => current);
+  jest.spyOn(internals, "checkout", "get").mockReturnValue({
+    context: jest.fn().mockResolvedValue(undefined),
+  });
+  jest.spyOn(internals, "chatDecision").mockResolvedValue(undefined);
+
+  await expect(
+    internals.recordActivity(
+      task.customerId,
+      {
+        operation: "message",
+        operationKey: "message",
+        text: "Check the brief",
+      },
+      {
+        profileId: randomUUID(),
+        requestMetadata: { provider: { modelId: "gpt-4o" } },
+      },
+    ),
+  ).rejects.toThrow("This stage has a fixed model");
+  expect(resolveWork).not.toHaveBeenCalled();
+  expect(createWorkMessage).not.toHaveBeenCalled();
+});
 
 it("resumes the latest file-only input by audit order without writing a Social message", async () => {
   const f = resumptionFixture();
@@ -675,6 +821,110 @@ it("resolves the buyer and offer from the existing order when opening a conversa
     undefined,
     scope.actorId,
   );
+});
+
+it("opens a closed offer only for the order that already has the exact saved offer", async () => {
+  const customerId = randomUUID();
+  const productId = randomUUID();
+  const storeId = randomUUID();
+  const offerId = randomUUID();
+  const orderId = randomUUID();
+  const task = {
+    id: randomUUID(),
+    customerId,
+    orderId,
+    storeId,
+    productId,
+    offerId,
+  };
+  const startServiceDiscussion = jest.fn();
+  const product = { id: productId, kind: "service", type: "one_off" };
+  const offer = {
+    id: offerId,
+    productId,
+    storeId,
+    variant: "default",
+    settings: {
+      standalone: true,
+      closedForNewOrders: true,
+      requiresResultAcceptance: true,
+    },
+  };
+  const lines = jest
+    .fn()
+    .mockResolvedValue([{ productId, offerId, quantity: 1 }]);
+  const service = new Service({
+    findById: jest
+      .fn()
+      .mockResolvedValue({ id: customerId, variant: "default" }),
+    repository: { withSubjectLock: jest.fn(async (_, callback) => callback()) },
+    module: {
+      subjectsToEcommerceModuleOrders: {
+        find: jest.fn().mockResolvedValue([{ subjectId: customerId }]),
+      },
+    },
+    modules: {
+      ecommerce: {
+        product: { findById: jest.fn().mockResolvedValue(product) },
+        storesToProducts: {
+          offersForProduct: jest.fn().mockResolvedValue([offer]),
+        },
+        ordersToProducts: { find: lines },
+        storesToOrders: { find: jest.fn().mockResolvedValue([{ storeId }]) },
+        order: {
+          lockForLifecycle: jest.fn(),
+          findById: jest
+            .fn()
+            .mockResolvedValue({ id: orderId, type: "cart", status: "new" }),
+          work: {
+            findByOrder: jest.fn().mockResolvedValue({
+              kind: "individual-service",
+              taskId: task.id,
+              customerId,
+              storeId,
+            }),
+            startServiceDiscussion,
+          },
+          ordersToBillingModulePaymentIntents: {
+            find: jest.fn().mockResolvedValue([]),
+          },
+        },
+      },
+      crm: {
+        task: {
+          find: jest
+            .fn()
+            .mockResolvedValueOnce([task])
+            .mockResolvedValueOnce([])
+            .mockResolvedValue([task]),
+        },
+      },
+    },
+  } as unknown as ConstructorParameters<typeof Service>[0]);
+  const view = jest.spyOn(service, "view").mockResolvedValue({
+    taskId: task.id,
+    orderId,
+  } as Awaited<ReturnType<Service["view"]>>);
+  const command = {
+    operation: "open-cart-discussion" as const,
+    productId,
+    orderId,
+    storeId,
+    offerId,
+    operationKey: randomUUID(),
+  };
+  await expect(service.execute(customerId, command)).resolves.toMatchObject({
+    taskId: task.id,
+    orderId,
+  });
+  lines.mockResolvedValueOnce([
+    { productId, offerId: randomUUID(), quantity: 1 },
+  ]);
+  await expect(service.execute(customerId, command)).rejects.toThrow(
+    "saved store offer changed",
+  );
+  expect(view).toHaveBeenCalledTimes(1);
+  expect(startServiceDiscussion).toHaveBeenCalledTimes(1);
 });
 
 it("returns an already linked task and rejects orders outside the store or manager scope", async () => {

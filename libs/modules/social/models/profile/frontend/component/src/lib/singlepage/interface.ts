@@ -5,10 +5,6 @@ import type { IComponentProps as IAuthorCardDefault } from "./author-card-defaul
 import type { IComponentProps as IByline } from "./byline/interface";
 import type { IComponentProps as IAgentIdAiChat } from "./agent-id-ai-chat/interface";
 import type { IComponentProps as IIdSettingsAiChat } from "./id-settings-ai-chat/interface";
-import type { IComponentProps as ISidebarAiChatProject } from "./sidebar-ai-chat-project/interface";
-import type { IComponentProps as ISelectItemAiChatProject } from "./select-item-ai-chat-project/interface";
-import type { IComponentProps as ISelectAiChatProject } from "./select-ai-chat-project/interface";
-import type { IComponentProps as IIdAiChatProject } from "./id-ai-chat-project/interface";
 import { IComponentProps as IArticlesDefaultComponentProps } from "./articles-default/interface";
 import { IComponentProps as IAdminV2SidebarItemComponentProps } from "./admin-v2/sidebar-item/interface";
 import { IComponentProps as IAdminV2CardComponentProps } from "./admin-v2/card/interface";
@@ -35,11 +31,7 @@ export type IComponentProps =
   | IByline
   | IAgentIdAiChat
   | IIdSettingsAiChat
-  | ISidebarAiChatProject
   | IThreadListSidebarAiChat
-  | ISelectItemAiChatProject
-  | ISelectAiChatProject
-  | IIdAiChatProject
   | IArticlesDefaultComponentProps
   | IOverviewDefaultComponentProps
   | IButtonDefaultComponentProps

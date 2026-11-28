@@ -1,0 +1,18 @@
+{
+  "id": "5f778547-5a19-422c-a34a-0fb1a6a98db7",
+  "createdAt": "2026-11-26T19:18:24.545Z",
+  "updatedAt": "2026-11-28T12:36:19.612Z",
+  "variant": "default",
+  "orderIndex": 0,
+  "className": null,
+  "configurationKey": "",
+  "settings": {
+    "standalone": true,
+    "workTokenPricing": {
+      "currencyId": "0c409156-5614-4fba-9c87-d32d1c256b5a"
+    }
+  },
+  "sku": "5b47010c-888a-45ba-9d60-672f8eb6bac9",
+  "storeId": "57407484-0471-4465-b0fa-4fd6a46b9012",
+  "productId": "6cf87096-77c1-405e-8070-5a28fb20457b"
+}

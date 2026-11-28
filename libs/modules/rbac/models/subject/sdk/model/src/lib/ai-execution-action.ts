@@ -179,6 +179,7 @@ export interface IAiExecutionActionPayload {
   phase: TAiExecutionActionPhase;
   selectedModelId?: string;
   rejectedFileName?: string;
+  replyFailure?: "wallet-balance";
   startedAt: string;
   completedAt?: string;
   steps: IAiExecutionActionStep[];
@@ -336,6 +337,8 @@ export function parseAiExecutionActionPayload(
     !includes(aiExecutionActionPhases, value.phase) ||
     !isOptionalBoundedString(value.selectedModelId) ||
     !isOptionalBoundedString(value.rejectedFileName) ||
+    (value.replyFailure !== undefined &&
+      value.replyFailure !== "wallet-balance") ||
     !isIsoDate(value.startedAt) ||
     !isOptionalIsoDate(value.completedAt) ||
     !Array.isArray(value.steps) ||
@@ -365,6 +368,7 @@ export function parseAiExecutionActionPayload(
     ...(value.selectedModelId
       ? { selectedModelId: value.selectedModelId }
       : {}),
+    ...(value.replyFailure && { replyFailure: value.replyFailure }),
     startedAt: value.startedAt,
     ...(value.completedAt ? { completedAt: value.completedAt } : {}),
     steps: steps as IAiExecutionActionStep[],

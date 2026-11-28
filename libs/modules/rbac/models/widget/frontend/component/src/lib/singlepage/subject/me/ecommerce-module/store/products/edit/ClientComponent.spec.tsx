@@ -13,6 +13,9 @@ import type { IModel as IStore } from "@sps/ecommerce/models/store/sdk/model";
 import { cloneElement, type ReactNode } from "react";
 import { ClientComponent } from "./ClientComponent";
 
+const mockCatalog = jest.fn();
+const mockChangeOffer = jest.fn();
+const mockSetAttribute = jest.fn();
 const mockUpdate = jest.fn();
 const mockRead = jest.fn();
 const mockUpdateRelation = jest.fn();
@@ -28,6 +31,11 @@ jest.mock("next/link", () => ({
 }));
 jest.mock("@sps/rbac/models/subject/sdk/client", () => ({
   api: {
+    ecommerceModuleCatalogMutation: () => ({ mutateAsync: mockChangeOffer }),
+    ecommerceModuleCatalogContext: (...args: unknown[]) => mockCatalog(...args),
+    ecommerceModuleCatalogAttributeSet: () => ({
+      mutateAsync: mockSetAttribute,
+    }),
     storeCatalogDirectories: {
       useList: () => ({
         data: {
@@ -770,4 +778,100 @@ it("retains only unsaved photos after an interrupted multiple upload", async () 
     "second.png",
     "second.png",
   ]);
+});
+
+it("opens the product formula from its price editor and saves through the catalogue owner", async () => {
+  const refetch = jest.fn();
+  mockCatalog.mockReturnValue({
+    data: {
+      ownedProductIds: ["product"],
+      offers: [],
+      currencies: [],
+      attributes: [
+        {
+          id: "formula",
+          key: "price_formula",
+          field: "string",
+          text: "provider_usd * topup_tokens / topup_usd * 2",
+          owner: { type: "product", id: "product" },
+        },
+      ],
+    },
+    refetch,
+  });
+  render(editor);
+  expect(mockCatalog).not.toHaveBeenCalled();
+  chooseTab("Pricing formula");
+  const field = screen.getByRole("textbox", { name: "Value" });
+  expect(field).toHaveValue("provider_usd * topup_tokens / topup_usd * 2");
+  const updated = "provider_usd * topup_tokens / topup_usd * 3";
+  fireEvent.change(field, { target: { value: updated } });
+  fireEvent.click(screen.getByRole("button", { name: "Save rate or formula" }));
+  await screen.findByText("Catalogue attribute saved.");
+  expect(mockSetAttribute).toHaveBeenCalledWith({
+    id: "seller",
+    data: expect.objectContaining({
+      owner: { type: "product", id: "product" },
+      key: "price_formula",
+      field: "string",
+      string: updated,
+    }),
+  });
+  expect(refetch).toHaveBeenCalledTimes(1);
+  expect(mockUpdate).not.toHaveBeenCalled();
+});
+
+it("enables work pricing on the selected service offer and preserves its other settings", async () => {
+  const service = detail();
+  service.product.kind = "service";
+  mockRead.mockReturnValue({ data: service });
+  const offer = {
+    ...service.offers[0],
+    storeId: "store",
+    productId: "product",
+    settings: { receiptMethod: "electronic" },
+  };
+  mockCatalog.mockReturnValue({
+    data: {
+      offers: [offer],
+      ownedProductIds: ["product"],
+      currencies: [{ id: "wallet", slug: "token", title: "Token" }],
+      attributes: [
+        {
+          owner: { type: "offer", id: offer.id },
+          id: "price",
+          key: "price",
+          type: "price",
+          field: "number",
+          currencyId: "wallet",
+          number: "0.00",
+        },
+      ],
+    },
+    refetch: jest.fn(),
+  });
+  render(editor);
+  chooseTab("Pricing formula");
+  fireEvent.change(screen.getByLabelText("When the customer pays"), {
+    target: { value: "work-formula" },
+  });
+  fireEvent.click(screen.getByRole("button", { name: "Save payment terms" }));
+  await waitFor(() =>
+    expect(mockChangeOffer).toHaveBeenCalledWith({
+      id: "seller",
+      data: {
+        entity: "stores-to-products",
+        method: "PATCH",
+        recordId: offer.id,
+        data: {
+          settings: {
+            receiptMethod: "electronic",
+            requiresResultAcceptance: false,
+            standalone: true,
+            workTokenPricing: { currencyId: "wallet" },
+          },
+        },
+      },
+    }),
+  );
 });

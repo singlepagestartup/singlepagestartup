@@ -7,6 +7,17 @@ const measurement = z
 export const offerSettingsSchema = z
   .object({
     requiresResultAcceptance: z.boolean().optional(),
+    closedForNewOrders: z.boolean().optional(),
+    fullTextDraftPreview: z.literal(true).optional(),
+    workTokenPricing: z
+      .object({
+        currencyId: z.uuid(),
+        multiplier: measurement
+          .refine((value) => /[1-9]/.test(value))
+          .optional(),
+      })
+      .strict()
+      .optional(),
     initialGrant: z.boolean().optional(),
     initialGrantLegacyHistory: z.boolean().optional(),
     standalone: z.boolean().optional(),

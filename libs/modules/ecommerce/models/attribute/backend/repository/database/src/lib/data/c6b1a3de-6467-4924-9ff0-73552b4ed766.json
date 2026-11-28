@@ -1,0 +1,15 @@
+{
+  "id": "c6b1a3de-6467-4924-9ff0-73552b4ed766",
+  "createdAt": "2026-11-26T14:02:39.923Z",
+  "updatedAt": "2026-11-26T14:02:39.923Z",
+  "variant": "default",
+  "number": null,
+  "boolean": null,
+  "date": null,
+  "datetime": null,
+  "string": {
+    "en": "unit_price * quantity"
+  },
+  "adminTitle": "price_formula",
+  "slug": "poised-indigo-bat-5551"
+}

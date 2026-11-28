@@ -15,7 +15,11 @@ const links = [
     href: "/ecommerce",
     story: "ecommerce-module-token-find",
   },
-  { label: "AI Chat", href: "/", story: "ai-chat" },
+  {
+    label: "AI agent services",
+    href: "/framework/services",
+    story: "framework-service-list",
+  },
 ];
 export function Component({
   variant = "navbar-default",

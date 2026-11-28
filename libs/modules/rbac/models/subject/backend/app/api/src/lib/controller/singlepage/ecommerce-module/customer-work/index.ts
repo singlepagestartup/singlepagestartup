@@ -7,7 +7,12 @@ import {
   customerWorkCommandSchema,
   customerWorkOfferScopeSchema,
   customerWorkScopeSchema,
+  customerWorkTelegramRateSchema,
 } from "@sps/rbac/models/subject/sdk/model";
+import {
+  customerWorkTelegramCheckoutSchema,
+  customerWorkTelegramFileReviewSchema,
+} from "@sps/rbac/models/subject/sdk/model/src/lib/order-work";
 import { z } from "zod";
 import type { Context } from "hono";
 import { HTTPException } from "hono/http-exception";
@@ -57,6 +62,62 @@ export class Handler {
       );
       c.header("Cache-Control", "private, no-store");
       return c.json({ data });
+    } catch (error) {
+      const { status, message, details } = getHttpErrorType(error);
+      throw new HTTPException(status, { message, cause: details });
+    }
+  }
+
+  async approveTelegramRate(c: Context) {
+    try {
+      const callback = customerWorkTelegramRateSchema.safeParse(
+        await c.req.json().catch(() => null),
+      );
+      if (!callback.success) {
+        throw new Error("Validation error. Invalid Telegram rate callback");
+      }
+      await this.subject.customerWork.approveRateFromTelegram(callback.data);
+      c.header("X-SPS-SKIP-ACTION-LOGGER", "1");
+      c.header("Cache-Control", "private, no-store");
+      return c.body(null, 204);
+    } catch (error) {
+      const { status, message, details } = getHttpErrorType(error);
+      throw new HTTPException(status, { message, cause: details });
+    }
+  }
+
+  async telegramFileReview(c: Context) {
+    try {
+      const callback = customerWorkTelegramFileReviewSchema.safeParse(
+        await c.req.json().catch(() => null),
+      );
+      if (!callback.success) {
+        throw new Error(
+          "Validation error. Invalid Telegram result review callback",
+        );
+      }
+      await this.subject.customerWork.reviewFileFromTelegram(callback.data);
+      c.header("X-SPS-SKIP-ACTION-LOGGER", "1");
+      c.header("Cache-Control", "private, no-store");
+      return c.body(null, 204);
+    } catch (error) {
+      const { status, message, details } = getHttpErrorType(error);
+      throw new HTTPException(status, { message, cause: details });
+    }
+  }
+
+  async telegramCheckout(c: Context) {
+    try {
+      const callback = customerWorkTelegramCheckoutSchema.safeParse(
+        await c.req.json().catch(() => null),
+      );
+      if (!callback.success) {
+        throw new Error("Validation error. Invalid Telegram checkout callback");
+      }
+      await this.subject.customerWork.checkoutFromTelegram(callback.data);
+      c.header("X-SPS-SKIP-ACTION-LOGGER", "1");
+      c.header("Cache-Control", "private, no-store");
+      return c.body(null, 204);
     } catch (error) {
       const { status, message, details } = getHttpErrorType(error);
       throw new HTTPException(status, { message, cause: details });

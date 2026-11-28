@@ -1,0 +1,25 @@
+{
+  "metadata": {
+    "seo": {
+      "title": {
+        "en": "Order",
+        "ru": "Заказ"
+      },
+      "description": {
+        "en": "Items, quantities, status and conversation for your order.",
+        "ru": "Позиции, количество, статус и переписка по вашему заказу."
+      }
+    }
+  },
+  "id": "73d05c62-2a6d-4ffc-9b5e-494d66d2d3ca",
+  "title": "[host.pages.metadata.seo.title]",
+  "url": "/rbac/subjects/orders/[ecommerce.orders.id]",
+  "slug": "customer-order",
+  "description": "[host.pages.metadata.seo.description]",
+  "createdAt": "2026-11-26T10:55:39.182Z",
+  "updatedAt": "2026-11-26T11:01:27.124Z",
+  "variant": "noindex",
+  "className": null,
+  "language": "en",
+  "adminTitle": "Profile | Order"
+}

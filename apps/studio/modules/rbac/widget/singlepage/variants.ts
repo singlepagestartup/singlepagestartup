@@ -1,3 +1,7 @@
+import { Component as FrameworkServiceList } from "./framework-service-list";
+import { Component as FrameworkServiceDetail } from "./framework-service-detail";
+import { Component as SubjectMeCustomerOrder } from "./subject-me-customer-order";
+import { Component as SubjectMeCustomerOrders } from "./subject-me-customer-orders";
 import { Component as SubjectMeBlogModuleArticleCreate } from "./subject-me-blog-module-article-create";
 import { Component as SubjectMeEcommerceModuleProductListDefault } from "./subject-me-ecommerce-module-product-list-default";
 import { Component as SubjectMeEcommerceModuleTokenFind } from "./subject-me-ecommerce-module-token-find";
@@ -8,16 +12,16 @@ import { Component as SubjectMeAuthenticationRegistrationAiChat } from "./subjec
 import { Component as SubjectMeAuthenticationSelectMethodAiChat } from "./subject-me-authentication-select-method-ai-chat/index";
 import { Component as SubjectMeCrmModuleFormSupportAiChat } from "./subject-me-crm-module-form-support-ai-chat/index";
 import { Component as SubjectMeProfileSettings } from "./subject-me-profile-settings/index";
-import { Component as SubjectMeSocialModuleProfileIdChatIdThreadCreateAiChat } from "./subject-me-social-module-profile-id-chat-id-thread-create-ai-chat/index";
-import { Component as SubjectMeSocialModuleProfileIdChatIdThreadIdAiChat } from "./subject-me-social-module-profile-id-chat-id-thread-id-ai-chat/index";
-import { Component as SubjectMeSocialModuleProfileIdSettingsAiChat } from "./subject-me-social-module-profile-id-settings-ai-chat/index";
-import { Component as SubjectMeSocialModuleProfileListAiChat } from "./subject-me-social-module-profile-list-ai-chat/index";
 import { Component as SubjectMeSocialModuleProfileChatListDefault } from "./subject/me/social-module/profile/chat/list-default/index";
 import { Component as SubjectMeSocialModuleProfileChatOverviewDefault } from "./subject/me/social-module/profile/chat/overview-default/index";
 import { Component as SubjectMeStoreCustomerWork } from "./subject-me-store-customer-work";
 import { Component as SubjectMeStoreProviderSettings } from "./subject-me-store-provider-settings";
 
 export const variants = {
+  "framework-service-list": FrameworkServiceList,
+  "framework-service-detail": FrameworkServiceDetail,
+  "subject-me-customer-order": SubjectMeCustomerOrder,
+  "subject-me-customer-orders": SubjectMeCustomerOrders,
   "subject-me-store-provider-settings": SubjectMeStoreProviderSettings,
   "subject-me-store-customer-work": SubjectMeStoreCustomerWork,
   "subject-me-blog-module-article-create": SubjectMeBlogModuleArticleCreate,
@@ -34,14 +38,6 @@ export const variants = {
   "subject-me-crm-module-form-support-ai-chat":
     SubjectMeCrmModuleFormSupportAiChat,
   "subject-me-profile-settings": SubjectMeProfileSettings,
-  "subject-me-social-module-profile-id-chat-id-thread-create-ai-chat":
-    SubjectMeSocialModuleProfileIdChatIdThreadCreateAiChat,
-  "subject-me-social-module-profile-id-chat-id-thread-id-ai-chat":
-    SubjectMeSocialModuleProfileIdChatIdThreadIdAiChat,
-  "subject-me-social-module-profile-id-settings-ai-chat":
-    SubjectMeSocialModuleProfileIdSettingsAiChat,
-  "subject-me-social-module-profile-list-ai-chat":
-    SubjectMeSocialModuleProfileListAiChat,
   "subject-me-social-module-profile-chat-list-default":
     SubjectMeSocialModuleProfileChatListDefault,
   "subject-me-social-module-profile-chat-overview-default":

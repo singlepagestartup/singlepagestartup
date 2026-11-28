@@ -212,3 +212,21 @@ it("shows reminder controls inline and uses the stage instructions for uploaded 
   fireEvent.click(toggle);
   expect(props.onChange).toHaveBeenLastCalledWith({ waiting: undefined });
 });
+
+it("lets a manager fund an individual service stage using its order formula", () => {
+  const props = editorProps();
+  const { rerender } = render(<StageEditor {...props} />);
+  fireEvent.change(screen.getByLabelText("Как рассчитывать стоимость работы"), {
+    target: { value: "formula" },
+  });
+  const patch = (props.onChange as jest.Mock).mock.lastCall[0];
+  expect(patch.workFunding).toMatchObject({
+    payer: "customer",
+    orderFormula: true,
+  });
+  expect(patch.workFunding.multiplier).toBeUndefined();
+  rerender(<StageEditor {...props} stage={{ ...props.stage, ...patch }} />);
+  expect(
+    screen.queryByLabelText("Коэффициент стоимости для клиента"),
+  ).toBeNull();
+});

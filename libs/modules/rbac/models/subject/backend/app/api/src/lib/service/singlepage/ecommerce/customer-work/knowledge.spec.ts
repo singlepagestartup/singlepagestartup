@@ -1,5 +1,4 @@
 import type { IModel as Task } from "@sps/crm/models/task/sdk/model";
-import { Service as Projects } from "../../social-module/profile/projects";
 import {
   customerWorkInputText,
   isMemoryOnlyMessage,
@@ -73,7 +72,7 @@ function fixture() {
       knowledgeModuleSourceId: "same-brand",
       variant: "customer-memory",
       storeId: "store-1",
-      projectId: "north",
+      projectId: null,
     },
     {
       profileId: "buyer-profile",
@@ -222,15 +221,7 @@ function fixture() {
     customerId: "buyer",
     profileId: "buyer-profile",
     storeId: "store-1",
-    projectId: "north",
   };
-  const projects = [
-    { thread: { id: "north", title: "North" }, profile: {} },
-    { thread: { id: "south", title: "South" }, profile: {} },
-  ] as Awaited<ReturnType<Projects["find"]>>;
-  const projectRead = jest
-    .spyOn(Projects.prototype, "find")
-    .mockResolvedValue(projects);
   const service = new Service(
     subject as unknown as ConstructorParameters<typeof Service>[0],
   );
@@ -246,7 +237,6 @@ function fixture() {
     skillSources,
     resolveStoreExpert,
     expertDescription,
-    projectRead,
     trainingOrigins,
     authenticate,
     linkSource,
@@ -464,16 +454,8 @@ it("retrieves profile-wide private notes only for the authenticated sending prof
 });
 
 it("uses the sending and assigned profiles' current sources in the authorized task scope", async () => {
-  const {
-    service,
-    task,
-    scope,
-    source,
-    sourceLinks,
-    docs,
-    publicSource,
-    projectRead,
-  } = fixture();
+  const { service, task, scope, source, sourceLinks, docs, publicSource } =
+    fixture();
   const addSource = (
     id: string,
     profileId: string,
@@ -531,37 +513,27 @@ it("uses the sending and assigned profiles' current sources in the authorized ta
       "specification",
       "sender-reference",
       "agent-reference",
-      "project-reference",
       "same-brand",
     ]),
   );
   expect(result.personalKnowledgeSourceIds).toEqual([
     "sender-reference",
-    "project-reference",
     "same-brand",
   ]);
   expect(result.content).not.toMatch(
-    /different-|default-profile-reference|product-expert-personal-reference|Another buyer/,
+    /project-reference|different-|default-profile-reference|product-expert-personal-reference|Another buyer/,
   );
   expect(new Set(source.findSourcesByIds.mock.calls[0][0])).toEqual(
     new Set([
       "specification",
       "sender-reference",
       "agent-reference",
-      "project-reference",
       "other-customer",
       "same-brand",
     ]),
   );
   expect(mockSearch).toHaveBeenCalledWith(
     expect.objectContaining({ sourceIds: result.knowledgeSourceIds }),
-  );
-
-  projectRead.mockResolvedValue([]);
-  const revoked = await service.context(task, profiles, "battery");
-  expect(revoked.content).not.toMatch(/project-reference|Use formal address/);
-  expect(new Set(revoked.knowledgeSourceIds)).toEqual(
-    new Set(["specification", "sender-reference", "agent-reference"]),
   );
 });
 
@@ -642,7 +614,6 @@ it("gathers eligible versions without reading knowledge and receipts only matchi
 
 it("learns a natural remember command only in the customer's scoped personal profile", async () => {
   const { service, scope, source, linkSource, authenticate } = fixture();
-  const thread = { id: "thread", memoryProjectId: "north" };
   const text = "В заказах для North обращайтесь ко мне на «вы».";
   const command = {
     text: `Запомни, что ${text} Какой нужен размер?`,
@@ -668,7 +639,7 @@ it("learns a natural remember command only in the customer's scoped personal pro
   expect(isPersonalMemoryCommand("Remember the warranty we discussed?")).toBe(
     false,
   );
-  const sourceId = await service.rememberFromMessage(scope, thread, command);
+  const sourceId = await service.rememberFromMessage(scope, command);
   expect(sourceId).toBe("created-note");
   expect(source.upsertSourceBySlug).toHaveBeenCalledWith(
     {
@@ -683,31 +654,29 @@ it("learns a natural remember command only in the customer's scoped personal pro
     data: {
       variant: "customer-memory",
       profileId: "buyer-profile",
-      storeId: "store-1",
-      projectId: "north",
       knowledgeModuleSourceId: "created-note",
     },
   });
   expect(mockIndex).toHaveBeenCalledWith({ sourceId });
-  await expect(
-    service.rememberFromMessage(scope, thread, command),
-  ).resolves.toBe(sourceId);
+  await expect(service.rememberFromMessage(scope, command)).resolves.toBe(
+    sourceId,
+  );
   expect(linkSource).toHaveBeenCalledTimes(1);
 
   source.lock.mockResolvedValue([{ ...saved, content: "Changed note" }]);
-  await expect(
-    service.rememberFromMessage(scope, thread, command),
-  ).rejects.toThrow("another personal note");
+  await expect(service.rememberFromMessage(scope, command)).rejects.toThrow(
+    "another personal note",
+  );
   expect(linkSource).toHaveBeenCalledTimes(1);
 
   authenticate.mockResolvedValue({ authenticated: false });
-  await expect(
-    service.rememberFromMessage(scope, thread, command),
-  ).rejects.toThrow("Sign in to save personal notes");
+  await expect(service.rememberFromMessage(scope, command)).rejects.toThrow(
+    "Sign in to save personal notes",
+  );
   expect(linkSource).toHaveBeenCalledTimes(1);
 });
 
-it("rejects direct changes to another project or customer's note", async () => {
+it("rejects changes to legacy project notes and another customer's notes", async () => {
   const { service, scope, source } = fixture();
   for (const sourceId of [
     "other-brand",
@@ -716,35 +685,17 @@ it("rejects direct changes to another project or customer's note", async () => {
     "specification",
   ]) {
     await expect(
-      service.record(
-        scope,
-        { id: "thread", memoryProjectId: "north" },
-        {
-          operation: "remember",
-          storeId: scope.storeId,
-          taskId: "task",
-          operationKey: "edit",
-          text: "Unauthorized update",
-          sourceId,
-        },
-      ),
+      service.record(scope, {
+        operation: "remember",
+        storeId: scope.storeId,
+        taskId: "task",
+        operationKey: "edit",
+        text: "Unauthorized update",
+        sourceId,
+      }),
     ).rejects.toThrow("personal note is unavailable");
   }
   expect(source.updateSource).not.toHaveBeenCalled();
-});
-
-it("withdraws project memory on the next read", async () => {
-  const { service, task, scope, projectRead } = fixture();
-  projectRead.mockResolvedValue([]);
-  const current = await service.context(
-    task,
-    { agentProfileId: "assigned-profile", memory: scope },
-    "battery",
-  );
-  expect(current.content).not.toContain("Use formal address for North");
-  expect(current.sourceVersions).toEqual([
-    { id: "specification", version: "version-a" },
-  ]);
 });
 
 it("gives the painter only the current buyer’s scoped notes and proven training for the assigned employee", async () => {

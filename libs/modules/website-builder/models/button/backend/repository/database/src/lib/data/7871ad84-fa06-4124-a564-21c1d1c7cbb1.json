@@ -1,15 +1,15 @@
 {
   "title": {
-    "en": "Open AI Chat",
-    "ru": "Открыть AI-чат"
+    "en": "AI agent services",
+    "ru": "Услуги ИИ-агентов"
   },
   "subtitle": {},
-  "url": "/",
+  "url": "/framework/services",
   "className": "w-fit",
   "id": "7871ad84-fa06-4124-a564-21c1d1c7cbb1",
   "createdAt": "2026-10-23T20:18:06.908Z",
-  "updatedAt": "2026-10-23T20:18:06.908Z",
+  "updatedAt": "2026-11-26T14:08:39.979Z",
   "variant": "primary",
-  "adminTitle": "Open AI Chat",
+  "adminTitle": "AI agent services",
   "slug": "framework-about-chat"
 }

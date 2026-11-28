@@ -136,6 +136,10 @@ export class Handler {
         });
       }
 
+      const supportMessageIds =
+        await this.service.customerWork.orderSupport.messageIdsForChat(
+          socialModuleChatId,
+        );
       const socialModuleChatsToMessages =
         await this.service.modules.social.chatsToMessages.find({
           params: {
@@ -146,6 +150,15 @@ export class Handler {
                   method: "eq",
                   value: socialModuleChatId,
                 },
+                ...(supportMessageIds.length
+                  ? [
+                      {
+                        column: "messageId",
+                        method: "notInArray" as const,
+                        value: supportMessageIds,
+                      },
+                    ]
+                  : []),
               ],
             },
             limit,

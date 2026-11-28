@@ -10,7 +10,26 @@ allOf:
         properties:
           requiresResultAcceptance:
             type: boolean
-            description: Charge for a commissioned service after the customer accepts a result version.
+            description: A commissioned service requires the customer to accept a result version.
+          closedForNewOrders:
+            type: boolean
+            description: Preserve the offer for existing orders after closing it to new purchases.
+          fullTextDraftPreview:
+            type: boolean
+            enum: [true]
+            description: Show the complete text draft for commissioned PDFs in the order chat.
+          workTokenPricing:
+            type: object
+            description: Charge for commissioned work from the customer's token balance.
+            properties:
+              currencyId:
+                type: string
+                format: uuid
+              multiplier:
+                type: string
+                description: Legacy offer multiplier. Omit to use the Product price formula.
+            required:
+              - currencyId
           initialGrant:
             type: boolean
             description: An administrator can assign this offer to registered Subjects once per Product.

@@ -1,13 +1,12 @@
-import { AIChatPreview, type IAIChatPreviewProps } from "../ai-chat/Preview";
+import {
+  AccountPreview,
+  type IAccountPreviewProps,
+} from "../../AccountPreview";
 import { aiChatAccount } from "../../../../rbac/subject/singlepage/me/account/fixture";
-import { aiChatWorkspaceFixture } from "../../../../social/profile/singlepage/scope/ai-chat/project/fixtures";
 import type { Meta, StoryObj } from "@storybook/react";
-type IPageStoryProps = Pick<
-  IAIChatPreviewProps,
-  "signedIn" | "account" | "profiles"
->;
+type IPageStoryProps = Pick<IAccountPreviewProps, "signedIn" | "account">;
 function Component(props: IPageStoryProps) {
-  return <AIChatPreview {...props} initialHref="/ai-chat/help" />;
+  return <AccountPreview {...props} initialHref="/framework/help" />;
 }
 const meta = {
   id: "modules-host-models-page-singlepage-ai-chat-help",
@@ -17,12 +16,10 @@ const meta = {
   args: {
     signedIn: true,
     account: aiChatAccount,
-    profiles: aiChatWorkspaceFixture(),
   },
   argTypes: {
     signedIn: { control: "boolean" },
     account: { control: "object" },
-    profiles: { control: "object" },
   },
 } satisfies Meta<typeof Component>;
 export default meta;

@@ -1,15 +1,15 @@
 {
   "title": {
-    "en": "Register",
-    "ru": "Зарегистрироваться"
+    "en": "Choose a service",
+    "ru": "Выбрать услугу"
   },
   "subtitle": {},
-  "url": "/rbac/subject/authentication/email-and-password/registration",
+  "url": "/framework/services",
   "className": "w-full",
   "id": "c9431e9b-fdc4-4cd9-a5f4-7ea94c939278",
   "createdAt": "2026-10-26T00:12:30.917Z",
-  "updatedAt": "2026-11-10T23:51:16.653Z",
+  "updatedAt": "2026-11-26T14:08:39.599Z",
   "variant": "action",
-  "adminTitle": "Зарегистрироваться",
+  "adminTitle": "Choose a service",
   "slug": "framework-reviewed-step-register-0"
 }

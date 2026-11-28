@@ -12,6 +12,8 @@ export function Component(props: IComponentPropsExtended) {
       className={props.className}
       ecommerceModuleProduct={props.ecommerceModuleProduct}
       ecommerceModuleStore={props.ecommerceModuleStore}
+      ecommerceModuleOfferId={props.ecommerceModuleOfferId}
+      openServiceDiscussionOnSubmit={props.openServiceDiscussionOnSubmit}
       excludedOfferIds={props.excludedOfferIds}
       hideConfiguration={props.hideConfiguration}
       checkoutSlot={props.checkoutSlot}

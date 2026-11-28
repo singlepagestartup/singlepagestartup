@@ -28,7 +28,7 @@ import {
   selectPrimaryLinkedThread,
 } from "@sps/social/models/thread/sdk/model";
 import { IModel as ISocialModuleAction } from "@sps/social/models/action/sdk/model";
-import { IModel as IRbacModuleSubject } from "@sps/rbac/models/subject/sdk/model";
+import { type IModel as IRbacModuleSubject } from "@sps/rbac/models/subject/sdk/model";
 import { IModel as IEcommerceModuleProduct } from "@sps/ecommerce/models/product/sdk/model";
 import { api as rbacModuleSubjectApi } from "@sps/rbac/models/subject/sdk/server";
 import { api as socialModuleThreadApi } from "@sps/social/models/thread/sdk/server";
@@ -1420,8 +1420,8 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     socialModuleAction: ISocialModuleAction;
     messageFromSocialModuleProfile: ISocialModuleProfile | null;
   }) {
-    const callbackQueryData =
-      props.socialModuleAction.payload?.telegram?.callback_query?.data;
+    const callback = props.socialModuleAction.payload?.telegram?.callback_query;
+    const callbackQueryData = callback?.data;
 
     if (!callbackQueryData) {
       throw new Error("Validation error. Callback query data is missing");

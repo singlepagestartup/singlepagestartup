@@ -2,18 +2,61 @@ interface IRichTextNode {
   type?: string;
   text?: string;
   attrs?: { level?: number; start?: number; href?: string; alt?: string };
-  marks?: { type?: string; attrs?: { href?: string } }[];
+  marks?: { type: string; attrs?: { href?: string } }[];
   content?: IRichTextNode[];
 }
-function read(value: string): IRichTextNode | undefined {
+
+const inlineNodeTypes = new Set(["text", "hardBreak", "copyButton"]);
+const blockNodeTypes = new Set([
+  "doc",
+  "paragraph",
+  "heading",
+  "bulletList",
+  "orderedList",
+  "listItem",
+  "blockquote",
+  "codeBlock",
+  "horizontalRule",
+  "image",
+]);
+
+function isRichTextNode(value: unknown): value is IRichTextNode {
+  if (!value || typeof value !== "object") return false;
+  const node = value as IRichTextNode;
+  if (typeof node.type !== "string") return false;
+  if (node.type === "text") return typeof node.text === "string";
+  return (
+    inlineNodeTypes.has(node.type) ||
+    blockNodeTypes.has(node.type) ||
+    Array.isArray(node.content)
+  );
+}
+
+export function readRichTextContent(
+  value: string,
+): IRichTextNode | IRichTextNode[] | undefined {
+  const firstCharacter = value.trimStart()[0];
+  if (firstCharacter !== "{" && firstCharacter !== "[") return undefined;
+
   try {
-    const node = JSON.parse(value);
-    return node && node.type === "doc" && Array.isArray(node.content)
-      ? node
+    const parsed: unknown = JSON.parse(value);
+    if (isRichTextNode(parsed)) return parsed;
+    return Array.isArray(parsed) && parsed.every(isRichTextNode)
+      ? parsed
       : undefined;
   } catch {
     return undefined;
   }
+}
+
+function read(value: string): IRichTextNode | undefined {
+  const node = readRichTextContent(value);
+  return node &&
+    !Array.isArray(node) &&
+    node.type === "doc" &&
+    Array.isArray(node.content)
+    ? node
+    : undefined;
 }
 function plain(node: IRichTextNode): string {
   if (node.type === "hardBreak") return "\n";
@@ -70,7 +113,26 @@ function markdown(node: IRichTextNode): string {
 }
 /** CMS fields can contain legacy plain text or the admin editor's TipTap JSON. */
 export function getRichTextEditorValue(value: string): string {
-  if (!value || read(value)) return value;
+  if (!value) return value;
+  const saved = readRichTextContent(value);
+  if (saved) {
+    if (!Array.isArray(saved) && saved.type === "doc") return value;
+    const nodes = Array.isArray(saved) ? saved : [saved];
+    const content: IRichTextNode[] = [];
+    let inline: IRichTextNode[] = [];
+    for (const node of nodes) {
+      if (node.type && inlineNodeTypes.has(node.type)) {
+        inline.push(node);
+        continue;
+      }
+      if (inline.length) content.push({ type: "paragraph", content: inline });
+      inline = [];
+      content.push(node);
+    }
+    if (inline.length) content.push({ type: "paragraph", content: inline });
+    return JSON.stringify({ type: "doc", content });
+  }
+
   return JSON.stringify({
     type: "doc",
     content: value.split(/\r\n|\n|\r/).map((line) => ({

@@ -180,6 +180,42 @@ it("shows only the selected currency amount", () => {
   expect(screen.queryByText("10 $")).toBeNull();
 });
 
+it("shows token-funded work outside the postpayment section and checkout totals", async () => {
+  orderIds = ["brief", "chair"];
+  extraDetails.brief = {
+    lines: [
+      { id: "brief-line", productId: "brief-item", offerId: "brief-offer" },
+    ],
+    work: {
+      orderId: "brief",
+      storeId: "store",
+      paymentTiming: "work-tokens",
+      state: "requires-discussion",
+    },
+  };
+  checkout.mockResolvedValue({ billingModule: { invoices: [] } });
+  render(<Component {...props} />);
+  expect(screen.getByRole("heading", { name: "Оплата токенами" })).toBeTruthy();
+  expect(screen.getByRole("button", { name: "Перейти в чат" })).toBeTruthy();
+  expect(screen.queryByText("Оплата после принятия результата.")).toBeNull();
+  expect(screen.getByText("К оплате сейчас")).toBeTruthy();
+  expect(screen.getByText("100 ₽")).toBeTruthy();
+  expect(screen.queryByText("200 ₽")).toBeNull();
+  fireEvent.change(screen.getByLabelText("Email для чека"), {
+    target: { value: "buyer@example.test" },
+  });
+  fireEvent.click(screen.getByRole("button", { name: "Перейти к оплате" }));
+  await waitFor(() =>
+    expect(checkout).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          ecommerceModule: { orders: [{ id: "chair" }] },
+        }),
+      }),
+    ),
+  );
+});
+
 it("opens the service discussion and charges only the selected prepaid product in a mixed cart", async () => {
   orderIds = ["cover", "chair", "lamp"];
   linesByOrder = {

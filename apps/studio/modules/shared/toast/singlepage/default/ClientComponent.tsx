@@ -97,7 +97,9 @@ export function Component({
       data-variant={variant}
       className={
         "min-h-screen bg-muted px-6 py-10 font-default text-foreground sm:px-10" +
-        (appearance === "all" ? " grid content-start gap-8 xl:grid-cols-2" : "")
+        (appearance === "all"
+          ? " grid content-start gap-8 2xl:grid-cols-[minmax(18rem,24rem)_minmax(0,1fr)]"
+          : "")
       }
     >
       <div className="max-w-xl space-y-6">
@@ -156,16 +158,11 @@ export function Component({
             </p>
           ) : null}
         </section>
-        <p className="text-xs leading-5 text-muted-foreground">
-          Icons: Phosphor Regular. Card, text and border use the current SPS
-          theme. Success uses the primary accent; errors use the destructive
-          accent.
-        </p>
       </div>
       <Toaster
         className={
           appearance === "all"
-            ? "!static !m-0 !grid !w-full !max-w-none !list-none !grid-cols-1 !gap-4 !p-0 !transform-none sm:!grid-cols-2 [&>li]:!relative [&>li]:!inset-auto [&>li]:!h-auto [&>li]:!transform-none [&>li]:!opacity-100"
+            ? "!static !m-0 !grid !w-full !max-w-[55rem] !list-none !grid-cols-[repeat(auto-fit,minmax(min(100%,22rem),1fr))] !items-start !gap-4 !p-0 !transform-none [&>li]:!relative [&>li]:!inset-auto [&>li]:!h-auto [&>li]:!transform-none [&>li]:!opacity-100"
             : undefined
         }
         position={position}

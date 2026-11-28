@@ -5,12 +5,16 @@ import { api as rbacModuleIdentityApi } from "@sps/rbac/models/identity/sdk/serv
 import { api } from "@sps/rbac/models/subject/sdk/server";
 import { IModel as ISocialModuleProfile } from "@sps/social/models/profile/sdk/model";
 import { IModel as ISocialModuleChat } from "@sps/social/models/chat/sdk/model";
-import { IModel as ISocialModuleThread } from "@sps/social/models/thread/sdk/model";
+import {
+  CLOSED_THREAD_VARIANT,
+  type IModel as ISocialModuleThread,
+} from "@sps/social/models/thread/sdk/model";
 import { api as socialModuleProfileApi } from "@sps/social/models/profile/sdk/server";
 import { api as socialModuleProfilesToChatsApi } from "@sps/social/relations/profiles-to-chats/sdk/server";
 import { api as socialModuleChatApi } from "@sps/social/models/chat/sdk/server";
 import { api as socialModuleThreadApi } from "@sps/social/models/thread/sdk/server";
 import { api as socialModuleChatsToThreadsApi } from "@sps/social/relations/chats-to-threads/sdk/server";
+import { ORDER_SUPPORT_THREAD_VARIANT } from "@sps/social/relations/chats-to-threads/sdk/model";
 import { IModel as ISocialModuleAttributeKey } from "@sps/social/models/attribute-key/sdk/model";
 import { IModel as ISocialModuleAttribute } from "@sps/social/models/attribute/sdk/model";
 import { api as socialModuleAttributeKeyApi } from "@sps/social/models/attribute-key/sdk/server";
@@ -543,12 +547,14 @@ export class Service {
       },
     });
 
-    const threadIds =
-      chatToThreads
-        ?.map((chatToThread: { threadId?: string }) => chatToThread.threadId)
-        .filter((threadId: string | undefined): threadId is string =>
-          Boolean(threadId),
-        ) || [];
+    const threadIds = (chatToThreads ?? [])
+      .filter(({ variant }) => variant !== ORDER_SUPPORT_THREAD_VARIANT)
+      .map(({ threadId }) => threadId);
+    const primaryThreadIds = new Set(
+      (chatToThreads ?? [])
+        .filter(({ variant }) => variant === "default")
+        .map(({ threadId }) => threadId),
+    );
 
     if (threadIds.length) {
       const threads = await this.social.thread.find({
@@ -567,7 +573,11 @@ export class Service {
 
       const defaultThreads =
         threads?.filter((thread: ISocialModuleThread) => {
-          return thread.variant === "default";
+          return (
+            thread.variant === "default" ||
+            (thread.variant === CLOSED_THREAD_VARIANT &&
+              primaryThreadIds.has(thread.id))
+          );
         }) || [];
 
       if (defaultThreads.length > 1) {

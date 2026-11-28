@@ -86,8 +86,8 @@ Code Framework доступен бесплатно по лицензии MIT. Т
 | per-month       | в месяц                                                                                                   |
 | continue        | Продолжить в AI Chat                                                                                      |
 | pro-review      | Посмотреть тариф Pro                                                                                      |
-| pro-review-href | /ai-chat/rbac/subjects/subscriptions/pro                                                                  |
-| checkout-href   | /ai-chat/rbac/subjects/tokens                                                                             |
+| pro-review-href | /ecommerce                                                                                                |
+| checkout-href   | /ecommerce                                                                                                |
 | package-label   | Выберите сумму пополнения                                                                                 |
 | amount-unit     | RUB                                                                                                       |
 | token-unit      | внутренних токенов                                                                                        |
@@ -97,7 +97,7 @@ Code Framework доступен бесплатно по лицензии MIT. Т
 | estimate-note   | Количество токенов округлено до ближайшего целого. Перед оплатой проверьте итоговое количество в AI Chat. |
 | rate            | 0,13 рубля за внутренний токен                                                                            |
 | terms           | Token and payment terms in AI Chat                                                                        |
-| terms-href      | /ai-chat/rbac/subjects/tokens                                                                             |
+| terms-href      | /ecommerce                                                                                                |
 | framework       | Посмотреть Code Framework                                                                                 |
 | framework-href  | /framework                                                                                                |
 | chat            | Открыть AI Chat                                                                                           |

@@ -220,15 +220,31 @@ it("renders the registered form entrypoint in its explicitly selected mode", () 
   expect(screen.queryByLabelText("Password")).toBeNull();
 });
 
+it("keeps registration and recovery in the embedded form", () => {
+  const onModeChange = jest.fn();
+  render(
+    <QueryClientProvider client={queryClient}>
+      <PublicForm
+        language="en"
+        isServer={false}
+        variant="authentication-email-and-password-form-default"
+        mode="authentication"
+        onModeChange={onModeChange}
+      />
+    </QueryClientProvider>,
+  );
+  fireEvent.click(screen.getByRole("button", { name: "Create an account" }));
+  fireEvent.click(screen.getByRole("button", { name: "Forgot password?" }));
+  expect(onModeChange.mock.calls).toEqual([
+    ["registration"],
+    ["forgot-password"],
+  ]);
+});
+
 it.each([
   ["authentication", "account-token", "", "/en/"],
   ["registration", "visitor-token", "", "/en/"],
-  [
-    "registration",
-    "account-token",
-    "returnTo=/ai-chat/projects",
-    "/en/ai-chat/projects",
-  ],
+  ["registration", "account-token", "returnTo=/framework", "/en/framework"],
   ["authentication", "account-token", "returnTo=//attacker.example", "/en/"],
   [
     "authentication",
@@ -280,7 +296,7 @@ it.each([
             language="en"
             variant="authentication-email-and-password-form-default"
             mode={mode}
-            successHref="/ai-chat/projects"
+            successHref="/framework"
           />
         </CookiesProvider>
       </QueryClientProvider>,

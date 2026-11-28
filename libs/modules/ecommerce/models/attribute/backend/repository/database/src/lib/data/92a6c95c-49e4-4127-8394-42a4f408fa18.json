@@ -1,0 +1,15 @@
+{
+  "id": "92a6c95c-49e4-4127-8394-42a4f408fa18",
+  "createdAt": "2026-11-26T14:02:43.204Z",
+  "updatedAt": "2026-11-26T14:02:43.204Z",
+  "variant": "default",
+  "number": null,
+  "boolean": null,
+  "date": null,
+  "datetime": null,
+  "string": {
+    "en": "unit_price * quantity"
+  },
+  "adminTitle": "price_formula",
+  "slug": "isolated-lavender-ostrich-6527"
+}

@@ -4,7 +4,7 @@ import { MoveRight } from "lucide-react";
 import { useRef, useState } from "react";
 
 import { api } from "@sps/rbac/models/subject/sdk/client";
-import type { ICrmWorkspaceStore } from "@sps/rbac/models/subject/sdk/model";
+import { type ICrmWorkspaceStore } from "@sps/rbac/models/subject/sdk/model";
 import {
   StoreSection,
   type IStoreSectionContentProps,

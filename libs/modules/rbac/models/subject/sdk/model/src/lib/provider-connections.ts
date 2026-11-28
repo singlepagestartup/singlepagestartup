@@ -132,6 +132,8 @@ export interface IProviderTerms extends z.infer<typeof providerTerms> {
   topupUsd?: string;
   topupTokens?: string;
   topupProductId?: string;
+  /** Serialized order tariff saved with the work attempt. */
+  workTokenTariff?: string;
 }
 
 export interface IProviderConnection {
@@ -199,6 +201,7 @@ export interface IProviderChatModelGroup {
 export interface IProviderChatModelsResult {
   stageModelFixed?: boolean;
   stageModelId?: string;
+  stageModelReasoning?: IProviderModelSelection["reasoning"];
   auto: {
     id: "auto";
     name: string;

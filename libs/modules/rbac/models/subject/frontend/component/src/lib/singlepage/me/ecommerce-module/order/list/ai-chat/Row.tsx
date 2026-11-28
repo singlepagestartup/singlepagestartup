@@ -1,12 +1,10 @@
 "use client";
 
-import { memo, useCallback, useState } from "react";
+import { memo, useCallback } from "react";
 import { Component as EcommerceModuleOrder } from "@sps/ecommerce/models/order/frontend/component";
 import { api } from "@sps/rbac/models/subject/sdk/client";
-import {
-  downloadOrderArtifact,
-  ResultReview,
-} from "../../../../../ecommerce-module/order/create-default/customer-work/ResultReview";
+import { ReceiptDownload } from "../../ReceiptDownload";
+import { ResultReview } from "../../../../../ecommerce-module/order/create-default/customer-work/ResultReview";
 import type { IOrderRowProps } from "./interface";
 
 export const Component = memo(function Component(props: IOrderRowProps) {
@@ -137,54 +135,6 @@ export const Component = memo(function Component(props: IOrderRowProps) {
     />
   );
 });
-
-function ReceiptDownload({
-  subjectId,
-  orderId,
-  receiptId,
-  ru,
-}: {
-  subjectId: string;
-  orderId: string;
-  receiptId: string;
-  ru: boolean;
-}) {
-  const [pending, setPending] = useState(false);
-  const [error, setError] = useState(false);
-  async function download() {
-    setPending(true);
-    setError(false);
-    try {
-      await downloadOrderArtifact(
-        subjectId,
-        orderId,
-        receiptId,
-        `receipt-${orderId}`,
-      );
-    } catch {
-      setError(true);
-    } finally {
-      setPending(false);
-    }
-  }
-  return (
-    <>
-      <button
-        type="button"
-        onClick={download}
-        disabled={pending}
-        className="inline-flex min-h-11 items-center rounded-xl border border-border px-4 text-sm font-medium disabled:opacity-50"
-      >
-        {ru ? "Скачать чек" : "Download receipt"}
-      </button>
-      {error && (
-        <p role="alert" className="text-sm text-destructive">
-          {ru ? "Чек недоступен." : "The receipt is unavailable."}
-        </p>
-      )}
-    </>
-  );
-}
 
 function StoreWorkDetails({
   subjectId,

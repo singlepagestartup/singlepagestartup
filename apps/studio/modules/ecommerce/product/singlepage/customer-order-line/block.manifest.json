@@ -1,0 +1,27 @@
+{
+  "id": "ecommerce.product.customer-order-line",
+  "title": "Товар в заказе",
+  "description": "Сохранённые название, сумма и количество товара и ссылка на каталог.",
+  "layer": "singlepage",
+  "state": "draft",
+  "source": {
+    "module": "ecommerce",
+    "entityType": "model",
+    "entity": "product",
+    "variant": "customer-order-line"
+  },
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "contentSlots": [],
+  "figma": {
+    "componentName": "ecommerce.product",
+    "pageName": "ecommerce",
+    "variantName": "customer-order-line",
+    "nodeId": null,
+    "variantNodeId": null,
+    "syncStatus": "not-created",
+    "metadataFile": "figma.json"
+  }
+}

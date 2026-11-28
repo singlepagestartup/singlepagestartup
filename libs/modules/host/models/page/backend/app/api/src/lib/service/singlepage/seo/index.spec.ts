@@ -151,6 +151,34 @@ it("retains Page fallback if Metadata is absent", async () => {
   expect(result.metadata.title).toBe("О нас");
   expect(result.metadata.description).toBe("О компании");
 });
+it("resolves explicit Page-local masks and preserves linked Metadata precedence", async () => {
+  const localizedPage = page({
+    title: "[host.pages.metadata.seo.title]",
+    description: "[host.pages.metadata.seo.description]",
+    metadata: {
+      seo: {
+        title: { en: "Orders", ru: "Заказы" },
+        description: { en: "Your orders", ru: "Ваши заказы" },
+      },
+    },
+  });
+  jest.mocked(linksApi.find).mockResolvedValue([]);
+  jest.mocked(metadata.find).mockResolvedValue([]);
+  const result = await seo.generate({ page: localizedPage, url: "/ru/orders" });
+  expect(result.metadata.title).toBe("Заказы");
+  expect(result.metadata.description).toBe("Ваши заказы");
+
+  jest.mocked(linksApi.find).mockResolvedValue([{ metadataId: "meta" }] as any);
+  jest
+    .mocked(metadata.find)
+    .mockResolvedValue([{ id: "meta", title: "Purchases" }] as any);
+  const override = await seo.generate({
+    page: localizedPage,
+    url: "/en/orders",
+  });
+  expect(override.metadata.title).toBe("Purchases");
+  expect(override.metadata.description).toBe("Your orders");
+});
 it("uses primary Metadata when the Page has no meaningful text", async () => {
   jest.mocked(linksApi.find).mockResolvedValue([]);
   jest.mocked(metadata.find).mockResolvedValue([

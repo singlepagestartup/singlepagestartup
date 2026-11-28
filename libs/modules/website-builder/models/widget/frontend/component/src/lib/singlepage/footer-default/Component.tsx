@@ -1,6 +1,7 @@
 import { useId } from "react";
 import { ChevronUp } from "lucide-react";
 import { TipTap } from "@sps/shared-ui-shadcn";
+import { TipTapContent } from "@sps/shared-ui-shadcn/tiptap/content";
 import { cn } from "@sps/shared-frontend-client-utils";
 import { Component as WidgetsToLogotypes } from "@sps/website-builder/relations/widgets-to-logotypes/frontend/component";
 import { Component as WidgetsToButtonsArrays } from "@sps/website-builder/relations/widgets-to-buttons-arrays/frontend/component";
@@ -65,9 +66,11 @@ export function Component(props: IComponentPropsExtended) {
     >
       <div className="peer/footer-links mx-auto hidden w-full max-w-7xl items-center gap-3 pr-[5.5rem] pl-4 group-[&]/social-chat-layout:flex sm:px-6 lg:px-8">
         {copyright ? (
-          <p className="min-w-0 text-xs leading-5 text-muted-foreground">
-            {copyright}
-          </p>
+          <TipTapContent
+            className="min-w-0 text-xs leading-5 text-muted-foreground"
+            typography="inherit"
+            value={copyright}
+          />
         ) : null}
         <details className="group/footer-details shrink-0">
           <summary
@@ -153,9 +156,11 @@ export function Component(props: IComponentPropsExtended) {
         </div>
         <div className="mt-12 flex flex-col items-start justify-between gap-4 border-t border-border pt-6 group-[&]/social-chat-layout:mt-6 group-[&]/social-chat-layout:pt-2 sm:flex-row sm:items-center">
           {copyright ? (
-            <p className="text-xs leading-5 text-muted-foreground group-[&]/social-chat-layout:hidden">
-              {copyright}
-            </p>
+            <TipTapContent
+              className="text-xs leading-5 text-muted-foreground group-[&]/social-chat-layout:hidden"
+              typography="inherit"
+              value={copyright}
+            />
           ) : null}
           <div className="flex flex-wrap items-center gap-4 [&_[data-model=buttons-array]]:w-auto [&_[data-relation=buttons-arrays-to-buttons]]:w-auto [&_[data-model=button]]:min-h-11 [&_[data-model=button]]:w-auto [&_[data-model=button]]:bg-transparent [&_[data-model=button]]:px-0 [&_[data-model=button]]:text-xs [&_[data-model=button]]:font-normal [&_[data-model=button]]:text-muted-foreground [&_[data-model=button]:hover]:text-foreground">
             <ButtonGroups

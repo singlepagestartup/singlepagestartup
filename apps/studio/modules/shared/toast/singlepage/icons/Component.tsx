@@ -13,8 +13,8 @@ export function Component({ variant = "icons" }: IComponentPropsExtended) {
       </p>
       <h1 className="mt-3 text-2xl font-semibold">Notification icons</h1>
       <p className="mt-3 max-w-xl text-sm leading-6 text-muted-foreground">
-        Phosphor Regular, 20 px. Loading animates only when reduced motion is
-        disabled. These are the same glyphs used in application notifications.
+        Application notifications use Phosphor Regular. Status icons are 24 px.
+        The spinner respects the reduced-motion setting.
       </p>
       <div className="mt-8 grid max-w-4xl grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
         {(

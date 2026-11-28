@@ -1,12 +1,17 @@
 "use client";
 import { memo, useCallback, useState, type FormEvent } from "react";
+import { ScopedAttributeForm } from "./ScopedAttributeForm";
 import { createId } from "@paralleldrive/cuid2";
 import { api as subjectApi } from "@sps/rbac/models/subject/sdk/client";
 import { catalogCreateOfferSchema } from "@sps/rbac/models/subject/sdk/model";
 import type { IModel as IOffer } from "@sps/ecommerce/relations/stores-to-products/sdk/model";
 import type { IModel as ILink } from "@sps/ecommerce/relations/offers-to-offers/sdk/model";
 import type { IBoxDraft, IEditorProps } from "./interface";
-import { PaymentTiming } from "./PaymentTiming";
+import {
+  PaymentTiming,
+  offerPaymentSettings,
+  offerPaymentTiming,
+} from "./PaymentTiming";
 
 const field =
   "min-h-11 w-full min-w-0 rounded-xl border border-input bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:bg-muted disabled:text-muted-foreground";
@@ -70,9 +75,10 @@ function OfferEditor(props: IEditorProps & { offer: IOffer }) {
   );
   const stock = attrs.find((attribute) => attribute.key === "stock_quantity");
   const [unlimited, setUnlimited] = useState(!stock);
-  const [afterAcceptance, setAfterAcceptance] = useState(
-    Boolean(offer.settings.requiresResultAcceptance),
+  const token = context.currencies.find(
+    (currency) => currency.slug?.toLowerCase() === "token",
   );
+  const [timing, setTiming] = useState(offerPaymentTiming(offer.settings));
   const [standalone, setStandalone] = useState(
     Boolean(offer.settings.standalone),
   );
@@ -209,15 +215,23 @@ function OfferEditor(props: IEditorProps & { offer: IOffer }) {
     setError("");
     setFeedback("");
     try {
+      if (
+        timing === "work-formula" &&
+        (!token || !/^0(?:\.0+)?$/.test(text(`price:${token.id}`)))
+      ) {
+        throw new Error(
+          props.language === "ru"
+            ? "Укажите цену оформления 0 Token."
+            : "Set the checkout price to 0 Token.",
+        );
+      }
       const settings = catalogCreateOfferSchema.shape.settings.parse({
-        ...offer.settings,
-        ...(commissionedService && {
-          requiresResultAcceptance:
-            text("paymentTiming") === "after-acceptance",
-        }),
+        ...(commissionedService
+          ? offerPaymentSettings(timing, token?.id, offer.settings)
+          : offer.settings),
         standalone:
           values.has("standalone") ||
-          (commissionedService && text("paymentTiming") === "after-acceptance"),
+          (commissionedService && timing !== "in-cart"),
         receiptMethod: text("receiptMethod"),
         regionIds: text("regions")
           .split(",")
@@ -504,16 +518,20 @@ function OfferEditor(props: IEditorProps & { offer: IOffer }) {
             <input
               name="standalone"
               type="checkbox"
-              checked={standalone || (commissionedService && afterAcceptance)}
-              disabled={commissionedService && afterAcceptance}
+              checked={
+                standalone || (commissionedService && timing !== "in-cart")
+              }
+              disabled={commissionedService && timing !== "in-cart"}
               onChange={(event) => setStandalone(event.target.checked)}
             />
             Allow this service to be sold separately
           </label>
           {commissionedService && (
             <PaymentTiming
-              afterAcceptance={offer.settings.requiresResultAcceptance}
-              onChange={setAfterAcceptance}
+              settings={offer.settings}
+              language={props.language}
+              currencyId={token?.id}
+              onChange={setTiming}
             />
           )}
           <fieldset className="space-y-3">
@@ -563,7 +581,7 @@ function OfferEditor(props: IEditorProps & { offer: IOffer }) {
           </button>
         </fieldset>
       </form>
-      <ScopedAttributeForm {...props} />
+      <ScopedAttributeForm {...props} productId={props.offer.productId} />
       <section className="space-y-3">
         <h3 className="font-semibold">Delivery, add-ons and fulfilment</h3>
         <ul className="space-y-2">
@@ -737,157 +755,3 @@ const LinkRow = memo(function LinkRow({
     </li>
   );
 });
-
-function ScopedAttributeForm(props: IEditorProps & { offer: IOffer }) {
-  const mutation = subjectApi.ecommerceModuleCatalogAttributeSet();
-  const [scope, setScope] = useState<"store" | "product">("store");
-  const [key, setKey] = useState("dispatch_fee");
-  const [feedback, setFeedback] = useState("");
-  const ownsProduct = props.context.ownedProductIds.includes(
-    props.offer.productId,
-  );
-  const ownerId = scope === "store" ? props.storeId : props.offer.productId;
-  const attributes = props.context.attributes.filter(
-    (attribute) =>
-      attribute.owner.type === scope &&
-      attribute.owner.id === ownerId &&
-      (scope === "product" || attribute.field === "number"),
-  );
-  const current = attributes.find((attribute) => attribute.key === key);
-  async function submit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    const values = new FormData(event.currentTarget);
-    setFeedback("");
-    try {
-      const value = String(values.get("value") ?? "");
-      await mutation.mutateAsync({
-        id: props.subjectId,
-        data: {
-          owner: { type: scope, id: ownerId },
-          key,
-          field: scope === "product" ? "string" : "number",
-          string: scope === "product" ? value : undefined,
-          number: scope === "store" ? value : undefined,
-          currencyId:
-            scope === "store" && values.get("currency")
-              ? String(values.get("currency"))
-              : undefined,
-        },
-      });
-      await props.onRefresh();
-      setFeedback("Catalogue attribute saved.");
-    } catch (failure) {
-      setFeedback(
-        failure instanceof Error
-          ? failure.message
-          : "Could not save this catalogue attribute.",
-      );
-    }
-  }
-  return (
-    <section className="space-y-3">
-      <h3 className="font-semibold">Store rates and shared Product formula</h3>
-      <form onSubmit={submit} className="grid gap-3 sm:grid-cols-2">
-        <label className={label}>
-          Owner
-          <select
-            className={field}
-            value={scope}
-            onChange={(event) => {
-              const next = event.target.value as "store" | "product";
-              setScope(next);
-              setKey(next === "product" ? "price_formula" : "dispatch_fee");
-            }}
-          >
-            <option value="store">This store’s rates</option>
-            <option value="product" disabled={!ownsProduct}>
-              Shared Product · owner only
-            </option>
-          </select>
-        </label>
-        <label className={label}>
-          Attribute key
-          {scope === "product" ? (
-            <select
-              className={field}
-              value={key}
-              onChange={(event) => setKey(event.target.value)}
-            >
-              <option value="price_formula">Price formula</option>
-              <option value="formula_version">Formula version</option>
-            </select>
-          ) : (
-            <input
-              className={field}
-              required
-              pattern="[a-z][a-z0-9_-]*"
-              value={key}
-              onChange={(event) => setKey(event.target.value)}
-            />
-          )}
-        </label>
-        <label className={label}>
-          Value
-          <input
-            key={`${scope}-${key}`}
-            name="value"
-            className={field}
-            required
-            defaultValue={
-              scope === "product" ? current?.text : (current?.number ?? "")
-            }
-          />
-        </label>
-        {scope === "store" && (
-          <label className={label}>
-            Currency
-            <select
-              name="currency"
-              className={field}
-              required={!key.endsWith("_percent")}
-              defaultValue={current?.currencyId ?? ""}
-            >
-              <option value="">No currency · percentage</option>
-              {props.context.currencies.map((currency) => (
-                <option key={currency.id} value={currency.id}>
-                  {currency.title}
-                </option>
-              ))}
-            </select>
-          </label>
-        )}
-        <button type="submit" className={button} disabled={mutation.isPending}>
-          {mutation.isPending ? "Saving…" : "Save rate or formula"}
-        </button>
-        <p className="text-xs text-muted-foreground sm:col-span-2">
-          Examples: dispatch_fee, rate_per_km, assembly_rate. Percentage keys
-          end in _percent and have no currency. Product formulas remain with
-          their owner.
-        </p>
-      </form>
-      <dl className="space-y-1 text-xs text-muted-foreground">
-        {attributes.map((attribute) => (
-          <div
-            key={`${attribute.id}-${attribute.key}`}
-            className="flex flex-wrap justify-between gap-2"
-          >
-            <dt>{attribute.key}</dt>
-            <dd className="break-all">
-              {attribute.number ?? attribute.text}{" "}
-              {
-                props.context.currencies.find(
-                  (currency) => currency.id === attribute.currencyId,
-                )?.title
-              }
-            </dd>
-          </div>
-        ))}
-      </dl>
-      {feedback && (
-        <p role="status" className="text-sm text-muted-foreground">
-          {feedback}
-        </p>
-      )}
-    </section>
-  );
-}
