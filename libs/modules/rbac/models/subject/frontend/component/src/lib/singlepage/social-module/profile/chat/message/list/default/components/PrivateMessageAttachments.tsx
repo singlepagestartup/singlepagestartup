@@ -106,18 +106,13 @@ function AttachmentPreview(props: IAttachmentRowProps) {
       props.onDownload,
     ],
   );
-  const imageDocument =
-    props.document && props.attachment.mimeType?.startsWith("image/");
   return (
     <FilePreview
       name={props.attachment.name}
       language={props.language}
       mimeType={props.attachment.mimeType}
       layout={props.layout ?? "message"}
-      availability={
-        props.document && !imageDocument ? "download-only" : undefined
-      }
-      showDownload={imageDocument}
+      showDownload={props.document}
       onDownload={download}
     />
   );

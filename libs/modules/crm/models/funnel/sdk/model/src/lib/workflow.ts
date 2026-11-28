@@ -271,13 +271,21 @@ export function stageWorkFunding(
 export function customerStageFunding(
   stage: Pick<IFunnelStage, "workFunding">,
   tokenCurrencyId: string,
-): IStageWorkFunding {
+): IStageWorkFunding & { payer: "customer" } {
   const existing = stage.workFunding;
+  if (existing?.payer === "customer") {
+    const { currencyId, multiplier, maxRunAmount } = existing;
+    return {
+      payer: "customer",
+      currencyId,
+      multiplier,
+      ...(maxRunAmount !== undefined && { maxRunAmount }),
+    };
+  }
   return {
     payer: "customer",
-    currencyId:
-      existing?.payer === "customer" ? existing.currencyId : tokenCurrencyId,
-    multiplier: existing?.payer === "customer" ? existing.multiplier : "0",
+    currencyId: tokenCurrencyId,
+    multiplier: "0",
   };
 }
 

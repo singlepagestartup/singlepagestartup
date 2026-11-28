@@ -473,9 +473,6 @@ export function Composer(props: ComposerProps) {
     if (!canSubmit) return;
     typing.stop();
     void composer.form.handleSubmit(composer.onSubmit)();
-    if (composer.textareaRef.current) {
-      composer.textareaRef.current.style.height = "auto";
-    }
   }
 
   const showModelPicker =
@@ -575,12 +572,10 @@ export function Composer(props: ComposerProps) {
                 aria-describedby={keyboardHintId}
                 placeholder={keyboardHint}
                 rows={4}
-                className="h-32 min-h-24 max-h-[min(50dvh,480px)] w-full resize-y rounded-lg bg-transparent text-sm leading-6 outline-none placeholder:text-muted-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+                className="field-sizing-content min-h-[min(8rem,50dvh)] max-h-[min(50dvh,480px)] w-full resize-y rounded-lg bg-transparent text-sm leading-6 outline-none placeholder:text-muted-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
                 onChange={(event) => {
                   field.onChange(event);
                   typing.input(event.currentTarget.value);
-                  event.currentTarget.style.height = "auto";
-                  event.currentTarget.style.height = `${event.currentTarget.scrollHeight}px`;
                 }}
                 onBlur={() => {
                   field.onBlur();

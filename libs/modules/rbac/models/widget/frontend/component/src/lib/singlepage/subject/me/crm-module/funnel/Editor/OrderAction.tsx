@@ -21,6 +21,7 @@ export function OrderAction({
   onChange,
 }: IOrderActionProps) {
   const ru = language === "ru";
+  const workTokens = stage.resultPricing?.kind === "work-tokens";
   const action = stage.actions.find(
     (item) =>
       item.actors.includes("system") &&
@@ -46,15 +47,19 @@ export function OrderAction({
       <Field
         label={ru ? "Действие с заказом" : "Order action"}
         hint={
-          payment
+          workTokens
             ? ru
-              ? "Клиент оплачивает заказ в чате. Платёжный сервис проверяет сумму и подтверждает оплату."
-              : "The customer pays in the order chat. The payment service verifies the amount and confirms the payment."
-            : acceptance
+              ? "Это последний этап. После приёмки PDF задача завершится, и покупатель получит оригинал."
+              : "This is the final stage. Accepting the PDF closes the task and releases the original to the customer."
+            : payment
               ? ru
-                ? "Покупатель проверяет файл. Если он принимает результат, задача переходит дальше. Если нужны правки, комментарий получает исполнитель этого этапа."
-                : "The customer reviews the file. Accepting the result advances the task. A request for changes sends the customer's comment to the employee on this stage."
-              : undefined
+                ? "Клиент оплачивает заказ в чате. Платёжный сервис проверяет сумму и подтверждает оплату."
+                : "The customer pays in the order chat. The payment service verifies the amount and confirms the payment."
+              : acceptance
+                ? ru
+                  ? "Покупатель проверяет файл. Если он принимает результат, задача переходит дальше. Если нужны правки, комментарий получает исполнитель этого этапа."
+                  : "The customer reviews the file. Accepting the result advances the task. A request for changes sends the customer's comment to the employee on this stage."
+                : undefined
         }
       >
         <Select
@@ -92,7 +97,7 @@ export function OrderAction({
                 }),
             });
           }}
-          disabled={stage.archived}
+          disabled={stage.archived || workTokens}
           options={[
             {
               value: "none",

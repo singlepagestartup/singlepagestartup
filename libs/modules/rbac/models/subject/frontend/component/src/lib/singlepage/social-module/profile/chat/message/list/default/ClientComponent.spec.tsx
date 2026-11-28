@@ -737,6 +737,36 @@ describe("Social thread context", () => {
     expect(screen.queryByRole("textbox", { name: "Message" })).toBeNull();
   });
 
+  it("preserves the order support composer's browser-managed height while editing and sending", async () => {
+    const user = userEvent.setup();
+    mockMessageCreateMutate.mockImplementation((_payload, options) => {
+      options.onSuccess({ id: "support-reply" });
+    });
+    renderComponent("customer-work", {
+      socialModuleThread: {
+        id: "support-1",
+        isOrderSupport: true,
+        metadata: {},
+      },
+    });
+
+    const textarea = screen.getByRole<HTMLTextAreaElement>("textbox", {
+      name: "Message",
+    });
+    await user.click(textarea);
+    fireEvent.change(textarea, { target: { value: "H" } });
+    expect(textarea.style.height).toBe("");
+
+    // Native textarea resizing sets an inline height.
+    textarea.style.height = "200px";
+    fireEvent.change(textarea, { target: { value: "Hello\nSupport" } });
+    expect(textarea.style.height).toBe("200px");
+
+    fireEvent.keyDown(textarea, { key: "Enter" });
+    await waitFor(() => expect(textarea.value).toBe(""));
+    expect(textarea.style.height).toBe("200px");
+  });
+
   it("keeps the file attached to the message when the context sidebar closes", () => {
     mockCustomerWork.mockReturnValue({
       data: {
@@ -812,7 +842,9 @@ describe("Given: OpenRouter chat profile sidebar", () => {
   it("When: typing slash in a Knowledge chat Then: /learn can be selected", () => {
     renderComponent("knowledge");
 
-    const textarea = screen.getByRole("textbox", { name: "Message" });
+    const textarea = screen.getByRole<HTMLTextAreaElement>("textbox", {
+      name: "Message",
+    });
 
     fireEvent.change(textarea, {
       target: {
@@ -823,10 +855,12 @@ describe("Given: OpenRouter chat profile sidebar", () => {
     expect(screen.getByText("Learn")).toBeTruthy();
     expect(screen.getByText("/learn")).toBeTruthy();
 
+    textarea.style.height = "200px";
     fireEvent.click(screen.getByText("Learn"));
 
-    expect((textarea as HTMLTextAreaElement).value).toBe("@knowledge /learn ");
+    expect(textarea.value).toBe("@knowledge /learn ");
     expect(document.activeElement).toBe(textarea);
+    expect(textarea.style.height).toBe("200px");
   });
 
   /**

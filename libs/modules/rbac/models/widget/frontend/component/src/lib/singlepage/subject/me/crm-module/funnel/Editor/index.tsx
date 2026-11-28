@@ -10,6 +10,7 @@ import {
   type IFunnelStage,
   type TFunnelKind,
 } from "@sps/crm/models/funnel/sdk/model";
+import { customerPaysForWork } from "@sps/crm/models/stage/sdk/model";
 import type {
   ICrmWorkspaceFunnel,
   ICrmWorkspaceOptions,
@@ -176,13 +177,15 @@ export function Editor({
       return stage;
     const {
       operations,
-      resultPricing,
       payerSubjectId,
       imageBrief,
       imageBriefAutoGenerate,
       coverAttachmentRole,
       ...editable
     } = stage;
+    if (editable.resultPricing?.kind !== "work-tokens") {
+      delete editable.resultPricing;
+    }
     const ai = options.participants.some(
       (person) =>
         person.id === stage.defaultAssigneeSubjectId && person.kind === "ai",
@@ -199,7 +202,18 @@ export function Editor({
     if (!stageWorkFundingSchema.safeParse(workFunding).success) {
       throw new Error("Проверьте валюту Token и коэффициент.");
     }
-    return { ...editable, workFunding };
+    if (
+      editable.resultPricing?.kind === "work-tokens" &&
+      !customerPaysForWork(workFunding)
+    ) {
+      throw new Error("Для этого этапа укажите коэффициент больше нуля.");
+    }
+    return {
+      ...editable,
+      ...(original?.workFunding?.payer === "customer" &&
+        operations && { operations }),
+      workFunding,
+    };
   }
 
   const persist = useCallback(
